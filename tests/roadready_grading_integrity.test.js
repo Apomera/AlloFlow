@@ -13,6 +13,11 @@
 //   - A too-short sample is not graded at all, rather than graded generously.
 import { describe, it, expect, beforeAll } from 'vitest';
 import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { readFileSync } from 'node:fs';
+
+// One source read, for the two assertions that are about a CALL SITE in the
+// render loop rather than about an exported function's return value.
+const RR_SRC = readFileSync('stem_lab/stem_tool_roadready.js', 'utf8');
 
 let RR;
 
@@ -45,6 +50,88 @@ const outcomeFor = (over, elapsedSec) => {
   const evidence = RR.rrSessionEvidence(stats, elapsedSec == null ? QUALIFYING_SEC : elapsedSec);
   return RR.rrDriveOutcome(stats, evidence);
 };
+
+// An AI-caused crash is subtracted from the recorded total to work out how
+// many crashes were the learner's fault. That arithmetic is only sound while
+// EVERY crash site increments both counters. One site did not: the rear-end
+// branch incremented aiCausedCrashes alone, so each AI rear-end cancelled a
+// genuine at-fault crash. Two of them took a learner with two real crashes to
+// learnerFaultCrashes = 0 and the road test reported PASSED.
+//
+// The existing coverage used crashes: 1, aiCausedCrashes: 1 -- the case where
+// the counters happen to agree -- which is exactly why this survived.
+describe('RoadReady AI-caused crash accounting', () => {
+  const roadTest = { durationSec: 240, score: 95, startedAtSim: 0 };
+  const outcome = (over) =>
+    RR.roadTestOutcome(roadTest, baseStats(Object.assign({ distance: 99999 }, over)), 300);
+
+  it('does not let AI-caused crashes cancel the learner\'s own', () => {
+    // 2 learner crashes + 2 AI rear-ends = 4 recorded, 2 credited to the AI.
+    const o = outcome({ crashes: 4, aiCausedCrashes: 2 });
+    expect(o.criticalEvents.learnerFaultCrashes).toBe(2);
+    expect(o.critical).toBe(true);
+    expect(o.passed).toBe(false);
+  });
+
+  it('still exonerates a learner whose only crashes were AI-caused', () => {
+    const o = outcome({ crashes: 3, aiCausedCrashes: 3 });
+    expect(o.criticalEvents.learnerFaultCrashes).toBe(0);
+    expect(o.passed).toBe(true);
+  });
+
+  it('fails CLOSED when the two counters have diverged', () => {
+    // aiCausedCrashes cannot legitimately exceed crashes. If it does, the
+    // figure is untrustworthy, so it must not be allowed to exonerate anyone.
+    // Clamping to the recorded total instead would hand out full credit on the
+    // strength of the broken counter.
+    const o = outcome({ crashes: 2, aiCausedCrashes: 99 });
+    expect(o.criticalEvents.learnerFaultCrashes).toBe(2);
+    expect(o.passed).toBe(false);
+  });
+
+  it('applies the same rule to the drive grade, not just the road test', () => {
+    const blamed = outcomeFor({ crashes: 4, aiCausedCrashes: 2 });
+    expect(blamed.passed).toBe(false);
+    const diverged = outcomeFor({ crashes: 2, aiCausedCrashes: 99 });
+    expect(diverged.passed).toBe(false);
+    const clean = outcomeFor({ crashes: 3, aiCausedCrashes: 3 });
+    expect(clean.passed).toBe(true);
+  });
+
+  it('increments BOTH counters at every crash site that credits the AI', () => {
+    // The arithmetic in both graders is `crashes - aiCausedCrashes`, so a site
+    // that increments aiCausedCrashes WITHOUT incrementing crashes makes each
+    // AI event cancel a real at-fault crash. The rear-end branch did exactly
+    // that, and two AI rear-ends took a learner with two genuine crashes to
+    // learnerFaultCrashes = 0 with the road test reporting PASSED.
+    //
+    // This is a source assertion because the bug lives at a render-loop call
+    // site, not in an exported function. It reads every aiCausedCrashes
+    // increment and requires a crashes increment nearby.
+    const sites = [];
+    const re = /statsRef\.current\.aiCausedCrashes\s*(?:=\s*\(statsRef\.current\.aiCausedCrashes \|\| 0\) \+ 1|\+\+)/g;
+    let m;
+    while ((m = re.exec(RR_SRC))) sites.push(m.index);
+    expect(sites.length).toBeGreaterThanOrEqual(4);
+
+    const missing = sites.filter((at) => {
+      // Look back far enough to cover the guard line and the comment above it,
+      // but not so far as to reach the previous crash site.
+      const window = RR_SRC.slice(Math.max(0, at - 700), at + 200);
+      return !/statsRef\.current\.crashes\s*(?:=\s*\(statsRef\.current\.crashes \|\| 0\) \+ 1|\+\+)/.test(window);
+    });
+    expect(missing).toEqual([]);
+  });
+
+  it('counts a brake-check rear-end against the learner', () => {
+    // The brake-check branch credits nobody, so it must record a crash: the
+    // tool labels it "YOUR FAULT" in the toast. It used to increment neither
+    // counter, so a crash the tool blamed on the student vanished entirely.
+    const branch = RR_SRC.slice(RR_SRC.indexOf("// Player's fault: brake-check"));
+    const upToElse = branch.slice(0, branch.indexOf('} else {'));
+    expect(upToElse).toContain('statsRef.current.crashes');
+  });
+});
 
 describe('RoadReady driving grade', () => {
   it('grades a clean qualifying drive as a pass', () => {
