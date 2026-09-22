@@ -1733,7 +1733,7 @@ dataRef.current = d;
 
             else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Shape in stages: reinforce Turn Right (↪️) first, then Half-Turns, then full Spins!';
 
-            else if (blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5) blHint = '\uD83D\uDCA1 You\'ve reinforced 5 times! Click "Start Extinction" to stop reinforcing.';
+            else if (blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5) blHint = __alloT('stem.behaviorlab.hint_l3_predict', '\uD83D\uDCA1 You\'ve reinforced 5 times. Now answer the prediction on the right \u2014 that starts the extinction phase.');
 
             else if (blLevel === 4 && blTick > 3) blHint = '\uD83D\uDCA1 FR-3: Only reinforce every 3rd lever press (count them!)';
 

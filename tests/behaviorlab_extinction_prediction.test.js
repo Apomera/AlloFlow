@@ -74,6 +74,14 @@ describe('Behavior Lab extinction prediction gate', () => {
     expect(html).not.toContain('You predicted:');
   });
 
+  it('never points the learner at the removed "Start Extinction" button', () => {
+    // The running-phase hint still read 'Click "Start Extinction"' after the
+    // button became a prediction prompt — copy outliving the control it names.
+    // SSR assertions on the panel did not catch it; a screenshot did.
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).not.toContain('Click "Start Extinction"');
+  });
+
   it('clears the prediction on every restart of the level', () => {
     // A prediction that survived a replay would debrief the learner on a guess
     // they made the first time through — a recorded result outliving the state
