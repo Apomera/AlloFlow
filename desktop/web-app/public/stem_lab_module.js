@@ -664,7 +664,20 @@
         _stemFsNotify(el, true);
         var s = el.style;
         Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); s.setProperty(p, _stemFsProps[p], 'important'); });
-        el.__alloFsEsc = function(ev) { if (ev && ev.key === 'Escape') _stemFsExit(el); };
+        // The Escape handler is removed by _stemFsExit, but a tool can unmount
+        // while still in CSS fullscreen (the hub's "all tools" button does not
+        // exit first), and then nothing removes it: the handler stays on the
+        // document referencing a detached node, and every later Escape fires a
+        // spurious window resize that makes every live canvas re-measure.
+        // Drop it as soon as the stage is no longer in the document.
+        el.__alloFsEsc = function(ev) {
+          if (!el.isConnected && el.isConnected !== undefined) {
+            try { document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
+            el.__alloFsOn = false;
+            return;
+          }
+          if (ev && ev.key === 'Escape') _stemFsExit(el);
+        };
         try { document.addEventListener('keydown', el.__alloFsEsc); } catch (e) {}
         try { window.dispatchEvent(new Event('resize')); } catch (e) {}
       };
@@ -715,11 +728,44 @@
           var glyph = btn.firstElementChild;
           if (glyph) glyph.textContent = on ? '✕' : '⛶';
         };
+        // Release the observer and the two document listeners when the stage
+        // leaves the page.
+        //
+        // 56 tools bind a fullscreen button, and a React remount hands over a
+        // fresh button and a fresh stage every time, so the same-pair guard
+        // above never fires across tool switches. Ten tool opens used to leave
+        // ten live MutationObservers watching detached stages and twenty
+        // document listeners, each still running `sync` on every
+        // fullscreenchange to write attributes onto buttons nobody can see.
         try {
           var mo = new MutationObserver(sync);
           mo.observe(stage, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
           document.addEventListener('fullscreenchange', sync);
           document.addEventListener('webkitfullscreenchange', sync);
+          var release = function () {
+            try { mo.disconnect(); } catch (e) {}
+            try { document.removeEventListener('fullscreenchange', sync); } catch (e) {}
+            try { document.removeEventListener('webkitfullscreenchange', sync); } catch (e) {}
+            try { if (btn.__alloFsBound === stage) btn.__alloFsBound = null; } catch (e) {}
+          };
+          btn.__alloFsRelease = release;
+          window.__alloStemFsBindings = window.__alloStemFsBindings || [];
+          window.__alloStemFsBindings.push({ stage: stage, release: release });
+          // Sweep bindings whose stage has left the document. Cheap, and it
+          // runs only when a new binding is made, so an idle session does no
+          // work. isConnected is the one reliable signal here: the hub cannot
+          // know when a plugin's own subtree unmounts.
+          if (window.__alloStemFsBindings.length > 1) {
+            // Only a stage the DOM reports as detached is released. The stage
+            // being bound right now is connected by definition, so it needs no
+            // special case; and an environment where isConnected is undefined
+            // keeps everything, which is the safe direction.
+            window.__alloStemFsBindings = window.__alloStemFsBindings.filter(function (b) {
+              var gone = b.stage && b.stage.isConnected === false;
+              if (gone) { try { b.release(); } catch (e) {} }
+              return !gone;
+            });
+          }
         } catch (e) {}
         btn.addEventListener('click', function (ev) {
           ev.preventDefault();
@@ -745,6 +791,117 @@
     // reported "The 3D engine could not load". A shim is recognised by what it
     // lacks; its registry is re-registered through the real registerTool below so
     // the entries pick up the same defaults and lesson-plan rows as the rest.
+    // ── Shared post-processing for makeOrbitViewer ───────────────────────
+    // Five tools share that viewer (bridgeLab, cityLab, fireEcology,
+    // machineLab, titration), so BOTH of these are opt-in per viewer via
+    // cfg.bloom / cfg.env. Nothing changes for a tool that does not ask.
+    var _ORBIT_FX_URLS = [
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+    ];
+    var _orbitFxPromise = null;
+    function _orbitFxReady() {
+      return !!(window.THREE && window.THREE.EffectComposer && window.THREE.RenderPass && window.THREE.UnrealBloomPass);
+    }
+    // The r128 example addons depend on each other in order, so they load one
+    // at a time; the shared promise means several viewers never double-load.
+    function _loadOrbitFx() {
+      if (_orbitFxReady()) return Promise.resolve(true);
+      if (_orbitFxPromise) return _orbitFxPromise;
+      _orbitFxPromise = new Promise(function (resolve) {
+        var i = 0;
+        (function next() {
+          if (i >= _ORBIT_FX_URLS.length) { resolve(_orbitFxReady()); return; }
+          try {
+            var sc = document.createElement('script');
+            sc.src = _ORBIT_FX_URLS[i]; sc.async = false;
+            sc.onload = function () { i++; next(); };
+            sc.onerror = function () { i++; next(); };
+            document.head.appendChild(sc);
+          } catch (e) { resolve(false); }
+        })();
+      });
+      return _orbitFxPromise;
+    }
+    function _orbitLowPower() {
+      try {
+        var rm = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        return rm || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+      } catch (e) { return false; }
+    }
+    // opts: true for defaults, or { strength, radius, threshold }.
+    function _attachOrbitBloom(THREE, renderer, scene, camera, S, opts) {
+      if (window.AlloPostFXEnabled === false) return;
+      var o = (opts && typeof opts === 'object') ? opts : {};
+      _loadOrbitFx().then(function (ok) {
+        // S is captured, but the viewer may have been torn down while the
+        // addons were in flight — never build into a dead renderer.
+        if (!ok || !S || S.disposing || S.failed || S.contextLost || S.renderer !== renderer) return;
+        try {
+          var T = window.THREE, lp = _orbitLowPower(), rs = lp ? 0.5 : 1;
+          var size = new T.Vector2(); renderer.getSize(size);
+          var cc = new T.EffectComposer(renderer);
+          cc.addPass(new T.RenderPass(scene, camera));
+          cc.addPass(new T.UnrealBloomPass(
+            new T.Vector2(Math.max(1, Math.round(size.x * rs)), Math.max(1, Math.round(size.y * rs))),
+            (o.strength || 0.62) * (lp ? 0.7 : 1), o.radius || 0.38, o.threshold || 0.82));
+          S.composer = cc;
+          S.dirty = true;   // these viewers render on demand; ask for one more frame
+        } catch (e) { S.composer = null; }
+      });
+    }
+    // A PMREM environment belongs to the GL CONTEXT THAT BUILT IT — sharing one
+    // across renderers throws nothing and renders as NO environment at all. So
+    // it is cached on the renderer and dies with it.
+    function _attachOrbitEnv(THREE, renderer, scene) {
+      try {
+        if (renderer._alloEnvTried) {
+          if (renderer._alloEnvTexture) scene.environment = renderer._alloEnvTexture;
+          return;
+        }
+        renderer._alloEnvTried = true;
+        renderer._alloEnvTexture = null;
+        if (!THREE.PMREMGenerator || typeof THREE.PMREMGenerator.prototype.fromScene !== 'function') return;
+        var envScene = new THREE.Scene();
+        var geo = new THREE.BoxGeometry(12, 12, 12);
+        var pos = geo.attributes.position, cols = new Float32Array(pos.count * 3);
+        var sky = new THREE.Color(0x9ec5fe), ground = new THREE.Color(0x3a2f26), mix = new THREE.Color();
+        for (var i = 0; i < pos.count; i++) {
+          var t = Math.max(0, Math.min(1, (pos.getY(i) / 6 + 1) / 2));
+          mix.copy(ground).lerp(sky, t);
+          cols[i * 3] = mix.r; cols[i * 3 + 1] = mix.g; cols[i * 3 + 2] = mix.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+        var box = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide }));
+        envScene.add(box);
+        var pm = new THREE.PMREMGenerator(renderer);
+        pm.compileEquirectangularShader();
+        var target = pm.fromScene(envScene);
+        renderer._alloEnvTarget = target || null;
+        renderer._alloEnvTexture = target ? target.texture : null;
+        pm.dispose(); geo.dispose(); box.material.dispose();
+        if (renderer._alloEnvTexture) scene.environment = renderer._alloEnvTexture;
+      } catch (e) { renderer._alloEnvTexture = null; }
+    }
+    function _disposeOrbitFx(S) {
+      if (!S) return;
+      try {
+        if (S.composer) {
+          (S.composer.passes || []).forEach(function (pss) { if (pss && pss.dispose) pss.dispose(); });
+          if (S.composer.dispose) S.composer.dispose();
+        }
+      } catch (e) {}
+      S.composer = null;
+      try {
+        var r = S.renderer;
+        if (r && r._alloEnvTarget && r._alloEnvTarget.dispose) r._alloEnvTarget.dispose();
+        if (r) { r._alloEnvTarget = null; r._alloEnvTexture = null; r._alloEnvTried = false; }
+      } catch (e) {}
+    }
     var __alloStemLabShim = (window.StemLab && typeof window.StemLab.ensureThree !== 'function') ? window.StemLab : null;
     if (!window.StemLab || __alloStemLabShim) {
       window.StemLab = {
@@ -2031,7 +2188,17 @@
               contextLost: !!(S && S.contextLost),
               canvas: S && S.renderer
                 ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height }
-                : null
+                : null,
+              // Post-processing state, so a test can assert the FX are really
+              // wired rather than inferring it from a screenshot. `envLit` is
+              // the one that matters: a cross-context PMREM texture is still
+              // "present" but renders as no environment at all.
+              fx: S ? {
+                bloom: !!S.composer,
+                envTried: !!(S.renderer && S.renderer._alloEnvTried),
+                envTexture: !!(S.renderer && S.renderer._alloEnvTexture),
+                sceneEnv: !!(S.scene && S.scene.environment)
+              } : null
             };
             if (S && cfg.debug) {
               try {
@@ -2095,6 +2262,10 @@
               S.lastW = w; S.lastH = hgt;
               S.renderer.setSize(w, hgt, false);
               S.camera.aspect = w / Math.max(1, hgt);
+              // A composer keeps its own render targets; without this the bloom
+              // pass keeps sampling at the OLD size and the glow drifts out of
+              // register with the scene after any resize.
+              if (S.composer) { try { S.composer.setSize(w, hgt); } catch (e) {} }
               S.dirty = true;
             }
             if (isStatic && !hadPending && !sizeChanged && !S.dirty) return;
@@ -2151,7 +2322,17 @@
             S.camera.far = dist * 8 + 200;
             S.camera.updateProjectionMatrix();
             S.camera.lookAt(tgt);
-            try { S.renderer.render(S.scene, S.camera); S.dirty = false; }
+            try {
+              // Composer first when the addons arrived; a composer that throws
+              // is dropped and the plain path takes over from then on.
+              if (S.composer) {
+                try { S.composer.render(); }
+                catch (ce) { S.composer = null; S.renderer.render(S.scene, S.camera); }
+              } else {
+                S.renderer.render(S.scene, S.camera);
+              }
+              S.dirty = false;
+            }
             catch (e) { failRuntime(e, 'render'); return; }
             if (!isStatic) ensureFrame();
           }
@@ -2195,6 +2376,18 @@
             };
             if (cfg.lights) { try { cfg.lights(THREE, scene, S); } catch (e) {} }
 
+            // ── Guarded bloom + environment, OPT-IN per viewer ────────────
+            // makeOrbitViewer is shared by five tools, so neither of these is
+            // switched on globally: a tool asks for it with cfg.bloom / cfg.env
+            // and everything else keeps exactly the look it has today.
+            //
+            // Both follow the house pattern: plain render until the r128 addons
+            // CDN-load, every GPU-facing call try/caught with a fallback to
+            // renderer.render, kill-switch window.AlloPostFXEnabled === false,
+            // and half-res + gentler strength on reduced-motion or <=4 cores.
+            if (cfg.bloom) { try { _attachOrbitBloom(THREE, renderer, scene, camera, S, cfg.bloom); } catch (e) {} }
+            if (cfg.env) { try { _attachOrbitEnv(THREE, renderer, scene); } catch (e) {} }
+
             var localS = S;
             localS.onContextLost = function (ev) {
               ev.preventDefault();
@@ -2202,6 +2395,11 @@
               localS.contextLost = true;
               if (localS.raf) cancelAnimationFrame(localS.raf);
               localS.raf = 0;
+              // A lost context invalidates the composer's render targets and
+              // the PMREM texture. Drop both so a restore renders plainly
+              // rather than sampling dead GPU resources; the env is rebuilt
+              // below because _alloEnvTried is cleared with it.
+              _disposeOrbitFx(localS);
               setStatus('failed');
             };
             localS.onContextRestored = function () {
@@ -2211,6 +2409,9 @@
               localS.failed = false;
               localS.dirty = true;
               sig = '';
+              // Rebuild the FX the loss tore down, on the NEW context.
+              if (cfg.env) { try { _attachOrbitEnv(localS.THREE, localS.renderer, localS.scene); } catch (e) {} }
+              if (cfg.bloom) { try { _attachOrbitBloom(localS.THREE, localS.renderer, localS.scene, localS.camera, localS, cfg.bloom); } catch (e) {} }
               setStatus('ready');
               ensureFrame();
             };
@@ -2278,6 +2479,10 @@
                 if (retiring.onContextRestored) canvas.removeEventListener('webglcontextrestored', retiring.onContextRestored);
               }
               disposeGroup(retiring.model);
+              // Composer render targets and the PMREM environment are renderer-
+              // owned GPU allocations; forceContextLoss/dispose below do not
+              // free them on their own. Release BEFORE the context goes.
+              _disposeOrbitFx(retiring);
               if (retiring.renderer) {
                 try { retiring.renderer.forceContextLoss(); } catch (e) {}
                 try { retiring.renderer.dispose(); } catch (e) {}
@@ -2288,6 +2493,18 @@
             }
             S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
             status = 'idle';
+          }
+          // Every viewer registers itself so diagnostics and tests can reach
+          // one without each tool having to export its module-scoped handle.
+          // Weak intent: this is a debug surface, not an API tools should
+          // drive — nothing here mutates viewer state.
+          function _registerOrbitViewer(v) {
+            try {
+              if (typeof window === 'undefined') return;
+              window.StemLab = window.StemLab || {};
+              if (!window.StemLab._orbitViewers) window.StemLab._orbitViewers = [];
+              if (window.StemLab._orbitViewers.indexOf(v) === -1) window.StemLab._orbitViewers.push(v);
+            } catch (e) {}
           }
           var api = {
             /** Stable ref callback target. Host div, or null on unmount. */
@@ -2333,6 +2550,7 @@
               teardown(false);
             }
           };
+          _registerOrbitViewer(api);
           return api;
         },
 
@@ -2969,17 +3187,36 @@
       var [_journeyEntry, _setJourneyEntry] = React.useState(null);
 
       // ── STEAM Lab Global Sound Effect Helper ──
-      var _stemAudioCtx = null;
+      //
+      // Use the ONE shared context, not a local of this component.
+      //
+      // `var _stemAudioCtx = null;` lived inside StemLabModal, so it was
+      // re-declared on every RENDER of the hub - not merely every mount - and
+      // the next beep constructed a fresh AudioContext that nothing ever
+      // closed. The hub re-renders on search input, catalog filter, XP award,
+      // quest tick and theme toggle, so this was reached in ordinary use.
+      // WebKit refuses a fifth live context and Chromium a seventh; past that
+      // the constructor throws, the bare catch below swallows it, and the XP
+      // chime and celebration fanfare go silent for the rest of the session
+      // with nothing reported.
+      //
+      // window.StemLab.audioContext() is the host getter the 2026-09-14 tool
+      // sweep introduced for exactly this: one context, resumed when
+      // suspended, with close() neutered so no caller can silence the others.
+      // The hub's own helper was missed by that sweep. The fallback keeps stub
+      // harnesses that do not define the getter working.
       function stemBeep(freq, dur, vol) {
         try {
-          if (!_stemAudioCtx) _stemAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          var osc = _stemAudioCtx.createOscillator();
-          var gain = _stemAudioCtx.createGain();
-          osc.connect(gain); gain.connect(_stemAudioCtx.destination);
+          var ctx = (window.StemLab && typeof window.StemLab.audioContext === 'function')
+            ? window.StemLab.audioContext()
+            : new (window.AudioContext || window.webkitAudioContext)();
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
           osc.frequency.value = freq; osc.type = 'sine';
           gain.gain.value = vol || 0.12;
-          gain.gain.exponentialRampToValueAtTime(0.001, _stemAudioCtx.currentTime + (dur || 0.15));
-          osc.start(); osc.stop(_stemAudioCtx.currentTime + (dur || 0.15));
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (dur || 0.15));
+          osc.start(); osc.stop(ctx.currentTime + (dur || 0.15));
         } catch (e) { }
       }
       function stemCelebrate() {
@@ -3272,6 +3509,21 @@
         //
         // The updater stays pure — it only records what it did — and the
         // feedback below reads that real number.
+        //
+        // `points` arrives from ctx.awardXP, which every tool plugin can call.
+        // A plugin computing points from a division, a parse or a missing
+        // field can hand over NaN, and `Math.min(NaN, n)` is NaN, so
+        // `earned += NaN` poisoned that activity PERMANENTLY: the XP panel
+        // then rendered "NaN / 100 XP" with style width:"NaN%", and no later
+        // award could repair it because every sum with NaN is NaN. Infinity
+        // and a numeric string are the same class of input. Normalise once,
+        // here, rather than defending every read downstream.
+        var _points = Math.floor(Number(points));
+        if (!isFinite(_points) || _points <= 0) {
+          if (typeof onCredited === 'function') { try { onCredited(0); } catch (_) {} }
+          return;
+        }
+        points = _points;
         var _awardedPts = Math.min(points, Math.max(0, 100 - getStemXP(activityId)));
         if (_awardedPts <= 0) {
           // Callers that describe the award themselves still need to hear that
@@ -3332,13 +3584,25 @@
           setTimeout(function () { _setXpBadgePulse(false); }, 600);
         }, 0);
       }
+      // Reads persisted XP, which may predate the input guard in awardStemXP
+      // or have been edited by hand. A stored NaN used to flow straight to the
+      // panel as "NaN / 100 XP" with style width:"NaN%"; a negative drew a
+      // negative bar. Clamping on the way out repairs those records on sight
+      // instead of requiring a migration.
       function getStemXP(activityId) {
-        return (stemXpData[activityId] && stemXpData[activityId].earned) || 0;
+        var raw = stemXpData[activityId] && stemXpData[activityId].earned;
+        var n = Math.floor(Number(raw));
+        if (!isFinite(n) || n <= 0) return 0;
+        return Math.min(100, n);
       }
       function getStemXPCap(activityId) {
         return 100 - getStemXP(activityId);
       }
-      var totalStemXP = stemXpData._total || 0;
+      // _total is a stored sum, so it carries the same risk as an entry.
+      var totalStemXP = (function () {
+        var n = Math.floor(Number(stemXpData._total));
+        return isFinite(n) && n > 0 ? n : 0;
+      })();
 
       // ── AI Helper Functions (powered by main app's callGemini) ──
       var _aiPending = {};
@@ -3561,7 +3825,9 @@
       });
       var [_questHudCollapsed, _setQuestHudCollapsed] = React.useState(false);
       var [_showXpPanel, _setShowXpPanel] = React.useState(false);
-      var [_questFreeResponseOpen, _setQuestFreeResponseOpen] = React.useState(null); // qid of expanded free response
+      // (_questFreeResponseOpen removed: it tracked which reflection was
+      // "expanded", but nothing ever read or set it, and the response
+      // textarea is now always present rather than revealed on demand.)
 
       // Live mirrors of the overlay state for the global Escape handler.
       // That listener is re-bound only when [stemLabTool, stemLabTab,
@@ -3586,10 +3852,30 @@
         Object.keys(_stationTools || {}).some(function (k) { return _stationTools[k]; })
       );
 
-      // Quest progress persistence
+      // Quest progress persistence.
+      //
+      // This is the ONLY copy of a student's written reflections. A failed
+      // write used to reach the console and nowhere else, so a learner could
+      // type several paragraphs on a device at its storage limit, see them on
+      // screen, close the tab and lose them without ever being told.
+      //
+      // The warning is announced once per run of failures rather than on every
+      // keystroke, and reset on the next success, so a transient failure does
+      // not become a stream of identical toasts over a live region.
+      var _questSaveFailedRef = React.useRef(false);
       React.useEffect(function() {
-        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); }
-        catch(e) { console.warn('[QuestSystem] Quest progress not saved (storage quota or permission) — non-fatal, continuing:', e.message || e); }
+        try {
+          localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress));
+          _questSaveFailedRef.current = false;
+        } catch(e) {
+          console.warn('[QuestSystem] Quest progress not saved (storage quota or permission) - non-fatal, continuing:', e.message || e);
+          if (!_questSaveFailedRef.current) {
+            _questSaveFailedRef.current = true;
+            var msg = 'This device would not save your quest progress. Your writing is still on screen - copy it somewhere before you close this page.';
+            if (typeof addToast === 'function') addToast(msg, 'error');
+            if (typeof announceToSR === 'function') announceToSR(msg);
+          }
+        }
       }, [_questProgress]);
 
       // Quest evaluation — watches labToolData for auto-completion
@@ -3681,14 +3967,36 @@
 
 
       // Quest type definitions
+      // minVal/maxVal bound what the quest builder will accept.
+      //
+      // The number input carried `min: 1`, which the browser only applies to
+      // its spinner and to form validation this form never runs \u2014 a typed
+      // value went straight through. Two ends were broken:
+      //   * a NEGATIVE target completed the quest instantly, because
+      //     `earned >= threshold` is true at 0 XP, and a target of 0 made the
+      //     HUD progress bar compute 0/0 -> NaN, emitting width:"NaN%".
+      //   * xpThreshold above 100 was PERMANENTLY unreachable: XP is capped at
+      //     100 per activity, so "Earn 500 XP" can never complete however long
+      //     the student works.
+      // The ceilings below are the real limits of each measure, not arbitrary.
       var QUEST_TYPES = [
-        { id: 'xpThreshold', label: t('stem.tools_menu.earn_xp') || 'Earn XP', icon: '\u2B50', paramLabel: 'XP Target', defaultVal: 50, unit: 'XP' },
-        { id: 'timeSpent', label: t('stem.tools_menu.spend_time') || 'Spend Time', icon: '\u23F1', paramLabel: 'Minutes', defaultVal: 5, unit: 'min' },
-        { id: 'discoveryCount', label: t('stem.tools_menu.discover_items') || 'Discover Items', icon: '\uD83D\uDD2D', paramLabel: 'Item Count', defaultVal: 5, unit: 'items' },
-        { id: 'quizScore', label: t('stem.tools_menu.quiz_score') || 'Quiz Score', icon: '\uD83C\uDFAF', paramLabel: 'Min Score', defaultVal: 5, unit: 'pts' },
-        { id: 'freeResponse', label: t('stem.tools_menu.written_response') || 'Written Response', icon: '\u270D\uFE0F', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars' },
+        { id: 'xpThreshold', label: t('stem.tools_menu.earn_xp') || 'Earn XP', icon: '\u2B50', paramLabel: 'XP Target', defaultVal: 50, unit: 'XP', minVal: 1, maxVal: 100 },
+        { id: 'timeSpent', label: t('stem.tools_menu.spend_time') || 'Spend Time', icon: '\u23F1', paramLabel: 'Minutes', defaultVal: 5, unit: 'min', minVal: 1, maxVal: 120 },
+        { id: 'discoveryCount', label: t('stem.tools_menu.discover_items') || 'Discover Items', icon: '\uD83D\uDD2D', paramLabel: 'Item Count', defaultVal: 5, unit: 'items', minVal: 1, maxVal: 100 },
+        { id: 'quizScore', label: t('stem.tools_menu.quiz_score') || 'Quiz Score', icon: '\uD83C\uDFAF', paramLabel: 'Min Score', defaultVal: 5, unit: 'pts', minVal: 1, maxVal: 100 },
+        { id: 'freeResponse', label: t('stem.tools_menu.written_response') || 'Written Response', icon: '\u270D\uFE0F', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars', minVal: 1, maxVal: 2000 },
         { id: 'toolQuest', label: t('stem.tools_menu.tool_specific') || 'Tool-Specific', icon: '\uD83C\uDFC6', paramLabel: 'Quest', defaultVal: '', unit: '' }
       ];
+      // Clamp a builder parameter into its type's range. Used by the input, the
+      // live preview and the Add handler so all three agree.
+      function _clampQuestParam(value, qtDef) {
+        var def = (qtDef && qtDef.defaultVal) || 5;
+        var n = parseInt(value, 10);
+        if (!isFinite(n)) return def;
+        var lo = (qtDef && qtDef.minVal) || 1;
+        var hi = (qtDef && qtDef.maxVal) || 100;
+        return Math.min(hi, Math.max(lo, n));
+      }
 
       // Get available tool-specific quests for a given tool ID
       function _getToolQuestHooks(toolId) {
@@ -3835,6 +4143,28 @@
         return progress;
       }
 
+      // A progress percentage that is always a renderable 0-100 number.
+      //
+      // Every bar below divides by a target that comes from saved station
+      // JSON. A target of 0 yields NaN (0/0), which reaches the DOM as
+      // style width:"NaN%", an invalid declaration the browser drops, so the
+      // bar silently renders at full width. A negative target yields a
+      // negative width. Stations saved before the builder clamped its input
+      // can still hold either, so the guard belongs here as well.
+      // The two guards below overlap on purpose: the early return states the
+      // precondition (a target must be a positive number), and the isFinite
+      // check after the division would also catch NaN/Infinity on its own.
+      // Either alone is sufficient for the OUTPUT, so a test cannot tell them
+      // apart. Keep both: the first documents the contract and the
+      // second is what holds if the contract is ever loosened.
+      function _questPct(current, target) {
+        var c = Number(current), t = Number(target);
+        if (!isFinite(c) || !isFinite(t) || t <= 0) return 0;
+        var pct = c / t * 100;
+        if (!isFinite(pct)) return 0;
+        return Math.min(100, Math.max(0, pct));
+      }
+
       // Get display info for a quest's progress
       function _getQuestDisplay(quest, toolData, progress, stationId) {
         var qp = ((progress[stationId] || {})[quest.qid]) || {};
@@ -3845,29 +4175,29 @@
             xpData = (toolData._stemXP || {})[quest.toolId];
             var earned = xpData ? (typeof xpData === 'number' ? xpData : (xpData.earned || 0)) : 0;
             var thr = quest.params.threshold || 50;
-            return { done: false, text: earned + '/' + thr + ' XP', pct: Math.min(100, earned / thr * 100) };
+            return { done: false, text: earned + '/' + thr + ' XP', pct: _questPct(earned, thr) };
           case 'timeSpent':
             ms = qp.timeAccumMs || 0;
             targetMs = (quest.params.minutes || 5) * 60000;
-            return { done: false, text: Math.floor(ms / 60000) + '/' + (quest.params.minutes || 5) + ' min', pct: Math.min(100, ms / targetMs * 100) };
+            return { done: false, text: Math.floor(ms / 60000) + '/' + (quest.params.minutes || 5) + ' min', pct: _questPct(ms, targetMs) };
           case 'discoveryCount':
             toolState = toolData['_' + quest.toolId] || toolData[quest.toolId] || {};
             field = quest.params.field || 'discoveries';
             val = field.indexOf('.') !== -1 ? field.split('.').reduce(function(o, k) { return (o || {})[k]; }, toolState) : toolState[field];
             var c = Array.isArray(val) ? val.length : (typeof val === 'number' ? val : 0);
             var target = quest.params.count || 5;
-            return { done: false, text: c + '/' + target, pct: Math.min(100, c / target * 100) };
+            return { done: false, text: c + '/' + target, pct: _questPct(c, target) };
           case 'quizScore':
             toolState = toolData['_' + quest.toolId] || toolData[quest.toolId] || {};
             field = quest.params.field || 'quizScore';
             val = field.indexOf('.') !== -1 ? field.split('.').reduce(function(o, k) { return (o || {})[k]; }, toolState) : toolState[field];
             var sv = typeof val === 'number' ? val : 0;
             var minS = quest.params.minScore || 5;
-            return { done: false, text: sv + '/' + minS, pct: Math.min(100, sv / minS * 100) };
+            return { done: false, text: sv + '/' + minS, pct: _questPct(sv, minS) };
           case 'freeResponse':
             var len = (qp.response || '').length;
             var minL = quest.params.minLength || 30;
-            return { done: false, text: len + '/' + minL + ' chars', pct: Math.min(100, len / minL * 100) };
+            return { done: false, text: len + '/' + minL + ' chars', pct: _questPct(len, minL) };
           case 'toolQuest':
             var hooks2 = _getToolQuestHooks(quest.toolId);
             var hook2 = hooks2.find(function(h2) { return h2 && h2.id === quest.params.hookId; });
@@ -5720,7 +6050,12 @@
               var _xpKeys = Object.keys(stemXpData);
               _xpKeys.forEach(function(key) {
                 if (key === '_total') return;
-                if (!stemXpData[key] || typeof stemXpData[key].earned !== 'number' || stemXpData[key].earned <= 0) return;
+                if (!stemXpData[key]) return;
+                // `typeof x === 'number'` is true for NaN and Infinity, so the
+                // old guard admitted both and the tile rendered "NaN / 100 XP".
+                // getStemXP now normalises, so list the activity only when the
+                // value it will actually display is real.
+                if (getStemXP(key) <= 0) return;
                 _xpActivities.push(_xpLabel(key));
               });
               // Sort: maxed first, then by earned descending
@@ -5738,9 +6073,24 @@
                     React.createElement("span", { className: "text-[10px] font-bold text-amber-700 uppercase" },
                       _earnedCount + " Active" + (_maxedCount > 0 ? " \u00B7 " + _maxedCount + " Maxed" : "")
                     ),
-                    React.createElement("span", { className: "text-[10px] font-black text-amber-600" }, totalStemXP + " Total XP")
+                    React.createElement("span", { className: "text-[10px] font-black text-amber-600" },
+                      // The bar is totalStemXP/10, i.e. it fills at 1000 XP and
+                      // turns green there. Nothing said so, so a learner at
+                      // 1000+ saw a full bar with no idea what it measured or
+                      // that they had passed anything.
+                      totalStemXP >= 1000
+                        ? totalStemXP + ' Total XP \u00B7 1000 reached'
+                        : totalStemXP + ' / 1000 Total XP')
                   ),
-                  React.createElement("div", { className: "w-full h-3 bg-amber-100 rounded-full overflow-hidden", style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
+                  React.createElement("div", {
+                    className: "w-full h-3 bg-amber-100 rounded-full overflow-hidden",
+                    style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' },
+                    role: 'progressbar',
+                    'aria-valuenow': Math.min(1000, totalStemXP),
+                    'aria-valuemin': 0,
+                    'aria-valuemax': 1000,
+                    'aria-label': 'Total STEAM Lab XP'
+                  },
                     React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: {
                       width: Math.min(100, totalStemXP / 10) + '%',
                       background: totalStemXP >= 1000 ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #eab308, #f59e0b)',
@@ -6409,6 +6759,20 @@
                 desc: t('stem.tools_menu.spot_phishing_emails_forge_strong_passwords') || 'Spot phishing emails, forge strong passwords, and crack ciphers. Gamified cybersecurity training aligned with Digital Citizenship standards.',
                 color: 'rose', ready: true
               },
+              // Teacher/developer workspace: the tool itself returns a "switch on
+              // Teacher Mode" notice unless ctx.isTeacherMode, so the tile is safe
+              // to list for everyone. Without this entry the tool had no way in at
+              // all \u2014 it is reached only by tile or by ?tool=forge, and the deep
+              // link resolved a name the loader could not fetch.
+              // NOTE: this comment must stay ABOVE the brace. Every tile parser
+              // here and in dev-tools matches /\{\s*id:\s*'...'/, so a comment
+              // between `{` and `id:` makes the entry invisible to all of them \u2014
+              // check_stem_tile_catalog then passes by not seeing the tile at all.
+              {
+                id: 'forge', icon: '\uD83D\uDEE0\uFE0F', label: t('stem.tools_menu.tool_forge') || 'Tool Forge',
+                desc: t('stem.tools_menu.author_validate_and_preview_new_plugins') || 'Teacher workspace: author, validate and preview new STEAM Lab / SEL Hub tools. Describe one in plain language or hand-code it against the plugin contract, then render it in a sandboxed preview before submitting it for review.',
+                color: 'indigo', ready: true
+              },
               {
                 id: 'a11yAuditor', icon: '\u267F', label: t('stem.tools_menu.digital_accessibility_lab') || 'Digital Accessibility Lab',
                 desc: t('stem.tools_menu.audit_websites_for_wcag_2_1') || 'Audit websites for WCAG 2.1 AA compliance. Learn how accessibility barriers affect people with disabilities and how to fix them.',
@@ -6954,6 +7318,40 @@
               if (!state) return 0;
               try { return getCount(state) || 0; } catch (e) { return 0; }
             };
+            // Count the keys of a nested mastery map, and ONLY when it really
+            // is a map.
+            //
+            // Several entries read `(s.field || s)` and then Object.keys() it.
+            // When the tool has saved state but not that field yet - settings,
+            // a seen-tutorial flag, a last-open tab - the fallback counted the
+            // WHOLE state object, so a learner who had mastered nothing saw
+            // "4 / 15" from four unrelated settings keys. An array or a string
+            // in that slot counted its indices or characters the same way.
+            var _atlasMapCount = function (holder, field) {
+              if (!holder || typeof holder !== 'object' || Array.isArray(holder)) return 0;
+              var map;
+              if (field) {
+                // When a field is named it must actually be there. Falling
+                // back to the holder is precisely what counted settings keys
+                // as mastered items.
+                if (!Object.prototype.hasOwnProperty.call(holder, field)) return 0;
+                map = holder[field];
+              } else {
+                map = holder;
+              }
+              if (!map || typeof map !== 'object' || Array.isArray(map)) return 0;
+              return Object.keys(map).length;
+            };
+            // A tile's count must stay inside the total it is shown against:
+            // the bar is `width: pct + '%'` and the label reads "N / total",
+            // so an unbounded count rendered a bar past its track and text
+            // like "200 / 15". Persisted state is user-writable and outlives
+            // any single release, so the clamp belongs at read time.
+            var _atlasClamp = function (n, total) {
+              var v = Number(n);
+              if (!isFinite(v) || v <= 0) return 0;
+              return Math.min(Math.floor(v), Math.max(0, Number(total) || 0));
+            };
             var _countPetsDecoderMastery = function (state) {
               if (!state || typeof state !== 'object') return 0;
               if (state.decoderCanonicalCount != null && state.decoderCanonicalCount !== '' && isFinite(Number(state.decoderCanonicalCount))) {
@@ -6978,55 +7376,55 @@
               { id: 'birdLab', icon: '🪶', label: t('stem.tools_menu.birdlab_life_list') || 'BirdLab Life List',
                 color: '#10b981', accent: 'rgba(16,185,129,0.15)',
                 slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 15,
-                count: function () { var s = _readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'); if (!s) return 0; var ll = (s.lifeList || s); return Object.keys(ll || {}).length; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'), 'lifeList'), 15); } },
               { id: 'petsLab', icon: '🐾', label: t('stem.tools_menu.petslab_decoder') || 'PetsLab Decoder',
                 color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
                 slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
-                count: function () { return _countPetsDecoderMastery(_readSlot('__alloflowPetsLab', 'petsLab.state.v1')); } },
+                count: function () { return _atlasClamp(_countPetsDecoderMastery(_readSlot('__alloflowPetsLab', 'petsLab.state.v1')), 27); } },
               { id: 'opticsLab', icon: '🔆', label: t('stem.tools_menu.opticslab_ap') || 'OpticsLab AP',
                 color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
                 slot: '__alloflowOpticsLab', lsKey: 'opticsLab.state.v1', total: 30,
-                count: function () { var s = _readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'), 'quizMastery'), 30); } },
               { id: 'statsLab', icon: '📊', label: t('stem.tools_menu.statslab_ap') || 'StatsLab AP',
                 color: '#a855f7', accent: 'rgba(168,85,247,0.15)',
                 slot: '__alloflowStatsLab', lsKey: 'statsLab.state.v1', total: 25,
-                count: function () { var s = _readSlot('__alloflowStatsLab', 'statsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowStatsLab', 'statsLab.state.v1'), 'quizMastery'), 25); } },
               { id: 'weldLab', icon: '🔥', label: "Welder's Catalog",
                 color: '#dc2626', accent: 'rgba(220,38,38,0.15)',
                 slot: '__alloflowWeldLab', lsKey: 'weldLab.defectCatalog.v1', total: 6,
-                count: function () { var s = _readSlot('__alloflowWeldLab', 'weldLab.defectCatalog.v1'); if (!s) return 0; var cat = (s.defectCatalog || s); return Object.keys(cat || {}).length; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowWeldLab', 'weldLab.defectCatalog.v1'), 'defectCatalog'), 6); } },
               { id: 'renewablesLab', icon: '☀️', label: t('stem.renewables.energy_mastery') || 'Energy Mastery',
                 color: '#22c55e', accent: 'rgba(34,197,94,0.15)',
                 slot: '__alloflowRenewablesLab', lsKey: 'renewablesLab.state.v1', total: 18,
-                count: function () { var s = _readSlot('__alloflowRenewablesLab', 'renewablesLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowRenewablesLab', 'renewablesLab.state.v1'), 'quizMastery'), 18); } },
               { id: 'firstResponse', icon: '🚑', label: t('stem.firstresponse.responder_mastery') || 'Responder Mastery',
                 color: '#ef4444', accent: 'rgba(239,68,68,0.15)',
                 slot: '__alloflowFirstResponse', lsKey: 'firstResponse.state.v1', total: 10,
-                count: function () { var s = _readSlot('__alloflowFirstResponse', 'firstResponse.state.v1'); return s && s.faMastery ? Object.keys(s.faMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowFirstResponse', 'firstResponse.state.v1'), 'faMastery'), 10); } },
               { id: 'throwlab', icon: '⚾', label: t('stem.throwlab.pitch_locker') || 'Pitch Locker',
                 color: '#7c3aed', accent: 'rgba(124,58,237,0.15)',
                 slot: '__alloflowThrowLab', lsKey: 'throwlab.state.v1', total: 6,
-                count: function () { var s = _readSlot('__alloflowThrowLab', 'throwlab.state.v1'); return s && s.pitchLocker ? Object.keys(s.pitchLocker).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowThrowLab', 'throwlab.state.v1'), 'pitchLocker'), 6); } },
               { id: 'playlab', icon: '🏈', label: t('stem.playlab.play_catalog') || 'Play Catalog',
                 color: '#fb923c', accent: 'rgba(251,146,60,0.15)',
                 slot: '__alloflowPlayLab', lsKey: 'playlab.state.v1', total: 13,
-                count: function () { var s = _readSlot('__alloflowPlayLab', 'playlab.state.v1'); return s && s.playCatalog ? Object.keys(s.playCatalog).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowPlayLab', 'playlab.state.v1'), 'playCatalog'), 13); } },
               { id: 'roadReady', icon: '🚗', label: t('stem.roadready.permit_mastery') || 'Permit Mastery',
                 color: '#fbbf24', accent: 'rgba(251,191,36,0.15)',
                 slot: '__alloflowRoadReady', lsKey: 'roadReady.permitMastery.v1', total: 185,
-                count: function () { var s = _readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'); if (!s) return 0; var pm = (s.permitMastery || s); return Object.keys(pm || {}).length; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'), 'permitMastery'), 185); } },
               { id: 'assessmentLiteracy', icon: '🔍', label: t('stem.tools_menu.junk_science') || 'Junk-Science',
                 color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
                 slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
-                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'), 'junkMastery'), 15); } },
               { id: 'fisherLab', icon: '🎣', label: t('stem.tools_menu.fisher_life_log') || 'Fisher Life Log',
                 color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
                 slot: '__alloflowFisherLab', lsKey: 'fisherLab.state.v1', total: 8,
-                count: function () { var s = _readSlot('__alloflowFisherLab', 'fisherLab.state.v1'); if (!s) return 0; var caught = s.speciesCaught || {}; return Object.keys(caught).length; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowFisherLab', 'fisherLab.state.v1'), 'speciesCaught'), 8); } },
               { id: 'aquacultureLab', icon: '🦪', label: t('stem.tools_menu.farm_log') || 'Farm Log',
                 color: '#14b8a6', accent: 'rgba(20,184,166,0.15)',
                 slot: '__alloflowAquacultureLab', lsKey: 'aquacultureLab.state.v1', total: 5,
-                count: function () { var s = _readSlot('__alloflowAquacultureLab', 'aquacultureLab.state.v1'); return s && typeof s.droppersDeployed === 'number' ? s.droppersDeployed : 0; } }
+                count: function () { var s = _readSlot('__alloflowAquacultureLab', 'aquacultureLab.state.v1'); return _atlasClamp(s && typeof s.droppersDeployed === 'number' ? s.droppersDeployed : 0, 5); } }
             ];
             var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
             var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
@@ -7386,26 +7784,47 @@
                     !disp.done && React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full overflow-hidden", role: 'progressbar', 'aria-valuenow': Math.round(disp.pct), 'aria-valuemax': 100 },
                       React.createElement("div", { className: "h-full rounded-full transition-all " + (disp.pct >= 80 ? 'bg-green-400' : disp.pct >= 50 ? 'bg-amber-400' : 'bg-amber-300'), style: { width: disp.pct + '%' } })
                     ),
-                    // Free response textarea
-                    quest.type === 'freeResponse' && !disp.done && React.createElement("textarea", {
-                      value: qp.response || '',
-                      placeholder: quest.params.prompt || 'Describe what you learned...',
-                      'aria-label': quest.params.prompt || 'Write your response',
-                      onChange: function(e) {
-                        var val = e.target.value;
-                        _setQuestProgress(function(prev) {
-                          var sp = Object.assign({}, prev[_activeStation.id] || {});
-                          var qpUpdate = Object.assign({}, sp[quest.qid] || {});
-                          qpUpdate.response = val;
-                          sp[quest.qid] = qpUpdate;
-                          var next = Object.assign({}, prev);
-                          next[_activeStation.id] = sp;
-                          return next;
-                        });
-                      },
-                      rows: 2,
-                      className: "w-full mt-1.5 px-2 py-1.5 text-xs border border-amber-200 rounded-lg resize-none focus:ring-2 focus:ring-amber-400 outline-none"
-                    })
+                    // Free response textarea.
+                    //
+                    // This used to render only while `!disp.done`. A reflection
+                    // completes as soon as it reaches minLength, so the moment
+                    // the quest was marked complete the box the student had
+                    // written in was removed: they could not finish the
+                    // sentence, reread what they had said, or fix a typo, and
+                    // nothing else on the row displayed the text. It still went
+                    // into the teacher's report verbatim.
+                    //
+                    // Writing stays visible and editable after completion. The
+                    // quest does not un-complete when edited below the
+                    // threshold, because taking a finished quest away again
+                    // would be worse than leaving it.
+                    quest.type === 'freeResponse' && React.createElement("div", { className: "mt-1.5" },
+                      disp.done && React.createElement("label", {
+                        className: "block text-[10px] font-bold text-green-700 mb-0.5",
+                        htmlFor: 'stem-quest-response-' + quest.qid
+                      }, "Your response (you can still edit it)"),
+                      React.createElement("textarea", {
+                        id: 'stem-quest-response-' + quest.qid,
+                        value: qp.response || '',
+                        placeholder: quest.params.prompt || 'Describe what you learned...',
+                        'aria-label': quest.params.prompt || 'Write your response',
+                        onChange: function(e) {
+                          var val = e.target.value;
+                          _setQuestProgress(function(prev) {
+                            var sp = Object.assign({}, prev[_activeStation.id] || {});
+                            var qpUpdate = Object.assign({}, sp[quest.qid] || {});
+                            qpUpdate.response = val;
+                            sp[quest.qid] = qpUpdate;
+                            var next = Object.assign({}, prev);
+                            next[_activeStation.id] = sp;
+                            return next;
+                          });
+                        },
+                        rows: 2,
+                        className: "w-full px-2 py-1.5 text-xs rounded-lg resize-none focus:ring-2 outline-none " +
+                          (disp.done ? "border border-green-300 bg-green-50/40 focus:ring-green-400" : "border border-amber-200 focus:ring-amber-400")
+                      })
+                    )
                   );
                 }),
                 // All quests complete celebration
@@ -7769,12 +8188,21 @@
                         React.createElement("input", {
                           type: "number",
                           value: d._questBuilderParam || qtDef.defaultVal,
-                          onChange: function(e) { upd('_questBuilderParam', parseInt(e.target.value) || qtDef.defaultVal); },
-                          min: 1,
-                          'aria-label': qtDef.paramLabel + ' for quest',
+                          // Clamp on the way in. `min`/`max` below are the
+                          // browser's spinner hints only; this form never runs
+                          // HTML validation, so a typed value reached the quest
+                          // unchecked.
+                          onChange: function(e) { upd('_questBuilderParam', _clampQuestParam(e.target.value, qtDef)); },
+                          min: qtDef.minVal || 1,
+                          max: qtDef.maxVal || 100,
+                          'aria-label': qtDef.paramLabel + ' for quest, ' + (qtDef.minVal || 1) + ' to ' + (qtDef.maxVal || 100) + ' ' + (qtDef.unit || ''),
                           className: "w-20 px-2 py-1.5 text-xs border border-amber-200 rounded-lg"
                         }),
-                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" }, qtDef.unit)
+                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" }, qtDef.unit),
+                        // Say what the range is, so a clamped value does not
+                        // look like the field ignoring what was typed.
+                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" },
+                          '(' + (qtDef.minVal || 1) + '\u2013' + (qtDef.maxVal || 100) + ')')
                       );
                     })()
                   ),
@@ -7786,7 +8214,10 @@
                         d._questBuilderTool || null,
                         (function() {
                           var qT = d._questBuilderType || 'xpThreshold';
-                          var p = d._questBuilderParam || QUEST_TYPES.find(function(x) { return x.id === qT; })?.defaultVal || 5;
+                          var qtDefP = QUEST_TYPES.find(function(x) { return x.id === qT; });
+                          // The preview must show the value that will actually
+                          // be saved, not the raw one.
+                          var p = _clampQuestParam(d._questBuilderParam || (qtDefP && qtDefP.defaultVal) || 5, qtDefP);
                           if (qT === 'xpThreshold') return { threshold: p };
                           if (qT === 'timeSpent') return { minutes: p };
                           if (qT === 'discoveryCount') return { count: p };
@@ -7801,7 +8232,11 @@
                       disabled: (d._questBuilderType || 'xpThreshold') !== 'freeResponse' && !d._questBuilderTool,
                       onClick: function() {
                         var qT2 = d._questBuilderType || 'xpThreshold';
-                        var p2 = d._questBuilderParam || QUEST_TYPES.find(function(x) { return x.id === qT2; })?.defaultVal || 5;
+                        var qtDef2 = QUEST_TYPES.find(function(x) { return x.id === qT2; });
+                        // Clamp again here: the stored value may predate the
+                        // bounds, and this is the last point before it becomes
+                        // a quest a student is graded against.
+                        var p2 = _clampQuestParam(d._questBuilderParam || (qtDef2 && qtDef2.defaultVal) || 5, qtDef2);
                         var params2;
                         if (qT2 === 'xpThreshold') params2 = { threshold: p2 };
                         else if (qT2 === 'timeSpent') params2 = { minutes: p2 };
@@ -7838,8 +8273,26 @@
                     key: tool.id,
                     onClick: function() {
                       var next = Object.assign({}, _stationTools);
-                      if (next[tool.id]) { delete next[tool.id]; } else { next[tool.id] = true; }
+                      var removing = !!next[tool.id];
+                      if (removing) { delete next[tool.id]; } else { next[tool.id] = true; }
                       _setStationTools(next);
+                      // Deselecting a tool used to leave its quests behind.
+                      // The saved station then listed tools WITHOUT that tool,
+                      // and the station filter shows only the station's own
+                      // tools, so the orphaned quests named something the
+                      // student could not open from there: they sat in the
+                      // Quest HUD at 0% forever and the station could never
+                      // read complete.
+                      if (removing) {
+                        var orphaned = _stationQuests.filter(function(q) { return q.toolId === tool.id; });
+                        if (orphaned.length > 0) {
+                          _setStationQuests(_stationQuests.filter(function(q) { return q.toolId !== tool.id; }));
+                          var msg = 'Removed ' + orphaned.length + ' quest' + (orphaned.length > 1 ? 's' : '') +
+                            ' for ' + tool.label + ', because students could not reach that tool from this station.';
+                          if (addToast) addToast(msg, 'info');
+                          if (typeof announceToSR === 'function') announceToSR(msg);
+                        }
+                      }
                     },
                     className: "p-2 rounded-lg text-left text-[10px] font-bold transition-all border " +
                       (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-600")
@@ -7857,6 +8310,14 @@
                 onClick: function() {
                   var selectedIds = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
                   if (selectedIds.length === 0) { if (addToast) addToast('Select at least one tool', 'error'); return; }
+                  // Last line of defence against a quest naming a tool the
+                  // station does not carry. The toggle prunes these as they
+                  // happen; this catches any other route into the same state,
+                  // because a station saved with one can never read complete.
+                  var _inStation = {};
+                  selectedIds.forEach(function(tid) { _inStation[tid] = true; });
+                  var _keptQuests = _stationQuests.filter(function(q) { return !q.toolId || _inStation[q.toolId]; });
+                  var _droppedCount = _stationQuests.length - _keptQuests.length;
                   var station = {
                     id: 'station_' + Date.now(),
                     name: _stationName.trim() || 'STEM Station',
@@ -7865,7 +8326,7 @@
                     timeEstimate: _stationTimeEst + ' min',
                     teacherNote: _stationNote.trim(),
                     createdAt: new Date().toISOString(),
-                    quests: _stationQuests.map(function(q, qi) {
+                    quests: _keptQuests.map(function(q, qi) {
                       return { qid: 'q_' + Date.now() + '_' + qi, type: q.type, toolId: q.toolId, label: q.label, params: q.params };
                     })
                   };
@@ -7881,6 +8342,9 @@
                   _setActiveStationId(station.id);
                   if (station.grade && typeof props.setGradeLevel === 'function') props.setGradeLevel(station.grade);
                   var questMsg = station.quests.length > 0 ? ' \u2022 ' + station.quests.length + ' quest' + (station.quests.length > 1 ? 's' : '') : '';
+                  // Dropping a quest silently would leave the teacher counting
+                  // quests that are not there.
+                  if (_droppedCount > 0) questMsg += ' (' + _droppedCount + ' dropped for unselected tools)';
                   if (addToast) addToast('\u2705 Station "' + station.name + '" created with ' + selectedIds.length + ' tools!' + questMsg, 'success');
                 },
                 disabled: Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).length === 0,
@@ -8325,6 +8789,11 @@
             singing: true,
             migration: true,
             appLab: true,
+            // Tool Forge — without this entry the guard below returns null and
+            // its deep link opens a BLANK content area (the same failure the
+            // gisStudio and arccity notes above record). build.js already ships
+            // the file; stemToolModules in ANTI fetches it.
+            forge: true,
             bakingScience: true,
             alloBotSage: true,
             // Jun 2026: Lumen go-live — provenance-bound reactive research canvas.
