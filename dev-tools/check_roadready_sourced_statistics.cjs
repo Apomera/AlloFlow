@@ -140,6 +140,57 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine headlight visibility threshold (§2067)',
+    re: /visibility is under ([\d,]+) ft due to unfavorable conditions/,
+    min: 1000, max: 1000,
+    source: 'Maine 29-A §2067: headlights required when persons or vehicles are not ' +
+      'discernible for 1,000 feet ahead, and whenever wipers are in constant use.',
+  },
+  {
+    label: 'Maine high-beam dim distance, oncoming (§2067)',
+    re: /dim high beams within (\d{3}) ft of oncoming traffic/,
+    min: 500, max: 500,
+    source: 'Maine 29-A §2067: dim or switch to low beam within 500 feet of an oncoming ' +
+      'vehicle; also turn off a fog light.',
+  },
+  {
+    label: 'Maine high-beam dim distance, following (§2067)',
+    re: /(\d{3}) ft when following another vehicle/,
+    min: 300, max: 300,
+    source: 'Maine 29-A §2067: dim within 300 feet when following another vehicle.',
+  },
+  {
+    label: 'Maine school-zone active speed (§2074)',
+    re: /§2074 sets (\d{2}) mph in a school zone/,
+    min: 15, max: 15,
+    source: 'Maine 29-A §2074: 15 mph in a school zone during recess and during school ' +
+      'opening/closing hours.',
+  },
+  {
+    label: 'Maine school-zone window is defined as a half hour (§2074)',
+    // The tool used to say only "opening/closing windows", which a student
+    // cannot act on. The statute defines it: 1/2 hour either side of the start
+    // and of the end of the school day. Presence check -- it is the qualifier
+    // that carries the meaning, not a number in a range.
+    re: /a HALF HOUR before and a half hour after the start of the school day/,
+    min: null, max: null,
+    source: 'Maine 29-A §2074 defines school opening and closing hours as 1/2 hour before ' +
+      'and 1/2 hour after the beginning of the school day, and the same around its end.',
+  },
+  {
+    label: 'Maine snowmobile crossing cites the LIVE section (§13106-A)',
+    // Title 12 §13106 was REPEALED by PL 2003, c. 655, B393. The tool cited it
+    // until 2026-09-21. The live section is §13106-A, amended as recently as
+    // PL 2025, c. 267. Second repealed-statute catch in this tool: §2951 for
+    // wildlife collisions was repealed in 1979, live section is §12403.
+    re: /Title 12, §13106-A\(6\) and \(7\)/,
+    min: null, max: null,
+    source: 'Maine Title 12 §13106-A(6): complete stop before entering a public way. ' +
+      '§13106-A(7): yield right-of-way to ALL vehicular traffic. The repealed §13106 must ' +
+      'not come back, and note §13106-A does NOT say "at right angles" -- it says cross as ' +
+      'directly as possible, so do not reintroduce that phrasing as statute.',
+  },
+  {
     label: 'Maine fire-apparatus following distance (§2066)',
     re: /(\d{3}) ft behind fire apparatus responding to an alarm/,
     min: 500, max: 500,
