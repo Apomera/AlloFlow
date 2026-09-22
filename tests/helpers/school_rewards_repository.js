@@ -227,6 +227,17 @@ function harness() {
       const book = books.get(properties.get('SR_SPREADSHEET_ID'));
       book.getSheetByName(name).appendRow([...row]);
     },
+    setRaw: (name, dataRowIndex, columnIndex, value) => {
+      const book = books.get(properties.get('SR_SPREADSHEET_ID'));
+      book.getSheetByName(name).data[dataRowIndex + 1][columnIndex] = value;
+    },
+    simulateV6Claims: () => {
+      const book = books.get(properties.get('SR_SPREADSHEET_ID'));
+      book.sheets = book.sheets.filter(sheet => sheet.name !== 'ClaimTokens');
+      const config = book.getSheetByName('Config');
+      const row = config.data.findIndex(values => values[0] === 'schemaVersion');
+      if (row >= 0) config.data[row][1] = '6';
+    },
     simulateV5Mail: () => {
       const book = books.get(properties.get('SR_SPREADSHEET_ID'));
       book.sheets = book.sheets.filter(sheet => !['MailRuns', 'MailOutbox'].includes(sheet.name));

@@ -31,7 +31,7 @@ function otherStudent(h, n = 2) {
 describe('reviewed optional School Store class identity links', () => {
   it('keeps schema6 compatible and disabled without creating feature tables', () => {
     const h = harness(); setup(h);
-    expect(h.configValue('schemaVersion')).toBe('6');
+    expect(h.configValue('schemaVersion')).toBe('7');
     expect(h.call('getSchoolRewardsAlloFlowLinkContext')).toMatchObject({ enabled: false, students: [], staff: [], classes: [] });
     expect(h.call('listSchoolRewardsAlloFlowLinkedClasses')).toMatchObject({ enabled: false, classes: [] });
     expect(() => h.rows('AlloFlowClassHeads')).toThrow();
@@ -53,7 +53,7 @@ describe('reviewed optional School Store class identity links', () => {
     h.call('adminConfigureSchoolRewardsClassLinks', { enabled: false });
     h.call('adminConfigureSchoolRewardsClassLinks', { enabled: false });
     expect(h.rows('Audit').filter(r => r[1] === 'CLASS_LINK_SETTINGS_REVIEWED')).toHaveLength(2);
-    expect(h.configValue('schemaVersion')).toBe('6');
+    expect(h.configValue('schemaVersion')).toBe('7');
   });
   it('previews without writes, commits only confirmed manual links, and resolves one private recipient', () => {
     const { h, student } = fixture(), p = proposal(h, student);

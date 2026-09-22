@@ -46,7 +46,7 @@ describe('authenticated non-sensitive recognition navigation hint', () => {
     const h = entry();
     const result = h.get({ parameter: { view: 'recognition', codename: 'Fictional Private Fox', studentId: 'PRIVATE-STUDENT', learnerId: 'PRIVATE-LEARNER', reason: 'Fictional private reason', amount: '5', draft: '{"private":true}', redirect: 'https://untrusted.example/' } });
     expect(result.content).toBe('{"initialView":"recognition"}');
-    expect(Object.keys(h.templates[0]).sort()).toEqual(['evaluate', 'initialView', 'name']);
+    expect(Object.keys(h.templates[0]).sort()).toEqual(['claimToken', 'evaluate', 'initialView', 'name']);
     expect(result.content).not.toMatch(/Fictional|PRIVATE|untrusted|amount|draft|reason/);
   });
 
@@ -71,7 +71,7 @@ describe('authenticated non-sensitive recognition navigation hint', () => {
   });
 
   it('uses context-escaped template output for the body attribute, not a script or URL draft', () => {
-    expect(index).toContain('<body data-school-rewards-view="<?= initialView ?>">');
+    expect(index).toContain('<body data-school-rewards-view="<?= initialView ?>" data-school-rewards-claim="<?= claimToken ?>">');
     expect(index).not.toContain('<?!= initialView');
     expect(index).not.toMatch(/postMessage|window\.opener|location\.hash|localStorage|sessionStorage/);
   });

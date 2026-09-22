@@ -1764,7 +1764,7 @@ describe('School Rewards Apps Script repository', () => {
   it('preserves a legacy schema on reconfigure and rejects unsigned pre-v6 mail rows', () => {
     const old = harness(); setup(old); old.simulateV4Inventory();
     const reconfigured = old.call('setupSchoolRewardsRepository', { allowedDomain: DOMAIN, schoolName: 'Reconfigured legacy school' });
-    expect(reconfigured).toMatchObject({ version: 6, repositoryVersion: 4 });
+    expect(reconfigured).toMatchObject({ version: 7, repositoryVersion: 4 });
     expect(old.configValue('schemaVersion')).toBe('4');
     expect(() => old.call('migrateSchoolRewardsRepositoryV6')).toThrow(/schema v5 inventory migration/i);
 

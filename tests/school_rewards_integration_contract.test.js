@@ -52,7 +52,7 @@ describe('School Rewards integration contract', () => {
     const source = read('apps_script/school_rewards/Code.gs');
     const initialize = between(source, 'function initializeSheets_', 'function putConfig_');
 
-    expect(source).toContain('var SR_VERSION = 6');
+    expect(source).toContain('var SR_VERSION = 7');
     expect(source).toContain("Catalog: ['Id', 'Name', 'Description', 'Cost', 'InventoryLimit', 'Remaining', 'Active', 'ImageUrl', 'CreatedAt', 'UpdatedAt', 'InventoryVersion']");
     expect(source).toContain("InventoryMovements: ['Id', 'CatalogId', 'Version', 'Kind', 'QuantityDelta', 'BeforeLimit', 'BeforeRemaining', 'AfterLimit', 'AfterRemaining', 'ReferenceType', 'ReferenceId', 'ActorEmail', 'ActorRole', 'At', 'IdempotencyKey', 'Reason', 'PreviousHash', 'Hash']");
     expect(initialize).toContain("sheet.getRange(1, 11).setValues([['InventoryVersion']])");
@@ -748,7 +748,7 @@ describe('School Rewards integration contract', () => {
   it('retains the schema-v5 private asset and immutable revision boundary in schema v6', () => {
     const source = read('apps_script/school_rewards/Code.gs');
     const portal = read('apps_script/school_rewards/Portal.html');
-    expect(source).toContain('var SR_VERSION = 6');
+    expect(source).toContain('var SR_VERSION = 7');
     expect(source).toContain('SR_MAX_PRINT_ASSET_BYTES = 4 * 1024 * 1024');
     expect(source).toContain("PrintAssets: ['Id', 'ModelId'");
     expect(source).toContain("'PreviousRequestId'");

@@ -4,7 +4,7 @@
  * Public calls always derive identity and role from Session.getActiveUser().
  */
 var SR_SERVICE = 'alloflow-school-rewards';
-var SR_VERSION = 6;
+var SR_VERSION = 7;
 var SR_MAX_POINTS = 1000;
 var SR_MAX_BATCH = 500;
 var SR_MAIL_CHUNK_DEFAULT = 25;
@@ -53,6 +53,7 @@ var SR_SHEETS = {
   MailOutbox: ['Id', 'RunId', 'DeliveryKey', 'Kind', 'StudentId', 'GuardianId', 'RecipientHash', 'ConsentConfirmedAt', 'PeriodKey', 'PayloadJson', 'PayloadHash', 'Status', 'CreatedAt', 'AttemptedAt', 'SettledAt', 'ErrorCode', 'Error', 'RetryOfId', 'ResolvedAt', 'ResolvedByHash', 'ResolutionNote'],
   SisImports: ['Id', 'SnapshotId', 'FormatVersion', 'ContentHash', 'CreatedCount', 'UpdatedCount', 'UnchangedCount', 'Status', 'AppliedAt', 'ActorHash', 'CreatedAt'],
   PointHolds: ['Id', 'StudentId', 'PurposeType', 'PurposeId', 'Amount', 'Status', 'ExpiresAt', 'IdempotencyKey', 'CaptureLedgerId', 'CreatedAt', 'UpdatedAt', 'CapturedAt', 'ReleasedAt', 'ReleaseReason'],
+  ClaimTokens: ['Id', 'Points', 'CategoryId', 'Reason', 'BatchId', 'Status', 'ClaimedByStudentId', 'ClaimedAt', 'ExpiresAt', 'LedgerId', 'CreatedByEmail', 'CreatedAt'],
   Audit: ['Id', 'Event', 'EntityType', 'EntityId', 'Summary', 'ActorEmail', 'ActorRole', 'At', 'PreviousHash', 'Hash'],
   Idempotency: ['Key', 'Operation', 'ResultJson', 'At']
 };
@@ -69,6 +70,8 @@ function doGet(e) {
     // A navigation hint only: never forward a draft, identity, reason, or arbitrary
     // query value to the page. All recognition actions remain authenticated RPCs.
     template.initialView = e && e.parameter && e.parameter.view === 'recognition' && ['admin', 'staff'].indexOf(actor.role) >= 0 ? 'recognition' : '';
+    var claimParam = String(e && e.parameter && e.parameter.claim || '');
+    template.claimToken = actor.role === 'student' && /^[A-Za-z0-9_-]{8,80}$/.test(claimParam) ? claimParam : '';
     return template.evaluate().setTitle('AlloFlow School Rewards');
   } catch (err) {
     return HtmlService.createHtmlOutput('<!doctype html><meta charset="utf-8"><title>Access unavailable</title><main style="font:16px system-ui;max-width:680px;margin:64px auto;padding:24px"><h1>Access unavailable</h1><p>School Rewards could not verify an authorized managed Google Education account.</p><p>Ask the school administrator to check the domain-only deployment and your membership.</p></main>');
@@ -151,6 +154,107 @@ function migrateSchoolRewardsRepositoryV4() {
     var book = book_(); initializeSheets_(book); putConfig_(book, { schemaVersion: 4 });
     appendAudit_({ event: 'REPOSITORY_MIGRATED_V4', type: 'repository', id: 'repository', summary: 'Additive School Rewards schema v4 migration completed' }, actor);
     return { ok: true, service: SR_SERVICE, version: 4 };
+  });
+}
+
+/** One-time additive migration for single-use claim tokens (printed QR codes). */
+function migrateSchoolRewardsRepositoryV7() {
+  var actor = requireRole_(['admin']);
+  return locked_(function() {
+    var book = book_(), configuredVersion = number_(configMap_(book).schemaVersion);
+    if (configuredVersion < 6) throw srError_('claim_migration_order', 'Run the schema v6 mail migration before migrating claim tokens to schema v7.');
+    assertNoPendingCoreOperation_(book, '');
+    initializeSheets_(book);
+    if (configuredVersion < 7) {
+      putConfig_(book, { schemaVersion: 7 });
+      appendAudit_({ event: 'REPOSITORY_MIGRATED_V7', type: 'repository', id: 'repository', summary: 'Additive School Rewards schema v7 claim token migration completed' }, actor);
+    }
+    return { ok: true, service: SR_SERVICE, version: 7 };
+  });
+}
+
+var SR_MAX_CLAIM_BATCH = 200;
+function requireClaimTokensReady_(book) {
+  if (number_(configMap_(book).schemaVersion) < 7 || !book.getSheetByName('ClaimTokens')) throw srError_('claim_migration_required', 'Run the School Rewards schema v7 claim token migration before printing or redeeming claim codes.');
+}
+function claimIdemKey_(tokenId) { return 'claim:' + tokenId; }
+function claimUrlBase_() { try { return String(ScriptApp.getService().getUrl() || ''); } catch (_) { return ''; } }
+function claimTokens_(book) {
+  return rows_(sheet_(book, 'ClaimTokens'), 12).map(function(row) {
+    return { id: String(row[0] || ''), points: number_(row[1]), categoryId: String(row[2] || ''), reason: String(row[3] || ''), batchId: String(row[4] || ''), status: String(row[5] || ''), claimedByStudentId: String(row[6] || ''), claimedAt: cell_(row[7]), expiresAt: cell_(row[8]), ledgerId: String(row[9] || ''), createdByEmail: String(row[10] || ''), createdAt: cell_(row[11]) };
+  });
+}
+function claimTokenById_(book, tokenId) { var list = claimTokens_(book); for (var i = 0; i < list.length; i++) if (list[i].id === tokenId) return list[i]; return null; }
+function upsertClaimTokenRow_(book, token) {
+  upsert_(sheet_(book, 'ClaimTokens'), 12, token.id, safeRow_([token.id, token.points, token.categoryId, token.reason, token.batchId, token.status, token.claimedByStudentId, token.claimedAt, token.expiresAt, token.ledgerId, token.createdByEmail, token.createdAt]));
+}
+function claimTokenExpired_(token, at) { return !!token.expiresAt && new Date(token.expiresAt).getTime() < new Date(at).getTime(); }
+function publicClaimToken_(token) { return { id: token.id, points: token.points, categoryId: token.categoryId, reason: token.reason, batchId: token.batchId, status: token.status, expiresAt: token.expiresAt, createdAt: token.createdAt }; }
+
+/** Staff print a batch of single-use claim codes. The code alone carries no identity; the signed-in student supplies it at redemption. */
+function mintSchoolRewardsClaimTokens(request) {
+  var actor = requireRole_(['admin', 'staff']); request = object_(request);
+  var count = integer_(request.count, 1, SR_MAX_CLAIM_BATCH, 'Code count'), points = integer_(request.points, 1, SR_MAX_POINTS, 'Points');
+  var reason = text_(request.reason, 180, ''), categoryId = id_(request.categoryId, 'category'), expiresAt = iso_(request.expiresAt);
+  if (!reason) throw srError_('bad_award', 'Describe what a student does to earn this code.');
+  return locked_(function() {
+    var book = book_(); requireClaimTokensReady_(book); requireCategory_(book, categoryId);
+    var at = now_(), batchId = uuid_(), tokens = [];
+    if (expiresAt && new Date(expiresAt).getTime() <= new Date(at).getTime()) throw srError_('bad_date', 'The expiry must be in the future.');
+    for (var i = 0; i < count; i++) {
+      var token = { id: uuid_(), points: points, categoryId: categoryId, reason: reason, batchId: batchId, status: 'unused', claimedByStudentId: '', claimedAt: '', expiresAt: expiresAt, ledgerId: '', createdByEmail: actor.email, createdAt: at };
+      sheet_(book, 'ClaimTokens').appendRow(safeRow_([token.id, token.points, token.categoryId, token.reason, token.batchId, token.status, '', '', token.expiresAt, '', token.createdByEmail, token.createdAt]));
+      tokens.push(publicClaimToken_(token));
+    }
+    appendAudit_({ event: 'CLAIM_TOKENS_MINTED', type: 'claim_batch', id: batchId, summary: count + ' claim code(s) minted for ' + points + ' points each' }, actor);
+    return { ok: true, batchId: batchId, claimUrlBase: claimUrlBase_(), tokens: tokens };
+  });
+}
+
+/** Staff void every unused code in a batch (for example a lost printout). Redeemed codes keep their ledger entries. */
+function voidSchoolRewardsClaimBatch(request) {
+  var actor = requireRole_(['admin', 'staff']); request = object_(request);
+  var batchId = id_(request.batchId, 'claim batch');
+  return locked_(function() {
+    var book = book_(); requireClaimTokensReady_(book);
+    var voided = 0;
+    claimTokens_(book).forEach(function(token) { if (token.batchId === batchId && token.status === 'unused') { token.status = 'void'; upsertClaimTokenRow_(book, token); voided++; } });
+    if (voided) appendAudit_({ event: 'CLAIM_TOKENS_VOIDED', type: 'claim_batch', id: batchId, summary: voided + ' unused claim code(s) voided' }, actor);
+    return { ok: true, batchId: batchId, voided: voided };
+  });
+}
+
+/** A signed-in student redeems one code. Idempotent per token: the same student may retry; any second identity sees already_redeemed. Never throws for an unknown or spent code. */
+function claimSchoolRewardsToken(request) {
+  var actor = requireRole_(['student']); request = object_(request);
+  var tokenId = id_(request.tokenId, 'claim token'), key = claimIdemKey_(tokenId);
+  var operation = printIdemOperation_('claim', actor, { tokenId: tokenId });
+  return locked_(function() {
+    var book = book_(); requireClaimTokensReady_(book);
+    var token = claimTokenById_(book, tokenId);
+    if (!token) return { ok: false, state: 'not_found' };
+    var state;
+    try { state = loadCoreOperation_(book, key, operation, 'claim'); }
+    catch (err) { if (err && err.code === 'idempotency_conflict') return { ok: false, state: 'already_redeemed' }; throw err; }
+    if (state && state.result) return state.result;
+    if (!state) {
+      if (token.status === 'used') return { ok: false, state: 'already_redeemed' };
+      if (token.status === 'void') return { ok: false, state: 'void' };
+      var at = now_();
+      if (token.status === 'expired' || claimTokenExpired_(token, at)) {
+        if (token.status !== 'expired') { token.status = 'expired'; upsertClaimTokenRow_(book, token); }
+        return { ok: false, state: 'expired' };
+      }
+      if (token.status !== 'unused') return { ok: false, state: 'void' };
+      requireStudent_(book, actor.studentId);
+      if (!historicalCategoryById_(book, token.categoryId)) throw srError_('not_found', 'That code points at a recognition category that no longer exists.');
+      state = startCoreOperation_(book, key, operation, 'claim', {
+        ledgerId: operationEntityId_('ledger', key), tokenId: tokenId, studentId: actor.studentId, amount: token.points, reason: token.reason,
+        categoryId: token.categoryId, actorEmail: actor.email, actorRole: actor.role, at: at
+      });
+      coreFault_('claim:after_intent');
+    }
+    return resumeCoreOperation_(book, key, operation, state.journal, actor);
   });
 }
 
@@ -3542,7 +3646,7 @@ function validatePendingCoreJournal_(book, key, operation, journal) {
     journalExactAt_(linkIntent.at); validateClassLinkJournal_(book, key, operation, journal);
     return { email: linkIntent.actorEmail, role: linkIntent.actorRole };
   }
-  var kind = String(journal.kind || ''), intent = object_(journal.intent), actorEmail = normalizeEmail_(intent.actorEmail), actorRole = String(intent.actorRole || ''), allowedRoles = { award: ['admin', 'staff'], reverse: ['admin', 'staff'], checkout: ['admin', 'cashier'], refund: ['admin'], catalog: ['admin'] };
+  var kind = String(journal.kind || ''), intent = object_(journal.intent), actorEmail = normalizeEmail_(intent.actorEmail), actorRole = String(intent.actorRole || ''), allowedRoles = { award: ['admin', 'staff'], reverse: ['admin', 'staff'], checkout: ['admin', 'cashier'], refund: ['admin'], catalog: ['admin'], claim: ['student'] };
   if (!allowedRoles[kind] || allowedRoles[kind].indexOf(actorRole) < 0 || !actorEmail || actorEmail !== intent.actorEmail || emailDomain_(actorEmail) !== allowedDomain_()) throw srError_('journal_intent_invalid', 'The pending operation has an invalid original business actor.');
   var actor = { email: actorEmail, role: actorRole }, canonical, payload;
   journalExactAt_(intent.at);
@@ -3592,6 +3696,16 @@ function validatePendingCoreJournal_(book, key, operation, journal) {
       canonical = { orderId: refundOrderId, sourceSpendId: sourceSpendId, ledgerId: intent.ledgerId, studentId: refundStudentId, total: refundTotal, lines: refundLines, inventoryPlan: refundPlan, reason: refundReason, actorEmail: actorEmail, actorRole: actorRole, at: intent.at };
     }
     payload = { orderId: refundOrderId, reason: refundReason };
+  } else if (kind === 'claim') {
+    var claimTokenId = journalExactId_(intent.tokenId, 'claim token'), claimStudentId = journalExactId_(intent.studentId, 'student'), claimCategoryId = journalExactId_(intent.categoryId, 'category'), claimAmount = journalExactInteger_(intent.amount, 1, SR_MAX_POINTS, 'points'), claimReason = journalExactText_(intent.reason, 180, 'reason');
+    var claimStudent = requireStudentRecord_(book, claimStudentId), claimToken = claimTokenById_(book, claimTokenId);
+    if (claimStudent.email !== actorEmail) throw srError_('journal_intent_invalid', 'The pending claim student does not match its actor.');
+    if (!claimToken || claimToken.points !== claimAmount || claimToken.categoryId !== claimCategoryId || claimToken.reason !== claimReason) throw srError_('journal_intent_invalid', 'The pending claim does not match its token.');
+    if (claimToken.status === 'used' && claimToken.claimedByStudentId !== claimStudentId) throw srError_('journal_intent_invalid', 'The pending claim token was redeemed by another student.');
+    if (!historicalCategoryById_(book, claimCategoryId)) throw srError_('journal_intent_invalid', 'The pending claim references a missing recognition category.');
+    if (intent.ledgerId !== operationEntityId_('ledger', key) || key !== claimIdemKey_(claimTokenId)) throw srError_('journal_intent_invalid', 'The pending claim ids are not deterministic.');
+    canonical = { ledgerId: intent.ledgerId, tokenId: claimTokenId, studentId: claimStudentId, amount: claimAmount, reason: claimReason, categoryId: claimCategoryId, actorEmail: actorEmail, actorRole: actorRole, at: intent.at };
+    payload = { tokenId: claimTokenId };
   } else {
     var catalogValidation = validateCatalogJournalIntent_(book, key, intent, actor);
     canonical = catalogValidation.intent; payload = catalogValidation.payload;
@@ -3764,7 +3878,7 @@ function loadCoreOperationByKey_(book, key) {
   if (records.length > 1) throw srError_('idempotency_corrupt', 'That request key appears more than once. Review the integrity report.');
   if (!records.length) throw srError_('not_found', 'No saved operation journal was found for that request key.');
   var saved = parseIdemPayload_(records[0][2]);
-  if (!saved || saved.journalVersion !== 1 || !saved.intent || ['award', 'reverse', 'checkout', 'refund', 'catalog', 'class_links'].indexOf(saved.kind) < 0 || ['INTENT', 'MUTATIONS_APPLIED', 'COMPLETED'].indexOf(saved.state) < 0) throw srError_('idempotency_corrupt', 'That request key is not a recoverable core operation journal.');
+  if (!saved || saved.journalVersion !== 1 || !saved.intent || ['award', 'reverse', 'checkout', 'refund', 'catalog', 'claim', 'class_links'].indexOf(saved.kind) < 0 || ['INTENT', 'MUTATIONS_APPLIED', 'COMPLETED'].indexOf(saved.state) < 0) throw srError_('idempotency_corrupt', 'That request key is not a recoverable core operation journal.');
   return { operation: String(records[0][1]), journal: saved, result: saved.state === 'COMPLETED' ? saved.result : null };
 }
 function resumeCoreOperation_(book, key, operation, journal) {
@@ -3777,6 +3891,7 @@ function resumeCoreOperation_(book, key, operation, journal) {
   if (journal.kind === 'checkout') return resumeCheckoutCoreOperation_(book, key, operation, journal, businessActor);
   if (journal.kind === 'refund') return resumeRefundCoreOperation_(book, key, operation, journal, businessActor);
   if (journal.kind === 'catalog') return resumeCatalogCoreOperation_(book, key, operation, journal, businessActor);
+  if (journal.kind === 'claim') return resumeClaimCoreOperation_(book, key, operation, journal, businessActor);
   throw srError_('idempotency_corrupt', 'The saved core operation kind cannot be recovered.');
 }
 function resumeAwardCoreOperation_(book, key, operation, journal, actor) {
@@ -3794,6 +3909,29 @@ function resumeAwardCoreOperation_(book, key, operation, journal, actor) {
   appendAuditOnce_({ event: 'POINTS_AWARDED', type: 'ledger', id: entry.id, summary: 'Points awarded: ' + intent.amount }, actor);
   completeCoreOperation_(book, key, operation, journal, result);
   coreFault_('award:after_complete');
+  return result;
+}
+function resumeClaimCoreOperation_(book, key, operation, journal, actor) {
+  var intent = journal.intent;
+  var entry = ensureLedgerEntry_(book, {
+    id: intent.ledgerId, studentId: intent.studentId, kind: 'EARN', amount: intent.amount,
+    reason: intent.reason, referenceType: 'claim_token', referenceId: intent.tokenId, reversesId: '',
+    actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at,
+    idempotencyKey: key, categoryId: intent.categoryId
+  });
+  coreFault_('claim:after_ledger');
+  var token = claimTokenById_(book, intent.tokenId);
+  if (!token) throw srError_('recovery_conflict', 'The claim token row disappeared during recovery.');
+  if (token.status !== 'used') {
+    token.status = 'used'; token.claimedByStudentId = intent.studentId; token.claimedAt = intent.at; token.ledgerId = entry.id;
+    upsertClaimTokenRow_(book, token);
+  } else if (token.claimedByStudentId !== intent.studentId || token.ledgerId !== entry.id) throw srError_('recovery_conflict', 'The claim token row does not match its operation intent.');
+  coreFault_('claim:after_token');
+  var balance = reconcileBalanceFromLedger_(book, intent.studentId).balance;
+  var result = { ok: true, state: 'claimed', points: intent.amount, reason: intent.reason, categoryId: intent.categoryId, balance: balance, entry: studentLedgerEntry_(entry) };
+  appendAuditOnce_({ event: 'CLAIM_TOKEN_REDEEMED', type: 'claim_token', id: intent.tokenId, summary: 'Claim token redeemed for ' + intent.amount + ' points' }, actor);
+  completeCoreOperation_(book, key, operation, journal, result);
+  coreFault_('claim:after_complete');
   return result;
 }
 function resumeReverseCoreOperation_(book, key, operation, journal, actor) {
