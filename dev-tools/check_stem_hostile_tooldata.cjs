@@ -172,7 +172,11 @@ function discover(id) {
   if (allKeys.length > KEY_CAP) {
     truncated.push({ tool: id, read: allKeys.length, swept: KEY_CAP });
   }
-  return { keys: kept, views: [...views].slice(0, 30) };
+  const allViews = [...views];
+  if (allViews.length > VIEW_CAP) {
+    viewTruncated.push({ tool: id, found: allViews.length, mounted: VIEW_CAP });
+  }
+  return { keys: kept, views: allViews.slice(0, VIEW_CAP) };
 }
 
 /** Which of the view key names this tool actually uses, so we set only those. */
@@ -214,6 +218,16 @@ const HOSTILE = ['abc', 9999, -1, 1.5, {}, [], null, 0];
 const KEY_CAP = process.argv.includes('--deep') ? 400 : 60;
 const truncated = [];
 
+// ★Views had the SAME failure the key cap comment above describes, but silently:
+// `views.slice(0, 30)` was hardcoded, unreported and not raised by --deep, so
+// 15 tools lost 671 of the 2048 discovered view ids while the gate printed a
+// clean tick. aquaculture mounted 30 of 146, birdlab 30 of 137, fisherlab
+// 30 of 122. A hostile value is only ever tested on the screens that got
+// mounted, so an unmounted view is UNTESTED, not passing — exactly the
+// distinction the key cap already makes visible.
+const VIEW_CAP = process.argv.includes('--deep') ? 200 : 30;
+const viewTruncated = [];
+
 const palProxy = new Proxy({}, { get: () => '#888888' });
 const theme = new Proxy({ isDark: true, isContrast: false, reduceMotion: false, palette: palProxy },
   { get: (o, p) => (p in o ? o[p] : '#888888') });
@@ -244,6 +258,8 @@ function render(id, bag) {
 const crashes = [];
 const skipped = [];
 let exercised = 0;
+let viewsMounted = 0;
+const unenterable = [];
 
 // A filter that matches nothing must not look like a clean sweep. Tool ids are
 // camelCase (`climateExplorer`), not the file slug (`climateexplorer`), so a
@@ -274,6 +290,18 @@ for (const id of ALL_IDS) {
   if (!keys.length) continue;
   const defaults = defaultsOf(id);
   const vKeys = viewKeysOf(id);
+  // ★A view NAME is not an enterable view. discover() harvests names from
+  // `view === 'x'` and `setView('x')`, but the patch can only navigate by
+  // setting a toolData key, and viewKeysOf() finds one only if the tool reads
+  // `d.<viewkey>`. When it returns [], `viewBits` below stays {} and EVERY
+  // named view re-renders the default screen — so the run still counts them as
+  // mounted while testing one screen N times. 48 of 118 tools with views are in
+  // this state (754 names), incl. aquaculture 146, fisherlab 122,
+  // cephalopodlab 117, all of which hold their screen in local React state or
+  // localStorage. Those need a click path, not a state patch.
+  if (views.length && !vKeys.length) {
+    unenterable.push({ tool: id, views: views.length });
+  }
 
   // CONTROL: a view that is broken for unrelated reasons must not be blamed on
   // hostile input. Mount clean first; skip the views that already fail.
@@ -286,6 +314,10 @@ for (const id of ALL_IDS) {
   }
   if (!liveViews.length) continue;
   exercised += 1;
+  // The denominator this gate never reported. Without it a tool whose views
+  // could not be entered looks identical to one probed end to end, which is how
+  // a crash behind `section === 'spotter'` in llmLiteracy read as a clean pass.
+  viewsMounted += liveViews.length;
   const seen = new Set();
 
   for (const view of liveViews) {
@@ -315,6 +347,7 @@ for (const c of crashes) (byTool[c.tool] = byTool[c.tool] || []).push(c);
 console.log(`tools exercised : ${exercised}`);
 console.log(`crashing tools  : ${Object.keys(byTool).length}`);
 console.log(`distinct crashes: ${crashes.length}`);
+console.log(`views mounted   : ${viewsMounted} (each tool's default screen plus every view reached)`);
 console.log(`views skipped   : ${skipped.length} (failed their CLEAN control — not hostile-input bugs)\n`);
 // Partial coverage must never read as complete. Without this, the tick at the
 // end said "no STEM tool crashes" while solarsystem had swept 60 of its 379
@@ -325,6 +358,26 @@ if (truncated.length) {
   console.log(`PARTIAL COVERAGE: ${truncated.length} tool(s) read more than ${KEY_CAP} keys; `
     + `${unswept} key(s) were NOT swept. Re-run with --deep for full coverage.`);
   for (const t of worst.slice(0, 5)) console.log(`  ${t.tool}: swept ${t.swept} of ${t.read}`);
+  console.log('');
+}
+if (unenterable.length) {
+  const worst = unenterable.slice().sort((a, b) => b.views - a.views);
+  const names = unenterable.reduce((n, t) => n + t.views, 0);
+  console.log(`NOT ENTERABLE: ${unenterable.length} tool(s) name ${names} view(s) that this gate `
+    + `cannot navigate to — they keep their screen in local state or localStorage, so setting a `
+    + `toolData key does nothing and every one re-renders the default screen.`);
+  for (const t of worst.slice(0, 5)) console.log(`  ${t.tool}: ${t.views} view(s) named, 0 reachable`);
+  console.log(`  These are UNMEASURED by this gate, not clean. The only way in is a click, so`);
+  console.log(`  they need an e2e spec (tests/e2e/) that opens each screen — 18 of them have no`);
+  console.log(`  e2e spec at all today, so those views are tested by neither instrument.`);
+  console.log('');
+}
+if (viewTruncated.length) {
+  const worst = viewTruncated.slice().sort((a, b) => b.found - a.found);
+  const unmounted = viewTruncated.reduce((n, t) => n + (t.found - t.mounted), 0);
+  console.log(`PARTIAL COVERAGE: ${viewTruncated.length} tool(s) have more than ${VIEW_CAP} views; `
+    + `${unmounted} view(s) were NOT mounted. Re-run with --deep for full coverage.`);
+  for (const t of worst.slice(0, 5)) console.log(`  ${t.tool}: mounted ${t.mounted} of ${t.found}`);
   console.log('');
 }
 for (const [tool, list] of Object.entries(byTool)) {

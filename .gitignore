@@ -293,3 +293,5 @@ __pycache__/
 /desktop/web-app/public/ui_strings.js.math-refinements-tmp
 # find_vacuous_pins.cjs crash-recovery journals (per-pid, never committed)
 .vacuous-pins-journal.*.json
+# check_stem_behavior.cjs writes and deletes this harness page on every run
+/dev-tools/_stem_harness.html
