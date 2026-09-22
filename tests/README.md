@@ -10,7 +10,7 @@ This directory holds **two complementary suites**:
 ```
 tests/
   # — Unit / clinical-logic tests (Node + vitest) —
-  clinical_tests.js              # 111 tests across 3 tiers (Tier 1/2/3)
+  clinical_tests.js              # 96 tests across 3 tiers (Tier 1/2/3)
   translation_pipeline.test.js   # 22 tests — DNT masking + glossary preamble + round-trip
   *.test.js                      # anchor_charts, glossary, math_helpers, etc.
   extracted_logic/
@@ -74,6 +74,8 @@ The source modules (report_writer_module.js, student_analytics_module.js, etc.) 
 The tests import from `extracted_logic/clinical_logic.js` and verify known-answer behavior.
 
 **Important:** The extracted logic file is a mirror, not a replacement. The source modules still contain the originals. If you change a clinical formula in a source module, update the extracted copy and run the tests.
+
+**Why copies are risky:** a copy can keep passing after the shipped code changes, and it can hold the same mistake as the original. The score-classification tests here asserted the wrong labels (WISC-V 70-79 "Borderline", BASC-3 T 60 "High Average") against a copy frozen in April, and all passed. Score classification is now tested on the shipped module, against the publishers' manuals, in `report_writer_score_classification.test.js`. Prefer loading the real module (see `setup.js` `loadAlloModule`) over adding to the extracted copy.
 
 ## Test Tiers
 

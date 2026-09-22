@@ -12,34 +12,6 @@
 //   doc_pipeline_source.jsx — Issue normalization, issue merging, accessibility scoring
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// REPORT WRITER — Score Classification
-// Source: report_writer_module.js lines 69-107
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const SCORE_CLASSIFICATIONS = [
-    { min: 130, max: 999, label: 'Very Superior', color: 'emerald' },
-    { min: 120, max: 129, label: 'Superior', color: 'green' },
-    { min: 110, max: 119, label: 'High Average', color: 'teal' },
-    { min: 90, max: 109, label: 'Average', color: 'sky' },
-    { min: 80, max: 89, label: 'Low Average', color: 'amber' },
-    { min: 70, max: 79, label: 'Borderline', color: 'orange' },
-    { min: 0, max: 69, label: 'Extremely Low', color: 'red' },
-];
-
-function classifyScore(score, scoreType) {
-    scoreType = scoreType || 'standard';
-    if (scoreType === 'T-score') {
-        if (score >= 70) return { label: 'Clinically Significant', color: 'red' };
-        if (score >= 65) return { label: 'At-Risk', color: 'orange' };
-        if (score >= 60) return { label: 'High Average', color: 'amber' };
-        if (score >= 40) return { label: 'Average', color: 'sky' };
-        if (score >= 35) return { label: 'Low', color: 'amber' };
-        return { label: 'Very Low', color: 'red' };
-    }
-    return SCORE_CLASSIFICATIONS.find(function (c) { return score >= c.min && score <= c.max; }) || { label: 'Unknown', color: 'slate' };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // REPORT WRITER — Percentile Calculation (Abramowitz-Stegun error function)
 // Source: report_writer_module.js line 849 (inline in addScoreEntry)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -473,11 +445,9 @@ function fmtDuration(seconds) {
 
 module.exports = {
     // Report Writer
-    classifyScore: classifyScore,
     calculatePercentile: calculatePercentile,
     scrubPII: scrubPII,
     crossReferenceDevNorms: crossReferenceDevNorms,
-    SCORE_CLASSIFICATIONS: SCORE_CLASSIFICATIONS,
     DEVELOPMENTAL_NORMS: DEVELOPMENTAL_NORMS,
     ASSESSMENT_PRESETS: ASSESSMENT_PRESETS,
 

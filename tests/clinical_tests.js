@@ -37,114 +37,12 @@ function section(name) {
 // TIER 1: CLINICAL SCORING (affects real student services)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-section('TIER 1: Score Classification (Standard Scores)');
-
-test('WISC-V FSIQ 100 → Average', function () {
-    var r = logic.classifyScore(100, 'standard');
-    assert.strictEqual(r.label, 'Average');
-});
-
-test('WISC-V FSIQ 130 → Very Superior', function () {
-    var r = logic.classifyScore(130, 'standard');
-    assert.strictEqual(r.label, 'Very Superior');
-});
-
-test('WISC-V FSIQ 69 → Extremely Low', function () {
-    var r = logic.classifyScore(69, 'standard');
-    assert.strictEqual(r.label, 'Extremely Low');
-});
-
-test('WISC-V FSIQ 70 → Borderline (boundary)', function () {
-    var r = logic.classifyScore(70, 'standard');
-    assert.strictEqual(r.label, 'Borderline');
-});
-
-test('WISC-V FSIQ 79 → Borderline (upper boundary)', function () {
-    var r = logic.classifyScore(79, 'standard');
-    assert.strictEqual(r.label, 'Borderline');
-});
-
-test('WISC-V FSIQ 80 → Low Average (boundary)', function () {
-    var r = logic.classifyScore(80, 'standard');
-    assert.strictEqual(r.label, 'Low Average');
-});
-
-test('WISC-V FSIQ 89 → Low Average (upper)', function () {
-    var r = logic.classifyScore(89, 'standard');
-    assert.strictEqual(r.label, 'Low Average');
-});
-
-test('WISC-V FSIQ 90 → Average (lower boundary)', function () {
-    var r = logic.classifyScore(90, 'standard');
-    assert.strictEqual(r.label, 'Average');
-});
-
-test('WISC-V FSIQ 109 → Average (upper boundary)', function () {
-    var r = logic.classifyScore(109, 'standard');
-    assert.strictEqual(r.label, 'Average');
-});
-
-test('WISC-V FSIQ 110 → High Average', function () {
-    var r = logic.classifyScore(110, 'standard');
-    assert.strictEqual(r.label, 'High Average');
-});
-
-test('WISC-V FSIQ 120 → Superior', function () {
-    var r = logic.classifyScore(120, 'standard');
-    assert.strictEqual(r.label, 'Superior');
-});
-
-test('Score 0 → Extremely Low (floor)', function () {
-    var r = logic.classifyScore(0, 'standard');
-    assert.strictEqual(r.label, 'Extremely Low');
-});
-
-test('Default scoreType is standard', function () {
-    var r = logic.classifyScore(100);
-    assert.strictEqual(r.label, 'Average');
-});
-
-section('TIER 1: Score Classification (T-Scores — behavioral measures)');
-
-test('BASC-3 T=50 → Average', function () {
-    var r = logic.classifyScore(50, 'T-score');
-    assert.strictEqual(r.label, 'Average');
-});
-
-test('BASC-3 T=70 → Clinically Significant', function () {
-    var r = logic.classifyScore(70, 'T-score');
-    assert.strictEqual(r.label, 'Clinically Significant');
-});
-
-test('BASC-3 T=65 → At-Risk', function () {
-    var r = logic.classifyScore(65, 'T-score');
-    assert.strictEqual(r.label, 'At-Risk');
-});
-
-test('BASC-3 T=60 → High Average', function () {
-    var r = logic.classifyScore(60, 'T-score');
-    assert.strictEqual(r.label, 'High Average');
-});
-
-test('BASC-3 T=40 → Average (lower boundary)', function () {
-    var r = logic.classifyScore(40, 'T-score');
-    assert.strictEqual(r.label, 'Average');
-});
-
-test('BASC-3 T=39 → Low', function () {
-    var r = logic.classifyScore(39, 'T-score');
-    assert.strictEqual(r.label, 'Low');
-});
-
-test('BASC-3 T=35 → Low (boundary)', function () {
-    var r = logic.classifyScore(35, 'T-score');
-    assert.strictEqual(r.label, 'Low');
-});
-
-test('BASC-3 T=34 → Very Low', function () {
-    var r = logic.classifyScore(34, 'T-score');
-    assert.strictEqual(r.label, 'Very Low');
-});
+// Score classification is NOT tested here any more. These tests checked a
+// copy of the code frozen in April (extracted_logic/clinical_logic.js) that
+// held the wrong labels (WISC-V 70-79 "Borderline", BASC-3 T 60 "High
+// Average"), so they passed while the shipped module was wrong. Labels are
+// now checked against the publishers' manuals, on the SHIPPED module, in
+// tests/report_writer_score_classification.test.js.
 
 section('TIER 1: Percentile Calculation');
 
