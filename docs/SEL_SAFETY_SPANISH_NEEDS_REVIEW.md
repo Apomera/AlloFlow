@@ -62,9 +62,10 @@ test renders the English fallbacks only. Treat each line as a check to write:
   echoes the key (the hub's default), and when it throws. Crisis copy must
   never depend on i18n working. (`_sT` is written to do this; nothing pins it.)
 * No raw key (`sel.safety.modal_title`) can reach a student.
-* No value carries a literal escape. The first cut stored `—` as six
-  characters in 2 English and 7 Spanish values, which would have shown on the
-  banner as text; fixed before commit.
+* No value carries a literal escape. The first cut stored the em dash as its
+  six-character JSON escape (backslash, u, 2, 0, 1, 4) in 2 English and 7
+  Spanish values, which would have shown on the banner as text; fixed before
+  commit.
 * Five translated strings are joined into `innerHTML`. `sanitizeLanguagePack`
   strips executable tags and event handlers, but a pack can still carry
   markup, so "a pack cannot inject tags" is not a claim to make yet.
