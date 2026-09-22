@@ -216,7 +216,18 @@ describe('the unified Sculpt workspace', () => {
     tabs.forEach(tab => expect(root.querySelector('#' + tab.getAttribute('aria-controls'))).toBeTruthy());
     const parts = root.querySelector('#geo-sculpt-panel-parts');
     expect(parts.hidden).toBe(false);
-    expect(parts.textContent).toContain('Add a primitive, choose a part, then open Edit to shape it.');
+    // Pin the guidance ELEMENT, not the sentence. The old literal ('Add a
+    // primitive, choose a part, then open Edit to shape it.') was rewritten into
+    // shorter translated copy, so this went red for a UI improvement.
+    // Matching loose words against the whole tab is worse than useless: the
+    // surrounding buttons say 'Add a shape' and 'Edit by hand', so a regex over
+    // parts.textContent still passed when the guidance was replaced by
+    // 'Lorem ipsum' (verified by mutation). Scope to the one element that
+    // carries the instruction, and require it to say something real.
+    const guidance = parts.querySelector('[data-geo-shape-guidance]');
+    expect(guidance, 'the Parts tab must carry a guidance line').toBeTruthy();
+    expect(guidance.textContent.trim().length).toBeGreaterThan(20);
+    expect(guidance.textContent).toMatch(/shape/i);
     ['box', 'sphere', 'cylinder', 'cone', 'torus'].forEach(shape => {
       const add = parts.querySelector('[aria-label="Add ' + shape + '"]');
       expect(add).toBeTruthy();
