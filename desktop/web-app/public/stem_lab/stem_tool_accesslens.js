@@ -81,8 +81,16 @@
       '3. Objects with their colors, rough sizes, and textures.\n' +
       '4. Read out any text you can see, word for word.\n' +
       '5. If a person appears, say only "a person" plus clothing color and where they are. Never guess identity, age, gender, or feelings.\n' +
-      'Never guess brands, prices, or value. If you are not sure about something, say you are not sure. ' +
-      'Plain sentences only, no markdown, no headings.';
+      'Never guess brands, prices, or value. ' +
+      'Respond with STRICT JSON only (no markdown fences, no extra text):\n' +
+      '{"photo":{"usable":true,"problem":""},' +
+      '"description":"the description, following steps 1 to 5 above, as plain sentences",' +
+      '"unsure":["anything you could not make out, one short phrase each; empty array if none"]}\n' +
+      'Set photo.usable to false and fill photo.problem when the photo is too dark, too blurry, ' +
+      'mostly covered, or aimed at nothing identifiable. Say which, in one short sentence the student ' +
+      'can act on, such as "too dark" or "the lens looks covered". The student cannot see the photo, ' +
+      'so this is the only way they learn to retake it. Put anything you are unsure of in unsure, ' +
+      'never hedged inside the description.';
   }
 
   function readPrompt() {
@@ -112,6 +120,140 @@
       'Rules: observations must be visible facts only. Never state a price or value. Never present the guess as certain. If the photo is too unclear, use low confidence and say why in the why field.';
   }
 
+  // Describe mode is the one a blind student lives in, so it must never lose
+  // the description to a parsing problem: if the JSON does not arrive, the raw
+  // text IS the description and the photo is simply unreported. Mirrors
+  // parseInquire's fence-stripping.
+  // Read-aloud is how this mode is actually consumed, so the photo problem and
+  // the hedges have to be spoken too. Putting the problem FIRST means a student
+  // hears "this may not have come out" before a description built on a bad shot.
+  function describeSpeech(out) {
+    if (!out) return '';
+    var parts = [];
+    if (!out.usable) {
+      var why = out.problem || 'the picture is unclear';
+      why = why.replace(/[.!?]+$/, '');
+      parts.push('This photo may not have come out: ' + why + '.');
+    }
+    if (out.description) parts.push(out.description);
+    if (out.unsure && out.unsure.length) parts.push('The AI was not sure about: ' + out.unsure.join('; ') + '.');
+    return parts.join(' ');
+  }
+  // The transcription prompts tell the model to write [unclear] where a word
+  // could not be read. That marker was rendered as ordinary text, so at 44px a
+  // gap in a medication label or a lab safety instruction looked exactly like
+  // the words that WERE read. Split it out so it can be marked visually and
+  // spoken as a gap rather than as the literal word "unclear".
+  // Two modes tested the same sentinel two different ways, and both were wrong.
+  // Read used strict equality, so "NO_TEXT_FOUND." rendered the raw token at
+  // 44px to a low-vision student. Translate used indexOf, so a sign that really
+  // contains that token was misreported as having no text at all.
+  //
+  // One rule: the sentinel counts only when it is the WHOLE reply, allowing for
+  // surrounding whitespace and trailing punctuation the model may add.
+  // "Analysis ready." told a blind student that something had happened, then
+  // left them to find it with a virtual cursor. The result IS the answer, so
+  // the announcement carries it -- capped, because a live region should not
+  // read three paragraphs before the student can stop it. The full text stays
+  // on screen and in Read aloud.
+  var ANNOUNCE_CAP = 240;
+  function announceCap(text) {
+    var t = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+    if (t.length <= ANNOUNCE_CAP) return t;
+    var cut = t.slice(0, ANNOUNCE_CAP);
+    var lastStop = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('? '), cut.lastIndexOf('! '));
+    if (lastStop > ANNOUNCE_CAP * 0.5) return cut.slice(0, lastStop + 1);
+    var lastSpace = cut.lastIndexOf(' ');
+    return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut) + '\u2026';
+  }
+  function resultAnnouncement(mode, value, noTextMsg, moreMsg) {
+    if (mode === 'describe') {
+      if (!value) return '';
+      var lead = value.usable ? '' : ('This photo may not have come out: ' + (value.problem || 'the picture is unclear') + '. ');
+      return announceCap(lead + (value.description || ''));
+    }
+    if (mode === 'read') {
+      if (isNoTextReply(value)) return noTextMsg;
+      var gaps = countUnclear(value);
+      var gapNote = gaps ? (gaps === 1 ? '1 word could not be read. ' : gaps + ' words could not be read. ') : '';
+      return announceCap(gapNote + speechWithGaps(value));
+    }
+    if (mode === 'translate') {
+      if (!value || value.none) return noTextMsg;
+      return announceCap(value.translated || '');
+    }
+    if (mode === 'inquire') {
+      if (!value) return '';
+      if (value.raw) return announceCap(value.raw);
+      var guess = value.guess || {};
+      return announceCap('Best guess, ' + (guess.confidence || 'low') + ' confidence: ' + (guess.what || '') + '. ' + (moreMsg || ''));
+    }
+    return '';
+  }
+  var NO_TEXT_SENTINEL = 'NO_TEXT_FOUND';
+  function isNoTextReply(text) {
+    if (text == null) return false;
+    var t = String(text).trim();
+    if (!t) return false;
+    // Strip trailing punctuation and quotes the model sometimes appends.
+    t = t.replace(/^["'`]+/, '').replace(/["'`.!?\s]+$/, '');
+    return t.toUpperCase() === NO_TEXT_SENTINEL;
+  }
+  var UNCLEAR_TOKEN = '[unclear]';
+  function splitUnclear(text) {
+    if (text == null) return [];
+    var raw = String(text);
+    if (!raw) return [];
+    var parts = [], rest = raw, at = rest.toLowerCase().indexOf(UNCLEAR_TOKEN);
+    while (at !== -1) {
+      if (at > 0) parts.push({ unclear: false, text: rest.slice(0, at) });
+      parts.push({ unclear: true, text: UNCLEAR_TOKEN });
+      rest = rest.slice(at + UNCLEAR_TOKEN.length);
+      at = rest.toLowerCase().indexOf(UNCLEAR_TOKEN);
+    }
+    if (rest) parts.push({ unclear: false, text: rest });
+    return parts;
+  }
+  function countUnclear(text) {
+    return splitUnclear(text).filter(function (p) { return p.unclear; }).length;
+  }
+  // Speech: "unclear" on its own is heard as a word in the sentence. Saying
+  // what it means keeps the gap audible.
+  function speechWithGaps(text) {
+    if (text == null) return '';
+    return splitUnclear(text).map(function (p) {
+      return p.unclear ? ' (one word could not be read) ' : p.text;
+    }).join('').replace(/\s{2,}/g, ' ').trim();
+  }
+  function parseDescribe(text) {
+    if (!text || typeof text !== 'string') return null;
+    var raw = String(text).trim();
+    if (!raw) return null;
+    var fallback = { description: raw, usable: true, problem: '', unsure: [], structured: false };
+    var s = raw.replace(/```json/gi, '```').split('```').join('');
+    var a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a === -1 || b === -1 || b <= a) return fallback;
+    var obj;
+    try { obj = JSON.parse(s.slice(a, b + 1)); } catch (e) { return fallback; }
+    if (!obj || typeof obj !== 'object') return fallback;
+    var description = obj.description == null ? '' : String(obj.description).trim();
+    var photo = obj.photo && typeof obj.photo === 'object' ? obj.photo : {};
+    // A black or covered photo can come back with nothing to describe. Falling
+    // back there read the raw JSON aloud and lost the retake message.
+    if (!description && photo.usable !== false) return fallback;
+    var unsure = Array.isArray(obj.unsure)
+      ? obj.unsure.slice(0, 6).map(function (u) { return String(u).trim(); }).filter(Boolean)
+      : [];
+    return {
+      description: description,
+      // Only an explicit false means unusable; a missing field must not accuse
+      // a good photo of being bad.
+      usable: photo.usable !== false,
+      problem: photo.problem == null ? '' : String(photo.problem).trim(),
+      unsure: unsure,
+      structured: true
+    };
+  }
   // Robust JSON extraction: strips code fences, grabs first {...last}.
   function parseInquire(text) {
     if (!text || typeof text !== 'string') return null;
@@ -134,7 +276,7 @@
 
   function parseTranslation(text) {
     if (!text || typeof text !== 'string') return null;
-    if (text.indexOf('NO_TEXT_FOUND') !== -1) return { none: true };
+    if (isNoTextReply(text)) return { none: true };
     var oi = text.indexOf('ORIGINAL:'), ti = text.indexOf('TRANSLATION:');
     if (oi === -1 || ti === -1 || ti <= oi) return { original: '', translated: text.trim() };
     return {
@@ -231,10 +373,18 @@
     // that the description is stale, so it is the worst failure mode here.
     var photoTokenRef = useRef(0);
 
+    // aria-live fires on a TEXT CHANGE, so announcing the same string twice in
+    // a row is silent: analysing two photos in a row said "Analysis ready."
+    // once, and a student retrying a bad photo three times heard one error.
+    // A trailing run of zero-width spaces changes the text without changing
+    // what is read aloud.
+    var liveSeqRef = useRef(0);
     var announce = useCallback(function (m) {
-      setLiveMsg(String(m || ''));
+      var text = String(m || '');
+      liveSeqRef.current = (liveSeqRef.current + 1) % 4;
+      setLiveMsg(text ? text + '\u200B'.repeat(liveSeqRef.current) : '');
       var cx = ctxRef.current;
-      if (cx && typeof cx.announceToSR === 'function') { try { cx.announceToSR(m); } catch (_) {} }
+      if (cx && typeof cx.announceToSR === 'function') { try { cx.announceToSR(text); } catch (_) {} }
     }, []);
 
     // ── quest persistence: booleans/counters only, NEVER the photo ──
@@ -428,18 +578,28 @@
           setErr(_t('stem.accessLens.err_ai', 'The AI could not answer right now. Please try again.'));
           return;
         }
+        // Parse ONCE, before storing. Reading the value back out of the
+        // setResults updater would depend on React running it before this
+        // continues, which under batching it may not -- the announcement would
+        // silently fall back to "Analysis ready."
+        var parsed =
+          m === 'translate' ? parseTranslation(text) :
+          m === 'inquire' ? (parseInquire(text) || { raw: String(text) }) :
+          m === 'describe' ? (parseDescribe(text) || { description: String(text).trim(), usable: true, problem: '', unsure: [], structured: false }) :
+          String(text).trim();
         setResults(function (r) {
           var n = Object.assign({}, r);
-          if (m === 'translate') n.translate = parseTranslation(text);
-          else if (m === 'inquire') n.inquire = parseInquire(text) || { raw: String(text) };
-          else n[m] = String(text).trim();
+          n[m] = parsed;
           return n;
         });
         if (m === 'describe') markQuest('described');
         else if (m === 'read') markQuest('readText');
         else if (m === 'translate') markQuest('translated');
         else markQuest('inquired');
-        announce(_t('stem.accessLens.sr_done', 'Analysis ready.'));
+        var spoken = resultAnnouncement(m, parsed,
+          _t('stem.accessLens.no_text', 'No readable text was found in this photo. Try getting closer or adding more light.'),
+          _t('stem.accessLens.sr_more_below', 'The observations, questions and a way to test the guess are below.'));
+        announce(spoken || _t('stem.accessLens.sr_done', 'Analysis ready.'));
       }).catch(function () {
         if (token !== photoTokenRef.current) return;
         setBusy('');
@@ -516,6 +676,9 @@
         { title: _t('stem.accessLens.read_aloud_title', 'Hear this text spoken out loud') });
     }
 
+    // Shared by the photo preview and the Describe panel.
+    var describeOut = results.describe && typeof results.describe === 'object' ? results.describe : null;
+
     // ════════════════════ capture panel ════════════════════
     function renderCapture() {
       var kids = [];
@@ -581,7 +744,15 @@
         kids.push(h('div', { key: 'preview', style: { display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
           h('img', {
             src: photo.dataUrl,
-            alt: results.describe ? results.describe.slice(0, 300) : _t('stem.accessLens.photo_alt', 'The photo you captured. It is not saved anywhere.'),
+            // The description is the visible result right below this image, so
+            // repeating 300 characters of it here made a screen reader say the
+            // opening twice. What a blind photographer needs from the image
+            // itself is whether the shot came out.
+            alt: describeOut
+              ? (describeOut.usable
+                  ? _t('stem.accessLens.photo_alt_ok', 'Your photo. The description is below.')
+                  : _t('stem.accessLens.photo_alt_problem', 'Your photo. It may not have come out: ') + (describeOut.problem || _t('stem.accessLens.photo_alt_unclear', 'the picture is unclear.')))
+              : _t('stem.accessLens.photo_alt', 'The photo you captured. It is not saved anywhere.'),
             style: { width: '160px', height: 'auto', borderRadius: '10px', border: '1px solid ' + C.border }
           }),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
@@ -607,21 +778,35 @@
     }
 
     function renderDescribe() {
-      var out = results.describe;
+      var out = describeOut;
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
         h('p', { style: { margin: 0, fontSize: '12.5px', color: C.sub, lineHeight: 1.5 } },
-          _t('stem.accessLens.describe_intro', 'Get a spoken picture of what is in front of you: layout, objects, colors, and any text. Made for students who are blind or have low vision, useful for everyone.')),
+          _t('stem.accessLens.describe_intro', 'Get a spoken picture of what is in front of you: layout, objects, colors, and any text. Made for students who are blind or have low vision.')),
         analyzeButton('describe', _t('stem.accessLens.describe_cta', 'Describe my photo')),
         out ? card([
-          h('div', { key: 'txt', style: { fontSize: '15px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out),
-          h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px' } }, speakBtn(out)),
+          // A student who cannot see the photo cannot tell a bad PHOTO from a
+          // bad description. Reported first, and announced, so the fix (retake
+          // it) is obvious rather than inferred from a vague description.
+          !out.usable ? h('div', {
+            key: 'quality', role: 'status',
+            style: { marginBottom: '10px', fontSize: '13px', lineHeight: 1.5, color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px' }
+          }, h('strong', null, _t('stem.accessLens.photo_problem_title', 'This photo may not have come out. ')),
+             out.problem || _t('stem.accessLens.photo_problem_generic', 'The picture is unclear. Try taking it again.')) : null,
+          h('div', { key: 'txt', style: { fontSize: '15px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.description),
+          // Hedges belong in their own list, not buried mid-sentence where a
+          // listener loses them.
+          out.unsure && out.unsure.length ? h('div', { key: 'unsure', style: { marginTop: '10px', fontSize: '13px', lineHeight: 1.6, color: C.text } },
+            h('strong', null, _t('stem.accessLens.unsure_title', 'The AI was not sure about:')),
+            h('ul', { style: { margin: '4px 0 0', paddingLeft: '20px' } },
+              out.unsure.map(function (u, i) { return h('li', { key: i }, u); }))) : null,
+          h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px' } }, speakBtn(describeSpeech(out))),
           h('div', { key: 'disc' }, aiDisclaimer())
         ]) : null);
     }
 
     function renderRead() {
       var out = results.read;
-      var noText = out === 'NO_TEXT_FOUND';
+      var noText = isNoTextReply(out);
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
         h('p', { style: { margin: 0, fontSize: '12.5px', color: C.sub, lineHeight: 1.5 } },
           _t('stem.accessLens.read_intro', 'Point at a worksheet, a whiteboard, a sign, or a label. The text is re-typed here in large print you can resize and listen to.')),
@@ -639,7 +824,16 @@
                   onChange: function (e) { setReaderPx(parseInt(e.target.value, 10) || 24); },
                   style: { width: '130px' }
                 })),
-              speakBtn(out)),
+              speakBtn(speechWithGaps(out))),
+            // Announced before the text: a gap count is the difference between
+            // "this is what the label says" and "this is most of what it says".
+            countUnclear(out) ? h('div', {
+              key: 'gaps', role: 'status',
+              style: { marginBottom: '10px', fontSize: '13px', lineHeight: 1.5, color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px' }
+            }, h('strong', null, countUnclear(out) === 1
+                 ? _t('stem.accessLens.gap_one', '1 word could not be read. ')
+                 : countUnclear(out) + _t('stem.accessLens.gap_many', ' words could not be read. ')),
+               _t('stem.accessLens.gap_advice', 'Each gap is marked below. If this text matters, take the photo again with more light or move closer, or ask someone to check it.')) : null,
             h('div', {
               key: 'reader',
               style: {
@@ -647,7 +841,15 @@
                 color: C.text, background: C.soft, borderRadius: '10px', padding: '14px 16px',
                 whiteSpace: 'pre-wrap', maxWidth: '46ch'
               }
-            }, out),
+            }, splitUnclear(out).map(function (part, i) {
+              // A gap is marked, not styled like the words that were read.
+              return part.unclear
+                ? h('span', {
+                    key: i,
+                    style: { background: C.warnBg, border: '1px dashed ' + C.warnBorder, borderRadius: '4px', padding: '0 4px', fontStyle: 'italic', fontWeight: 700 }
+                  }, _t('stem.accessLens.unclear_inline', '[could not read]'))
+                : h('span', { key: i }, part.text);
+            })),
             h('div', { key: 'disc' }, aiDisclaimer())
           ])) : null);
     }
@@ -679,10 +881,16 @@
           : card([
             out.original ? h('div', { key: 'orig', style: { marginBottom: '10px' } },
               h('div', { style: { fontSize: '10px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.original', 'Original')),
-              h('div', { style: { fontSize: '13.5px', lineHeight: 1.6, color: C.sub, whiteSpace: 'pre-wrap' } }, out.original)) : null,
+              h('div', { style: { fontSize: '13.5px', lineHeight: 1.6, color: C.sub, whiteSpace: 'pre-wrap' } }, splitUnclear(out.original).map(function (part, i) {
+                return part.unclear
+                  ? h('span', { key: i, style: { background: C.warnBg, border: '1px dashed ' + C.warnBorder, borderRadius: '4px', padding: '0 3px', fontStyle: 'italic', fontWeight: 700 } }, _t('stem.accessLens.unclear_inline', '[could not read]'))
+                  : h('span', { key: i }, part.text);
+              }))) : null,
             h('div', { key: 'trans' },
               h('div', { style: { fontSize: '10px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.translation', 'Translation')),
               h('div', { style: { fontSize: '16px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.translated)),
+            countUnclear(out.original) ? h('div', { key: 'gaps', role: 'status', style: { marginTop: '10px', fontSize: '12.5px', lineHeight: 1.5, color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px' } },
+              _t('stem.accessLens.translate_gap', 'Some words in the original could not be read, so the translation is missing part of the text. Take the photo again with more light if this matters.')) : null,
             h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px' } }, speakBtn(out.translated)),
             h('div', { key: 'disc' }, aiDisclaimer())
           ])) : null);
@@ -842,5 +1050,13 @@
   if (typeof window !== 'undefined') {
     window.AccessLensPure = window.AccessLensPure || {};
     window.AccessLensPure.cameraFailureReason = cameraFailureReason;
+    window.AccessLensPure.parseDescribe = parseDescribe;
+    window.AccessLensPure.describeSpeech = describeSpeech;
+    window.AccessLensPure.splitUnclear = splitUnclear;
+    window.AccessLensPure.countUnclear = countUnclear;
+    window.AccessLensPure.speechWithGaps = speechWithGaps;
+    window.AccessLensPure.isNoTextReply = isNoTextReply;
+    window.AccessLensPure.announceCap = announceCap;
+    window.AccessLensPure.resultAnnouncement = resultAnnouncement;
   }
 })();
