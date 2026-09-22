@@ -5063,7 +5063,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         // ── Student-authored spotter ──
         // Bracket syntax: [[error phrase]] inside the draft becomes a flagged
         // segment. Students preview their own trap passage and can share via copy.
-        var authorDraftTuple = useState(d.authoredPassage || '');
+        // ★`|| ''` is falsy-only, so a persisted {} / [] / 42 / true reached the
+        // textarea's `value` AND `authorDraft.trim()` below — and .trim() is not
+        // a function on any of them, so the Spotter view THREW on render and the
+        // ErrorBoundary took the tool down. upd('authoredPassage', text) writes
+        // this key, so a corrupt save is enough; no attacker needed.
+        var authorDraftTuple = useState(typeof d.authoredPassage === 'string' ? d.authoredPassage : '');
         var authorDraft = authorDraftTuple[0]; var setAuthorDraft = authorDraftTuple[1];
         function saveAuthorDraft(text) {
           setAuthorDraft(text);
