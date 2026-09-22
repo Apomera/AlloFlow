@@ -58390,7 +58390,9 @@
       "task_8": "Answer the second knowledge check, set the entry angle inside the corridor, then begin re-entry.",
       "task_9": "Watch the entry and splashdown, then complete the mission.",
       "unmute_mission_audio": "Turn mission sound back on",
-      "your_job_now": "Your job now: "
+      "your_job_now": "Your job now: ",
+      "enter_fullscreen": "View the mission profile fullscreen",
+      "exit_fullscreen": "Exit fullscreen mission profile (Escape)"
     },
     "mult_table": {
       "value": "Value...",
