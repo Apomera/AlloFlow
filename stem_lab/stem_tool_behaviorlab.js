@@ -1371,7 +1371,30 @@ dataRef.current = d;
           // a fixed-ratio staircase" would answer the question the tool is asking.
           var blCumRecordDescription = function () {
 
-            var rec = blCumRecord;
+            // toolData is persisted, so this array can arrive holding entries
+            // from an older shape: a missing tick, a null cum, a string, a bare
+            // {}. Reading .tick off those produced "rises about NaN, then NaN"
+            // — a description that is worse than none, because it reads as
+            // authoritative. Drop anything that is not two finite numbers, and
+            // sort, since a description that claims a span cannot trust the
+            // order it was handed.
+            var rec = [];
+
+            for (var rawI = 0; rawI < (blCumRecord || []).length; rawI++) {
+
+              var raw = blCumRecord[rawI];
+
+              if (!raw || typeof raw !== 'object') continue;
+
+              var rt = Number(raw.tick), rc = Number(raw.cum);
+
+              if (!isFinite(rt) || !isFinite(rc)) continue;
+
+              rec.push({ tick: rt, cum: rc });
+
+            }
+
+            rec.sort(function (a, b) { return a.tick - b.tick; });
 
             if (!rec || rec.length < 2) {
 
@@ -6487,7 +6510,13 @@ dataRef.current = d;
                     }, __alloT('stem.behaviorlab.start_the_game', "\uD83D\uDD75\uFE0F Start the game"))
                   );
                 }
-                var sch = SCHEDULE_TYPES[sleuthIdx];
+                // blSleuthIdx is PERSISTED. The guard above only rejects -1, so a
+                // save written when this array was longer — or any hand-edited
+                // store — reached SCHEDULE_TYPES[idx] as undefined and threw on
+                // `.ratio` inside the generator, blanking the whole lab rather
+                // than the one panel. Fall back to the first schedule and let the
+                // round play rather than dead-ending the tool on a stale key.
+                var sch = SCHEDULE_TYPES[sleuthIdx] || SCHEDULE_TYPES[0];
                 // One generator, shared with the Schedule Comparison animation.
                 var sleuthRec = blScheduleRecord(sch, sleuthSeed);
                 var sleuthBlocks = blScheduleBlocks(sleuthRec, 10);
