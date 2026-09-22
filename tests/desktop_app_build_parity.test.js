@@ -142,6 +142,21 @@ describe('desktop app-build deployment guard', () => {
     expect(stampedWorker).toContain('./static/css/main.5678cdef.css');
   });
 
+  // The fixtures above are built WITH contract.render, so they cannot notice a
+  // renderer that drops the remediation_review_helpers footer (Step 4.5 rejected
+  // the correct module for exactly that). Render the real sources instead.
+  it('renders every real source to its committed module byte for byte', () => {
+    for (const contract of MODULE_CONTRACTS) {
+      const rendered = Buffer.from(contract.render(readFileSync(contract.source, 'utf8')), 'utf8');
+      const committed = readFileSync(contract.file);
+      expect(rendered.length, `${contract.file} length`).toBe(committed.length);
+      expect(rendered.equals(committed), `${contract.file} bytes`).toBe(true);
+    }
+    const footer = readFileSync('remediation_review_helpers.js', 'utf8');
+    expect(footer.length).toBeGreaterThan(1000);
+    expect(readFileSync('doc_pipeline_module.js', 'utf8')).toContain(footer.trim());
+  });
+
   it('accepts source/module mirrors and a self-consistent hashed offline shell', () => {
     const fixture = makeValidFixture();
     expect(() => validateDesktopAppBuild({
