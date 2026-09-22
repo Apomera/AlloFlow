@@ -55,11 +55,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
   // Detect prefers-reduced-motion at module load — used to gate canvas-level
   // cosmetic motion (creature bouncing, particle effects). The simulation
   // itself still runs; only purely decorative animation is suppressed.
-  var _prefersReducedMotion = (function() {
+  // Read once at load was not enough: a learner who turns reduced motion ON
+  // mid-lesson kept getting full creature animation until the page reloaded,
+  // which is exactly when they cannot afford it. Stay subscribed instead.
+  //
+  // Every consumer of this flag sits INSIDE its rAF frame body, so flipping the
+  // variable stops motion on the very next frame with nothing else to cancel.
+  //
+  // addEventListener where it exists, the deprecated addListener as a fallback:
+  // Safari < 14 and the older classroom iPads do not have the modern one on a
+  // MediaQueryList.
+  var _prefersReducedMotion = false;
+  var _motionQuery = null;
+  try {
+    _motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    _prefersReducedMotion = !!(_motionQuery && _motionQuery.matches);
+  } catch (e) { _motionQuery = null; }
+  function _onMotionPreferenceChange(event) {
+    _prefersReducedMotion = !!(event && event.matches);
+  }
+  if (_motionQuery) {
     try {
-      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    } catch (e) { return false; }
-  })();
+      if (typeof _motionQuery.addEventListener === 'function') _motionQuery.addEventListener('change', _onMotionPreferenceChange);
+      else if (typeof _motionQuery.addListener === 'function') _motionQuery.addListener(_onMotionPreferenceChange);
+    } catch (e) {}
+  }
+  // No teardown: this module body runs ONCE when the script loads, not per
+  // mount, so exactly one listener exists for the file's lifetime and there is
+  // no unmount that should remove it. (magnetism removes its listener because
+  // there the registration lives inside the component body, where a tool switch
+  // would otherwise accumulate one dead handler per mount.)
 
   // Print stylesheet — when teachers print a module, hide interactive controls
   // and force expand TeacherNotes / glossary so the printed copy includes the
