@@ -417,4 +417,79 @@ describe('Solar System surface-ops immersive layout', () => {
     expect(sync[0], 'must not claim a pause the student set by hand')
       .toMatch(/if \(!factPaused\) factPausedByMotionPref = true;/);
   });
+
+  it('does not label engine speed as a real-world measurement', () => {
+    // roverDrive.maxForward is 2.6 engine units/s and scaleFactor is 50 m/unit,
+    // so multiplying them produced an honest-LOOKING 130 m/s. Measured at full
+    // throttle in Chromium the two readouts showed: rover 355 km/h (2500x
+    // Curiosity's real 0.14 km/h), submersible 2549 km/h (700x Alvin, faster
+    // than a rifle bullet), gas probe 2599 km/h (5x Galileo's descent).
+    //
+    // The DISTANCE scale is sound -- the minimap's "5 km to edge" checks out --
+    // so the fix is not to rescale the sim but to stop calling a playability
+    // choice a measurement. Pace as a share of the vehicle's own top speed is
+    // true, answers the slope question this tab asks, and needs no unit.
+    const source = readFileSync(SOURCE, 'utf8');
+
+    const reading = source.match(/scienceReadingEl\.textContent = 'Elevation.*/);
+    expect(reading, 'could not find the rocky science reading').toBeTruthy();
+    expect(reading[0], 'the science line must not claim m/s for engine speed')
+      .not.toMatch(/m\/s/);
+    expect(reading[0], 'pace should be expressed as a share of full').toMatch(/% of full/);
+
+    // Elevation and slope ARE properly scaled, so they stay as real units.
+    expect(reading[0], 'elevation is genuinely scaled and keeps its unit').toMatch(/' m /);
+
+    const spd = source.match(/if \(spdEl\) spdEl\.textContent = [\s\S]{0,320}?';/);
+    expect(spd, 'could not find the Pace row assignment').toBeTruthy();
+    expect(spd[0], 'the Pace row must not claim m/s either').not.toMatch(/m\/s/);
+    expect(spd[0], 'the Pace row should report a percentage').toMatch(/\+ '%'/);
+    // Both vehicle families need the treatment: the submersible was the worst
+    // offender at 700x, so a rocky-only fix would leave it stating a falsehood.
+    expect(spd[0], 'fluid vehicles need the same treatment as rocky ones')
+      .toMatch(/isFluid/);
+
+    // The label must not promise m/s either.
+    expect(source, 'the Spd label must not advertise m/s')
+      .not.toMatch(/title="Current speed in m\/s"/);
+  });
+
+  it('does not make the scene smaller when you ask for fullscreen', () => {
+    // The camera bar is a full control panel (9 sections; the sample station
+    // alone is ~246px of its ~419px), and the fullscreen branch subtracted ALL
+    // of it from the viewport. Measured in Chromium at 1280x860 that gave a
+    // 1280x441 scene against the normal 1170x710 -- a 38% height loss, and 44%
+    // on a 768-tall laptop. A control that promises a bigger view must not
+    // deliver a smaller one. Capped, fullscreen is now 1280x688: +6% area.
+    const source = readFileSync(SOURCE, 'utf8');
+
+    const fsBranch = source.match(/var barNatural = 0;[\s\S]*?h2 = Math\.max\(160, window\.innerHeight - barBudget\);/);
+    expect(fsBranch, 'could not find the fullscreen sizing branch').toBeTruthy();
+    const branch = fsBranch[0];
+
+    // The bar may not claim the whole viewport.
+    expect(branch, 'the control bar must be capped against the viewport')
+      .toMatch(/Math\.min\(barNatural, Math\.max\(\d+, Math\.round\(window\.innerHeight \/ (\d+)\)\)\)/);
+    const divisor = Number(branch.match(/window\.innerHeight \/ (\d+)/)[1]);
+    expect(divisor, 'a third still lost 12% of area; the scene needs most of the viewport')
+      .toBeGreaterThanOrEqual(4);
+
+    // Capping without scrolling would clip controls away entirely.
+    expect(branch, 'a capped bar must scroll or its controls become unreachable')
+      .toMatch(/overflowY = barNatural > barBudget \? 'scroll' : ''/);
+
+    // offsetHeight reports the CLAMPED height once maxHeight is set, so the cap
+    // has to be released before measuring or a second resize reads back its own
+    // cap, concludes the bar fits, and drops the overflow.
+    const releaseIdx = branch.indexOf("roverCameraBar.style.maxHeight = '';");
+    const measureIdx = branch.indexOf('barNatural = roverCameraBar.offsetHeight;');
+    expect(releaseIdx, 'the cap must be released before measuring').toBeGreaterThan(-1);
+    expect(measureIdx, 'the natural height must be measured').toBeGreaterThan(releaseIdx);
+
+    // And leaving fullscreen must release it, or the bar stays clipped. Anchored
+    // to the exit path: the fullscreen branch has the same release (before it
+    // measures), so an unanchored match passes with the exit release deleted.
+    expect(source, 'exiting fullscreen must release the bar cap')
+      .toMatch(/container\.style\.background = '';[\s\S]{0,600}?if \(roverCameraBar\) \{\s*\n\s*roverCameraBar\.style\.maxHeight = '';/);
+  });
 });

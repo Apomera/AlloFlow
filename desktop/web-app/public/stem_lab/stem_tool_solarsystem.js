@@ -1493,7 +1493,7 @@ const d = labToolData.solarSystem || {};
               '@media(max-width:640px){.solar-cosmos .solar-tutorial-orbit{height:106px}.solar-cosmos .solar-tutorial-orbit-line--three{width:270px}.solar-cosmos .solar-tutorial-content{padding:16px}.solar-cosmos .solar-tutorial-title{font-size:19px}.solar-cosmos .solar-tutorial-steps{grid-template-columns:1fr;gap:7px;margin-top:13px}.solar-cosmos .solar-tutorial-step{min-height:54px}.solar-cosmos .solar-tutorial-jupiter{left:calc(50% + 112px)}}',
               '@media(prefers-reduced-motion:reduce){.solar-cosmos .solar-tutorial-sun,.solar-cosmos .solar-tutorial-planet,.solar-cosmos .solar-tutorial-craft{animation:none!important}.solar-cosmos .solar-tutorial-launch,.solar-cosmos .solar-tutorial-launch::before,.solar-cosmos .solar-tutorial-launch-arrow{transition:none!important}.solar-cosmos .solar-tutorial-launch:hover{transform:none}}',
               '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{position:relative;top:auto;left:auto;right:auto;bottom:auto;max-width:none;margin:8px 10px 66px;padding:7px 9px}.solar-cosmos .solar-model-note span{font-size:10px;line-height:1.38}.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr));padding:7px}.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
-              '.solar-cosmos [data-drone-presentation=scene] :is(.rover-hud,[data-drone-compass],[data-drone-depth-gauge],[data-drone-map-panel],[data-drone-ticker],[data-drone-sound-caption],[data-drone-action-dock],#rover-traverse-panel,#poi-arrow,#hud-sonar,#hud-spectrometer){display:none!important}.solar-cosmos [data-drone-camera-bar] button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.solar-cosmos [data-drone-sampling-active=true] #hud-sample-prox,.solar-cosmos [data-drone-survey-tracking=true] #hud-sample-prox{display:none!important}@media(max-width:640px){.solar-cosmos [data-drone-sampling-overlay]{bottom:120px!important}}',
+              '.solar-cosmos [data-drone-presentation=scene] :is(.rover-hud,[data-drone-compass],[data-drone-depth-gauge],[data-drone-map-panel],[data-drone-ticker],[data-drone-ticker-controls],[data-drone-sound-caption],[data-drone-action-dock],#rover-traverse-panel,#poi-arrow,#hud-sonar,#hud-spectrometer){display:none!important}.solar-cosmos [data-drone-camera-bar] button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.solar-cosmos [data-drone-sampling-active=true] #hud-sample-prox,.solar-cosmos [data-drone-survey-tracking=true] #hud-sample-prox{display:none!important}@media(max-width:640px){.solar-cosmos [data-drone-sampling-overlay]{bottom:120px!important}}',
               // Phone HUD. Three values below are COUPLED and must move together:
               // the HUD's max-height, the flex order, and the hazard banner's top.
               //
@@ -1511,7 +1511,7 @@ const d = labToolData.solarSystem || {};
               // moves to 237px to clear it. Raising max-height without moving the
               // banner puts the banner back on top of the gauge row.
               '@media(max-width:640px){.solar-cosmos .rover-hud{top:8px!important;left:8px!important;width:min(220px,calc(100% - 160px))!important;max-width:none!important;max-height:225px!important;overflow:hidden!important;padding:8px 10px!important;border-radius:10px!important;display:flex!important;flex-direction:column!important}.solar-cosmos .rover-hud>*{flex:0 0 auto}.solar-cosmos .rover-hud #hud-mode{order:0}.solar-cosmos .rover-hud #hud-science-focus{order:1}.solar-cosmos .rover-hud #hud-science-reading{order:2}.solar-cosmos .rover-hud #hud-simple-row{order:3}.solar-cosmos .rover-hud #hud-mode{font-size:10px!important;margin-bottom:3px!important}.solar-cosmos .rover-hud #hud-world-context,.solar-cosmos .rover-hud #hud-notable,.solar-cosmos .rover-hud #hud-shortcuts,.solar-cosmos .rover-hud #hud-ocean-panel,.solar-cosmos .rover-hud #hud-atmo-panel{display:none!important}.solar-cosmos .rover-hud #hud-simple-row{gap:1px 6px!important;margin-bottom:3px!important;padding-top:3px!important;font-size:9px!important}.solar-cosmos .rover-hud #hud-science-focus{padding-top:3px!important;margin-bottom:0!important}.solar-cosmos .rover-hud #hud-science-focus>div:nth-child(2){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}.solar-cosmos .rover-hud #hud-science-reading{font-size:9px!important}.solar-cosmos [data-drone-fullscreen-toggle],.solar-cosmos [data-rover-sound-toggle],.solar-cosmos [data-drone-compass]{top:8px!important;width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border-radius:10px!important}.solar-cosmos [data-drone-compass]{right:8px!important}.solar-cosmos [data-drone-fullscreen-toggle]{right:56px!important;font-size:20px!important}.solar-cosmos [data-rover-sound-toggle]{right:104px!important;font-size:18px!important}.solar-cosmos [data-drone-depth-gauge]{top:60px!important;right:8px!important;width:24px!important;height:142px!important}.solar-cosmos [data-drone-action-dock]{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;width:auto!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important}.solar-cosmos [data-drone-action-dock] button{min-height:44px!important;padding:4px 2px!important;flex-direction:column!important;justify-content:center!important;gap:1px!important;border-radius:9px!important;font-size:9px!important}.solar-cosmos [data-drone-action-dock] kbd{display:none!important}.solar-cosmos [data-drone-map-panel]{right:8px!important;bottom:64px!important;width:112px!important;padding:4px!important}.solar-cosmos [data-drone-minimap]{position:relative!important;right:auto!important;bottom:auto!important;width:100%!important;height:auto!important}.solar-cosmos #rover-traverse-panel{left:8px!important;right:8px!important;bottom:60px!important;width:auto!important;max-height:calc(100% - 128px)!important;padding:0!important;overflow:auto!important;border-radius:10px!important}.solar-cosmos #rover-traverse-panel[data-collapsed="true"]{right:auto!important;width:min(220px,calc(100% - 132px))!important;overflow:hidden!important}.solar-cosmos #rover-traverse-toggle{display:flex!important}.solar-cosmos #rover-traverse-details{padding:0 10px 10px}.solar-cosmos #rover-traverse-panel[data-collapsed="true"] #rover-traverse-details{display:none!important}}',
-              '@media(max-width:640px){.solar-cosmos [data-drone-hazard]{top:237px!important;left:8px!important;right:40px!important;width:auto!important;transform:none!important;padding:5px 8px!important;border-radius:7px!important;font-size:9px!important;line-height:1.25!important}.solar-cosmos [data-drone-ticker]{display:none!important}.solar-cosmos [data-drone-sound-caption]{display:none!important}.solar-cosmos [data-drone-navigation-card]{left:8px!important;bottom:120px!important;width:calc(100% - 132px)!important;box-sizing:border-box!important;max-height:calc(100% - 300px)!important;overflow:auto!important;padding:8px!important;font-size:10px!important;pointer-events:auto!important}.solar-cosmos [data-drone-navigation-card]>div:first-child{font-size:11px!important}.solar-cosmos #hud-sonar{left:8px!important;bottom:64px!important;width:calc(100% - 132px)!important;box-sizing:border-box!important;max-height:50px!important;overflow:hidden!important;padding:4px 6px!important}}',
+              '@media(max-width:640px){.solar-cosmos [data-drone-hazard]{top:237px!important;left:8px!important;right:40px!important;width:auto!important;transform:none!important;padding:5px 8px!important;border-radius:7px!important;font-size:9px!important;line-height:1.25!important}.solar-cosmos [data-drone-ticker],.solar-cosmos [data-drone-ticker-controls]{display:none!important}.solar-cosmos [data-drone-sound-caption]{display:none!important}.solar-cosmos [data-drone-navigation-card]{left:8px!important;bottom:120px!important;width:calc(100% - 132px)!important;box-sizing:border-box!important;max-height:calc(100% - 300px)!important;overflow:auto!important;padding:8px!important;font-size:10px!important;pointer-events:auto!important}.solar-cosmos [data-drone-navigation-card]>div:first-child{font-size:11px!important}.solar-cosmos #hud-sonar{left:8px!important;bottom:64px!important;width:calc(100% - 132px)!important;box-sizing:border-box!important;max-height:50px!important;overflow:hidden!important;padding:4px 6px!important}}',
                '@media(prefers-reduced-motion:reduce){.solar-cosmos svg[viewBox],.solar-cosmos .solar-world-thumb,.solar-cosmos .solar-season-bar,.solar-cosmos .solar-moon-moving,.solar-cosmos .solar-moon-phase-disk,.solar-cosmos .solar-evidence-fill,.solar-cosmos .solar-evidence-node,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]){transition:none!important}.solar-cosmos .solar-season-sun,.solar-cosmos .solar-season-beam,.solar-cosmos .solar-signal-line,.solar-cosmos .solar-signal-pulse,.solar-cosmos .solar-drop-ball{animation:none!important}.solar-cosmos .solar-signal-pulse{left:90%;opacity:1}.solar-cosmos .solar-drop-ball{top:146px}.solar-cosmos .solar-evidence-node[data-current="true"],.solar-cosmos .solar-evidence-node[data-recommended="true"]{transform:none}.solar-cosmos .solar-world-card:hover .solar-world-thumb,.solar-cosmos .solar-world-card[aria-current="true"] .solar-world-thumb,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]):hover svg{transform:none}}'
             ].join('\n');
             document.head.appendChild(solarVisualCss);
@@ -20210,7 +20210,36 @@ const d = labToolData.solarSystem || {};
                           var w, h2;
                           if (isFS) {
                             w = window.innerWidth;
-                            h2 = Math.max(160, window.innerHeight - (roverCameraBar ? roverCameraBar.offsetHeight : 0));
+                            // Cap what the control bar can claim. It is a full panel
+                            // (the sample station alone is ~246px of its ~419px), and
+                            // subtracting all of it made FULLSCREEN SMALLER than the
+                            // normal 86vh frame -- 441px vs 710px at a 860px viewport,
+                            // and 349px vs 618px on a 768-tall laptop. A control that
+                            // promises a bigger view must not deliver a smaller one.
+                            // The bar scrolls past the cap, so nothing becomes
+                            // unreachable; the scene keeps at least four fifths. A third was
+                            // still a 12% area LOSS versus the normal frame; a fifth makes
+                            // fullscreen an actual gain (+6% at 1280x860).
+                            //
+                            // Release the cap BEFORE measuring: offsetHeight reports the
+                            // CLAMPED height once maxHeight is set, so a second resize read
+                            // back its own cap, concluded the bar fitted, and dropped the
+                            // overflow -- leaving ~240px of controls clipped and unreachable.
+                            var barNatural = 0;
+                            if (roverCameraBar) {
+                              roverCameraBar.style.maxHeight = '';
+                              roverCameraBar.style.overflowY = '';
+                              barNatural = roverCameraBar.offsetHeight;
+                            }
+                            var barBudget = Math.min(barNatural, Math.max(150, Math.round(window.innerHeight / 5)));
+                            if (roverCameraBar) {
+                              roverCameraBar.style.maxHeight = barBudget + 'px';
+                              // Always scrollable when capped: 'auto' alone still measured
+                              // as 'visible' in the browser because the clamp had not been
+                              // applied yet at read time.
+                              roverCameraBar.style.overflowY = barNatural > barBudget ? 'scroll' : '';
+                            }
+                            h2 = Math.max(160, window.innerHeight - barBudget);
                             canvasEl.style.width = w + 'px';
                             canvasEl.style.height = h2 + 'px';
                             // Native fullscreen owns the outer element's viewport box;
@@ -20259,6 +20288,10 @@ const d = labToolData.solarSystem || {};
                             // pre-fullscreen values. Without that guard the very first
                             // (non-fullscreen) resize replayed an empty init snapshot
                             // over React's own height and collapsed the frame.
+                            if (roverCameraBar) {
+                              roverCameraBar.style.maxHeight = '';
+                              roverCameraBar.style.overflowY = '';
+                            }
                             if (innerContainer && innerContainer !== container && _droneInnerOriginalStyle && _droneInnerOriginalStyle.captured) {
                               innerContainer.style.height = _droneInnerOriginalStyle.height;
                               innerContainer.style.maxHeight = _droneInnerOriginalStyle.maxHeight;
@@ -20362,7 +20395,7 @@ const d = labToolData.solarSystem || {};
 
                           '<span style="color:#64748b" title="Cartesian grid position (X, Y)">\uD83D\uDCCD Pos</span><span id="hud-pos" style="color:#67e8f9;font-size:9px">0.0, 0.0</span>' +
 
-                          '<span style="color:#64748b" title="Current speed in m/s">\uD83D\uDCA8 Spd</span><span id="hud-spd" style="color:#67e8f9">0 m/s</span>' +
+                          '<span style="color:#64748b" title="Pace as a share of this vehicle\u2019s own top speed. Drive speed is set for playability, not scaled to the real vehicle.">\uD83D\uDCA8 Pace</span><span id="hud-spd" style="color:#67e8f9">0%</span>' +
 
                           '</div>' +
 
@@ -20468,7 +20501,18 @@ const d = labToolData.solarSystem || {};
                             return;
                           }
                           var slopeDegrees = roverGroup ? Math.max(Math.abs(roverGroup.rotation.x), Math.abs(roverGroup.rotation.z)) * 180 / Math.PI : 0;
-                          scienceReadingEl.textContent = 'Elevation ' + altitude + ' m \u2022 slope ' + slopeDegrees.toFixed(1) + '\u00B0 \u2022 speed ' + (lastSpeed || 0).toFixed(1) + ' m/s';
+                          // Speed is deliberately NOT shown in m/s. roverDrive.maxForward
+                          // is 2.6 engine units/s and scaleFactor is 50 m/unit, so the
+                          // honest-looking product was 130 m/s -- 468 km/h, about 3000x
+                          // Curiosity's real 0.14 km/h top speed. The distance scale is
+                          // right (the minimap's "5 km to edge" checks out); it is the
+                          // driving speed that is a playability choice, and labelling a
+                          // playability choice "m/s" states a measurement the sim cannot
+                          // support. Show it as a fraction of this rover's own top speed,
+                          // which is true, useful for the slope question this tab asks,
+                          // and needs no unit at all.
+                          var throttlePercent = Math.round(Math.min(1, Math.abs(roverDrive.speed) / Math.max(0.001, roverDrive.maxForward)) * 100);
+                          scienceReadingEl.textContent = 'Elevation ' + altitude + ' m \u2022 slope ' + slopeDegrees.toFixed(1) + '\u00B0 \u2022 pace ' + throttlePercent + '% of full';
                         }
 
                         // ── Gas Sample Inventory Panel (Tab to toggle) ──
@@ -25187,7 +25231,9 @@ const d = labToolData.solarSystem || {};
 
                             updateDroneScienceFocus(altitude);
 
-                            if (spdEl) spdEl.textContent = lastSpeed.toFixed(1) + ' m/s';
+                            if (spdEl) spdEl.textContent = (isFluid
+                              ? Math.round(Math.min(1, lastSpeed / Math.max(0.001, speed3d * 60 * scaleFactor)) * 100)
+                              : Math.round(Math.min(1, Math.abs(roverDrive.speed) / Math.max(0.001, roverDrive.maxForward)) * 100)) + '%';
 
                             if (hdgEl) hdgEl.textContent = dirLabel + ' ' + Math.round(deg) + '\u00B0';
 
