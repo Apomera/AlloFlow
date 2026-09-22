@@ -1259,6 +1259,8 @@
       }
 
       return h('div', { ref: wrapRef, className: 'flex flex-col gap-3 animate-in fade-in duration-300',
+        // The fullscreen target the button below resolves with closest().
+        'data-allo-fs-stage': 'true',
         // The host card is white in both themes and these inks assume slate.
         style: { background: P.bg, color: P.text, borderRadius: 14, padding: 14, minWidth: 0 } },
 
@@ -1267,7 +1269,22 @@
             ArrowLeft ? h(ArrowLeft, { size: 14, style: { display: 'inline', verticalAlign: '-2px', marginRight: 4 } }) : null,
             S('back_to_tools', 'Back to STEAM Lab tools')),
           h('h2', { style: { margin: 0, fontSize: '1.0625rem', fontWeight: 700, flex: '1 1 auto' } }, S('title', '🪆 Scale Explorer — powers of ten')),
-          typeof window.__alloStemFS === 'function' ? h('button', { type: 'button', style: btn, onClick: function () { try { window.__alloStemFS(wrapRef.current); } catch (_) {} setTimeout(draw, 60); } }, S('fullscreen', '⛶ Fullscreen')) : null
+          // The shared binder owns the click AND keeps the accessible name, the
+          // pressed state and the glyph in step with the real fullscreen state --
+          // including an Escape exit, which never reaches a click handler. Before
+          // this the button read "Fullscreen" even while the tool filled the
+          // screen. The glyph has to be the first element child for the binder to
+          // swap it, hence the span.
+          typeof window.__alloStemFS === 'function' ? h('button', {
+            type: 'button', style: btn,
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            'aria-label': S('fullscreen_enter', 'View the scale explorer full screen'),
+            'data-fs-out': S('fullscreen_enter', 'View the scale explorer full screen'),
+            'data-fs-in': S('fullscreen_exit', 'Exit full screen scale explorer'),
+            ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+            onClick: function () { setTimeout(draw, 60); }
+          }, h('span', { 'aria-hidden': 'true' }, '⛶'), ' ', S('fullscreen_label', 'Fullscreen')) : null
         ),
 
         h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } },

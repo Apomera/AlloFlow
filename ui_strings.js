@@ -13860,7 +13860,10 @@
       "you_label": "Make the person your height:",
       "you_name": "You",
       "you_reset": "Back to average",
-      "you_set_sr": "The person is now you, {len} tall."
+      "you_set_sr": "The person is now you, {len} tall.",
+      "fullscreen_enter": "View the scale explorer full screen",
+      "fullscreen_exit": "Exit full screen scale explorer",
+      "fullscreen_label": "Fullscreen"
     },
     "cellatlas": {
       "sr_all_marker_features_restored": "All marker features restored.",
