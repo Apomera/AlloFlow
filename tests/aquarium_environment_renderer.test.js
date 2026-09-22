@@ -336,7 +336,7 @@ describe('Aquarium resident contact shadows', () => {
   // tier, and high's per-fish 512px pigment bake pushed these past the 5s limit.
   const lit = { light: { installed: true, on: true, intensity: 1 }, filter: { installed: true, on: true, intensity: 1 } };
   const swimmers = [resident('neon', 0), resident('guppy', 1)];
-  const shadowsOf = h => { const out = []; h.root('residents').traverse(n => { if (n.name === 'aquarium-resident-shadow') out.push(n); }); return out; };
+  const shadowsOf = h => { const out = []; (h.root('resident-shadows') || { traverse() {} }).traverse(n => { if (n.name === 'aquarium-resident-shadow') out.push(n); }); return out; };
 
   it('gives every resident a shadow that lies flat on the substrate', () => {
     const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
@@ -435,6 +435,25 @@ describe('Aquarium resident contact shadows', () => {
     for (const spy of spies) expect(spy).toHaveBeenCalled();
     expect(shadowsOf(h).length).toBe(0);
     expect(h.root('residents').children).toHaveLength(0);
+  });
+
+  it('keeps the shadow out of the resident it belongs to', () => {
+    // A shadow is a mark on the substrate, not part of the animal. Parented
+    // INSIDE the fish it inflated Box3.setFromObject(fish) far below the body
+    // and past the glass, and exposed the shared shadow map to per-fish
+    // resource disposal checks. Both broke other suites while this one stayed
+    // green, so pin the containment here.
+    const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    settle(h, 8);
+    const shadows = shadowsOf(h);
+    expect(shadows.length).toBe(swimmers.length);
+    for (const resident of h.root('residents').children) {
+      let found = false;
+      resident.traverse(n => { if (n.name === 'aquarium-resident-shadow') found = true; });
+      expect(found).toBe(false);
+    }
+    // The residents root holds residents only; nothing else may be counted as one.
+    expect(h.root('residents').children.length).toBe(swimmers.length);
   });
 
   it('omits resident shadows on the low quality tier', () => {

@@ -11835,7 +11835,12 @@ window.StemLab = window.StemLab || {
     var equipmentRoot=new THREE.Group(),environmentRoot=new THREE.Group(),foodRoot=new THREE.Group();
     equipmentRoot.name='aquarium-equipment';environmentRoot.name='aquarium-environment';foodRoot.name='aquarium-food';
     tankGroup.name = 'aquarium-vessel'; habitatRoot.name = 'aquarium-habitat'; plantRoot.name = 'aquarium-plants'; creatureRoot.name = 'aquarium-residents'; overlayRoot.name = 'aquarium-science-overlays';
-    scene.add(tankGroup, habitatRoot, plantRoot, creatureRoot, overlayRoot, equipmentRoot, environmentRoot, foodRoot);
+    // Resident contact shadows live beside the residents, not inside them: a
+    // shadow is a mark on the substrate, not part of the animal's body, so it
+    // must not enlarge the fish's bounding box or ride its transform.
+    var residentShadowRoot = new THREE.Group(); residentShadowRoot.name = 'aquarium-resident-shadows';
+    residentShadowRoot.userData.ignorePick = true;
+    scene.add(tankGroup, habitatRoot, plantRoot, creatureRoot, residentShadowRoot, overlayRoot, equipmentRoot, environmentRoot, foodRoot);
     var persistentTextures = [], fishById = {}, plantById = {}, habitatSignature = '', overlaySignature = '', currentMood = '';
     // Scratch objects for per-frame contact-shadow orientation (avoids allocating
     // a quaternion per resident per frame).
@@ -12205,6 +12210,17 @@ window.StemLab = window.StemLab || {
       controls.target.copy(cameraTarget);
       if (controls.addEventListener) controls.addEventListener('change', requestRender);
     }
+    // A resident's shadow is a sibling, so removing the fish does not remove it;
+    // tear it down explicitly or every restock leaks a plane.
+    function releaseResidentShadow(group) {
+      var shadow = group && group.userData && group.userData.residentShadow;
+      if (!shadow) return;
+      residentShadowRoot.remove(shadow);
+      if (shadow.geometry && shadow.geometry.dispose) shadow.geometry.dispose();
+      if (shadow.material && shadow.material.dispose) shadow.material.dispose();
+      group.userData.residentShadow = null;
+    }
+
     function disposeGroup(group) {
       var geometries = [], materials = [], textures = [];
       group.traverse(function(node) {
@@ -13268,7 +13284,7 @@ window.StemLab = window.StemLab || {
       }
       if(appearanceOptions().quality!=='low'){
         var shadowSpanX=Math.max(.22,extentX*1.55),shadowSpanZ=Math.max(.16,extentZ*2.1);
-        var residentShadow=mesh(new THREE.PlaneGeometry(shadowSpanX,shadowSpanZ),new THREE.MeshBasicMaterial({map:shadowMap,transparent:true,opacity:0,depthWrite:false}),group,0,0,0);
+        var residentShadow=mesh(new THREE.PlaneGeometry(shadowSpanX,shadowSpanZ),new THREE.MeshBasicMaterial({map:shadowMap,transparent:true,opacity:0,depthWrite:false}),residentShadowRoot,0,0,0);
         residentShadow.rotation.x=-Math.PI/2;residentShadow.name='aquarium-resident-shadow';
         residentShadow.userData.ignorePick=true;residentShadow.userData.residentShadow=true;
         group.userData.residentShadow=residentShadow;
@@ -13618,11 +13634,11 @@ window.StemLab = window.StemLab || {
         var key=String(fish.instanceId||fish.id||index);nextFishKeys[key]=true;var old=fishById[key];
         if(!old||old.userData.appearanceSignature!==fishAppearanceSignature(fish)){
           var previousPosition=old&&old.position.clone(),previousYaw=old&&old.rotation.y;
-          if(old){disposeGroup(old);creatureRoot.remove(old);}
+          if(old){releaseResidentShadow(old);disposeGroup(old);creatureRoot.remove(old);}
           var next=addFish(fish,index);fishById[key]=next;if(previousPosition){next.position.set(clamp(previousPosition.x,-next.userData.boundX,next.userData.boundX),clamp(previousPosition.y,next.userData.minY,next.userData.maxY),clamp(previousPosition.z,-next.userData.boundZ,next.userData.boundZ));next.rotation.y=previousYaw;next.userData.feedingEventId=old.userData.feedingEventId;next.userData.foodInterest=old.userData.foodInterest||0;}
         }else updateFishState(old,fish,index,false);
       });
-      Object.keys(fishById).forEach(function(key){if(!nextFishKeys[key]){disposeGroup(fishById[key]);creatureRoot.remove(fishById[key]);delete fishById[key];}});
+      Object.keys(fishById).forEach(function(key){if(!nextFishKeys[key]){releaseResidentShadow(fishById[key]);disposeGroup(fishById[key]);creatureRoot.remove(fishById[key]);delete fishById[key];}});
       var nextOverlaySignature=JSON.stringify([options.overlay,options.layout,options.overlay==='organisms'?options.fish:[],options.overlay==='interactions'?options.interactions:[]]);
       if(nextOverlaySignature!==overlaySignature){overlaySignature=nextOverlaySignature;disposeGroup(overlayRoot);addOverlay(options.overlay||'none',options.layout||[],catalogById,options.fish||[],options.interactions||[]);}
       syncSchools();syncFeeding();updateSubstrateShading();applyMood();applyEnvironment();syncFocusedCamera(false);syncInspectionHalos();lastTime=null;
@@ -13765,19 +13781,16 @@ window.StemLab = window.StemLab || {
             if(!data.stationary){var heading=Math.atan2(-dz,dx),difference=Math.atan2(Math.sin(heading-group.rotation.y),Math.cos(heading-group.rotation.y));group.rotation.y+=difference*Math.min(1,.09+dt*3);group.rotation.z=data.bottom?0:Math.sin(angle*1.8)*.025;}
             var residentShadowMesh=data.residentShadow;
             if(residentShadowMesh){
-              var shadowScale=Math.max(.01,group.scale.x||1),sandTop=.093*sizeY();
+              var sandTop=.093*sizeY();
               var altitude=Math.max(0,group.position.y+data.bodyMinY-sandTop);
-              // Local Y so the plane lands on the sand regardless of parent height.
-              residentShadowMesh.position.y=(sandTop-group.position.y)/shadowScale+.004;
-              // Build the orientation from world-up directly: composing a yaw
-              // onto an already-X-rotated plane tilts it instead of spinning it,
-              // which flipped some shadows upside-down.
-              residentShadowMesh.quaternion.copy(group.getWorldQuaternion(shadowWorldQuat).invert());
-              residentShadowMesh.quaternion.multiply(shadowFlatQuat);
+              // The shadow is a sibling now, so it tracks the fish in the shared
+              // parent's space and never inherits its yaw, bank or scale.
+              residentShadowMesh.position.set(group.position.x,sandTop+.004,group.position.z);
+              residentShadowMesh.quaternion.copy(shadowFlatQuat);
               // Close contact reads dark and tight; higher up it fades and spreads.
               var closeness=1/(1+altitude*1.5);
               residentShadowMesh.material.opacity=.34*closeness*(environmentRoot.userData.lightActive===false?.35:1);
-              var spread=1+altitude*.35;residentShadowMesh.scale.set(spread,spread,1);
+              var spread=(1+altitude*.35)*Math.max(.01,group.scale.x||1);residentShadowMesh.scale.set(spread,spread,1);
               residentShadowMesh.visible=residentShadowMesh.material.opacity>.012;
             }
             (data.crustaceanLegs||[]).forEach(function(limb){var stride=.035+data.activityHealth*.0003;limb.rotation.y=Math.sin(motionTime*(2+data.speed*8)+data.phase+limb.userData.pairIndex*1.25+limb.userData.side*Math.PI*.5)*stride;});
