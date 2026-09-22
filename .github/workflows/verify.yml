@@ -24,11 +24,20 @@ name: verify
 #                  deployed demo and asserts no fatal/ErrorBoundary. Regression
 #                  detection (tests whatever is live), not a pre-merge gate.
 
+# TRIGGERS (2026-09-22): this gate is BLOCKING and correctly aimed, but it had
+# never run on a single line of the work it is meant to protect. All
+# development happens on a long-lived shared branch — 212 commits ahead of
+# main at the time of writing — and `branches: [main]` meant the gate only
+# fired on a push to main that never came. Running it here found it already
+# RED, from three separate sessions' committed work.
+#
+# `branches-ignore: []` runs it on every branch push. A gate that reports on
+# the branch people actually commit to is the whole point; restricting it to
+# main made it a gate in name only.
 on:
   push:
-    branches: [main]
+    branches-ignore: []
   pull_request:
-    branches: [main]
 
 jobs:
   docs-integrity:
