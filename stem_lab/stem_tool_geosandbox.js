@@ -5142,7 +5142,7 @@ window.StemLab = window.StemLab || {
             h('p',{className:'geo-move-step-note'},sculptLabel('move_step_hint','Each tap moves {step} {unit}. Handles use the same step.').replace('{step}',gd.sculptStep||0.5).replace('{unit}',unitDef.short)),
             h('div',{className:'geo-move-coordinates'},['x','y','z'].map(function(axis,i){return h('div',{key:axis,className:'geo-move-coordinate','data-axis':axis},
               renderSculptNumber(label('position','Local position')+' '+axis.toUpperCase()+' ('+unitDef.short+')',part.position[i]*f,-4*f,(i===1?8:4)*f,function(n){return setPartField('position',i,n/f);},moveBlocked),
-              h('div',{className:'geo-move-buttons'},[-1,1].map(function(dir){return h('button',{key:dir,type:'button',disabled:moveBlocked,'aria-label':'Move '+axis+(dir>0?' positive':' negative'),title:(dir>0?'+':'−')+(gd.sculptStep||0.5)+' '+unitDef.short,onClick:function(){nudgePart(axis,dir);}},dir>0?'+':'−');}))
+              h('div',{className:'geo-move-buttons'},[-1,1].map(function(dir){return h('button',{key:dir,type:'button',disabled:moveBlocked,'aria-label':t('stem.geosandbox.move_axis_prefix','Move ')+axis+(dir>0?t('stem.geosandbox.move_axis_positive',' positive'):t('stem.geosandbox.move_axis_negative',' negative')),title:(dir>0?'+':'−')+(gd.sculptStep||0.5)+' '+unitDef.short,onClick:function(){nudgePart(axis,dir);}},dir>0?'+':'−');}))
             );}))),
           h('details',sculptSectionProps('rotation'),h('summary',null,sculptLabel('sculpt_rotation_angles','Rotation')),
             h('p',{className:'geo-move-scope'},sculptLabel('rotation_scope','Set the selected part’s X, Y and Z angles around its center.')),
@@ -5759,7 +5759,22 @@ window.StemLab = window.StemLab || {
         }
       }, [ext.dimAdjusts]);
 
-      var currentSliders = sliderConfigs[shape] || sliderConfigs.box;
+      // sliderConfigs lives at module scope, where no translator exists, so its
+      // labels are raw English ('Width', 'Height', 'Radius'...). They are rendered
+      // BOTH as the visible field name and inside the number/range aria-labels, so
+      // the core vocabulary of a geometry tool stayed English for every student
+      // whatever language they chose. Translate at the point of use, where t() is
+      // in scope.
+      //
+      // Keyed on the LABEL, not on key+shape: `r` means Radius, Base Radius or
+      // Major Radius depending on the solid, while 'Height' is the same word
+      // everywhere. Keying on the text gives one key per distinct term (12 in
+      // total) instead of one per slider per shape, so a translator sees each
+      // word once and cannot render the same word two ways.
+      var currentSliders = (sliderConfigs[shape] || sliderConfigs.box).map(function(sl) {
+        var slug = String(sl.label).toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        return Object.assign({}, sl, { label: t('stem.geosandbox.dim_' + slug, sl.label) });
+      });
       var ct = shape === 'cylinder' && Math.abs((dims.rTop || 1.5) - (dims.rBot || 1.5)) >= 1e-6
         ? { title: 'Frustum', tip: 'Two unequal circular bases joined by a tapered curved surface. V = ⅓πh(r₁² + r₁r₂ + r₂²)', example: 'Buckets, lampshades, and tapered cups are everyday frustums.' }
         : (coachTips[shape] || coachTips.box);
@@ -5968,7 +5983,7 @@ currentSliders.map(function(sl) {
                 return h('div', { key: sl.key, className: 'mb-2' },
                   h('div', { className: 'flex justify-between text-[0.6875rem] text-slate-300 mb-0.5' },
                     h('span', { title: getDimTooltip(shape, sl.key), style: { cursor: getDimTooltip(shape, sl.key) ? 'help' : 'default', borderBottom: getDimTooltip(shape, sl.key) ? '1px dotted #64748b' : 'none' } }, sl.label),
-                    h('input',{type:'number',className:'geo-dimension-number','aria-label':sl.label+' value',min:sl.min,max:sliderMax,step:sl.step,value:dims[sl.key],onChange:function(e){if(e.target.value!==''&&Number.isFinite(Number(e.target.value)))updDim(sl.key,Math.max(sl.min,Math.min(sliderMax,Number(e.target.value))));}})
+                    h('input',{type:'number',className:'geo-dimension-number','aria-label':sl.label+t('stem.geosandbox.dim_suffix_value',' value'),min:sl.min,max:sliderMax,step:sl.step,value:dims[sl.key],onChange:function(e){if(e.target.value!==''&&Number.isFinite(Number(e.target.value)))updDim(sl.key,Math.max(sl.min,Math.min(sliderMax,Number(e.target.value))));}})
                   ),
                   h('input', {
                     type: 'range',
@@ -5977,7 +5992,7 @@ currentSliders.map(function(sl) {
                     step: sl.step,
                     value: dims[sl.key] || sl.min,
                     onChange: function(e) { updDim(sl.key, e.target.value); },
-                    'aria-label': sl.label + ' slider',
+                    'aria-label': sl.label + t('stem.geosandbox.dim_suffix_slider', ' slider'),
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
                   })
                 );
