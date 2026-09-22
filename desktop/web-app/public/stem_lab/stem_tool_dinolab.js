@@ -11449,6 +11449,8 @@ var evidenceRoute = [
             props.showBody ? readoutChip(surfaceHypothesis.id === 'classic' ? 'Historical comparison' : (Number(props.bodyOpacity) >= 98 ? 'Life reconstruction · ' : 'Surface · ') + surfaceHypothesis.shortLabel, surfaceHypothesis.id === 'classic' ? 'rgba(245,158,11,0.85)' : 'rgba(94,234,212,0.68)') : null,
             readoutChip('Scene ' + (props.stage === 'habitat' ? habitat.shortLabel : selectedStudioLight.sceneLabel), 'rgba(20,184,166,0.65)'),
             readoutChip('Pose ' + posture.shortLabel, 'rgba(245,158,11,0.62)'),
+            readoutChip('Colour ' + (integumentEvidence.direct ? 'from fossil pigment' : 'illustrated'),
+              integumentEvidence.direct ? 'rgba(232,121,249,0.72)' : 'rgba(148,163,184,0.55)'),
             readoutChip('Fossils ' + (reconstructionProfile.coverage === 'strong' ? 'abundant'
               : (reconstructionProfile.coverage === 'limited' ? 'sparse' : 'partial')),
               reconstructionProfile.coverage === 'strong' ? 'rgba(34,197,94,0.70)'
