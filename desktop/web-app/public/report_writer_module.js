@@ -5129,7 +5129,7 @@ Return ONLY valid JSON:
                 className: 'bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative'
             },
                 h('h1', { id: 'rw-dialog-title', className: 'sr-only' }, 'Report Writer'),
-                h('button', { ref: closeButtonRef, type: 'button', 'aria-label': 'Close report writer', className: 'absolute top-4 right-4 text-slate-600 hover:text-slate-600 text-xl', onClick: closeDialog
+                h('button', { ref: closeButtonRef, type: 'button', 'aria-label': (typeof t === 'function' && t('toasts.close_report_writer')) || 'Close report writer', className: 'absolute top-4 right-4 text-slate-600 hover:text-slate-600 text-xl', onClick: closeDialog
                 }, '✕'),
                 h(ReportWriterPanel, {
                     studentName: studentNickname || '',
