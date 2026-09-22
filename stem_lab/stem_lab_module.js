@@ -755,18 +755,27 @@
           };
           btn.__alloFsRelease = release;
           window.__alloStemFsBindings = window.__alloStemFsBindings || [];
-          window.__alloStemFsBindings.push({ stage: stage, release: release });
+          // The BUTTON is recorded as well as the stage. A tool that re-renders in
+          // place hands over a fresh button node while keeping the same stage, and a
+          // sweep that only asks about the stage never collects those: twelve
+          // re-renders left twelve live observers and twenty-four document listeners,
+          // every one of them still running sync() on each fullscreenchange to write
+          // aria-pressed onto a button that had already left the page.
+          window.__alloStemFsBindings.push({ stage: stage, btn: btn, release: release });
           // Sweep bindings whose stage has left the document. Cheap, and it
           // runs only when a new binding is made, so an idle session does no
           // work. isConnected is the one reliable signal here: the hub cannot
           // know when a plugin's own subtree unmounts.
           if (window.__alloStemFsBindings.length > 1) {
-            // Only a stage the DOM reports as detached is released. The stage
-            // being bound right now is connected by definition, so it needs no
-            // special case; and an environment where isConnected is undefined
-            // keeps everything, which is the safe direction.
+            // A binding is dead once EITHER end has left the document: the stage on a
+            // tool switch, the button on a re-render in place. Checking only the stage
+            // missed the second case entirely. An environment where isConnected is
+            // undefined keeps everything, which is the safe direction, and the pair
+            // being bound right now is connected by definition so it needs no special
+            // case.
             window.__alloStemFsBindings = window.__alloStemFsBindings.filter(function (b) {
-              var gone = b.stage && b.stage.isConnected === false;
+              var gone = (b.stage && b.stage.isConnected === false)
+                || (b.btn && b.btn.isConnected === false);
               if (gone) { try { b.release(); } catch (e) {} }
               return !gone;
             });

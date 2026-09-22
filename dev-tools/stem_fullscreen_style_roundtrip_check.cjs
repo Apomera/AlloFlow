@@ -96,6 +96,59 @@ async function run(chromium, mod, label) {
         JSON.stringify(s.before.posPri) + ' -> ' + JSON.stringify(s.after.posPri));
       ok('plain stage restored too', p.after.h === p.before.h, p.before.h + ' -> ' + p.after.h);
     }
+    // ── Binding lifecycle ────────────────────────────────────────────────
+    // __alloStemFsBind registers a MutationObserver and two document listeners per
+    // button, and sweeps them when a binding dies. A tool that re-renders in place
+    // keeps its stage node and hands over a FRESH button, so a sweep that only asks
+    // about the stage collects nothing: twelve re-renders left twelve live observers
+    // and twenty-four listeners, all still writing aria-pressed onto buttons that had
+    // left the page. Counted, not inspected — the leak is invisible in the DOM.
+    const churn = await pg.evaluate(() => {
+      if (typeof window.__alloStemFsBind !== 'function') return { error: 'binder not defined' };
+      const host = document.body.appendChild(document.createElement('div'));
+      const stage = document.createElement('div');
+      stage.setAttribute('data-allo-fs-stage', 'true');
+      host.appendChild(stage);
+      const newBtn = () => {
+        const b = document.createElement('button');
+        b.setAttribute('data-allo-fs-btn', 'true');
+        b.appendChild(document.createElement('span'));
+        return b;
+      };
+      let b0 = newBtn(); stage.appendChild(b0);
+      window.__alloStemFsBind(b0, stage);
+      const before = (window.__alloStemFsBindings || []).length;
+      // A re-render in place: same stage, replacement button, every time.
+      for (let i = 0; i < 12; i++) {
+        const old = stage.querySelector('button');
+        if (old) old.remove();
+        const nb = newBtn();
+        stage.appendChild(nb);
+        window.__alloStemFsBind(nb, stage);
+      }
+      const all = window.__alloStemFsBindings || [];
+      const live = all.filter((x) => (!x.stage || x.stage.isConnected !== false) && (!x.btn || x.btn.isConnected !== false)).length;
+      // What actually costs work: how many handlers answer one fullscreenchange.
+      let writes = 0;
+      const realSet = Element.prototype.setAttribute;
+      Element.prototype.setAttribute = function (n, v) { if (n === 'aria-pressed') writes++; return realSet.call(this, n, v); };
+      document.dispatchEvent(new Event('fullscreenchange'));
+      Element.prototype.setAttribute = realSet;
+      const connected = document.querySelectorAll('[data-allo-fs-btn]').length;
+      host.remove();
+      return { grew: all.length - before, total: all.length, live, writes, connected };
+    });
+    if (churn.error) ok('binder defined', false, churn.error);
+    else {
+      ok('re-rendering a button does not leak bindings', churn.grew === 0,
+        '12 re-renders added ' + churn.grew + ' binding(s) that nothing will sweep');
+      ok('every retained binding is still live', churn.total === churn.live,
+        churn.total + ' retained, only ' + churn.live + ' live');
+      // The cost the learner's browser actually pays on each fullscreen change.
+      ok('one aria write per button still on the page', churn.writes <= churn.connected,
+        churn.writes + ' aria-pressed writes for ' + churn.connected + ' button(s) in the page');
+    }
+
     ok('no console errors', errs.length === 0, errs.slice(0, 3).join(' | '));
   } catch (e) {
     ok('run completed', false, String(e.message).split(/\r?\n/)[0]);
@@ -128,7 +181,24 @@ async function run(chromium, mod, label) {
   }
   const broken = mod.replace(marker, 's.setProperty(p, saved[p])');
   const mutated = await run(chromium, broken, 'MUTATED (priority dropped on restore)');
-  console.log('\nselftest: ' + (!mutated ? 'PASS — the gate goes red on the real defect' : 'FAIL — the gate stayed green with the defect reinstated'));
+
+  // Second defect, second mutation. Each assertion group needs its own, or a gate
+  // can look mutation-verified while half of it is inert.
+  console.log('\n=== selftest: sweeping on the stage only ===');
+  const sweepMarker = "|| (b.btn && b.btn.isConnected === false)";
+  let sweepRed = null;
+  if (mod.indexOf(sweepMarker) < 0) {
+    console.log('SELFTEST INCONCLUSIVE — sweep predicate not found; update the marker.');
+  } else {
+    const brokenSweep = mod.replace(sweepMarker, '');
+    sweepRed = !(await run(chromium, brokenSweep, 'MUTATED (sweep ignores the button)'));
+  }
+
+  const bothRed = !mutated && sweepRed === true;
+  console.log('\nselftest: ' + (bothRed ? 'PASS — the gate goes red on both real defects'
+    : 'FAIL — a reinstated defect left the gate green'
+      + (mutated ? ' [priority]' : '') + (sweepRed === false ? ' [sweep]' : '')
+      + (sweepRed === null ? ' [sweep inconclusive]' : '')));
   console.log(live ? 'live helper: OK' : 'live helper: FAILURES above');
-  process.exit(!mutated && live ? 0 : 1);
+  process.exit(bothRed && live ? 0 : 1);
 })();
