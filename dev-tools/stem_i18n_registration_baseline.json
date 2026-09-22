@@ -3,8 +3,8 @@
   "_generated": "2026-09-22",
   "_totals": {
     "tools": 103,
-    "called": 56846,
-    "missing": 1574
+    "called": 56748,
+    "missing": 1349
   },
   "tools": {
     "allobotsage": 0,
@@ -29,7 +29,7 @@
     "cell": 0,
     "cellatlas": 0,
     "cephalopodlab": 0,
-    "chembalance": 100,
+    "chembalance": 0,
     "circuit": 0,
     "companionplanting": 1,
     "consciousness": 0,
@@ -68,7 +68,7 @@
     "manipulatives": 4,
     "microbiology": 0,
     "migration": 0,
-    "molecule": 125,
+    "molecule": 0,
     "money": 0,
     "music": 3,
     "nutritionlab": 2,

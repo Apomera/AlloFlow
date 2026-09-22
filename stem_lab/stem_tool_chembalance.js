@@ -4653,7 +4653,7 @@
               h('div', {
                 role: 'region',
                 tabIndex: 0,
-                'aria-label': __alloT('stem.chembalance.scrollable_periodic_table', 'Scrollable 18-column periodic table'),
+                'aria-label': __alloT('stem.chembalance.scrollable_periodic_table_aria', 'Scrollable 18-column periodic table'),
                 className: 'overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-2'
               },
                 h('div', { style: gridStyle, 'aria-hidden': 'true' },
@@ -5443,7 +5443,7 @@
                     })
                   ),
                   d._classifyFb && h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-2 text-sm font-bold ' + (d._classifyFb === classifyQ.type ? 'text-emerald-800' : 'text-red-700') }, d._classifyFb === classifyQ.type ? '✓ Correct — ' + correctReaction.label : '✗ Not quite — the correct type is ' + correctReaction.label),
-                  d._classifyFb && h('button', { type: 'button', 'aria-label': __alloT('stem.chembalance.next', 'Next'), onClick: function() {
+                  d._classifyFb && h('button', { type: 'button', 'aria-label': __alloT('stem.chembalance.next_aria', 'Next'), onClick: function() {
                     var all = [];
                     REACTION_TYPES.forEach(function(rt) { rt.examples.forEach(function(ex) { all.push({ eq: ex.eq, type: rt.id, label: rt.label }); }); });
                     var pick = all[Math.floor(Math.random() * all.length)];
@@ -6441,7 +6441,7 @@
                       id: 'buf-ratio', type: 'range', min: -2, max: 2, step: 0.25, value: buf.ratio,
                       onChange: function(e) { setBuf({ ratio: parseFloat(e.target.value) }); },
                       className: 'w-full min-h-[44px]',
-                      'aria-label': __alloT('stem.chembalance.base_acid_ratio', 'Base to acid ratio'),
+                      'aria-label': __alloT('stem.chembalance.base_acid_ratio_aria', 'Base to acid ratio'),
                       'aria-valuetext': ratioText + ', pH ' + fm(pH)
                     })
                   ),
@@ -6623,7 +6623,7 @@
                           id: 'cell-n', type: 'range', min: 1, max: 6, step: 1, value: cell.n,
                           onChange: function(e) { setCell({ n: parseInt(e.target.value, 10) }); },
                           className: 'w-full min-h-[44px]',
-                          'aria-label': __alloT('stem.chembalance.electrons_transferred', 'Electrons transferred'),
+                          'aria-label': __alloT('stem.chembalance.electrons_transferred_aria', 'Electrons transferred'),
                           'aria-valuetext': cell.n + ' electrons'
                         })),
 
@@ -6930,7 +6930,7 @@
                     id: 'gibbs-temp', type: 'range', min: 100, max: 1500, step: 25, value: th.tempK,
                     onChange: function(e) { setTh({ tempK: parseInt(e.target.value, 10) }); },
                     className: 'w-full min-h-[44px]',
-                    'aria-label': __alloT('stem.chembalance.temperature_k', 'Temperature in kelvin'),
+                    'aria-label': __alloT('stem.chembalance.temperature_k_aria', 'Temperature in kelvin'),
                     'aria-valuetext': th.tempK + ' kelvin, delta G ' + sv(dG) + ' kilojoules per mole'
                   })
                 ),
@@ -7091,7 +7091,7 @@
                     value: kin.eaKJ,
                     onChange: function(e) { setKin({ eaKJ: parseInt(e.target.value, 10) }); },
                     className: 'w-full min-h-[44px]',
-                    'aria-label': __alloT('stem.chembalance.activation_energy', 'Activation energy in kilojoules per mole'),
+                    'aria-label': __alloT('stem.chembalance.activation_energy_aria', 'Activation energy in kilojoules per mole'),
                     'aria-valuetext': kin.eaKJ + ' kilojoules per mole'
                   })
                 ),
@@ -7106,7 +7106,7 @@
                     value: kin.tempC,
                     onChange: function(e) { setKin({ tempC: parseInt(e.target.value, 10) }); },
                     className: 'w-full min-h-[44px]',
-                    'aria-label': __alloT('stem.chembalance.temperature', 'Temperature in degrees Celsius'),
+                    'aria-label': __alloT('stem.chembalance.temperature_aria', 'Temperature in degrees Celsius'),
                     'aria-valuetext': kin.tempC + ' degrees Celsius, ' + tK.toFixed(2) + ' kelvin'
                   })
                 ),
@@ -8024,7 +8024,7 @@
                   value: iq.hExpo,
                   onChange: function(e) { setIQ({ hExpo: parseInt(e.target.value, 10) }); },
                   className: 'w-full min-h-[44px]',
-                  'aria-label': __alloT('stem.chembalance.log_hydronium_activity', 'log10 hydronium activity'),
+                  'aria-label': __alloT('stem.chembalance.log_hydronium_activity_aria', 'log10 hydronium activity'),
                   'aria-valuetext': '10 to the ' + iq.hExpo + ' mol per liter; pH ' + pH.toFixed(0)
                 }),
                 h('div', { className: 'mt-1 flex justify-between text-xs font-mono text-slate-600' },

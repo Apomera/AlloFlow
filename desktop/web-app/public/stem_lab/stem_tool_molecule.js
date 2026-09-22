@@ -6692,7 +6692,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     id: 'ka-conc', type: 'number', value: molarity, step: 0.05, min: 0.01, max: 1,
                     onChange: function (e) { setExp({ kaConc: e.target.value }); },
                     className: 'w-full min-h-[44px] text-[0.75rem] font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
-                    'aria-label': __alloT('stem.molecule.concentration_m', 'Concentration in moles per litre'),
+                    'aria-label': __alloT('stem.molecule.concentration_m_aria', 'Concentration in moles per litre'),
                     'aria-valuetext': molarity + ' molar, pH ' + f(pH)
                   }))),
 
@@ -6814,7 +6814,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   id: 'qn-shell', type: 'range', min: 1, max: 6, step: 1, value: nShell,
                   onChange: function (e) { setExp({ qnShell: parseInt(e.target.value, 10) }); },
                   className: 'w-full min-h-[44px]',
-                  'aria-label': __alloT('stem.molecule.shell_n', 'Principal quantum number n'),
+                  'aria-label': __alloT('stem.molecule.shell_n_aria', 'Principal quantum number n'),
                   'aria-valuetext': 'n equals ' + nShell + ', ' + subs.length + ' subshells, ' + cap + ' electrons'
                 })),
 
@@ -9198,7 +9198,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   id: 'cg-molality', type: 'range', min: 0, max: 6, step: 0.25, value: molality,
                   onChange: function(e) { setExp({ cgMolality: parseFloat(e.target.value) }); },
                   className: 'w-full min-h-[44px]',
-                  'aria-label': __alloT('stem.molecule.molality', 'Molality in moles per kilogram'),
+                  'aria-label': __alloT('stem.molecule.molality_aria', 'Molality in moles per kilogram'),
                   'aria-valuetext': f(molality, 2) + ' molal, ' + f(particles, 2) + ' molal in particles'
                 })),
 
@@ -10421,7 +10421,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     id: 'phase-temp', type: 'number', value: tempC, step: 10, min: -273, max: 6000,
                     onChange: function (e) { setExp({ phaseTemp: e.target.value }); },
                     className: 'w-full min-h-[44px] text-[0.75rem] font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
-                    'aria-label': __alloT('stem.molecule.temperature_c', 'Temperature in degrees Celsius'),
+                    'aria-label': __alloT('stem.molecule.temperature_c_aria', 'Temperature in degrees Celsius'),
                     'aria-valuetext': tempC + ' degrees Celsius, ' + sub.label + ' is ' + state.label
                   }))),
 
