@@ -193,6 +193,34 @@ const CLAIMS = [
       'contradict or override a lighted traffic control or pedestrian control device.',
   },
   {
+    label: 'Regenerative braking recovery fraction',
+    // Was "~70% of braking energy" -- the optimistic top of the quoted
+    // 60-70% band, while real-world measurements land at 48-60% and a hard
+    // stop goes mostly to the friction brakes. There is NO regen constant in
+    // the tool's physics, so nothing contradicted the prose; it was a bare
+    // claim. Pinned on the low end of the stated range.
+    re: /recaptures roughly half the braking energy in normal driving - about (\d{2})-60%/,
+    min: 50, max: 50,
+    source: 'Published real-world regen recovery runs about 48-60% in normal driving, ' +
+      'higher (85%+) on a gentle long downgrade. 70% is a best-case figure, not typical.',
+  },
+  {
+    label: 'Cannabis crash-risk claim states its own uncertainty',
+    // The teaching point (THC impairs reaction time, judgment, spatial
+    // awareness) is solid and stays. The MULTIPLIER is contested:
+    // meta-analyses land near OR 2.0-2.66, but NHTSA's large case-control
+    // study found ~1.0 once age and sex were controlled. "Studies show
+    // cannabis doubles crash risk" presented one side as settled. Presence
+    // check: the qualifier must survive, since the confident version is
+    // shorter and reads better, which is exactly how it would come back.
+    re: /The impairment is the reliable finding; the exact\s+multiplier is not\./,
+    min: null, max: null,
+    source: 'Meta-analysis summary OR 2.66 (95% CI 2.07-3.41); other pooled estimates ~2.0; ' +
+      'French national data adjusted OR 1.65 for THC alone; NHTSA DOT HS 812 440 case-control ' +
+      'adjusted OR ~1.0. Impairment in simulators is consistently reproduced; the crash-risk ' +
+      'multiplier is not. Do not restate the multiplier as settled.',
+  },
+  {
     label: 'Maine headlight visibility threshold (§2067)',
     re: /visibility is under ([\d,]+) ft due to unfavorable conditions/,
     min: 1000, max: 1000,

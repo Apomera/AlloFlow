@@ -261,7 +261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       mass: 1850, cd: 0.23, area: 2.3, powerKW: 220, fuelCap: 75,
       cityMPG: 130, hwyMPG: 115, tank: 'battery_kwh',
       desc: 'Battery electric. Instant torque, regenerative braking, near-zero idle waste. Very low Cd.',
-      tip: 'Regen braking recaptures ~70% of braking energy. Efficiency drops less at low speed than gas cars.'
+      tip: 'Regen braking recaptures roughly half the braking energy in normal driving - about 50-60%, and more on a long downgrade where the deceleration is gentle. Hard stops still go mostly to the friction brakes as heat. Efficiency drops less at low speed than gas cars.'
     },
     {
       id: 'hybrid', name: 'Hybrid Compact', icon: '🔋', type: 'hybrid',
@@ -35223,7 +35223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { id: 'weed', friend: 'Pat', text: __alloT('stem.roadready.weed_actually_makes_me_a_better_driver', '"Weed actually makes me a BETTER driver — slower and more cautious. Seriously."'),
             context: 'Pat wants to drive to get food after smoking.',
             choices: [
-              { text: __alloT('stem.roadready.that_sounds_reasonable_ride_with_them', 'That sounds reasonable, ride with them'), safe: false, reply: 'False. THC impairs reaction time, judgment, and spatial awareness. Studies show cannabis doubles crash risk. "Slower and more cautious" feelings ≠ actually being slower to react.' },
+              { text: __alloT('stem.roadready.that_sounds_reasonable_ride_with_them', 'That sounds reasonable, ride with them'), safe: false, reply: 'False. THC measurably impairs reaction time, judgment and spatial awareness - that part is not in dispute, and it shows up in driving simulators every time. Crash studies put the risk at roughly double, though the estimates disagree (meta-analyses land near 2x, while a large NHTSA case-control study found almost no effect once age and sex were controlled for). The impairment is the reliable finding; the exact multiplier is not. "Slower and more cautious" feelings ≠ actually being slower to react.' },
               { text: __alloT('stem.roadready.drive_them_yourself_or_call_a_ride', 'Drive them yourself or call a ride'), safe: true, reply: 'Correct. Cannabis DUIs are increasing in Maine. Under 21 = any amount = immediate license suspension.' }
             ] },
           { id: 'curfew', friend: 'Morgan', text: __alloT('stem.roadready.it_s_only_12_30_am_let_s_go_get_pizza_', '"It\'s only 12:30 AM, let\'s go get pizza. You\'re 17 — nobody checks GDL curfew anyway."'),
