@@ -5143,12 +5143,14 @@ window.StemLab = window.StemLab || {
     else if (/Stegosaur/i.test(clade)) profile = { label: 'Plated, high-backed herbivore', stance: 0.90, shoulder: 0.92, neck: 0.92, tail: 0.94, bodyHeight: 1.10, bodyDepth: 1.08, head: 0.82, torsoLength: 1.02, chestFullness: 1.08, hipFullness: 1.04, neckBase: 0.92, neckTip: 0.68, tailBase: 0.92, tailTip: 0.48 };
     else if (/Hadrosaur|Lambeosaur|Iguanodont/i.test(clade)) profile = { label: 'Deep-bodied facultative quadruped', stance: 0.96, shoulder: 0.98, neck: 1, tail: 1.02, bodyHeight: 1.08, bodyDepth: 1.12, head: 1.02, torsoLength: 1.04, chestFullness: 1.10, hipFullness: 1.06, neckBase: 0.98, neckTip: 0.78, tailBase: 1.02, tailTip: 0.56 };
     var evidence = String((dn && dn.howKnow) || '').toLowerCase();
-    if (/partial|handful|fragment|single |few |known from just|scaled from|incomplete/.test(evidence)) {
-      profile.coverage = 'limited';
-      profile.coverageNote = 'Limited fossil coverage; relatives and scaling contribute more to the silhouette.';
-    } else if (/abundant|hundreds|dozens|many skeletons|multiple skeletons|several good|complete skeleton/.test(evidence)) {
+    var strongEvidence = /abundant|hundreds|dozens|many skeletons|multiple skeletons|several good|complete skeleton/.test(evidence)
+      && !/no (single )?complete skeleton|no complete|never found a complete/.test(evidence);
+    if (strongEvidence) {
       profile.coverage = 'strong';
       profile.coverageNote = 'Strong fossil coverage for the main skeletal proportions.';
+    } else if (/partial|handful|fragment|single |few |known from just|scaled from|incomplete/.test(evidence)) {
+      profile.coverage = 'limited';
+      profile.coverageNote = 'Limited fossil coverage; relatives and scaling contribute more to the silhouette.';
     } else {
       profile.coverage = 'moderate';
       profile.coverageNote = 'Moderate fossil coverage; some proportions remain comparative.';
@@ -11447,6 +11449,11 @@ var evidenceRoute = [
             props.showBody ? readoutChip(surfaceHypothesis.id === 'classic' ? 'Historical comparison' : (Number(props.bodyOpacity) >= 98 ? 'Life reconstruction · ' : 'Surface · ') + surfaceHypothesis.shortLabel, surfaceHypothesis.id === 'classic' ? 'rgba(245,158,11,0.85)' : 'rgba(94,234,212,0.68)') : null,
             readoutChip('Scene ' + (props.stage === 'habitat' ? habitat.shortLabel : selectedStudioLight.sceneLabel), 'rgba(20,184,166,0.65)'),
             readoutChip('Pose ' + posture.shortLabel, 'rgba(245,158,11,0.62)'),
+            readoutChip('Fossils ' + (reconstructionProfile.coverage === 'strong' ? 'abundant'
+              : (reconstructionProfile.coverage === 'limited' ? 'sparse' : 'partial')),
+              reconstructionProfile.coverage === 'strong' ? 'rgba(34,197,94,0.70)'
+                : (reconstructionProfile.coverage === 'limited' ? 'rgba(248,113,113,0.70)'
+                  : 'rgba(245,158,11,0.62)')),
             readoutChip('Body ' + postcranialSurface.shortLabel, 'rgba(251,146,60,0.62)'),
             readoutChip('Head ' + cranialSurface.shortLabel, 'rgba(167,139,250,0.62)'),
             props.showEvidence && props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
