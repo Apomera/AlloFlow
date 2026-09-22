@@ -1641,7 +1641,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 cv._ceInit = true;
                 var g = cv.getContext('2d');
                 if (!g) return;
-                var heroRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                // Read LIVE, not once at init. This ref callback runs a single time
+                // per canvas (cv._ceInit guards re-entry), so a captured value left
+                // the hero animating after a learner turned reduced motion ON, and
+                // -- because the loop below only reschedules while it is false --
+                // left the hero frozen for ever after they turned it OFF.
+                var heroMQ = null;
+                try { heroMQ = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null; } catch (eRM) { heroMQ = null; }
+                function heroReduced() { return !!(heroMQ && heroMQ.matches); }
                 var heroTick = 0;
                 var mols = [];
                 for (var mi = 0; mi < 46; mi++) mols.push({ x: Math.random(), ph: Math.random() * 6.28, sp: 0.4 + Math.random() * 0.8, r: 0.8 + Math.random() * 1.2 });
@@ -1652,7 +1659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   if (!cv.isConnected || cv._cePaused) return;
                   var W = cv.clientWidth || 600, H = cv.clientHeight || 130;
                   if (cv.width !== W * 2) { cv.width = W * 2; cv.height = H * 2; }
-                  if (!heroRM) heroTick++;
+                  if (!heroReduced()) heroTick++;
                   var sig = cv._ceSignal != null ? cv._ceSignal : 0.4;
                   var dpr = 2;
                   // Space
@@ -1737,9 +1744,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }
                     g.globalAlpha = 1;
                   }
-                  if (!heroRM && !cv._cePaused) requestAnimationFrame(heroDraw);
+                  if (!heroReduced() && !cv._cePaused) requestAnimationFrame(heroDraw);
                 }
                 cv._ceResume = function() { cv._cePaused = false; heroDraw(); };
+                // Turning the preference OFF has to RESTART the loop: by then it has
+                // already stopped rescheduling itself, so a live read alone would
+                // leave the hero frozen. Turning it ON needs nothing here -- the next
+                // frame reads it and stops. addListener is the fallback for Safari < 14
+                // and the older classroom iPads, and the handler drops itself once the
+                // canvas leaves the page.
+                if (heroMQ) {
+                  var onHeroMotionChange = function() {
+                    if (!cv.isConnected) {
+                      try {
+                        if (typeof heroMQ.removeEventListener === 'function') heroMQ.removeEventListener('change', onHeroMotionChange);
+                        else if (typeof heroMQ.removeListener === 'function') heroMQ.removeListener(onHeroMotionChange);
+                      } catch (eRM2) {}
+                      return;
+                    }
+                    if (!heroReduced() && !cv._cePaused) heroDraw();
+                  };
+                  try {
+                    if (typeof heroMQ.addEventListener === 'function') heroMQ.addEventListener('change', onHeroMotionChange);
+                    else if (typeof heroMQ.addListener === 'function') heroMQ.addListener(onHeroMotionChange);
+                  } catch (eRM3) {}
+                }
                 heroDraw();
               },
               style: { width: '100%', height: 130, display: 'block', background: '#020617' }

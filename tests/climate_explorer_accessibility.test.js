@@ -38,7 +38,16 @@ describe('Climate Explorer reduced motion', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_climateExplorer.js', 'utf8');
 
     expect(source).toContain('heroDraw();');
-    expect(source).toContain('if (!heroRM && !cv._cePaused) requestAnimationFrame(heroDraw);');
+    // `heroRM` was a value CAPTURED once in the ref callback, which runs a
+    // single time per canvas. It is now `heroReduced()`, read live per frame,
+    // because the captured version broke both ways: turning the preference on
+    // mid-session kept the loop rescheduling, and turning it off left the hero
+    // frozen for ever, since the loop had already stopped rescheduling itself.
+    // The contract this test asserts is unchanged — one frame, no loop — and
+    // the behaviour is covered end to end in
+    // tests/climate_explorer_hero_motion_live.test.js.
+    expect(source).toContain('if (!heroReduced() && !cv._cePaused) requestAnimationFrame(heroDraw);');
+    expect(source, 'the captured flag must not come back').not.toContain('heroRM');
     expect(source).not.toContain('requestAnimationFrame(heroDraw);\n                requestAnimationFrame(heroDraw);');
   });
 });
