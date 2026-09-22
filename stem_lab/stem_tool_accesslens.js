@@ -143,6 +143,20 @@
     };
   }
 
+  // getUserMedia failures are not interchangeable. Telling a student on a
+  // laptop with no rear camera to allow permissions, and offering a pop-out
+  // window that will fail the same way, is wrong advice three times out of
+  // four. Names come from the Media Capture spec; older engines used the
+  // legacy aliases, so both are mapped.
+  function cameraFailureReason(error) {
+    var name = error && (error.name || error.code);
+    name = typeof name === 'string' ? name : '';
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') return 'denied';
+    if (name === 'NotFoundError' || name === 'DevicesNotFoundError' || name === 'OverconstrainedError' || name === 'ConstraintNotSatisfiedError') return 'none';
+    if (name === 'NotReadableError' || name === 'TrackStartError' || name === 'AbortError') return 'inuse';
+    if (name === 'TypeError') return 'unsupported';
+    return 'other';
+  }
   function splitDataUrl(dataUrl) {
     if (typeof dataUrl !== 'string') return null;
     var m = dataUrl.match(/^data:([^;,]+);base64,(.+)$/);
@@ -198,6 +212,7 @@
     var sErr = useState(''); var err = sErr[0], setErr = sErr[1];
     var sResults = useState({}); var results = sResults[0], setResults = sResults[1];
     var sCam = useState('idle'); var camState = sCam[0], setCamState = sCam[1]; // idle|starting|live|denied
+    var sCamWhy = useState(''); var camReason = sCamWhy[0], setCamReason = sCamWhy[1]; // '' | denied | none | inuse | unsupported | other
     var sLang = useState('Spanish'); var targetLang = sLang[0], setTargetLang = sLang[1];
     var sReaderPx = useState(24); var readerPx = sReaderPx[0], setReaderPx = sReaderPx[1];
     var sAnswers = useState({}); var answers = sAnswers[0], setAnswers = sAnswers[1];
@@ -334,19 +349,24 @@
     function startLiveCamera() {
       setErr('');
       if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setCamReason('unsupported');
         setCamState('denied');
         return;
       }
       setCamState('starting');
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false })
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }, audio: false })
         .then(function (stream) {
           streamRef.current = stream;
+          setCamReason('');
           setCamState('live');
           announce(_t('stem.accessLens.sr_cam_live', 'Live camera started. Press Snap photo when ready.'));
         })
-        .catch(function () {
-          // NotAllowedError in the Canvas iframe lands here → offer the
-          // companion-window escape hatch (and the file picker always works).
+        .catch(function (error) {
+          // The error was discarded, so a laptop with no rear camera, a camera
+          // already in use, and a real permission refusal all told the student
+          // the same thing: that the camera is blocked and to try the pop-out
+          // window, which fails identically for three of the four.
+          setCamReason(cameraFailureReason(error));
           setCamState('denied');
         });
     }
@@ -537,13 +557,17 @@
           }, '📷 ' + _t('stem.accessLens.take_photo', 'Take or choose a photo')),
           btn('🎥 ' + _t('stem.accessLens.live_camera', 'Live camera'), startLiveCamera, { key: 'livecam', title: _t('stem.accessLens.live_camera_title', 'Show a live preview and snap from it') })
         ];
-        if (camState === 'denied') {
+        if (camState === 'denied' && camReason !== 'none' && camReason !== 'unsupported') {
           row.push(btn('🪟 ' + _t('stem.accessLens.popout', 'Open camera window'), openLensWindow, { key: 'popout', title: _t('stem.accessLens.popout_title', 'Opens a separate window where the camera is allowed') }));
         }
         kids.push(h('div', { key: 'row', style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } }, row));
         if (camState === 'denied') {
-          kids.push(h('div', { key: 'denied', style: { fontSize: '11.5px', color: C.sub, lineHeight: 1.5 } },
-            _t('stem.accessLens.denied_note', 'The live camera is blocked inside this app view. The photo button above still works everywhere, or use the camera window.')));
+          kids.push(h('div', { key: 'denied', role: 'status', style: { fontSize: '13px', color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px', lineHeight: 1.5 } },
+            camReason === 'none' ? _t('stem.accessLens.denied_none', 'This device does not have a camera this app can use. The photo button above still works: you can choose a picture that is already on the device.')
+            : camReason === 'inuse' ? _t('stem.accessLens.denied_inuse', 'Another app is using the camera right now. Close the other app, such as a video call, and press Live camera again. The photo button above still works meanwhile.')
+            : camReason === 'unsupported' ? _t('stem.accessLens.denied_unsupported', 'This browser will not give the page a live camera. The photo button above still works: you can take or choose a picture with it.')
+            : camReason === 'denied' ? _t('stem.accessLens.denied_perm', 'Camera permission was refused. You can allow it in the browser address bar and press Live camera again, open the camera window, or use the photo button above.')
+            : _t('stem.accessLens.denied_note', 'The live camera did not start. The photo button above still works everywhere, or try the camera window.')));
         }
       }
 
@@ -812,4 +836,11 @@
       return ctx.React.createElement(AccessLens, { ctx: ctx });
     }
   });
+
+  // Exposed so the camera-failure mapping can be tested directly. A test that
+  // only greps the source proves the names are spelled, not that they map.
+  if (typeof window !== 'undefined') {
+    window.AccessLensPure = window.AccessLensPure || {};
+    window.AccessLensPure.cameraFailureReason = cameraFailureReason;
+  }
 })();
