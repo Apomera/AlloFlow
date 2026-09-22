@@ -410,6 +410,7 @@
   "cmd.rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
   "cmd.rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
   "cmd.rebuild_lesson_step_hint": "Regenerates a single resource — say which step number",
+  "cmd.rebuild_lesson_step_missing": "I could not find that step in the plan.",
   "cmd.rebuild_lesson_step_none": "the plan has no steps yet.",
   "cmd.rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
   "cmd.rebuild_lesson_step_which": "Which step? ",
