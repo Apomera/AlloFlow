@@ -3613,9 +3613,31 @@ dataRef.current = d;
 
             var ctx = canvas.getContext('2d');
 
-            var W = canvas.width = canvas.offsetWidth || 420;
+            // HiDPI, matching the chamber canvas above. The backing store used to
+            // be set in CSS pixels, so on any 2x display the cumulative record —
+            // the instrument this tool teaches slope-reading on — was upscaled and
+            // soft, which is exactly the wrong thing to blur: an FR pause, a VR
+            // straight line and an FI scallop are distinguished by the shape of a
+            // thin stroke.
+            var W = canvas.offsetWidth || 420;
 
-            var H = canvas.height = 130;
+            var H = 130;
+
+            var cumDpr = window.devicePixelRatio || 1;
+
+            if (canvas.width !== Math.round(W * cumDpr) || canvas.height !== Math.round(H * cumDpr)) {
+
+              canvas.width = Math.round(W * cumDpr);
+
+              canvas.height = Math.round(H * cumDpr);
+
+              canvas.style.width = W + 'px';
+
+              canvas.style.height = H + 'px';
+
+            }
+
+            ctx.setTransform(cumDpr, 0, 0, cumDpr, 0, 0);
 
             var data = blCumRecord;
 
@@ -6160,9 +6182,19 @@ dataRef.current = d;
                   ref: function(cvs) {
                     if (!cvs) return;
                     var w = cvs.parentElement.offsetWidth || 400;
-                    if (cvs.width !== w) cvs.width = w;
-                    if (cvs.height !== 286) cvs.height = 286;
+                    // HiDPI backing store, as on the chamber and the cumulative
+                    // record. These four small multiples exist to be compared by
+                    // slope, so a soft upscale on a 2x display costs the reader the
+                    // one property the panel is built around.
+                    var slDpr = window.devicePixelRatio || 1;
+                    if (cvs.width !== Math.round(w * slDpr) || cvs.height !== Math.round(286 * slDpr)) {
+                      cvs.width = Math.round(w * slDpr);
+                      cvs.height = Math.round(286 * slDpr);
+                      cvs.style.width = '100%';
+                      cvs.style.height = '286px';
+                    }
                     var ctx = cvs.getContext('2d');
+                    ctx.setTransform(slDpr, 0, 0, slDpr, 0, 0);
                     ctx.fillStyle = '#0f172a';
                     ctx.fillRect(0, 0, w, 286);
 
