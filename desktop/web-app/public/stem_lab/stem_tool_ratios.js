@@ -72,7 +72,7 @@
 
   var CHALLENGES = {
     ratioTable: [
-      { id: 'ratio-paint', prompt: 'A paint mix uses 3 cups blue for every 5 cups white. If there are 20 cups of white, how many cups of blue are needed?', answer: 12, suffix: 'cups', hint: 'Five was multiplied by 4, so multiply three by 4 too.', explain: '3:5 and 12:20 are equivalent because both quantities were multiplied by 4.' },
+      { id: 'ratio-paint', ratioPair: [3, 5, 12, 20], prompt: 'A paint mix uses 3 cups blue for every 5 cups white. If there are 20 cups of white, how many cups of blue are needed?', answer: 12, suffix: 'cups', hint: 'Five was multiplied by 4, so multiply three by 4 too.', explain: '3:5 and 12:20 are equivalent because both quantities were multiplied by 4.' },
       { id: 'ratio-simplify', prompt: 'Simplify the ratio 18:24. Enter your answer with a colon.', answers: ['3:4', '3/4'], hint: 'Divide both terms by their greatest common factor, 6.', explain: '18 \u00F7 6 = 3 and 24 \u00F7 6 = 4, so the simplest ratio is 3:4.' },
       { id: 'ratio-scale', prompt: 'Scale the ratio 7:4 by a factor of 6. What is the second quantity?', answer: 24, hint: 'Multiply the second quantity by the scale factor.', explain: '4 \u00D7 6 = 24, while the first quantity becomes 7 \u00D7 6 = 42.' }
     ],
@@ -311,6 +311,44 @@
     return isFinite(numeric) ? numeric : null;
   }
 
+  // Wrong answers returned the same static hint forever, no matter what the
+  // student actually did. The most important misconception in this whole
+  // topic is additive reasoning -- on 3:5 -> ?:20 a student adds the same 15
+  // to both parts and answers 18 instead of 12 -- and the tool could already
+  // prove that is what happened. This names the error instead of restating
+  // the hint. It returns null unless it is confident, so a plain slip still
+  // falls through to the challenge hint.
+  function diagnoseRatioAnswer(challenge, rawAnswer) {
+    if (!challenge || challenge.answers) return null;
+    var numeric = parseNumericChallengeAnswer(normalizeAnswer(rawAnswer));
+    if (numeric == null || !isFinite(numeric)) return null;
+    var key = Number(challenge.answer);
+    if (!isFinite(key) || numeric === key) return null;
+    var pair = challenge.ratioPair;
+    if (pair && pair.length === 4) {
+      var a = Number(pair[0]), b = Number(pair[1]), d = Number(pair[3]);
+      // Additive: the student added (d - b) to a instead of scaling by d / b.
+      if (isFinite(a) && isFinite(b) && isFinite(d) && b !== 0) {
+        var additive = a + (d - b);
+        if (numeric === additive && additive !== key) {
+          return { kind: "additive", added: d - b, factor: d / b,
+            message: "You added " + (d - b) + " to both parts. Ratios keep the same MULTIPLIER, not the same difference: " + b + " was multiplied by " + (d / b) + ", so multiply " + a + " by " + (d / b) + " too." };
+        }
+      }
+    }
+    // Off by a power of ten: the relationship is right, the place value is not.
+    for (var e = -3; e <= 3; e++) {
+      if (e === 0) continue;
+      if (Math.abs(numeric * Math.pow(10, e) - key) <= 1e-9 * Math.max(1, Math.abs(key))) {
+        return { kind: "placeValue", message: "Your reasoning gives the right digits, but the value is off by a factor of " + Math.pow(10, Math.abs(e)) + ". Check where the decimal point or the zeros belong." };
+      }
+    }
+    // Inverted: the student scaled the wrong way round.
+    if (key !== 0 && Math.abs(numeric - 1 / key) <= 1e-9) {
+      return { kind: "inverted", message: "That is the reciprocal. Check which quantity you are scaling up and which you are scaling down." };
+    }
+    return null;
+  }
   function challengeIsCorrect(challenge, rawAnswer) {
     var normalized = normalizeAnswer(rawAnswer);
     if (!normalized) return false;
@@ -448,6 +486,7 @@
     percentTapeSummary: percentTapeSummary,
     parseNumericChallengeAnswer: parseNumericChallengeAnswer,
     challengeIsCorrect: challengeIsCorrect,
+    diagnoseRatioAnswer: diagnoseRatioAnswer,
     canonicalChallengeAnswer: canonicalChallengeAnswer,
     challenges: CHALLENGES
   };
@@ -1234,13 +1273,17 @@
           }
           if (firstSolve) notify(t('stem.ratios.challenge_solved_15_xp', "Challenge solved! +15 XP"), 'success');
         } else {
+          // Name the specific error when it can be proved; otherwise keep the
+          // challenge's own hint rather than guessing at what went wrong.
+          var diagnosis = diagnoseRatioAnswer(challenge, scopedChallengeAnswer);
+          var wrongAnswerHelp = diagnosis ? diagnosis.message : challenge.hint;
           update(function(current) {
             var missed = Object.assign({}, current.missedChallenges || {});
             missed[challenge.id] = true;
             return { missedChallenges: missed, challengeAttempts: (current.challengeAttempts || 0) + 1,
-              challengeFeedback: { challengeId: challenge.id, correct: false, message: t('stem.ratios.not_yet', "Not yet. ") + challenge.hint } };
+              challengeFeedback: { challengeId: challenge.id, correct: false, message: t('stem.ratios.not_yet', "Not yet. ") + wrongAnswerHelp } };
           });
-          announce(t('stem.ratios.not_yet', "Not yet. ") + challenge.hint);
+          announce(t('stem.ratios.not_yet', "Not yet. ") + wrongAnswerHelp);
         }
       }
 
