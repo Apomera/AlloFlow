@@ -249,6 +249,9 @@
     pop_out: '↗ Pop out',
     pop_out_title: 'Open the gallery in its own window (for a second screen or a bigger view)',
     fullscreen: '⛶ Fullscreen',
+    fullscreen_enter: 'View the zoom gallery full screen',
+    fullscreen_exit: 'Exit full screen zoom gallery',
+    fullscreen_label: 'Fullscreen',
     viewer_blocked: 'The deep-zoom library could not load here. Use "Pop out" to open the gallery in its own window.',
     ai_inline_on: 'AI coach is ON — it builds on what you notice.',
     ai_inline_off: 'AI hints are off — built-in observation prompts stand in for the coach.',
@@ -1152,10 +1155,10 @@
           say(I('coach_answered_sr'));
         });
       }
-      function toggleFullscreen() {
-        var el = wrapRef.current; if (!el) return;
-        if (typeof window.__alloStemFS === 'function') { try { window.__alloStemFS(el); } catch (_) {} }
-      }
+      // The shared binder attached to the button performs the toggle itself, so
+      // this must NOT call __alloStemFS again: two calls per click would enter
+      // fullscreen and leave it in the same gesture.
+      function toggleFullscreen() {}
       function returnToCatalog() {
         if (typeof setStemLabTool !== 'function') return;
         setStemLabTool(null);
@@ -1270,6 +1273,8 @@
       }
 
       return h('div', { ref: wrapRef, className: 'flex flex-col gap-3 animate-in fade-in duration-300',
+        // The fullscreen target the gallery's button resolves with closest().
+        'data-allo-fs-stage': 'true',
         // Painted ground: the host card is white in both themes, and these inks assume slate.
         style: { background: P.bg, color: P.text, borderRadius: 14, padding: 14, minWidth: 0 } },
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
@@ -1290,7 +1295,20 @@
               h('option', { value: '' }, W('select_placeholder')),
               IMAGES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + imgText(s, 'name')); }))),
           h('button', { type: 'button', style: btnBase, onClick: function () { openPopout(current && current.id); }, title: I('pop_out_title'), 'aria-label': I('pop_out_title') }, I('pop_out')),
-          current && typeof window.__alloStemFS === 'function' ? h('button', { type: 'button', style: btnBase, onClick: toggleFullscreen }, I('fullscreen')) : null
+          // Labelled by the shared binder, which keeps the accessible name, the
+          // pressed state and the glyph in step with the real fullscreen state --
+          // including an Escape exit. Before this the button read "Fullscreen"
+          // even while the gallery filled the screen.
+          current && typeof window.__alloStemFS === 'function' ? h('button', {
+            type: 'button', style: btnBase,
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            'aria-label': I('fullscreen_enter'),
+            'data-fs-out': I('fullscreen_enter'),
+            'data-fs-in': I('fullscreen_exit'),
+            ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+            onClick: toggleFullscreen
+          }, h('span', { 'aria-hidden': 'true' }, '⛶'), ' ', I('fullscreen_label')) : null
         ),
         !current ? h('p', { style: { margin: 0, fontSize: '0.8125rem', color: P.dim, lineHeight: 1.55 } }, I('blurb')) : null,
         h('div', { style: { fontSize: '0.71875rem', color: P.dim } }, aiOn ? '✨ ' + I('ai_inline_on') : '🌱 ' + I('ai_inline_off')),
