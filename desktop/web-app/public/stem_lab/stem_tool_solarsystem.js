@@ -4695,6 +4695,18 @@ const d = labToolData.solarSystem || {};
                 }, 0);
                 return;
               }
+              // A context lost AFTER init used to leave the orrery black with no panel
+              // and no way back. preventDefault is required or the context can never be
+              // restored; then raise the SAME state creation failure uses, which shows
+              // the Retry 3D Mode panel.
+              if (!canvas._ssLossBound) {
+                canvas._ssLossBound = true;
+                canvas.addEventListener('webglcontextlost', function (ev) {
+                  ev.preventDefault();
+                  console.warn('[SolarSystem] WebGL context lost — offering Retry 3D Mode');
+                  setTimeout(function () { upd('webglError', true); }, 0);
+                });
+              }
               renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
               // updateStyle=false. The canvas is laid out `w-full` with a fixed 520px
@@ -16815,6 +16827,16 @@ const d = labToolData.solarSystem || {};
                             upd('droneWebglError', true);
                           }, 0);
                           return;
+                        }
+                        // Same recovery for the surface simulator: without this a lost
+                        // context leaves it black with no panel and no way back.
+                        if (!canvasEl._ssDroneLossBound) {
+                          canvasEl._ssDroneLossBound = true;
+                          canvasEl.addEventListener('webglcontextlost', function (ev) {
+                            ev.preventDefault();
+                            console.warn('[SolarSystem Drone] WebGL context lost — offering Retry 3D Mode');
+                            setTimeout(function () { upd('droneWebglError', true); }, 0);
+                          });
                         }
 
                         // updateStyle=false, matching resizeDroneCanvas below. This init

@@ -234,3 +234,76 @@ test.describe('Solar System — real WebGL', () => {
     expect(await page.evaluate(() => document.querySelectorAll('#wrap canvas').length)).toBe(0);
   });
 });
+
+/**
+ * WebGL context loss — ordinary in the field (GPU driver reset, a tab restored on a
+ * low-memory device, another page claiming contexts; browsers cap simultaneous
+ * contexts and evict the oldest).
+ *
+ * Both of this tool's WebGL surfaces already handled CREATION failure with a panel and
+ * a "Retry 3D Mode" button (`webglError` for the orrery, `droneWebglError` for the
+ * surface simulator). Neither was bound to `webglcontextlost`, so a context lost AFTER
+ * init left the view black with no panel and no way back.
+ *
+ * COVERAGE: this pins the ORRERY only. The surface simulator got the identical fix, but
+ * it cannot be exercised here — its canvas never mounts in this harness, and the
+ * pre-existing 'rocky rover accelerates' test fails the same way at HEAD with this
+ * change reverted. That handler is therefore UNVERIFIED; whoever fixes the drone mount
+ * should force a loss there and assert the 'Drone 3D Mode Unresolved' panel appears.
+ */
+test.describe('Solar System — WebGL context loss', () => {
+  test('a lost orrery context raises Retry, and Retry rebuilds a live context', async ({ page }) => {
+    test.setTimeout(120000);
+    await harness.mount(page);
+
+    const before = await page.evaluate(() => (window as any).__glLive());
+    expect(before, 'no canvas mounted').not.toBeNull();
+    expect(before.lost, 'context already lost before the test acted').toBe(false);
+
+    const killed = await page.evaluate(() => {
+      const cvs = Array.from(document.querySelectorAll('#wrap canvas')) as HTMLCanvasElement[];
+      for (const c of cvs) {
+        const g: any = c.getContext('webgl2') || c.getContext('webgl');
+        if (g && !g.isContextLost()) {
+          const ext = g.getExtension('WEBGL_lose_context');
+          if (ext) { ext.loseContext(); return true; }
+        }
+      }
+      return false;
+    });
+    expect(killed, 'could not force a context loss').toBe(true);
+
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('button'))
+      .some((b) => /retry 3d mode/i.test(b.textContent || '') && (b as HTMLElement).offsetParent !== null),
+      null, { timeout: 15000 });
+
+    const after = await page.evaluate(() => ({
+      retry: Array.from(document.querySelectorAll('button'))
+        .filter((b) => /retry 3d mode/i.test(b.textContent || '') && (b as HTMLElement).offsetParent !== null).length,
+      warned: /WebGL failed to initialize/i.test(document.body.textContent || '')
+    }));
+    console.log('orrery after loss:', JSON.stringify(after));
+    expect(after.retry, 'the orrery went black with no way back').toBeGreaterThan(0);
+    expect(after.warned, 'no explanation of what happened').toBe(true);
+
+    // An unrecoverable panel is barely better than a black canvas: prove Retry works.
+    await page.evaluate(() => {
+      const b = Array.from(document.querySelectorAll('button'))
+        .find((x) => /retry 3d mode/i.test(x.textContent || '') && (x as HTMLElement).offsetParent !== null);
+      (b as HTMLElement).click();
+    });
+    await page.waitForFunction(() => {
+      const cvs = Array.from(document.querySelectorAll('#wrap canvas')) as HTMLCanvasElement[];
+      return cvs.some((c) => {
+        const g: any = c.getContext('webgl2') || c.getContext('webgl');
+        return g && !g.isContextLost();
+      });
+    }, null, { timeout: 30000 });
+
+    const recovered = await page.evaluate(() => (window as any).__glLive());
+    console.log('orrery after retry:', JSON.stringify(recovered));
+    expect(recovered, 'no canvas after Retry').not.toBeNull();
+    expect(recovered.lost, 'Retry left the context lost').toBe(false);
+    expect(recovered.w, 'the rebuilt canvas has no width').toBeGreaterThan(100);
+  });
+});
