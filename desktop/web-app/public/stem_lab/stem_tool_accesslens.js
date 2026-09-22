@@ -209,6 +209,12 @@
     var streamRef = useRef(null);
     var lensWinRef = useRef(null);
     var busyRef = useRef(''); busyRef.current = busy;
+    // Which photo an in-flight analysis belongs to. Without this, clearing or
+    // replacing a photo mid-analysis still let the old result land: the student
+    // got an authoritative description of a photo that is no longer there. For
+    // a blind student -- this tool's headline user -- there is no visual cue
+    // that the description is stale, so it is the worst failure mode here.
+    var photoTokenRef = useRef(0);
 
     var announce = useCallback(function (m) {
       setLiveMsg(String(m || ''));
@@ -280,8 +286,11 @@
     // ── photo intake: everything funnels through here; downscale to <=1024px
     //    JPEG so the AI payload stays small ──
     function acceptPhoto(dataUrl, sourceLabel) {
+      // Claim this decode. A later photo bumps the token and wins.
+      var token = ++photoTokenRef.current;
       var img = new Image();
       img.onload = function () {
+        if (token !== photoTokenRef.current) return;
         try {
           var maxDim = 1024;
           var w = img.width, hgt = img.height;
@@ -293,7 +302,7 @@
           cv.getContext('2d').drawImage(img, 0, 0, cw, chg);
           var out = cv.toDataURL('image/jpeg', 0.85);
           setPhoto({ dataUrl: out });
-          setResults({}); setAnswers({}); setErr('');
+          setResults({}); setAnswers({}); setErr(''); setBusy('');
           stopSpeech();
           markQuest('captured');
           announce(_t('stem.accessLens.sr_photo_ready', 'Photo ready. Choose a lens mode and press Analyze.'));
@@ -302,6 +311,7 @@
         }
       };
       img.onerror = function () {
+        if (token !== photoTokenRef.current) return;
         setErr(_t('stem.accessLens.err_photo', 'That photo could not be loaded. Please try another one.'));
       };
       img.src = dataUrl;
@@ -369,7 +379,8 @@
     }
 
     function clearPhoto() {
-      setPhoto(null); setResults({}); setAnswers({}); setErr('');
+      photoTokenRef.current++;
+      setPhoto(null); setResults({}); setAnswers({}); setErr(''); setBusy('');
       stopSpeech();
       announce(_t('stem.accessLens.sr_cleared', 'Photo cleared. Nothing was saved.'));
     }
@@ -386,8 +397,12 @@
         m === 'translate' ? translatePrompt(targetLang || 'Spanish') :
         inquirePrompt(band);
       setBusy(m); setErr('');
+      var token = photoTokenRef.current;
       announce(_t('stem.accessLens.sr_analyzing', 'Analyzing your photo.'));
       vision(prompt, parts.base64, parts.mime).then(function (text) {
+        // The photo this describes is gone or replaced; saying anything now
+        // would attach it to whatever is on screen instead.
+        if (token !== photoTokenRef.current) return;
         setBusy('');
         if (!text) {
           setErr(_t('stem.accessLens.err_ai', 'The AI could not answer right now. Please try again.'));
@@ -406,6 +421,7 @@
         else markQuest('inquired');
         announce(_t('stem.accessLens.sr_done', 'Analysis ready.'));
       }).catch(function () {
+        if (token !== photoTokenRef.current) return;
         setBusy('');
         setErr(_t('stem.accessLens.err_ai', 'The AI could not answer right now. Please try again.'));
       });
