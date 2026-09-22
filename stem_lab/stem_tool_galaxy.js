@@ -91,6 +91,20 @@ window.StemLab = window.StemLab || {
          viewport. In fullscreen the grid row IS the viewport, so pin it flush and let
          the column scroll internally instead. */
       [data-galaxy-workspace][data-galaxy-fullscreen=true] > [data-galaxy-controls] { overflow-y: auto !important; max-height: 100% !important; height: 100% !important; top: 0 !important; border-radius: 0 !important; }
+      /* Draggable split. The panel column is driven by --galaxy-panel-w (set and
+         clamped in JS) rather than the fixed 360px, and a handle column sits between
+         the two. Only in fullscreen with the panel shown: on the normal page the
+         workspace keeps its responsive Tailwind template untouched. */
+      [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] { grid-template-columns: minmax(0, 1fr) 10px var(--galaxy-panel-w, 360px) !important; gap: 0 !important; }
+      [data-galaxy-panel-resizer] { display: none; }
+      [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] > [data-galaxy-panel-resizer] { display: flex; align-items: center; justify-content: center; height: 100%; padding: 0; border: 0; background: #0f172a; cursor: col-resize; touch-action: none; }
+      [data-galaxy-panel-resizer]::before { content: ''; width: 2px; height: 46px; border-radius: 2px; background: #64748b; transition: background .15s; }
+      [data-galaxy-panel-resizer]:hover::before, [data-galaxy-panel-resizer][data-dragging=true]::before { background: #67e8f9; }
+      [data-galaxy-panel-resizer]:focus-visible { outline: 3px solid #67e8f9; outline-offset: -3px; }
+      /* A 10px column is below the 24x24 target minimum, so widen the hit area
+         without widening the visible seam. */
+      [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] > [data-galaxy-panel-resizer] { position: relative; }
+      [data-galaxy-panel-resizer]::after { content: ''; position: absolute; top: 0; bottom: 0; left: -8px; right: -8px; }
       [data-galaxy-workspace][data-galaxy-focus=true] > [data-galaxy-stage] > :not(canvas):not([data-galaxy-focus-exit]):not(.sr-only) { display: none !important; }
       [data-galaxy-workspace][data-galaxy-focus=true] [data-galaxy-focus-exit] { display: flex; position: absolute; top: 16px; right: 16px; z-index: 30; align-items: center; min-height: 44px; padding: 10px 16px; border: 1px solid #ffffff40; border-radius: 999px; color: #f1f5f9; background: #020617bd; font: 600 12px/1.3 system-ui, sans-serif; cursor: pointer; opacity: 1; transition: opacity .18s; }
       [data-galaxy-workspace][data-galaxy-focus-idle=true] [data-galaxy-focus-exit] { opacity: 0; }
@@ -705,6 +719,9 @@ if (!window._galaxyHasLoadedOnce) {
           // settings should not have to leave fullscreen to reach them. Persisted, so
           // the choice survives a reload the way the other view preferences do.
           var galaxyFullscreenPanel = !!d.galaxyFullscreenPanel;
+          // Persisted split position. Clamped again on apply, so a saved value from a
+          // wider screen cannot squeeze the scene on a narrow one.
+          var galaxyPanelWidthSaved = Number.isFinite(d.galaxyPanelWidth) ? d.galaxyPanelWidth : 360;
           var galaxyTourActive = !!d.galaxyTourActive && !galaxyReducedMotion;
           var galaxyQuality = (typeof d.galaxyQuality === 'string' && d.galaxyQuality) ? d.galaxyQuality : 'auto';
           var galaxyBrightness = Number.isFinite(d.galaxyBrightness) ? Math.min(1.2, Math.max(0.7, d.galaxyBrightness)) : 1;
@@ -2149,6 +2166,16 @@ if (!window._galaxyHasLoadedOnce) {
           var _galaxyIsFullscreen = React.useState(false);
           var galaxyIsFullscreen = _galaxyIsFullscreen[0];
           var setGalaxyIsFullscreen = _galaxyIsFullscreen[1];
+          // Live split width. Held locally during a drag so pointermove does not
+          // rerender, then written back to toolData once the drag settles.
+          var _galaxyPanelWidth = React.useState(galaxyPanelWidthSaved);
+          var galaxyPanelWidth = _galaxyPanelWidth[0];
+          var setGalaxyPanelWidth = _galaxyPanelWidth[1];
+          React.useEffect(function () {
+            if (galaxyPanelWidth === galaxyPanelWidthSaved) return;
+            var id = setTimeout(function () { upd('galaxyPanelWidth', galaxyPanelWidth); }, 300);
+            return function () { clearTimeout(id); };
+          }, [galaxyPanelWidth, galaxyPanelWidthSaved]);
           // The CSS fallback never fires fullscreenchange, so poll the tool's own
           // predicate as well. Both paths set it, and cheap equality keeps this from
           // re-rendering the scene.
@@ -2160,11 +2187,21 @@ if (!window._galaxyHasLoadedOnce) {
             };
             document.addEventListener('fullscreenchange', read);
             document.addEventListener('webkitfullscreenchange', read);
-            var poll = setInterval(read, 400);
+            // The scene calls this the moment either path changes, which is what makes
+            // the panel toggle appear with the view instead of up to a poll late. The
+            // interval stays as a safety net for a scene that is rebuilt underneath us.
+            var attach = function () {
+              var cv = galaxyCanvasActive.current;
+              if (cv && cv._galaxyOnFullscreenChange !== read) cv._galaxyOnFullscreenChange = read;
+            };
+            var poll = setInterval(function () { attach(); read(); }, 400);
+            attach();
             read();
             return function () {
               document.removeEventListener('fullscreenchange', read);
               document.removeEventListener('webkitfullscreenchange', read);
+              var cv = galaxyCanvasActive.current;
+              if (cv && cv._galaxyOnFullscreenChange === read) cv._galaxyOnFullscreenChange = null;
               clearInterval(poll);
             };
           }, []);
@@ -2174,8 +2211,12 @@ if (!window._galaxyHasLoadedOnce) {
           // because the canvas helpers do not exist before the scene is built.
           React.useEffect(function () {
             var cv = galaxyCanvasActive.current;
-            if (cv && cv._galaxySetFullscreenSidebar) cv._galaxySetFullscreenSidebar(!galaxyFullscreenPanel);
-          }, [galaxyFullscreenPanel, galaxySceneReady]);
+            if (!cv) return;
+            // Width first, so the panel appears at the remembered split rather than
+            // flashing 360px and then jumping.
+            if (cv._galaxySetPanelWidth) cv._galaxySetPanelWidth(galaxyPanelWidthSaved, false);
+            if (cv._galaxySetFullscreenSidebar) cv._galaxySetFullscreenSidebar(!galaxyFullscreenPanel);
+          }, [galaxyFullscreenPanel, galaxySceneReady, galaxyPanelWidthSaved]);
           var _galaxyCameraFeedback = React.useState({ angle: 'angled', zoom: 100, zoomPosition: 0, fieldHeight: 0, regime: 'structure' });
           var galaxyCameraFeedback = _galaxyCameraFeedback[0];
           var setGalaxyCameraFeedback = _galaxyCameraFeedback[1];
@@ -6886,16 +6927,42 @@ if (!window._galaxyHasLoadedOnce) {
             // The sidebar preference is honoured in both, so "fullscreen" does not have
             // to mean "lose the controls".
             var galaxyFsSidebarHidden = true;
+            // Width of the settings column in fullscreen, in px. Driven through a
+            // custom property so the grid template reads it without this code having
+            // to know the template, and clamped on every write: a drag that produced
+            // a 0px or wider-than-the-screen column would leave the learner with no
+            // way to grab the handle again.
+            var GALAXY_PANEL_MIN = 240, GALAXY_PANEL_MAX_FRAC = 0.6;
+            var galaxyFsPanelWidth = 360;
+            function galaxyFsClampPanel(px) {
+              var host = galaxyFocusFrame;
+              var available = (host && host.clientWidth) || window.innerWidth || 1280;
+              // Always leave room for the scene itself, and never go under the min.
+              var max = Math.max(GALAXY_PANEL_MIN, Math.round(available * GALAXY_PANEL_MAX_FRAC));
+              return Math.min(max, Math.max(GALAXY_PANEL_MIN, Math.round(px)));
+            }
+            function galaxyFsApplyPanelWidth() {
+              if (!galaxyFocusFrame) return galaxyFsPanelWidth;
+              galaxyFsPanelWidth = galaxyFsClampPanel(galaxyFsPanelWidth);
+              galaxyFocusFrame.style.setProperty('--galaxy-panel-w', galaxyFsPanelWidth + 'px');
+              return galaxyFsPanelWidth;
+            }
             function galaxyFsMark(active) {
               var workspace = galaxyFocusFrame;
               if (!workspace) return;
               if (active) {
                 workspace.setAttribute('data-galaxy-fullscreen', 'true');
                 workspace.setAttribute('data-galaxy-sidebar', galaxyFsSidebarHidden ? 'hidden' : 'shown');
+                galaxyFsApplyPanelWidth();
               } else {
                 workspace.removeAttribute('data-galaxy-fullscreen');
                 workspace.removeAttribute('data-galaxy-sidebar');
               }
+              // Tell React straight away rather than leaving it to the poll. Both
+              // fullscreen paths run through here, so this is the one place that
+              // always knows; waiting for the 400ms tick left the panel toggle
+              // missing for up to half a second after the view had already changed.
+              if (typeof canvasEl._galaxyOnFullscreenChange === 'function') canvasEl._galaxyOnFullscreenChange(active === true);
               // The stage's CSS box changed, so the drawing buffer has to follow. The
               // ResizeObserver does this, but only after a layout pass; nudging it here
               // avoids a frame of stretched or letterboxed scene on the way in.
@@ -6919,6 +6986,17 @@ if (!window._galaxyHasLoadedOnce) {
             };
             canvasEl._galaxyFullscreenSidebarHidden = function () { return galaxyFsSidebarHidden; };
             canvasEl._galaxyIsFullscreen = function () { return !!(galaxyCssFullscreen || galaxyFsElement()); };
+            // The drag writes straight to the custom property for a smooth resize and
+            // only tells React the final value, so a pointermove does not rerender the
+            // whole tool (and tear down the scene) on every frame.
+            canvasEl._galaxySetPanelWidth = function (px, syncRenderer) {
+              galaxyFsPanelWidth = px;
+              var applied = galaxyFsApplyPanelWidth();
+              if (syncRenderer !== false) galaxyFsSyncRenderer();
+              return applied;
+            };
+            canvasEl._galaxyGetPanelWidth = function () { return galaxyFsPanelWidth; };
+            canvasEl._galaxyClampPanelWidth = function (px) { return galaxyFsClampPanel(px); };
 
             function galaxyFsEnterStyles(immersive) {
               var canvasFrame = canvasEl.parentElement;
@@ -7730,6 +7808,11 @@ if (!window._galaxyHasLoadedOnce) {
             } catch(e){}
 
             var ro = new ResizeObserver(function () {
+              // Re-clamp the panel against the new viewport. Shrinking the window (or
+              // rotating a tablet) could otherwise leave a panel wider than the clamp
+              // allows, squeezing the scene to nothing. Covers native fullscreen too,
+              // which galaxyFsFitViewport does not run for.
+              if ((galaxyCssFullscreen || galaxyFsElement()) && !galaxyFsSidebarHidden) galaxyFsApplyPanelWidth();
               W = canvasEl.offsetWidth; H = canvasEl.offsetHeight;
               var nextPixelRatio = Math.min(window.devicePixelRatio || 1, pixelRatioCap);
               if (Math.abs(renderer.getPixelRatio() - nextPixelRatio) > 0.01) renderer.setPixelRatio(nextPixelRatio);
@@ -9631,6 +9714,52 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
+                // Drag handle between the scene and the settings panel. A separator
+                // role with aria-valuenow makes the split reportable, and the arrow
+                // keys resize it without a pointer — a col-resize drag is unusable for
+                // anyone who cannot hold and move a mouse.
+                React.createElement("div", { "data-galaxy-panel-resizer": "true", role: "separator", tabIndex: 0, "aria-orientation": "vertical", "aria-label": __alloT('stem.galaxy.panel_resizer', 'Resize the settings panel'), "aria-valuenow": galaxyPanelWidth, "aria-valuemin": 240, "aria-valuetext": galaxyPanelWidth + 'px',
+                  onKeyDown: function (e) {
+                    var cv = galaxyCanvasActive.current;
+                    if (!cv || !cv._galaxySetPanelWidth) return;
+                    var step = e.shiftKey ? 64 : 16;
+                    // Left arrow WIDENS: the panel is on the right, so dragging the
+                    // handle left grows it. Matching that keeps the keys unsurprising.
+                    var delta = e.key === 'ArrowLeft' ? step : e.key === 'ArrowRight' ? -step : 0;
+                    if (!delta && e.key !== 'Home' && e.key !== 'End') return;
+                    e.preventDefault(); e.stopPropagation();
+                    var next = e.key === 'Home' ? 240 : e.key === 'End' ? 9999 : cv._galaxyGetPanelWidth() + delta;
+                    setGalaxyPanelWidth(cv._galaxySetPanelWidth(next));
+                  },
+                  onPointerDown: function (e) {
+                    var cv = galaxyCanvasActive.current;
+                    if (!cv || !cv._galaxySetPanelWidth) return;
+                    e.preventDefault();
+                    var handle = e.currentTarget;
+                    handle.setAttribute('data-dragging', 'true');
+                    // Pointer capture keeps the drag alive when the cursor outruns the
+                    // 10px handle, which it always does.
+                    try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+                    var startX = e.clientX, startW = cv._galaxyGetPanelWidth();
+                    var move = function (ev) { cv._galaxySetPanelWidth(startW + (startX - ev.clientX)); };
+                    var up = function () {
+                      handle.removeAttribute('data-dragging');
+                      handle.removeEventListener('pointermove', move);
+                      handle.removeEventListener('pointerup', up);
+                      handle.removeEventListener('pointercancel', up);
+                      // Tell React only once, at the end: a setState per pointermove
+                      // would rerender the tool on every frame of the drag.
+                      setGalaxyPanelWidth(cv._galaxyGetPanelWidth());
+                    };
+                    handle.addEventListener('pointermove', move);
+                    handle.addEventListener('pointerup', up);
+                    handle.addEventListener('pointercancel', up);
+                  },
+                  onDoubleClick: function () {
+                    var cv = galaxyCanvasActive.current;
+                    if (cv && cv._galaxySetPanelWidth) setGalaxyPanelWidth(cv._galaxySetPanelWidth(360));
+                  }
+                }),
                 React.createElement("aside", { "data-galaxy-controls": "true", className: "rounded-2xl border border-slate-200 bg-slate-50/95 p-3 shadow-lg shadow-slate-900/5 xl:sticky xl:top-4 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto" },
                   React.createElement("div", { className: "mb-3 flex items-start gap-3" },
                     React.createElement("div", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-700 text-lg text-white shadow-md", "aria-hidden": true }, "✦"),
@@ -11343,7 +11472,7 @@ if (!window._galaxyHasLoadedOnce) {
                     // that de-biases answer position.
                     var optLetter = String.fromCharCode(65 + optIndex);
                     var chipClass = !answered ? "bg-indigo-600 text-white"
-                      : isAnswer ? "bg-green-600 text-white"
+                      : isAnswer ? "bg-green-700 text-white"
                       : isMyPick ? "bg-red-600 text-white"
                       : "bg-slate-300 text-slate-700";
                     var marker = !answered ? null : isAnswer ? "\u2713 " : isMyPick ? "\u2717 " : "";

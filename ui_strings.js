@@ -72858,7 +72858,7 @@
       "snowplows": "Snowplows",
       "never_pass_a_plow_on_the_right_the_bla": "Never pass a plow on the right — the blade throws snow and debris that direction. Stay 4+ truck lengths back. Plows often travel 30–40 mph even on highways; that slow-moving orange light is your safest speed too.",
       "windshield_roof": "Windshield + roof",
-      "maine_2396_b_requires_a_clear_view_thr": "Maine §2093 requires reasonable measures to prevent snow or ice from falling off vehicles under 10,000 lb. Safest practice: clear the roof, windows, lights, and hood before driving.",
+      "maine_2396_b_requires_a_clear_view_thr": "Maine §2093 requires reasonable measures to prevent snow or ice falling off a vehicle registered under 10,000 lb (bigger trucks are exempt — clearing them is impractical). It becomes a traffic infraction when what falls off actually causes damage or injury: up to $50 first offence, $150–$250 after. Safest practice: clear the roof, windows, lights and hood before driving — a roof slab that slides onto your own windshield at speed blinds you instantly.",
       "hitting_black_ice": "Hitting black ice",
       "following_distance_on_snow": "Following distance on snow",
       "tail_swinging_out_oversteer": "Tail swinging out (oversteer)",
