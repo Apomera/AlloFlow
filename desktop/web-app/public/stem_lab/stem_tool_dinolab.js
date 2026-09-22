@@ -10148,9 +10148,13 @@ window.StemLab = window.StemLab || {
               var knee = vec(x + (front ? -len * 0.012 : (isTheropod ? -len * 0.043 : len * 0.018)) * columnFactor, Math.max(0.20 * detailScale, top.y * (front ? 0.52 : (0.55 + (distalScale - 1) * 0.10)) - posture.kneeFlex * Math.max(0.20 * detailScale, top.y)), z + sideSign * Math.max(0.015 * detailScale, bodyDepth * 0.06) * columnFactor);
               var ankle = vec(x + (front ? -len * 0.026 : len * (isTheropod ? 0.025 : 0.050) * distalScale) * columnFactor, Math.max(0.10 * detailScale, top.y * 0.16 * distalScale), z + sideSign * Math.max(0.045 * detailScale, bodyDepth * 0.12) * columnFactor);
               var foot = vec(x + (front ? -len * 0.050 : len * (isTheropod ? 0.005 : 0.065) * distalScale) * posture.footReach * columnFactor, Math.max(0.008, ht * 0.010), z + sideSign * Math.max(0.08 * detailScale, bodyDepth * 0.20) * columnFactor);
-              addBodyPartAnchor(front ? 'forelimb' : 'thigh', topPoint.clone().lerp(knee, 0.52));
-              addBodyPartAnchor(front ? 'hand' : 'foot', foot);
-              if (!front) { addBodyPartAnchor('knee', knee); addBodyPartAnchor('ankle', ankle); }
+              var limbAnchors = [];
+              limbAnchors.push(addBodyPartAnchor(front ? 'forelimb' : 'thigh', topPoint.clone().lerp(knee, 0.52)));
+              limbAnchors.push(addBodyPartAnchor(front ? 'hand' : 'foot', foot));
+              if (!front) {
+                limbAnchors.push(addBodyPartAnchor('knee', knee));
+                limbAnchors.push(addBodyPartAnchor('ankle', ankle));
+              }
               var upperRadius = Math.max(0.034 * detailScale, ht * (front ? 0.011 : 0.013)) * limbRobustness;
               var lowerRadius = Math.max(0.028 * detailScale, ht * (front ? 0.009 : 0.011)) * limbRobustness;
               var upperBoneBow = front ? Math.min(0.008, skeletalProfile.longBoneBow) : skeletalProfile.longBoneBow;
@@ -10206,6 +10210,13 @@ window.StemLab = window.StemLab || {
                 var upperLimbShell = addSoftTissueChain([limbSkinRoot, thighMid, knee, calfMid, ankle, foot],
                   [thighRadius * 0.88, thighRadius, kneeRadius, kneeRadius * 1.02, ankleRadius, ankleRadius * 0.68], bodyMat)[0];
                 upperLimbShell.userData.dinoRegion = (front ? 'foreleg-' : 'hindleg-') + sideSign;
+                limbAnchors.forEach(function (limbAnchor) {
+                  if (!limbAnchor || limbAnchor.parent === upperLimbShell) return;
+                  var worldPoint = limbAnchor.getWorldPosition(new THREE.Vector3());
+                  upperLimbShell.updateMatrixWorld(true);
+                  upperLimbShell.add(limbAnchor);
+                  limbAnchor.position.copy(upperLimbShell.worldToLocal(worldPoint));
+                });
                 idleMotion.legs.push({
                   mesh: upperLimbShell,
                   baseRotation: upperLimbShell.rotation.clone(),
@@ -11490,7 +11501,7 @@ var evidenceRoute = [
               style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 12, fontWeight: 800, cursor: deviceReducedMotion ? 'default' : 'pointer' } },
               deviceReducedMotion ? __alloT('stem.dinolab.motion_reduced', 'Motion reduced') : (motionPaused ? __alloT('stem.dinolab.resume_motion', 'Resume motion') : __alloT('stem.dinolab.pause_motion', 'Pause motion'))),
             el('span', { role: 'status', 'aria-live': 'polite', style: { flex: '1 1 220px', fontSize: 11.5, color: T.soft, lineHeight: 1.4 } },
-              deviceReducedMotion ? __alloT('stem.dinolab.device_motion_paused', 'Motion is paused by your device preference.') : (motionPaused ? __alloT('stem.dinolab.motion_paused_help', 'Motion paused. You can still rotate and zoom.') : __alloT('stem.dinolab.motion_help', 'Pause breathing, feather movement, and auto spin.')))
+              deviceReducedMotion ? __alloT('stem.dinolab.device_motion_paused', 'Motion is paused by your device preference.') : (motionPaused ? __alloT('stem.dinolab.motion_paused_help', 'Motion paused. You can still rotate and zoom.') : __alloT('stem.dinolab.motion_help', 'Pause breathing, the head turn, the leg gait, feather movement, and auto spin.')))
           ),
           renderEvidenceRoute(),
           el('details', { className: 'dinolab-3d-controls-disclosure', open: props.focusMode ? true : null, style: { marginTop: 8 } },
