@@ -36,6 +36,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const src = fs.readFileSync(path.join(ROOT, 'stem_lab/stem_tool_roadready.js'), 'utf8');
 
+const FAIL_BANNER = '✗ check_roadready_stopping_prose FAILED';
 const errors = [];
 
 function readNum(re, label) {
@@ -56,10 +57,77 @@ if (errors.length) {
   process.exit(1);
 }
 
-const G = 9.81;
-const brakingFt = (mph) => ((mph * MPH_TO_MS) ** 2 / (2 * MU * G)) * FT_PER_M;
-const reactionFt = (mph, rt) => mph * MPH_TO_MS * rt * FT_PER_M;
-const totalFt = (mph, rt) => brakingFt(mph) + reactionFt(mph, rt);
+// Load the tool and use ITS OWN stoppingDistance(), rather than re-deriving
+// v^2/(2*mu*g) here. Proven necessary on 2026-09-21: dropping the factor of 2
+// from the real stoppingDistance() -- which doubles every braking distance the
+// tool reports -- left this gate and all five sibling physics gates GREEN,
+// while 14 tests in the vitest suite went red. The tests called the function;
+// the gates each carried a private copy of the formula that stayed correct no
+// matter what the tool did. A gate that recomputes the value cannot fail.
+//
+// The extracted MU / MPH_TO_MS / FT_PER_M above are kept, but only to report
+// the model in the success line and to cross-check the loaded function below.
+const vm = require('vm');
+function loadRoadReady() {
+  const win = { __RR_TEST_EXPORTS__: {} };
+  const noop = function () {};
+  const elStub = () => ({ style: {}, setAttribute: noop, appendChild: noop,
+    addEventListener: noop, getContext: () => null,
+    classList: { add: noop, remove: noop } });
+  const doc = { createElement: elStub, getElementById: () => null,
+    head: { appendChild: noop }, body: { appendChild: noop },
+    addEventListener: noop, querySelector: () => null, querySelectorAll: () => [] };
+  const sandbox = {
+    window: win, globalThis: win, self: win, document: doc,
+    navigator: { userAgent: 'node', language: 'en' },
+    console: { log: noop, warn: noop, error: noop, info: noop },
+    Math, Date, JSON,
+    setTimeout: noop, clearTimeout: noop, setInterval: noop, clearInterval: noop,
+    requestAnimationFrame: noop, cancelAnimationFrame: noop,
+    localStorage: { getItem: () => null, setItem: noop, removeItem: noop },
+    performance: { now: () => 0 },
+  };
+  win.document = doc;
+  vm.createContext(sandbox);
+  vm.runInContext(src, sandbox, { filename: 'stem_tool_roadready.js', timeout: 60000 });
+  const RR = win.__RR_TEST_EXPORTS__ && win.__RR_TEST_EXPORTS__.roadReady;
+  if (!RR || typeof RR.stoppingDistance !== 'function') {
+    throw new Error('roadready loaded but did not export stoppingDistance() via ' +
+      '__RR_TEST_EXPORTS__ -- this gate cannot verify anything, so it fails rather ' +
+      'than falling back to its own copy of the formula');
+  }
+  return RR;
+}
+
+let RR;
+try {
+  RR = loadRoadReady();
+} catch (e) {
+  console.error('\n' + FAIL_BANNER + '\n');
+  console.error('  • ' + e.message + '\n');
+  process.exit(1);
+}
+
+const brakingFt = (mph) => RR.stoppingDistance(mph, 'clear', 1.5).braking_ft;
+const reactionFt = (mph, rt) => RR.stoppingDistance(mph, 'clear', rt).reaction_ft;
+const totalFt = (mph, rt) => RR.stoppingDistance(mph, 'clear', rt).total_ft;
+
+// Cross-check: the constants this gate reads by regex must agree with the
+// loaded model. If they diverge, one of the two is reading stale source.
+{
+  const probe = RR.stoppingDistance(60, 'clear', 1.5);
+  const expected = ((60 * MPH_TO_MS) ** 2 / (2 * MU * 9.81)) * FT_PER_M;
+  if (Math.abs(probe.braking_ft - expected) > 0.5) {
+    errors.push('the loaded stoppingDistance() disagrees with the constants read from ' +
+      'source: braking at 60 mph is ' + probe.braking_ft.toFixed(1) + ' ft from the ' +
+      'function but ' + expected.toFixed(1) + ' ft from mu=' + MU + '. The formula in ' +
+      'stoppingDistance() has changed shape -- re-derive the prose figures against it.');
+  }
+  if (Math.abs(probe.mu - MU) > 1e-9) {
+    errors.push('frictionCoef dry mu is ' + probe.mu + ' from the function but ' + MU +
+      ' by regex -- the regex anchor is stale.');
+  }
+}
 
 // Claims that legitimately describe something other than the dry 1.5 s model.
 // Each needs a reason; an unexplained exemption is how a wrong number hides.
