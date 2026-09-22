@@ -924,6 +924,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
       // ── State Management ──
       var d = (labToolData && labToolData.moonMission) || {};
+      // Saved state is user data: an older, hand-edited or corrupted save can hold the
+      // wrong TYPE in any key, and the later phases dereference these (the quiz indexes
+      // the bank with quizIdx, the debrief calls .toFixed on the landing and entry
+      // records). Normalise the ones that can crash a render once, here.
+      d = (function (raw) {
+        var s = Object.assign({}, raw);
+        var isNum = function (v) { return typeof v === 'number' && isFinite(v); };
+        var isObj = function (v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+        ['lunarSamples', 'decisionLog', 'missionLog'].forEach(function (k) {
+          if (s[k] != null) s[k] = Array.isArray(s[k]) ? s[k].filter(isObj) : [];
+        });
+        if (s.resolvedEvents != null && !Array.isArray(s.resolvedEvents)) s.resolvedEvents = [];
+        if (s.earnedBadges != null && !isObj(s.earnedBadges)) s.earnedBadges = {};
+        if (s.quizIdx != null && !(isNum(s.quizIdx) && s.quizIdx >= 0 && s.quizIdx % 1 === 0)) s.quizIdx = 0;
+        if (s.landingResult != null && !(isObj(s.landingResult) && isNum(s.landingResult.vVel) && isNum(s.landingResult.hVel))) s.landingResult = null;
+        if (s.entryOutcome != null && !(isObj(s.entryOutcome) && isNum(s.entryOutcome.angle) && isNum(s.entryOutcome.peakG) && typeof s.entryOutcome.outcome === 'string')) s.entryOutcome = null;
+        if (s.deltaVHunt != null && (!isObj(s.deltaVHunt) || (s.deltaVHunt.log != null && !Array.isArray(s.deltaVHunt.log)))) s.deltaVHunt = null;
+        return s;
+      })(d);
       // `val` may be a plain value OR an updater function that receives the CURRENT
       // stored value. The updater form is mandatory anywhere the write happens outside
       // the render pass that produced `d` — above all inside the EVA render loop, whose
@@ -1355,7 +1374,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         pilot:     { label: t('stem.moonmission.pilot', 'Pilot'),      icon: '\u2B50', desc: t('stem.moonmission.standard_apollo_parameters', 'Standard Apollo parameters'), gravity: 1.62, fuel: 100, o2Rate: 0.3, eventFreq: 0.6, showEffects: true, showOptimalHint: false },
         commander: { label: t('stem.moonmission.commander', 'Commander'),  icon: '\uD83C\uDFC5', desc: t('stem.moonmission.realistic_tight_fuel_budget_faster_o_d', 'Realistic \u2014 tight fuel budget, faster O\u2082 drain'), gravity: 1.62, fuel: 70, o2Rate: 0.6, eventFreq: 0.9, showEffects: false, showOptimalHint: false }
       };
-      var difficulty = (d.difficulty === 'pilot' || d.difficulty === 'commander') ? d.difficulty : 'pilot';
+      // Any key of DIFFICULTIES. The type-guard pass listed only two of the three, so
+      // choosing Tourist stored 'tourist' and then played Pilot with Pilot checked.
+      var difficulty = Object.prototype.hasOwnProperty.call(DIFFICULTIES, d.difficulty) ? d.difficulty : 'pilot';
       var diffSettings = DIFFICULTIES[difficulty];
 
       // ── Achievement Badges ──
@@ -1391,7 +1412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var quizIdx = d.quizIdx || 0;
       var quizCorrect = d.quizCorrect || 0;
       var quizAnswered = d.quizAnswered || false;
-      var quizSelectedAnswer = d.quizSelectedAnswer || -1;
+      var quizSelectedAnswer = typeof d.quizSelectedAnswer === 'number' ? d.quizSelectedAnswer : -1;   // 0 is the first option, not 'unanswered'
 
       // ── Mission Timer ──
       var missionStartTime = d.missionStartTime || 0;
@@ -7827,8 +7848,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('mccChoice', null);
                 upd('entryAngle', null);
                 upd('entryOutcome', null);
-                upd('aiBriefing', null);
+                // aiBriefing is kept: it is the teacher's customization of the whole
+                // mission (objectives, samples, quiz), not something this flight earned.
                 upd('aiBriefingLoading', false);
+                upd('eventPhaseTarget', null);   // a stale target rewound the next flight
+                upd('webglError', false);        // the next EVA opened on the error panel
                 upd('descentStarted', false);
                 upd('evaStarted', false);
                 upd('quizSelectedAnswer', -1);
