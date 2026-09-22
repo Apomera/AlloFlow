@@ -650,10 +650,32 @@
           else el.removeAttribute('data-allo-fullscreen-active');
         } catch (e) {}
       };
+      // Undo the fill-frame body lock, but only while the body still carries it.
+      // The STEM Lab modal locks the body with the same pair and restores its own
+      // snapshot on close, so if the modal closed first the snapshot taken here is
+      // the modal's 'hidden'; writing it back afterwards locked the whole app.
+      var _stemFsReleaseBody = function(el) {
+        var lock = el.__alloFsBodyLock, b = document.body;
+        el.__alloFsBodyLock = null;
+        if (!lock || !b) return null;
+        if (b.style.overflow !== 'hidden' || b.style.overscrollBehavior !== 'none') return null;
+        b.style.overflow = lock.overflow;
+        b.style.overscrollBehavior = lock.overscroll;
+        return lock;
+      };
       var _stemFsExit = function(el) {
         if (!el) return;
         el.__alloFsOn = false;
         _stemFsNotify(el, false);
+        // Give the page its scrolling back, and put the learner where they were.
+        // Restoring overflow alone is not enough: while the body was locked the
+        // browser may still have moved scrollTop, and the tool is usually well down
+        // a long page, so landing back at the top loses their place.
+        var released = null;
+        try { released = _stemFsReleaseBody(el); } catch (e) {}
+        if (released && typeof released.scrollY === 'number') {
+          try { window.scrollTo(released.scrollX, released.scrollY); } catch (e) {}
+        }
         var s = el.style, saved = el.__alloFsSaved || {}, savedPri = el.__alloFsSavedPri || {};
         // Restore the PRIORITY too. getPropertyValue returns the value alone, so a
         // stage that carried `height: 400px !important` inline came back as a plain
@@ -687,6 +709,25 @@
           try { window.dispatchEvent(new Event('resize')); } catch (e) {}
           return;
         }
+        // Stop the page scrolling behind the fill-frame. The overlay is fixed and
+        // covers the viewport, so the scroll is invisible - the learner drags on the
+        // stage, nothing in the tool moves, and they land somewhere else entirely
+        // when they leave fullscreen. overscroll-behavior stops a touch scroll
+        // chaining to the page, which is the same pair the module's modal already
+        // uses. Real fullscreen needs none of this; only the CSS fallback does.
+        try {
+          var bl = document.body;
+          if (bl && !el.__alloFsBodyLock) {
+            el.__alloFsBodyLock = {
+              overflow: bl.style.overflow,
+              overscroll: bl.style.overscrollBehavior,
+              scrollX: window.scrollX || 0,
+              scrollY: window.scrollY || 0
+            };
+            bl.style.overflow = 'hidden';
+            bl.style.overscrollBehavior = 'none';
+          }
+        } catch (e) {}
         Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); el.__alloFsSavedPri[p] = s.getPropertyPriority(p); s.setProperty(p, _stemFsProps[p], 'important'); });
         // The Escape handler is removed by _stemFsExit, but a tool can unmount
         // while still in CSS fullscreen (the hub's "all tools" button does not
@@ -698,6 +739,10 @@
           if (!el.isConnected && el.isConnected !== undefined) {
             try { document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
             el.__alloFsOn = false;
+            // The stage is gone, so nothing will call _stemFsExit for it. Release
+            // the body lock here or the whole page stays unscrollable for the rest
+            // of the session, with no element left on screen to explain why.
+            try { _stemFsReleaseBody(el); } catch (e2) {}
             return;
           }
           if (ev && ev.key === 'Escape') _stemFsExit(el);

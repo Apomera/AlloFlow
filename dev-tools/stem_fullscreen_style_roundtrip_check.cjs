@@ -34,7 +34,11 @@ function page(mod) {
     // precisely what the stage's own !important exists to hold off, so it is the
     // condition that makes a lost priority visible rather than merely untidy.
     + '<style>#stage { height: 90px !important; } #plain { height: 70px; }</style>\n'
+    + '<style>body{margin:0}</style>\n'
     + '</head><body>\n'
+    // Tall filler so the page can actually scroll: the scroll-lock assertions below
+    // need a page that scrolls, or "it did not scroll" passes for the wrong reason.
+    + '<div id="filler" style="height:3000px">tall page</div>\n'
     + '<div id="stage" style="height:400px !important;position:relative;border-radius:12px">S</div>\n'
     + '<div id="plain" style="height:300px;position:relative">P</div>\n'
     + '<script>window.StemLab={registerTool:function(){},registerHelper:function(){},getHelper:function(){return null;}};<\/script>\n'
@@ -96,6 +100,62 @@ async function run(chromium, mod, label) {
         JSON.stringify(s.before.posPri) + ' -> ' + JSON.stringify(s.after.posPri));
       ok('plain stage restored too', p.after.h === p.before.h, p.before.h + ' -> ' + p.after.h);
     }
+    // ── Scroll lock ──────────────────────────────────────────────────────
+    // The fill-frame is a fixed overlay covering the viewport, so a scroll behind it
+    // is INVISIBLE: the learner drags, nothing in the tool moves, and they are
+    // somewhere else on the page when they leave. Driven with a real wheel gesture,
+    // because window.scrollTo() is programmatic and bypasses overflow:hidden when the
+    // scrolling element is <html> - it scrolls either way and proves nothing.
+    const stageSel = '#stage';
+    await pg.evaluate((sel) => { window.scrollTo(0, 0); document.querySelector(sel); }, stageSel);
+    await pg.mouse.move(450, 300);
+    await pg.mouse.wheel(0, 400);
+    await pg.waitForTimeout(220);
+    const baselineScroll = await pg.evaluate(() => Math.round(window.scrollY));
+    await pg.evaluate(() => window.scrollTo(0, 0));
+    await pg.evaluate((sel) => window.__alloStemFS(document.querySelector(sel)), stageSel);
+    await pg.waitForTimeout(180);
+    await pg.mouse.move(450, 300);
+    await pg.mouse.wheel(0, 400);
+    await pg.waitForTimeout(220);
+    const lockedScroll = await pg.evaluate(() => Math.round(window.scrollY));
+    await pg.evaluate((sel) => window.__alloStemFS(document.querySelector(sel)), stageSel);
+    await pg.waitForTimeout(180);
+    await pg.mouse.wheel(0, 400);
+    await pg.waitForTimeout(220);
+    const afterScroll = await pg.evaluate(() => Math.round(window.scrollY));
+    await pg.evaluate(() => window.scrollTo(0, 0));
+    // Assert the baseline first: if the page could not scroll anyway, "it did not
+    // scroll" during the fill-frame would be a vacuous pass.
+    ok('page scrolls normally without the fill-frame', baselineScroll > 0,
+      'a wheel gesture moved the page ' + baselineScroll + 'px - the lock test below would be vacuous');
+    ok('page does not scroll behind the fill-frame', lockedScroll === 0,
+      'wheel moved the page ' + lockedScroll + 'px behind an overlay that hides it');
+    ok('scrolling is restored on exit', afterScroll > 0,
+      'page left unscrollable after leaving the fill-frame (scrollY ' + afterScroll + ')');
+
+    // ── Modal closes first ───────────────────────────────────────────────
+    // Inside STEM Lab the modal already holds the body at overflow:hidden +
+    // overscroll:none and restores its own snapshot on close, so the fill-frame
+    // snapshots the MODAL's lock. If the stage unmounts in fill-frame (the hub's
+    // tool switch does not exit first) and the modal is then closed by mouse, the
+    // orphaned Escape handler wrote that stale 'hidden' back on the next keypress
+    // and the whole app stopped scrolling.
+    const modal = await pg.evaluate(() => {
+      const body = document.body;
+      body.style.overflow = 'hidden'; body.style.overscrollBehavior = 'none';   // modal opens
+      const el = document.createElement('div');
+      el.style.height = '200px';
+      body.appendChild(el);
+      window.__alloStemFS(el);                                                // fill-frame
+      el.remove();                                                            // tool switched away
+      body.style.overflow = ''; body.style.overscrollBehavior = '';          // modal closed by mouse
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));    // next keypress
+      return { overflow: body.style.overflow, overscroll: body.style.overscrollBehavior };
+    });
+    ok('a closed modal is not re-locked by an orphaned fill-frame', modal.overflow === '' && modal.overscroll === '',
+      'body left at ' + JSON.stringify(modal) + ' after the modal restored it');
+
     // ── Re-entry ─────────────────────────────────────────────────────────
     // Entering the fill-frame twice without an exit between. A tool that re-renders
     // can hand over a node whose __alloFsOn flag reads false while the fill-frame
@@ -238,12 +298,34 @@ async function run(chromium, mod, label) {
     reRed = !(await run(chromium, brokenRe, 'MUTATED (re-entry re-snapshots)'));
   }
 
-  const allRed = !mutated && sweepRed === true && reRed === true;
-  console.log('\nselftest: ' + (allRed ? 'PASS — the gate goes red on all three real defects'
+  console.log('\n=== selftest: not locking the page behind the fill-frame ===');
+  const lockMarker = "bl.style.overflow = 'hidden';";
+  let lockRed = null;
+  if (mod.indexOf(lockMarker) < 0) {
+    console.log('SELFTEST INCONCLUSIVE — body lock not found; update the marker.');
+  } else {
+    const brokenLock = mod.replace(lockMarker, "bl.style.overflow = bl.style.overflow;");
+    lockRed = !(await run(chromium, brokenLock, 'MUTATED (no body scroll lock)'));
+  }
+
+  console.log('\n=== selftest: releasing a lock the body no longer carries ===');
+  const ownMarker = "if (b.style.overflow !== 'hidden' || b.style.overscrollBehavior !== 'none') return null;";
+  let ownRed = null;
+  if (mod.indexOf(ownMarker) < 0) {
+    console.log('SELFTEST INCONCLUSIVE — ownership guard not found; update the marker.');
+  } else {
+    const brokenOwn = mod.replace(ownMarker, '');
+    ownRed = !(await run(chromium, brokenOwn, 'MUTATED (release ignores who owns the body)'));
+  }
+
+  const allRed = !mutated && sweepRed === true && reRed === true && lockRed === true && ownRed === true;
+  console.log('\nselftest: ' + (allRed ? 'PASS — the gate goes red on all five real defects'
     : 'FAIL — a reinstated defect left the gate green'
       + (mutated ? ' [priority]' : '') + (sweepRed === false ? ' [sweep]' : '')
       + (sweepRed === null ? ' [sweep inconclusive]' : '')
-      + (reRed === false ? ' [re-entry]' : '') + (reRed === null ? ' [re-entry inconclusive]' : '')));
+      + (reRed === false ? ' [re-entry]' : '') + (reRed === null ? ' [re-entry inconclusive]' : '')
+      + (lockRed === false ? ' [scroll lock]' : '') + (lockRed === null ? ' [scroll lock inconclusive]' : '')
+      + (ownRed === false ? ' [lock ownership]' : '') + (ownRed === null ? ' [lock ownership inconclusive]' : '')));
   console.log(live ? 'live helper: OK' : 'live helper: FAILURES above');
   process.exit(allRed && live ? 0 : 1);
 })();
