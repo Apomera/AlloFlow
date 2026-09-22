@@ -1679,8 +1679,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
   function drivingFollowingTarget(weather) {
     // Practice targets, not a guarantee of stopping room or a legal minimum.
-    return weather === 'rain' ? 4 :
-      (weather === 'snow' || weather === 'fog' || weather === 'ice') ? 6 : 3;
+    //
+    // Shares followingSecondsFor() with safeFollowingFeet() and
+    // recommendedFollowingMeters() so the HUD target cannot contradict what
+    // the Stopping Distance Lab teaches. This used to be a third private
+    // table; it agreed on every weather the drive loop can actually produce
+    // (clear/rain/snow/fog) but gave ice 6 s where the other two give 8.
+    // No scenario has weather: 'ice', so that branch was unreachable rather
+    // than wrong on screen -- but a future icy scenario would have inherited
+    // a HUD that contradicted the lesson.
+    return followingSecondsFor(weather);
   }
   function drivingFollowingDisplay(gapMeters, speedMps, weather) {
     var target = drivingFollowingTarget(weather);
@@ -28312,6 +28320,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // UI RENDERING (menus, lessons, permit test, debrief, driving)
       // ═══════════════════════════════════════════
 
+      // ── Tool catalog: ONE list feeds the menu (grouped by learner goal) and the
+      // help directory (searchable). Adding a view here is the only registration
+      // a tool needs to appear in both places.
+      var features = [
+        { view: 'permitStart', goal: 'permit', icon: '📝', name: __alloT('stem.roadready.permit_test_20q_quiz', 'Permit Test (20q quiz)'), desc: 'Randomized 20-question practice test from ' + PERMIT_BANK.length + ' Maine BMV-style questions.' },
+        { view: 'permitFlashcards', goal: 'permit', icon: '🗂️', name: __alloT('stem.roadready.permit_flashcards_3', 'Permit Flashcards'), desc: 'Spaced-repetition study mode for all ' + PERMIT_BANK.length + ' permit questions.' },
+        { view: 'cheatSheet', goal: 'permit', icon: '📄', name: __alloT('stem.roadready.study_cheat_sheet_2', 'Study Cheat Sheet'), desc: __alloT('stem.roadready.printable_one_page_summary_of_all_key_', 'Printable one-page summary of all key rules.') },
+        { view: 'signsView', goal: 'permit', icon: '🪧', name: __alloT('stem.roadready.road_signs_reference_2', 'Road Signs Reference'), desc: __alloT('stem.roadready.19_common_signs_with_svg_illustrations', '19 common signs with SVG illustrations + quiz mode.') },
+        { view: 'rightOfWay', goal: 'permit', icon: '↔️', name: __alloT('stem.roadready.right_of_way_scenarios_2', 'Right-of-Way Scenarios'), desc: __alloT('stem.roadready.10_who_goes_first_intersection_puzzles', '20 right-of-way and intersection puzzles.') },
+        { view: 'scenarioSelect', goal: 'practice', icon: '🚗', name: 'Drive Simulator (' + SCENARIOS.length + ' scenarios)', desc: __alloT('stem.roadready.residential_highway_snow_fog_night_dow', 'Residential, highway, snow, fog, night, downtown, and more.') },
+        { view: 'freeExploreSetup', goal: 'practice', icon: '🌎', name: __alloT('stem.roadready.free_explore_5', 'Free Explore'), desc: __alloT('stem.roadready.open_sandbox_with_landmarks_challenges', 'Open sandbox with landmarks, challenges, road trips, dynamic weather.') },
+        { view: 'lessonPath', goal: 'practice', icon: '🎓', name: __alloT('stem.roadready.lesson_path_3', 'Lesson Path'), desc: __alloT('stem.roadready.guided_10_lesson_progression_from_begi', 'Guided 10-lesson progression from beginner to winter expert.') },
+        { view: 'roadTestIntro', goal: 'practice', icon: '🪪', name: __alloT('stem.roadready.road_test_simulator_3', 'Road Test Simulator'), desc: __alloT('stem.roadready.full_maine_bmv_style_scored_exam_pre_t', 'Full Maine BMV-style scored exam (pre-trip + 4min drive).') },
+        { view: 'parkingMenu', goal: 'practice', icon: '🅿️', name: __alloT('stem.roadready.parking_practice_7_scenarios', 'Parking Practice (9 Scenarios)'), desc: __alloT('stem.roadready.parallel_tight_parallel_3_point_backin', 'Parallel, tight parallel, 3-point, backing, angle-back, obstacle, U-turn, hydrant, and hill parking. Personal-best scores save.') },
+        { view: 'nightVisionIntro', goal: 'practice', icon: '🌃', name: __alloT('stem.roadready.night_vision_training_3', 'Night Vision Training'), desc: __alloT('stem.roadready.focused_night_drive_drill_with_coach_p', 'Focused night-drive drill with coach prompts.') },
+        { view: 'parentRideCheck', goal: 'practice', icon: '👨‍👧', name: __alloT('stem.roadready.parent_ride_check_3', 'Parent Ride Check'), desc: __alloT('stem.roadready.2_min_structured_eval_parent_taps_to_m', '2-min structured eval — parent taps to mark errors.') },
+        { view: 'defensiveList', goal: 'safety', icon: '🛡️', name: __alloT('stem.roadready.defensive_drills_2', 'Defensive Drills'), desc: __alloT('stem.roadready.8_hazard_response_scenarios_with_corre', '8 hazard-response scenarios with correct-answer reveals.') },
+        { view: 'mooseSafety', goal: 'safety', icon: '🫎', name: __alloT('stem.roadready.moose_encounter_drill_2', 'Moose Encounter Drill'), desc: __alloT('stem.roadready.maine_specific_what_to_do_when_a_moose', 'Maine-specific: what to do when a moose is in the road.') },
+        { view: 'emergencyVehicle', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_vehicle_drill_2', 'Emergency Vehicle Drill'), desc: __alloT('stem.roadready.maine_move_over_law_pull_to_right_rule', 'Maine Move Over law, pull-to-right rule, stationary vehicles.') },
+        { view: 'schoolBus', goal: 'safety', icon: '🚌', name: __alloT('stem.roadready.school_bus_stop_drill_2', 'School Bus Stop Drill'), desc: __alloT('stem.roadready.when_to_stop_for_a_stopped_school_bus_', 'When to stop for a stopped school bus (Maine §2308).') },
+        { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: __alloT('stem.roadready.railroad_crossing_drill_2', 'Railroad Crossing Drill'), desc: __alloT('stem.roadready.federal_maine_crossing_rules_and_the_4', 'Railroad crossing rules — and the 45° escape if you stall.') },
+        { view: 'winterDriving', goal: 'safety', icon: '❄️', name: __alloT('stem.roadready.winter_driving_drill_2', 'Winter Driving Drill'), desc: __alloT('stem.roadready.black_ice_skid_recovery_plow_etiquette', 'Black ice, skid recovery, plow etiquette, and the 4WD myth.') },
+        { view: 'constructionZone', goal: 'safety', icon: '🚧', name: __alloT('stem.roadready.construction_zone_drill_2', 'Construction Zone Drill'), desc: __alloT('stem.roadready.flaggers_zipper_merges_barrels_pilot_c', 'Flaggers, zipper merges, barrels, pilot cars, and posted construction-speed penalties.') },
+        { view: 'roundaboutDrill', goal: 'safety', icon: '🔄', name: __alloT('stem.roadready.roundabout_drill_2', 'Roundabout Drill'), desc: __alloT('stem.roadready.yield_signal_timing_multi_lane_trucks_', 'Yield, signal timing, multi-lane trucks, pedestrians — Maine is adding these fast.') },
+        { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: __alloT('stem.roadready.oui_impaired_driving_drill_2', 'OUI / Impaired-Driving Drill'), desc: __alloT('stem.roadready.maine_0_02_bac_zero_tolerance_implied_', 'Maine under-21 0.00 zero-tolerance, implied consent, Rx + marijuana rules.') },
+        { view: 'peerPressure', goal: 'safety', icon: '🙅', name: __alloT('stem.roadready.peer_pressure_practice', 'Peer Pressure Practice'), desc: __alloT('stem.roadready.8_real_teen_situations_say_no_like_you', '8 real teen situations: say no like you mean it.') },
+        { view: 'distractedLab', goal: 'safety', icon: '📱', name: __alloT('stem.roadready.distracted_driving_lab_2', 'Distracted Driving Lab'), desc: __alloT('stem.roadready.visualize_the_cost_of_a_3_second_phone', 'Visualize the cost of a 3-second phone glance.') },
+        { view: 'reactionTest', goal: 'safety', icon: '⚡', name: __alloT('stem.roadready.reaction_time_test_2', 'Reaction Time Test'), desc: __alloT('stem.roadready.your_baseline_vs_simulated_0_08_bac', 'Your baseline vs modeled impairment lag.') },
+        { view: 'emergencyHandbook', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_handbook_3', 'Emergency Handbook'), desc: __alloT('stem.roadready.tire_blowout_brake_failure_hydroplane_', 'Tire blowout, brake failure, hydroplane — 9 critical responses.') },
+        { view: 'postCrash', goal: 'safety', icon: '📞', name: __alloT('stem.roadready.post_crash_protocol_3', 'Post-Crash Protocol'), desc: __alloT('stem.roadready.first_10_minutes_after_a_crash_2', 'First 10 minutes after a crash.') },
+        { view: 'bikeAware', goal: 'safety', icon: '🚴', name: __alloT('stem.roadready.cyclist_moto_awareness_2', 'Cyclist & Moto Awareness'), desc: __alloT('stem.roadready.3_ft_law_shared_blind_spots_right_hook', '3-ft law, shared blind spots, right-hook avoidance.') },
+        { view: 'crashLab', goal: 'science', icon: '🔬', name: __alloT('stem.roadready.crash_reconstruction_lab_2', 'Crash Reconstruction Lab'), desc: __alloT('stem.roadready.physics_of_real_crashes_rear_end_t_bon', 'Physics of real crashes: rear-end, T-bone, rollover, hydroplane.') },
+        { view: 'stoppingLab', goal: 'science', icon: '📐', name: __alloT('stem.roadready.stopping_distance_lab_2', 'Stopping Distance Lab'), desc: __alloT('stem.roadready.live_v_2_g_physics_with_weather_reacti', 'Live v² / 2μg physics with weather, reaction time, and tire condition.') },
+        { view: 'lessonSelect', goal: 'science', icon: '📚', name: __alloT('stem.roadready.auto_science_lessons', 'Auto Science Lessons'), desc: __alloT('stem.roadready.formal_physics_drag_friction_mpg_kinet', 'Formal physics: drag, friction, MPG, kinetic energy.') },
+        { view: 'hypermilingLab', goal: 'science', icon: '🌿', name: __alloT('stem.roadready.hypermiling_lab_2', 'Hypermiling Lab'), desc: __alloT('stem.roadready.mpg_vs_speed_graph_beat_the_epa_rating', 'MPG vs speed graph — beat the EPA rating.') },
+        { view: 'vehicleCompare', goal: 'science', icon: '🔬', name: __alloT('stem.roadready.vehicle_comparison', 'Vehicle Comparison'), desc: __alloT('stem.roadready.compare_specs_cd_mass_mpg_across_vehic', 'Compare specs (Cd, mass, MPG) across vehicle types.') },
+        { view: 'seatSetup', goal: 'pre-drive', icon: '🪑', name: __alloT('stem.roadready.seat_mirror_setup_3', 'Seat & Mirror Setup'), desc: __alloT('stem.roadready.7_step_ergonomics_guide_for_before_dri', '7-step ergonomics guide for before-drive setup.') },
+        { view: 'preTrip', goal: 'pre-drive', icon: '✅', name: __alloT('stem.roadready.pre_trip_inspection', 'Pre-Trip Inspection'), desc: __alloT('stem.roadready.interactive_28_point_vehicle_walkaroun', 'Interactive 28-point vehicle walkaround checklist.') },
+        { view: 'maintenanceGuide', goal: 'pre-drive', icon: '🔧', name: __alloT('stem.roadready.maintenance_guide', 'Maintenance Guide'), desc: __alloT('stem.roadready.oil_changes_tire_rotation_essential_up', 'Oil changes, tire rotation, essential upkeep schedules.') },
+        { view: 'maintenanceGame', goal: 'pre-drive', icon: '🔧', name: __alloT('stem.roadready.warning_lights_quiz', 'Warning Lights Quiz'), desc: __alloT('stem.roadready.10_dashboard_lights_diagnose_and_respo', '10 dashboard lights — diagnose and respond correctly.') },
+        { view: 'maineWinter', goal: 'maine', icon: '❄️', name: __alloT('stem.roadready.maine_winter_guide_2', 'Maine Winter Guide'), desc: __alloT('stem.roadready.moose_warnings_black_ice_winter_kit_st', 'Moose warnings, black ice, winter kit, studded tires.') },
+        { view: 'roundaboutGuide', goal: 'maine', icon: '🔄', name: __alloT('stem.roadready.roundabout_tutorial_2', 'Roundabout Tutorial'), desc: __alloT('stem.roadready.maine_is_adding_these_fast_step_by_ste', 'Maine is adding these fast. Step-by-step how-to.') },
+        { view: 'gdlTracker', goal: 'maine', icon: '🪪', name: __alloT('stem.roadready.gdl_stage_tracker', 'GDL Stage Tracker'), desc: __alloT('stem.roadready.maine_graduated_driver_license_timelin', 'Maine Graduated Driver License timeline + restrictions.') },
+        { view: 'teenGDL', goal: 'maine', icon: '📘', name: __alloT('stem.roadready.teen_gdl_drill_2', 'Teen GDL Drill'), desc: __alloT('stem.roadready.passenger_curfew_and_phone_rules_teens', 'Passenger, curfew, and phone rules teens get tested on.') },
+        { view: 'insuranceCalc', goal: 'maine', icon: '💰', name: __alloT('stem.roadready.insurance_calculator', 'Insurance Calculator'), desc: __alloT('stem.roadready.estimate_what_your_actual_rate_will_be', 'Estimate what your actual rate will be.') },
+        { view: 'logbook', goal: 'progress', icon: '📔', name: __alloT('stem.roadready.driving_logbook_3', 'Driving Logbook'), desc: __alloT('stem.roadready.all_drives_logged_with_70_hour_maine_p', 'Every simulator drive, with a printable log for a parent or instructor.') },
+        { view: 'analytics', goal: 'progress', icon: '📈', name: __alloT('stem.roadready.analytics_dashboard', 'Analytics Dashboard'), desc: __alloT('stem.roadready.trend_charts_of_safety_eco_scores_best', 'Trend charts of safety/eco scores, bests, achievement timeline.') },
+        { view: 'achievementGallery', goal: 'progress', icon: '🏆', name: __alloT('stem.roadready.achievement_gallery', 'Achievement Gallery'), desc: __alloT('stem.roadready.bronze_silver_gold_tiered_badge_collec', 'Bronze/silver/gold tiered badge collection.') },
+        { view: 'dailyChallenge', goal: 'progress', icon: '⭐', name: __alloT('stem.roadready.daily_challenge_3', 'Daily Challenge'), desc: __alloT('stem.roadready.one_task_per_day_streak_tracker', 'One task per day, streak tracker.') },
+        { view: 'customize', goal: 'fun', icon: '🎨', name: __alloT('stem.roadready.my_ride_2', 'My Ride'), desc: __alloT('stem.roadready.paint_color_driver_name_license_plate', 'Paint color, driver name, license plate.') },
+        { view: 'driverPledge', goal: 'fun', icon: '📜', name: __alloT('stem.roadready.driver_s_pledge_3', "Driver's Pledge"), desc: __alloT('stem.roadready.sign_your_commitment_to_safe_driving', 'Sign your commitment to safe driving.') },
+        // Additions — these views were reachable from the menu but missing from the directory.
+        { view: 'rulesFoundations', goal: 'permit', icon: '📚', name: __alloT('stem.roadready.rules_foundations_3', 'Rules Foundations'), desc: __alloT('stem.roadready.9_universal_pillars_every_driver_must__2', '9 universal pillars every driver must know.') },
+        { view: 'hazardTest', goal: 'safety', icon: '⚡', name: __alloT('stem.roadready.hazard_perception_test', 'Hazard Perception Test'), desc: __alloT('stem.roadready.reaction_time_test_under_real_driving_', 'Reaction-time test under real driving hazards. Target 8/10.') },
+        { view: 'emergencyDrill', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_vehicle_live_drill', 'Emergency Vehicle Live Drill'), desc: __alloT('stem.roadready.suburban_drive_with_siren_events_every', 'Suburban drive with siren events every 20–30 seconds.') },
+        { view: 'blindSpotGuide', goal: 'safety', icon: '👁️', name: __alloT('stem.roadready.blind_spots_mirrors_2', 'Blind Spots & Mirrors'), desc: __alloT('stem.roadready.where_you_cannot_see_and_how_to_fix_it', 'Where you cannot see — and how to fix it.') },
+        { view: 'weatherCompare', goal: 'safety', icon: '🌦️', name: __alloT('stem.roadready.weather_impact_chart_2', 'Weather Impact Chart'), desc: __alloT('stem.roadready.side_by_side_stopping_distance_across_', 'Side-by-side stopping distance across conditions.') },
+        { view: 'nightVision', goal: 'safety', icon: '🔦', name: __alloT('stem.roadready.night_vision_math_2', 'Night Vision Math'), desc: __alloT('stem.roadready.can_you_stop_within_your_headlight_ran', 'Can you stop within your headlight range?') },
+        { view: 'reactionTrainer', goal: 'safety', icon: '⏱️', name: __alloT('stem.roadready.reaction_time_trainer', 'Reaction Time Trainer'), desc: __alloT('stem.roadready.traffic_light_reaction_drill_measure_y', 'Traffic-light reaction drill — measure your actual speed.') },
+        { view: 'intersectionGuide', goal: 'safety', icon: '🚦', name: __alloT('stem.roadready.intersection_guide_2', 'Intersection Guide'), desc: __alloT('stem.roadready.every_intersection_type_and_how_to_han', 'Every intersection type and how to handle it.') },
+        { view: 'forceDiagram', goal: 'science', icon: '📐', name: __alloT('stem.roadready.live_force_diagram', 'Live Force Diagram'), desc: __alloT('stem.roadready.drag_roll_thrust_and_weight_vectors_in', 'Drag, roll, thrust, and weight vectors in real time.') },
+        { view: 'speedCompare', goal: 'science', icon: '🏎️', name: __alloT('stem.roadready.speed_comparison_2', 'Speed Comparison'), desc: __alloT('stem.roadready.side_by_side_stopping_distance_at_2_di', 'Side-by-side stopping distance at 2 different speeds.') },
+        { view: 'fuelCalc', goal: 'science', icon: '⛽', name: __alloT('stem.roadready.fuel_cost_calculator_2', 'Fuel Cost Calculator'), desc: __alloT('stem.roadready.distance_mpg_gas_price_plan_any_trip', 'Distance × MPG × gas price — plan any trip.') },
+        { view: 'threePoint', goal: 'practice', icon: '↩️', name: __alloT('stem.roadready.3_point_turn_2', '3-Point Turn'), desc: __alloT('stem.roadready.k_turn_practice_2d_top_down_with_step_', 'K-turn practice (2D top-down with step guidance).') },
+        { view: 'backingDrill', goal: 'practice', icon: '⬅️', name: __alloT('stem.roadready.straight_backing_2', 'Straight Backing'), desc: __alloT('stem.roadready.backing_drill_for_lane_straightness_co', 'Backing drill for lane-straightness control.') },
+        { view: 'roadTestRubric', goal: 'practice', icon: '📋', name: __alloT('stem.roadready.road_test_rubric_2', 'Road Test Rubric'), desc: __alloT('stem.roadready.what_the_examiner_actually_grades_on', 'What the examiner actually grades on.') },
+        { view: 'dashLights', goal: 'pre-drive', icon: '💡', name: __alloT('stem.roadready.dashboard_lights_reference', 'Dashboard Lights Reference'), desc: __alloT('stem.roadready.every_warning_light_what_it_means_and_', 'Every warning light — what it means and what to do.') },
+        { view: 'knowYourCar', goal: 'pre-drive', icon: '🔍', name: __alloT('stem.roadready.know_your_car_2', 'Know Your Car'), desc: __alloT('stem.roadready.every_part_explained_engine_to_tires_2', 'Every part explained — engine to tires.') },
+        { view: 'keyboardCheatSheet', goal: 'pre-drive', icon: '⌨️', name: __alloT('stem.roadready.keyboard_shortcuts_3', 'Keyboard Shortcuts'), desc: __alloT('stem.roadready.all_in_drive_controls_at_a_glance', 'All in-drive controls at a glance.') },
+        { view: 'learningPath', goal: 'progress', icon: '🎯', name: __alloT('stem.roadready.learning_path_2', 'Learning Path'), desc: __alloT('stem.roadready.step_by_step_guided_progression_2', 'Step-by-step guided progression.') },
+        { view: 'aiCoach', goal: 'progress', icon: '🤖', name: __alloT('stem.roadready.ai_driving_coach_2', 'AI Driving Coach'), desc: __alloT('stem.roadready.gemini_reviews_your_last_drive', 'Gemini reviews your last drive.') },
+        { view: 'roadTrip', goal: 'fun', icon: '🗺️', name: __alloT('stem.roadready.road_trip_planner_2', 'Road Trip Planner'), desc: __alloT('stem.roadready.distance_fuel_cost_and_stop_planning', 'Distance, fuel cost, and stop planning.') },
+        { view: 'carBuying', goal: 'fun', icon: '💵', name: __alloT('stem.roadready.first_car_guide_2', 'First Car Guide'), desc: __alloT('stem.roadready.what_to_look_for_what_to_avoid_2', 'What to look for, what to avoid.') }
+      ];
+      var goals = [
+        { id: 'all', label: __alloT('stem.roadready.help_goal_all', 'All'), icon: '🧭' },
+        { id: 'permit', label: __alloT('stem.roadready.study_for_permit', 'Study for permit'), icon: '📝' },
+        { id: 'practice', label: __alloT('stem.roadready.practice_driving', 'Practice driving'), icon: '🚗' },
+        { id: 'safety', label: __alloT('stem.roadready.safety_skills', 'Safety skills'), icon: '🛡️' },
+        { id: 'science', label: __alloT('stem.roadready.physics_science', 'Physics / science'), icon: '🔬' },
+        { id: 'pre-drive', label: __alloT('stem.roadready.pre_drive_prep', 'Pre-drive prep'), icon: '✅' },
+        { id: 'maine', label: __alloT('stem.roadready.help_goal_maine_specific', 'Maine-specific'), icon: '🌲' },
+        { id: 'progress', label: __alloT('stem.roadready.track_progress', 'Track progress'), icon: '📈' },
+        { id: 'fun', label: __alloT('stem.roadready.personalization', 'Personalization'), icon: '🎨' }
+      ];
+
       // ── MENU VIEW ──
       // ══════════════════════════════════════════════════════════
       // FIRST-TIME ONBOARDING TOUR
@@ -28536,398 +28630,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, __alloT('stem.roadready.achievements_earned_count', '{n}/{m} achievements earned').replace('{n}', String(Object.keys(earnedBadges).length)).replace('{m}', String(ACHIEVEMENTS.length)))
             )
           ),
-          // Structured modes
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' } },
-            h('button', { onClick: function() { upd('view', 'scenarioSelect'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #0c4a6e, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '32px' } }, '🛣️'),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.drive_simulator', 'Drive Simulator')),
-              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, __alloT('stem.roadready.tile_scenarios_count', '{n} scenarios. Real physics. Maine roads.').replace('{n}', String(SCENARIOS.length)))
-            ),
-            h('button', { onClick: function() { upd('view', 'permitStart'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '32px' } }, '📝'),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.permit_test', 'Permit Test')),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-amber, #fbbf24)', marginTop: '4px' } }, __alloT('stem.roadready.tile_questions_count', '{n} questions. Maine BMV format.').replace('{n}', String(PERMIT_BANK.length)))
-            ),
-            h('button', { onClick: function() { upd('view', 'lessonSelect'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '32px' } }, '📚'),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.auto_science', 'Auto Science')),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, __alloT('stem.roadready.tile_lessons_count', '{n} physics lessons').replace('{n}', String(Object.keys(LESSONS).length)))
-            ),
-            h('button', { onClick: function() { upd('view', 'signsView'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #4ade80', background: 'linear-gradient(135deg, #14532d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '32px' } }, '🪧'),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.signs_signals', 'Signs & Signals')),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-green, #4ade80)', marginTop: '4px' } }, __alloT('stem.roadready.color_shape_meanings', 'Color & shape meanings'))
-            ),
-            h('button', { onClick: function() { upd('view', 'stoppingLab'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #f87171', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '32px' } }, '🛑'),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.stopping_distance_lab', 'Stopping Distance Lab')),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-red, #fca5a5)', marginTop: '4px' } }, __alloT('stem.roadready.live_physics_v_reaction_time', 'Live physics: v, μ, reaction time'))
-            ),
-            h('button', { onClick: function() { upd('view', 'parking'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '32px' } }, '🅿️'),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.parallel_parking', 'Parallel Parking')),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '4px' } }, __alloT('stem.roadready.2d_top_down_with_step_guidance', '2D top-down with step guidance'))
-            ),
-            h('button', { onClick: function() { upd('view', 'hypermilingLab'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '32px' } }, '🌿'),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.hypermiling_lab', 'Hypermiling Lab')),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-green, #4ade80)', marginTop: '4px' } }, __alloT('stem.roadready.mpg_vs_speed_graph_beat_the_epa', 'MPG vs speed graph — beat the EPA'))
-            )
-          ),
-          h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', margin: '-4px 0 16px' } },
-            h('button', {
-              onClick: function() { upd('showRoadReadyCatalog', !d.showRoadReadyCatalog); },
-              'aria-expanded': !!d.showRoadReadyCatalog,
-              'aria-controls': 'rr-specialist-tool-catalog',
-              style: { minHeight: '38px', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 750, cursor: 'pointer' }
-            }, d.showRoadReadyCatalog ? __alloT('stem.roadready.hide_specialist_tools', 'Hide specialist tools') : __alloT('stem.roadready.explore_specialist_tools', 'Explore specialist tools')),
-            h('button', {
-              onClick: function() { upd('view', 'helpHub'); },
-              style: { minHeight: '38px', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--rr-cyan, #22d3ee)', background: 'transparent', color: 'var(--rr-cyan, #22d3ee)', fontSize: '11px', fontWeight: 750, cursor: 'pointer' }
-            }, __alloT('stem.roadready.find_a_specific_tool', 'Find a specific tool'))
-          ),
-          // Second row of tools
-          d.showRoadReadyCatalog ? h('div', { id: 'rr-specialist-tool-catalog', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' } },
-            h('button', { onClick: function() { upd('view', 'maineWinter'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #38bdf8', background: 'linear-gradient(135deg, #0c4a6e, #1e3a5f)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '❄️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.maine_winter_guide', 'Maine Winter Guide')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.moose_ice_snow_kit_tires', 'Moose, ice, snow kit, tires'))
-            ),
-            h('button', { onClick: function() { upd('view', 'neurodivergentGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e1b4b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🧠'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.neurodivergent_driver_guide', 'Neurodivergent Driver Guide')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.adhd_autism_sensory_anxiety_iep_504_ro', 'ADHD, autism, sensory, anxiety, IEP/504 road-test accommodations'))
-            ),
-            h('button', { onClick: function() { upd('view', 'nightVisionIntro'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🌃'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.night_vision_training', 'Night Vision Training')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.progressive_darkness_drill_sign_readin', 'Progressive darkness drill — sign reading, ped scan'))
-            ),
-            h('button', { onClick: function() { upd('view', 'parentRideCheck'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '👨‍👧'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.parent_ride_check', 'Parent Ride Check')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.2_min_eval_tap_to_mark_errors', '2-min eval — tap to mark errors'))
-            ),
-            h('button', { onClick: function() { upd('view', 'roadTestIntro'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #4ade80', background: 'linear-gradient(135deg, #14532d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🪪'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.road_test_simulator', 'Road Test Simulator')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.full_maine_bmv_style_scored_exam', 'Full Maine BMV-style scored exam'))
-            ),
-            h('button', { onClick: function() { upd('view', 'logbook'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📔'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.driving_logbook', 'Driving Logbook')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.tile_sessions_logged', '{n} sessions logged').replace('{n}', String((d.logbook && d.logbook.length) || 0)))
-            ),
-            h('button', { onClick: function() { upd('view', 'defensiveList'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #60a5fa', background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🛡️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.defensive_drills', 'Defensive Drills')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-blue, #60a5fa)', marginTop: '2px' } }, __alloT('stem.roadready.short_hazard_response_scenarios', 'Short hazard-response scenarios'))
-            ),
-            h('button', { onClick: function() { upd('view', 'crashLab'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔬'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.crash_recon_lab', 'Crash Recon Lab')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.physics_of_real_crash_types', 'Physics of real crash types'))
-            ),
-            h('button', { onClick: function() { upd('view', 'lessonPath'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🎓'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.lesson_path', 'Lesson Path')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.guided_1_2_3_progression', 'Guided 1→2→3 progression'))
-            ),
-            h('button', { onClick: function() { upd('view', 'maintenanceGame'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f97316', background: 'linear-gradient(135deg, #7c2d12, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔧'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.maintenance_game', 'Maintenance Game')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.diagnose_dashboard_warnings', 'Diagnose dashboard warnings'))
-            ),
-            h('button', { onClick: function() { upd('view', 'customize'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ec4899', background: 'linear-gradient(135deg, #831843, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🎨'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.my_ride', 'My Ride')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.color_name_plate', 'Color, name, plate'))
-            ),
-            h('button', { onClick: function() { upd('view', 'distractedLab'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #450a0a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📱'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.distracted_driving_lab', 'Distracted Driving Lab')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.feel_the_cost_of_a_3_second_glance', 'Feel the cost of a 3-second glance'))
-            ),
-            h('button', { onClick: function() { upd('view', 'analytics'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #0ea5e9', background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📈'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.progress_analytics', 'Progress Analytics')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.charts_of_your_growth_over_time', 'Charts of your growth over time'))
-            ),
-            h('button', { onClick: function() { upd('view', 'emergencyHandbook'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #dc2626', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🚨'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.emergency_handbook', 'Emergency Handbook')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.what_to_do_when_things_go_wrong', 'What to do when things go wrong'))
-            ),
-            h('button', { onClick: function() { upd('view', 'driverPledge'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📜'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.driver_s_pledge', 'Driver\'s Pledge')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, d.pledgeSigned ? __alloT('stem.roadready.pledge_signed_short', '✓ Signed') : __alloT('stem.roadready.pledge_make_your_commitment', 'Make your commitment'))
-            ),
-            h('button', { onClick: function() { updMulti({ view: 'permitFlashcards', permitFlashIdx: 0 }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🗂️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.permit_flashcards', 'Permit Flashcards')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.study_mode_spaced_repetition', 'Study mode — spaced repetition'))
-            ),
-            h('button', { onClick: function() { updMulti({ view: 'rightOfWay', rowIdx: 0, rowAnswered: null }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '↔️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.right_of_way_tile', 'Right-of-Way')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.18_who_goes_first_scenarios', '20 "who goes first?" scenarios'))
-            ),
-            h('button', { onClick: function() { updMulti({ view: 'rulesFoundations', rulesPillar: 'rightOfWay' }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📚'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.rules_foundations', 'Rules Foundations')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.9_universal_pillars_every_driver_must_', '9 universal pillars every driver must know'))
-            ),
-            h('button', { onClick: function() { upd('view', 'gdlTracker'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🪪'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.maine_gdl_tracker', 'Maine GDL Tracker')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.your_license_stage_restrictions', 'Your license stage + restrictions'))
-            ),
-            // ── Daily Challenge: highlighted hero tile (always on top) ──
-            (function() {
-              var today = localDayKey();
-              var dailyState = d.dailyChallenge || {};
-              var doneToday = dailyState.date === today && dailyState.done;
-              var streak = dailyState.streak || 0;
-              return h('button', { onClick: function() { upd('view', 'dailyChallenge'); },
-                style: { padding: '16px', borderRadius: '12px', border: '2px solid ' + (doneToday ? '#4ade80' : '#fbbf24'), background: 'linear-gradient(135deg, ' + (doneToday ? '#14532d' : '#78350f') + ', #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', textAlign: 'left', position: 'relative' } },
-                streak >= 3 ? h('div', { style: { position: 'absolute', top: '6px', right: '6px', background: '#b91c1c', color: '#fff', borderRadius: '10px', padding: '2px 6px', fontSize: '9px', fontWeight: 800 } }, '🔥 ' + streak) : null,
-                h('div', { style: { fontSize: '28px' } }, doneToday ? '✅' : '⭐'),
-                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.daily_challenge', 'Daily Challenge')),
-                h('div', { style: { fontSize: '10px', color: doneToday ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, doneToday ? __alloT('stem.roadready.daily_done_come_back_tomorrow', 'Done! Come back tomorrow') : __alloT('stem.roadready.daily_one_task_per_day_streak', 'One task per day · Streak: {n}').replace('{n}', String(streak)))
-              );
-            })(),
-            h('button', { onClick: function() { updMulti({ view: 'peerPressure', ppIdx: 0, ppAnswered: null, ppScore: 0 }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🙅'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.peer_pressure', 'Peer Pressure')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.practice_saying_no_to_friend_pressure', 'Practice saying no to "friend" pressure'))
-            ),
-            h('button', { onClick: function() { updMulti({ view: 'reactionTest', rtPhase: 'intro', rtTrials: [], rtMode: 'baseline' }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #083344, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '⚡'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.reaction_test', 'Reaction Test')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.your_baseline_vs_0_08_bac', 'Your baseline vs modeled impairment'))
-            ),
-            h('button', { onClick: function() { upd('view', 'cheatSheet'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #e5e7eb', background: 'linear-gradient(135deg, #475569, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📄'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.study_cheat_sheet', 'Study Cheat Sheet')),
-              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text, #e2e8f0)', marginTop: '2px' } }, __alloT('stem.roadready.one_page_printable_summary', 'One-page printable summary'))
-            ),
-            h('button', { onClick: function() { upd('view', 'seatSetup'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #8b5cf6', background: 'linear-gradient(135deg, #4c1d95, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🪑'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.seat_mirror_setup', 'Seat & Mirror Setup')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.get_seated_like_a_pro', 'Get seated like a pro'))
-            ),
-            h('button', { onClick: function() { upd('view', 'postCrash'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #dc2626', background: 'linear-gradient(135deg, #7f1d1d, #450a0a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📞'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.post_crash_protocol', 'Post-Crash Protocol')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.first_10_minutes_after_a_crash', 'First 10 minutes after a crash'))
-            ),
-            h('button', { onClick: function() { upd('view', 'bikeAware'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #16a34a', background: 'linear-gradient(135deg, #14532d, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🚴'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.cyclist_moto_awareness', 'Cyclist & Moto Awareness')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.3_ft_law_shared_blind_spots', '3-ft law, shared blind spots'))
-            ),
-            h('button', { onClick: function() { upd('view', 'helpHub'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🧭'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.help_directory', 'Help & Directory')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.find_anything_in_roadready', 'Find anything in RoadReady'))
-            ),
-            h('button', { onClick: function() { upd('view', 'keyboardCheatSheet'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #64748b', background: 'linear-gradient(135deg, #334155, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '⌨️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.keyboard_shortcuts', 'Keyboard Shortcuts')),
-              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginTop: '2px' } }, __alloT('stem.roadready.all_drive_menu_controls', 'All drive + menu controls'))
-            ),
-            h('button', { onClick: function() { upd('view', 'roundaboutGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔄'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.roundabout_tutorial', 'Roundabout Tutorial')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.yield_enter_exit_step_by_step', 'Yield, enter, exit — step by step'))
-            ),
-            h('button', { onClick: function() { upd('view', 'vehicleCompare'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #8b5cf6', background: 'linear-gradient(135deg, #4c1d95, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔬'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.vehicle_science', 'Vehicle Science')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.compare_specs_cd_mass_mpg', 'Compare specs, Cd, mass, MPG'))
-            ),
-            h('button', { onClick: function() { upd('view', 'threePoint'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ec4899', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '↩️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.3_point_turn', '3-Point Turn')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.road_test_maneuver_2d_trainer', 'Road-test maneuver, 2D trainer'))
-            ),
-            h('button', { onClick: function() { upd('view', 'fuelCalc'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f97316', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '💰'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.fuel_cost_calculator', 'Fuel Cost Calculator')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.mi_annual_cost_ev_vs_gas', '$/mi, annual cost, EV vs gas'))
-            ),
-            h('button', { onClick: function() { upd('view', 'backingDrill'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a3a3a3', background: 'linear-gradient(135deg, #404040, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔙'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.straight_backing', 'Straight Backing')),
-              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, __alloT('stem.roadready.reverse_in_a_straight_line', 'Reverse in a straight line'))
-            ),
-            h('button', { onClick: function() { upd('view', 'emergencyDrill'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🚨'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.emergency_response', 'Emergency Response')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.practice_yielding_to_sirens', 'Practice yielding to sirens'))
-            ),
-            h('button', { onClick: function() { upd('view', 'intersectionGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🚦'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.intersection_guide', 'Intersection Guide')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.right_of_way_rules_at_every_type', 'Right-of-way rules at every type'))
-            ),
-            h('button', { onClick: function() { upd('view', 'dashLights'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f43f5e', background: 'linear-gradient(135deg, #881337, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔧'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.dashboard_lights', 'Dashboard Lights')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.warning_lights_decoded', 'Warning lights decoded'))
-            ),
-            h('button', { onClick: function() { upd('view', 'preTrip'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '✅'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.pre_trip_check', 'Pre-Trip Check')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.tires_lights_fluids_walk_around', 'TIRES, lights, fluids walk-around'))
-            ),
-            h('button', { onClick: function() { upd('view', 'hazardTest'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f43f5e', background: 'linear-gradient(135deg, #9f1239, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '⚡'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.hazard_perception', 'Hazard Perception')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.timed_reaction_test_spot_the_danger', 'Timed reaction test — spot the danger'))
-            ),
-            h('button', { onClick: function() { upd('view', 'insuranceCalc'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🛡️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.insurance_estimator', 'Insurance Estimator')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.how_driving_record_affects_rates', 'How driving record affects rates'))
-            ),
-            h('button', { onClick: function() { upd('view', 'maintenanceGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a3a3a3', background: 'linear-gradient(135deg, #404040, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔧'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.maintenance_schedule', 'Maintenance Schedule')),
-              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, __alloT('stem.roadready.oil_tires_brakes_by_mileage', 'Oil, tires, brakes by mileage'))
-            ),
-            callGemini ? h('button', { onClick: function() { upd('view', 'aiCoach'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🤖'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.ai_driving_coach', 'AI Driving Coach')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.gemini_analyzes_your_last_drive', 'Gemini analyzes your last drive'))
-            ) : null,
-            h('button', { onClick: function() { upd('view', 'postCrash'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📋'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.after_a_crash', 'After a Crash')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.timeline_based_protocol_glove_box_expo', 'Timeline-based protocol + glove-box export'))
-            ),
-            h('button', { onClick: function() { upd('view', 'knowYourCar'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #e879f9', background: 'linear-gradient(135deg, #701a75, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔍'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.know_your_car', 'Know Your Car')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.every_part_explained_engine_to_tires', 'Every part explained — engine to tires'))
-            ),
-            h('button', { onClick: function() { upd('view', 'speedCompare'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🏎️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.speed_comparison', 'Speed Comparison')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.side_by_side_stopping_distance_at_2_sp', 'Side-by-side stopping distance at 2 speeds'))
-            ),
-            h('button', { onClick: function() { upd('view', 'blindSpotGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '👁️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.blind_spots_mirrors', 'Blind Spots & Mirrors')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.where_you_can_t_see_and_how_to_fix_it', 'Where you can\'t see — and how to fix it'))
-            ),
-            h('button', { onClick: function() { upd('view', 'weatherCompare'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #38bdf8', background: 'linear-gradient(135deg, #0c4a6e, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🌦️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.weather_impact_chart', 'Weather Impact Chart')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.how_conditions_change_everything', 'How conditions change everything'))
-            ),
-            h('button', { onClick: function() { upd('view', 'roadTrip'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #34d399', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🗺️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.road_trip_planner', 'Road Trip Planner')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.distance_fuel_cost_stop_planning', 'Distance, fuel cost, stop planning'))
-            ),
-            h('button', { onClick: function() { upd('view', 'reactionTrainer'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '⏱️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.reaction_time_test', 'Reaction Time Test')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.measure_your_actual_reaction_speed', 'Measure YOUR actual reaction speed'))
-            ),
-            h('button', { onClick: function() { upd('view', 'nightVision'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🔦'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.night_vision_math', 'Night Vision Math')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.can_you_stop_within_your_headlights', 'Can you stop within your headlights?'))
-            ),
-            h('button', { onClick: function() { upd('view', 'carBuying'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '💵'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.first_car_guide', 'First Car Guide')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.what_to_look_for_what_to_avoid', 'What to look for, what to avoid'))
-            ),
-            h('button', { onClick: function() { upd('view', 'learningPath'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🎯'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.learning_path', 'Learning Path')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.step_by_step_guided_progression', 'Step-by-step guided progression'))
-            ),
-            h('button', { onClick: function() { upd('view', 'roadTestRubric'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📋'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.road_test_rubric', 'Road Test Rubric')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.what_the_examiner_actually_grades', 'What the examiner actually grades'))
-            ),
-            h('button', { onClick: function() { upd('view', 'emergencyHandbook'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '🆘'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.emergency_situations', 'Emergency Situations')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.blowout_brake_failure_hood_flies_up', 'Blowout, brake failure, hood flies up'))
-            ),
-            h('button', { onClick: function() { upd('view', 'forceDiagram'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📐'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.force_diagram', 'Force Diagram')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.live_drag_friction_thrust_vectors', 'Live drag, friction, thrust vectors'))
-            )
-          ) : null,
+          // ── Tool catalog, grouped by learner goal ──
+          // The old menu was 7 primary tiles, 25 more behind an "Explore specialist
+          // tools" toggle, and a separate 68-entry directory: three discovery paths
+          // for one catalog. Every tool now sits under the goal it serves, in the
+          // same groups the directory searches by, so the landing page reads as a
+          // syllabus rather than a wall of buttons.
+          (function() {
+            var today = localDayKey();
+            var dailyState = d.dailyChallenge || {};
+            var doneToday = dailyState.date === today && dailyState.done;
+            var streak = dailyState.streak || 0;
+            var logCount = (d.logbook && d.logbook.length) || 0;
+            var order = ['practice', 'permit', 'safety', 'science', 'pre-drive', 'maine', 'progress', 'fun'];
+            return h('div', { 'data-rr-catalog': 'true' },
+              order.map(function(goalId) {
+                var goal = null;
+                for (var gi = 0; gi < goals.length; gi++) if (goals[gi].id === goalId) goal = goals[gi];
+                var list = features.filter(function(f) { return f.goal === goalId; });
+                if (!goal || !list.length) return null;
+                var headingId = 'rr-goal-' + goalId;
+                return h('section', { key: goalId, 'aria-labelledby': headingId, style: { marginBottom: '18px' } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid var(--allo-stem-border, #334155)' } },
+                    h('h3', { id: headingId, style: { margin: 0, fontSize: '13px', fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--rr-cyan, #22d3ee)' } }, goal.icon + ' ' + goal.label),
+                    h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, list.length)
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))', gap: '10px' } },
+                    list.map(function(f) {
+                      var note = null;
+                      if (f.view === 'dailyChallenge') note = doneToday ? __alloT('stem.roadready.daily_done_come_back_tomorrow', 'Done! Come back tomorrow') : __alloT('stem.roadready.daily_one_task_per_day_streak', 'One task per day · Streak: {n}').replace('{n}', String(streak));
+                      if (f.view === 'logbook') note = __alloT('stem.roadready.tile_sessions_logged', '{n} sessions logged').replace('{n}', String(logCount));
+                      if (f.view === 'achievementGallery') note = __alloT('stem.roadready.achievements_earned_count', '{n}/{m} achievements earned').replace('{n}', String(Object.keys(earnedBadges).length)).replace('{m}', String(ACHIEVEMENTS.length));
+                      if (f.view === 'driverPledge' && d.pledgeSigned) note = __alloT('stem.roadready.pledge_signed_short', '✓ Signed');
+                      return h('button', { key: f.view, 'data-rr-tile': 'true', 'data-rr-view-target': f.view, onClick: function() { upd('view', f.view); },
+                        style: { display: 'flex', gap: '10px', alignItems: 'flex-start', textAlign: 'left', padding: '12px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', minWidth: 0, minHeight: '64px', position: 'relative' } },
+                        h('span', { 'aria-hidden': 'true', style: { fontSize: '22px', lineHeight: 1, flexShrink: 0 } }, f.icon),
+                        h('span', { style: { minWidth: 0 } },
+                          h('span', { style: { display: 'block', fontSize: '13px', fontWeight: 800, lineHeight: 1.25 } }, f.name),
+                          h('span', { style: { display: 'block', fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '3px', lineHeight: 1.4 } }, f.desc),
+                          note ? h('span', { style: { display: 'block', fontSize: '10px', fontWeight: 700, color: 'var(--rr-amber, #fbbf24)', marginTop: '4px' } }, note) : null
+                        ),
+                        f.view === 'dailyChallenge' && streak >= 3 ? h('span', { style: { position: 'absolute', top: '6px', right: '6px', background: 'var(--rr-red, #fca5a5)', color: '#0f172a', borderRadius: '10px', padding: '2px 6px', fontSize: '9px', fontWeight: 900 } }, '🔥 ' + streak) : null
+                      );
+                    })
+                  )
+                );
+              }),
+              h('div', { style: { display: 'flex', justifyContent: 'center', margin: '4px 0 16px' } },
+                h('button', {
+                  onClick: function() { upd('view', 'helpHub'); },
+                  style: { minHeight: '38px', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--rr-cyan, #22d3ee)', background: 'transparent', color: 'var(--rr-cyan, #22d3ee)', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                }, __alloT('stem.roadready.find_a_specific_tool', 'Find a specific tool'))
+              )
+            );
+          })(),
           // Maine facts strip
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '16px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.maine_state_rules_at_a_glance', '🌲 Maine state rules at a glance')),
@@ -35159,88 +34915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'helpHub') {
         var helpQuery = (d.helpQuery || '').toLowerCase().trim();
         var helpGoal = d.helpGoal || 'all';
-        var features = [
-          { view: 'permitStart', goal: 'permit', icon: '📝', name: __alloT('stem.roadready.permit_test_20q_quiz', 'Permit Test (20q quiz)'), desc: 'Randomized 20-question practice test from ' + PERMIT_BANK.length + ' Maine BMV-style questions.' },
-          { view: 'permitFlashcards', goal: 'permit', icon: '🗂️', name: __alloT('stem.roadready.permit_flashcards_3', 'Permit Flashcards'), desc: 'Spaced-repetition study mode for all ' + PERMIT_BANK.length + ' permit questions.' },
-          { view: 'cheatSheet', goal: 'permit', icon: '📄', name: __alloT('stem.roadready.study_cheat_sheet_2', 'Study Cheat Sheet'), desc: __alloT('stem.roadready.printable_one_page_summary_of_all_key_', 'Printable one-page summary of all key rules.') },
-          { view: 'signsView', goal: 'permit', icon: '🪧', name: __alloT('stem.roadready.road_signs_reference_2', 'Road Signs Reference'), desc: __alloT('stem.roadready.19_common_signs_with_svg_illustrations', '19 common signs with SVG illustrations + quiz mode.') },
-          { view: 'rightOfWay', goal: 'permit', icon: '↔️', name: __alloT('stem.roadready.right_of_way_scenarios_2', 'Right-of-Way Scenarios'), desc: __alloT('stem.roadready.10_who_goes_first_intersection_puzzles', '20 right-of-way and intersection puzzles.') },
-          { view: 'scenarioSelect', goal: 'practice', icon: '🚗', name: 'Drive Simulator (' + SCENARIOS.length + ' scenarios)', desc: __alloT('stem.roadready.residential_highway_snow_fog_night_dow', 'Residential, highway, snow, fog, night, downtown, and more.') },
-          { view: 'freeExploreSetup', goal: 'practice', icon: '🌎', name: __alloT('stem.roadready.free_explore_5', 'Free Explore'), desc: __alloT('stem.roadready.open_sandbox_with_landmarks_challenges', 'Open sandbox with landmarks, challenges, road trips, dynamic weather.') },
-          { view: 'lessonPath', goal: 'practice', icon: '🎓', name: __alloT('stem.roadready.lesson_path_3', 'Lesson Path'), desc: __alloT('stem.roadready.guided_10_lesson_progression_from_begi', 'Guided 10-lesson progression from beginner to winter expert.') },
-          { view: 'roadTestIntro', goal: 'practice', icon: '🪪', name: __alloT('stem.roadready.road_test_simulator_3', 'Road Test Simulator'), desc: __alloT('stem.roadready.full_maine_bmv_style_scored_exam_pre_t', 'Full Maine BMV-style scored exam (pre-trip + 4min drive).') },
-          { view: 'parkingMenu', goal: 'practice', icon: '🅿️', name: __alloT('stem.roadready.parking_practice_7_scenarios', 'Parking Practice (9 Scenarios)'), desc: __alloT('stem.roadready.parallel_tight_parallel_3_point_backin', 'Parallel, tight parallel, 3-point, backing, angle-back, obstacle, U-turn, hydrant, and hill parking. Personal-best scores save.') },
-          { view: 'nightVisionIntro', goal: 'practice', icon: '🌃', name: __alloT('stem.roadready.night_vision_training_3', 'Night Vision Training'), desc: __alloT('stem.roadready.focused_night_drive_drill_with_coach_p', 'Focused night-drive drill with coach prompts.') },
-          { view: 'parentRideCheck', goal: 'practice', icon: '👨‍👧', name: __alloT('stem.roadready.parent_ride_check_3', 'Parent Ride Check'), desc: __alloT('stem.roadready.2_min_structured_eval_parent_taps_to_m', '2-min structured eval — parent taps to mark errors.') },
-          { view: 'defensiveList', goal: 'safety', icon: '🛡️', name: __alloT('stem.roadready.defensive_drills_2', 'Defensive Drills'), desc: __alloT('stem.roadready.8_hazard_response_scenarios_with_corre', '8 hazard-response scenarios with correct-answer reveals.') },
-          { view: 'mooseSafety', goal: 'safety', icon: '🫎', name: __alloT('stem.roadready.moose_encounter_drill_2', 'Moose Encounter Drill'), desc: __alloT('stem.roadready.maine_specific_what_to_do_when_a_moose', 'Maine-specific: what to do when a moose is in the road.') },
-          { view: 'emergencyVehicle', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_vehicle_drill_2', 'Emergency Vehicle Drill'), desc: __alloT('stem.roadready.maine_move_over_law_pull_to_right_rule', 'Maine Move Over law, pull-to-right rule, stationary vehicles.') },
-          { view: 'schoolBus', goal: 'safety', icon: '🚌', name: __alloT('stem.roadready.school_bus_stop_drill_2', 'School Bus Stop Drill'), desc: __alloT('stem.roadready.when_to_stop_for_a_stopped_school_bus_', 'When to stop for a stopped school bus (Maine §2308).') },
-          { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: __alloT('stem.roadready.railroad_crossing_drill_2', 'Railroad Crossing Drill'), desc: __alloT('stem.roadready.federal_maine_crossing_rules_and_the_4', 'Railroad crossing rules — and the 45° escape if you stall.') },
-          { view: 'winterDriving', goal: 'safety', icon: '❄️', name: __alloT('stem.roadready.winter_driving_drill_2', 'Winter Driving Drill'), desc: __alloT('stem.roadready.black_ice_skid_recovery_plow_etiquette', 'Black ice, skid recovery, plow etiquette, and the 4WD myth.') },
-          { view: 'constructionZone', goal: 'safety', icon: '🚧', name: __alloT('stem.roadready.construction_zone_drill_2', 'Construction Zone Drill'), desc: __alloT('stem.roadready.flaggers_zipper_merges_barrels_pilot_c', 'Flaggers, zipper merges, barrels, pilot cars, and posted construction-speed penalties.') },
-          { view: 'roundaboutDrill', goal: 'safety', icon: '🔄', name: __alloT('stem.roadready.roundabout_drill_2', 'Roundabout Drill'), desc: __alloT('stem.roadready.yield_signal_timing_multi_lane_trucks_', 'Yield, signal timing, multi-lane trucks, pedestrians — Maine is adding these fast.') },
-          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: __alloT('stem.roadready.oui_impaired_driving_drill_2', 'OUI / Impaired-Driving Drill'), desc: __alloT('stem.roadready.maine_0_02_bac_zero_tolerance_implied_', 'Maine under-21 0.00 zero-tolerance, implied consent, Rx + marijuana rules.') },
-          { view: 'peerPressure', goal: 'safety', icon: '🙅', name: __alloT('stem.roadready.peer_pressure_practice', 'Peer Pressure Practice'), desc: __alloT('stem.roadready.8_real_teen_situations_say_no_like_you', '8 real teen situations: say no like you mean it.') },
-          { view: 'distractedLab', goal: 'safety', icon: '📱', name: __alloT('stem.roadready.distracted_driving_lab_2', 'Distracted Driving Lab'), desc: __alloT('stem.roadready.visualize_the_cost_of_a_3_second_phone', 'Visualize the cost of a 3-second phone glance.') },
-          { view: 'reactionTest', goal: 'safety', icon: '⚡', name: __alloT('stem.roadready.reaction_time_test_2', 'Reaction Time Test'), desc: __alloT('stem.roadready.your_baseline_vs_simulated_0_08_bac', 'Your baseline vs modeled impairment lag.') },
-          { view: 'emergencyHandbook', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_handbook_3', 'Emergency Handbook'), desc: __alloT('stem.roadready.tire_blowout_brake_failure_hydroplane_', 'Tire blowout, brake failure, hydroplane — 9 critical responses.') },
-          { view: 'postCrash', goal: 'safety', icon: '📞', name: __alloT('stem.roadready.post_crash_protocol_3', 'Post-Crash Protocol'), desc: __alloT('stem.roadready.first_10_minutes_after_a_crash_2', 'First 10 minutes after a crash.') },
-          { view: 'bikeAware', goal: 'safety', icon: '🚴', name: __alloT('stem.roadready.cyclist_moto_awareness_2', 'Cyclist & Moto Awareness'), desc: __alloT('stem.roadready.3_ft_law_shared_blind_spots_right_hook', '3-ft law, shared blind spots, right-hook avoidance.') },
-          { view: 'crashLab', goal: 'science', icon: '🔬', name: __alloT('stem.roadready.crash_reconstruction_lab_2', 'Crash Reconstruction Lab'), desc: __alloT('stem.roadready.physics_of_real_crashes_rear_end_t_bon', 'Physics of real crashes: rear-end, T-bone, rollover, hydroplane.') },
-          { view: 'stoppingLab', goal: 'science', icon: '📐', name: __alloT('stem.roadready.stopping_distance_lab_2', 'Stopping Distance Lab'), desc: __alloT('stem.roadready.live_v_2_g_physics_with_weather_reacti', 'Live v² / 2μg physics with weather, reaction time, and tire condition.') },
-          { view: 'lessonSelect', goal: 'science', icon: '📚', name: __alloT('stem.roadready.auto_science_lessons', 'Auto Science Lessons'), desc: __alloT('stem.roadready.formal_physics_drag_friction_mpg_kinet', 'Formal physics: drag, friction, MPG, kinetic energy.') },
-          { view: 'hypermilingLab', goal: 'science', icon: '🌿', name: __alloT('stem.roadready.hypermiling_lab_2', 'Hypermiling Lab'), desc: __alloT('stem.roadready.mpg_vs_speed_graph_beat_the_epa_rating', 'MPG vs speed graph — beat the EPA rating.') },
-          { view: 'vehicleCompare', goal: 'science', icon: '🔬', name: __alloT('stem.roadready.vehicle_comparison', 'Vehicle Comparison'), desc: __alloT('stem.roadready.compare_specs_cd_mass_mpg_across_vehic', 'Compare specs (Cd, mass, MPG) across vehicle types.') },
-          { view: 'seatSetup', goal: 'pre-drive', icon: '🪑', name: __alloT('stem.roadready.seat_mirror_setup_3', 'Seat & Mirror Setup'), desc: __alloT('stem.roadready.7_step_ergonomics_guide_for_before_dri', '7-step ergonomics guide for before-drive setup.') },
-          { view: 'preTrip', goal: 'pre-drive', icon: '✅', name: __alloT('stem.roadready.pre_trip_inspection', 'Pre-Trip Inspection'), desc: __alloT('stem.roadready.interactive_28_point_vehicle_walkaroun', 'Interactive 28-point vehicle walkaround checklist.') },
-          { view: 'maintenanceGuide', goal: 'pre-drive', icon: '🔧', name: __alloT('stem.roadready.maintenance_guide', 'Maintenance Guide'), desc: __alloT('stem.roadready.oil_changes_tire_rotation_essential_up', 'Oil changes, tire rotation, essential upkeep schedules.') },
-          { view: 'maintenanceGame', goal: 'pre-drive', icon: '🔧', name: __alloT('stem.roadready.warning_lights_quiz', 'Warning Lights Quiz'), desc: __alloT('stem.roadready.10_dashboard_lights_diagnose_and_respo', '10 dashboard lights — diagnose and respond correctly.') },
-          { view: 'maineWinter', goal: 'maine', icon: '❄️', name: __alloT('stem.roadready.maine_winter_guide_2', 'Maine Winter Guide'), desc: __alloT('stem.roadready.moose_warnings_black_ice_winter_kit_st', 'Moose warnings, black ice, winter kit, studded tires.') },
-          { view: 'roundaboutGuide', goal: 'maine', icon: '🔄', name: __alloT('stem.roadready.roundabout_tutorial_2', 'Roundabout Tutorial'), desc: __alloT('stem.roadready.maine_is_adding_these_fast_step_by_ste', 'Maine is adding these fast. Step-by-step how-to.') },
-          { view: 'gdlTracker', goal: 'maine', icon: '🪪', name: __alloT('stem.roadready.gdl_stage_tracker', 'GDL Stage Tracker'), desc: __alloT('stem.roadready.maine_graduated_driver_license_timelin', 'Maine Graduated Driver License timeline + restrictions.') },
-          { view: 'teenGDL', goal: 'maine', icon: '📘', name: __alloT('stem.roadready.teen_gdl_drill_2', 'Teen GDL Drill'), desc: __alloT('stem.roadready.passenger_curfew_and_phone_rules_teens', 'Passenger, curfew, and phone rules teens get tested on.') },
-          { view: 'insuranceCalc', goal: 'maine', icon: '💰', name: __alloT('stem.roadready.insurance_calculator', 'Insurance Calculator'), desc: __alloT('stem.roadready.estimate_what_your_actual_rate_will_be', 'Estimate what your actual rate will be.') },
-          { view: 'logbook', goal: 'progress', icon: '📔', name: __alloT('stem.roadready.driving_logbook_3', 'Driving Logbook'), desc: __alloT('stem.roadready.all_drives_logged_with_70_hour_maine_p', 'All drives logged with 70-hour Maine progress bar.') },
-          { view: 'analytics', goal: 'progress', icon: '📈', name: __alloT('stem.roadready.analytics_dashboard', 'Analytics Dashboard'), desc: __alloT('stem.roadready.trend_charts_of_safety_eco_scores_best', 'Trend charts of safety/eco scores, bests, achievement timeline.') },
-          { view: 'achievementGallery', goal: 'progress', icon: '🏆', name: __alloT('stem.roadready.achievement_gallery', 'Achievement Gallery'), desc: __alloT('stem.roadready.bronze_silver_gold_tiered_badge_collec', 'Bronze/silver/gold tiered badge collection.') },
-          { view: 'dailyChallenge', goal: 'progress', icon: '⭐', name: __alloT('stem.roadready.daily_challenge_3', 'Daily Challenge'), desc: __alloT('stem.roadready.one_task_per_day_streak_tracker', 'One task per day, streak tracker.') },
-          { view: 'customize', goal: 'fun', icon: '🎨', name: __alloT('stem.roadready.my_ride_2', 'My Ride'), desc: __alloT('stem.roadready.paint_color_driver_name_license_plate', 'Paint color, driver name, license plate.') },
-          { view: 'driverPledge', goal: 'fun', icon: '📜', name: __alloT('stem.roadready.driver_s_pledge_3', "Driver's Pledge"), desc: __alloT('stem.roadready.sign_your_commitment_to_safe_driving', 'Sign your commitment to safe driving.') },
-          // Additions — these views were reachable from the menu but missing from the directory.
-          { view: 'rulesFoundations', goal: 'permit', icon: '📚', name: __alloT('stem.roadready.rules_foundations_3', 'Rules Foundations'), desc: __alloT('stem.roadready.9_universal_pillars_every_driver_must__2', '9 universal pillars every driver must know.') },
-          { view: 'hazardTest', goal: 'safety', icon: '⚡', name: __alloT('stem.roadready.hazard_perception_test', 'Hazard Perception Test'), desc: __alloT('stem.roadready.reaction_time_test_under_real_driving_', 'Reaction-time test under real driving hazards. Target 8/10.') },
-          { view: 'emergencyDrill', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_vehicle_live_drill', 'Emergency Vehicle Live Drill'), desc: __alloT('stem.roadready.suburban_drive_with_siren_events_every', 'Suburban drive with siren events every 20–30 seconds.') },
-          { view: 'blindSpotGuide', goal: 'safety', icon: '👁️', name: __alloT('stem.roadready.blind_spots_mirrors_2', 'Blind Spots & Mirrors'), desc: __alloT('stem.roadready.where_you_cannot_see_and_how_to_fix_it', 'Where you cannot see — and how to fix it.') },
-          { view: 'weatherCompare', goal: 'safety', icon: '🌦️', name: __alloT('stem.roadready.weather_impact_chart_2', 'Weather Impact Chart'), desc: __alloT('stem.roadready.side_by_side_stopping_distance_across_', 'Side-by-side stopping distance across conditions.') },
-          { view: 'nightVision', goal: 'safety', icon: '🔦', name: __alloT('stem.roadready.night_vision_math_2', 'Night Vision Math'), desc: __alloT('stem.roadready.can_you_stop_within_your_headlight_ran', 'Can you stop within your headlight range?') },
-          { view: 'reactionTrainer', goal: 'safety', icon: '⏱️', name: __alloT('stem.roadready.reaction_time_trainer', 'Reaction Time Trainer'), desc: __alloT('stem.roadready.traffic_light_reaction_drill_measure_y', 'Traffic-light reaction drill — measure your actual speed.') },
-          { view: 'intersectionGuide', goal: 'safety', icon: '🚦', name: __alloT('stem.roadready.intersection_guide_2', 'Intersection Guide'), desc: __alloT('stem.roadready.every_intersection_type_and_how_to_han', 'Every intersection type and how to handle it.') },
-          { view: 'forceDiagram', goal: 'science', icon: '📐', name: __alloT('stem.roadready.live_force_diagram', 'Live Force Diagram'), desc: __alloT('stem.roadready.drag_roll_thrust_and_weight_vectors_in', 'Drag, roll, thrust, and weight vectors in real time.') },
-          { view: 'speedCompare', goal: 'science', icon: '🏎️', name: __alloT('stem.roadready.speed_comparison_2', 'Speed Comparison'), desc: __alloT('stem.roadready.side_by_side_stopping_distance_at_2_di', 'Side-by-side stopping distance at 2 different speeds.') },
-          { view: 'fuelCalc', goal: 'science', icon: '⛽', name: __alloT('stem.roadready.fuel_cost_calculator_2', 'Fuel Cost Calculator'), desc: __alloT('stem.roadready.distance_mpg_gas_price_plan_any_trip', 'Distance × MPG × gas price — plan any trip.') },
-          { view: 'threePoint', goal: 'practice', icon: '↩️', name: __alloT('stem.roadready.3_point_turn_2', '3-Point Turn'), desc: __alloT('stem.roadready.k_turn_practice_2d_top_down_with_step_', 'K-turn practice (2D top-down with step guidance).') },
-          { view: 'backingDrill', goal: 'practice', icon: '⬅️', name: __alloT('stem.roadready.straight_backing_2', 'Straight Backing'), desc: __alloT('stem.roadready.backing_drill_for_lane_straightness_co', 'Backing drill for lane-straightness control.') },
-          { view: 'roadTestRubric', goal: 'practice', icon: '📋', name: __alloT('stem.roadready.road_test_rubric_2', 'Road Test Rubric'), desc: __alloT('stem.roadready.what_the_examiner_actually_grades_on', 'What the examiner actually grades on.') },
-          { view: 'dashLights', goal: 'pre-drive', icon: '💡', name: __alloT('stem.roadready.dashboard_lights_reference', 'Dashboard Lights Reference'), desc: __alloT('stem.roadready.every_warning_light_what_it_means_and_', 'Every warning light — what it means and what to do.') },
-          { view: 'knowYourCar', goal: 'pre-drive', icon: '🔍', name: __alloT('stem.roadready.know_your_car_2', 'Know Your Car'), desc: __alloT('stem.roadready.every_part_explained_engine_to_tires_2', 'Every part explained — engine to tires.') },
-          { view: 'keyboardCheatSheet', goal: 'pre-drive', icon: '⌨️', name: __alloT('stem.roadready.keyboard_shortcuts_3', 'Keyboard Shortcuts'), desc: __alloT('stem.roadready.all_in_drive_controls_at_a_glance', 'All in-drive controls at a glance.') },
-          { view: 'learningPath', goal: 'progress', icon: '🎯', name: __alloT('stem.roadready.learning_path_2', 'Learning Path'), desc: __alloT('stem.roadready.step_by_step_guided_progression_2', 'Step-by-step guided progression.') },
-          { view: 'aiCoach', goal: 'progress', icon: '🤖', name: __alloT('stem.roadready.ai_driving_coach_2', 'AI Driving Coach'), desc: __alloT('stem.roadready.gemini_reviews_your_last_drive', 'Gemini reviews your last drive.') },
-          { view: 'roadTrip', goal: 'fun', icon: '🗺️', name: __alloT('stem.roadready.road_trip_planner_2', 'Road Trip Planner'), desc: __alloT('stem.roadready.distance_fuel_cost_and_stop_planning', 'Distance, fuel cost, and stop planning.') },
-          { view: 'carBuying', goal: 'fun', icon: '💵', name: __alloT('stem.roadready.first_car_guide_2', 'First Car Guide'), desc: __alloT('stem.roadready.what_to_look_for_what_to_avoid_2', 'What to look for, what to avoid.') }
-        ];
-        var goals = [
-          { id: 'all', label: __alloT('stem.roadready.help_goal_all', 'All'), icon: '🧭' },
-          { id: 'permit', label: __alloT('stem.roadready.study_for_permit', 'Study for permit'), icon: '📝' },
-          { id: 'practice', label: __alloT('stem.roadready.practice_driving', 'Practice driving'), icon: '🚗' },
-          { id: 'safety', label: __alloT('stem.roadready.safety_skills', 'Safety skills'), icon: '🛡️' },
-          { id: 'science', label: __alloT('stem.roadready.physics_science', 'Physics / science'), icon: '🔬' },
-          { id: 'pre-drive', label: __alloT('stem.roadready.pre_drive_prep', 'Pre-drive prep'), icon: '✅' },
-          { id: 'maine', label: __alloT('stem.roadready.help_goal_maine_specific', 'Maine-specific'), icon: '🌲' },
-          { id: 'progress', label: __alloT('stem.roadready.track_progress', 'Track progress'), icon: '📈' },
-          { id: 'fun', label: __alloT('stem.roadready.personalization', 'Personalization'), icon: '🎨' }
-        ];
+        // (features / goals are defined once at render scope; see rrFeatures above)
         var filtered = features.filter(function(f) {
           if (helpGoal !== 'all' && f.goal !== helpGoal) return false;
           if (helpQuery && (f.name.toLowerCase() + ' ' + f.desc.toLowerCase()).indexOf(helpQuery) === -1) return false;
