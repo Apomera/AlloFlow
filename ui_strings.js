@@ -93619,7 +93619,8 @@
       "what_is_the_relationship_between_density_exc": "What is the relationship between density, exchange rate, and pond health? Is there a single number that matters most? Or trade-offs?",
       "explain_in_your_own_words_what_drives_oxygen": "Explain in your own words: what drives oxygen consumption? What replenishes it? Why does feed rate matter even at constant density? What is the trade-off a real fish farmer faces?",
       "device_save_recovery": "Device save recovery",
-      "what_surprised_you_what_would_you_investigat": "What surprised you? What would you investigate next?"
+      "what_surprised_you_what_would_you_investigat": "What surprised you? What would you investigate next?",
+      "sr_3d_context_lost_use_guided_2d_instead": "3D graphics stopped unexpectedly. Use Guided 2D, or retry the 3D mission."
     },
     "elig": {
       "a11y_close_diagnosis_evaluation_and_school_eligibili": "Close Diagnosis, Evaluation and School Eligibility",
