@@ -1123,10 +1123,10 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         'BASC-3 (Teacher)': {
             description: 'Behavior Assessment System for Children, 3rd Ed (Teacher). Measures behavioral/emotional functioning in school.',
             keyPatterns: [
-                'T-scores >=70 on Externalizing scales are Clinically Significant and typically warrant intervention',
+                'Clinical scales: T >=70 is Clinically Significant and 60-69 At-Risk',
                 'Elevated Attention Problems (>=65) combined with elevated Hyperactivity (>=65) is convergent evidence for attention concerns',
-                'Low Adaptive Skills (<=35) alongside elevated BSI suggests pervasive functional impact',
-                'Teacher-Parent discrepancies >10 T-score points suggest setting-specific behavior patterns'
+                'Adaptive scales run the other way: 31-40 is At-Risk and <=30 Clinically Significant. Low Adaptive Skills alongside an elevated BSI suggests pervasive functional impact',
+                'Teacher-Parent discrepancies >10 T-score points may reflect setting-specific behavior or rater differences'
             ]
         },
         'BASC-3 (Parent)': {
@@ -1140,8 +1140,8 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         'WIAT-4': {
             description: 'Wechsler Individual Achievement Test, 4th Ed. Measures academic achievement in reading, math, written language.',
             keyPatterns: [
-                'Achievement scores >=1 SD below cognitive ability (FSIQ) may indicate ability-achievement discrepancy relevant to SLD',
-                'Reading Composite below 85 with average or above FSIQ is a key pattern for SLD in Reading',
+                'Achievement well below FSIQ is an ability-achievement discrepancy. IDEA 2004 lets states permit this model but not require it, and thresholds vary by state; many teams rely on RTI/MTSS data or a pattern of strengths and weaknesses instead',
+                'Reading Composite below 85 with average-or-higher FSIQ is one pattern teams weigh for SLD in reading; it does not establish SLD on its own',
                 'Math Composite below 85 with intact reading suggests domain-specific learning difficulty',
                 'Written Language deficits often co-occur with fine motor or executive functioning concerns'
             ]
@@ -1149,7 +1149,7 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         'Vineland-3': {
             description: 'Vineland Adaptive Behavior Scales, 3rd Ed. Measures adaptive functioning across communication, daily living, socialization, motor.',
             keyPatterns: [
-                'ABC <=70 combined with FSIQ <=70 meets criteria pattern for Intellectual Disability',
+                'ABC <=70 with FSIQ around 70 or below (about 65-75 once measurement error is considered) is consistent with the score pattern for intellectual disability; diagnosis also requires onset in the developmental period and clinical judgment',
                 'Significant discrepancy between cognitive ability and adaptive functioning suggests environmental masking or exacerbation',
                 'Socialization domain deficits are particularly relevant for autism spectrum evaluations'
             ]
@@ -1157,7 +1157,7 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         'BRIEF-2': {
             description: 'Behavior Rating Inventory of Executive Function, 2nd Ed. Measures executive functioning in everyday environments.',
             keyPatterns: [
-                'GEC T-score >=65 indicates clinically significant executive dysfunction',
+                'Higher T-scores mean more difficulty: 60-64 is mildly elevated, 65-69 potentially clinically elevated, and >=70 clinically elevated',
                 'Elevated Working Memory + Plan/Organize suggests organizational support needs',
                 'Elevated Inhibit + Emotional Control aligns with behavioral regulation concerns',
                 'BRI-CRI discrepancy may differentiate behavioral vs cognitive executive profiles'
@@ -1166,16 +1166,18 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         'Conners-4': {
             description: 'Conners 4th Ed. Measures ADHD symptoms and related concerns.',
             keyPatterns: [
-                'Inattention/Executive Dysfunction >=65 is a primary indicator for ADHD-Inattentive presentation',
-                'Hyperactivity + Impulsivity both >=65 suggests ADHD-Hyperactive/Impulsive or Combined presentation',
+                'Inattention/Executive Dysfunction >=65 (Elevated) supports attention concerns; rating scales alone do not establish ADHD or its presentation',
+                'Hyperactivity + Impulsivity both >=65 is consistent with hyperactive-impulsive concerns; presentation is decided by DSM-5-TR symptom criteria, not scale scores',
                 'Emotional Dysregulation elevation may indicate comorbid mood concerns beyond ADHD'
             ]
         }
     };
 
+    // Codes are ICD-10-CM, as listed in DSM-5-TR (ICD-9-CM codes such as 314.0x
+    // were retired in the US in 2015).
     const DSM5_SCREENING_CRITERIA = {
         'ADHD': {
-            code: '314.0x',
+            code: 'F90.0 / F90.1 / F90.2',
             presentations: ['Predominantly Inattentive', 'Predominantly Hyperactive-Impulsive', 'Combined'],
             keyIndicators: [
                 'Six or more symptoms of inattention and/or hyperactivity-impulsivity for children <=16 (five for >=17)',
@@ -1187,13 +1189,13 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
             convergentEvidence: [
                 'Elevated BASC-3 Attention Problems + Hyperactivity scales',
                 'Elevated Conners-4 Inattention and/or Hyperactivity',
-                'Low BRIEF-2 Working Memory and Inhibit scales',
+                'Elevated BRIEF-2 Working Memory and Inhibit scales (higher BRIEF-2 scores mean more difficulty)',
                 'WISC-V WMI and/or PSI significantly below VCI/FRI'
             ],
             exclusionary: 'Symptoms not better explained by another mental disorder (anxiety, mood, dissociative, personality, substance)'
         },
         'SLD': {
-            code: '315.xx',
+            code: 'F81.0 / F81.81 / F81.2',
             presentations: ['With impairment in reading', 'With impairment in written expression', 'With impairment in mathematics'],
             keyIndicators: [
                 'Academic skills substantially and quantifiably below expectations for age',
@@ -1201,14 +1203,14 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
                 'Not better accounted for by ID, sensory issues, neurological conditions, or inadequate instruction'
             ],
             convergentEvidence: [
-                'Achievement composite >=1 SD below FSIQ (ability-achievement discrepancy)',
+                'Ability-achievement discrepancy (permitted but not required under IDEA 2004; thresholds vary by state)',
                 'Low achievement despite adequate instruction (RTI/MTSS data)',
                 'Pattern of strengths and weaknesses in cognitive processing (PSW model)'
             ],
             exclusionary: 'Must rule out: ID, uncorrected vision/hearing, other mental/neurological disorders, psychosocial adversity, inadequate instruction, language proficiency'
         },
         'ASD': {
-            code: '299.00',
+            code: 'F84.0',
             keyIndicators: [
                 'Persistent deficits in social communication and social interaction across multiple contexts',
                 'Restricted, repetitive patterns of behavior, interests, or activities',
@@ -1224,10 +1226,11 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
             exclusionary: 'Not better explained by intellectual disability or global developmental delay alone'
         },
         'ID': {
-            code: '319',
+            code: 'F70 / F71 / F72 / F73',
             presentations: ['Mild', 'Moderate', 'Severe', 'Profound'],
             keyIndicators: [
-                'Deficits in intellectual functions confirmed by clinical assessment AND testing (FSIQ approximately <=70)',
+                'Deficits in intellectual functions confirmed by clinical assessment AND testing (about 2 SD below the mean, roughly 65-75 including measurement error)',
+                'Severity levels are defined by adaptive functioning, not by IQ score',
                 'Deficits in adaptive functioning (failure to meet standards for personal independence)',
                 'Onset during the developmental period'
             ],
@@ -1325,12 +1328,19 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         if (fsiq && mathComp && (fsiq.score - mathComp.score) >= 15)
             parts.push('ABILITY-ACHIEVEMENT: ' + (fsiq.score - mathComp.score) + '-point FSIQ-Math gap (' + fsiq.score + ' vs ' + mathComp.score + ') — relevant for SLD-Math');
         if (attn && attn.score >= 65 && hyper && hyper.score >= 65)
-            parts.push('CONVERGENT: BASC-3 Attention (' + attn.score + ') + Hyperactivity (' + hyper.score + ') both elevated — ADHD pattern');
+            parts.push('CONVERGENT: BASC-3 Attention (' + attn.score + ') + Hyperactivity (' + hyper.score + ') both elevated — consistent with attention concerns (rating scales alone do not establish ADHD)');
         if (attn && attn.score >= 65 && connIn && connIn.score >= 65)
-            parts.push('CONVERGENT: BASC-3 Attention (' + attn.score + ') + Conners Inattention (' + connIn.score + ') — strong cross-measure ADHD convergence');
-        // Contextual DSM-5 + IDEA references
-        const hasBehElev = scoreEntries.some(s => s.scoreType === 'T-score' && s.score >= 65);
-        const hasLowCog = scoreEntries.some(s => s.scoreType === 'standard' && s.score <= 70);
+            parts.push('CONVERGENT: BASC-3 Attention (' + attn.score + ') + Conners Inattention (' + connIn.score + ') — cross-measure convergence on attention concerns');
+        // Contextual DSM-5 + IDEA references. Each reference is added only when a
+        // score that bears on it is present. "Any T >= 65" used to add the ADHD
+        // block for an elevated Anxiety or SRS-2 score, and "any standard score
+        // <= 70" added the ID block for every BOT-2 score (mean 50) and for low
+        // achievement alone, steering the draft toward diagnoses no data raised.
+        const ATTENTION_SCALES = new Set(['Attention Problems', 'Hyperactivity', 'Inattention/Executive Dysfunction', 'Impulsivity', 'Inhibit', 'Working Memory']);
+        const ATTENTION_INSTRUMENTS = ['BASC-3 (Parent)', 'BASC-3 (Teacher)', 'Conners-4', 'BRIEF-2'];
+        const GLOBAL_COGNITIVE = new Set(['WISC-V:Full Scale IQ', 'WJ-IV COG:General Intellectual Ability', 'KABC-II:Mental Processing Index', 'DAS-II:General Conceptual Ability']);
+        const hasBehElev = scoreEntries.some(s => ATTENTION_INSTRUMENTS.includes(s.assessment) && ATTENTION_SCALES.has(s.subtest) && Number(s.score) >= 65);
+        const hasLowCog = scoreEntries.some(s => GLOBAL_COGNITIVE.has(s.assessment + ':' + s.subtest) && Number(s.score) <= 75);
         const hasAchGap = (fsiq && readComp && (fsiq.score - readComp.score) >= 15) || (fsiq && mathComp && (fsiq.score - mathComp.score) >= 15);
         if (hasBehElev) {
             parts.push('\n--- DSM-5 Reference (ADHD) ---');
@@ -5132,6 +5142,7 @@ Return ONLY valid JSON:
         normalizeScoreType: normalizeReportScoreType,
         classifyDisplayScore,
         assessmentPresets: ASSESSMENT_PRESETS,
+        buildReferenceContext,
         validateReportPayload,
         validateDiscrepancyPayload,
         getTranslationLanguageMeta,

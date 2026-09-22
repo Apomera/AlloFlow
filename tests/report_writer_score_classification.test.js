@@ -205,6 +205,33 @@ describe('one table, every surface', () => {
   });
 });
 
+describe('diagnostic references in the AI prompt are raised only by scores that bear on them', () => {
+  const ctx = (rows) => utils.buildReferenceContext(rows.map(([assessment, subtest, score, scoreType]) => ({ assessment, subtest, score, scoreType })), 10);
+  const ID = 'DSM-5 Reference (ID)';
+  const ADHD = 'DSM-5 Reference (ADHD)';
+
+  it('BOT-2 scores (mean 50) never raise intellectual disability', () => {
+    expect(ctx([['BOT-2', 'Total Motor Composite', 45, 'standard'], ['BOT-2', 'Fine Manual Control', 38, 'standard']])).not.toContain(ID);
+  });
+  it('low achievement alone does not raise intellectual disability', () => {
+    expect(ctx([['WIAT-4', 'Reading Composite', 68, 'standard']])).not.toContain(ID);
+  });
+  it('a low global cognitive composite does, including the measurement-error margin', () => {
+    expect(ctx([['WISC-V', 'Full Scale IQ', 73, 'standard']])).toContain(ID);
+    expect(ctx([['WISC-V', 'Full Scale IQ', 76, 'standard']])).not.toContain(ID);
+  });
+  it('an elevated anxiety or social-responsiveness score does not raise ADHD', () => {
+    expect(ctx([['BASC-3 (Parent)', 'Anxiety', 75, 'T-score'], ['SRS-2', 'Total Score', 72, 'T-score']])).not.toContain(ADHD);
+  });
+  it('a high BASC-3 adaptive score (a strength) does not raise ADHD', () => {
+    expect(ctx([['BASC-3 (Teacher)', 'Adaptive Skills', 68, 'T-score']])).not.toContain(ADHD);
+  });
+  it('an elevated attention scale does', () => {
+    expect(ctx([['BASC-3 (Teacher)', 'Attention Problems', 70, 'T-score']])).toContain(ADHD);
+    expect(ctx([['Conners-4', 'Inattention/Executive Dysfunction', 66, 'T-score']])).toContain(ADHD);
+  });
+});
+
 describe('saved reports get their labels recomputed on load', () => {
   it('a WISC-V 75 saved as "Borderline" reloads as "Very Low"', () => {
     const data = utils.validateReportPayload({
