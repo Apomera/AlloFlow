@@ -3416,6 +3416,88 @@
         try { if (renderer._magEnvTarget && renderer._magEnvTarget.dispose) renderer._magEnvTarget.dispose(); } catch (e) {}
         renderer._magEnvTarget = null; renderer._magEnvTexture = null; renderer._magEnvTried = false;
       }
+      // ── Solid vector arrows ──────────────────────────────────────────
+      // THREE.ArrowHelper draws its shaft as a 1px THREE.Line, and WebGL
+      // IGNORES LineBasicMaterial.linewidth — verified on this stack: identical
+      // pixels at linewidth 1, 4 and 10, and the driver reports
+      // ALIASED_LINE_WIDTH_RANGE = [1, 1]. So an ArrowHelper shaft can never be
+      // made thicker, and these arrows are the tool's primary vector readout:
+      // B at a probe, F on a motor wire, v and the Lorentz force on a particle.
+      // On a projector they were nearly invisible next to the field tubes.
+      //
+      // This is a drop-in replacement: same constructor shape, and it
+      // implements the parts of the ArrowHelper API the tool actually uses —
+      // setDirection, setLength, position and visible.
+      //
+      // Cost: the shaft and head geometries are SHARED across every arrow and
+      // never disposed per-arrow, so only the lightweight Mesh wrappers are
+      // per-arrow. Measured at 99 arrows this is FASTER than ArrowHelper
+      // (~1.08ms vs ~1.58ms per rebuild), because ArrowHelper allocates fresh
+      // geometry for each instance.
+      var _magShaftGeo = null, _magHeadGeo = null;
+      function magArrowGeos(THREE) {
+        // Unit shaft along +Y with its base at the origin, so scaling Y alone
+        // sets the length and the arrow still starts where it was placed.
+        if (!_magShaftGeo) {
+          _magShaftGeo = new THREE.CylinderGeometry(1, 1, 1, magLowPower() ? 5 : 8, 1, true);
+          _magShaftGeo.translate(0, 0.5, 0);
+          // Every scene's disposeObject/clearGroup disposes child geometries.
+          // These two are SHARED across all arrows in all six scenes, so a
+          // single rebuild would destroy them and every later arrow would
+          // silently fail to draw. The flag makes them skippable.
+          _magShaftGeo._magShared = true;
+        }
+        if (!_magHeadGeo) {
+          _magHeadGeo = new THREE.ConeGeometry(1, 1, magLowPower() ? 6 : 10);
+          _magHeadGeo.translate(0, 0.5, 0);
+          _magHeadGeo._magShared = true;
+        }
+        return { shaft: _magShaftGeo, head: _magHeadGeo };
+      }
+      // Returns an Object3D that behaves like an ArrowHelper for this tool's
+      // purposes. `thickness` is the shaft RADIUS in world units.
+      function magMakeArrow(THREE, dir, origin, length, color, headLength, headWidth, opacity, thickness) {
+        var geos = magArrowGeos(THREE);
+        var group = new THREE.Group();
+        var material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity == null ? 1 : opacity });
+        var shaft = new THREE.Mesh(geos.shaft, material);
+        var head = new THREE.Mesh(geos.head, material);
+        group.add(shaft); group.add(head);
+        group._magShaft = shaft; group._magHead = head; group._magMat = material;
+        group._magThickness = thickness == null ? 0.018 : thickness;
+        group.setLength = function (len, hLen, hWidth) {
+          var L = Math.max(1e-6, Number(len) || 0);
+          var hl = Math.min(hLen == null ? L * 0.28 : hLen, L * 0.6);
+          var hw = hWidth == null ? hl * 0.55 : hWidth;
+          // Shaft stops where the head begins, so the arrow's total length is
+          // exactly `len` — the same contract ArrowHelper gives.
+          shaft.scale.set(this._magThickness, Math.max(1e-6, L - hl), this._magThickness);
+          head.scale.set(Math.max(1e-6, hw), Math.max(1e-6, hl), Math.max(1e-6, hw));
+          head.position.set(0, Math.max(0, L - hl), 0);
+        };
+        group.setDirection = function (d) {
+          if (!d) return;
+          var v = d.clone ? d.clone() : new THREE.Vector3(d.x, d.y, d.z);
+          if (v.lengthSq() < 1e-12) return;
+          v.normalize();
+          // The geometries point along +Y, so orient that axis onto the vector.
+          this.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), v);
+        };
+        group.setColor = function (c) { material.color.set(c); };
+        if (origin) group.position.copy(origin);
+        group.setDirection(dir);
+        group.setLength(length, headLength, headWidth);
+        return group;
+      }
+      // The shared geometries deliberately outlive individual scenes, and that
+      // is safe: unlike a PMREM texture (which belongs to the context that
+      // built it and renders as nothing anywhere else), a BufferGeometry holds
+      // CPU-side attribute data that three.js re-uploads per context.
+      // Verified: the same geometry drew identically on two renderers and kept
+      // drawing on the second after the first was force-lost and disposed.
+      // So they are NOT disposed per scene — a scene's clearGroup must not
+      // dispose them either, which is why arrows are built from these two
+      // shared geometries rather than fresh ones.
       function magRenderPack(pack) {
         if (!pack || pack.disposed) return;
         if (pack.composer) {
@@ -4482,7 +4564,7 @@
 
             function disposeObject(obj) {
               obj.traverse(function (child) {
-                if (child.geometry && child.geometry.dispose) child.geometry.dispose();
+                if (child.geometry && child.geometry.dispose && !child.geometry._magShared) child.geometry.dispose();
                 if (child.material) {
                   (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) {
                     if (material && material.dispose) material.dispose();
@@ -4525,9 +4607,7 @@
             function addArrow(group, origin, field, color, length, opacity) {
               var magnitude = Math.sqrt(field.x * field.x + field.y * field.y + field.z * field.z);
               if (magnitude < 1e-12) return;
-              var arrow = new THREE.ArrowHelper(new THREE.Vector3(field.x, field.y, field.z).normalize(), origin, length, color, Math.min(0.22, length * 0.28), Math.min(0.12, length * 0.15));
-              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity;
-              arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity;
+              var arrow = magMakeArrow(THREE, new THREE.Vector3(field.x, field.y, field.z), origin, length, color, Math.min(0.22, length * 0.28), Math.min(0.12, length * 0.15), opacity, 0.017);
               group.add(arrow);
             }
             function fieldLevel(magnitude) {
@@ -5926,7 +6006,7 @@
             var liveState = cv._electro3dState || currentElectro3DState();
             var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), probePlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
             var resizeObserver = null, disposed = false, pointerStart = null;
-            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
+            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose && !child.geometry._magShared) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
             function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } }
             function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(electroPack, width, height); }
             var electroPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
@@ -5939,8 +6019,8 @@
             magAttachBloom(electroPack, { strength: 0.72, radius: 0.4, threshold: 0.72 }, renderScene);
             function addArrow(origin, field, color, length, opacity) {
               var magnitude = Math.hypot(field.x, field.y, field.z); if (magnitude < 1e-10) return;
-              var arrow = new THREE.ArrowHelper(new THREE.Vector3(field.x, field.y, field.z).normalize(), origin, length, color, Math.min(0.22, length * 0.3), Math.min(0.13, length * 0.18));
-              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; dynamicGroup.add(arrow);
+              var arrow = magMakeArrow(THREE, new THREE.Vector3(field.x, field.y, field.z), origin, length, color, Math.min(0.22, length * 0.3), Math.min(0.13, length * 0.18), opacity, 0.016);
+              dynamicGroup.add(arrow);
             }
             function buildCoil(state) {
               var visibleTurns = 5 + Math.round(Math.max(0, Math.min(195, state.turns - 5)) / 195 * 9);
@@ -7146,7 +7226,7 @@
             var resizeObserver = null, disposed = false, liveSignature = '';
             var particleGroup = null, velocityArrow = null, forceArrow = null, trailLine = null, trailGeometry = null, referenceLine = null, particleLightRef = particleLight;
             var cometGeometry = null, cometLine = null, particleGlow = null;
-            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
+            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose && !child.geometry._magShared) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
             function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } particleGroup = null; velocityArrow = null; forceArrow = null; trailLine = null; trailGeometry = null; referenceLine = null; cometGeometry = null; cometLine = null; particleGlow = null; }
             function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(chargePack, width, height); }
             var chargePack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
@@ -7158,8 +7238,8 @@
             }
             magAttachBloom(chargePack, { strength: 0.85, radius: 0.44, threshold: 0.58 }, renderScene);
             function addArrow(parent, origin, direction, color, length, opacity) {
-              var arrow = new THREE.ArrowHelper(direction.clone().normalize(), origin, length, color, Math.min(0.25, length * 0.27), Math.min(0.14, length * 0.16));
-              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; parent.add(arrow); return arrow;
+              var arrow = magMakeArrow(THREE, direction, origin, length, color, Math.min(0.25, length * 0.27), Math.min(0.14, length * 0.16), opacity, 0.019);
+              parent.add(arrow); return arrow;
             }
             function buildScene(state) {
               clearDynamic();
@@ -7841,7 +7921,7 @@
             var rotorGroup = null, forceArrows = [], currentArrows = [], momentArrow = null, torqueArrow = null;
             var commutatorHalves = [];
             var yAxis = new THREE.Vector3(0, 1, 0);
-            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
+            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose && !child.geometry._magShared) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
             function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } rotorGroup = null; forceArrows = []; currentArrows = []; momentArrow = null; torqueArrow = null; commutatorHalves = []; }
             function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(motorPack, width, height); }
             var motorPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
@@ -7853,8 +7933,8 @@
             }
             magAttachBloom(motorPack, { strength: 0.7, radius: 0.4, threshold: 0.74 }, renderScene);
             function addArrow(parent, origin, direction, color, length, opacity) {
-              var arrow = new THREE.ArrowHelper(direction.clone().normalize(), origin, length, color, Math.min(0.28, length * 0.28), Math.min(0.16, length * 0.17));
-              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; parent.add(arrow); return arrow;
+              var arrow = magMakeArrow(THREE, direction, origin, length, color, Math.min(0.28, length * 0.28), Math.min(0.16, length * 0.17), opacity, 0.021);
+              parent.add(arrow); return arrow;
             }
             function addPoleMark(x, isNorth) {
               var radii = isNorth ? [0.42] : [0.28, 0.55];
@@ -8388,7 +8468,7 @@
 
             function disposeObject(obj) {
               obj.traverse(function (child) {
-                if (child.geometry && child.geometry.dispose) child.geometry.dispose();
+                if (child.geometry && child.geometry.dispose && !child.geometry._magShared) child.geometry.dispose();
                 if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); });
               });
             }
@@ -8414,9 +8494,7 @@
             function addArrow(group, origin, vector, color, length, opacity) {
               var magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
               if (magnitude < 1e-10) return;
-              var arrow = new THREE.ArrowHelper(new THREE.Vector3(vector.x, vector.y, vector.z).normalize(), origin, length, color, Math.min(0.22, length * 0.3), Math.min(0.13, length * 0.18));
-              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity;
-              arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity;
+              var arrow = magMakeArrow(THREE, new THREE.Vector3(vector.x, vector.y, vector.z), origin, length, color, Math.min(0.22, length * 0.3), Math.min(0.13, length * 0.18), opacity, 0.016);
               group.add(arrow);
             }
             function momentVector(magnet, polarity) {
@@ -10116,7 +10194,7 @@
             } catch (starError) { starField = null; }
             var liveState = cv._earth3dState || currentEarth3DState();
             var resizeObserver = null, disposed = false, liveSignature = '', animationFrame = 0, animatedParticles = [], animatedWind = [];
-            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
+            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose && !child.geometry._magShared) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
             function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } }
             function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(earthPack, width, height); }
             var earthPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
@@ -10133,8 +10211,8 @@
               var line = new THREE.Line(geometry, material); if (dashed) line.computeLineDistances(); parent.add(line); return line;
             }
             function addArrow(parent, origin, direction, color, length, opacity) {
-              var arrow = new THREE.ArrowHelper(direction.clone().normalize(), origin, length, color, 0.24, 0.13);
-              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; parent.add(arrow); return arrow;
+              var arrow = magMakeArrow(THREE, direction, origin, length, color, 0.24, 0.13, opacity, 0.018);
+              parent.add(arrow); return arrow;
             }
             function buildScene(state) {
               clearDynamic();

@@ -440,6 +440,44 @@ test.describe('magnetism — 3D visual pass', () => {
       .toBeGreaterThan(0);
   });
 
+  test('vector arrows are solid geometry, not 1px ArrowHelper lines', async ({ page }) => {
+    // WebGL ignores LineBasicMaterial.linewidth — verified on this stack:
+    // identical lit-pixel counts at linewidth 1, 4 and 10, and the driver
+    // reports ALIASED_LINE_WIDTH_RANGE = [1, 1]. So an ArrowHelper shaft can
+    // never be thickened, and these arrows are the tool's primary vector
+    // readout. Assert the tool builds NO ArrowHelper at all and does build
+    // cylinder shafts.
+    //
+    // Counting cylinders alone would be weak — other scene furniture could be
+    // a cylinder — so the ArrowHelper count is the load-bearing half: it must
+    // be exactly zero.
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(
+      () => !!(window as any).StemLab?._registry?.magnetism, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const T = (window as any).THREE, w = window as any;
+      w.__tally = { arrowHelpers: 0, cylinders: 0 };
+      const AH = T.ArrowHelper;
+      T.ArrowHelper = function (...a: any[]) { w.__tally.arrowHelpers++; return new AH(...a); };
+      T.ArrowHelper.prototype = AH.prototype;
+      const Cyl = T.CylinderGeometry;
+      T.CylinderGeometry = function (...a: any[]) { w.__tally.cylinders++; return new Cyl(...a); };
+      T.CylinderGeometry.prototype = Cyl.prototype;
+    });
+    // The field studio draws the densest arrow set (vector grid + line markers
+    // + probe), so it exercises the shared helper hardest.
+    await page.evaluate(() => (window as any).__mount({
+      magnetism: { tab: 'field', fieldView: '3d', vectors: true, lines: true },
+    }));
+    await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+    await page.waitForTimeout(1500);
+
+    const tally = await page.evaluate(() => (window as any).__tally);
+    expect(tally.arrowHelpers, 'still building 1px ArrowHelper arrows').toBe(0);
+    expect(tally.cylinders, 'no cylinder shaft was built — arrows are not solid')
+      .toBeGreaterThan(0);
+  });
+
   test('releases its GL context on unmount', async ({ page }) => {
     await harness.mount(page, FIELD_3D);
     await page.evaluate(() => (window as any).__magProbe());
