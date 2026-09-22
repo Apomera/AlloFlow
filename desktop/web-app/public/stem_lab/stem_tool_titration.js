@@ -5951,7 +5951,7 @@ return React.createElement("div", {
 
   // ── Safety Reference Panel (toggled) ──
   showSafetyRef && React.createElement("div", {
-    id: "titration-safety-reference", role: "region", "aria-label": __alloT('stem.titration.quick_safety_reference',"Quick safety reference"),
+    id: "titration-safety-reference", role: "region", "aria-label": __alloT('stem.titration.quick_safety_reference_aria',"Quick safety reference"),
     className: "rounded-xl p-4 border space-y-2 animate-in slide-in-from-top duration-200",
     style: Object.assign({}, glass, { background: 'rgba(120,53,15,0.3)', borderColor: 'rgba(251,191,36,0.2)' })
   },
@@ -5969,7 +5969,7 @@ return React.createElement("div", {
 
   // ── Chemical Hazards Panel (toggled) ──
   showHazards && React.createElement("div", {
-    id: "titration-hazards-panel", role: "region", "aria-label": __alloT('stem.titration.chemical_hazard_information',"Chemical hazard information"),
+    id: "titration-hazards-panel", role: "region", "aria-label": __alloT('stem.titration.chemical_hazard_information_aria',"Chemical hazard information"),
     className: "rounded-xl p-4 border space-y-3 animate-in slide-in-from-top duration-200",
     style: Object.assign({}, glass, { background: 'rgba(127,29,29,0.15)', borderColor: 'rgba(248,113,113,0.2)' })
   },

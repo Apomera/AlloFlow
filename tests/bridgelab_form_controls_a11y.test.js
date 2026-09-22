@@ -13,6 +13,8 @@ describe('Bridge Lab design notes accessibility', () => {
   it('provides accessible names for optional design notes fields', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain("'aria-label': __alloT('stem.bridgelab.design_name', 'Bridge design name')");
-    expect(source).toContain("'aria-label': __alloT('stem.bridgelab.design_notes', 'Bridge design notes')");
+    // Its own key: design_notes is the "Design notes" heading, and one key with two
+    // fallbacks mislabels one of them as soon as the key is registered.
+    expect(source).toContain("'aria-label': __alloT('stem.bridgelab.design_notes_aria', 'Bridge design notes')");
   });
 });
