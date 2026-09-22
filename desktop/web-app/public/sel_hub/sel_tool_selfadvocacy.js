@@ -1977,7 +1977,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               ),
               h('button', {
                 onClick: function() { switchTab(suggestion.tab, suggestion.cta); },
-                className: 'px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-400 shrink-0 no-print'
+                className: 'px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-600 shrink-0 no-print'
               }, 'Go \u2192')
             )
           ),
@@ -2133,7 +2133,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                   role: 'checkbox',
                   'aria-checked': picked,
                   'aria-label': (picked ? 'Selected: ' : 'Not selected: ') + item,
-                  className: 'px-2 py-1 rounded text-xs transition focus:ring-2 focus:ring-violet-400 focus:outline-none ' + (picked ? 'bg-violet-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+                  className: 'px-2 py-1 rounded text-xs transition focus:ring-2 focus:ring-violet-400 focus:outline-none ' + (picked ? 'bg-violet-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
                 },
                   picked ? h('span', { 'aria-hidden': 'true' }, '\u2713 ') : null,
                   item
@@ -2257,7 +2257,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           h('div', { className: 'flex flex-wrap gap-2 pt-2 no-print' },
             h('button', {
               onClick: function() { window.print && window.print(); },
-              className: 'flex-1 py-2 rounded-lg bg-violet-600 text-white text-sm font-bold hover:bg-violet-500'
+              className: 'flex-1 py-2 rounded-lg bg-violet-600 text-white text-sm font-bold hover:bg-violet-600'
             }, '\uD83D\uDDA8 Print one-pager / Save as PDF'),
             h('button', {
               id: 'selfadv-clear-profile',
@@ -3018,7 +3018,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                 disabled: pLoading || !pResponse || pResponse.length < 20,
                 'aria-busy': pLoading ? 'true' : 'false',
                 'aria-label': pLoading ? 'Coaching feedback loading' : 'Get coaching feedback on your response',
-                className: 'px-4 py-2 rounded-lg text-xs font-bold no-print ' + (pLoading || !pResponse || pResponse.length < 20 ? 'bg-slate-700 text-slate-400' : 'bg-fuchsia-600 text-white hover:bg-fuchsia-500')
+                className: 'px-4 py-2 rounded-lg text-xs font-bold no-print ' + (pLoading || !pResponse || pResponse.length < 20 ? 'bg-slate-700 text-slate-400' : 'bg-fuchsia-600 text-white hover:bg-fuchsia-600')
               }, pLoading ? 'Coaching…' : '\u2728 Get coaching feedback')
             ),
             // Surface 988 / Crisis Text Line block when last draft was tier-3.
@@ -3042,7 +3042,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                   onClick: startRolePlay,
                   disabled: !callGemini || pRpStarting,
                   'aria-label': 'Start a role-play of this conversation',
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((!callGemini || pRpStarting) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-500')
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((!callGemini || pRpStarting) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-600')
                 }, pRpStarting ? 'Starting…' : 'Start rehearsal →')
               ),
               // In-conversation state
@@ -3099,7 +3099,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                       onClick: sendRpTurn,
                       disabled: pRpLoading || !pRpInput.trim() || !callGemini,
                       'aria-busy': pRpLoading ? 'true' : 'false',
-                      className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((pRpLoading || !pRpInput.trim() || !callGemini) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-500')
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((pRpLoading || !pRpInput.trim() || !callGemini) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-600')
                     }, pRpLoading ? 'Thinking…' : 'Send →'),
                     h('button', {
                       onClick: coachRp,
@@ -3120,7 +3120,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                   h('div', { className: 'flex flex-wrap gap-2' },
                     h('button', {
                       onClick: function() { startRolePlay(); },
-                      className: 'px-3 py-2 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-500'
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-600'
                     }, 'Rehearse again'),
                     h('button', {
                       onClick: resetRp,
@@ -3300,7 +3300,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           h('div', { className: 'flex flex-wrap gap-2 pt-2 no-print' },
             h('button', {
               onClick: function() { window.print && window.print(); },
-              className: 'flex-1 py-2 rounded-lg bg-teal-600 text-white text-sm font-bold hover:bg-teal-500'
+              className: 'flex-1 py-2 rounded-lg bg-teal-700 text-white text-sm font-bold hover:bg-teal-700'
             }, '\uD83D\uDDA8 Print worksheet / Save as PDF'),
             h('button', {
               id: 'selfadv-clear-meeting',
@@ -3403,11 +3403,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             h('div', { className: 'flex flex-wrap gap-2 mt-3 no-print' },
               h('button', {
                 onClick: copyOutput,
-                className: 'flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500'
+                className: 'flex-1 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-700'
               }, '\uD83D\uDCCB Copy to clipboard'),
               h('button', {
                 onClick: function() { window.print && window.print(); },
-                className: 'flex-1 py-2 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-500'
+                className: 'flex-1 py-2 rounded-lg bg-amber-700 text-white text-xs font-bold hover:bg-amber-700'
               }, '\uD83D\uDDA8 Print / Save as PDF')
             )
           ),
@@ -3508,7 +3508,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               )
             ),
             h('div', { className: 'flex gap-2 no-print' },
-              h('button', { onClick: reset, className: 'flex-1 py-2 rounded-lg bg-cyan-600 text-white text-sm font-bold hover:bg-cyan-500' }, '\uD83D\uDD04 Retake quiz'),
+              h('button', { onClick: reset, className: 'flex-1 py-2 rounded-lg bg-cyan-700 text-white text-sm font-bold hover:bg-cyan-700' }, '\uD83D\uDD04 Retake quiz'),
               h('button', { onClick: function() { switchTab('rights', 'Know Your Rights'); }, className: 'flex-1 py-2 rounded-lg bg-slate-700 text-white text-sm font-bold hover:bg-slate-600' }, 'Review Rights module')
             )
           );
@@ -3538,7 +3538,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                   disabled: revealed,
                   onClick: function() { pick(i); },
                   className: 'w-full text-left p-3 rounded-lg border-2 transition focus:ring-2 focus:ring-cyan-400 focus:outline-none ' +
-                    (showCorrect ? 'bg-emerald-600 border-emerald-600 text-white' :
+                    (showCorrect ? 'bg-emerald-700 border-emerald-600 text-white' :
                      showWrong ? 'bg-rose-600 border-rose-600 text-white' :
                      picked ? 'bg-cyan-700 border-cyan-600 text-white' :
                      'bg-slate-900/60 border-slate-600 text-slate-100 hover:bg-slate-800/60')
@@ -3560,7 +3560,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           revealed && h('div', { className: 'flex justify-end no-print' },
             h('button', {
               onClick: next,
-              className: 'px-5 py-2 rounded-xl font-bold text-sm bg-cyan-600 text-white hover:bg-cyan-500'
+              className: 'px-5 py-2 rounded-xl font-bold text-sm bg-cyan-700 text-white hover:bg-cyan-700'
             }, qIdx + 1 >= total ? 'See results \u2192' : 'Next question \u2192')
           )
         );
@@ -3790,7 +3790,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                 h('div', { className: 'flex gap-2' },
                   h('button', {
                     onClick: saveEntry,
-                    className: 'flex-1 py-2 rounded-lg bg-fuchsia-600 text-white text-xs font-bold hover:bg-fuchsia-500'
+                    className: 'flex-1 py-2 rounded-lg bg-fuchsia-600 text-white text-xs font-bold hover:bg-fuchsia-600'
                   }, 'Save entry'),
                   h('button', {
                     onClick: cancelDraft,
@@ -3978,7 +3978,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           h('div', { className: 'flex flex-wrap gap-2 pt-2 no-print' },
             h('button', {
               onClick: function() { window.print && window.print(); },
-              className: 'flex-1 py-2 rounded-lg bg-amber-600 text-white text-sm font-bold hover:bg-amber-500'
+              className: 'flex-1 py-2 rounded-lg bg-amber-700 text-white text-sm font-bold hover:bg-amber-700'
             }, '\uD83D\uDDA8 Print card'),
             h('button', {
               id: 'selfadv-clear-card',
@@ -4235,7 +4235,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           h('div', { className: 'flex flex-wrap gap-2 pt-2 no-print' },
             h('button', {
               onClick: function() { window.print && window.print(); },
-              className: 'flex-1 py-2 rounded-lg bg-lime-600 text-white text-sm font-bold hover:bg-lime-500'
+              className: 'flex-1 py-2 rounded-lg bg-lime-700 text-white text-sm font-bold hover:bg-lime-700'
             }, '\uD83D\uDDA8 Print plan'),
             h('button', {
               id: 'selfadv-clear-action-plan',
@@ -4668,7 +4668,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               onClick: doExport,
               disabled: !hasAnyData,
               'aria-label': hasAnyData ? 'Export all your data as a JSON file download' : 'No data to export yet',
-              className: 'px-5 py-2 rounded-lg font-bold text-sm ' + (hasAnyData ? 'bg-sky-600 text-white hover:bg-sky-500' : 'bg-slate-700 text-slate-400 cursor-not-allowed')
+              className: 'px-5 py-2 rounded-lg font-bold text-sm ' + (hasAnyData ? 'bg-sky-700 text-white hover:bg-sky-700' : 'bg-slate-700 text-slate-400 cursor-not-allowed')
             }, '\uD83D\uDCE5 Download my data (.json)'),
             !hasAnyData && h('div', { className: 'text-xs text-slate-300 mt-2 italic' }, 'Nothing to export yet. Fill in some content first.')
           ),
@@ -4683,7 +4683,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                 var input = document.getElementById('data-import-file');
                 if (input && input.click) input.click();
               },
-              className: 'inline-flex min-h-11 items-center px-5 py-2 rounded-lg font-bold text-sm bg-amber-600 text-white hover:bg-amber-500'
+              className: 'inline-flex min-h-11 items-center px-5 py-2 rounded-lg font-bold text-sm bg-amber-700 text-white hover:bg-amber-700'
             }, '\uD83D\uDCE4 Choose a backup file'),
             h('input', {
               id: 'data-import-file',
@@ -4705,7 +4705,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               onClick: doReset,
               disabled: !hasAnyData,
               'aria-label': hasAnyData ? 'Reset all personal data, with confirmation' : 'Nothing to reset',
-              className: 'px-5 py-2 rounded-lg font-bold text-sm ' + (hasAnyData ? 'bg-rose-600 text-white hover:bg-rose-500' : 'bg-slate-700 text-slate-400 cursor-not-allowed')
+              className: 'px-5 py-2 rounded-lg font-bold text-sm ' + (hasAnyData ? 'bg-rose-600 text-white hover:bg-rose-600' : 'bg-slate-700 text-slate-400 cursor-not-allowed')
             }, '\uD83D\uDDD1\uFE0F Reset all my data'),
             !hasAnyData && h('div', { className: 'text-xs text-slate-300 mt-2 italic' }, 'Nothing to reset.')
           ),

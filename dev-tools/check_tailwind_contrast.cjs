@@ -3,7 +3,7 @@
  * check_tailwind_contrast.cjs — WCAG AA contrast for Tailwind colour pairs.
  *
  * The 2026-09-15 sweep found 133 places where white text sat on a fill too
- * light to read (emerald-600 is 3.77:1, amber-600 3.19, lime-500 1.76), plus
+ * light to read (emerald-600 is 3.77:1, amber-600 3.19, lime-500 1.98), plus
  * 18 hover fills that went LIGHTER under white text — the control became least
  * readable exactly when the pointer was on it — and a reading-fluency legend at
  * 1.23:1 that was effectively invisible. Every one of those shipped through a
@@ -340,6 +340,30 @@ function isDecorativeIconToken(text, index) {
   return DECORATIVE.test(text.slice(Math.max(0, index - 40), index));
 }
 
+// WCAG exempts disabled controls, and the SKIP pattern above catches the
+// Tailwind spelling (`disabled:`, `cursor-not-allowed`). But these tools are
+// React: the control is disabled by a PROP, several lines away from the class
+// string —
+//
+//     else btnClass += 'border-slate-200 bg-slate-50 text-slate-300';
+//     ...
+//     h('button', { disabled: quizAnswered, className: btnClass }, ...)
+//
+// Three of civicaction's seven flags were this shape (2026-09-21): real
+// disabled states reported as contrast failures. Scanning the class string
+// alone cannot see it, so look for a `disabled:` prop in the same element.
+// Deliberately narrow — a bare `disabled` attribute or a distant one does not
+// count, because over-matching here would silence real findings.
+const DISABLED_PROP = /\bdisabled\s*:\s*(?!false\b)[A-Za-z_$][\w$.]*/;
+
+function nearDisabledProp(text, index) {
+  // The prop may sit before the class string (inline) or after it (when the
+  // class was built into a variable first), so look both ways.
+  const before = text.slice(Math.max(0, index - 400), index);
+  const after = text.slice(index, index + 400);
+  return DISABLED_PROP.test(before) || DISABLED_PROP.test(after);
+}
+
 function scanFile(file) {
   let text;
   try { text = fs.readFileSync(file, 'utf8'); } catch (_) { return []; }
@@ -355,6 +379,10 @@ function scanFile(file) {
   STRING.lastIndex = 0;
   while ((m = STRING.exec(text)) !== null) {
     if (isDecorativeIconToken(text, m.index)) continue;
+    // WCAG exempts disabled controls. SKIP catches the Tailwind spelling; this
+    // catches the React one, where `disabled:` is a prop on the element rather
+    // than a token in the class string.
+    if (nearDisabledProp(text, m.index)) continue;
     for (const v of violationsIn(m[2])) add(v, m[2].slice(0, 90));
     for (const v of gradientViolations(m[2])) add(v, m[2].slice(0, 90));
   }
@@ -371,6 +399,19 @@ function scanFile(file) {
 // A module built from a source would double-count every violation, so scan the
 // SOURCE where one exists and the built module only when it is hand-maintained
 // (behavior_lens, word_sounds, report_writer and friends have no source file).
+// The SEL hub and STEM lab keep their tools in subdirectories, so a root-only
+// scan never saw them: 2,825 Tailwind colour classes in sel_hub/ and 78,527 in
+// stem_lab/ were unguarded (measured 2026-09-21). check_sel_a11y reports the
+// same gap from the other side — 933 text nodes "skipped (colour from a CSS
+// class)", ungraded rather than silently dropped precisely so the report would
+// not look healthier than it is. This gate resolves colour from the palette
+// instead of the DOM, so it can grade exactly what SSR cannot.
+//
+// Mirrors are excluded: desktop/web-app/public|build and desktop/app-build hold
+// byte-identical copies, and counting them would triple every violation and
+// make the per-file ratchet meaningless.
+const SUBDIRS = ['sel_hub', 'stem_lab'];
+
 function targets() {
   const all = fs.readdirSync(ROOT);
   const sources = new Set(all.filter((f) => /_source\.jsx$/.test(f)));
@@ -380,6 +421,16 @@ function targets() {
     if (!/_module\.js$/.test(f)) continue;
     if (sources.has(f.replace(/_module\.js$/, '_source.jsx'))) continue;
     out.push(path.join(ROOT, f));
+  }
+  for (const dir of SUBDIRS) {
+    const abs = path.join(ROOT, dir);
+    let entries;
+    try { entries = fs.readdirSync(abs); } catch (_) { continue; }
+    for (const f of entries) {
+      if (!/\.js$/.test(f)) continue;
+      if (/^_build/.test(f) || /\.codex\.tmp\.js$/.test(f)) continue;
+      out.push(path.join(abs, f));
+    }
   }
   return out;
 }
@@ -425,7 +476,7 @@ function main() {
     console.error(`❌ check_tailwind_contrast: contrast violations increased in ${grew.length} file(s).`);
     for (const [f, n] of grew) console.error(`   ${f}: ${baseline.files[f] || 0} -> ${n}`);
     console.error("");
-    console.error("   White text needs a 700/800 fill (emerald-600 is 3.77:1, amber-600 3.19, lime-500 1.76).");
+    console.error("   White text needs a 700/800 fill (emerald-600 is 3.77:1, amber-600 3.19, lime-500 1.98).");
     console.error("   Coloured text on a 50-200 tint usually needs the 800 shade.");
     console.error("   Run with --verbose to list them.");
     process.exit(1);

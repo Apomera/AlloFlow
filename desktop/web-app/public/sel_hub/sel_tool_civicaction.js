@@ -979,7 +979,7 @@ window.SelHub = window.SelHub || {
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },
           h('div', { className: 'flex items-center gap-3' },
-            h('button', Object.assign({ 'aria-label': 'Back to SEL Hub', className: 'p-2 rounded-full hover:bg-teal-100 text-teal-600 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })),
+            h('button', Object.assign({ 'aria-label': 'Back to SEL Hub', className: 'p-2 rounded-full hover:bg-teal-100 text-teal-700 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })),
               h(ArrowLeft, { size: 20 })
             ),
             h('div', null,
@@ -2317,7 +2317,10 @@ window.SelHub = window.SelHub || {
                     key: pi,
                     'aria-current': isActive ? 'step' : undefined,
                     className: 'flex-1 text-center py-2 rounded-lg text-xs font-bold ' +
-                      (isActive ? 'bg-teal-700 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-300')
+                      // slate-300 on slate-100 is 1.36:1 — an upcoming phase
+                      // label was effectively invisible. slate-600 is 6.92:1
+                      // and still reads as "not yet" beside the active step.
+                      (isActive ? 'bg-teal-700 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600')
                   }, phase.label);
                 })
               ),
@@ -2349,12 +2352,12 @@ window.SelHub = window.SelHub || {
                     h('div', { className: 'flex items-center gap-2' },
                       h('button', { 'aria-label': '-',
                         onClick: function() { if (serviceHours > 0) upd('serviceHours', serviceHours - 0.5); },
-                        className: 'w-6 h-6 rounded-full bg-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-300'
+                        className: 'w-6 h-6 rounded-full bg-amber-200 text-amber-800 text-xs font-bold hover:bg-amber-300'
                       }, '-'),
                       h('span', { className: 'text-sm font-bold text-amber-800 w-10 text-center' }, serviceHours.toFixed(1)),
                       h('button', { 'aria-label': '+',
                         onClick: function() { upd('serviceHours', serviceHours + 0.5); },
-                        className: 'w-6 h-6 rounded-full bg-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-300'
+                        className: 'w-6 h-6 rounded-full bg-amber-200 text-amber-800 text-xs font-bold hover:bg-amber-300'
                       }, '+')
                     )
                   ),
@@ -2755,7 +2758,7 @@ window.SelHub = window.SelHub || {
                       var active = (a.supports || []).indexOf(s) >= 0;
                       return h('button', { key: s, onClick: function() { toggleSupport(a.id, s); },
                         'aria-pressed': active,
-                        className: 'px-2 py-0.5 rounded-full text-xs font-bold border ' + (active ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-300') },
+                        className: 'px-2 py-0.5 rounded-full text-xs font-bold border ' + (active ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-slate-600 border-slate-300') },
                         (active ? '✓ ' : '') + s);
                     })
                   )
@@ -2839,7 +2842,10 @@ window.SelHub = window.SelHub || {
                   h('div', { 'aria-hidden': 'true', className: 'absolute -left-6 top-3 w-4 h-4 rounded-full border-2 border-white ' + (m.done ? 'bg-emerald-500' : 'bg-teal-400') }),
                   h('div', { className: 'flex items-center gap-2' },
                     h('button', { onClick: function() { toggleM(m.id); }, 'aria-label': m.done ? 'Mark not done' : 'Mark done', 'aria-pressed': m.done,
-                      className: 'w-6 h-6 rounded-md border-2 ' + (m.done ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-400 bg-white') }, m.done ? '✓' : ''),
+                      // The tick is white on the fill: emerald-500 is 2.54:1,
+                      // emerald-700 is 5.42:1. aria-pressed already tells a
+                      // screen reader; this is for the student who looks.
+                      className: 'w-6 h-6 rounded-md border-2 ' + (m.done ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-400 bg-white') }, m.done ? '✓' : ''),
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'text-sm font-bold ' + (m.done ? 'line-through text-slate-500' : 'text-slate-800') }, m.label),
                       h('div', { className: 'text-xs text-slate-500' }, m.date ? ('Target: ' + m.date) : 'No target date'),
