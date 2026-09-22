@@ -1328,9 +1328,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     residential: { skill: 'Low-speed scanning', durationSec: 60, distanceMeters: 300, habit: 'stops', habitTarget: 1, habitLabel: 'Make one complete stop' },
     suburban: { skill: 'Signals and lane position', durationSec: 70, distanceMeters: 400, habit: 'laneChanges', habitTarget: 1, habitLabel: 'Complete one signaled lane change' },
     highway: { skill: 'Merge with space', durationSec: 75, distanceMeters: 700, habit: 'laneChanges', habitTarget: 1, habitLabel: 'Complete one signaled merge or lane change' },
-    roundabout: { skill: 'Yield, enter, and exit', durationSec: 65, distanceMeters: 320, habit: 'distance', habitTarget: 320, habitLabel: 'Travel through the roundabout course' },
+    roundabout: { skill: 'Yield, enter, and exit', durationSec: 65, distanceMeters: 320, habit: 'distance', habitTarget: 320, habitSpeedCapMph: 25, habitLabel: 'Travel the roundabout course under 25 mph' },
     rural: { skill: 'Curve and hazard scanning', durationSec: 70, distanceMeters: 500, habit: 'distance', habitTarget: 500, habitLabel: 'Scan through a full rural-road segment' },
-    parking: { skill: 'Slow-space control', durationSec: 55, distanceMeters: 80, habit: 'distance', habitTarget: 80, habitLabel: 'Complete the maneuver area at walking speed' },
+    parking: { skill: 'Slow-space control', durationSec: 55, distanceMeters: 80, habit: 'distance', habitTarget: 80, habitSpeedCapMph: 12, habitLabel: 'Complete the maneuver area at walking speed (12 mph cap)' },
     night: { skill: 'Drive within headlight range', durationSec: 70, distanceMeters: 400, habit: 'smooth', habitTarget: 1, habitLabel: 'Avoid sustained skids or hard inputs' },
     fog: { skill: 'Visibility-speed choice', durationSec: 70, distanceMeters: 350, habit: 'smooth', habitTarget: 1, habitLabel: 'Use smooth inputs in limited visibility' },
     rain: { skill: 'Wet-road space and grip', durationSec: 70, distanceMeters: 400, habit: 'smooth', habitTarget: 1, habitLabel: 'Avoid hydroplaning and sustained skids' },
@@ -1351,6 +1351,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       distanceMeters: authored.distanceMeters || 300,
       habit: authored.habit || 'distance',
       habitTarget: authored.habitTarget || authored.distanceMeters || 300,
+      // Optional peak-speed standard for a 'distance' habit. This builder
+      // copies fields explicitly, so a new authored key is silently dropped
+      // unless it is listed here -- which is what happened on the first
+      // attempt at the walking-speed cap: the LABEL changed and the check
+      // did not, leaving the mission promising more than it measured.
+      habitSpeedCapMph: authored.habitSpeedCapMph,
       criteria: [
         { id: 'pace', label: 'Complete the practice segment' },
         { id: 'speed', label: 'Stay within the posted limit' },
@@ -1393,6 +1399,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       habitDone = (Number(stats.skidSeconds) || 0) < 2 &&
         (Number(stats.hydroplaneSeconds) || 0) < 1 &&
         (Number(stats.hardBrakes) || 0) <= 2;
+    }
+    // A 'distance' habit whose habitTarget equals mission.distanceMeters is
+    // byte-identical to the `pace` criterion above, so it cannot be failed
+    // separately and its authored target is dead configuration -- the same
+    // defect the 'speed' branch had. Worse, two of the three labels promise
+    // something distance does not measure: "Complete the maneuver area at
+    // walking speed" ticked at 80 mph, and "Travel through the roundabout
+    // course" said nothing about entering under control.
+    //
+    // Keep distance as the floor (you must actually cover the segment) and add
+    // the control standard the label names. maxSpeed is stored in m/s.
+    else if (mission.habit === 'distance') {
+      var coveredSegment = distance >= mission.habitTarget;
+      var peakMph = Math.max(0, Number(stats.maxSpeed) || 0) * MS_TO_MPH;
+      var speedCap = Number(mission.habitSpeedCapMph);
+      habitDone = coveredSegment &&
+        (isFinite(speedCap) && speedCap > 0 ? peakMph <= speedCap : true);
     } else habitDone = distance >= mission.habitTarget;
     var checks = {
       pace: paceDone,

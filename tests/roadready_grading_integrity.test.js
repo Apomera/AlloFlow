@@ -133,6 +133,83 @@ describe('RoadReady AI-caused crash accounting', () => {
   });
 });
 
+// A mission criterion must be failable by the behaviour its LABEL names.
+// Three scenarios used habit: 'distance' with habitTarget === distanceMeters,
+// making the habit check byte-identical to the `pace` criterion -- two of five
+// criteria measuring one thing, and the authored target dead configuration.
+// Two of the labels also promised something distance never measured:
+// "Complete the maneuver area at walking speed" ticked at 80 mph.
+describe('RoadReady mission habit criteria', () => {
+  const driveStats = {
+    safetyScore: 100, efficiencyScore: 100, crashes: 0, aiCausedCrashes: 0,
+    majorViolations: 0, childStrike: 0, wrongSideViolations: 0, distance: 5000,
+    pedYields: 9, stops: 9, secondsOverLimit: 0, speedViolations: 0,
+    closeFollows: 0, cyclistClose: 0, busStopCompliance: 9, emergencyYields: 9,
+    hardBrakes: 0, jackrabbits: 0, unsignaledLaneChanges: 0, laneChanges: 3,
+    skidSeconds: 0, hydroplaneSeconds: 0,
+  };
+  // stats.maxSpeed is stored in METRES PER SECOND, not mph.
+  const atPeakMph = (mph, scenarioId) =>
+    RR.rrScenarioMissionStatus({ ...driveStats, maxSpeed: mph / 2.23694 }, 600, scenarioId);
+  const habitMet = (mph, scenarioId) =>
+    atPeakMph(mph, scenarioId).criteria.find((c) => c.id === 'habit').met;
+
+  it('fails the parking walking-speed habit above its cap', () => {
+    expect(habitMet(8, 'parking')).toBe(true);
+    expect(habitMet(12, 'parking')).toBe(true);   // at the cap
+    expect(habitMet(15, 'parking')).toBe(false);
+    expect(habitMet(80, 'parking')).toBe(false);  // used to tick
+  });
+
+  it('fails the roundabout habit above its cap', () => {
+    expect(habitMet(25, 'roundabout')).toBe(true);
+    expect(habitMet(30, 'roundabout')).toBe(false);
+  });
+
+  it('leaves the rural scanning habit uncapped', () => {
+    // Its label is about scanning, not speed, and the generic `speed`
+    // criterion already covers the posted limit. An invented cap here would
+    // be a standard the label never states.
+    expect(habitMet(30, 'rural')).toBe(true);
+    expect(atPeakMph(30, 'rural').mission.habitSpeedCapMph).toBeUndefined();
+  });
+
+  it('carries the authored cap through the mission builder', () => {
+    // rrScenarioMission copies fields explicitly, so a new authored key is
+    // dropped unless listed. That happened on the first attempt: the label
+    // changed and the check did not.
+    expect(atPeakMph(5, 'parking').mission.habitSpeedCapMph).toBe(12);
+    expect(atPeakMph(5, 'roundabout').mission.habitSpeedCapMph).toBe(25);
+  });
+
+  it('keeps the distance floor as well as the cap', () => {
+    // Crawling at 2 mph must not tick the habit without covering the segment.
+    const short = RR.rrScenarioMissionStatus(
+      { ...driveStats, distance: 10, maxSpeed: 2 / 2.23694 }, 600, 'parking');
+    expect(short.criteria.find((c) => c.id === 'habit').met).toBe(false);
+  });
+
+  it('gives every scenario a habit its own label can fail', () => {
+    // A habit that no input can break is decoration, not assessment.
+    const SCENARIOS = ['residential', 'suburban', 'highway', 'roundabout',
+      'rural', 'parking', 'school_zone', 'night', 'snow', 'downtown'];
+    const unbreakable = SCENARIOS.filter((id) => {
+      const probes = [
+        { secondsOverLimit: 200 }, { closeFollows: 20 }, { hardBrakes: 20 },
+        { skidSeconds: 20 }, { stops: 0 }, { laneChanges: 0 },
+        { unsignaledLaneChanges: 20 }, { distance: 1 },
+        { maxSpeed: 80 / 2.23694 },
+      ];
+      return !probes.some((probe) => {
+        const st = RR.rrScenarioMissionStatus({ ...driveStats, ...probe }, 600, id);
+        const h = st.criteria.find((c) => c.id === 'habit');
+        return h && h.met === false;
+      });
+    });
+    expect(unbreakable).toEqual([]);
+  });
+});
+
 describe('RoadReady driving grade', () => {
   it('grades a clean qualifying drive as a pass', () => {
     const o = outcomeFor({});
