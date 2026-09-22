@@ -30741,6 +30741,8 @@ const d = labToolData.waterCycle || {};
             React.createElement("div", {
               className: "wc-canvas-shell relative rounded-xl overflow-hidden shadow-lg mb-3 border-2 " + (isDark ? "border-slate-800/80" : "border-sky-300"),
               "data-watercycle-canvas-shell": "true",
+              // The fullscreen target the dock's button resolves with closest().
+              "data-allo-fs-stage": "true",
               "data-wc-focus-key": wcSignalDriver.key,
               "data-wc-focus-state": wcSignalFocusState
             },
@@ -31137,52 +31139,39 @@ const d = labToolData.waterCycle || {};
                     }, cameraControl.icon);
                   }),
 
-                  // Full-screen the whole shell, not just the canvas: the dock this
-                  // button sits in is absolutely positioned inside .wc-canvas-shell,
-                  // so the scene keeps its pause / speed / camera controls and its
-                  // stage readout. Fullscreening the canvas alone would strand them.
+                  // Full-screen the whole shell, not just the canvas: this dock is
+                  // absolutely positioned INSIDE .wc-canvas-shell, so the scene keeps
+                  // its pause / speed / camera controls and its stage readout.
+                  // Fullscreening the canvas alone would strand every one of them.
+                  //
+                  // Routed through the shared binder (stem_lab_module.js) that 56 other
+                  // STEM tools use, rather than a local handler. It owns the click, and
+                  // it covers three things a local one here would not: vendor-prefixed
+                  // request/exit for older WebKit, a CSS full-viewport fallback when the
+                  // real API is blocked or rejects (so the button never just silently
+                  // does nothing), and releasing its observer and listeners when the
+                  // stage unmounts. data-fs-in / data-fs-out arrive already translated,
+                  // and the binder swaps the glyph on the child span.
                   React.createElement("button", {
                     type: "button",
                     className: "wc-viewport-btn wc-viewport-fullscreen",
-                    "aria-label": __alloT('stem.watercycle.a11y_view_the_droplet_journey_full_screen', 'View the droplet journey full screen'),
-                    "data-tooltip": "Full screen",
+                    "data-allo-fs-btn": "true",
                     "aria-pressed": "false",
-                    onClick: function(event) {
-                      var fsButton = event.currentTarget;
-                      var shell = fsButton.closest('[data-watercycle-canvas-shell]');
-                      if (!shell) return;
-                      // Esc and the browser's own chrome exit fullscreen without ever
-                      // firing this click, so the label has to follow the REAL state.
-                      // Bound once per node; the listener is removed when the shell
-                      // leaves the document.
-                      if (!fsButton._wcFullscreenBound) {
-                        fsButton._wcFullscreenBound = true;
-                        var syncFullscreenLabel = function() {
-                          if (!fsButton.isConnected) {
-                            document.removeEventListener('fullscreenchange', syncFullscreenLabel);
-                            return;
-                          }
-                          var isFull = document.fullscreenElement === shell;
-                          fsButton.setAttribute('aria-pressed', isFull ? 'true' : 'false');
-                          fsButton.setAttribute('aria-label', isFull
-                            ? __alloT('stem.watercycle.a11y_exit_full_screen_droplet_journey', 'Exit full screen droplet journey')
-                            : __alloT('stem.watercycle.a11y_view_the_droplet_journey_full_screen', 'View the droplet journey full screen'));
-                          fsButton.setAttribute('data-tooltip', isFull ? 'Exit full screen' : 'Full screen');
-                          fsButton.textContent = isFull ? '\u2715' : '\u26F6';
-                        };
-                        document.addEventListener('fullscreenchange', syncFullscreenLabel);
-                      }
-                      if (document.fullscreenElement) {
-                        document.exitFullscreen();
-                      } else if (shell.requestFullscreen) {
-                        shell.requestFullscreen().catch(function() {
-                          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_full_screen_is_unavailable_in_this_browser', 'Full screen is unavailable in this browser.'));
-                        });
-                      } else if (typeof announceToSR === 'function') {
-                        announceToSR(__alloT('stem.watercycle.sr_full_screen_is_unavailable_in_this_browser', 'Full screen is unavailable in this browser.'));
+                    "aria-label": __alloT('stem.watercycle.a11y_view_the_droplet_journey_full_screen', 'View the droplet journey full screen'),
+                    "data-fs-out": __alloT('stem.watercycle.a11y_view_the_droplet_journey_full_screen', 'View the droplet journey full screen'),
+                    "data-fs-in": __alloT('stem.watercycle.a11y_exit_full_screen_droplet_journey', 'Exit full screen droplet journey'),
+                    // No data-tooltip, unlike the camera buttons beside it. Nothing in
+                    // this tool renders that attribute (only roadready styles
+                    // attr(data-tooltip)), and the binder cannot keep it in step with
+                    // the fullscreen state, so carrying it here would only ship a label
+                    // that goes stale the moment the button is pressed. The binder syncs
+                    // `title`, which is the tooltip a browser actually shows.
+                    ref: function(fsButton) {
+                      if (fsButton && typeof window.__alloStemFsBind === 'function') {
+                        window.__alloStemFsBind(fsButton, fsButton.closest('[data-allo-fs-stage]'));
                       }
                     }
-                  }, "\u26F6")
+                  }, React.createElement("span", { "aria-hidden": "true" }, "\u26F6"))
                 )
               )
 

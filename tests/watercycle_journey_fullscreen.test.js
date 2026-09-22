@@ -26,10 +26,15 @@
 //      only by clicks desynchronises and tells a screen-reader user "exit full
 //      screen" on a button that enters it. Asserted by dispatching a real exit.
 //
-// The SSR harness cannot attach React handlers, so the toggle logic is lifted
-// out of the shipped source and evaluated against the real rendered DOM in
-// Chromium. That keeps the behaviour under test while the markup it runs
-// against stays the genuine article.
+// The behaviour under test does not live in this tool. The button routes through
+// window.__alloStemFsBind / __alloStemFS in stem_lab_module.js, shared by 56 STEM
+// tools, which is what gives it vendor-prefixed request/exit for older WebKit, a
+// CSS full-viewport fallback when the real API is blocked or rejects, Escape
+// handling for that fallback, and listener cleanup on unmount. So this suite
+// lifts THOSE blocks out of the module and runs the real thing against the real
+// SSR markup in Chromium, rather than restating what they do. (The SSR harness
+// attaches no React handlers, hence the explicit bind in openPage, exactly as the
+// tool's own ref callback does in the browser.)
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { chromium } from 'playwright';
 import fs from 'node:fs';
@@ -64,31 +69,35 @@ function renderJourney() {
   return prepareStemBrowserRender(renderTool('waterCycle', JOURNEY_STATE, {}));
 }
 
-// The page is built from the SSR markup, so nothing is wired. Re-attach ONLY
-// the shipped toggle: read it out of the source rather than restating it, so a
-// future edit to the real handler is what this suite measures.
 const SOURCE = fs.readFileSync(TOOL, 'utf8');
+const MODULE = fs.readFileSync(path.join(ROOT, 'stem_lab/stem_lab_module.js'), 'utf8');
 
-function shippedHandlerBody() {
-  const marker = 'className: "wc-viewport-btn wc-viewport-fullscreen"';
-  const at = SOURCE.indexOf(marker);
-  expect(at, 'full-screen button is still in the source').toBeGreaterThan(-1);
-  const onClickAt = SOURCE.indexOf('onClick: function(event) {', at);
-  expect(onClickAt, 'its onClick is still an event handler').toBeGreaterThan(at);
-  const bodyStart = SOURCE.indexOf('{', onClickAt + 'onClick: function(event)'.length);
-  // Balance braces to the end of the handler.
+// The page is built from SSR markup, so nothing is wired. The button's behaviour
+// does not live in this tool at all: it routes through window.__alloStemFsBind /
+// __alloStemFS in stem_lab_module.js, which 56 STEM tools share. So lift THOSE
+// out of the module and run the real thing, rather than restating what they do.
+//
+// Extracting the two blocks instead of executing the whole 631 KB module keeps
+// this suite from dragging in the registry, the plugin pump and the hub.
+function sharedFullscreenSource() {
+  const start = MODULE.indexOf("if (typeof window !== 'undefined' && !window.__alloStemFS) {");
+  expect(start, '__alloStemFS block is still in stem_lab_module.js').toBeGreaterThan(-1);
+  const bindAt = MODULE.indexOf("window.__alloStemFsBind = function (btn, stage) {", start);
+  expect(bindAt, '__alloStemFsBind is still defined after it').toBeGreaterThan(start);
+  // Balance braces from the start of the binder's guard to its close.
+  const guardAt = MODULE.lastIndexOf('if (typeof window !== ', bindAt);
   let depth = 0;
   let end = -1;
-  for (let i = bodyStart; i < SOURCE.length; i += 1) {
-    const ch = SOURCE[i];
+  for (let i = guardAt; i < MODULE.length; i += 1) {
+    const ch = MODULE[i];
     if (ch === '{') depth += 1;
     else if (ch === '}') {
       depth -= 1;
-      if (depth === 0) { end = i; break; }
+      if (depth === 0) { end = i + 1; break; }
     }
   }
-  expect(end, 'handler body is brace balanced').toBeGreaterThan(bodyStart);
-  return SOURCE.slice(bodyStart + 1, end);
+  expect(end, 'binder block is brace balanced').toBeGreaterThan(guardAt);
+  return MODULE.slice(start, end);
 }
 
 describe('Water Cycle droplet journey full-screen control', () => {
@@ -127,15 +136,14 @@ describe('Water Cycle droplet journey full-screen control', () => {
     // 30s "element intercepts pointer events" timeout. Say why instead.
     const blocked = await page.$$eval('.wc-3d-loading', (n) => n.length);
     expect(blocked, 'the 3D loading overlay must be gone before clicks are meaningful').toBe(0);
-    // Wire the SHIPPED handler to the real button.
-    await page.evaluate((body) => {
-      const btn = document.querySelector('.wc-viewport-fullscreen');
+    // Install the SHIPPED shared helpers, then bind them to the real button the
+    // same way the tool's ref callback does in the browser.
+    await page.evaluate((moduleSource) => {
       // eslint-disable-next-line no-new-func
-      const handler = new Function('event', '__alloT', 'announceToSR', body);
-      btn.addEventListener('click', (event) => {
-        handler(event, (key, fallback) => fallback, () => {});
-      });
-    }, shippedHandlerBody());
+      new Function(moduleSource)();
+      const btn = document.querySelector('.wc-viewport-fullscreen');
+      window.__alloStemFsBind(btn, btn.closest('[data-allo-fs-stage]'));
+    }, sharedFullscreenSource());
     return page;
   }
 
@@ -229,12 +237,21 @@ describe('Water Cycle droplet journey full-screen control', () => {
     );
     const entered = await page.$eval('.wc-viewport-fullscreen', (n) => ({
       label: n.getAttribute('aria-label'),
-      tooltip: n.getAttribute('data-tooltip'),
+      // `title`, not data-tooltip: the shared binder syncs the native tooltip,
+      // and nothing in this tool renders data-tooltip at all.
+      tooltip: n.getAttribute('title'),
       text: n.textContent,
     }));
     expect(entered.label).toBe('Exit full screen droplet journey');
-    expect(entered.tooltip).toBe('Exit full screen');
+    expect(entered.tooltip).toBe('Exit full screen droplet journey');
 
+    // Mutation note, same shape as the trim rule below. Deleting ONE of the
+    // binder's two native checks (document.fullscreenElement === stage /
+    // document.webkitFullscreenElement === stage) will NOT fail this test, and
+    // that is the code being correctly portable rather than a hole: Chromium
+    // exposes both, so either alone still reports the truth. Remove BOTH and
+    // this goes red, which is the real defect.
+    //
     // Esc does NOT go through the click handler. Exiting out of band is the
     // case a click-driven label gets wrong.
     await page.evaluate(() => document.exitFullscreen());
@@ -245,10 +262,10 @@ describe('Water Cycle droplet journey full-screen control', () => {
     );
     const exited = await page.$eval('.wc-viewport-fullscreen', (n) => ({
       label: n.getAttribute('aria-label'),
-      tooltip: n.getAttribute('data-tooltip'),
+      tooltip: n.getAttribute('title'),
     }));
     expect(exited.label, 'label follows the browser, not the click count').toBe('View the droplet journey full screen');
-    expect(exited.tooltip).toBe('Full screen');
+    expect(exited.tooltip).toBe('View the droplet journey full screen');
     await page.close();
   }, 60000);
 
