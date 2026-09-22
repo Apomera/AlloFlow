@@ -704,6 +704,56 @@ describe('Aquarium equipment status cues', () => {
     expect(healthy.root('equipment').getObjectByName('equipment-heater').userData.equipmentStatusScale).toBe(1);
   });
 
+  it('separates every status by a non-colour channel, so hue is never the only cue', () => {
+    // Under deuteranopia and protanopia no four-hue palette here separates all
+    // four states by luminance, so size and emissive have to carry the signal.
+    const read = (heater) => {
+      const h = harness({ equipment: rig(heater), model: { daylight: true } });
+      const pip = pipOf(h);
+      return { status: statusOf(h), size: +pip.scale.x.toFixed(5), lit: pip.material.emissive.getHex() !== 0 };
+    };
+    const off = read({ on: false, intensity: 0 });
+    const running = read({});
+    const service = read({ condition: 15, intensity: .15 });
+    const offline = read({ on: false, intensity: 0, fault: 'seized' });
+    expect([off.status, running.status, service.status, offline.status])
+      .toEqual(['off', 'running', 'needs-service', 'offline']);
+
+    // off vs running: emissive alone.
+    expect(off.lit).toBe(false);
+    expect(running.lit).toBe(true);
+    // Each escalation is a clear size step, not a hue change.
+    expect(service.size).toBeGreaterThan(running.size * 1.4);
+    expect(offline.size).toBeGreaterThan(service.size * 1.5);
+  });
+
+  it('pulses a fault, holds it still under reduced motion, and keeps the size cue either way', () => {
+    const h = harness({ equipment: rig({ on: false, intensity: 0, fault: 'seized' }), model: { daylight: true } });
+    const pip = pipOf(h);
+    const rest = pip.userData.statusRestScale;
+    expect(pip.userData.statusIndicator).toBe(true);
+    let lo = Infinity, hi = -Infinity;
+    for (let step = 0; step < 40; step++) { h.flush(50); lo = Math.min(lo, pip.scale.x); hi = Math.max(hi, pip.scale.x); }
+    expect(hi - lo).toBeGreaterThan(0);
+
+    h.reduce(true);
+    for (let step = 0; step < 4; step++) h.flush(50);
+    const held = pip.scale.x;
+    for (let step = 0; step < 20; step++) h.flush(50);
+    expect(Math.abs(pip.scale.x - held)).toBeLessThan(1e-9);
+    // The alert must not depend on the motion: the enlarged size remains.
+    expect(pip.scale.x).toBeGreaterThan(0);
+    expect(rest).toBeGreaterThan(0);
+  });
+
+  it('does not pulse a merely worn device', () => {
+    const h = harness({ equipment: rig({ condition: 15, intensity: .15 }), model: { daylight: true } });
+    const pip = pipOf(h);
+    let lo = Infinity, hi = -Infinity;
+    for (let step = 0; step < 30; step++) { h.flush(50); lo = Math.min(lo, pip.scale.x); hi = Math.max(hi, pip.scale.x); }
+    expect(hi - lo).toBe(0);
+  });
+
   it('does not invent a warning for a device with no condition reported', () => {
     // Callers may omit condition/fault entirely. Unknown must read as healthy,
     // not as wear - the same rule as unmeasured water chemistry.
@@ -721,5 +771,122 @@ describe('Aquarium equipment status cues', () => {
     expect(statusOf(h)).toBe('offline');
     h.update({ equipment: rig({}) });h.flush();
     expect(statusOf(h)).toBe('running');
+  });
+});
+
+describe('Aquarium condition cues without animation', () => {
+  const lit = { light: { installed: true, on: true, intensity: 1 }, filter: { installed: true, on: true, intensity: 1 } };
+  const clean = { dissolvedO2: 7.5, ammonia: 0, nitrite: 0 };
+  const stock = (patch) => [{ ...resident('betta', 0), displaySize: 2.5, ...patch }];
+  const finOf = group => (group.userData.fins || [])[0];
+
+  it('reduced motion still shows a fade and a clamped fin pose', () => {
+    // These cues used to live inside the animation guard, so a learner with
+    // reduced motion saw no symptom at all - the thing the lesson asks them to
+    // notice simply was not drawn.
+    const h = harness({ fish: stock({ stress: 0, health: 100 }), equipment: lit, model: { daylight: true, chemistry: clean }, appearance: { quality: 'medium' } }, true);
+    h.flush();h.flush();
+    const healthyBody = h.root('residents').children[0];
+    const healthyFin = finOf(healthyBody);
+    expect(healthyFin).toBeTruthy();
+    const healthyYaw = healthyFin.rotation.y;
+    expect(healthyBody.userData.conditionColourFade).toBe(0);
+
+    h.update({ fish: stock({ stress: 95, health: 30 }) });h.flush();h.flush();
+    const sickBody = h.root('residents').children[0];
+    const sickFin = finOf(sickBody);
+    expect(sickBody.userData.conditionColourFade).toBeGreaterThan(0.3);
+    expect(sickBody.userData.finClampCue).toBeGreaterThan(0.3);
+    // A frozen frame must still separate the two poses.
+    expect(Math.abs(sickFin.rotation.y - healthyYaw)).toBeGreaterThan(0.1);
+    // Toward the body, not away from it.
+    expect(Math.abs(sickFin.rotation.y)).toBeLessThan(Math.abs(healthyYaw));
+  });
+
+  it('holds the clamped pose steady instead of creeping toward the body', () => {
+    const h = harness({ fish: stock({ stress: 80, health: 40 }), equipment: lit, model: { daylight: true, chemistry: clean }, appearance: { quality: 'medium' } }, true);
+    h.flush();h.flush();
+    const fin = finOf(h.root('residents').children[0]);
+    const settled = fin.userData.baseYaw;
+    for (let step = 0; step < 60; step++) h.flush(50);
+    // A pose derived from the previous frame would drift toward zero.
+    expect(fin.userData.baseYaw).toBeCloseTo(settled, 9);
+    expect(fin.userData.restYaw).toBeTruthy();
+  });
+
+  it('recovers the original fin pose when the condition clears', () => {
+    const h = harness({ fish: stock({ stress: 0, health: 100 }), equipment: lit, model: { daylight: true, chemistry: clean }, appearance: { quality: 'medium' } }, true);
+    h.flush();h.flush();
+    const rest = finOf(h.root('residents').children[0]).userData.restYaw;
+    h.update({ fish: stock({ stress: 95, health: 20 }) });h.flush();h.flush();
+    h.update({ fish: stock({ stress: 0, health: 100 }) });h.flush();h.flush();
+    const fin = finOf(h.root('residents').children[0]);
+    expect(fin.userData.baseYaw).toBeCloseTo(rest, 6);
+  });
+});
+
+describe('Aquarium glass detail', () => {
+  const lit = { light: { installed: true, on: true, intensity: 1 } };
+  const detailOf = h => h.root('vessel').getObjectByName('aquarium-glass-detail');
+
+  it('marks the waterline and the lit top edge without intercepting picking', () => {
+    const h = harness({ paused: true, equipment: lit, model: { daylight: true } });
+    const detail = detailOf(h);
+    expect(detail).toBeTruthy();
+    expect(detail.userData.ignorePick).toBe(true);
+    const meniscus = detail.getObjectByName('aquarium-meniscus');
+    const topEdge = detail.getObjectByName('aquarium-glass-top-edge');
+    expect(meniscus).toBeTruthy();
+    expect(topEdge).toBeTruthy();
+    detail.traverse(node => { if (node.isMesh) expect(node.material.depthWrite).toBe(false); });
+  });
+
+  it('keeps the meniscus on the water and the top edge above it, at every vessel size', () => {
+    const h = harness({ paused: true, equipment: lit, model: { daylight: true } });
+    for (const dimensions of [{ width: 12, height: 5.2, depth: 6.4, volumeGallons: 20 }, { width: 8, height: 4, depth: 6, volumeGallons: 10 }, { width: 18, height: 9, depth: 9, volumeGallons: 100 }]) {
+      h.update({ dimensions });h.flush();
+      h.renderer.scene.updateMatrixWorld(true);
+      const vessel = h.root('vessel'), detail = detailOf(h);
+      const surfaceY = vessel.userData.waterSurfaceY;
+      const meniscus = new realThree.Box3().setFromObject(detail.getObjectByName('aquarium-meniscus'));
+      const topEdge = new realThree.Box3().setFromObject(detail.getObjectByName('aquarium-glass-top-edge'));
+      // The band belongs at the waterline, scaled with the vessel.
+      const centre = (meniscus.min.y + meniscus.max.y) / 2;
+      expect(Math.abs(centre - surfaceY)).toBeLessThan(dimensions.height * 0.1);
+      // And inside the glass, not poking through it.
+      expect(meniscus.max.x).toBeLessThanOrEqual(dimensions.width / 2 + 0.05);
+      // The lit edge is the rim, so it sits above the water.
+      expect((topEdge.min.y + topEdge.max.y) / 2).toBeGreaterThan(surfaceY);
+    }
+  });
+
+  it('never puts a pickable surface between the viewer and a resident', () => {
+    // The glass sits in FRONT of everything, so a pane that carries a pickable
+    // id would swallow every click meant for a fish behind it.
+    const h = harness({ paused: true, fish: [resident('neon', 0)], equipment: lit, model: { daylight: true } });
+    const detail = detailOf(h);
+    detail.traverse(node => {
+      if (!node.isMesh) return;
+      const data = node.userData || {};
+      expect(data.fishInstanceId || data.plantId || data.habitatId || data.equipmentId).toBeFalsy();
+    });
+    // And the group itself opts out, so a raycast walk skips the whole subtree.
+    expect(detail.userData.ignorePick).toBe(true);
+  });
+
+  it('dims the glass highlights with the light and never lights them in the dark', () => {
+    const h = harness({ paused: true, equipment: lit, model: { daylight: true } });
+    const meniscus = detailOf(h).getObjectByName('aquarium-meniscus');
+    const topEdge = detailOf(h).getObjectByName('aquarium-glass-top-edge');
+    const litMeniscus = meniscus.material.opacity, litEdge = topEdge.material.opacity;
+    expect(litMeniscus).toBeGreaterThan(0);
+
+    h.update({ lighting: 'night', model: { daylight: false } });h.flush();
+    // A reflection has nothing to reflect when the lamp is off.
+    expect(meniscus.material.opacity).toBeLessThan(litMeniscus);
+    expect(topEdge.material.opacity).toBeLessThan(litEdge);
+
+    h.update({ lighting: 'day', model: { daylight: true } });h.flush();
+    expect(meniscus.material.opacity).toBeCloseTo(litMeniscus, 6);
   });
 });

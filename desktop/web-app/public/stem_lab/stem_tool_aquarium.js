@@ -12135,6 +12135,32 @@ window.StemLab = window.StemLab || {
     var causticFloor = mesh(new THREE.PlaneGeometry(11.88, 6.4), causticMaterial, tankGroup, 0, 0.095, 0); causticFloor.rotation.x = -Math.PI / 2;causticFloor.name='aquarium-water-shimmer';causticFloor.userData.ignorePick=true;
     var glassGlintMaterial = new THREE.MeshBasicMaterial({ color: 0xdafffa, transparent: true, opacity: 0.13, depthWrite: false });
     [-5.8, 5.8].forEach(function(x) { var glint = mesh(new THREE.PlaneGeometry(0.05, 4.95), glassGlintMaterial, tankGroup, x, 2.7, 3.33); glint.rotation.z = -0.022; });
+    var glassDetail = new THREE.Group(); glassDetail.name = 'aquarium-glass-detail';
+    glassDetail.userData.ignorePick = true; tankGroup.add(glassDetail);
+    // Top edge of each pane: a thin lit strip reading as glass thickness.
+    var glassEdgeMaterial = new THREE.MeshBasicMaterial({ color: 0xe8fffb, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    var frontEdge = mesh(new THREE.PlaneGeometry(11.96, 0.085), glassEdgeMaterial, glassDetail, 0, 5.42, 3.3);
+    frontEdge.name = 'aquarium-glass-top-edge';
+    [-1, 1].forEach(function(side) {
+      var sideEdge = mesh(new THREE.PlaneGeometry(6.56, 0.085), glassEdgeMaterial, glassDetail, side * 5.99, 5.42, 0);
+      sideEdge.rotation.y = Math.PI / 2;
+    });
+    // Meniscus band: the water clings to the glass and reads brighter just
+    // below the surface. Sits marginally inside the pane so it never z-fights.
+    var meniscusMaterial = new THREE.MeshBasicMaterial({ color: 0xd2fff4, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    var frontMeniscus = mesh(new THREE.PlaneGeometry(11.9, 0.3), meniscusMaterial, glassDetail, 0, 5.12, 3.27);
+    frontMeniscus.name = 'aquarium-meniscus';
+    [-1, 1].forEach(function(side) {
+      var sideMeniscus = mesh(new THREE.PlaneGeometry(6.5, 0.3), meniscusMaterial, glassDetail, side * 5.96, 5.12, 0);
+      sideMeniscus.rotation.y = Math.PI / 2;
+    });
+    // A soft corner return on the two front verticals, so the pane edges read
+    // as corners rather than as floating lines.
+    var glassCornerMaterial = new THREE.MeshBasicMaterial({ color: 0xdafffa, transparent: true, opacity: 0.09, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    [-1, 1].forEach(function(side) {
+      var corner = mesh(new THREE.PlaneGeometry(0.16, 5.5), glassCornerMaterial, glassDetail, side * 5.94, 2.68, 3.24);
+      corner.rotation.y = side * 0.5;
+    });
     // --- Atmosphere layer -------------------------------------------------
     // Depth cues for the open water: suspended motes, god rays from the lamp,
     // a sway-ready surface mesh and a soft vignette on the rear glass. Every
@@ -12335,6 +12361,31 @@ window.StemLab = window.StemLab || {
         if(fade>0)swatch.material.color.lerp(symptomPallor,fade);
       });
       group.userData.conditionColourFade=+fade.toFixed(3);
+    }
+
+    // Condition cues that do not depend on animation: pigment fade and how far
+    // the fins are held from the body. With motion running these are modulated
+    // by the swim loop; frozen, they still read.
+    function applyStaticConditionCues(){
+      creatureRoot.children.forEach(function(group){
+        var data=group.userData;
+        applySymptomColour(group,data);
+        var clampCue=clamp((data.stress||0)/100,0,1)*.62+(data.health===null?0:clamp((55-data.health)/55,0,1))*.5;
+        data.finClampCue=+clampCue.toFixed(3);
+        var spread=clamp(1-clampCue,.22,1);
+        // Draw the fins in toward the body by the same factor the stroke uses,
+        // so a still frame shows clamped fins rather than a neutral pose.
+        (data.fins||[]).forEach(function(fin){
+          if(fin.userData.baseYaw===undefined)return;
+          if(fin.userData.restYaw===undefined)fin.userData.restYaw=fin.userData.baseYaw;
+          fin.userData.baseYaw=fin.userData.restYaw*spread;
+          // The swim loop writes rotation.y from baseYaw; with motion stopped
+          // nothing does, so the clamped pose has to be applied here.
+          fin.rotation.y=fin.userData.baseYaw;
+        });
+        if(data.tail&&data.tailRestYaw===undefined)data.tailRestYaw=data.tail.rotation.y;
+        if(data.tail)data.tail.rotation.y=(data.tailRestYaw||0)*clamp(1-clampCue*.55,.35,1);
+      });
     }
 
     function buildPlantFlexRig(group){
@@ -13544,8 +13595,10 @@ window.StemLab = window.StemLab || {
           var indicatorColour=faulted?0xd4563f:worn?0xd9a441:state.on?0x72d49b:0x735b4a;
           var indicatorGlow=faulted?0x5e1b12:worn?0x5c3f10:state.on?0x215738:0;
           var indicator=material(indicatorColour,{emissive:indicatorGlow,emissiveIntensity:faulted?.9:worn?.75:.65,roughness:.35});
-          var statusScale=faulted?2.2:worn?1.7:1;
+          var statusScale=faulted?2.8:worn?1.6:1;
           group.userData.equipmentStatusCue=statusCue;
+          group.userData.statusPulse=faulted;
+          group.userData.statusA11yNote='Status is carried by size and pulse as well as colour, so it does not depend on hue discrimination.';
           group.userData.equipmentStatusScale=statusScale;
           group.userData.statusCueNote='Indicator colour is an illustrative status cue from modeled condition and fault state; it does not diagnose the fault or measure wear.';
           if(key==='filter'){
@@ -13561,14 +13614,14 @@ window.StemLab = window.StemLab || {
               for(var slit=0;slit<5;slit++)mesh(new THREE.BoxGeometry(.38,.025,.015),rubber,group,0,2.4+slit*.18,.278);
             }
             curve(group,[[0,3.8,0],[0,4.38,.05],[-.25,4.51,.18],[-.62,4.51,.25]],.09,housing,12);
-            sphere(group,indicator,.25,3.48,.29,.042*statusScale);
+            var filterPip=sphere(group,indicator,.25,3.48,.29,.042*statusScale);filterPip.userData.statusIndicator=true;filterPip.userData.statusRestScale=.042*statusScale;
           }else if(key==='heater'){
             group.position.set(-tankSize.width/2+.65,Math.max(-.7,tankSize.height-5.2),-tankSize.depth/2+.55);
             mesh(new THREE.CylinderGeometry(.1,.1,2.72,12),new THREE.MeshPhongMaterial({color:0xa6cac8,transparent:true,opacity:.55,shininess:100}),group,0,2.34,0);
             mesh(new THREE.CylinderGeometry(.057,.057,2.1,10),material(0x70685a,{metalness:.6,roughness:.35}),group,0,2.15,0);
             for(var coil=0;coil<10;coil++)mesh(new THREE.TorusGeometry(.06,.01,5,14),housing,group,0,1.32+coil*.16,0).rotation.x=Math.PI/2;
             mesh(new THREE.CylinderGeometry(.13,.13,.32,12),housing,group,0,3.85,0);
-            sphere(group,indicator,0,3.79,.12,.035*statusScale);
+            var heaterPip=sphere(group,indicator,0,3.79,.12,.035*statusScale);heaterPip.userData.statusIndicator=true;heaterPip.userData.statusRestScale=.035*statusScale;
             [1.25,3.1].forEach(function(y){sphere(group,rubber,0,y,-.13,.19,.12,.06,10);});
             curve(group,[[0,4,0],[.02,4.9,-.03],[.14,5.6,-.21],[.4,5.72,-.5]],.025,rubber,12);
           }else if(key==='aerator'){
@@ -13700,6 +13753,13 @@ window.StemLab = window.StemLab || {
           motes.material.opacity=(night?.14:.3)*gain*(.45+appearance.waterShimmer*.55);
           motes.visible=motes.material.opacity>.01&&motes.geometry.drawRange.count>0;
         }
+        var glassLit=night?.25:.6+output*.4;
+        glassEdgeMaterial.opacity=.16*glassLit;
+        meniscusMaterial.opacity=.22*glassLit;
+        glassCornerMaterial.opacity=.09*glassLit;
+        glassEdgeMaterial.color.set(blue?0xcfe9ff:marine?0xe4f6ff:0xe8fffb).convertSRGBToLinear();
+        meniscusMaterial.color.set(blue?0xbcdcf7:0xd2fff4).convertSRGBToLinear();
+        glassDetail.visible=glassLit>.05;
         vignetteMaterial.color.set(night?0x04101a:marine?0x08243c:0x0b2733).convertSRGBToLinear();
         vignetteMaterial.opacity=appearance.backdrop==='black'?.46:night?.42:.27;
         environmentRoot.userData.lightActive=active;environmentRoot.userData.lightOutput=output;environmentRoot.userData.daylight=daylight;
@@ -13863,6 +13923,9 @@ window.StemLab = window.StemLab || {
       environmentRoot.userData.surfaceDistressCue=+surfaceDistressCue.toFixed(3);
       var quality=appearanceOptions().quality,frameInterval=quality==='low'?42:quality==='high'?22:32;
       if(!moving||needsRender||now-lastRender>=frameInterval){
+        // Runs whether or not the scene animates: a paused or reduced-motion
+        // view must still show which residents are in trouble.
+        applyStaticConditionCues();
         if(moving){
           var foodActive=foodRoot.visible&&feedingAge<10;
           creatureRoot.children.forEach(function(group){
@@ -13958,6 +14021,14 @@ window.StemLab = window.StemLab || {
               }
               position.needsUpdate=true;
               entry.geometry.computeBoundingSphere();
+            });
+          });
+          equipmentRoot.children.forEach(function(device){
+            if(!device.userData.statusPulse)return;
+            var beat=.86+Math.sin(motionTime*2.4)*.14;
+            device.traverse(function(node){
+              if(!node.userData.statusIndicator)return;
+              node.scale.setScalar(node.userData.statusRestScale*beat);
             });
           });
           if(causticsMap){causticsMap.offset.set(Math.sin(motionTime*.08)*.06,motionTime*.006%1);causticMaterial.opacity=(causticMaterial.userData.baseOpacity||0)*(1+Math.sin(motionTime*.45)*.12);}
