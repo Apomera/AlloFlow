@@ -972,9 +972,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var outcome = function(id, label, count, evidence, action, priorityAt, verified) {
       var status = count <= 0 ? 'clear' : count >= priorityAt ? 'priority' : 'review';
       var statusMeta = status === 'clear'
-        ? { label: 'ON TRACK', color: 'var(--rr-green, #4ade80)' }
+        ? { label: 'ON TRACK', color: '#4ade80' }
         : status === 'priority'
-          ? { label: 'PRACTICE NEXT', color: 'var(--rr-red, #fca5a5)' }
+          ? { label: 'PRACTICE NEXT', color: '#f87171' }
           : { label: 'REVIEW', color: 'var(--rr-amber, #fbbf24)' };
       return {
         id: id,
@@ -1062,42 +1062,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var distance = Number(input.signalDistanceFt);
     var distanceText = isFinite(distance) && distance > 0 ? (' in ' + Math.round(distance) + ' ft') : '';
     if (input.laneSide) {
-      return { kind: 'urgent', title: 'RETURN TO LANE', detail: input.laneSide === 'left' ? 'Move right of the centerline.' : 'Move back inside the white edge line.', color: 'var(--rr-red, #fca5a5)' };
+      return { kind: 'urgent', title: 'RETURN TO LANE', detail: input.laneSide === 'left' ? 'Move right of the centerline.' : 'Move back inside the white edge line.', color: '#ef4444' };
     }
     var stoppedAtLine = Math.abs(speed) <= 0.1 && input.signalDistanceFt != null &&
       isFinite(distance) && distance >= 0 && distance <= 6;
     if (stoppedAtLine && signal === 'red') {
-      return { kind: 'caution', title: 'HOLD AT RED', detail: 'Keep the crosswalk clear. Wait for your signal; check traffic and pedestrians before moving.', color: 'var(--rr-amber, #fbbf24)' };
+      return { kind: 'caution', title: 'HOLD AT RED', detail: 'Keep the crosswalk clear. Wait for your signal; check traffic and pedestrians before moving.', color: '#f59e0b' };
     }
     if (stoppedAtLine && signal === 'stop') {
-      return { kind: 'caution', title: 'SCAN AND YIELD', detail: 'Look left, right, then left. Yield to pedestrians and traffic with priority; go only when clear.', color: 'var(--rr-amber, #fbbf24)' };
+      return { kind: 'caution', title: 'SCAN AND YIELD', detail: 'Look left, right, then left. Yield to pedestrians and traffic with priority; go only when clear.', color: '#f59e0b' };
     }
     if (signal === 'red' || signal === 'stop') {
-      return { kind: 'urgent', title: 'STOP AHEAD', detail: 'Stop before the marked line' + distanceText + '.', color: 'var(--rr-red, #fca5a5)' };
+      return { kind: 'urgent', title: 'STOP AHEAD', detail: 'Stop before the marked line' + distanceText + '.', color: '#ef4444' };
     }
     if (gap != null && isFinite(gap) && gap < requiredGap) {
       return { kind: gap < Math.max(2, requiredGap - 1) ? 'urgent' : 'caution', title: 'ADD FOLLOWING SPACE', detail: gap.toFixed(1) + 's gap — aim for ' + requiredGap + '+ seconds.', color: gap < Math.max(2, requiredGap - 1) ? 'var(--rr-red, #fca5a5)' : 'var(--rr-amber, #fbbf24)' };
     }
     if (limit > 0 && speed > limit + 8) {
-      return { kind: 'urgent', title: 'SLOW DOWN', detail: Math.round(speed) + ' mph in a ' + Math.round(limit) + ' mph zone.', color: 'var(--rr-red, #fca5a5)' };
+      return { kind: 'urgent', title: 'SLOW DOWN', detail: Math.round(speed) + ' mph in a ' + Math.round(limit) + ' mph zone.', color: '#ef4444' };
     }
     if (signal === 'flashing_yellow') {
-      return { kind: 'caution', title: 'YIELD BEFORE TURNING', detail: 'Flashing yellow arrow: yield to oncoming traffic and pedestrians.', color: 'var(--rr-amber, #fbbf24)' };
+      return { kind: 'caution', title: 'YIELD BEFORE TURNING', detail: 'Flashing yellow arrow: yield to oncoming traffic and pedestrians.', color: '#f59e0b' };
     }
     if (signal === 'yellow') {
-      return { kind: 'caution', title: 'PREPARE TO STOP', detail: 'Yellow signal' + distanceText + ' — stop if you safely can.', color: 'var(--rr-amber, #fbbf24)' };
+      return { kind: 'caution', title: 'PREPARE TO STOP', detail: 'Yellow signal' + distanceText + ' — stop if you safely can.', color: '#f59e0b' };
     }
     if (limit > 0 && speed > limit + 3) {
-      return { kind: 'caution', title: 'EASE OFF THE GAS', detail: Math.round(speed) + ' mph — posted limit is ' + Math.round(limit) + '.', color: 'var(--rr-amber, #fbbf24)' };
+      return { kind: 'caution', title: 'EASE OFF THE GAS', detail: Math.round(speed) + ' mph — posted limit is ' + Math.round(limit) + '.', color: '#f59e0b' };
     }
     if (signal === 'green' && input.turnIntent === 'left') {
-      return { kind: 'caution', title: 'YIELD BEFORE TURNING', detail: 'A round green light does not protect a left turn. Yield to oncoming traffic and pedestrians.', color: 'var(--rr-amber, #fbbf24)' };
+      return { kind: 'caution', title: 'YIELD BEFORE TURNING', detail: 'A round green light does not protect a left turn. Yield to oncoming traffic and pedestrians.', color: '#f59e0b' };
     }
     if (signal === 'green') {
-      return { kind: 'good', title: 'CHECK BEFORE PROCEEDING', detail: 'Green is permission to go when clear. Scan the crosswalk and leave room beyond the intersection.', color: 'var(--rr-green, #4ade80)' };
+      return { kind: 'good', title: 'CHECK BEFORE PROCEEDING', detail: 'Green is permission to go when clear. Scan the crosswalk and leave room beyond the intersection.', color: '#4ade80' };
     }
     if (signal === 'green_arrow') {
-      return { kind: 'good', title: 'PROTECTED TURN', detail: 'Follow the arrow only when the path is clear. Check the crosswalk, then turn smoothly.', color: 'var(--rr-green, #4ade80)' };
+      return { kind: 'good', title: 'PROTECTED TURN', detail: 'Follow the arrow only when the path is clear. Check the crosswalk, then turn smoothly.', color: '#4ade80' };
     }
     return { kind: 'good', title: 'SAFE BUFFER', detail: limit > 0 ? 'Keep scanning ahead · ' + Math.round(limit) + ' mph limit.' : 'Keep scanning ahead and leave yourself an out.', color: 'var(--rr-cyan, #22d3ee)' };
   }
@@ -5800,9 +5800,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // In a typical 5 min drive, you'll see 0-1 emergency vehicles
     if (Math.random() > 0.005) return null;
     var types = [
-      { kind: 'ambulance', icon: '🚑', color: 'var(--rr-red, #fca5a5)', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
-      { kind: 'firetruck', icon: '🚒', color: 'var(--rr-orange, #fdba74)', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 },
-      { kind: 'police', icon: '🚓', color: 'var(--rr-blue, #60a5fa)', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 }
+      { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
+      { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 },
+      { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 }
     ];
     return types[Math.floor(Math.random() * types.length)];
   }
@@ -5954,8 +5954,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hint: 'A tight 20 ft curb space. Leave at least 2 ft to each parked car and finish within 18 inches of the curb.',
       startCar:  { x: 145.7, y: 105, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 103, y: 80, w: 24, h: 50, label: 'FRONT', color: 'var(--rr-violet, #a78bfa)' },
-        { x: 103, y: 197, w: 24, h: 50, label: 'REAR',  color: 'var(--rr-red, #fca5a5)' }
+        { x: 103, y: 80, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
+        { x: 103, y: 197, w: 24, h: 50, label: 'REAR',  color: '#dc2626' }
       ],
       slot:    { x: 115, y: 163.5, w: 30, h: 67, requiredHeadingDeg: 270, headingTolDeg: 12 },
       curb:    { x: 100, edgeColor: '#fbbf24' },
@@ -5971,8 +5971,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       startCar:  { x: 100, y: 250, heading: 0 },
       // Two angled parked cars flanking the slot
       obstacles: [
-        { x: 340, y: 200, w: 50, h: 90, label: 'CAR L', color: 'var(--rr-violet, #a78bfa)', rotateDeg: 45 },
-        { x: 470, y: 200, w: 50, h: 90, label: 'CAR R', color: 'var(--rr-red, #fca5a5)', rotateDeg: 45 }
+        { x: 340, y: 200, w: 50, h: 90, label: 'CAR L', color: '#7c3aed', rotateDeg: 45 },
+        { x: 470, y: 200, w: 50, h: 90, label: 'CAR R', color: '#dc2626', rotateDeg: 45 }
       ],
       slot:    { x: 405, y: 240, w: 65, h: 100, requiredHeadingDeg: 45, headingTolDeg: 18 },
       curb:    { x: 0, edgeColor: 'transparent' },
@@ -5990,7 +5990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hint: '50 ft straight reverse. A parked car is offset 4 ft into your lane — stay clear of it AND inside the marked corridor.',
       startCar:  { x: 200, y: 80, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 250, y: 280, w: 50, h: 100, label: 'PARKED', color: 'var(--rr-red, #fca5a5)' }
+        { x: 250, y: 280, w: 50, h: 100, label: 'PARKED', color: '#dc2626' }
       ],
       slot:    { x: 200, y: 480, w: 80, h: 60, requiredHeadingDeg: 270, headingTolDeg: 15 },
       curb:    { x: 0, edgeColor: 'transparent' },
@@ -6024,9 +6024,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hint: 'Park in the legal portion of the long curb space while remaining at least 10 ft from the hydrant.',
       startCar:  { x: 145.7, y: 65, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 103, y: 40, w: 24, h: 50, label: 'FRONT', color: 'var(--rr-violet, #a78bfa)' },
-        { x: 103, y: 330, w: 24, h: 50, label: 'REAR',  color: 'var(--rr-red, #fca5a5)' },
-        { x: 88, y: 170, w: 10, h: 18, label: 'H', color: 'var(--rr-red, #fca5a5)', isHydrant: true }
+        { x: 103, y: 40, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
+        { x: 103, y: 330, w: 24, h: 50, label: 'REAR',  color: '#dc2626' },
+        { x: 88, y: 170, w: 10, h: 18, label: 'H', color: '#b91c1c', isHydrant: true }
       ],
       slot:    { x: 115, y: 270, w: 30, h: 65, requiredHeadingDeg: 270, headingTolDeg: 12 },
       curb:    { x: 100, edgeColor: '#fbbf24' },
@@ -6041,8 +6041,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hint: 'Park uphill within 18 inches of the curb. Turn the wheels away, then select Park and set the parking brake.',
       startCar:  { x: 145.7, y: 95, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 103, y: 70, w: 24, h: 50, label: 'FRONT', color: 'var(--rr-violet, #a78bfa)' },
-        { x: 103, y: 205, w: 24, h: 50, label: 'REAR',  color: 'var(--rr-red, #fca5a5)' }
+        { x: 103, y: 70, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
+        { x: 103, y: 205, w: 24, h: 50, label: 'REAR',  color: '#dc2626' }
       ],
       slot:    { x: 115, y: 167.5, w: 30, h: 75, requiredHeadingDeg: 270, headingTolDeg: 12 },
       curb:    { x: 100, edgeColor: '#fbbf24' },
@@ -6472,7 +6472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }, [props.carRef, props.doneRef]);
     var paused = flags[0] === '1', settings = flags[1] === '1', finished = flags[2] === '1', waiting = flags[3] === '1';
     var inactive = paused || settings || finished;
-    var buttonStyle = function(disabled, primary) { return { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: primary ? '#0e7490' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.55 : 1 }; };
+    var buttonStyle = function(disabled, primary) { return { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: primary ? '#0e7490' : '#1e293b', color: '#fff', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.55 : 1 }; };
     var hold = function(key, label) {
       return h('button', { key: key, type: 'button', disabled: inactive, 'aria-label': label, 'data-stem-touch-controls': 'true',
         onPointerDown: function(e) { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); keysRef.current[key] = true; },
@@ -12129,7 +12129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var evt = null;
                     if (lt2.id === 'school') {
                       if (Math.random() < 0.5) {
-                        evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: 'var(--rr-red, #fca5a5)' };
+                        evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: '#ef4444' };
                       } else {
                         evt = { kind: 'schoolbus_arm', icon: '🚌', warn: 'SCHOOL BUS stopped with RED FLASHING lights! STOP — illegal to pass!', color: 'var(--rr-amber, #fbbf24)' };
                       }
@@ -12138,13 +12138,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     } else if (lt2.id === 'market' || lt2.id === 'pharmacy' || lt2.id === 'library') {
                       evt = { kind: 'pedestrian', icon: '🚶', warn: 'PEDESTRIAN stepping off sidewalk!', color: 'var(--rr-blue, #60a5fa)' };
                     } else if (lt2.id === 'hospital') {
-                      evt = { kind: 'ambulance', icon: '🚑', warn: 'AMBULANCE exiting hospital — yield!', color: 'var(--rr-red, #fca5a5)' };
+                      evt = { kind: 'ambulance', icon: '🚑', warn: 'AMBULANCE exiting hospital — yield!', color: '#ef4444' };
                     } else if (lt2.id === 'fire') {
-                      evt = { kind: 'firetruck', icon: '🚒', warn: 'FIRE TRUCK responding — pull right!', color: 'var(--rr-red, #fca5a5)' };
+                      evt = { kind: 'firetruck', icon: '🚒', warn: 'FIRE TRUCK responding — pull right!', color: '#dc2626' };
                     } else if (lt2.id === 'farm') {
-                      evt = { kind: 'tractor', icon: '🚜', warn: 'SLOW TRACTOR entering road!', color: 'var(--rr-orange, #fdba74)' };
+                      evt = { kind: 'tractor', icon: '🚜', warn: 'SLOW TRACTOR entering road!', color: '#f97316' };
                     } else if (lt2.id === 'police') {
-                      evt = { kind: 'cruiser', icon: '🚔', warn: 'POLICE CRUISER pulling out — stay alert!', color: 'var(--rr-blue, #60a5fa)' };
+                      evt = { kind: 'cruiser', icon: '🚔', warn: 'POLICE CRUISER pulling out — stay alert!', color: '#1e40af' };
                     }
                     if (evt) {
                       var evtWorld = infiniteWorldRef.current;
@@ -14556,9 +14556,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (d.emergencyDrillMode && timeRef.current > _nextDrillSpawn) {
               _nextDrillSpawn = timeRef.current + 20 + Math.random() * 15;
               var drillTypes = [
-                { kind: 'ambulance', icon: '🚑', color: 'var(--rr-red, #fca5a5)', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
-                { kind: 'police', icon: '🚓', color: 'var(--rr-blue, #60a5fa)', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 },
-                { kind: 'firetruck', icon: '🚒', color: 'var(--rr-orange, #fdba74)', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 }
+                { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
+                { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 },
+                { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 }
               ];
               spawn = drillTypes[Math.floor(Math.random() * drillTypes.length)];
             }
@@ -26443,13 +26443,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var warnX = hudCompact ? 116 : 10;
           var warnY = hudCompact ? H - 88 : H - 54;
           var warnIcons = [];
-          if (d && d.highBeams) warnIcons.push({ icon: '🔆', color: 'var(--rr-blue, #60a5fa)', title: __alloT('stem.roadready.high_beams', 'High beams') });
-          if (!hudCompact && blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: 'var(--rr-green, #4ade80)', title: __alloT('stem.roadready.left_signal', 'Left signal') });
-          if (!hudCompact && blinkerRef.current === 1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '►', color: 'var(--rr-green, #4ade80)', title: __alloT('stem.roadready.right_signal', 'Right signal') });
-          if (car.brake > 0.3) warnIcons.push({ icon: '🛑', color: 'var(--rr-red, #fca5a5)', title: __alloT('stem.roadready.braking', 'Braking') });
-          if (skidRef.current && skidRef.current.active) warnIcons.push({ icon: '⚠', color: 'var(--rr-amber, #fbbf24)', title: __alloT('stem.roadready.traction_loss', 'Traction loss') });
-          if (tireDynamicsRef.current && tireDynamicsRef.current.absActive) warnIcons.push({ icon: 'ABS', color: 'var(--rr-amber, #fbbf24)', title: 'Anti-lock brakes active' });
-          if (tireDynamicsRef.current && tireDynamicsRef.current.hydroplaneSeverity > 0.15) warnIcons.push({ icon: '≋', color: 'var(--rr-cyan, #22d3ee)', title: 'Hydroplaning' });
+          if (d && d.highBeams) warnIcons.push({ icon: '🔆', color: '#3b82f6', title: __alloT('stem.roadready.high_beams', 'High beams') });
+          if (!hudCompact && blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: '#22c55e', title: __alloT('stem.roadready.left_signal', 'Left signal') });
+          if (!hudCompact && blinkerRef.current === 1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '►', color: '#22c55e', title: __alloT('stem.roadready.right_signal', 'Right signal') });
+          if (car.brake > 0.3) warnIcons.push({ icon: '🛑', color: '#ef4444', title: __alloT('stem.roadready.braking', 'Braking') });
+          if (skidRef.current && skidRef.current.active) warnIcons.push({ icon: '⚠', color: '#f59e0b', title: __alloT('stem.roadready.traction_loss', 'Traction loss') });
+          if (tireDynamicsRef.current && tireDynamicsRef.current.absActive) warnIcons.push({ icon: 'ABS', color: '#f59e0b', title: 'Anti-lock brakes active' });
+          if (tireDynamicsRef.current && tireDynamicsRef.current.hydroplaneSeverity > 0.15) warnIcons.push({ icon: '≋', color: '#38bdf8', title: 'Hydroplaning' });
           if (scn.weather === 'fog' && !(d && d.highBeams)) warnIcons.push({ icon: '🌫', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', title: __alloT('stem.roadready.fog_low_beams_ok', 'Fog — low beams OK') });
           warnIcons.forEach(function(wi, widx) {
             gfx.fillStyle = wi.color;
@@ -29514,9 +29514,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('h3', { id: 'rr-brief-rules', style: { margin: '0 0 10px', fontSize: '17px' } }, __alloT('stem.roadready.before_you_drive', 'Before you drive: see, decide, act')),
                 h('div', { className: 'rr-rule-brief' },
                   [
-                    { cue: 'STOP', title: 'Stop means stationary', text: 'Stop before the stop line or crosswalk. Scan left, right, then left again. Yield before moving.', color: 'var(--rr-red, #fca5a5)' },
-                    { cue: briefingScenario.speedLimit + ' MPH', title: 'The limit is a maximum', text: 'Ease off early for bends, crossings and poor visibility. Leave more space when the road is wet or slippery.', color: 'var(--rr-blue, #60a5fa)' },
-                    { cue: 'MIRROR → SIGNAL → CHECK', title: 'Make your intention clear', text: 'Signal at least 100 feet before turning. Check mirrors and the blind spot before changing lanes; move only when clear.', color: 'var(--rr-green, #4ade80)' }
+                    { cue: 'STOP', title: 'Stop means stationary', text: 'Stop before the stop line or crosswalk. Scan left, right, then left again. Yield before moving.', color: '#b91c1c' },
+                    { cue: briefingScenario.speedLimit + ' MPH', title: 'The limit is a maximum', text: 'Ease off early for bends, crossings and poor visibility. Leave more space when the road is wet or slippery.', color: '#1e40af' },
+                    { cue: 'MIRROR → SIGNAL → CHECK', title: 'Make your intention clear', text: 'Signal at least 100 feet before turning. Check mirrors and the blind spot before changing lanes; move only when clear.', color: '#115e59' }
                   ].map(function(rule, index) {
                     return h('article', { key: index },
                       h('span', { style: { display: 'inline-block', padding: '5px 8px', borderRadius: index === 0 ? '4px' : '6px', fontSize: '10px', fontWeight: 900, letterSpacing: '.035em', background: rule.color, color: 'var(--allo-stem-text, #e2e8f0)' } }, rule.cue),
@@ -30216,11 +30216,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var shown = selCat === 'all' ? signLibrary : signLibrary.filter(function(s) { return s.cat === selCat; });
         var cats = [
           { id: 'all', label: 'All', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' },
-          { id: 'regulatory', label: __alloT('stem.roadready.regulatory', 'Regulatory'), color: 'var(--allo-stem-text, #e2e8f0)' },
+          { id: 'regulatory', label: __alloT('stem.roadready.regulatory', 'Regulatory'), color: '#fff' },
           { id: 'warning', label: __alloT('stem.roadready.warning', 'Warning'), color: 'var(--allo-stem-text, #fde047)' },
-          { id: 'construction', label: __alloT('stem.roadready.construction', 'Construction'), color: 'var(--rr-orange, #fdba74)' },
-          { id: 'school', label: __alloT('stem.roadready.school', 'School'), color: 'var(--rr-green, #4ade80)' },
-          { id: 'guide', label: __alloT('stem.roadready.guide', 'Guide'), color: 'var(--rr-blue, #60a5fa)' }
+          { id: 'construction', label: __alloT('stem.roadready.construction', 'Construction'), color: '#f97316' },
+          { id: 'school', label: __alloT('stem.roadready.school', 'School'), color: '#ccff00' },
+          { id: 'guide', label: __alloT('stem.roadready.guide', 'Guide'), color: '#1e3a8a' }
         ];
         // Quiz mode state
         var quizMode = !!d.signsQuizMode;
@@ -30725,8 +30725,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // and a "WHY THIS MATTERS" header so the learner can't gloss over it.
             lastAns ? h('div', {
               style: lastAns.correct
-                ? { marginTop: '10px', padding: '10px', borderRadius: '8px', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.3)', fontSize: '11px', color: 'var(--rr-cyan, #22d3ee)', lineHeight: '1.5' }
-                : { marginTop: '10px', padding: '12px', borderRadius: '8px', background: 'rgba(239,68,68,0.12)', border: '2px solid #ef4444', fontSize: '12px', color: 'var(--rr-red, #fca5a5)', lineHeight: '1.55' }
+                ? { marginTop: '10px', padding: '10px', borderRadius: '8px', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.3)', fontSize: '11px', color: '#a5f3fc', lineHeight: '1.5' }
+                : { marginTop: '10px', padding: '12px', borderRadius: '8px', background: 'rgba(239,68,68,0.12)', border: '2px solid #ef4444', fontSize: '12px', color: '#fecaca', lineHeight: '1.55' }
             },
               lastAns.correct
                 ? h('span', null, h('b', null, __alloT('stem.roadready.correct', '✓ Correct. ')), q.exp)
@@ -34450,9 +34450,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           eligible_permit: { title: __alloT('stem.roadready.eligible_to_apply_for_permit', 'Eligible to apply for permit'), icon: '📝', color: 'var(--rr-cyan, #22d3ee)', desc: __alloT('stem.roadready.you_re_15_apply_at_the_maine_bmv_pass_', 'You\'re 15+. Apply at the Maine BMV: pass the written test, vision test, $35 fee.') },
           permit_hold: { title: __alloT('stem.roadready.learner_s_permit_holding_period', 'Learner\'s Permit (holding period)'), icon: '🪪', color: 'var(--rr-amber, #fbbf24)', desc: __alloT('stem.roadready.you_must_hold_the_permit_6_months_with', 'You must hold the permit 6 months with NO violations. Keep logging practice hours!') },
           permit_waiting: { title: __alloT('stem.roadready.permit_held_6_months_waiting_to_be_16', 'Permit held 6+ months — waiting to be 16'), icon: '⏳', color: 'var(--rr-amber, #fbbf24)', desc: __alloT('stem.roadready.you_ve_cleared_the_6_month_hold_once_y', 'You\'ve cleared the 6-month hold. Once you\'re 16 AND have 70 supervised hours (including 10 night), apply for intermediate license.') },
-          eligible_intermediate: { title: __alloT('stem.roadready.eligible_for_intermediate_license', 'Eligible for intermediate license'), icon: '🔑', color: 'var(--rr-green, #4ade80)', desc: __alloT('stem.roadready.you_re_16_with_permit_6_months_apply_f', 'You\'re 16 with permit + 6 months. Apply for intermediate license at the BMV. Road test required.') },
-          intermediate_restricted: { title: __alloT('stem.roadready.intermediate_license', 'Intermediate License'), icon: '🚗', color: 'var(--rr-cyan, #22d3ee)', desc: __alloT('stem.roadready.you_have_a_restricted_license_see_rest', 'You have a restricted license. See restrictions below. After the 270-day restriction period, restrictions can lift if they are not extended by a violation.') },
-          full_license: { title: __alloT('stem.roadready.full_license', 'Full License!'), icon: '🎉', color: 'var(--rr-green, #4ade80)', desc: __alloT('stem.roadready.congratulations_you_have_a_full_maine_', 'Congratulations. You have a full Maine driver\'s license. Drive responsibly — Maine roads count on you.') }
+          eligible_intermediate: { title: __alloT('stem.roadready.eligible_for_intermediate_license', 'Eligible for intermediate license'), icon: '🔑', color: '#10b981', desc: __alloT('stem.roadready.you_re_16_with_permit_6_months_apply_f', 'You\'re 16 with permit + 6 months. Apply for intermediate license at the BMV. Road test required.') },
+          intermediate_restricted: { title: __alloT('stem.roadready.intermediate_license', 'Intermediate License'), icon: '🚗', color: '#0ea5e9', desc: __alloT('stem.roadready.you_have_a_restricted_license_see_rest', 'You have a restricted license. See restrictions below. After the 270-day restriction period, restrictions can lift if they are not extended by a violation.') },
+          full_license: { title: __alloT('stem.roadready.full_license', 'Full License!'), icon: '🎉', color: '#4ade80', desc: __alloT('stem.roadready.congratulations_you_have_a_full_maine_', 'Congratulations. You have a full Maine driver\'s license. Drive responsibly — Maine roads count on you.') }
         };
         stageInfo = stages[stage];
         // Restrictions for intermediate stage
@@ -34997,24 +34997,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'keyboardCheatSheet') {
         // Every drive shortcut used in RoadReady. Color-coded by category.
         var keyMap = {
-          w: { label: __alloT('stem.roadready.accel', 'Accel'), group: 'drive', color: 'var(--rr-green, #4ade80)' },
-          s: { label: __alloT('stem.roadready.brake', 'Brake'), group: 'drive', color: 'var(--rr-red, #fca5a5)' },
+          w: { label: __alloT('stem.roadready.accel', 'Accel'), group: 'drive', color: '#22c55e' },
+          s: { label: __alloT('stem.roadready.brake', 'Brake'), group: 'drive', color: '#ef4444' },
           a: { label: __alloT('stem.roadready.steer', 'Steer ←'), group: 'drive', color: 'var(--rr-blue, #60a5fa)' },
           d: { label: __alloT('stem.roadready.steer_2', 'Steer →'), group: 'drive', color: 'var(--rr-blue, #60a5fa)' },
           space: { label: __alloT('stem.roadready.pause_2', 'Pause'), group: 'meta', color: 'var(--rr-violet, #a78bfa)' },
           f: { label: __alloT('stem.roadready.drive_gear', 'Drive gear'), group: 'gear', color: 'var(--rr-amber, #fbbf24)' },
           g: { label: __alloT('stem.roadready.reverse', 'Reverse'), group: 'gear', color: 'var(--rr-amber, #fbbf24)' },
           p: { label: __alloT('stem.roadready.park', 'Park'), group: 'gear', color: 'var(--rr-amber, #fbbf24)' },
-          e: { label: __alloT('stem.roadready.left_signal_2', 'Left signal'), group: 'signal', color: 'var(--rr-green, #4ade80)' },
-          v: { label: __alloT('stem.roadready.right_signal_2', 'Right signal'), group: 'signal', color: 'var(--rr-green, #4ade80)' },
-          t: { label: __alloT('stem.roadready.cancel_signal', 'Cancel signal'), group: 'signal', color: 'var(--rr-green, #4ade80)' },
-          c: { label: __alloT('stem.roadready.cycle_camera', 'Cycle camera'), group: 'view', color: 'var(--rr-cyan, #22d3ee)' },
-          l: { label: __alloT('stem.roadready.high_low_beams', 'High/low beams'), group: 'view', color: 'var(--rr-cyan, #22d3ee)' },
-          h: { label: __alloT('stem.roadready.toggle_hud', 'Toggle HUD'), group: 'view', color: 'var(--rr-cyan, #22d3ee)' },
-          k: { label: __alloT('stem.roadready.photo_2', '📸 Photo'), group: 'fun', color: 'var(--rr-pink, #f9a8d4)' },
-          q: { label: __alloT('stem.roadready.horn', 'Horn'), group: 'fun', color: 'var(--rr-pink, #f9a8d4)' },
-          z: { label: __alloT('stem.roadready.look_left_shoulder_check', 'Look left (shoulder check)'), group: 'sight', color: 'var(--rr-amber, #fbbf24)' },
-          x: { label: __alloT('stem.roadready.look_right_shoulder_check', 'Look right (shoulder check)'), group: 'sight', color: 'var(--rr-amber, #fbbf24)' }
+          e: { label: __alloT('stem.roadready.left_signal_2', 'Left signal'), group: 'signal', color: '#10b981' },
+          v: { label: __alloT('stem.roadready.right_signal_2', 'Right signal'), group: 'signal', color: '#10b981' },
+          t: { label: __alloT('stem.roadready.cancel_signal', 'Cancel signal'), group: 'signal', color: '#10b981' },
+          c: { label: __alloT('stem.roadready.cycle_camera', 'Cycle camera'), group: 'view', color: '#06b6d4' },
+          l: { label: __alloT('stem.roadready.high_low_beams', 'High/low beams'), group: 'view', color: '#06b6d4' },
+          h: { label: __alloT('stem.roadready.toggle_hud', 'Toggle HUD'), group: 'view', color: '#06b6d4' },
+          k: { label: __alloT('stem.roadready.photo_2', '📸 Photo'), group: 'fun', color: '#ec4899' },
+          q: { label: __alloT('stem.roadready.horn', 'Horn'), group: 'fun', color: '#ec4899' },
+          z: { label: __alloT('stem.roadready.look_left_shoulder_check', 'Look left (shoulder check)'), group: 'sight', color: '#f59e0b' },
+          x: { label: __alloT('stem.roadready.look_right_shoulder_check', 'Look right (shoulder check)'), group: 'sight', color: '#f59e0b' }
         };
         // Physical key layout — rough QWERTY
         var rows = [
@@ -35023,12 +35023,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ['z','x','c','v','b','n','m']
         ];
         var legend = [
-          { group: 'drive', color: 'var(--rr-green, #4ade80)', label: __alloT('stem.roadready.drive_brake', 'Drive / brake') },
+          { group: 'drive', color: '#22c55e', label: __alloT('stem.roadready.drive_brake', 'Drive / brake') },
           { group: 'gear', color: 'var(--rr-amber, #fbbf24)', label: __alloT('stem.roadready.gears', 'Gears') },
-          { group: 'signal', color: 'var(--rr-green, #4ade80)', label: __alloT('stem.roadready.turn_signals', 'Turn signals') },
-          { group: 'view', color: 'var(--rr-cyan, #22d3ee)', label: __alloT('stem.roadready.camera_hud', 'Camera / HUD') },
-          { group: 'sight', color: 'var(--rr-amber, #fbbf24)', label: __alloT('stem.roadready.shoulder_check', 'Shoulder check') },
-          { group: 'fun', color: 'var(--rr-pink, #f9a8d4)', label: __alloT('stem.roadready.photo_horn', 'Photo / horn') },
+          { group: 'signal', color: '#10b981', label: __alloT('stem.roadready.turn_signals', 'Turn signals') },
+          { group: 'view', color: '#06b6d4', label: __alloT('stem.roadready.camera_hud', 'Camera / HUD') },
+          { group: 'sight', color: '#f59e0b', label: __alloT('stem.roadready.shoulder_check', 'Shoulder check') },
+          { group: 'fun', color: '#ec4899', label: __alloT('stem.roadready.photo_horn', 'Photo / horn') },
           { group: 'meta', color: 'var(--rr-violet, #a78bfa)', label: __alloT('stem.roadready.meta_pause', 'Meta (pause)') }
         ];
         return h('div', { 'data-rr-view': view, key: view, style: { padding: '20px', maxWidth: '820px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
@@ -35927,17 +35927,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var curPlate = d.licensePlate || '';
         var paintOptions = [
           { color: 'var(--rr-cyan, #22d3ee)', name: __alloT('stem.roadready.electric_cyan', 'Electric Cyan') },
-          { color: 'var(--rr-red, #fca5a5)', name: __alloT('stem.roadready.fire_red', 'Fire Red') },
+          { color: '#ef4444', name: __alloT('stem.roadready.fire_red', 'Fire Red') },
           { color: 'var(--rr-amber, #fbbf24)', name: __alloT('stem.roadready.maine_gold', 'Maine Gold') },
-          { color: 'var(--rr-green, #4ade80)', name: __alloT('stem.roadready.forest_green', 'Forest Green') },
+          { color: '#22c55e', name: __alloT('stem.roadready.forest_green', 'Forest Green') },
           { color: 'var(--rr-violet, #a78bfa)', name: __alloT('stem.roadready.sunset_purple', 'Sunset Purple') },
-          { color: 'var(--rr-pink, #f9a8d4)', name: __alloT('stem.roadready.hot_pink', 'Hot Pink') },
-          { color: 'var(--allo-stem-text, #e2e8f0)', name: __alloT('stem.roadready.midnight_black', 'Midnight Black') },
-          { color: 'var(--allo-stem-text, #e2e8f0)', name: __alloT('stem.roadready.arctic_white', 'Arctic White') },
-          { color: 'var(--rr-orange, #fdba74)', name: __alloT('stem.roadready.blaze_orange', 'Blaze Orange') },
-          { color: 'var(--rr-blue, #60a5fa)', name: __alloT('stem.roadready.navy_blue', 'Navy Blue') },
-          { color: 'var(--rr-red, #fca5a5)', name: __alloT('stem.roadready.deep_burgundy', 'Deep Burgundy') },
-          { color: 'var(--rr-amber, #fbbf24)', name: __alloT('stem.roadready.chestnut_brown', 'Chestnut Brown') }
+          { color: '#f472b6', name: __alloT('stem.roadready.hot_pink', 'Hot Pink') },
+          { color: '#0f172a', name: __alloT('stem.roadready.midnight_black', 'Midnight Black') },
+          { color: '#f8fafc', name: __alloT('stem.roadready.arctic_white', 'Arctic White') },
+          { color: '#f97316', name: __alloT('stem.roadready.blaze_orange', 'Blaze Orange') },
+          { color: '#1e40af', name: __alloT('stem.roadready.navy_blue', 'Navy Blue') },
+          { color: '#7f1d1d', name: __alloT('stem.roadready.deep_burgundy', 'Deep Burgundy') },
+          { color: '#78350f', name: __alloT('stem.roadready.chestnut_brown', 'Chestnut Brown') }
         ];
         return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_49', '← Menu')),
@@ -36195,15 +36195,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── DASHBOARD WARNING LIGHTS ──
       if (view === 'dashLights') {
         var lights = [
-          { icon: '🔴', name: __alloT('stem.roadready.check_engine_mil', 'Check Engine (MIL)'), color: 'var(--rr-red, #fca5a5)', severity: 'VARIES', desc: __alloT('stem.roadready.steady_emissions_issue_safe_to_drive_t', 'Steady = emissions issue, safe to drive to a shop. FLASHING = misfire, pull over immediately — catalytic converter damage.'), action: 'Steady: schedule service within a week. Flashing: pull over NOW, do not drive further.' },
-          { icon: '🔴', name: __alloT('stem.roadready.oil_pressure', 'Oil Pressure'), color: 'var(--rr-red, #fca5a5)', severity: 'CRITICAL', desc: __alloT('stem.roadready.engine_oil_pressure_is_dangerously_low', 'Engine oil pressure is dangerously low. Continuing will destroy the engine in minutes.'), action: 'Pull over IMMEDIATELY. Turn off the engine. Check oil level. Do NOT drive if oil is low — tow it.' },
-          { icon: '🔴', name: __alloT('stem.roadready.temperature_overheating', 'Temperature / Overheating'), color: 'var(--rr-red, #fca5a5)', severity: 'CRITICAL', desc: __alloT('stem.roadready.coolant_is_too_hot_driving_further_can', 'Coolant is too hot. Driving further can crack the head gasket ($2,000+ repair).'), action: 'Pull over. Turn off AC, turn heat on MAX (pulls heat from engine). Let it cool 30 min. Check coolant level. Tow if recurring.' },
-          { icon: '🔴', name: __alloT('stem.roadready.brake_system', 'Brake System'), color: 'var(--rr-red, #fca5a5)', severity: 'CRITICAL', desc: __alloT('stem.roadready.brake_failure_or_very_low_brake_fluid_', 'Brake failure or very low brake fluid. Parking brake engaged also shows this light.'), action: 'If parking brake is off and this light is on: pump brakes gently, pull over at the first safe spot, tow to a shop. Do NOT drive at speed.' },
-          { icon: '🟡', name: 'ABS', color: 'var(--rr-amber, #fbbf24)', severity: 'MODERATE', desc: __alloT('stem.roadready.anti_lock_braking_system_fault_normal_', 'Anti-lock braking system fault. Normal brakes still work, but ABS will not activate in hard stops.'), action: 'Safe to drive carefully to a shop. Avoid hard braking situations. Be extra cautious on wet/icy roads.' },
-          { icon: '🟡', name: __alloT('stem.roadready.tpms_tire_pressure', 'TPMS (Tire Pressure)'), color: 'var(--rr-amber, #fbbf24)', severity: 'MODERATE', desc: __alloT('stem.roadready.one_or_more_tires_is_significantly_und', 'One or more tires is significantly under-inflated (usually 25%+ below spec).'), action: 'Check all 4 tires with a gauge. Inflate to the PSI on the driver door sticker (NOT the tire sidewall — that is the maximum). A $5 gauge saves tires and fuel.' },
-          { icon: '🟡', name: __alloT('stem.roadready.battery_charging', 'Battery / Charging'), color: 'var(--rr-amber, #fbbf24)', severity: 'MODERATE', desc: __alloT('stem.roadready.alternator_not_charging_the_battery_th', 'Alternator not charging the battery. The car will run on battery power for 30-60 minutes, then die.'), action: 'Drive directly to a shop. Turn off AC, radio, heated seats — anything electrical. If the car stalls, you will lose power steering and power brakes.' },
-          { icon: '🟡', name: __alloT('stem.roadready.traction_control_tc_esc', 'Traction Control (TC/ESC)'), color: 'var(--rr-amber, #fbbf24)', severity: 'LOW', desc: __alloT('stem.roadready.blinking_system_is_actively_working_wh', 'Blinking = system is actively working (wheels are slipping). Steady = system is OFF.'), action: 'Blinking: slow down, the road is slippery. Steady: check if you accidentally turned it off. On snow/ice, you generally want it ON.' },
-          { icon: '🔵', name: __alloT('stem.roadready.high_beam_indicator', 'High Beam Indicator'), color: 'var(--rr-blue, #60a5fa)', severity: 'INFO', desc: __alloT('stem.roadready.high_beams_are_on_remember_to_dim_for_', 'High beams are on. Maine requires dimming for oncoming traffic and when following another vehicle.'), action: 'Press L key in the sim or the headlight stalk in a real car. Dim within 500 ft of oncoming traffic or 300 ft when following another vehicle.' },
+          { icon: '🔴', name: __alloT('stem.roadready.check_engine_mil', 'Check Engine (MIL)'), color: '#ef4444', severity: 'VARIES', desc: __alloT('stem.roadready.steady_emissions_issue_safe_to_drive_t', 'Steady = emissions issue, safe to drive to a shop. FLASHING = misfire, pull over immediately — catalytic converter damage.'), action: 'Steady: schedule service within a week. Flashing: pull over NOW, do not drive further.' },
+          { icon: '🔴', name: __alloT('stem.roadready.oil_pressure', 'Oil Pressure'), color: '#ef4444', severity: 'CRITICAL', desc: __alloT('stem.roadready.engine_oil_pressure_is_dangerously_low', 'Engine oil pressure is dangerously low. Continuing will destroy the engine in minutes.'), action: 'Pull over IMMEDIATELY. Turn off the engine. Check oil level. Do NOT drive if oil is low — tow it.' },
+          { icon: '🔴', name: __alloT('stem.roadready.temperature_overheating', 'Temperature / Overheating'), color: '#ef4444', severity: 'CRITICAL', desc: __alloT('stem.roadready.coolant_is_too_hot_driving_further_can', 'Coolant is too hot. Driving further can crack the head gasket ($2,000+ repair).'), action: 'Pull over. Turn off AC, turn heat on MAX (pulls heat from engine). Let it cool 30 min. Check coolant level. Tow if recurring.' },
+          { icon: '🔴', name: __alloT('stem.roadready.brake_system', 'Brake System'), color: '#ef4444', severity: 'CRITICAL', desc: __alloT('stem.roadready.brake_failure_or_very_low_brake_fluid_', 'Brake failure or very low brake fluid. Parking brake engaged also shows this light.'), action: 'If parking brake is off and this light is on: pump brakes gently, pull over at the first safe spot, tow to a shop. Do NOT drive at speed.' },
+          { icon: '🟡', name: 'ABS', color: '#f59e0b', severity: 'MODERATE', desc: __alloT('stem.roadready.anti_lock_braking_system_fault_normal_', 'Anti-lock braking system fault. Normal brakes still work, but ABS will not activate in hard stops.'), action: 'Safe to drive carefully to a shop. Avoid hard braking situations. Be extra cautious on wet/icy roads.' },
+          { icon: '🟡', name: __alloT('stem.roadready.tpms_tire_pressure', 'TPMS (Tire Pressure)'), color: '#f59e0b', severity: 'MODERATE', desc: __alloT('stem.roadready.one_or_more_tires_is_significantly_und', 'One or more tires is significantly under-inflated (usually 25%+ below spec).'), action: 'Check all 4 tires with a gauge. Inflate to the PSI on the driver door sticker (NOT the tire sidewall — that is the maximum). A $5 gauge saves tires and fuel.' },
+          { icon: '🟡', name: __alloT('stem.roadready.battery_charging', 'Battery / Charging'), color: '#f59e0b', severity: 'MODERATE', desc: __alloT('stem.roadready.alternator_not_charging_the_battery_th', 'Alternator not charging the battery. The car will run on battery power for 30-60 minutes, then die.'), action: 'Drive directly to a shop. Turn off AC, radio, heated seats — anything electrical. If the car stalls, you will lose power steering and power brakes.' },
+          { icon: '🟡', name: __alloT('stem.roadready.traction_control_tc_esc', 'Traction Control (TC/ESC)'), color: '#f59e0b', severity: 'LOW', desc: __alloT('stem.roadready.blinking_system_is_actively_working_wh', 'Blinking = system is actively working (wheels are slipping). Steady = system is OFF.'), action: 'Blinking: slow down, the road is slippery. Steady: check if you accidentally turned it off. On snow/ice, you generally want it ON.' },
+          { icon: '🔵', name: __alloT('stem.roadready.high_beam_indicator', 'High Beam Indicator'), color: '#3b82f6', severity: 'INFO', desc: __alloT('stem.roadready.high_beams_are_on_remember_to_dim_for_', 'High beams are on. Maine requires dimming for oncoming traffic and when following another vehicle.'), action: 'Press L key in the sim or the headlight stalk in a real car. Dim within 500 ft of oncoming traffic or 300 ft when following another vehicle.' },
           { icon: '⬜', name: __alloT('stem.roadready.airbag_srs', 'Airbag (SRS)'), color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', severity: 'SAFETY', desc: __alloT('stem.roadready.airbag_system_fault_airbags_may_not_de', 'Airbag system fault. Airbags may not deploy in a crash.'), action: 'Get this diagnosed ASAP. Airbags are a critical safety system. The car is safe to drive, but you are unprotected in a crash.' }
         ];
         return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
@@ -36632,10 +36632,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (stopDist > 50) state = 'long';
         else state = 'controlled';
         var sm = {
-          unsafe:     { label: __alloT('stem.roadready.unsafe_stopping_distance_100m', '🚨 Unsafe stopping distance (>100m)'), color: 'var(--rr-red, #fca5a5)', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.roadready.cannot_stop_in_time_for_typical_road_h', 'Cannot stop in time for typical road hazard.') },
-          aggressive: { label: __alloT('stem.roadready.aggressive_1g_deceleration', '⚠️ Aggressive (>1g deceleration)'), color: 'var(--rr-orange, #fdba74)', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.roadready.hard_braking_risk_of_skid_abs_engageme', 'Hard braking. Risk of skid, ABS engagement.') },
-          long:       { label: __alloT('stem.roadready.long_stop_50_100m', '🟡 Long stop (50-100m)'), color: 'var(--rr-amber, #fbbf24)', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.roadready.acceptable_but_marginal_longer_than_ty', 'Acceptable but marginal. Longer than typical city block.') },
-          controlled: { label: __alloT('stem.roadready.controlled_stop_50m', '🟢 Controlled stop (<50m)'), color: 'var(--rr-green, #4ade80)', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.roadready.safe_deceleration_comfortable_for_pass', 'Safe deceleration. Comfortable for passengers.') }
+          unsafe:     { label: __alloT('stem.roadready.unsafe_stopping_distance_100m', '🚨 Unsafe stopping distance (>100m)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.roadready.cannot_stop_in_time_for_typical_road_h', 'Cannot stop in time for typical road hazard.') },
+          aggressive: { label: __alloT('stem.roadready.aggressive_1g_deceleration', '⚠️ Aggressive (>1g deceleration)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.roadready.hard_braking_risk_of_skid_abs_engageme', 'Hard braking. Risk of skid, ABS engagement.') },
+          long:       { label: __alloT('stem.roadready.long_stop_50_100m', '🟡 Long stop (50-100m)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.roadready.acceptable_but_marginal_longer_than_ty', 'Acceptable but marginal. Longer than typical city block.') },
+          controlled: { label: __alloT('stem.roadready.controlled_stop_50m', '🟢 Controlled stop (<50m)'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.roadready.safe_deceleration_comfortable_for_pass', 'Safe deceleration. Comfortable for passengers.') }
         }[state];
         return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #93c5fd', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, __alloT('stem.roadready.menu_57', '← Menu')),
@@ -38063,7 +38063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'weatherCompare') {
         var wcSpeed = d.wcSpeed || 55;
         var weatherTypes = [
-          { id: 'dry', label: __alloT('stem.roadready.dry_2', '☀️ Dry'), mu: 0.72, vis: '500+ ft', following: 3, color: 'var(--rr-green, #4ade80)' },
+          { id: 'dry', label: __alloT('stem.roadready.dry_2', '☀️ Dry'), mu: 0.72, vis: '500+ ft', following: 3, color: '#4ade80' },
           { id: 'rain', label: __alloT('stem.roadready.rain_2', '🌧️ Rain'), mu: 0.42, vis: '300 ft', following: 4, color: 'var(--rr-blue, #60a5fa)' },
           { id: 'snow', label: __alloT('stem.roadready.snow_2', '❄️ Snow'), mu: 0.22, vis: '150 ft', following: 6, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' },
           // Black ice's danger is that it's INVISIBLE — the road looks merely wet.
