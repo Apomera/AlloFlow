@@ -593,10 +593,15 @@
     pending = true;
     (window.requestAnimationFrame || window.setTimeout)(function() { pending = false; scan(); }, 0);
   }
-  var obs = new MutationObserver(schedule);
+  // Guarded: this runs at module top level, so an unguarded constructor throws
+  // under Node/jsdom where MutationObserver is undefined -- and it throws before
+  // anything registers, failing the whole file to load. scan() stays OUTSIDE the
+  // guard so the panel still gets its one tagging pass when there is a DOM but no
+  // observer; only re-tagging on later re-renders is lost.
+  var obs = typeof MutationObserver === 'function' ? new MutationObserver(schedule) : null;
   function start() {
     if (!document.body) return;
-    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-raptor-active-section'] });
+    if (obs) obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-raptor-active-section'] });
     scan();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
