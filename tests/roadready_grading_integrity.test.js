@@ -189,6 +189,59 @@ describe('RoadReady mission habit criteria', () => {
     expect(short.criteria.find((c) => c.id === 'habit').met).toBe(false);
   });
 
+  it('makes the smooth habit honour its authored skid allowance', () => {
+    // habitTarget was dead configuration for all six 'smooth' scenarios --
+    // the branch hardcoded `< 2` and never read it. Third instance of the
+    // same defect after the 'speed' and 'distance' branches.
+    const skid = (sec, id) => RR.rrScenarioMissionStatus(
+      { ...driveStats, skidSeconds: sec }, 600, id).criteria.find((c) => c.id === 'habit').met;
+    // The boundary has to be the AUTHORED one, not a looser hardcoded value.
+    // Every smooth scenario authors habitTarget: 1, so asserting only that
+    // skid 3 fails is vacuous -- a hardcoded `<= 2` passes it too. 1.5 is
+    // above the authored allowance and below the old hardcoded one, so it
+    // separates them.
+    expect(skid(1, 'night')).toBe(true);     // at the authored allowance
+    expect(skid(1.5, 'night')).toBe(false);  // a hardcoded 2 would pass this
+    expect(skid(3, 'night')).toBe(false);
+    expect(RR.rrScenarioMissionStatus(driveStats, 600, 'night').mission.habitTarget).toBe(1);
+  });
+
+  it('checks hydroplaning ONLY where standing water can occur', () => {
+    // hydroplaneSeconds only accumulates when wheels cross a puddle, and
+    // puddles spawn only when scn.weather === 'rain'. Of the scenarios using
+    // the smooth habit, only `rain` is weather: 'rain' -- night and dawn are
+    // 'clear', fog is 'fog', snow is 'snow'. Grading the other four against a
+    // counter that is always 0 is a check that cannot fail.
+    const hydro = (sec, id) => RR.rrScenarioMissionStatus(
+      { ...driveStats, hydroplaneSeconds: sec }, 600, id).criteria.find((c) => c.id === 'habit').met;
+    expect(hydro(2, 'rain')).toBe(false);
+    for (const dry of ['night', 'fog', 'snow', 'dawn']) {
+      expect(hydro(2, dry)).toBe(true);
+      expect(RR.rrScenarioMissionStatus(driveStats, 600, dry)
+        .mission.habitHydroplaneMax).toBeUndefined();
+    }
+    expect(RR.rrScenarioMissionStatus(driveStats, 600, 'rain')
+      .mission.habitHydroplaneMax).toBe(1);
+  });
+
+  it('holds snow to a tighter hard-brake standard than the others', () => {
+    // mu 0.22 is the lowest of the smooth set, and the label is "Gentle
+    // winter inputs". A standard identical to fog's would not be one.
+    const hb = (n, id) => RR.rrScenarioMissionStatus(
+      { ...driveStats, hardBrakes: n }, 600, id).criteria.find((c) => c.id === 'habit').met;
+    expect(hb(1, 'snow')).toBe(true);
+    expect(hb(2, 'snow')).toBe(false);
+    expect(hb(2, 'fog')).toBe(true);
+  });
+
+  it('carries the smooth-habit authored keys through the builder', () => {
+    // rrScenarioMission copies fields explicitly; an unlisted key is dropped
+    // and the label changes while the check does not.
+    const rain = RR.rrScenarioMissionStatus(driveStats, 600, 'rain').mission;
+    expect(rain.habitHydroplaneMax).toBe(1);
+    expect(RR.rrScenarioMissionStatus(driveStats, 600, 'snow').mission.habitHardBrakeMax).toBe(1);
+  });
+
   it('gives every scenario a habit its own label can fail', () => {
     // A habit that no input can break is decoration, not assessment.
     const SCENARIOS = ['residential', 'suburban', 'highway', 'roundabout',

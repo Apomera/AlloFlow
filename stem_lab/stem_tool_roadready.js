@@ -1333,8 +1333,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     parking: { skill: 'Slow-space control', durationSec: 55, distanceMeters: 80, habit: 'distance', habitTarget: 80, habitSpeedCapMph: 12, habitLabel: 'Complete the maneuver area at walking speed (12 mph cap)' },
     night: { skill: 'Drive within headlight range', durationSec: 70, distanceMeters: 400, habit: 'smooth', habitTarget: 1, habitLabel: 'Avoid sustained skids or hard inputs' },
     fog: { skill: 'Visibility-speed choice', durationSec: 70, distanceMeters: 350, habit: 'smooth', habitTarget: 1, habitLabel: 'Use smooth inputs in limited visibility' },
-    rain: { skill: 'Wet-road space and grip', durationSec: 70, distanceMeters: 400, habit: 'smooth', habitTarget: 1, habitLabel: 'Avoid hydroplaning and sustained skids' },
-    snow: { skill: 'Gentle winter inputs', durationSec: 75, distanceMeters: 350, habit: 'smooth', habitTarget: 1, habitLabel: 'Avoid sustained skids and hard inputs' },
+    rain: { skill: 'Wet-road space and grip', durationSec: 70, distanceMeters: 400, habit: 'smooth', habitTarget: 1, habitHydroplaneMax: 1, habitLabel: 'Avoid hydroplaning and sustained skids (1 s each)' },
+    snow: { skill: 'Gentle winter inputs', durationSec: 75, distanceMeters: 350, habit: 'smooth', habitTarget: 1, habitHardBrakeMax: 1, habitLabel: 'Avoid sustained skids; at most one hard brake' },
     construction: { skill: 'Early work-zone response', durationSec: 65, distanceMeters: 350, habit: 'speed', habitTarget: 1, habitLabel: 'Stay at or below the work-zone limit' },
     school_zone: { skill: 'Protect vulnerable road users', durationSec: 65, distanceMeters: 300, habit: 'speed', habitTarget: 1, habitLabel: 'Hold the active 15 mph limit' },
     downtown: { skill: 'Space, signals, and patience', durationSec: 70, distanceMeters: 350, habit: 'laneChanges', habitTarget: 1, habitLabel: 'Complete one signaled lane change' },
@@ -1357,6 +1357,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // attempt at the walking-speed cap: the LABEL changed and the check
       // did not, leaving the mission promising more than it measured.
       habitSpeedCapMph: authored.habitSpeedCapMph,
+      habitHydroplaneMax: authored.habitHydroplaneMax,
+      habitHardBrakeMax: authored.habitHardBrakeMax,
       criteria: [
         { id: 'pace', label: 'Complete the practice segment' },
         { id: 'speed', label: 'Stay within the posted limit' },
@@ -1395,10 +1397,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (!isFinite(speedAllowanceSec) || speedAllowanceSec < 0) speedAllowanceSec = 2;
       habitDone = (Number(stats.secondsOverLimit) || 0) <= speedAllowanceSec;
     }
+    // A 'smooth' habit is authored by SIX scenarios with identical thresholds,
+    // and the branch never read habitTarget -- the third instance of the dead
+    // configuration the 'speed' and 'distance' branches each had.
+    //
+    // It also carried a clause that cannot fire. hydroplaneSeconds only
+    // accumulates when wheels cross a puddle, and puddles are only spawned
+    // when scn.weather === 'rain' (see wheelPuddleAt in the drive loop). Of
+    // the scenarios using this habit, only `rain` has weather: 'rain' --
+    // night and dawn are 'clear', fog is 'fog', snow is 'snow'. So four of
+    // the five were graded against a counter that is always 0, while rain's
+    // label ("Avoid hydroplaning and sustained skids") is the one place the
+    // clause belongs.
+    //
+    // habitTarget is now the skid-seconds allowance, so a scenario can ask
+    // for a tighter standard than the generic 2 s. habitHydroplaneMax is
+    // opt-in, declared only where standing water actually exists.
     else if (mission.habit === 'smooth') {
-      habitDone = (Number(stats.skidSeconds) || 0) < 2 &&
-        (Number(stats.hydroplaneSeconds) || 0) < 1 &&
-        (Number(stats.hardBrakes) || 0) <= 2;
+      var skidAllowanceSec = Number(mission.habitTarget);
+      if (!isFinite(skidAllowanceSec) || skidAllowanceSec < 0) skidAllowanceSec = 2;
+      var hardBrakeAllowance = Number(mission.habitHardBrakeMax);
+      if (!isFinite(hardBrakeAllowance) || hardBrakeAllowance < 0) hardBrakeAllowance = 2;
+      habitDone = (Number(stats.skidSeconds) || 0) <= skidAllowanceSec &&
+        (Number(stats.hardBrakes) || 0) <= hardBrakeAllowance;
+      var hydroMax = Number(mission.habitHydroplaneMax);
+      if (isFinite(hydroMax) && hydroMax >= 0) {
+        habitDone = habitDone && (Number(stats.hydroplaneSeconds) || 0) <= hydroMax;
+      }
     }
     // A 'distance' habit whose habitTarget equals mission.distanceMeters is
     // byte-identical to the `pace` criterion above, so it cannot be failed
