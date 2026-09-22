@@ -7945,6 +7945,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     camera.lookAt(0, 1.5, 0);
 
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    // A context lost after init used to leave a black canvas with no error state and
+    // no way back. preventDefault is required or the context can never be restored;
+    // then hand the component the same threeError path creation failure already uses,
+    // which renders the alert and its retry button.
+    if (!canvas._aqLossBound) {
+      canvas._aqLossBound = true;
+      canvas.addEventListener('webglcontextlost', function (ev) {
+        ev.preventDefault();
+        console.warn('[Aquaculture] WebGL context lost — offering the 2D fallback and retry');
+        if (opts && typeof opts.onContextLost === 'function') opts.onContextLost();
+      });
+    }
     var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     renderer.setPixelRatio(dpr);
     renderer.setSize(W, H, false);
@@ -8855,7 +8867,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               onStatus: pushStatus,
               missionScenarioId: missionScenarioId,
               initialDroppers: 0,
-              onExit: stopSim
+              onExit: stopSim,
+              onContextLost: function () {
+                // Same state the init-failure catch below sets, so the student gets the
+                // familiar alert and its retry control instead of a black canvas.
+                setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
+                aqAnnounce(__alloT('stem.aquaculture.sr_3d_context_lost_use_guided_2d_instead', '3D graphics stopped unexpectedly. Use Guided 2D, or retry the 3D mission.'));
+              }
             });
             if (!farmRef.current) throw new Error('Farm simulation failed to initialize');
             try { c.focus(); } catch (focusError) {}
