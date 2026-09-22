@@ -1790,10 +1790,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       h = mixHex(h, '#91d36a', 0.46);
     }
     if (visual.waterStress > 0.18) {
-      h = mixHex(h, leafType === 'needle' ? '#77722a' : '#a98735', visual.waterStress * 0.24);
+      // The canopy has to carry the drought as plainly as the sky does.
+      // skyPalette commits 42-52% toward sepia the moment a drought is on,
+      // but this ceiling was 0.24 and only reached at waterStress 1.0, so
+      // the leaves stayed green (#2f7a3a -> #4c7d39, a 3/255 shift in the
+      // green channel) beneath a visibly parched sky. Matching the sky's
+      // register makes the scene tell one story; sqrt eases the curve so
+      // early stress is visible instead of flat until the tree nearly dies.
+      h = mixHex(h, leafType === 'needle' ? '#77722a' : '#a98735', Math.sqrt(visual.waterStress) * 0.46);
     }
     if (visual.carbonStress > 0.08) {
-      h = mixHex(h, '#76502a', visual.carbonStress * 0.38);
+      h = mixHex(h, '#76502a', Math.sqrt(visual.carbonStress) * 0.52);
     }
     return h;
   }
@@ -5524,6 +5531,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }
         if (n >= 10) xp(4);
       }
+      // Spend a share of the yearly budget on reproduction, then let years pass,
+      // so the Spread chapter has something to spend. This is the same thing the
+      // empty state describes in prose; doing it from there keeps a student who
+      // opened the chapters out of order from hitting a dead end.
+      function bankReproAndRun() {
+        if (experimentActive) {
+          srSay(__alloT('stem.treelab.use_trial_run', 'Finish or close the investigation before using ordinary year steps.'));
+          return;
+        }
+        if (!tree.alive) return;
+        var cur = normaliseAlloc(d.alloc);
+        var want = 0.2;
+        // Keep the shape of whatever the student already chose: scale the other
+        // four shares into the remaining room rather than overwriting them.
+        var others = ['leaf', 'root', 'wood', 'store'];
+        var rest = 0;
+        for (var i = 0; i < others.length; i++) rest += cur[others[i]];
+        var next = { repro: want };
+        for (var j = 0; j < others.length; j++) {
+          next[others[j]] = rest > 0 ? cur[others[j]] / rest * (1 - want) : (1 - want) / others.length;
+        }
+        updMulti({ alloc: normaliseAlloc(next) });
+        alloc = normaliseAlloc(next);
+        // 10 years, not 5: measured on this tool, 5 years banks 0.20 kg C and the
+        // CHEAPEST strategy costs 0.30, so a 5-year run leaves the student just as
+        // stuck. 10 banks ~1.1 kg C, which affords a real choice between strategies.
+        stepYears(10);
+        srSay(__alloT('stem.treelab.banked_say', 'Reproduction now takes a fifth of the yearly budget. Advanced ten years.'));
+      }
+
       // One clock tick. Fractional years accumulate in yearPhase; simulateYear runs
       // only when a whole one has passed, so the seasons animate smoothly without
       // running the engine five times a second.
@@ -5579,7 +5616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       function togglePlay() {
         if (experimentActive) {
           sfxBad();
-          srSay(__alloT('stem.treelab.use_trial_run', 'Finish or close the investigation before using ordinary playback.'));
+          srSay(__alloT('stem.treelab.use_trial_run_playback', 'Finish or close the investigation before using ordinary playback.'));
           return;
         }
         var next = !d.playing;
@@ -6045,7 +6082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }, [
           h('div', { key: 'title', className: 'allo-tree-effect-title' }, [
             h('span', { key: 'dot', 'aria-hidden': 'true', style: { width: 9, height: 9, borderRadius: 99, background: factorTone } }),
-            h('span', { key: 'text' }, __alloT('stem.treelab.effect_record_title', 'Last change') + (typeof lastEffect.age === 'number' ? ' · ' + __alloT('stem.treelab.age', 'Age') + ' ' + lastEffect.age : ''))
+            h('span', { key: 'text' }, __alloT('stem.treelab.effect_record_title', 'Last change') + (typeof lastEffect.age === 'number' ? ' · ' + __alloT('stem.treelab.age_label', 'Age') + ' ' + lastEffect.age : ''))
           ]),
           h('div', { key: 'grid', className: 'allo-tree-effect-grid' }, [
             effectTile('changed',
@@ -6360,7 +6397,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 ? __alloT('stem.treelab.outcome_intro_k2', 'Read what changed, then find the clues on the tree.')
                 : __alloT('stem.treelab.outcome_intro', 'A persistent receipt connecting the time jump to carbon, growth, and survival.')),
             h('span', { key: 'age', className: 'allo-tree-outcome-age' },
-              __alloT('stem.treelab.age', 'Age') + ' ' + o.ageBefore + ' \u2192 ' + o.ageAfter)
+              __alloT('stem.treelab.age_label', 'Age') + ' ' + o.ageBefore + ' \u2192 ' + o.ageAfter)
           ]),
           h('div', { key: 'grid', className: 'allo-tree-outcome-grid' }, [
             outcomeFact('carbon', carbonDeficit ? '\u25BC' : '\u25B2',
@@ -7735,7 +7772,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 h('div', { key: 'meaning' }, food < 0
                   ? __alloT('stem.treelab.discovery_deficit', 'Food shortfall; reserves were needed')
                   : __alloT('stem.treelab.discovery_surplus', 'Food left after staying alive')),
-                h('div', { key: 'time' }, __alloT('stem.treelab.age', 'Age') + ' ' + startAge + ' → ' + summary.endAge),
+                h('div', { key: 'time' }, __alloT('stem.treelab.age_label', 'Age') + ' ' + startAge + ' → ' + summary.endAge),
                 h('div', { key: 'height' }, __alloT('stem.treelab.height_label', 'Height') + ': ' + round(record.baseline.heightM, 2) + ' → ' + round(summary.endHeight, 2) + ' m'),
                 !summary.alive ? h('div', { key: 'died' }, __alloT('stem.treelab.discovery_ended', 'This tree died before or at the end of the trial.')) : null
               ]);
@@ -7832,7 +7869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ].filter(function (item) { return item[0]; });
         return items.length ? h('div', { key: 'notebook', className: 'allo-tree-discovery-notebook', 'aria-label': __alloT('stem.treelab.discovery_notebook', 'Field notebook') },
           [items.map(function (item, i) { return h('span', { key: i }, '\u2713 ' + item[1]); }),
-          Array.isArray(d.fieldNotes) && d.fieldNotes.length ? foldPanel('saved-notes', __alloT('stem.treelab.saved_explanations', 'My explanations'), d.fieldNotes.filter(function (note) { return note && typeof note === 'object'; }).map(function (note, i) { return h('p', { key: i }, (note.outcome ? __alloT('stem.treelab.age', 'Age') + ' ' + note.outcome.ageBefore + ' → ' + note.outcome.ageAfter + ': ' : '') + String(note.explanation || '')); })) : null]) : null;
+          Array.isArray(d.fieldNotes) && d.fieldNotes.length ? foldPanel('saved-notes', __alloT('stem.treelab.saved_explanations', 'My explanations'), d.fieldNotes.filter(function (note) { return note && typeof note === 'object'; }).map(function (note, i) { return h('p', { key: i }, (note.outcome ? __alloT('stem.treelab.age_label', 'Age') + ' ' + note.outcome.ageBefore + ' → ' + note.outcome.ageAfter + ': ' : '') + String(note.explanation || '')); })) : null]) : null;
       }
 
       function reflectionPanel() {
@@ -7911,7 +7948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           h('div', { key: 'actions', style: { position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap' } }, [
             btn('review-discovery', d.discovery && d.discovery.record ? __alloT('stem.treelab.discovery_review', 'Review my discovery') : __alloT('stem.treelab.discovery_guided', 'Try a guided discovery'), function () { upd('discoveryMode', null); }, { small: true, tone: 'ghost', disabled: experimentActive }),
             btn('mission-weather', inDrought
-              ? '\uD83C\uDF27 ' + __alloT('stem.treelab.end_drought', 'Bring back the rain')
+              ? '\uD83C\uDF27 ' + __alloT('stem.treelab.end_drought_rain', 'Bring back the rain')
               : '\u2600 ' + __alloT('stem.treelab.mission_try_drought', 'Try a 3-year drought'),
               function () { if (inDrought) endDrought(); else sendDrought(3); },
               { small: true, pressed: inDrought, primary: nextStepIndex === 0, tone: nextStepIndex === 0 ? undefined : 'ghost', disabled: !tree.alive || experimentLocked }),
@@ -9265,7 +9302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         pushKeyed(kids, reflectionPanel(), 'grow-reflection');
 
         var budgetCard = card([
-          heading(__alloT('stem.treelab.this_year', 'This year’s carbon budget'),
+          heading(__alloT('stem.treelab.this_year_carbon_budget', 'This year’s carbon budget'),
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.budget_sub_g68', 'Gross photosynthesis minus maintenance respiration is what is left to grow with. Everything below is spent out of that surplus.')
               : __alloT('stem.treelab.budget_sub_k2', 'Sugar made, minus sugar used just to stay alive. What is left is what the tree can grow with.')),
@@ -9480,7 +9517,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             __alloT('stem.treelab.conditions_sub', 'Change one thing at a time and watch which factor takes over as the limit.')),
           // Each condition wears the same hue its factor carries everywhere else —
           // the Chemistry curves, the limit bars, the ring strip. Same idea, same ink.
-          slider('light', __alloT('stem.treelab.light', 'Light reaching the leaves'), envCfg.light, 0, 1, 0.05,
+          slider('light', __alloT('stem.treelab.light_reaching_leaves', 'Light reaching the leaves'), envCfg.light, 0, 1, 0.05,
             function (v) { changeCondition('light', v, 'light'); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('light'))),
           slider('water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
             function (v) { changeCondition('soilWater', v, 'water'); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('water'))),
@@ -9497,7 +9534,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                 ? __alloT('stem.treelab.drought_on', 'A drought is running. Soil water is a third of what you set, the stomata are closing, and the ring this year will show it.')
                 : __alloT('stem.treelab.drought_off', 'Send a dry spell and watch what it does to the ring and to the limiting factor.')),
             inDrought
-              ? btn('rain', '🌧 ' + __alloT('stem.treelab.end_drought', 'End the drought'), endDrought, { small: true, disabled: experimentLocked })
+              ? btn('rain', '🌧 ' + __alloT('stem.treelab.end_drought_the', 'End the drought'), endDrought, { small: true, disabled: experimentLocked })
               : btn('dry3', '☀️ ' + __alloT('stem.treelab.drought_3', 'Drought for 3 years'), function () { sendDrought(3); }, { small: true, disabled: experimentLocked }),
             !inDrought && atLeast(band, 'g68')
               ? btn('dry8', '☀️ ' + __alloT('stem.treelab.drought_8', 'Drought for 8 years'), function () { sendDrought(8); }, { small: true, tone: 'ghost', disabled: experimentLocked })
@@ -10292,7 +10329,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           });
         });
         return card([
-          heading(__alloT('stem.treelab.rings', 'Growth rings'),
+          heading(__alloT('stem.treelab.rings_growth', 'Growth rings'),
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.rings_sub_g68', 'One bar per year, red where the tree ran a deficit. Rings usually narrow with age even in a healthy tree: the same volume of wood spread around a longer circumference is thinner.')
               : __alloT('stem.treelab.rings_sub_k2', 'One bar for each year. Taller means the tree grew a wider ring that year.')),
@@ -10645,7 +10682,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               ]);
             })),
             h('div', { key: 'actions', className: 'allo-tree-stopped-actions' },
-              btn('new-seedling', __alloT('stem.treelab.new_seedling', 'Start a new seedling'), function () { resetTree(sp.id); }, { primary: true }))
+              btn('new-seedling', __alloT('stem.treelab.new_seedling_start', 'Start a new seedling'), function () { resetTree(sp.id); }, { primary: true }))
           ], undefined, 'allo-tree-chem-stopped')];
         }
         var chemLimiterId = causeAwareLimiter(live) || 'light';
@@ -11886,8 +11923,23 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             statTile('s', band === 'k2' ? __alloT('stem.treelab.committed_k2', 'Food used') : __alloT('stem.treelab.committed', 'Committed'), spreadAmount(totalSpent), T.warn),
             statTile('r', band === 'k2' ? __alloT('stem.treelab.left_k2', 'Food left') : __alloT('stem.treelab.left', 'Left'), spreadAmount(remaining), remaining >= 0 ? T.good : T.bad)
           ]),
-          budget <= 0 ? h('div', { key: 'nb', style: { fontSize: 13, color: T.warn, lineHeight: 1.55 } },
-            (band === 'k2' ? __alloT('stem.treelab.no_budget_k2', 'No food is saved for new trees yet. Go back to Grow, save some food for seeds, and let years pass.') : __alloT('stem.treelab.no_budget', 'No reproduction carbon banked yet. Go back to Grow, put some of the surplus into Reproduction, and run some years.'))) : null,
+          budget <= 0 ? h('div', { key: 'nb', className: 'allo-tree-spread-empty' }, [
+            h('div', { key: 'why', style: { fontSize: 13, color: T.warn, lineHeight: 1.55 } },
+              (band === 'k2' ? __alloT('stem.treelab.no_budget_k2', 'No food is saved for new trees yet. Go back to Grow, save some food for seeds, and let years pass.') : __alloT('stem.treelab.no_budget', 'No reproduction carbon banked yet. Go back to Grow, put some of the surplus into Reproduction, and run some years.'))),
+            // The sentence above describes a three-step detour through another
+            // chapter. Offer to do it, so this chapter is never a dead end for
+            // a student who opened it out of order.
+            h('div', { key: 'act', style: { marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } }, [
+              btn('bank', band === 'k2'
+                ? __alloT('stem.treelab.bank_some_food_k2', 'Save food for seeds and grow 10 years')
+                : __alloT('stem.treelab.bank_some_carbon', 'Bank reproduction carbon and run 10 years'),
+                bankReproAndRun, { primary: true, key: 'bank' }),
+              h('span', { key: 'note', style: { fontSize: 12, color: T.dim } },
+                band === 'k2'
+                  ? __alloT('stem.treelab.bank_note_k2', 'Sets some food aside for new trees, then lets ten years pass.')
+                  : __alloT('stem.treelab.bank_note', 'Moves a fifth of the budget into reproduction, then advances ten years. You can change it in Grow.'))
+            ])
+          ]) : null,
           atLeast(band, 'g35') ? modelNote(__alloT('stem.treelab.spread_model_note',
             'The take rates below are tuned so that one decade is playable, not measured. What is real is the ORDER: a clonal shoot establishes far more reliably than a seed, and a wind-carried seed in the wild succeeds far more rarely than the figure here suggests. Compare the strategies against each other, not against the world.')) : null
         ], undefined, 'allo-tree-spread-hero'));
@@ -13568,7 +13620,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               __alloT('stem.treelab.discovery_subtitle', 'Make a prediction. Grow a tree. Discover what changed.')),
             h('div', { key: 'quick', className: 'allo-tree-hero-stats' }, [
               h('span', { key: 'age', className: 'allo-tree-hero-stat' }, [
-                h('span', { key: 'l', className: 'allo-tree-hero-stat-label' }, __alloT('stem.treelab.age', 'Age')),
+                h('span', { key: 'l', className: 'allo-tree-hero-stat-label' }, __alloT('stem.treelab.age_label', 'Age')),
                 h('strong', { key: 'v', className: 'allo-tree-hero-stat-value' }, tree.age + ' ' + (tree.age === 1 ? __alloT('stem.treelab.year_one', 'year') : __alloT('stem.treelab.year_many', 'years')))
               ]),
               h('span', { key: 'height', className: 'allo-tree-hero-stat' }, [
