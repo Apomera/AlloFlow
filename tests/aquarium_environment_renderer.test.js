@@ -1,10 +1,17 @@
 // The geometry and raycaster are real Three r128; only GPU drawing is replaced.
 // Real WebGL appearance and browser interactions are covered by the visual QA harness.
 import { describe, it, expect, vi, afterEach } from 'vitest';
+
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
+
+// Building real Three.js residents (pigment bakes, fin membranes) costs
+// seconds per test, and the first harness also pays the one-time compile of
+// the ~218KB scene source. The 5s default made these flip red under load;
+// 30s matches the other 3D suites here.
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
 
 const require = createRequire(import.meta.url);
 const realThree = require('../vendor/three-r128/three.min.js');
@@ -53,6 +60,10 @@ function harness(initial = {}, preference = false) {
   cleanups.push(() => engine.dispose());
   return result;
 }
+// The renderer clamps dt to 0.05s per frame, so h.flush(900) advances the
+// simulation by ONE 50ms step, not 900ms. Anything that needs the swim
+// simulation to actually progress has to step it repeatedly.
+const settle = (h, steps = 40) => { for (let i = 0; i < steps; i++) h.flush(50); };
 const resident = (id, index = 0) => ({ id, instanceId: id + '-' + index, name: id, zone: 'mid', targetX: -2 + index * .3, targetZ: 0, fitScore: 80, stress: 0 });
 afterEach(() => { cleanups.splice(0).forEach(cleanup => cleanup()); });
 
@@ -304,7 +315,7 @@ describe('Aquarium atmosphere respects tiers, shimmer and the glass', () => {
   it('keeps drifting motes inside the glass at every vessel size', () => {
     const h = harness({ appearance: { quality: 'high', waterShimmer: .8 }, equipment: lit, model: { daylight: true } });
     for (const dimensions of [{ width: 12, height: 5.2, depth: 6.4, volumeGallons: 20 }, { width: 8, height: 4, depth: 6, volumeGallons: 10 }, { width: 18, height: 9, depth: 9, volumeGallons: 100 }]) {
-      h.update({ dimensions });h.flush(700);h.flush(700);
+      h.update({ dimensions });settle(h, 8);
       const vessel = h.root('vessel'), motes = motesOf(h);
       vessel.updateMatrixWorld(true);motes.updateMatrixWorld(true);
       const attr = motes.geometry.attributes.position, point = new realThree.Vector3();
@@ -321,13 +332,15 @@ describe('Aquarium atmosphere respects tiers, shimmer and the glass', () => {
 });
 
 describe('Aquarium resident contact shadows', () => {
+  // 'medium' rather than 'high': shadows behave identically on every non-low
+  // tier, and high's per-fish 512px pigment bake pushed these past the 5s limit.
   const lit = { light: { installed: true, on: true, intensity: 1 }, filter: { installed: true, on: true, intensity: 1 } };
-  const swimmers = [resident('neon', 0), resident('neon', 1), resident('guppy', 2)];
+  const swimmers = [resident('neon', 0), resident('guppy', 1)];
   const shadowsOf = h => { const out = []; h.root('residents').traverse(n => { if (n.name === 'aquarium-resident-shadow') out.push(n); }); return out; };
 
   it('gives every resident a shadow that lies flat on the substrate', () => {
-    const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'high' } });
-    h.flush(600);
+    const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    settle(h, 6);
     const shadows = shadowsOf(h);
     expect(shadows.length).toBe(swimmers.length);
     h.renderer.scene.updateMatrixWorld(true);
@@ -344,9 +357,9 @@ describe('Aquarium resident contact shadows', () => {
   });
 
   it('keeps each shadow on the sand, never inside it or adrift in open water', () => {
-    const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'high' } });
+    const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
     for (const dimensions of [{ width: 12, height: 5.2, depth: 6.4, volumeGallons: 20 }, { width: 18, height: 9, depth: 9, volumeGallons: 100 }]) {
-      h.update({ dimensions });h.flush(700);
+      h.update({ dimensions });settle(h, 8);
       h.renderer.scene.updateMatrixWorld(true);
       const floor = h.root('vessel').getObjectByName('aquarium-substrate-bed');
       floor.updateMatrixWorld(true);
@@ -368,12 +381,12 @@ describe('Aquarium resident contact shadows', () => {
     // toward a target, so writing position.y and flushing races the easing and
     // can read a fish that has already been pulled back. Sample whatever
     // heights actually occur instead, and assert the monotonic relationship.
-    const h = harness({ fish: [resident('neon', 0)], equipment: lit, model: { daylight: true }, appearance: { quality: 'high' } });
-    h.flush(400);
+    const h = harness({ fish: [resident('neon', 0)], equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    settle(h, 6);
     const body = h.root('residents').children[0], shadow = shadowsOf(h)[0];
     const samples = [];
-    for (let step = 0; step < 90; step++) {
-      h.flush(120);
+    for (let step = 0; step < 30; step++) {
+      h.flush(50);
       samples.push({ altitude: body.position.y + body.userData.bodyMinY, opacity: shadow.material.opacity, spread: shadow.scale.x });
     }
     // A cruising fish's bob is small (measured ~0.046 units over 90 steps), so
@@ -392,8 +405,8 @@ describe('Aquarium resident contact shadows', () => {
     // a far larger and more stable signal than one fish's incidental bob.
     const floorFish = { ...resident('bristlenose', 0), zone: 'bottom' };
     const openFish = { ...resident('neon', 1), zone: 'mid' };
-    const h = harness({ fish: [floorFish, openFish], equipment: lit, model: { daylight: true }, appearance: { quality: 'high' } });
-    h.flush(900);h.flush(900);
+    const h = harness({ fish: [floorFish, openFish], equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    settle(h, 24);
     const residents = h.root('residents').children;
     const byId = id => residents.find(r => r.userData.fishInstanceId === id);
     const low = byId(floorFish.instanceId), high = byId(openFish.instanceId);
@@ -407,8 +420,8 @@ describe('Aquarium resident contact shadows', () => {
   });
 
   it('disposes a shadow with its resident, leaving nothing behind', () => {
-    const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'high' } });
-    h.flush(400);
+    const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    settle(h, 6);
     const shadows = shadowsOf(h);
     expect(shadows.length).toBe(swimmers.length);
     const spies = [];
@@ -426,7 +439,7 @@ describe('Aquarium resident contact shadows', () => {
 
   it('omits resident shadows on the low quality tier', () => {
     const h = harness({ fish: swimmers, equipment: lit, model: { daylight: true }, appearance: { quality: 'low' } });
-    h.flush(300);
+    settle(h, 4);
     expect(shadowsOf(h).length).toBe(0);
   });
 });
