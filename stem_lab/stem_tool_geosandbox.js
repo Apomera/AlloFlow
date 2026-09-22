@@ -1497,7 +1497,15 @@ window.StemLab = window.StemLab || {
 
   function geoChallengeGuidance(challenge, reveal) {
     if (!challenge) return '';
-    var dims = challenge.dims || {}, type = challenge.type;
+    // A saved project is INPUT: `challenge` comes straight out of persisted
+    // state (gd.challenge), and `|| {}` only replaces a MISSING object — a
+    // stored string or a negative number passes through. Every other path
+    // into challengeCalc runs geoNormalizeShapeDims first (it coerces to a
+    // number and clamps to the slider's own range); this one did not, so the
+    // hint showed the student "Total NaN - bases NaN = NaN" while the rest
+    // of the tab showed real values. Normalise here too.
+    // geoNormalizeShapeDims is a hoisted function declaration in this scope.
+    var dims = geoNormalizeShapeDims(challenge.shapeId, challenge.dims || {}), type = challenge.type;
     if (type === 'volume' || type === 'surfaceArea') {
       var steps = geoFormulaSteps(challenge.shapeId, dims)[type === 'volume' ? 'vol' : 'sa'];
       return steps ? (reveal ? steps.formula + ': ' + steps.sub + ' = ' + geoFormatChallengeAnswer(challenge) + ' ' + challenge.unit : 'Use ' + steps.formula + '. Substitute the dimensions shown, then check the units.') : '';
