@@ -2113,6 +2113,15 @@
       var activeSessionCode = props.activeSessionCode || null;
       var t               = props.t || function(k) { return k; };
 
+      // Publish the translator for the SHARED safety layer. Its render
+      // functions take (h, band) and are called from ~100 sites across the
+      // SEL tools, so they have no ctx to read `t` from. Assigning it here --
+      // beside elPrimer / copyText / toolLinks above -- lets the crisis
+      // banner and modal translate without touching a single call site.
+      // NOTE: the default `t` above ECHOES THE KEY, so consumers must pass an
+      // English fallback; sel_safety_layer.js does this via _sT().
+      try { window.SelHub = window.SelHub || {}; window.SelHub.t = t; } catch (e) {}
+
       // Lucide icons from parent
       var ArrowLeft    = props.ArrowLeft;
       var X            = props.X;

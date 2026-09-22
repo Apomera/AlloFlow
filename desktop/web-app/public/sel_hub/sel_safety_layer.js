@@ -36,6 +36,28 @@
   // ── In-Memory State (session-scoped, no persistence needed) ──
   // ══════════════════════════════════════════════════════════════
 
+  // ── Translator for this shared layer ─────────────────────────────
+  // The render functions here take (h, band) and are called from ~100 sites
+  // across the SEL tools, so there is no ctx to read `t` from. The hub
+  // publishes its translator as window.SelHub.t; this reads it defensively.
+  //
+  // ALWAYS pass the English text as `fallback`. The hub's default translator
+  // is `function(k){ return k; }`, so a missing pack entry would otherwise
+  // show a student a raw key at the exact moment they are in crisis.
+  function _sT(key, fallback) {
+    try {
+      var fn = (window.SelHub && typeof window.SelHub.t === 'function')
+        ? window.SelHub.t : null;
+      if (!fn) return fallback;
+      var v = fn(key, fallback);
+      // An echoed key is not a translation.
+      if (v == null || v === key) return fallback;
+      return v;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
   var _consentGiven = false;
 
   // Mirrors the app shell's Canvas detection (AlloFlowANTI isCanvas useMemo):
@@ -399,12 +421,12 @@
     return h('div', { role: 'alert', 'aria-live': 'assertive', style: { background: '#fef2f2', border: '2px solid #fca5a5', borderRadius: '12px', padding: '14px', marginTop: '10px' } },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
         h('span', { style: { fontSize: '18px' } }, '\u26A0\uFE0F'),
-        h('span', { style: { fontSize: '13px', fontWeight: 700, color: '#991b1b' } }, 'You matter. Help is available.')
+        h('span', { style: { fontSize: '13px', fontWeight: 700, color: '#991b1b' } }, _sT('sel.safety.banner_title', 'You matter. Help is available.'))
       ),
       h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', color: '#7f1d1d' } },
-        h('div', null, '\uD83D\uDCDE 988 Suicide & Crisis Lifeline \u2014 call or text 988'),
-        h('div', null, '\uD83D\uDCF1 Crisis Text Line \u2014 text HOME to 741741'),
-        h('div', null, '\uD83C\uDFEB Talk to a trusted adult at your school')
+        h('div', null, '\uD83D\uDCDE ' + _sT('sel.safety.banner_988', '988 Suicide & Crisis Lifeline \u2014 call or text 988')),
+        h('div', null, '\uD83D\uDCF1 ' + _sT('sel.safety.banner_741741', 'Crisis Text Line \u2014 text HOME to 741741')),
+        h('div', null, '\uD83C\uDFEB ' + _sT('sel.safety.banner_adult', 'Talk to a trusted adult at your school'))
       )
     );
   };
@@ -522,10 +544,10 @@
     },
       h('div', { style: { fontWeight: 700, marginBottom: 4 } }, isYoung ? 'You\u2019re not alone. Help is here:' : 'You\u2019re not alone. If you need help, reach out:'),
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 14px' } },
-        !isYoung && h('span', null, '\uD83D\uDCDE 988 (call or text)'),
-        !isYoung && h('span', null, '\uD83D\uDCF1 Text HOME to 741741'),
-        !isYoung && h('span', null, '\uD83C\uDF08 Trevor (LGBTQ+): 1-866-488-7386'),
-        h('span', null, '\uD83C\uDFEB Trusted adult at school')
+        !isYoung && h('span', null, '\uD83D\uDCDE ' + _sT('sel.safety.footer_988', '988 (call or text)')),
+        !isYoung && h('span', null, '\uD83D\uDCF1 ' + _sT('sel.safety.footer_741741', 'Text HOME to 741741')),
+        !isYoung && h('span', null, '\uD83C\uDF08 ' + _sT('sel.safety.footer_trevor', 'Trevor (LGBTQ+): 1-866-488-7386')),
+        h('span', null, '\uD83C\uDFEB ' + _sT('sel.safety.footer_adult', 'Trusted adult at school'))
       )
     );
   };
@@ -737,42 +759,50 @@
     title.id = 'cf-title';
     title.className = 'sel-cf-title';
     title.setAttribute('aria-live', 'polite');
-    title.textContent = 'You wrote something that sounds really heavy. I want to make sure you’re okay.';
+    title.textContent = _sT('sel.safety.modal_title',
+      'You wrote something that sounds really heavy. I want to make sure you’re okay.');
     card.appendChild(title);
 
     var body = document.createElement('p');
     body.className = 'sel-cf-body';
-    body.textContent = 'What you’re feeling is real, and you don’t have to handle it alone. The people below are trained to listen — they won’t judge you, and you don’t need a reason to reach out. If you can, tell an adult you trust today, even if it feels hard. You matter, and this moment is not the whole story.';
+    body.textContent = _sT('sel.safety.modal_body',
+      'What you’re feeling is real, and you don’t have to handle it alone. The people below are trained to listen — they won’t judge you, and you don’t need a reason to reach out. If you can, tell an adult you trust today, even if it feels hard. You matter, and this moment is not the whole story.');
     card.appendChild(body);
 
     // Primary: 988 (call + text variant on a second line)
     var btn988 = document.createElement('a');
     btn988.className = 'sel-cf-btn sel-cf-btn-primary';
     btn988.href = 'tel:988';
-    btn988.innerHTML = 'Call 988 — Suicide &amp; Crisis Lifeline'
-      + '<span class="sel-cf-btn-sub">or tap here to text instead: '
-      + '<a href="sms:988" style="color:inherit;text-decoration:underline">Text 988</a></span>';
+    btn988.innerHTML = _sT('sel.safety.modal_call_988', 'Call 988 — Suicide &amp; Crisis Lifeline')
+      + '<span class="sel-cf-btn-sub">'
+      + _sT('sel.safety.modal_or_text', 'or tap here to text instead: ')
+      + '<a href="sms:988" style="color:inherit;text-decoration:underline">'
+      + _sT('sel.safety.modal_text_988', 'Text 988') + '</a></span>';
     card.appendChild(btn988);
 
     // Secondary: Crisis Text Line
     var btn741 = document.createElement('a');
     btn741.className = 'sel-cf-btn sel-cf-btn-secondary';
     btn741.href = 'sms:741741?&body=HOME';
-    btn741.textContent = 'Text HOME to 741741 — Crisis Text Line';
+    btn741.textContent = _sT('sel.safety.modal_741741',
+      'Text HOME to 741741 — Crisis Text Line');
     card.appendChild(btn741);
 
     // Tertiary text (not a link)
     var tertiary = document.createElement('p');
     tertiary.className = 'sel-cf-tertiary';
-    tertiary.textContent = 'Tell a trusted adult right now — a parent, teacher, coach, family friend, or anyone who has your back.';
+    tertiary.textContent = _sT('sel.safety.modal_trusted_adult',
+      'Tell a trusted adult right now — a parent, teacher, coach, family friend, or anyone who has your back.');
     card.appendChild(tertiary);
 
     // Save button
     var btnSave = document.createElement('button');
     btnSave.type = 'button';
     btnSave.className = 'sel-cf-btn sel-cf-btn-save';
-    btnSave.innerHTML = 'Save what I wrote so I can show someone'
-      + '<span class="sel-cf-btn-sub">Downloads a small file to your device. Nothing is sent anywhere.</span>';
+    btnSave.innerHTML = _sT('sel.safety.modal_save', 'Save what I wrote so I can show someone')
+      + '<span class="sel-cf-btn-sub">'
+      + _sT('sel.safety.modal_save_sub', 'Downloads a small file to your device. Nothing is sent anywhere.')
+      + '</span>';
     btnSave.addEventListener('click', function() {
       _downloadSnippet(toolName, _lastSnippet);
     });
@@ -782,12 +812,13 @@
     var btnClose = document.createElement('button');
     btnClose.type = 'button';
     btnClose.className = 'sel-cf-btn sel-cf-btn-close';
-    btnClose.textContent = 'Close this — I’m okay';
+    btnClose.textContent = _sT('sel.safety.modal_close', 'Close this — I’m okay');
     card.appendChild(btnClose);
 
     var micro = document.createElement('p');
     micro.className = 'sel-cf-sub';
-    micro.textContent = 'If that changes in the next few minutes, 988 is always there.';
+    micro.textContent = _sT('sel.safety.modal_micro',
+      'If that changes in the next few minutes, 988 is always there.');
     card.appendChild(micro);
 
     overlay.appendChild(card);
