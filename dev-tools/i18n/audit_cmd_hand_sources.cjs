@@ -78,6 +78,17 @@ function replaceFile(file, text) {
   throw lastError;
 }
 
+// cmd.rebuild_lesson_step_done and cmd.run_lesson_blueprint_done are gone from
+// this batch. 79f68c22f re-extracted the cmd manifest and RENAMED them: the live
+// call sites in allo_commands_module.js use the _working / _complete pair, and
+// both replacements are registered in cmd_keys_en.json. Their hand translations
+// were orphans demanding English keys that are deliberately absent.
+//
+// This list is a POSITIONAL SCHEMA, not just a set of expected keys — the
+// cmd_delta_hand_20260801_part*.cjs files store one ARRAY per language aligned
+// to these indices. Dropping a key here alone leaves every language with a
+// 14-slot array against a 12-slot manifest ("expected 12 array slots" x63), so
+// the two data slots were removed in lockstep with these two entries.
 const KEYS_20260801 = [
   'cmd.apply_lesson_template',
   'cmd.apply_lesson_template_done',
@@ -85,13 +96,11 @@ const KEYS_20260801 = [
   'cmd.apply_lesson_template_missing',
   'cmd.apply_lesson_template_which',
   'cmd.rebuild_lesson_step',
-  'cmd.rebuild_lesson_step_done',
   'cmd.rebuild_lesson_step_hint',
   'cmd.rebuild_lesson_step_missing',
   'cmd.rebuild_lesson_step_none',
   'cmd.rebuild_lesson_step_which',
   'cmd.run_lesson_blueprint',
-  'cmd.run_lesson_blueprint_done',
   'cmd.run_lesson_blueprint_hint',
 ];
 
