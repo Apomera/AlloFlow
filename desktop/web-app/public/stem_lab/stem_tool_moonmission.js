@@ -848,8 +848,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         // Free the drawing buffer outright: Retry Landing builds a whole new
         // scene, and browsers cap simultaneous WebGL contexts hard.
         var gl = renderer.getContext && renderer.getContext();
-        var lose = gl && gl.getExtension && gl.getExtension('WEBGL_lose_context');
-        if (lose) lose.loseContext();
+        // Only force the loss if the context is still ALIVE. Doing it to an already-
+        // lost context can suppress the restore event on a canvas we mean to reuse.
+        if (gl && !(gl.isContextLost && gl.isContextLost())) {
+          var lose = gl.getExtension && gl.getExtension('WEBGL_lose_context');
+          if (lose) lose.loseContext();
+        }
       } catch (_dErr) {}
       if (glCv.parentElement) glCv.parentElement.removeChild(glCv);
     }
@@ -3242,6 +3246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var d3 = null;
                   var d3Failed = false;
                   var d3Ready = false;   // Three is present; the loop attaches on its next frame
+                  var _d3Retried = false; // one rebuild after a context restore, then stay 2D
 
                   // Controls
                   var keys = {};
@@ -3308,7 +3313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     tick++;
                     // Attach here rather than in the ref: by the first frame React has
                     // committed and the canvas is really in the document.
-                    if (d3Ready && !d3 && !d3Failed) bootDescent3D(window.THREE);
+                    if (d3Ready && !d3 && !d3Failed && cvEl.dataset.descent3d !== 'lost') bootDescent3D(window.THREE);
                     ctx.clearRect(0, 0, W, H);
 
                     // How many fixed steps does the elapsed wall-clock time buy?
@@ -3712,6 +3717,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     cvEl.style.position = 'relative';
                     cvEl.style.zIndex = '1';
                     cvEl.dataset.descent3d = 'on';
+
+                    // ── WebGL context loss ──
+                    // Without preventDefault the context can never be restored, and the
+                    // flight view stays black behind a live HUD for the rest of a GRADED
+                    // landing. Fall back to the 2D world immediately so the student keeps
+                    // a picture; the physics never paused, so the landing stays valid.
+                    var glc = built.canvas;
+                    if (glc && !glc._mmLossBound) {
+                      glc._mmLossBound = true;
+                      glc.addEventListener('webglcontextlost', function (ev) {
+                        ev.preventDefault();
+                        console.warn('[MoonMission descent] WebGL context lost — falling back to the 2D view');
+                        if (d3) { try { d3.dispose(); } catch (_clErr) {} d3 = null; }
+                        cvEl.style.background = '';
+                        cvEl.style.zIndex = '';
+                        cvEl.dataset.descent3d = 'lost';
+                      });
+                      glc.addEventListener('webglcontextrestored', function () {
+                        // Exactly one rebuild attempt. A scene that cannot come back
+                        // should leave a flying 2D view, not thrash on every restore.
+                        if (d3 || d3Failed || _d3Retried) return;
+                        _d3Retried = true;
+                        console.warn('[MoonMission descent] WebGL context restored — rebuilding once');
+                        bootDescent3D(window.THREE);
+                      });
+                    }
                   }
 
                   // Teardown rides the same ResizeObserver element the loop already
