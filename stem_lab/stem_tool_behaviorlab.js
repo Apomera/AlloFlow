@@ -1356,6 +1356,94 @@ dataRef.current = d;
 
           var blCumRecord = d.blCumRecord || [];
 
+          // ── Text alternative for the cumulative record ──────────────────────
+          // The chart's label reported a SCORE ("5 of 10"), which is the one thing
+          // the chart is not about: a cumulative record carries its meaning in the
+          // SLOPE. A screen-reader user got a progress number off a graph whose
+          // entire teaching job is "steep means fast, flat means not responding" —
+          // and axe cannot see it, because a canvas gives a scanner nothing to
+          // measure.
+          //
+          // This reports what is THERE — how much the line rose, over what span,
+          // and how the rate compares across the run — and deliberately stops
+          // short of naming a schedule or a pattern. Reading the shape is the
+          // assessed task in Schedule Sleuth and in level 4; handing over "this is
+          // a fixed-ratio staircase" would answer the question the tool is asking.
+          var blCumRecordDescription = function () {
+
+            var rec = blCumRecord;
+
+            if (!rec || rec.length < 2) {
+
+              return __alloT('stem.behaviorlab.cumrecord_desc_empty', 'Cumulative response record. No responses plotted yet — the line starts once the session produces data.');
+
+            }
+
+            var first = rec[0], last = rec[rec.length - 1];
+
+            var total = (last.cum || 0) - (first.cum || 0);
+
+            var span = (last.tick || 0) - (first.tick || 0);
+
+            if (span <= 0 || total <= 0) {
+
+              return blT('stem.behaviorlab.cumrecord_desc_flat', 'Cumulative response record. The line is flat across all {span} ticks plotted: no responses were recorded in this window.', { span: Math.max(span, rec.length) });
+
+            }
+
+            // Rate in each third of the plotted window. Thirds, not a single
+            // average, because "did the rate change and where" is exactly what a
+            // sighted reader gets from the slope at a glance.
+            var thirds = [];
+
+            for (var ti = 0; ti < 3; ti++) {
+
+              var lo = first.tick + span * ti / 3;
+
+              var hi = first.tick + span * (ti + 1) / 3;
+
+              var loCum = null, hiCum = null;
+
+              for (var ri = 0; ri < rec.length; ri++) {
+
+                if (rec[ri].tick <= lo || loCum === null) loCum = rec[ri].cum;
+
+                if (rec[ri].tick <= hi) hiCum = rec[ri].cum;
+
+              }
+
+              var width = (hi - lo) || 1;
+
+              thirds.push(((hiCum - loCum) / width) * 10);
+
+            }
+
+            var fmt = function (v) { return (Math.round(v * 10) / 10).toFixed(1); };
+
+            var flatCount = 0;
+
+            for (var fi = 0; fi < 3; fi++) { if (thirds[fi] < 0.5) flatCount++; }
+
+            var shape = flatCount > 0
+
+              // Singular and plural are separate keys rather than one sentence
+              // with a glued-in count: "2 of the three segments is nearly flat"
+              // is what a single string produces, and a translator handed one
+              // form cannot fix agreement in their own language either.
+              ? (flatCount === 1
+                  ? __alloT('stem.behaviorlab.cumrecord_desc_haspause_one', ' One of the three segments is nearly flat: a stretch where no responses were recorded.')
+                  : blT('stem.behaviorlab.cumrecord_desc_haspause_many', ' {n} of the three segments are nearly flat: stretches where no responses were recorded.', { n: flatCount }))
+
+              : '';
+
+            return blT('stem.behaviorlab.cumrecord_desc',
+
+              'Cumulative response record: a line that only rises, so its steepness is the response rate. {total} responses over {span} ticks. Reading left to right, the line rises about {a}, then {b}, then {c} responses per ten ticks.{shape}',
+
+              { total: total, span: span, a: fmt(thirds[0]), b: fmt(thirds[1]), c: fmt(thirds[2]), shape: shape });
+
+          };
+
           var blReinforcements = d.blReinforcements || 0;
 
           var blTarget = d.blTarget || 'pressLever';
@@ -5868,11 +5956,35 @@ dataRef.current = d;
 
                 id: "bl-cumrecord-canvas",
                 role: "img",
-                'aria-label': blT('stem.behaviorlab.cumrecord_label', 'Cumulative response record chart. Score: {n} of {goal}.', { n: d.blLevelScore || 0, goal: currentLevel ? currentLevel.goal : 0 }),
+                'aria-label': blCumRecordDescription(),
+
+                'aria-describedby': 'bl-cumrecord-desc',
 
                 style: { width: '100%', height: 130, display: 'block' }
 
-              })
+              }),
+
+              // The same description in the page, not only in the accessibility
+              // tree: a sighted student who finds slope hard to read, and a
+              // teacher projecting the tool, both get the numbers the curve is
+              // drawn from. Collapsed so it does not pre-empt looking at it.
+              React.createElement("details", { style: { borderTop: '1px solid rgba(245,158,11,0.18)' } },
+
+                React.createElement("summary", {
+
+                  style: { cursor: 'pointer', fontSize: 11, fontWeight: 700, padding: '6px 10px', color: 'var(--bl-amber-text)' }
+
+                }, __alloT('stem.behaviorlab.cumrecord_desc_toggle', 'Describe this chart in words')),
+
+                React.createElement("p", {
+
+                  id: 'bl-cumrecord-desc',
+
+                  style: { margin: 0, padding: '0 10px 8px', fontSize: 11, lineHeight: 1.55, color: 'var(--bl-text)' }
+
+                }, blCumRecordDescription())
+
+              )
 
             ),
 
