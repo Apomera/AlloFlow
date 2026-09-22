@@ -28271,12 +28271,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
           {
             icon: '🛣️', title: __alloT('stem.roadready.drive_scenarios', 'Drive Scenarios'),
-            body: 'Pick from ' + SCENARIOS.length + ' scenarios — residential streets, highways, snow, fog, roundabouts, night, school zones. Each teaches specific skills. Start easy.',
+            body: __alloT('stem.roadready.tour_scenarios_body', 'Pick from {n} scenarios — residential streets, highways, snow, fog, roundabouts, night, school zones. Each teaches specific skills. Start easy.').replace('{n}', String(SCENARIOS.length)),
             cta: __alloT('stem.roadready.next_2', 'Next →')
           },
           {
             icon: '📝', title: __alloT('stem.roadready.study_the_permit_test', 'Study the Permit Test'),
-            body: PERMIT_BANK.length + ' Maine BMV-style questions. Try the full Road Test Simulator when you are ready — includes the pre-trip vehicle inspection.',
+            body: __alloT('stem.roadready.tour_permit_body', '{n} Maine BMV-style questions. Try the full Road Test Simulator when you are ready — includes the pre-trip vehicle inspection.').replace('{n}', String(PERMIT_BANK.length)),
             cta: __alloT('stem.roadready.next_3', 'Next →')
           },
           {
@@ -28286,7 +28286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
           {
             icon: '🏆', title: __alloT('stem.roadready.earn_achievements', 'Earn Achievements'),
-            body: ACHIEVEMENTS.length + ' badges across bronze, silver, and gold tiers. Pass the permit, master night driving, complete road trips, diagnose warning lights.',
+            body: __alloT('stem.roadready.tour_badges_body', '{n} badges across bronze, silver, and gold tiers. Pass the permit, master night driving, complete road trips, diagnose warning lights.').replace('{n}', String(ACHIEVEMENTS.length)),
             cta: __alloT('stem.roadready.start_driving', 'Start Driving! 🚗')
           }
         ];
@@ -28431,15 +28431,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           (function() {
             var next = null;
             if (!scenariosDriven.residential) {
-              next = { title: 'Neighborhood foundations', detail: 'Practice pace, complete stops, and scanning on a low-speed residential route.', action: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: 'residential', freeExplore: false, freeExploreScenario: null }); } };
+              next = { title: __alloT('stem.roadready.next_neighborhood_title', 'Neighborhood foundations'), detail: __alloT('stem.roadready.next_neighborhood_detail', 'Practice pace, complete stops, and scanning on a low-speed residential route.'), action: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: 'residential', freeExplore: false, freeExploreScenario: null }); } };
             } else if (!earnedBadges.permit_pass) {
-              next = { title: 'Build permit readiness', detail: 'Check your Maine rules knowledge and review each explanation as you go.', action: function() { upd('view', 'permitStart'); } };
+              next = { title: __alloT('stem.roadready.next_permit_title', 'Build permit readiness'), detail: __alloT('stem.roadready.next_permit_detail', 'Check your Maine rules knowledge and review each explanation as you go.'), action: function() { upd('view', 'permitStart'); } };
             } else if (!scenariosDriven.highway) {
-              next = { title: 'Highway space management', detail: 'Practice merging, lane-change signals, and a stable following gap.', action: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: 'highway', freeExplore: false, freeExploreScenario: null }); } };
+              next = { title: __alloT('stem.roadready.next_highway_title', 'Highway space management'), detail: __alloT('stem.roadready.next_highway_detail', 'Practice merging, lane-change signals, and a stable following gap.'), action: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: 'highway', freeExplore: false, freeExploreScenario: null }); } };
             } else if (!earnedBadges.road_test_pass) {
-              next = { title: 'Prepare for the road test', detail: 'Use the guided path, then try the scored road-test simulation when ready.', action: function() { upd('view', 'lessonPath'); } };
+              next = { title: __alloT('stem.roadready.next_roadtest_title', 'Prepare for the road test'), detail: __alloT('stem.roadready.next_roadtest_detail', 'Use the guided path, then try the scored road-test simulation when ready.'), action: function() { upd('view', 'lessonPath'); } };
             } else {
-              next = { title: 'Keep skills current', detail: 'Review your logbook and choose one coaching focus for the next drive.', action: function() { upd('view', 'logbook'); } };
+              next = { title: __alloT('stem.roadready.next_current_title', 'Keep skills current'), detail: __alloT('stem.roadready.next_current_detail', 'Review your logbook and choose one coaching focus for the next drive.'), action: function() { upd('view', 'logbook'); } };
             }
             return h('section', { 'aria-label': __alloT('stem.roadready.a11y_recommended_next_step', 'Recommended next step'), style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--rr-cyan, #22d3ee)', borderRadius: '12px', padding: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' } },
               h('div', { style: { flex: '1 1 320px' } },
@@ -28473,7 +28473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null,
               h('div', { style: { fontSize: '16px', fontWeight: 900 } }, __alloT('stem.roadready.free_explore', 'Free Explore')),
               h('div', { style: { fontSize: '12px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.open_sandbox_no_objectives_toggle_weat', 'Open sandbox. No objectives. Toggle weather, time, traffic live. Practice anything. Earn achievements.')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ' achievements earned')
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, __alloT('stem.roadready.achievements_earned_count', '{n}/{m} achievements earned').replace('{n}', String(Object.keys(earnedBadges).length)).replace('{m}', String(ACHIEVEMENTS.length)))
             )
           ),
           // Structured modes
@@ -28482,19 +28482,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '20px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #0c4a6e, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '🛣️'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.drive_simulator', 'Drive Simulator')),
-              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, SCENARIOS.length + ' scenarios. Real physics. Maine roads.')
+              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, __alloT('stem.roadready.tile_scenarios_count', '{n} scenarios. Real physics. Maine roads.').replace('{n}', String(SCENARIOS.length)))
             ),
             h('button', { onClick: function() { upd('view', 'permitStart'); },
               style: { padding: '20px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '📝'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.permit_test', 'Permit Test')),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-amber, #fbbf24)', marginTop: '4px' } }, PERMIT_BANK.length + ' questions. Maine BMV format.')
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-amber, #fbbf24)', marginTop: '4px' } }, __alloT('stem.roadready.tile_questions_count', '{n} questions. Maine BMV format.').replace('{n}', String(PERMIT_BANK.length)))
             ),
             h('button', { onClick: function() { upd('view', 'lessonSelect'); },
               style: { padding: '20px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '📚'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.auto_science', 'Auto Science')),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, Object.keys(LESSONS).length + ' physics lessons')
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, __alloT('stem.roadready.tile_lessons_count', '{n} physics lessons').replace('{n}', String(Object.keys(LESSONS).length)))
             ),
             h('button', { onClick: function() { upd('view', 'signsView'); },
               style: { padding: '20px', borderRadius: '12px', border: '2px solid #4ade80', background: 'linear-gradient(135deg, #14532d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -28527,11 +28527,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'aria-expanded': !!d.showRoadReadyCatalog,
               'aria-controls': 'rr-specialist-tool-catalog',
               style: { minHeight: '38px', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 750, cursor: 'pointer' }
-            }, d.showRoadReadyCatalog ? 'Hide specialist tools' : 'Explore specialist tools'),
+            }, d.showRoadReadyCatalog ? __alloT('stem.roadready.hide_specialist_tools', 'Hide specialist tools') : __alloT('stem.roadready.explore_specialist_tools', 'Explore specialist tools')),
             h('button', {
               onClick: function() { upd('view', 'helpHub'); },
               style: { minHeight: '38px', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--rr-cyan, #22d3ee)', background: 'transparent', color: 'var(--rr-cyan, #22d3ee)', fontSize: '11px', fontWeight: 750, cursor: 'pointer' }
-            }, 'Find a specific tool')
+            }, __alloT('stem.roadready.find_a_specific_tool', 'Find a specific tool'))
           ),
           // Second row of tools
           d.showRoadReadyCatalog ? h('div', { id: 'rr-specialist-tool-catalog', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' } },
@@ -28569,7 +28569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📔'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.driving_logbook', 'Driving Logbook')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, ((d.logbook && d.logbook.length) || 0) + ' sessions logged')
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.tile_sessions_logged', '{n} sessions logged').replace('{n}', String((d.logbook && d.logbook.length) || 0)))
             ),
             h('button', { onClick: function() { upd('view', 'defensiveList'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #60a5fa', background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -28623,7 +28623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📜'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.driver_s_pledge', 'Driver\'s Pledge')),
-              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, d.pledgeSigned ? '✓ Signed' : 'Make your commitment')
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, d.pledgeSigned ? __alloT('stem.roadready.pledge_signed_short', '✓ Signed') : __alloT('stem.roadready.pledge_make_your_commitment', 'Make your commitment'))
             ),
             h('button', { onClick: function() { updMulti({ view: 'permitFlashcards', permitFlashIdx: 0 }); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -28634,7 +28634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('button', { onClick: function() { updMulti({ view: 'rightOfWay', rowIdx: 0, rowAnswered: null }); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '↔️'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Right-of-Way'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.right_of_way_tile', 'Right-of-Way')),
               h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.18_who_goes_first_scenarios', '20 "who goes first?" scenarios'))
             ),
             h('button', { onClick: function() { updMulti({ view: 'rulesFoundations', rulesPillar: 'rightOfWay' }); },
@@ -28660,7 +28660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 streak >= 3 ? h('div', { style: { position: 'absolute', top: '6px', right: '6px', background: '#b91c1c', color: '#fff', borderRadius: '10px', padding: '2px 6px', fontSize: '9px', fontWeight: 800 } }, '🔥 ' + streak) : null,
                 h('div', { style: { fontSize: '28px' } }, doneToday ? '✅' : '⭐'),
                 h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.daily_challenge', 'Daily Challenge')),
-                h('div', { style: { fontSize: '10px', color: doneToday ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, doneToday ? 'Done! Come back tomorrow' : 'One task per day · Streak: ' + streak)
+                h('div', { style: { fontSize: '10px', color: doneToday ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, doneToday ? __alloT('stem.roadready.daily_done_come_back_tomorrow', 'Done! Come back tomorrow') : __alloT('stem.roadready.daily_one_task_per_day_streak', 'One task per day · Streak: {n}').replace('{n}', String(streak)))
               );
             })(),
             h('button', { onClick: function() { updMulti({ view: 'peerPressure', ppIdx: 0, ppAnswered: null, ppScore: 0 }); },
@@ -35171,13 +35171,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'carBuying', goal: 'fun', icon: '💵', name: __alloT('stem.roadready.first_car_guide_2', 'First Car Guide'), desc: __alloT('stem.roadready.what_to_look_for_what_to_avoid_2', 'What to look for, what to avoid.') }
         ];
         var goals = [
-          { id: 'all', label: 'All', icon: '🧭' },
+          { id: 'all', label: __alloT('stem.roadready.help_goal_all', 'All'), icon: '🧭' },
           { id: 'permit', label: __alloT('stem.roadready.study_for_permit', 'Study for permit'), icon: '📝' },
           { id: 'practice', label: __alloT('stem.roadready.practice_driving', 'Practice driving'), icon: '🚗' },
           { id: 'safety', label: __alloT('stem.roadready.safety_skills', 'Safety skills'), icon: '🛡️' },
           { id: 'science', label: __alloT('stem.roadready.physics_science', 'Physics / science'), icon: '🔬' },
           { id: 'pre-drive', label: __alloT('stem.roadready.pre_drive_prep', 'Pre-drive prep'), icon: '✅' },
-          { id: 'maine', label: 'Maine-specific', icon: '🌲' },
+          { id: 'maine', label: __alloT('stem.roadready.help_goal_maine_specific', 'Maine-specific'), icon: '🌲' },
           { id: 'progress', label: __alloT('stem.roadready.track_progress', 'Track progress'), icon: '📈' },
           { id: 'fun', label: __alloT('stem.roadready.personalization', 'Personalization'), icon: '🎨' }
         ];
