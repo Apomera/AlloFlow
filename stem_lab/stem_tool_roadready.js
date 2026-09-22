@@ -36067,7 +36067,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var tierEarned = list.filter(function(a) { return earnedBadges[a.id]; }).length;
             return h('div', { key: tier, style: { marginBottom: '20px' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px', paddingBottom: '6px', borderBottom: '1px solid ' + c.ring } },
-                h('div', { style: { fontSize: '14px', fontWeight: 900, color: c.ring, textTransform: 'uppercase', letterSpacing: '0.1em' } }, (tier === 'bronze' ? '🥉 ' : tier === 'silver' ? '🥈 ' : '🥇 ') + tier + ' Tier'),
+                // c.ring is the badge ring colour (data, also used as a border); as a
+                // heading ink on the canvas it needs the theme-aware accent instead.
+                h('div', { style: { fontSize: '14px', fontWeight: 900, color: tier === 'bronze' ? 'var(--rr-orange, #fdba74)' : tier === 'silver' ? 'var(--allo-stem-text-soft, #94a3b8)' : 'var(--rr-amber, #fbbf24)', textTransform: 'uppercase', letterSpacing: '0.1em' } }, (tier === 'bronze' ? '🥉 ' : tier === 'silver' ? '🥈 ' : '🥇 ') + tier + ' Tier'),
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, tierEarned + ' / ' + list.length)
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' } },
@@ -36106,7 +36108,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       borderRadius: '12px', padding: '14px 10px 10px', textAlign: 'center',
                       border: '2px solid ' + (earned ? c.ring : '#1e293b'),
                       boxShadow: earned ? '0 4px 16px ' + c.glow : 'none',
-                      opacity: earned ? 1 : 0.55,
+                      // Locked cards used to sit at 0.55 opacity with theme-var inks on a
+                      // hard-coded dark card: in light theme that was dark-on-dark, and
+                      // the unlock requirement (the text a learner needs) was unreadable.
+                      // The card is dark by design, so its inks are fixed light, and the
+                      // locked state dims to 0.8 with a grayscale icon instead.
+                      opacity: earned ? 1 : 0.8,
                       cursor: 'default',
                       position: 'relative'
                     }
@@ -36118,8 +36125,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       h('div', { style: { position: 'absolute', inset: 0, borderRadius: '50%', background: earned ? c.bg : '#1e293b', animation: earned ? 'rrGalGlow 2.5s ease-in-out infinite' : 'none', color: c.ring } }),
                       h('div', { style: { position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', filter: earned ? 'none' : 'grayscale(1)' } }, earned ? ach.icon : '🔒')
                     ),
-                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? 'var(--allo-stem-text, #e2e8f0)' : 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px' } }, earned ? ach.name : '???'),
-                    h('div', { style: { fontSize: '9px', color: earned ? 'var(--allo-stem-text-soft, #94a3b8)' : 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: '1.4' } }, ach.desc)
+                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? '#f8fafc' : '#cbd5e1', marginBottom: '3px' } }, earned ? ach.name : '???'),
+                    h('div', { style: { fontSize: '10px', color: '#cbd5e1', lineHeight: '1.4' } }, ach.desc)
                   );
                 })
               )
@@ -38063,7 +38070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'weatherCompare') {
         var wcSpeed = d.wcSpeed || 55;
         var weatherTypes = [
-          { id: 'dry', label: __alloT('stem.roadready.dry_2', '☀️ Dry'), mu: 0.72, vis: '500+ ft', following: 3, color: '#4ade80' },
+          { id: 'dry', label: __alloT('stem.roadready.dry_2', '☀️ Dry'), mu: 0.72, vis: '500+ ft', following: 3, color: 'var(--rr-green, #4ade80)' },
           { id: 'rain', label: __alloT('stem.roadready.rain_2', '🌧️ Rain'), mu: 0.42, vis: '300 ft', following: 4, color: 'var(--rr-blue, #60a5fa)' },
           { id: 'snow', label: __alloT('stem.roadready.snow_2', '❄️ Snow'), mu: 0.22, vis: '150 ft', following: 6, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' },
           // Black ice's danger is that it's INVISIBLE — the road looks merely wet.
