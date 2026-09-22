@@ -90,6 +90,11 @@ const STRING = /(["'`])([^"'`\n]{0,400})\1/g;
 const BG = /\bbg-([a-z]+)-(\d{2,3})(?!\/)\b/;
 const HOVER_BG = /\bhover:bg-([a-z]+)-(\d{2,3})(?!\/)\b/;
 const TEXT = /\btext-([a-z]+)-(\d{2,3})(?!\/)\b/;
+// The hover text token, for pairing with a hover FILL. A control that restyles
+// its background on hover normally restyles its ink too, and those two are what
+// actually co-apply; pairing the hover fill with the BASE ink reports a
+// combination the browser never renders.
+const HOVER_TEXT = /\bhover:text-([a-z]+)-(\d{2,3})(?!\/)\b/;
 
 function between(chunk, a, b) {
   const i = chunk.indexOf(a);
@@ -104,8 +109,18 @@ function sameSurface(chunk, bgToken, otherToken) {
   return !span.split(/\s+/).some((t) => /^(hover:|focus:|active:)?bg-/.test(t) && t !== bgToken);
 }
 
+// A CSS RULE, not a class list. Tools inject theme overrides as strings:
+//   '.theme-dark .shell .bg-orange-100 .text-orange-600{color:#9a3412!important;}'
+// Those are SELECTORS naming the classes they override — the declaration that
+// follows is what actually renders, and it is usually the FIX. Grading the
+// selector reports the very pair the rule exists to correct (economicslab,
+// 2026-09-21). The inline-style pass already skips `!important` for the same
+// reason; the class-string pass had no such guard.
+const CSS_RULE = /\{[^{}]*:[^{}]*\}|^\s*\.[a-z]/i;
+
 function violationsIn(chunk, whiteOnly) {
   if (SKIP.test(chunk)) return [];
+  if (CSS_RULE.test(chunk)) return [];
   const out = [];
   const bg = chunk.match(BG);
   const hoverBg = chunk.match(HOVER_BG);
@@ -129,11 +144,24 @@ function violationsIn(chunk, whiteOnly) {
     }
   }
   if (!whiteOnly && bg && text && !whiteText && Number(bg[2]) <= 200) {
+    // When the fill this matched is a HOVER fill, the base text colour is the
+    // wrong partner: a control that restyles its background on hover usually
+    // restyles its text too, and the two hover tokens are what co-apply.
+    //   text-rose-600 hover:bg-rose-100 hover:text-rose-800
+    // pairing rose-600 with rose-100 reports 3.91, but that combination never
+    // renders — rose-800 on rose-100 is 6.68. Four of ten stem_lab findings
+    // were this shape (2026-09-21).
+    // BG's leading \b matches INSIDE `hover:bg-rose-100`, so bg[0] is
+    // `bg-rose-100` with the prefix stripped — testing bg[0] for /^hover:/
+    // would never fire. Look at the character before the match instead.
+    const bgIsHover = chunk.slice(0, bg.index).endsWith('hover:');
+    const hoverText = chunk.match(HOVER_TEXT);
+    const inkTok = bgIsHover && hoverText ? hoverText : text;
     const fill = colourOf(bg[1], bg[2]);
-    const ink = colourOf(text[1], text[2]);
-    if (fill && ink && sameSurface(chunk, bg[0], text[0])) {
+    const ink = colourOf(inkTok[1], inkTok[2]);
+    if (fill && ink && (bgIsHover || sameSurface(chunk, bg[0], text[0]))) {
       const r = ratio(ink, fill);
-      if (r < AA) out.push({ kind: 'tinted-text', pair: `${text[0]} on ${bg[0]}`, ratio: r });
+      if (r < AA) out.push({ kind: 'tinted-text', pair: `${inkTok[0]} on ${bg[0]}`, ratio: r });
     }
   }
   return out;
@@ -288,7 +316,14 @@ function gradientViolations(chunk) {
 // a computed colour cannot be checked statically.
 const STYLE_OBJ = /\{([^{}]{0,400})\}/g;
 // (?<![-\w]) keeps `background-color` and `borderColor` from matching as color.
-const S_COLOR = /(?<![-\w])color\s*:\s*['"](#[0-9a-fA-F]{3,6}|white|black)['"]/;
+// (?<![-\w]) keeps `background-color` / `borderColor` from matching. The added
+// (?<!\?[^,;]{0,80}) guard rejects a TERNARY branch inside another property:
+//     border: '1px solid ' + (currentArea ? group.color : '#416c67')
+// reads as `color : '#416c67'` to a naive scan, so a BORDER colour was graded
+// as text and reported against the card's background (aquaculture, 2026-09-21).
+// A real declaration is preceded by `{` or `,`, never by a `?` on the same
+// property.
+const S_COLOR = /(?<![-\w])(?<!\?[^,;{}]{0,80})color\s*:\s*['"](#[0-9a-fA-F]{3,6}|white|black)['"]/;
 const S_BG = /(?<![-\w])(?:background|backgroundColor)\s*:\s*['"](#[0-9a-fA-F]{3,6}|white|black)['"]/;
 const NAMED_HEX = { white: '#ffffff', black: '#000000' };
 

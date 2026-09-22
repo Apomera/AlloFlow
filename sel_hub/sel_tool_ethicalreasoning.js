@@ -1932,14 +1932,14 @@ window.SelHub = window.SelHub || {
                         newRanked[idx - 1] = newRanked[idx];
                         newRanked[idx] = tmp;
                         upd('valuesRanked', newRanked);
-                      }, className: 'text-xs text-slate-600 hover:text-rose-600 font-bold px-2 py-0.5 rounded hover:bg-rose-50' }, '\u25B2'),
+                      }, className: 'text-xs text-slate-600 hover:text-rose-700 font-bold px-2 py-0.5 rounded hover:bg-rose-50' }, '\u25B2'),
                       idx < ranked.length - 1 && h('button', { 'aria-label': 'Move down', onClick: function() {
                         var newRanked = ranked.slice();
                         var tmp = newRanked[idx + 1];
                         newRanked[idx + 1] = newRanked[idx];
                         newRanked[idx] = tmp;
                         upd('valuesRanked', newRanked);
-                      }, className: 'text-xs text-slate-600 hover:text-rose-600 font-bold px-2 py-0.5 rounded hover:bg-rose-50' }, '\u25BC')
+                      }, className: 'text-xs text-slate-600 hover:text-rose-700 font-bold px-2 py-0.5 rounded hover:bg-rose-50' }, '\u25BC')
                     )
                   );
                 })

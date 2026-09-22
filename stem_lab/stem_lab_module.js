@@ -8617,7 +8617,7 @@
             React.createElement('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 16 } }, 'If this persists, the plugin may have failed to load from CDN.'),
             React.createElement('button', {
               onClick: function() { setStemLabTool(null); },
-              style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+              style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#1d4ed8', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
             }, '\u2190 Back to Tools')
           );
         })(),
@@ -9288,7 +9288,7 @@
               React.createElement('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 16 } }, e.message || 'Unknown error'),
               React.createElement('button', {
                 onClick: function() { setStemLabTool(null); },
-                style: { padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, background: '#1d4ed8', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
               }, '← Back to Tools')
             );
           }

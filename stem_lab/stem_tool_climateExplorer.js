@@ -1911,7 +1911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     opt);
                 }),
                 isAnswer && el('button', { onClick: function() { upd('quizIdx', quizIdx + 1); upd('quizAnswer', undefined); },
-                  style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: '#6366f1', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Next Question \u2192')
+                  style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: '#4338ca', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Next Question \u2192')
               );
               var isAnswer = quizAnswer != null;
             })()
