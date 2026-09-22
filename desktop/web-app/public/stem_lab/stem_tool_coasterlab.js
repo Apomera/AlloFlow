@@ -8368,20 +8368,51 @@ __clabGet('clab-btnTrainView').addEventListener('click', frameTrainView);
 __clabGet('clab-btnTopView').addEventListener('click', () => fitCoasterView('top'));
 __clabGet('clab-btnSideView').addEventListener('click', () => fitCoasterView('side'));
 const sceneFocusButton = __clabGet('clab-btnSceneFocus');
+// Scene focus drives TWO things from one click: it hides the editing panels
+// and it asks for fullscreen. They can diverge, so the panel state is applied
+// from here and the fullscreen state is followed, never assumed.
+//
+// updateViewClearance() is deliberately NOT called in here. It measures
+// canvas.clientHeight and the HUD's offsetHeight, and nothing in this tool
+// re-runs it on resize, so it has to stay where it was: AFTER the fullscreen
+// request, or the clearance is computed against the pre-fullscreen layout.
+function applySceneFocus(announce){
+  if(!sceneFocus) clearStationViews();
+  rootEl.dataset.sceneFocus = String(sceneFocus);
+  sceneFocusButton.setAttribute('aria-pressed', String(sceneFocus));
+  sceneFocusButton.textContent = sceneFocus ? 'Restore panels' : 'Scene focus';
+  if(announce) banner(sceneFocus ? 'Scene focus on. Use Restore panels to return to editing.' : 'Editing panels restored.', '', 2400);
+}
 sceneFocusButton.addEventListener('click', () => {
   sceneFocus = !sceneFocus;
-  if(!sceneFocus) clearStationViews();
   rootEl.dataset.sceneFocus = String(sceneFocus);
   rootEl.setAttribute('data-allo-fs-stage', 'true');
   try {
     if (typeof window.__alloStemFS === 'function') window.__alloStemFS(rootEl);
   } catch (e) {}
   updateViewClearance();
-  sceneFocusButton.setAttribute('aria-pressed', String(sceneFocus));
-  sceneFocusButton.textContent = sceneFocus ? 'Restore panels' : 'Scene focus';
+  applySceneFocus(true);
   userTouched = true;
-  banner(sceneFocus ? 'Scene focus on. Use Restore panels to return to editing.' : 'Editing panels restored.', '', 2400);
 });
+// Escape leaves fullscreen without passing through the click handler. Without
+// this the student lands back at normal size with #clab-side, the HUDs, the
+// build coach and both legends still display:none, the button still saying
+// "Restore panels", and the next press restoring the panels instead of
+// re-entering fullscreen. Follow the browser rather than the click count.
+function onCoasterFullscreenChange(){
+  const stillFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if(stillFull || !sceneFocus) return;
+  sceneFocus = false;
+  applySceneFocus(false);
+  // Same reason as the click path: the viewport just changed size, and nothing
+  // else recomputes this.
+  updateViewClearance();
+  banner('Editing panels restored.', '', 2400);
+}
+try {
+  document.addEventListener('fullscreenchange', onCoasterFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', onCoasterFullscreenChange);
+} catch (e) {}
 themeSelect.value = visualTheme;
 themeSelect.addEventListener('change', () => applyVisualTheme(themeSelect.value));
 vectorButton.addEventListener('click', () => {
