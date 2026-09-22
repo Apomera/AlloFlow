@@ -46,12 +46,26 @@ const SELFTEST = process.argv.includes('--selftest');
  */
 function keysCalledBy(src) {
   const byNs = new Map();
-  const re = /__alloT\('stem\.([a-z0-9_]+)\.([a-z0-9_]+)'/g;
+  // Keys may nest deeper than two levels: machinelab and gisstudio use
+  // stem.<tool>.<group>.<key> (e.g. stem.machinelab.windlass.copy_g68).
+  // Stopping at two levels made 129 call sites invisible to this gate.
+  const re = /__alloT\('stem\.([a-z0-9_]+)\.([a-z0-9_]+(?:\.[a-z0-9_]+)*)'/g;
   for (let m = re.exec(src); m; m = re.exec(src)) {
     if (!byNs.has(m[1])) byNs.set(m[1], new Set());
     byNs.get(m[1]).add(m[2]);
   }
   return byNs;
+}
+
+/** Walk a dotted path; undefined if any segment is absent. */
+function lookup(obj, dotted) {
+  let cur = obj;
+  for (const seg of dotted.split('.')) {
+    if (cur === null || typeof cur !== 'object') return undefined;
+    if (!Object.prototype.hasOwnProperty.call(cur, seg)) return undefined;
+    cur = cur[seg];
+  }
+  return cur;
 }
 
 function unregisteredCount(src, stemRegistry) {
@@ -61,7 +75,7 @@ function unregisteredCount(src, stemRegistry) {
     const reg = stemRegistry[ns] || {};
     for (const k of keys) {
       called += 1;
-      if (!Object.prototype.hasOwnProperty.call(reg, k)) missing += 1;
+      if (lookup(reg, k) === undefined) missing += 1;
     }
   }
   return { called, missing };
@@ -77,7 +91,7 @@ function unregisteredCount(src, stemRegistry) {
  */
 function collidingKeys(src) {
   const byKey = new Map();
-  const re = /(.{0,40})__alloT\('stem\.([a-z0-9_]+)\.([a-z0-9_]+)',\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/g;
+  const re = /(.{0,40})__alloT\('stem\.([a-z0-9_]+)\.([a-z0-9_]+(?:\.[a-z0-9_]+)*)',\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/g;
   for (let m = re.exec(src); m; m = re.exec(src)) {
     const key = m[2] + '.' + m[3];
     let val;
@@ -121,6 +135,12 @@ if (SELFTEST) {
   const okA = a.called === 1 && a.missing === 0;
   const okB = b.called === 2 && b.missing === 1;
   const okC = c.called === 1 && c.missing === 1;
+  // Deep keys (stem.<tool>.<group>.<key>) must be seen, not skipped.
+  const deepReg = { demo: { grp: { known: 'K' } } };
+  const dOk = unregisteredCount("__alloT('stem.demo.grp.known', 'K')", deepReg);
+  const dBad = unregisteredCount("__alloT('stem.demo.grp.ghost', 'G')", deepReg);
+  const okG = dOk.called === 1 && dOk.missing === 0;
+  const okH = dBad.called === 1 && dBad.missing === 1;
   // Collision detection must fire on two texts and stay quiet on one.
   const same = "__alloT('stem.demo.k', 'One') __alloT('stem.demo.k', 'One')";
   const diff = "'aria-label': __alloT('stem.demo.k', 'One') __alloT('stem.demo.k', 'Two')";
@@ -136,9 +156,11 @@ if (SELFTEST) {
     ' | unknown namespace ' + (okC ? 'CAUGHT' : 'MISSED') +
     ' | identical-fallback ' + (okD ? 'quiet OK' : 'FAIL') +
     ' | colliding ' + (okE ? 'CAUGHT+ARIA' : 'MISSED') +
-    ' | both quote styles ' + (okF ? 'OK' : 'FAIL')
+    ' | both quote styles ' + (okF ? 'OK' : 'FAIL') +
+    ' | deep key ' + (okG ? 'seen' : 'FAIL') +
+    ' | deep missing ' + (okH ? 'CAUGHT' : 'MISSED')
   );
-  process.exit(okA && okB && okC && okD && okE && okF ? 0 : 1);
+  process.exit(okA && okB && okC && okD && okE && okF && okG && okH ? 0 : 1);
 }
 
 const registry = loadRegistry();
