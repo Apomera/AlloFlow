@@ -3923,6 +3923,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     renderer.setClearColor(0x000000);
                     renderer.outputEncoding = THREE.sRGBEncoding;
 
+                    // ── WebGL context loss ──
+                    // Creation failure is handled (the webglError panel), but a context
+                    // lost AFTER init left a black canvas with no error state and no way
+                    // back — in the phase a student spends the most time in. Tear down
+                    // through the SAME cleanup the unmount uses, then raise the existing
+                    // panel so they get the familiar Retry 3D Mode control.
+                    if (!canvasEl._evaLossBound) {
+                      canvasEl._evaLossBound = true;
+                      canvasEl.addEventListener('webglcontextlost', function (ev) {
+                        // Without this the context can never be restored.
+                        ev.preventDefault();
+                        console.warn('[MoonMission EVA] WebGL context lost — offering Retry 3D Mode');
+                        try { if (canvasEl._evaCleanup) canvasEl._evaCleanup(); } catch (_clErr) {}
+                        setTimeout(function () { upd('webglError', true); }, 0);
+                      });
+                    }
+
                     // ── Bloom: glow on the Earth + sun over the lunar surface (guarded) ──
                     // Same graceful, fully-guarded pattern as solarsystem — plain render until
                     // the r128 post-processing addons load, then a bloom composer; any failure
