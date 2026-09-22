@@ -11247,6 +11247,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 200);
 
         var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+        // A context lost AFTER init used to leave the hunt canvas black with no error
+        // state and no way back. preventDefault is required or the context can never be
+        // restored; then raise the SAME state the init-failure catch sets, which shows
+        // the Retry panel. The panel is gated on !active, so hunt3DActive must be
+        // cleared too or it stays hidden behind the dead hunt.
+        if (!canvasEl._clLossBound) {
+          canvasEl._clLossBound = true;
+          canvasEl.addEventListener('webglcontextlost', function (ev) {
+            ev.preventDefault();
+            console.warn('[CephalopodLab] WebGL context lost — offering Retry');
+            if (canvasEl._clCleanup) { try { canvasEl._clCleanup(); } catch (e) {} canvasEl._clCleanup = null; }
+            canvasEl._clInit = false;
+            setCL({ hunt3DActive: false, _threeError: true, _threeLoaded: false });
+          });
+        }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         // Third arg false: three.js would otherwise write width/height px into
         // the canvas's inline style and freeze a width:100% canvas at its first

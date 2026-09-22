@@ -318,3 +318,75 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     expect(after).toBe(0);
   });
 });
+
+/**
+ * WebGL context loss — ordinary in the field (GPU driver reset, a tab restored on a
+ * low-memory device, another page claiming contexts; browsers cap simultaneous
+ * contexts and evict the oldest).
+ *
+ * Creation failure was already handled: the catch around initHuntSim3D sets
+ * { hunt3DActive: false, _threeError: true, _threeLoaded: false }, which renders a
+ * panel with a Retry button. Nothing was bound to `webglcontextlost`, so a context lost
+ * AFTER the dive began left the hunt canvas black with no panel and no way back.
+ */
+test.describe('Cephalopod Lab — WebGL context loss', () => {
+  test('a lost context during the hunt raises Retry, and Retry dives again', async ({ page }) => {
+    test.setTimeout(120000);
+    await harness.mount(page, DIVE, 'document.querySelector(\'#wrap canvas[role="application"]\')');
+    await page.waitForTimeout(1200);
+
+    const before = await page.evaluate(() => {
+      const c = document.querySelector('#wrap canvas[role="application"]') as HTMLCanvasElement | null;
+      const g: any = c && (c.getContext('webgl2') || c.getContext('webgl'));
+      return { canvas: !!c, live: !!g && !g.isContextLost() };
+    });
+    expect(before.canvas, 'no hunt canvas before the loss').toBe(true);
+    expect(before.live, 'no live GL context before the loss').toBe(true);
+
+    const killed = await page.evaluate(() => {
+      const c = document.querySelector('#wrap canvas[role="application"]') as HTMLCanvasElement;
+      const g: any = c.getContext('webgl2') || c.getContext('webgl');
+      const ext = g && g.getExtension('WEBGL_lose_context');
+      if (!ext) return false;
+      ext.loseContext();
+      return true;
+    });
+    expect(killed, 'could not force a context loss').toBe(true);
+
+    // The student must land on something they can act from.
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('button'))
+      .some((b) => /^retry$/i.test((b.textContent || '').trim())
+        && (b as HTMLElement).offsetParent !== null),
+      null, { timeout: 15000 });
+
+    const after = await page.evaluate(() => ({
+      retry: Array.from(document.querySelectorAll('button'))
+        .filter((b) => /^retry$/i.test((b.textContent || '').trim()) && (b as HTMLElement).offsetParent !== null).length,
+      warned: /WebGL failed to load or initialize/i.test(document.body.textContent || ''),
+      deadCanvas: document.querySelectorAll('#wrap canvas[role="application"]').length
+    }));
+    console.log('after context loss:', JSON.stringify(after));
+    expect(after.retry, 'the hunt went black with no way back').toBeGreaterThan(0);
+    expect(after.warned, 'no explanation of what happened').toBe(true);
+
+    // An unrecoverable panel is barely better than a black canvas: prove Retry works.
+    // It clears the error and returns the student to the pre-dive screen, from which
+    // the Dive control must be reachable again.
+    await page.evaluate(() => {
+      const b = Array.from(document.querySelectorAll('button'))
+        .find((x) => /^retry$/i.test((x.textContent || '').trim()) && (x as HTMLElement).offsetParent !== null);
+      (b as HTMLElement).click();
+    });
+    await page.waitForFunction(() => !/WebGL failed to load or initialize/i.test(document.body.textContent || ''),
+      null, { timeout: 15000 });
+
+    const recovered = await page.evaluate(() => ({
+      stillWarned: /WebGL failed to load or initialize/i.test(document.body.textContent || ''),
+      canDive: Array.from(document.querySelectorAll('button'))
+        .some((b) => /dive/i.test(b.textContent || '') && (b as HTMLElement).offsetParent !== null)
+    }));
+    console.log('after retry:', JSON.stringify(recovered));
+    expect(recovered.stillWarned, 'Retry did not clear the error').toBe(false);
+    expect(recovered.canDive, 'Retry cleared the error but left no way to dive again').toBe(true);
+  });
+});
