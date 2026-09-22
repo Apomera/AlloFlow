@@ -230,7 +230,9 @@ describe('Solar System surface-ops immersive layout', () => {
     // 0.6 alpha with no backing: measured 1.20:1 over Earth's sunlit ocean and
     // 1.31:1 over the Martian sky, against WCAG AA's 4.5:1 for body text.
     const source = readFileSync(SOURCE, 'utf8');
-    const caption = source.match(/soundDesc\.style\.cssText = '([^']*)'/);
+    // The declaration is built by concatenation, so take the whole statement up
+    // to its terminating semicolon rather than the first quoted run.
+    const caption = source.match(/soundDesc\.style\.cssText = (.*);\n/);
     expect(caption, 'could not read the sound caption style').toBeTruthy();
     const css = caption[1];
 
@@ -245,6 +247,24 @@ describe('Solar System surface-ops immersive layout', () => {
     const colour = (css.match(/(?:^|;)color:([^;]*)/) || [])[1] || '';
     expect(colour, `caption colour "${colour}" must not be a translucent foreground`)
       .not.toMatch(/rgba\([^)]*,\s*0?\.\d+\s*\)/);
+
+    // It must be anchored to the BOTTOM band, not the top. The HUD claims the
+    // left 298px and the action dock the right 252px, so a centred caption at
+    // top:60px has clear width only above ~850px -- at 760px it ran 112px into
+    // the HUD and 66px into the dock. Below them the full width is free.
+    expect(css, 'the caption must sit in the clear bottom band, not under the HUD/dock')
+      .toMatch(/bottom:' \+ captionBottom \+ 'px/);
+    expect(css, 'a top-anchored caption collides with the HUD and dock below ~850px')
+      .not.toMatch(/(?:^|;)top:\d+px/);
+
+    // And its offset has to clear the ticker, which rocky worlds lift to its
+    // own row -- otherwise the two reading strips land on each other.
+    const offset = source.match(/var captionBottom = \(isFluid \? (\d+) : (\d+)\) \+ (\d+);/);
+    expect(offset, 'could not read the caption offset').toBeTruthy();
+    const [, fluidTicker, rockyTicker, gap] = offset.map(Number);
+    expect(rockyTicker, 'the rocky offset should track the lifted ticker row')
+      .toBeGreaterThan(fluidTicker);
+    expect(gap, 'the caption needs to clear the ticker it sits above').toBeGreaterThan(26);
   });
 
   it('keeps the driving HUD from swallowing the scene', () => {

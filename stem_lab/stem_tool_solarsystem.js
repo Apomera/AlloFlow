@@ -21231,7 +21231,16 @@ const d = labToolData.solarSystem || {};
                         // measured 1.20:1 over Earth's sunlit ocean and 1.31:1 over the
                         // Martian sky, against a 4.5:1 requirement. Same dark pill the
                         // hazard banner and ticker already use, so it reads over any world.
-                        soundDesc.style.cssText = 'position:absolute;top:60px;left:50%;transform:translateX(-50%);max-width:min(560px,calc(100% - 32px));background:linear-gradient(180deg,rgba(15,23,42,0.82) 0%,rgba(7,11,24,0.88) 100%);border:1px solid rgba(148,163,184,0.30);border-radius:8px;padding:4px 12px;color:#e2e8f0;font-size:10px;font-style:italic;font-family:system-ui;pointer-events:none;z-index:10;text-align:center;transition:opacity 1s;opacity:0;text-shadow:0 1px 2px rgba(0,0,0,0.6);box-shadow:0 2px 10px rgba(7,11,24,0.45)';
+                        // Anchored to the BOTTOM, not top:60px. The HUD claims the left
+                        // 298px and the action dock the right 252px, so a centred caption
+                        // at the top only has clear width above ~850px -- at 760px it ran
+                        // under both (measured 112px into the HUD, 66px into the dock).
+                        // Below them the full width is free, and sitting just above the
+                        // ticker also groups the two reading strips together.
+                        // Rocky worlds lift the ticker to its own row (see tickerBottom),
+                        // so clear that too.
+                        var captionBottom = (isFluid ? 8 : 166) + 38;
+                        soundDesc.style.cssText = 'position:absolute;bottom:' + captionBottom + 'px;left:50%;transform:translateX(-50%);max-width:min(560px,calc(100% - 32px));background:linear-gradient(180deg,rgba(15,23,42,0.82) 0%,rgba(7,11,24,0.88) 100%);border:1px solid rgba(148,163,184,0.30);border-radius:8px;padding:4px 12px;color:#e2e8f0;font-size:10px;font-style:italic;font-family:system-ui;pointer-events:none;z-index:10;text-align:center;transition:opacity 1s;opacity:0;text-shadow:0 1px 2px rgba(0,0,0,0.6);box-shadow:0 2px 10px rgba(7,11,24,0.45)';
                         canvasEl.parentElement.appendChild(soundDesc);
                         var AMBIENT_SOUNDS = {
                           Mercury: ['\uD83D\uDD07 Dead silence. No atmosphere to carry sound.', '\uD83D\uDD07 Only the faint vibration of your rover\u2019s wheels through the regolith.', '\uD83D\uDD07 The absolute quiet of an airless world.'],
