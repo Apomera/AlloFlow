@@ -87,13 +87,28 @@ function scan(src) {
   const localT = new Set();
   (function findWrappers(n) {
     if (!n || typeof n.type !== 'string') return;
-    if (n.type === 'FunctionDeclaration' && n.id && n.body && n.body.body && n.body.body.length === 1) {
-      const only = n.body.body[0];
-      if (only.type === 'ReturnStatement' && only.argument && only.argument.type === 'CallExpression') {
-        const inner = only.argument.callee;
-        if (inner && inner.type === 'Identifier' && T_FNS.has(inner.name)) localT.add(n.id.name);
+    // The wrapper may be a declaration, a `var x = function(...)`, or an
+    // arrow — geoSandbox alone uses two of the three, and a detector that
+    // knows only declarations leaves the others reporting false positives,
+    // which is the exact noise this rule exists to remove.
+    const delegatesToT = (fn) => {
+      if (!fn) return false;
+      let call = null;
+      if (fn.body && fn.body.type === 'BlockStatement') {
+        if (fn.body.body.length !== 1) return false;
+        const only = fn.body.body[0];
+        if (only.type !== 'ReturnStatement' || !only.argument) return false;
+        call = only.argument;
+      } else {
+        call = fn.body; // concise arrow body
       }
-    }
+      return !!(call && call.type === 'CallExpression' && call.callee
+        && call.callee.type === 'Identifier' && T_FNS.has(call.callee.name));
+    };
+    const isFn = (v) => v && (v.type === 'FunctionExpression' || v.type === 'ArrowFunctionExpression');
+    if (n.type === 'FunctionDeclaration' && n.id && delegatesToT(n)) localT.add(n.id.name);
+    if (n.type === 'VariableDeclarator' && n.id && n.id.type === 'Identifier' && isFn(n.init) && delegatesToT(n.init)) localT.add(n.id.name);
+    if (n.type === 'AssignmentExpression' && n.left && n.left.type === 'Identifier' && isFn(n.right) && delegatesToT(n.right)) localT.add(n.left.name);
     for (const k of Object.keys(n)) {
       const v = n[k];
       if (Array.isArray(v)) v.forEach(findWrappers);
