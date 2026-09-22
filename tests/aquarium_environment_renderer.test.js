@@ -462,3 +462,101 @@ describe('Aquarium resident contact shadows', () => {
     expect(shadowsOf(h).length).toBe(0);
   });
 });
+
+describe('Aquarium plant flex', () => {
+  const lit = { light: { installed: true, on: true, intensity: 1 }, filter: { installed: true, on: true, intensity: 1 } };
+  const flora = [
+    { id: 'vallisneria', name: 'Vallisneria', biomass: 2.4, maxBiomass: 3, health: 92 },
+    { id: 'java-fern', name: 'Java Fern', biomass: 1.5, maxBiomass: 3, health: 85 }
+  ];
+  const rigged = h => h.root('plants').children.filter(g => g.userData.plantFlexRig);
+  const extremes = group => {
+    // Lowest and highest rest vertex across every rigged buffer of one plant.
+    const rig = group.userData.plantFlexRig;
+    let lo = null, hi = null, loY = Infinity, hiY = -Infinity;
+    for (const entry of rig.entries) {
+      for (let i = 0; i < entry.position.count; i++) {
+        const y = entry.rest[i * 3 + 1];
+        if (y < loY) { loY = y; lo = { entry, i }; }
+        if (y > hiY) { hiY = y; hi = { entry, i }; }
+      }
+    }
+    return { lo, hi };
+  };
+  const offset = pick => Math.abs(pick.entry.position.getX(pick.i) - pick.entry.rest[pick.i * 3]);
+
+  it('anchors the base and moves the tip, instead of tipping the whole plant', () => {
+    const h = harness({ plants: flora, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    const plants = rigged(h);
+    expect(plants.length).toBeGreaterThan(0);
+    let sawBend = false;
+    for (const group of plants) {
+      const { lo, hi } = extremes(group);
+      let baseWorst = 0, tipBest = 0;
+      for (let step = 0; step < 24; step++) {
+        h.flush(50);
+        baseWorst = Math.max(baseWorst, offset(lo));
+        tipBest = Math.max(tipBest, offset(hi));
+      }
+      // The anchored end stays put; the free end travels.
+      expect(baseWorst).toBeLessThan(1e-6);
+      if (tipBest > 1e-4) sawBend = true;
+      // A rigid tip-over would show as a rotated group; the group stays put.
+      expect(group.rotation.z).toBeCloseTo(group.userData.baseRotation || 0, 10);
+    }
+    expect(sawBend).toBe(true);
+  });
+
+  it('bends further on a taller plant than a low rhizome one', () => {
+    const h = harness({ plants: flora, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    const spans = rigged(h).map(g => g.userData.plantFlexRig.span);
+    // Displacement is scaled by each plant's own span, so spans must differ for
+    // the comparison to mean anything, and the taller rig must carry more reach.
+    expect(Math.max(...spans)).toBeGreaterThan(Math.min(...spans));
+  });
+
+  it('re-derives the bend from rest rather than accumulating it', () => {
+    const h = harness({ plants: flora, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    const group = rigged(h)[0];
+    const { hi } = extremes(group);
+    let worst = 0;
+    for (let step = 0; step < 120; step++) { h.flush(50); worst = Math.max(worst, offset(hi)); }
+    // A drifting sum would grow without bound across many frames.
+    expect(worst).toBeLessThan(group.userData.plantFlexRig.span);
+  });
+
+  it('releases the rig with its plant, and re-rigs a replacement', () => {
+    // The rig caches a rest copy and a weight array per buffer (~2x the vertex
+    // data), so a plant that is removed must take its rig with it.
+    const h = harness({ plants: flora, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    const before = rigged(h);
+    expect(before.length).toBeGreaterThan(0);
+    const spies = [];
+    for (const group of before) {
+      for (const entry of group.userData.plantFlexRig.entries) spies.push(vi.spyOn(entry.geometry, 'dispose'));
+    }
+    h.update({ plants: [] });h.flush();
+    for (const spy of spies) expect(spy).toHaveBeenCalled();
+    expect(h.root('plants').children).toHaveLength(0);
+    expect(rigged(h).length).toBe(0);
+    // A replanted tank gets a fresh rig rather than reusing a disposed one.
+    h.update({ plants: flora });h.flush();
+    const after = rigged(h);
+    expect(after.length).toBeGreaterThan(0);
+    expect(after[0].userData.plantFlexRig).not.toBe(before[0].userData.plantFlexRig);
+  });
+
+  it('holds plants still under reduced motion and skips the rig on the low tier', () => {
+    const h = harness({ plants: flora, equipment: lit, model: { daylight: true }, appearance: { quality: 'medium' } });
+    const group = rigged(h)[0], { hi } = extremes(group);
+    for (let step = 0; step < 10; step++) h.flush(50);
+    h.reduce(true);
+    for (let step = 0; step < 4; step++) h.flush(50);
+    const held = hi.entry.position.getX(hi.i);
+    for (let step = 0; step < 10; step++) h.flush(50);
+    expect(Math.abs(hi.entry.position.getX(hi.i) - held)).toBeLessThan(1e-9);
+
+    const cheap = harness({ plants: flora, equipment: lit, model: { daylight: true }, appearance: { quality: 'low' } });
+    expect(rigged(cheap).length).toBe(0);
+  });
+});

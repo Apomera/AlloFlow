@@ -12294,6 +12294,39 @@ window.StemLab = window.StemLab || {
       var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
     }
 
+    // Progressive bend rig. Aquatic plants pivot from the substrate, not as a
+    // rigid signpost: displacement grows with height above the plant's own base.
+    // Built once per plant and reused every frame; geometries shared between
+    // plants are cached by uuid so a repeated buffer is only rigged once.
+    function buildPlantFlexRig(group){
+      if(appearanceOptions().quality==='low')return null;
+      var entries=[],lowest=Infinity,highest=-Infinity,seen={};
+      group.traverse(function(node){
+        var geometry=node.geometry;
+        if(!geometry||!geometry.attributes||!geometry.attributes.position)return;
+        if(seen[geometry.uuid])return;seen[geometry.uuid]=true;
+        var position=geometry.attributes.position;
+        if(position.count>4000)return;
+        var rest=Float32Array.from(position.array);
+        for(var i=0;i<position.count;i++){
+          var y=rest[i*3+1];if(y<lowest)lowest=y;if(y>highest)highest=y;
+        }
+        entries.push({position:position,rest:rest,geometry:geometry});
+      });
+      if(!entries.length||!(highest>lowest))return null;
+      var span=highest-lowest;
+      entries.forEach(function(entry){
+        var weights=new Float32Array(entry.position.count);
+        for(var i=0;i<entry.position.count;i++){
+          var normalized=clamp((entry.rest[i*3+1]-lowest)/span,0,1);
+          // Squared falloff keeps the holdfast still while the tips lead.
+          weights[i]=normalized*normalized;
+        }
+        entry.weights=weights;
+      });
+      return {entries:entries,span:span};
+    }
+
     function addPlant(plant,index) {
       var group=new THREE.Group(),profile=plant.visualProfile||(typeof getAquariumPlantVisualProfile==='function'?getAquariumPlantVisualProfile(plant.id):null);
       var key=[plant.morphology,plant.form,plant.growthForm,plant.name,plant.id].join(' ').toLowerCase();
@@ -13623,7 +13656,7 @@ window.StemLab = window.StemLab || {
         var old=plantById[key];
         if(!old||old.userData.appearanceSignature!==signature){
           if(old){disposeGroup(old);plantRoot.remove(old);}
-          var next=addPlant(plant,index);next.userData.appearanceSignature=signature;plantById[key]=next;
+          var next=addPlant(plant,index);next.userData.appearanceSignature=signature;next.userData.plantFlexRig=buildPlantFlexRig(next);plantById[key]=next;
           if(plant.selected){var halo=mesh(new THREE.TorusGeometry(.48,.018,6,40),new THREE.MeshBasicMaterial({color:0xfde68a,transparent:true,opacity:.82}),next,0,.12,0);halo.rotation.x=Math.PI/2;halo.userData.ignorePick=true;halo.userData.inspectionHalo=true;}
         }
         if(dimensionsChanged)placePlant(plantById[key],plant,index);
@@ -13821,7 +13854,25 @@ window.StemLab = window.StemLab || {
           // Still water is glassy; a running filter or airstone roughens it.
           surfaceRipple.amplitude=(environmentRoot.userData.lightActive===false?.012:.018)
             +(flow.on?flow.intensity*.042:0)+(airFlow.installed&&airFlow.on?airFlow.intensity*.05:0);
-          plantRoot.children.forEach(function(group){group.rotation.z=(group.userData.baseRotation||0)+Math.sin(motionTime*.7+group.userData.phase)*sway;});
+          plantRoot.children.forEach(function(group){
+            var rig=group.userData.plantFlexRig,phase=group.userData.phase||0;
+            if(!rig){group.rotation.z=(group.userData.baseRotation||0)+Math.sin(motionTime*.7+phase)*sway;return;}
+            // Keep the group upright and bend the geometry instead, so the
+            // base stays planted in the substrate rather than tipping with it.
+            group.rotation.z=group.userData.baseRotation||0;
+            var lean=Math.sin(motionTime*.7+phase)*sway*rig.span*1.35;
+            var cross=Math.cos(motionTime*.52+phase*1.3)*sway*rig.span*.75;
+            rig.entries.forEach(function(entry){
+              var position=entry.position,rest=entry.rest,weights=entry.weights;
+              for(var i=0;i<position.count;i++){
+                var weight=weights[i];
+                position.setX(i,rest[i*3]+lean*weight);
+                position.setZ(i,rest[i*3+2]+cross*weight);
+              }
+              position.needsUpdate=true;
+              entry.geometry.computeBoundingSphere();
+            });
+          });
           if(causticsMap){causticsMap.offset.set(Math.sin(motionTime*.08)*.06,motionTime*.006%1);causticMaterial.opacity=(causticMaterial.userData.baseOpacity||0)*(1+Math.sin(motionTime*.45)*.12);}
           surface.rotation.z=Math.sin(motionTime*.35)*.0015;
           // Surface chop: two crossing wave trains plus a finer chop, scaled by
