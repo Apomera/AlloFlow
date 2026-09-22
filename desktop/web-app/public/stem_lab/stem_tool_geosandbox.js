@@ -5614,6 +5614,21 @@ window.StemLab = window.StemLab || {
           if (!window._geoScene) {
             window._geoScene = initScene(cnv);
           }
+          // A context lost AFTER init used to leave the viewport black with no panel
+          // and no way back. preventDefault is required or the context can never be
+          // restored; then raise the SAME panel creation failure already shows, whose
+          // retry runs cleanupScene() and rebuilds. Bound once per canvas: this effect
+          // re-runs on many dependencies.
+          if (!cnv._geoLossBound) {
+            cnv._geoLossBound = true;
+            cnv.addEventListener('webglcontextlost', function (ev) {
+              ev.preventDefault();
+              console.warn('[GeoSandbox] WebGL context lost — offering the recovery panel');
+              // Drop the dead scene so the retry rebuilds instead of reusing it.
+              try { cleanupScene(); } catch (_clErr) {}
+              setWebglError(true);
+            });
+          }
           setWebglError(false);
         } catch (err) {
           console.error('[GeoSandbox] WebGL initialization failed', err);

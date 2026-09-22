@@ -729,3 +729,84 @@ test.describe('Geometry Sandbox — real WebGL', () => {
     expect(errors.filter((m) => !/ResizeObserver loop/.test(m))).toEqual([]);
   });
 });
+
+/**
+ * WebGL context loss — ordinary in the field (GPU driver reset, a tab restored on a
+ * low-memory device, another page claiming contexts; browsers cap simultaneous
+ * contexts and evict the oldest).
+ *
+ * The tool already handles WebGL *creation* failure: `setWebglError(true)` renders a
+ * panel with a retry that calls cleanupScene() and clears the flag. Nothing was bound
+ * to `webglcontextlost`, so a context lost AFTER init left the viewport black with no
+ * panel and no way back for the rest of the session. This harness has shipped a
+ * `__loseGlContexts` helper since it was written, but no test ever called it.
+ */
+test.describe('Geo Sandbox — WebGL context loss', () => {
+  test('a lost context raises the recovery panel, and retry rebuilds the scene', async ({ page }) => {
+    test.setTimeout(120000);
+    await mount(page, scene([PRISM], 1));
+
+    // Baseline: a live context, or killing it proves nothing.
+    const before = await page.evaluate(() => {
+      const c = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement;
+      const g: any = c && (c.getContext('webgl2') || c.getContext('webgl'));
+      return { hasScene: !!(window as any)._geoScene, live: !!g && !g.isContextLost() };
+    });
+    expect(before.hasScene, 'no scene before the loss').toBe(true);
+    expect(before.live, 'no live GL context before the loss').toBe(true);
+
+    // Force the loss the way the browser would. (The harness's own teardown does this
+    // inside __destroy, but that unmounts the tool, so it cannot be reused here.)
+    const killed = await page.evaluate(() => {
+      const c = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement;
+      const g: any = c.getContext('webgl2') || c.getContext('webgl');
+      const ext = g && g.getExtension('WEBGL_lose_context');
+      if (!ext) return false;
+      ext.loseContext();
+      return true;
+    });
+    expect(killed, 'could not force a context loss').toBe(true);
+
+    // The student must land somewhere they can act from.
+    await page.waitForFunction(() => {
+      const panel = Array.from(document.querySelectorAll('button'))
+        .some((b) => /try again|retry|reload/i.test(b.textContent || '')
+          && (b as HTMLElement).offsetParent !== null);
+      const c = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement | null;
+      const g: any = c && (c.getContext('webgl2') || c.getContext('webgl'));
+      return panel || (!!g && !g.isContextLost());
+    }, null, { timeout: 15000 });
+
+    const after = await page.evaluate(() => ({
+      buttons: Array.from(document.querySelectorAll('button'))
+        .filter((b) => (b as HTMLElement).offsetParent !== null)
+        .map((b) => (b.textContent || '').replace(/\s+/g, ' ').trim())
+        .filter((s) => /try again|retry|reload/i.test(s)),
+      warned: /WebGL is disabled or unsupported/i.test(document.body.textContent || '')
+    }));
+    console.log('after context loss:', JSON.stringify(after));
+    expect(after.buttons.length, 'the viewport went black with no way back').toBeGreaterThan(0);
+
+    // An unrecoverable panel is barely better than a black canvas: prove the way back
+    // actually rebuilds a LIVE context and a real scene, not just hides the panel.
+    await page.evaluate(() => {
+      const b = Array.from(document.querySelectorAll('button'))
+        .find((x) => /try again|retry|reload/i.test(x.textContent || '')
+          && (x as HTMLElement).offsetParent !== null);
+      (b as HTMLElement).click();
+    });
+    await page.waitForFunction(() => {
+      const gs = (window as any)._geoScene;
+      const c = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement | null;
+      const g: any = c && (c.getContext('webgl2') || c.getContext('webgl'));
+      return !!(gs && gs.renderer && gs.camera) && !!g && !g.isContextLost();
+    }, null, { timeout: 30000 });
+
+    const recovered = await page.evaluate(() => (window as any).__sceneGroups());
+    console.log('after retry:', JSON.stringify(recovered));
+    expect(recovered.objectCount, 'the rebuilt scene lost the student\'s construction').toBe(1);
+
+    const errors: string[] = await page.evaluate(() => (window as any).__events.errors);
+    expect(errors.filter((m) => !/ResizeObserver loop|Context Lost|context lost/i.test(m))).toEqual([]);
+  });
+});
