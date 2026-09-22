@@ -20339,6 +20339,25 @@ const d = labToolData.solarSystem || {};
 
                         canvasEl.parentElement.appendChild(hud);
 
+                        // World context and notable features are static reference: read
+                        // once, then pure occlusion while you drive. On Earth they were
+                        // 146px of a 537px HUD that already covered 76% of the scene
+                        // height. The phone rule has hidden exactly these since it was
+                        // written; desktop never got the same treatment. Fold them into
+                        // the H density cycle rather than hiding them outright, so they
+                        // stay one keypress away.
+                        //
+                        // hud-shortcuts deliberately STAYS: the action dock labels its own
+                        // keys, but WASD / Q-E / arrow-look appear nowhere else on screen,
+                        // so hiding the legend by default would strand the movement keys.
+                        function applyHudReferenceVisibility() {
+                          ['hud-world-context', 'hud-notable'].forEach(function (id) {
+                            var el = document.getElementById(id);
+                            if (el) el.style.display = hudMode === 'simple' ? 'none' : '';
+                          });
+                        }
+                        applyHudReferenceVisibility();
+
                         var scienceReadingEl = hud.querySelector('#hud-science-reading');
                         var roverGradeEl = hud.querySelector('#hud-grade');
                         var roverTractionEl = hud.querySelector('#hud-traction');
@@ -21206,7 +21225,13 @@ const d = labToolData.solarSystem || {};
                         // ── Atmospheric Sound Description (top-center, cycles) ──
                         var soundDesc = document.createElement('div');
                         soundDesc.setAttribute('data-drone-sound-caption', 'true');
-                        soundDesc.style.cssText = 'position:absolute;top:60px;left:50%;transform:translateX(-50%);color:rgba(148,163,184,0.6);font-size:9px;font-style:italic;font-family:system-ui;pointer-events:none;z-index:10;text-align:center;transition:opacity 1s;opacity:0';
+                        // This is the TEXT ALTERNATIVE for the scene's audio, so it has to
+                        // be readable. It used to be bare slate-400 at 0.6 alpha with no
+                        // backing, floating over whatever the scene happened to be:
+                        // measured 1.20:1 over Earth's sunlit ocean and 1.31:1 over the
+                        // Martian sky, against a 4.5:1 requirement. Same dark pill the
+                        // hazard banner and ticker already use, so it reads over any world.
+                        soundDesc.style.cssText = 'position:absolute;top:60px;left:50%;transform:translateX(-50%);max-width:min(560px,calc(100% - 32px));background:linear-gradient(180deg,rgba(15,23,42,0.82) 0%,rgba(7,11,24,0.88) 100%);border:1px solid rgba(148,163,184,0.30);border-radius:8px;padding:4px 12px;color:#e2e8f0;font-size:10px;font-style:italic;font-family:system-ui;pointer-events:none;z-index:10;text-align:center;transition:opacity 1s;opacity:0;text-shadow:0 1px 2px rgba(0,0,0,0.6);box-shadow:0 2px 10px rgba(7,11,24,0.45)';
                         canvasEl.parentElement.appendChild(soundDesc);
                         var AMBIENT_SOUNDS = {
                           Mercury: ['\uD83D\uDD07 Dead silence. No atmosphere to carry sound.', '\uD83D\uDD07 Only the faint vibration of your rover\u2019s wheels through the regolith.', '\uD83D\uDD07 The absolute quiet of an airless world.'],
@@ -22323,6 +22348,8 @@ const d = labToolData.solarSystem || {};
                             if (stdRows) stdRows.style.display = (hudMode === 'standard' || hudMode === 'full') ? 'grid' : 'none';
 
                             if (fullRows) fullRows.style.display = hudMode === 'full' ? 'grid' : 'none';
+
+                            applyHudReferenceVisibility();
 
                             var modeEl = document.getElementById('hud-mode');
 

@@ -223,4 +223,52 @@ describe('Solar System surface-ops immersive layout', () => {
     expect(frame.style.height, 'the height declaration must survive parsing').not.toBe('');
     expect(frame.style.minHeight, 'the min-height floor must survive parsing').not.toBe('');
   });
+
+  it('gives the scene audio caption a readable substrate', () => {
+    // This caption is the TEXT ALTERNATIVE for the scene's audio, so it has to be
+    // readable over whatever world is behind it. It used to be bare slate-400 at
+    // 0.6 alpha with no backing: measured 1.20:1 over Earth's sunlit ocean and
+    // 1.31:1 over the Martian sky, against WCAG AA's 4.5:1 for body text.
+    const source = readFileSync(SOURCE, 'utf8');
+    const caption = source.match(/soundDesc\.style\.cssText = '([^']*)'/);
+    expect(caption, 'could not read the sound caption style').toBeTruthy();
+    const css = caption[1];
+
+    // It must paint its own substrate rather than float on the scene, and the
+    // text colour must be a light one that reads against that substrate.
+    expect(css, 'the caption needs its own background to be readable over any world')
+      .toMatch(/background:[^;]*rgba?\(/);
+    expect(css, 'the caption text should be a light colour on its dark pill')
+      .toMatch(/color:#(?:e|f)[0-9a-f]{5}/i);
+
+    // The old failure mode was a translucent FOREGROUND over the live scene.
+    const colour = (css.match(/(?:^|;)color:([^;]*)/) || [])[1] || '';
+    expect(colour, `caption colour "${colour}" must not be a translucent foreground`)
+      .not.toMatch(/rgba\([^)]*,\s*0?\.\d+\s*\)/);
+  });
+
+  it('keeps the driving HUD from swallowing the scene', () => {
+    // Measured in Chromium on Earth: the HUD was 537px of a 710px frame (76% of
+    // the scene height). World context and notable features are static reference
+    // -- read once, then pure occlusion -- and the phone rule has hidden exactly
+    // those since it was written. They now follow the H density cycle instead.
+    const source = readFileSync(SOURCE, 'utf8');
+
+    const fn = source.match(/function applyHudReferenceVisibility\(\) \{[\s\S]*?\n {24}\}/);
+    expect(fn, 'could not find the HUD reference-visibility helper').toBeTruthy();
+    const body = fn[0];
+
+    expect(body, 'the static reference sections should collapse in simple mode')
+      .toMatch(/hudMode === 'simple' \? 'none' : ''/);
+
+    // The movement keys (WASD / Q-E / arrow-look) appear nowhere else on screen,
+    // so the shortcut legend must NOT be collapsed with the reference blocks.
+    expect(body, 'hud-shortcuts must stay visible or the movement keys are stranded')
+      .not.toMatch(/hud-shortcuts/);
+
+    // And it has to actually run: once at init and again on every H press.
+    const calls = source.match(/applyHudReferenceVisibility\(\);/g) || [];
+    expect(calls.length, 'the helper must run at init AND on the H density cycle')
+      .toBeGreaterThanOrEqual(2);
+  });
 });
