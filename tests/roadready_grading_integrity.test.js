@@ -148,10 +148,26 @@ describe('RoadReady following-distance rule', () => {
   const impliedSecondsMeters = (mps, w) =>
     (RR.recommendedFollowingMeters(mps, w, 1) - 2.5) / mps;
 
-  it('uses one seconds table for both callers', () => {
+  it('uses one seconds table for all three callers', () => {
+    // THREE functions implement this rule: safeFollowingFeet (Stopping
+    // Distance Lab), recommendedFollowingMeters (drive loop) and
+    // drivingFollowingTarget (the live HUD gap indicator). Each held its own
+    // table. Two of them disagreed about ice; the third disagreed with both.
     for (const w of ['clear', 'dry', 'rain', 'snow', 'fog', 'ice', 'nonsense']) {
       expect(impliedSecondsFeet(55, w)).toBeCloseTo(impliedSecondsMeters(24.587, w), 2);
+      expect(RR.drivingFollowingTarget(w)).toBeCloseTo(impliedSecondsFeet(55, w), 2);
     }
+  });
+
+  it('keeps the HUD target consistent with what the lab teaches', () => {
+    // A student who sees a 6 s target on the HUD and reads 8 s in the lab has
+    // been given two answers. Ice is not currently reachable in the drive loop
+    // (no scenario has weather: 'ice'), so this is the latent case -- pinned
+    // so a future icy scenario cannot inherit the contradiction.
+    expect(RR.drivingFollowingTarget('ice')).toBe(8);
+    expect(RR.drivingFollowingTarget('snow')).toBe(6);
+    expect(RR.drivingFollowingTarget('rain')).toBe(4);
+    expect(RR.drivingFollowingTarget('clear')).toBe(3);
   });
 
   it('does not give ice the dry-pavement gap', () => {
