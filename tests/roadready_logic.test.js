@@ -2393,6 +2393,58 @@ describe('rrPracticeFocusFor', () => {
   });
 });
 
+describe('rrNextStepFor', () => {
+  const repeat = (type, n, severity = 1) =>
+    Array.from({ length: n }, (_, i) => ({ type, t: i * 10, severity, speedMph: 30, mu: 0.72 }));
+  const DONE = { badges: { permit_pass: true, road_test_pass: true }, scenariosDriven: { residential: 1, highway: 1 } };
+
+  it('walks the milestone ladder for a learner with no recorded drive', () => {
+    expect(RR.rrNextStepFor({})).toMatchObject({ kind: 'milestone', id: 'neighborhood', scenario: 'residential' });
+    expect(RR.rrNextStepFor({ scenariosDriven: { residential: 1 } })).toMatchObject({ id: 'permit', view: 'permitStart' });
+    expect(RR.rrNextStepFor({ scenariosDriven: { residential: 1 }, badges: { permit_pass: true } }))
+      .toMatchObject({ id: 'highway', scenario: 'highway' });
+    expect(RR.rrNextStepFor({ scenariosDriven: { residential: 1, highway: 1 }, badges: { permit_pass: true } }))
+      .toMatchObject({ id: 'roadtest', view: 'lessonPath' });
+    expect(RR.rrNextStepFor(DONE)).toMatchObject({ id: 'current', view: 'logbook' });
+  });
+
+  it('coaches a REPEATED habit from the last drive ahead of any milestone', () => {
+    // The milestone ladder would say "neighborhood" here; the evidence wins.
+    const step = RR.rrNextStepFor({ drivingStats: { events: repeat('speedViolation', 3) } });
+    expect(step).toMatchObject({ kind: 'coach', focusType: 'speedViolation', evidenceCount: 3, view: 'stoppingLab' });
+    expect(step.title).toBe('Hold the posted limit');
+    expect(step.detail).toMatch(/posted limit/);
+  });
+
+  it('treats a single ordinary moment as a moment, not a habit', () => {
+    // One hard brake is normal driving. Only a repeat, or a severe one, takes
+    // the menu's single recommendation slot.
+    expect(RR.rrNextStepFor({ ...DONE, drivingStats: { events: repeat('hardBrake', 1) } }))
+      .toMatchObject({ kind: 'milestone', id: 'current' });
+    expect(RR.rrNextStepFor({ ...DONE, drivingStats: { events: repeat('crash', 1, 3) } }))
+      .toMatchObject({ kind: 'coach', focusType: 'crash', view: 'crashLab' });
+  });
+
+  it('routes every coachable habit to a drill that rehearses it', () => {
+    for (const type of Object.keys(RR.RR_PRACTICE_FOCUS_META)) {
+      const step = RR.rrNextStepFor({ ...DONE, drivingStats: { events: repeat(type, 2) } });
+      expect(step.kind).toBe('coach');
+      // An unmapped type must still land somewhere real, never undefined.
+      expect(typeof step.view).toBe('string');
+      expect(step.view.length).toBeGreaterThan(0);
+      expect(step.title.length).toBeGreaterThan(0);
+      expect(step.detail.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('survives malformed and absent stats', () => {
+    expect(RR.rrNextStepFor({ drivingStats: null }).kind).toBe('milestone');
+    expect(RR.rrNextStepFor({ drivingStats: { events: null } }).kind).toBe('milestone');
+    expect(RR.rrNextStepFor({ drivingStats: { events: 'nope' } }).kind).toBe('milestone');
+    expect(RR.rrNextStepFor().kind).toBe('milestone');
+  });
+});
+
 describe('rrRuleOutcomeFor', () => {
   it('turns rule counters into calm, evidence-backed practice states', () => {
     const clear = RR.rrRuleOutcomeFor({});

@@ -948,6 +948,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // tell a learner which legal habits held up, so this helper turns the same
   // counters used by scoring into five calm, scannable outcomes. It is pure so
   // thresholds and wording stay testable and the UI never invents a violation.
+  // What the learner should do next, in priority order:
+  //   1. a repeated coachable habit from the most recent drive (the drive's own
+  //      recorded events, via rrPracticeFocusFor — the same evidence the debrief
+  //      shows, so the menu never contradicts the coaching the learner just read)
+  //   2. an unmet milestone (first residential drive, permit, highway, road test)
+  //   3. keep-current maintenance
+  // Returning a plain object (no React, no closures) keeps the rule testable and
+  // lets the menu stay a renderer. RR_FOCUS_PRACTICE maps a habit to the drill
+  // that rehearses it; every type in RR_PRACTICE_FOCUS_META is mapped, and an
+  // unmapped type (a future event kind) falls back to the drive debrief, which
+  // always has something to say about the moment.
+  var RR_FOCUS_PRACTICE = {
+    hardBrake: { view: 'stoppingLab' },
+    tailgate: { view: 'stoppingLab' },
+    speedViolation: { view: 'stoppingLab' },
+    crash: { view: 'crashLab' },
+    skidLoss: { view: 'winterDriving' },
+    cyclistClose: { view: 'bikeAware' }
+  };
+
+  function rrNextStepFor(input) {
+    input = input || {};
+    var badges = input.badges || {};
+    var driven = input.scenariosDriven || {};
+    var stats = input.drivingStats || null;
+    var events = (stats && Array.isArray(stats.events)) ? stats.events : [];
+    // A single event is a moment, not a habit: only a repeat (or a severe one)
+    // earns the menu's one recommendation slot.
+    var focus = rrPracticeFocusFor(events, 1)[0] || null;
+    if (focus && (focus.count > 1 || focus.severity >= 3)) {
+      var practice = RR_FOCUS_PRACTICE[focus.type] || null;
+      return {
+        kind: 'coach',
+        focusType: focus.type,
+        title: focus.label,
+        detail: focus.rule,
+        evidenceCount: focus.count,
+        view: practice ? practice.view : 'debrief',
+        scenario: null
+      };
+    }
+    if (!driven.residential) return { kind: 'milestone', id: 'neighborhood', view: 'scenarioBriefing', scenario: 'residential' };
+    if (!badges.permit_pass) return { kind: 'milestone', id: 'permit', view: 'permitStart', scenario: null };
+    if (!driven.highway) return { kind: 'milestone', id: 'highway', view: 'scenarioBriefing', scenario: 'highway' };
+    if (!badges.road_test_pass) return { kind: 'milestone', id: 'roadtest', view: 'lessonPath', scenario: null };
+    return { kind: 'milestone', id: 'current', view: 'logbook', scenario: null };
+  }
+
   function rrRuleOutcomeFor(stats) {
     stats = stats || {};
     var positiveNumber = function(value) {
@@ -28582,26 +28630,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           })(),
           // One primary next step keeps the menu useful without making the
           // learner interpret the entire tool catalog before they can begin.
+          // The rule lives in rrNextStepFor (pure, tested); this is the renderer.
           (function() {
-            var next = null;
-            if (!scenariosDriven.residential) {
-              next = { title: __alloT('stem.roadready.next_neighborhood_title', 'Neighborhood foundations'), detail: __alloT('stem.roadready.next_neighborhood_detail', 'Practice pace, complete stops, and scanning on a low-speed residential route.'), action: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: 'residential', freeExplore: false, freeExploreScenario: null }); } };
-            } else if (!earnedBadges.permit_pass) {
-              next = { title: __alloT('stem.roadready.next_permit_title', 'Build permit readiness'), detail: __alloT('stem.roadready.next_permit_detail', 'Check your Maine rules knowledge and review each explanation as you go.'), action: function() { upd('view', 'permitStart'); } };
-            } else if (!scenariosDriven.highway) {
-              next = { title: __alloT('stem.roadready.next_highway_title', 'Highway space management'), detail: __alloT('stem.roadready.next_highway_detail', 'Practice merging, lane-change signals, and a stable following gap.'), action: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: 'highway', freeExplore: false, freeExploreScenario: null }); } };
-            } else if (!earnedBadges.road_test_pass) {
-              next = { title: __alloT('stem.roadready.next_roadtest_title', 'Prepare for the road test'), detail: __alloT('stem.roadready.next_roadtest_detail', 'Use the guided path, then try the scored road-test simulation when ready.'), action: function() { upd('view', 'lessonPath'); } };
-            } else {
-              next = { title: __alloT('stem.roadready.next_current_title', 'Keep skills current'), detail: __alloT('stem.roadready.next_current_detail', 'Review your logbook and choose one coaching focus for the next drive.'), action: function() { upd('view', 'logbook'); } };
-            }
-            return h('section', { 'aria-label': __alloT('stem.roadready.a11y_recommended_next_step', 'Recommended next step'), style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--rr-cyan, #22d3ee)', borderRadius: '12px', padding: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' } },
-              h('div', { style: { flex: '1 1 320px' } },
-                h('div', { style: { fontSize: '10px', fontWeight: 800, color: 'var(--rr-cyan, #22d3ee)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' } }, 'Recommended next'),
-                h('div', { style: { fontSize: '15px', fontWeight: 850, marginBottom: '3px' } }, next.title),
-                h('div', { style: { fontSize: '11px', lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, next.detail)
+            var step = rrNextStepFor({ badges: earnedBadges, scenariosDriven: scenariosDriven, drivingStats: drivingStats });
+            var MILESTONE_COPY = {
+              neighborhood: { title: __alloT('stem.roadready.next_neighborhood_title', 'Neighborhood foundations'), detail: __alloT('stem.roadready.next_neighborhood_detail', 'Practice pace, complete stops, and scanning on a low-speed residential route.') },
+              permit: { title: __alloT('stem.roadready.next_permit_title', 'Build permit readiness'), detail: __alloT('stem.roadready.next_permit_detail', 'Check your Maine rules knowledge and review each explanation as you go.') },
+              highway: { title: __alloT('stem.roadready.next_highway_title', 'Highway space management'), detail: __alloT('stem.roadready.next_highway_detail', 'Practice merging, lane-change signals, and a stable following gap.') },
+              roadtest: { title: __alloT('stem.roadready.next_roadtest_title', 'Prepare for the road test'), detail: __alloT('stem.roadready.next_roadtest_detail', 'Use the guided path, then try the scored road-test simulation when ready.') },
+              current: { title: __alloT('stem.roadready.next_current_title', 'Keep skills current'), detail: __alloT('stem.roadready.next_current_detail', 'Review your logbook and choose one coaching focus for the next drive.') }
+            };
+            var copy = step.kind === 'coach'
+              ? { title: step.title, detail: step.detail }
+              : (MILESTONE_COPY[step.id] || MILESTONE_COPY.current);
+            var go = function() {
+              if (step.scenario) updMulti({ view: step.view, pendingScenario: step.scenario, freeExplore: false, freeExploreScenario: null });
+              else upd('view', step.view);
+            };
+            var eyebrow = step.kind === 'coach'
+              ? __alloT('stem.roadready.next_from_your_last_drive', 'From your last drive')
+              : __alloT('stem.roadready.next_recommended_next', 'Recommended next');
+            var cta = step.kind === 'coach'
+              ? __alloT('stem.roadready.next_practice_this', 'Practice this')
+              : __alloT('stem.roadready.next_continue_learning', 'Continue learning');
+            return h('section', { 'aria-label': __alloT('stem.roadready.a11y_recommended_next_step', 'Recommended next step'), style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--rr-cyan, #22d3ee)', borderRadius: '12px', padding: '14px 16px', marginBottom: '14px', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' } },
+              h('div', { style: { flex: '1 1 320px', minWidth: 0 } },
+                h('div', { style: { fontSize: '10px', fontWeight: 800, color: 'var(--rr-cyan, #22d3ee)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' } }, eyebrow),
+                h('div', { style: { fontSize: '15px', fontWeight: 850, marginBottom: '3px' } }, copy.title),
+                h('div', { style: { fontSize: '11px', lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, copy.detail),
+                step.kind === 'coach' ? h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '4px', fontStyle: 'italic' } }, __alloT('stem.roadready.next_seen_n_times', 'Seen {n} times on your last drive.').replace('{n}', String(step.evidenceCount))) : null
               ),
-              h('button', { onClick: next.action, style: { minHeight: '42px', padding: '10px 18px', borderRadius: '9px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: 'var(--rr-cyan-ink, #ffffff)', fontSize: '12px', fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' } }, 'Continue learning')
+              h('button', { onClick: go, style: { minHeight: '42px', padding: '10px 18px', borderRadius: '9px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: 'var(--rr-cyan-ink, #ffffff)', fontSize: '12px', fontWeight: 900, cursor: 'pointer' } }, cta)
             );
           })(),
           h('nav', { className: 'rr-learning-path', 'aria-label': __alloT('stem.roadready.road_rules_learning_path', 'Road rules learning path') },
@@ -38529,6 +38588,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       driveAlertAppearance: driveAlertAppearance, driveAlertBaseY: driveAlertBaseY,
       canvasMessageLines: canvasMessageLines,
       rrPracticeFocusFor: rrPracticeFocusFor,
+      rrNextStepFor: rrNextStepFor,
+      RR_FOCUS_PRACTICE: RR_FOCUS_PRACTICE,
+      RR_PRACTICE_FOCUS_META: RR_PRACTICE_FOCUS_META,
       rrRuleOutcomeFor: rrRuleOutcomeFor,
       rrRuleCueFor: rrRuleCueFor,
       rrScenarioMission: rrScenarioMission,

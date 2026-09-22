@@ -72788,6 +72788,11 @@
       "compare_a_number_explain_the_tradeoff_and_na": "Compare a number, explain the tradeoff, and name a limitation."
     },
     "roadready": {
+      "next_from_your_last_drive": "From your last drive",
+      "next_recommended_next": "Recommended next",
+      "next_practice_this": "Practice this",
+      "next_continue_learning": "Continue learning",
+      "next_seen_n_times": "Seen {n} times on your last drive.",
       "road_rules_learning_path": "Road rules learning path",
       "roundaboutdrill_q1": "You approach a roundabout. One car is already circulating, about to pass in front of your entry. What do you do?",
       "roundaboutdrill_c1_1": "Enter quickly, since a car entering from the right has the right-of-way",
