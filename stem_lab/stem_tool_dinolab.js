@@ -8488,6 +8488,7 @@ window.StemLab = window.StemLab || {
               eyes: [],
               breathingMeshes: [],
               tailSegments: [],
+              legs: [],
               bodyBaseScale: null,
               neckBaseScale: null,
               neckBaseRotation: null,
@@ -10205,6 +10206,12 @@ window.StemLab = window.StemLab || {
                 var upperLimbShell = addSoftTissueChain([limbSkinRoot, thighMid, knee, calfMid, ankle, foot],
                   [thighRadius * 0.88, thighRadius, kneeRadius, kneeRadius * 1.02, ankleRadius, ankleRadius * 0.68], bodyMat)[0];
                 upperLimbShell.userData.dinoRegion = (front ? 'foreleg-' : 'hindleg-') + sideSign;
+                idleMotion.legs.push({
+                  mesh: upperLimbShell,
+                  baseRotation: upperLimbShell.rotation.clone(),
+                  front: !!front,
+                  side: sideSign
+                });
                 if (!front && !surfaceHypothesis.featureScales) addContourPlumage(upperLimbShell, 240, thighRadius * 0.80, false, null, 0.46);
                 addBodyContour(upperLimbShell);
                 if (!front && surfaceHypothesis.hindWingFeathers) addLimbPlumage(upperLimbShell, knee, ankle, sideSign, true);
@@ -11118,6 +11125,17 @@ window.StemLab = window.StemLab || {
                     tailEntry.mesh.rotation.y = tailEntry.baseRotation.y + tailWave;
                     tailEntry.mesh.rotation.z = tailEntry.baseRotation.z + Math.cos(idleTime * 0.58 + idleMotion.phase - tailEntry.phase) * (0.002 + tailIndex * 0.0015);
                     if (tailEntry.contour) tailEntry.contour.rotation.copy(tailEntry.mesh.rotation);
+                  });
+                  idleMotion.legs.forEach(function (legEntry) {
+                    // Diagonal couplets for quadrupeds, simple alternation for
+                    // bipeds. side is +1/-1; front shifts the fore pair half a
+                    // cycle so it pairs with the OPPOSITE hind leg.
+                    var legPhase = (legEntry.side > 0 ? 0 : Math.PI);
+                    if (legEntry.front) legPhase += Math.PI;
+                    var swing = Math.sin(idleTime * 0.84 + idleMotion.phase * 0.5 + legPhase);
+                    var amount = legEntry.front ? 0.012 : 0.019;
+                    legEntry.mesh.rotation.z = legEntry.baseRotation.z + swing * amount;
+                    if (legEntry.contour) legEntry.contour.rotation.copy(legEntry.mesh.rotation);
                   });
                   idleMotion.feathers.forEach(function (item, featherIndex) {
                     var featherWave = Math.sin(idleTime * 1.55 + item.phase + featherIndex * 0.04) * item.amount;
