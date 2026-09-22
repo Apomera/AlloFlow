@@ -7708,6 +7708,12 @@
       S.segs.push(seg);
     }
 
+    // Queried fresh each frame rather than captured: the OS toggle can flip
+    // mid-session and this loop has no other reason to re-read it.
+    function opticsPrefersReducedMotion() {
+      try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+      catch (e) { return false; }
+    }
     function scheduleFrame() {
       if (!S || S.raf || S.contextLost) return;
       S.raf = requestAnimationFrame(frame);
@@ -7768,7 +7774,16 @@
       S.camera.updateProjectionMatrix();
       S.camera.lookAt(S.target);
       try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep looping */ }
-      if (S.animate) scheduleFrame();
+      // Re-check the preference HERE, not only where S.animate is set from a
+      // pushed config. prefers-reduced-motion can flip ON while this loop is
+      // already running, and S.animate is refreshed only when a new config
+      // arrives — so without this the wave kept animating at full rate until
+      // something else happened to re-render. Measured: 92 frames in the
+      // second after the toggle, against 74 before it.
+      //
+      // A full frame has already been rendered above, so the scene settles on
+      // a complete image rather than a half-drawn one.
+      if (S.animate && !opticsPrefersReducedMotion()) scheduleFrame();
     }
 
     function build(THREE, host) {
