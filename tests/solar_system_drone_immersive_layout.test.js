@@ -267,6 +267,44 @@ describe('Solar System surface-ops immersive layout', () => {
     expect(gap, 'the caption needs to clear the ticker it sits above').toBeGreaterThan(26);
   });
 
+  it('does not clip the phone HUD past its teaching content', () => {
+    // On phones .rover-hud is max-height + overflow:hidden, and it is
+    // pointer-events:none, so anything past the cap is lost with no scroll and
+    // no indicator. At 154px that was 41px on Mars, 16px on Earth and 12px on
+    // Jupiter -- and what fell off the end was the pedagogy: the inquiry
+    // question cut mid-sentence and the live measurements hidden outright.
+    // Measured in Chromium at 390px; the tallest vehicle now renders 200px.
+    const source = readFileSync(SOURCE, 'utf8');
+
+    const cap = source.match(/\.rover-hud\{[^}]*max-height:(\d+)px!important/);
+    expect(cap, 'could not read the phone HUD cap').toBeTruthy();
+    expect(Number(cap[1]), 'the phone HUD cap must clear the tallest vehicle (200px)')
+      .toBeGreaterThanOrEqual(200);
+
+    // The science block must render ABOVE the gauge rows, so that if a future
+    // world does overflow, what survives the clip is the teaching content.
+    const rule = source.match(/@media\(max-width:640px\)\{\.solar-cosmos \.rover-hud\{[\s\S]{0,900}?#hud-simple-row\{order:(\d+)\}/);
+    expect(rule, 'the phone HUD should order its sections explicitly').toBeTruthy();
+    const focusOrder = source.match(/#hud-science-focus\{order:(\d+)\}/);
+    expect(focusOrder, 'the science focus needs an explicit order').toBeTruthy();
+    expect(Number(focusOrder[1]), 'the science block must precede the gauge rows')
+      .toBeLessThan(Number(rule[1]));
+
+    // Every inquiry question is three lines at this width, so a 2-line clamp
+    // truncated all three worlds.
+    const clamp = source.match(/#hud-science-focus>div:nth-child\(2\)\{[^}]*-webkit-line-clamp:(\d+)/);
+    expect(clamp, 'could not read the question clamp').toBeTruthy();
+    expect(Number(clamp[1]), 'a 2-line clamp truncates every inquiry question')
+      .toBeGreaterThanOrEqual(3);
+
+    // The hazard banner is z-index 11 over the HUD's 10, so it must start below
+    // the taller box or it lands back on top of the gauge row.
+    const hazard = source.match(/\[data-drone-hazard\]\{top:(\d+)px!important/);
+    expect(hazard, 'could not read the phone hazard banner offset').toBeTruthy();
+    expect(Number(hazard[1]), 'the hazard banner must clear the HUD cap')
+      .toBeGreaterThanOrEqual(Number(cap[1]));
+  });
+
   it('keeps the driving HUD from swallowing the scene', () => {
     // Measured in Chromium on Earth: the HUD was 537px of a 710px frame (76% of
     // the scene height). World context and notable features are static reference
