@@ -5,15 +5,15 @@
     "panels": 34,
     "resourceTypes": 24,
     "sidebarControls": 18,
-    "stemTools": 149,
+    "stemTools": 150,
     "selTools": 72,
     "alloPacks": 62,
     "hubCards": 72,
     "appsScripts": 6,
-    "modules": 216,
+    "modules": 217,
     "langPacks": 63,
-    "unitTestFiles": 4054,
-    "e2eSpecs": 452
+    "unitTestFiles": 4404,
+    "e2eSpecs": 573
   },
   "commands": [
     {
@@ -124,7 +124,7 @@
     {
       "id": "export_pack",
       "label": "Download the lesson pack",
-      "roles": "teacher",
+      "roles": "all",
       "opensPanel": "",
       "gated": false
     },
@@ -159,7 +159,7 @@
     {
       "id": "generate_analysis",
       "label": "Analyze this source",
-      "roles": "teacher",
+      "roles": "student",
       "opensPanel": "",
       "gated": false
     },
@@ -173,35 +173,35 @@
     {
       "id": "generate_glossary",
       "label": "Make a vocabulary glossary",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
     {
       "id": "generate_outline",
       "label": "Make a concept outline",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
     {
       "id": "generate_quiz",
       "label": "Make a quiz from this",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
     {
       "id": "generate_sentence_frames",
       "label": "Make sentence frames",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
     {
       "id": "generate_simplified",
       "label": "Simplify this text",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
@@ -222,7 +222,7 @@
     {
       "id": "jump_to_lesson_plan",
       "label": "Jump to my lesson plan",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
@@ -341,7 +341,7 @@
     {
       "id": "open_ai_settings",
       "label": "Open AI settings",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
@@ -383,7 +383,7 @@
     {
       "id": "open_block_suggestions",
       "label": "Get document block suggestions",
-      "roles": "teacher",
+      "roles": "all",
       "opensPanel": "",
       "gated": false
     },
@@ -439,7 +439,7 @@
     {
       "id": "open_document_builder",
       "label": "Open the Document Builder",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "exportPreview",
       "gated": false
     },
@@ -460,14 +460,14 @@
     {
       "id": "open_export_menu",
       "label": "Open the export menu",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "exportMenu",
       "gated": false
     },
     {
       "id": "open_fluency_maze",
       "label": "Open the Fluency Maze",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
@@ -775,7 +775,7 @@
     {
       "id": "open_udl_guide",
       "label": "Open the UDL Guide",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": true
     },
@@ -796,7 +796,7 @@
     {
       "id": "open_wizard",
       "label": "Start the lesson wizard",
-      "roles": "teacher",
+      "roles": "all",
       "opensPanel": "notebook",
       "gated": false
     },
@@ -1370,7 +1370,7 @@
     {
       "id": "use_gemini_canvas",
       "label": "Use AlloFlow inside Gemini Canvas",
-      "roles": "teacher",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
@@ -1785,6 +1785,7 @@
       "control": "simplified_format",
       "options": [
         "Dialogue Script",
+        "Keep Source Format and Tone",
         "Mock Advertisement",
         "Narrative Story",
         "News Report",
@@ -2016,6 +2017,11 @@
       "id": "bridgelab",
       "name": "Bridge Engineering Lab",
       "nameSource": "header"
+    },
+    {
+      "id": "butterfly",
+      "name": "Butterfly Habitat Lab: a local summer habitat investigation, not a migration model.",
+      "nameSource": "first-line"
     },
     {
       "id": "calculus",
@@ -3890,6 +3896,7 @@
     "misc_handlers_module.js",
     "module_scope_extras_module.js",
     "note_taking_templates_module.js",
+    "own_sources_module.js",
     "pd_core_module.js",
     "persona_session_artifact_module.js",
     "persona_ui_module.js",
@@ -4086,7 +4093,7 @@
     "yoruba"
   ],
   "tests": {
-    "unit": 4054,
-    "e2e": 452
+    "unit": 4404,
+    "e2e": 573
   }
 }
