@@ -3951,6 +3951,13 @@ const d = labToolData.solarSystem || {};
           }
           var selectedAccent = getSolarPlanetAccent(sel);
           var selectedName = sel ? sel.name : 'Free orbit';
+          // ── Immersive surface-ops layout ──
+          // The rover/probe/submersible scene used to sit at the bottom of a
+          // ~800px stack (orrery canvas, viewpoint bar, planet picker, scale
+          // note) that is inert while you are driving. When this tab is open we
+          // collapse that chrome so the scene gets the viewport instead, and
+          // keep the planet header + view tabs as the way back out.
+          var droneImmersive = !d.orreryMode && !!sel && d.viewTab === 'drone';
           var nextWorld = PLANETS.find(function(p) { return planetsVisited.indexOf(p.name) === -1; }) || PLANETS[0];
           var visitProgress = Math.round((planetsVisited.length / Math.max(PLANETS.length, 1)) * 100);
           var sampleCount = (d.collectedSamples || []).length;
@@ -13641,7 +13648,13 @@ const d = labToolData.solarSystem || {};
             })() : null,
 
             // 3D Canvas container (hidden in orrery mode)
-            !d.orreryMode && React.createElement("div", { "data-solarsystem-canvas-shell": true, className: "relative rounded-2xl overflow-hidden border-2 border-indigo-800/40", style: { background: '#0a0e27', boxShadow: '0 0 30px rgba(79,70,229,0.1), 0 8px 32px rgba(0,0,0,0.4)' } },
+            !d.orreryMode && React.createElement("div", { "data-solarsystem-canvas-shell": true, "data-solarsystem-chrome-collapsed": droneImmersive ? "true" : null, "aria-hidden": droneImmersive ? "true" : null,
+              // React 18 does not pass `inert` through, so set the property directly.
+              // display:none already removes the subtree from the tab order in every
+              // browser; inert is belt-and-braces for the hidden orrery canvas, which
+              // carries tabIndex=0 and its own key handlers.
+              ref: function (node) { if (node) { try { node.inert = !!droneImmersive; } catch (e) {} } },
+              className: "relative rounded-2xl overflow-hidden border-2 border-indigo-800/40", style: { background: '#0a0e27', boxShadow: '0 0 30px rgba(79,70,229,0.1), 0 8px 32px rgba(0,0,0,0.4)', display: droneImmersive ? 'none' : undefined } },
 
               d.webglError ? React.createElement("div", {
                 className: "flex flex-col items-center justify-center p-6 text-center text-white",
@@ -13761,7 +13774,7 @@ const d = labToolData.solarSystem || {};
 
             ),
 
-            !d.orreryMode && sel && React.createElement('div', {
+            !d.orreryMode && !droneImmersive && sel && React.createElement('div', {
               role: 'group', 'aria-label': __alloT('stem.solarsystem.orbital_observation_viewpoints','Orbital observation viewpoints'),
               style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', padding: '12px', marginTop: '10px', borderRadius: '14px', border: '1px solid #36526f', background: 'linear-gradient(120deg,#0a172c,#15243d)', color: '#e2e8f0' }
             },
@@ -13785,7 +13798,7 @@ const d = labToolData.solarSystem || {};
 
             // Planet buttons row
 
-            !d.orreryMode && React.createElement("div", { "data-solarsystem-canvas-world-picker": true, role: "group", "aria-label": __alloT('stem.solarsystem.select_world_for_3d_model', 'Select a world for the 3D model'), className: "solar-canvas-world-picker" },
+            !d.orreryMode && !droneImmersive && React.createElement("div", { "data-solarsystem-canvas-world-picker": true, role: "group", "aria-label": __alloT('stem.solarsystem.select_world_for_3d_model', 'Select a world for the 3D model'), className: "solar-canvas-world-picker" },
 
               PLANETS.map(p => React.createElement("button", { "aria-label": __alloFill(__alloT('stem.solarsystem.a11y_select_planet', 'Select planet: {value1}'), { value1: p.name }),
 
@@ -13812,7 +13825,7 @@ const d = labToolData.solarSystem || {};
 
             // â"€â"€ Scale Explanation Collapsible â"€â"€
 
-            !d.orreryMode && React.createElement("details", { className: "mt-2 rounded-xl border overflow-hidden " + (isDark ? 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-700/40' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200') },
+            !d.orreryMode && !droneImmersive && React.createElement("details", { className: "mt-2 rounded-xl border overflow-hidden " + (isDark ? 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-700/40' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200') },
 
               React.createElement("summary", { className: "px-3 py-1.5 text-[0.6875rem] font-bold cursor-pointer select-none transition-colors " + (isDark ? 'text-amber-300 hover:bg-amber-900/30' : 'text-amber-700 hover:bg-amber-100/50') }, __alloT('stem.solarsystem.why_aren_t_the_sizes_truly_to_scale', "\uD83D\uDD2D Why aren't the sizes truly to scale?")),
 
@@ -13870,7 +13883,8 @@ const d = labToolData.solarSystem || {};
             // planet-color glow + accent border do the cosmic-mood lift.
             !d.orreryMode && sel && React.createElement("div", {
               "data-solarsystem-planet-detail": sel.key,
-              className: "mt-3 rounded-2xl p-4 animate-in slide-in-from-bottom duration-300",
+              "data-solarsystem-immersive": droneImmersive ? "true" : null,
+              className: (droneImmersive ? "mt-1 rounded-2xl p-2" : "mt-3 rounded-2xl p-4 animate-in slide-in-from-bottom duration-300"),
               style: {
                 position: "relative",
                 overflow: "hidden",
@@ -13899,10 +13913,10 @@ const d = labToolData.solarSystem || {};
 
               // Planet header
 
-              React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3", style: { position: "relative", zIndex: 1 } },
+              React.createElement("div", { className: "flex flex-wrap items-center gap-3 " + (droneImmersive ? "mb-1.5" : "mb-3"), style: { position: "relative", zIndex: 1 } },
 
                 React.createElement("div", {
-                  className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl",
+                  className: (droneImmersive ? "w-8 h-8 rounded-lg text-lg" : "w-12 h-12 rounded-xl text-2xl") + " flex items-center justify-center",
                   style: {
                     background: "radial-gradient(circle," + selectedAccent + "44 0%," + selectedAccent + "11 60%,transparent 100%)",
                     border: "2px solid " + selectedAccent,
@@ -16709,7 +16723,13 @@ const d = labToolData.solarSystem || {};
 
               (d.viewTab) === 'drone' && React.createElement("div", { id: "drone-fullscreen-container" },
 
-                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '70vh', minHeight: '400px', maxHeight: '800px' } },
+                // 86vh with a maxHeight rather than min(86vh, calc(...)): the
+                // nested min()/calc() is dropped wholesale by stricter CSS
+                // parsers (jsdom rejects it outright), which silently leaves the
+                // frame with no height at all. Two plain declarations degrade to
+                // "tall" instead of "collapsed" and express the same intent --
+                // fill the viewport, but leave the tab bar above visible.
+                React.createElement("div", { "data-drone-scene-frame": "true", className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '86vh', maxHeight: 'calc(100vh - 150px)', minHeight: '400px' } },
 
                   d.droneWebglError ? React.createElement("div", {
                     className: "flex flex-col items-center justify-center p-6 text-center text-white",
@@ -16728,7 +16748,7 @@ const d = labToolData.solarSystem || {};
 
                     role: "application",
 
-                    "aria-label": ((sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'Atmospheric probe' : (sel && sel.terrainType === 'earthlike') ? 'Deep-sea submersible' : 'Surface rover') + ' simulation on ' + (sel ? sel.name : 'the selected world') + '. Use W A S D to move and the arrow keys to look around, including upward. Use the action controls to scan, collect evidence, take photos, review the mission and journal, or start navigation.',
+                    "aria-label": ((sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'Atmospheric probe' : (sel && sel.terrainType === 'earthlike') ? 'Deep-sea submersible' : 'Surface rover') + ' simulation on ' + (sel ? sel.name : 'the selected world') + '. Use W A S D to move and the arrow keys to look around, including upward. Use the action controls to scan, collect evidence, take photos, review the mission and journal, or start navigation. Press Shift plus H to hide the heads-up display and guide panels for an unobstructed view, and again to restore them.',
 
                     "data-drone-canvas": "true",
 
@@ -20107,13 +20127,9 @@ const d = labToolData.solarSystem || {};
 
                         // Robust fullscreen + resize handler
                         var _lastDroneSizeW = 0, _lastDroneSizeH = 0, _lastDroneSizeFS = null;
-                        var _droneInnerContainer = canvasEl.parentElement;
-                        var _droneInnerOriginalStyle = _droneInnerContainer ? {
-                          height: _droneInnerContainer.style.height,
-                          maxHeight: _droneInnerContainer.style.maxHeight,
-                          borderRadius: _droneInnerContainer.style.borderRadius,
-                          border: _droneInnerContainer.style.border
-                        } : null;
+                        // Filled on the way INTO fullscreen, not here -- see the capture
+                        // in resizeDroneCanvas for why an init-time snapshot is unsafe.
+                        var _droneInnerOriginalStyle = null;
                         var droneFullscreenObserver = null;
                         function resizeDroneCanvas(forceResize) {
                           if (!renderer || !camera) return;
@@ -20139,6 +20155,20 @@ const d = labToolData.solarSystem || {};
                               container.style.background = '#000';
                             }
                             if (innerContainer && innerContainer !== container) {
+                              // Capture the React-rendered values on the way IN, not at
+                              // init: at init React may not have committed the inline
+                              // style yet, and an empty snapshot is indistinguishable
+                              // from "React rendered no height", so the restore below
+                              // would clear the frame instead of putting it back.
+                              if (!_droneInnerOriginalStyle || !_droneInnerOriginalStyle.captured) {
+                                _droneInnerOriginalStyle = {
+                                  captured: true,
+                                  height: innerContainer.style.height,
+                                  maxHeight: innerContainer.style.maxHeight,
+                                  borderRadius: innerContainer.style.borderRadius,
+                                  border: innerContainer.style.border
+                                };
+                              }
                               innerContainer.style.height = h2 + 'px';
                               innerContainer.style.maxHeight = 'none';
                               innerContainer.style.borderRadius = '0';
@@ -20154,11 +20184,15 @@ const d = labToolData.solarSystem || {};
                             container.style.left = '';
                             container.style.zIndex = '';
                             container.style.background = '';
-                            if (innerContainer && innerContainer !== container) {
-                              innerContainer.style.height = _droneInnerOriginalStyle ? _droneInnerOriginalStyle.height : '';
-                              innerContainer.style.maxHeight = _droneInnerOriginalStyle ? _droneInnerOriginalStyle.maxHeight : '';
-                              innerContainer.style.borderRadius = _droneInnerOriginalStyle ? _droneInnerOriginalStyle.borderRadius : '';
-                              innerContainer.style.border = _droneInnerOriginalStyle ? _droneInnerOriginalStyle.border : '';
+                            // Only undo fullscreen if fullscreen actually captured the
+                            // pre-fullscreen values. Without that guard the very first
+                            // (non-fullscreen) resize replayed an empty init snapshot
+                            // over React's own height and collapsed the frame.
+                            if (innerContainer && innerContainer !== container && _droneInnerOriginalStyle && _droneInnerOriginalStyle.captured) {
+                              innerContainer.style.height = _droneInnerOriginalStyle.height;
+                              innerContainer.style.maxHeight = _droneInnerOriginalStyle.maxHeight;
+                              innerContainer.style.borderRadius = _droneInnerOriginalStyle.borderRadius;
+                              innerContainer.style.border = _droneInnerOriginalStyle.border;
                             }
                             w = canvasEl.clientWidth || canvasEl.parentElement.clientWidth || 900;
                             h2 = canvasEl.clientHeight || canvasEl.parentElement.clientHeight || 600;
@@ -20299,7 +20333,7 @@ const d = labToolData.solarSystem || {};
 
                           (featList ? '<div id="hud-notable" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
 
-                          '<div id="hud-shortcuts" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#a5b4fc">\u2191\u2193\u2190\u2192</span> look \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 J journal \u2022 M mission \u2022 H hud \u2022 N nav \u2022 P plot</div>';
+                          '<div id="hud-shortcuts" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#a5b4fc">\u2191\u2193\u2190\u2192</span> look \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 J journal \u2022 M mission \u2022 H hud \u2022 <span style="color:#7dd3fc">\u21e7H</span> hide all \u2022 N nav \u2022 P plot</div>';
 
                         hud.innerHTML = hudStaticHTML;
 
@@ -21635,17 +21669,25 @@ const d = labToolData.solarSystem || {};
                         sceneFocusButton.setAttribute('aria-label', 'Scene focus');
                         sceneFocusButton.textContent = 'Scene focus';
                         sceneFocusButton.style.cssText = 'min-height:44px;padding:6px 10px;border:1px solid #64748b;border-radius:8px;background:#14263b;color:#e0f2fe;font-size:12px;font-weight:750;cursor:pointer';
-                        sceneFocusButton.addEventListener('click', function() {
+                        // Named so the Shift+H shortcut below can run the same declutter
+                        // without reaching for this button, which sits in the camera bar
+                        // outside the scene and is easy to miss while driving.
+                        function toggleDroneSceneFocus() {
                           droneSceneFocus = !droneSceneFocus;
                           canvasEl.parentElement.setAttribute('data-drone-presentation', droneSceneFocus ? 'scene' : 'guides');
                           sceneFocusButton.setAttribute('aria-pressed', String(droneSceneFocus));
                           sceneFocusButton.textContent = droneSceneFocus ? 'Restore guides' : 'Scene focus';
                           sceneFocusButton.style.background = droneSceneFocus ? '#bae6fd' : '#14263b';
                           sceneFocusButton.style.color = droneSceneFocus ? '#082f49' : '#e0f2fe';
+                          sceneFocusButton.title = droneSceneFocus ? 'Restore the HUD and guide panels (Shift+H)' : 'Hide the HUD and guide panels for an unobstructed view (Shift+H)';
                           syncDroneCameraControls();
                           resizeDroneCanvas(true);
+                          if (typeof announceToSR === 'function') announceToSR(droneSceneFocus ? 'Scene focus on. HUD and guide panels hidden.' : 'Guides restored.');
                           canvasEl.focus({preventScroll:true});
-                        });
+                        }
+                        canvasEl._toggleDroneSceneFocus = toggleDroneSceneFocus;
+                        sceneFocusButton.title = 'Hide the HUD and guide panels for an unobstructed view (Shift+H)';
+                        sceneFocusButton.addEventListener('click', toggleDroneSceneFocus);
                         roverCameraBar.appendChild(cameraChoices);
                         roverCameraBar.appendChild(sceneFocusButton);
                         if (!isFluid) {
@@ -22237,6 +22279,16 @@ const d = labToolData.solarSystem || {};
 
                             setTimeout(function () { journalPanel.style.opacity = journalVisible ? '1' : '0'; }, 10);
 
+                          }
+
+                          // Shift+H is the all-or-nothing declutter (same action as the
+                          // camera bar's Scene focus button); plain H cycles HUD density.
+                          // Checked first and returned so the density cycle below, which
+                          // also sees e.key === 'H' when shift is held, does not run too.
+                          if ((e.key === 'h' || e.key === 'H') && e.shiftKey && !e.repeat) {
+                            e.preventDefault();
+                            toggleDroneSceneFocus();
+                            return;
                           }
 
                           if (e.key === 'h' || e.key === 'H') {
