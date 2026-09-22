@@ -59,4 +59,44 @@ test.describe('Optics — reduced motion mid-session', () => {
     expect(after, `the view kept animating after reduced motion was enabled (${after} frames vs ${before} before)`)
       .toBeLessThan(Math.max(3, before * 0.25));
   });
+
+  test('the polarization scene frees its GL context when the view unmounts', async ({ page }) => {
+    // Optics does NOT route through StemLab.releaseGl (unlike most GL tools);
+    // each of its five renderers calls forceContextLoss() directly. That is a
+    // valid alternative, but nothing had ever measured it — so this counts real
+    // contexts created against real webglcontextlost events, the same way the
+    // magnetism leak test does. Browsers cap live contexts per process, so a
+    // leak here breaks the 3D views after a few mode switches.
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(
+      () => !!(window as any).StemLab?._registry?.opticsLab, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__gl = { made: 0, lost: 0 };
+      const orig = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type: string, ...rest: any[]) {
+        const ctx = orig.call(this, type, ...rest);
+        if (ctx && /webgl/i.test(String(type)) && !(this as any).__glCounted) {
+          (this as any).__glCounted = true;
+          w.__gl.made++;
+          this.addEventListener('webglcontextlost', () => { w.__gl.lost++; });
+        }
+        return ctx;
+      };
+    });
+
+    await page.evaluate(() => (window as any).__mount({
+      opticsLab: { mode: 'polarization', polAnimate: true },
+    }));
+    await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+    await page.waitForTimeout(900);
+    await page.evaluate(() => { (window as any).__destroy(); });
+    await page.waitForTimeout(700);
+
+    const gl = await page.evaluate(() => (window as any).__gl);
+    // Guard first: if nothing built a context the rest proves nothing.
+    expect(gl.made, 'the polarization view created no WebGL context').toBeGreaterThan(0);
+    expect(gl.made - gl.lost, `${gl.made - gl.lost} of ${gl.made} GL contexts were never released`)
+      .toBe(0);
+  });
 });
