@@ -11644,6 +11644,7 @@ window.SelHub = window.SelHub || {
   var VALIDATION_PHRASES = [
     // ── SADNESS ──
     {
+      _k: 'sel.emotions.val_sad_001',
       id: 'sad_001',
       forFeeling: 'sad',
       forContext: 'general',
@@ -11654,6 +11655,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "My grandma died last week." You: "That sounds really hard. I\'m so sorry."'
     },
     {
+      _k: 'sel.emotions.val_sad_002',
       id: 'sad_002',
       forFeeling: 'sad',
       forContext: 'general',
@@ -11664,6 +11666,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "I didn\'t make the team and I can\'t stop crying." You: "Of course you\'re sad. Anyone would be."'
     },
     {
+      _k: 'sel.emotions.val_sad_003',
       id: 'sad_003',
       forFeeling: 'sad',
       forContext: 'peer',
@@ -11674,6 +11677,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "I feel so bad that my dog died, but it\'s just a dog." You: "It makes complete sense you\'d feel this way. He was family."'
     },
     {
+      _k: 'sel.emotions.val_sad_004',
       id: 'sad_004',
       forFeeling: 'sad',
       forContext: 'general',
@@ -11684,6 +11688,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend, weeks later: "I should be past this." You: "You\'re allowed to be sad about this for as long as you need."'
     },
     {
+      _k: 'sel.emotions.val_sad_005',
       id: 'sad_005',
       forFeeling: 'sad',
       forContext: 'family',
@@ -11694,6 +11699,7 @@ window.SelHub = window.SelHub || {
       example: 'Younger sibling crying. You: "I love you sad. I love you any way."'
     },
     {
+      _k: 'sel.emotions.val_sad_006',
       id: 'sad_006',
       forFeeling: 'sad',
       forContext: 'general',
@@ -11704,6 +11710,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend who lost a parent. You: "This is the kind of sad that takes time. I\'m here for the long haul."'
     },
     {
+      _k: 'sel.emotions.val_sad_007',
       id: 'sad_007',
       forFeeling: 'sad',
       forContext: 'self',
@@ -11714,6 +11721,7 @@ window.SelHub = window.SelHub || {
       example: 'You, alone, journaling: "It\'s okay that I\'m sad. I don\'t have to be okay right now."'
     },
     {
+      _k: 'sel.emotions.val_sad_008',
       id: 'sad_008',
       forFeeling: 'sad',
       forContext: 'general',
@@ -11726,6 +11734,7 @@ window.SelHub = window.SelHub || {
 
     // ── ANGER ──
     {
+      _k: 'sel.emotions.val_angry_001',
       id: 'angry_001',
       forFeeling: 'angry',
       forContext: 'general',
@@ -11736,6 +11745,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "He said something racist to me in front of everyone." You: "I get why you\'re angry. That was awful."'
     },
     {
+      _k: 'sel.emotions.val_angry_002',
       id: 'angry_002',
       forFeeling: 'angry',
       forContext: 'general',
@@ -11746,6 +11756,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "My teacher graded me unfairly." You: "That\'s not fair, and you have every right to be mad."'
     },
     {
+      _k: 'sel.emotions.val_angry_003',
       id: 'angry_003',
       forFeeling: 'angry',
       forContext: 'peer',
@@ -11756,6 +11767,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend furious about an injustice. You: "Your anger makes sense to me."'
     },
     {
+      _k: 'sel.emotions.val_angry_004',
       id: 'angry_004',
       forFeeling: 'angry',
       forContext: 'general',
@@ -11766,6 +11778,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend pressured by family to forgive an abuser. You: "You don\'t have to forgive anyone right now. You can just be mad."'
     },
     {
+      _k: 'sel.emotions.val_angry_005',
       id: 'angry_005',
       forFeeling: 'angry',
       forContext: 'general',
@@ -11776,6 +11789,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "I\'m so mad about this and I don\'t know why." You: "Anger is information. It\'s telling you something matters."'
     },
     {
+      _k: 'sel.emotions.val_angry_006',
       id: 'angry_006',
       forFeeling: 'angry',
       forContext: 'family',
@@ -11786,6 +11800,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "I shouldn\'t be this mad at my mom." You: "It\'s okay to be mad at people you love."'
     },
     {
+      _k: 'sel.emotions.val_angry_007',
       id: 'angry_007',
       forFeeling: 'angry',
       forContext: 'self',
@@ -11796,6 +11811,7 @@ window.SelHub = window.SelHub || {
       example: 'You, after a betrayal: "I\'m allowed to be angry. This was wrong."'
     },
     {
+      _k: 'sel.emotions.val_angry_008',
       id: 'angry_008',
       forFeeling: 'angry',
       forContext: 'peer',
@@ -11806,6 +11822,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend cheated on. You: "Yeah, screw that. You deserved better."'
     },
     {
+      _k: 'sel.emotions.val_angry_009',
       id: 'angry_009',
       forFeeling: 'angry',
       forContext: 'general',
@@ -11816,6 +11833,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend furious but unsure what to do. You: "You can be angry without doing anything with it right now. Just feel it."'
     },
     {
+      _k: 'sel.emotions.val_angry_010',
       id: 'angry_010',
       forFeeling: 'angry',
       forContext: 'general',
@@ -11828,6 +11846,7 @@ window.SelHub = window.SelHub || {
 
     // ── FEAR / ANXIETY ──
     {
+      _k: 'sel.emotions.val_scared_001',
       id: 'scared_001',
       forFeeling: 'scared',
       forContext: 'general',
@@ -11838,6 +11857,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend before flying for first time. You: "It\'s okay to be scared."'
     },
     {
+      _k: 'sel.emotions.val_scared_002',
       id: 'scared_002',
       forFeeling: 'scared',
       forContext: 'general',
@@ -11848,6 +11868,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend with panic attack. You: "Your nervous system is doing its job. It\'s trying to keep you safe."'
     },
     {
+      _k: 'sel.emotions.val_scared_003',
       id: 'scared_003',
       forFeeling: 'anxious',
       forContext: 'general',
@@ -11858,6 +11879,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend before college decisions release. You: "Of course you\'re anxious about this."'
     },
     {
+      _k: 'sel.emotions.val_scared_004',
       id: 'scared_004',
       forFeeling: 'anxious',
       forContext: 'general',
@@ -11868,6 +11890,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend before a hard procedure. You: "You don\'t have to be brave right now. You just have to get through this minute."'
     },
     {
+      _k: 'sel.emotions.val_scared_005',
       id: 'scared_005',
       forFeeling: 'scared',
       forContext: 'family',
@@ -11878,6 +11901,7 @@ window.SelHub = window.SelHub || {
       example: 'Younger sibling scared at the doctor. You: "I\'ll be right here. You\'re not alone."'
     },
     {
+      _k: 'sel.emotions.val_scared_006',
       id: 'scared_006',
       forFeeling: 'anxious',
       forContext: 'self',
@@ -11888,6 +11912,7 @@ window.SelHub = window.SelHub || {
       example: 'You, anxious about something uncertain: "Anxiety lies. The feeling is real, but the catastrophe in my head is not yet real."'
     },
     {
+      _k: 'sel.emotions.val_scared_007',
       id: 'scared_007',
       forFeeling: 'scared',
       forContext: 'general',
@@ -11898,6 +11923,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend scared before a performance. You: "It\'s scary because it matters to you."'
     },
     {
+      _k: 'sel.emotions.val_scared_008',
       id: 'scared_008',
       forFeeling: 'anxious',
       forContext: 'peer',
@@ -11908,6 +11934,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend anxious about social event. You: "I get anxious about that too. You\'re not alone in this."'
     },
     {
+      _k: 'sel.emotions.val_scared_009',
       id: 'scared_009',
       forFeeling: 'scared',
       forContext: 'general',
@@ -11918,6 +11945,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend pressured to try something they\'re unsure about. You: "You don\'t have to push through. You can pause."'
     },
     {
+      _k: 'sel.emotions.val_scared_010',
       id: 'scared_010',
       forFeeling: 'anxious',
       forContext: 'general',
@@ -11930,6 +11958,7 @@ window.SelHub = window.SelHub || {
 
     // ── FRUSTRATION ──
     {
+      _k: 'sel.emotions.val_frust_001',
       id: 'frust_001',
       forFeeling: 'frustrated',
       forContext: 'general',
@@ -11940,6 +11969,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "I\'ve been trying to fix this for three hours." You: "Ugh, that\'s frustrating."'
     },
     {
+      _k: 'sel.emotions.val_frust_002',
       id: 'frust_002',
       forFeeling: 'frustrated',
       forContext: 'general',
@@ -11950,6 +11980,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend dealing with bureaucracy. You: "I\'d be frustrated too."'
     },
     {
+      _k: 'sel.emotions.val_frust_003',
       id: 'frust_003',
       forFeeling: 'frustrated',
       forContext: 'peer',
@@ -11960,6 +11991,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend: "I am SO over this group project." You: "It\'s okay to be over it."'
     },
     {
+      _k: 'sel.emotions.val_frust_004',
       id: 'frust_004',
       forFeeling: 'frustrated',
       forContext: 'general',
@@ -11970,6 +12002,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend frustrated after weeks of trying. You: "You\'ve been so patient. It makes sense you\'re hitting the wall."'
     },
     {
+      _k: 'sel.emotions.val_frust_005',
       id: 'frust_005',
       forFeeling: 'frustrated',
       forContext: 'family',
@@ -11980,6 +12013,7 @@ window.SelHub = window.SelHub || {
       example: 'Family member frustrated. You: "Some days are just like this."'
     },
     {
+      _k: 'sel.emotions.val_frust_006',
       id: 'frust_006',
       forFeeling: 'frustrated',
       forContext: 'self',
@@ -11990,6 +12024,7 @@ window.SelHub = window.SelHub || {
       example: 'You, after a frustrating hour: "My frustration is valid. I don\'t have to fix it instantly."'
     },
     {
+      _k: 'sel.emotions.val_frust_007',
       id: 'frust_007',
       forFeeling: 'frustrated',
       forContext: 'general',
@@ -12000,6 +12035,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend frustrated. You: "Want to vent, or want help solving?"'
     },
     {
+      _k: 'sel.emotions.val_frust_008',
       id: 'frust_008',
       forFeeling: 'frustrated',
       forContext: 'general',
@@ -12012,6 +12048,7 @@ window.SelHub = window.SelHub || {
 
     // ── OVERWHELM ──
     {
+      _k: 'sel.emotions.val_over_001',
       id: 'over_001',
       forFeeling: 'overwhelmed',
       forContext: 'general',
@@ -12022,6 +12059,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend with multiple crises: "This is a lot."'
     },
     {
+      _k: 'sel.emotions.val_over_002',
       id: 'over_002',
       forFeeling: 'overwhelmed',
       forContext: 'general',
@@ -12032,6 +12070,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend overwhelmed by choices. You: "You don\'t have to figure this out right now."'
     },
     {
+      _k: 'sel.emotions.val_over_003',
       id: 'over_003',
       forFeeling: 'overwhelmed',
       forContext: 'peer',
@@ -12042,6 +12081,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend spiraling. You, slowly: "Hey. Let\'s slow it down."'
     },
     {
+      _k: 'sel.emotions.val_over_004',
       id: 'over_004',
       forFeeling: 'overwhelmed',
       forContext: 'family',
@@ -12052,6 +12092,7 @@ window.SelHub = window.SelHub || {
       example: 'Family member overwhelmed by tasks. You: "What\'s the next smallest thing? Just that."'
     },
     {
+      _k: 'sel.emotions.val_over_005',
       id: 'over_005',
       forFeeling: 'overwhelmed',
       forContext: 'general',
@@ -12062,6 +12103,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend overloaded with school + family + work. You: "Your plate is genuinely too full. That\'s not in your head."'
     },
     {
+      _k: 'sel.emotions.val_over_006',
       id: 'over_006',
       forFeeling: 'overwhelmed',
       forContext: 'self',
@@ -12072,6 +12114,7 @@ window.SelHub = window.SelHub || {
       example: 'You, alone, overloaded: "I can put this down for tonight. Tomorrow will still be there."'
     },
     {
+      _k: 'sel.emotions.val_over_007',
       id: 'over_007',
       forFeeling: 'overwhelmed',
       forContext: 'general',
@@ -12082,6 +12125,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in spiral. You: "You don\'t need to have it all figured out. You just need to breathe."'
     },
     {
+      _k: 'sel.emotions.val_over_008',
       id: 'over_008',
       forFeeling: 'overwhelmed',
       forContext: 'general',
@@ -12094,6 +12138,7 @@ window.SelHub = window.SelHub || {
 
     // ── JEALOUSY / ENVY ──
     {
+      _k: 'sel.emotions.val_jeal_001',
       id: 'jeal_001',
       forFeeling: 'jealous',
       forContext: 'general',
@@ -12104,6 +12149,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend jealous of another friend\'s success. You: "It\'s okay to feel that."'
     },
     {
+      _k: 'sel.emotions.val_jeal_002',
       id: 'jeal_002',
       forFeeling: 'jealous',
       forContext: 'general',
@@ -12114,6 +12160,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend jealous of mutual friend. You: "Jealousy is human. It doesn\'t make you a bad friend."'
     },
     {
+      _k: 'sel.emotions.val_jeal_003',
       id: 'jeal_003',
       forFeeling: 'jealous',
       forContext: 'peer',
@@ -12124,6 +12171,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend envious of someone else\'s life. You: "Wanting what they have doesn\'t make you bad. It tells you what you want."'
     },
     {
+      _k: 'sel.emotions.val_jeal_004',
       id: 'jeal_004',
       forFeeling: 'jealous',
       forContext: 'self',
@@ -12134,6 +12182,7 @@ window.SelHub = window.SelHub || {
       example: 'You, after a friend\'s success: "I can feel jealous and still love them. Both are true."'
     },
     {
+      _k: 'sel.emotions.val_jeal_005',
       id: 'jeal_005',
       forFeeling: 'jealous',
       forContext: 'family',
@@ -12144,6 +12193,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend envious of sibling getting more praise. You: "Sibling stuff is complicated. You\'re allowed to feel it all."'
     },
     {
+      _k: 'sel.emotions.val_jeal_006',
       id: 'jeal_006',
       forFeeling: 'jealous',
       forContext: 'general',
@@ -12156,6 +12206,7 @@ window.SelHub = window.SelHub || {
 
     // ── GUILT ──
     {
+      _k: 'sel.emotions.val_guilt_001',
       id: 'guilt_001',
       forFeeling: 'guilty',
       forContext: 'general',
@@ -12166,6 +12217,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend feeling guilty about a small thing. You: "It\'s good that you care."'
     },
     {
+      _k: 'sel.emotions.val_guilt_002',
       id: 'guilt_002',
       forFeeling: 'guilty',
       forContext: 'general',
@@ -12176,6 +12228,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in guilt spiral. You: "Feeling guilty means your conscience is working. It doesn\'t mean you\'re bad."'
     },
     {
+      _k: 'sel.emotions.val_guilt_003',
       id: 'guilt_003',
       forFeeling: 'guilty',
       forContext: 'peer',
@@ -12186,6 +12239,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend feeling like a terrible person for a mistake. You: "Mistakes don\'t make you a bad person. They make you a human."'
     },
     {
+      _k: 'sel.emotions.val_guilt_004',
       id: 'guilt_004',
       forFeeling: 'guilty',
       forContext: 'family',
@@ -12196,6 +12250,7 @@ window.SelHub = window.SelHub || {
       example: 'Family member guilty about a past decision. You: "You did the best you could with what you knew at the time."'
     },
     {
+      _k: 'sel.emotions.val_guilt_005',
       id: 'guilt_005',
       forFeeling: 'guilty',
       forContext: 'self',
@@ -12206,6 +12261,7 @@ window.SelHub = window.SelHub || {
       example: 'You, after a mistake: "I can repair without destroying myself."'
     },
     {
+      _k: 'sel.emotions.val_guilt_006',
       id: 'guilt_006',
       forFeeling: 'guilty',
       forContext: 'general',
@@ -12216,6 +12272,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend stuck in guilt loop. You: "Apologize and change behavior. That\'s the work. Punishing yourself isn\'t."'
     },
     {
+      _k: 'sel.emotions.val_guilt_007',
       id: 'guilt_007',
       forFeeling: 'guilty',
       forContext: 'general',
@@ -12226,6 +12283,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend whose apology was rejected. You: "You\'re allowed to forgive yourself eventually. The other person doesn\'t have to do it first."'
     },
     {
+      _k: 'sel.emotions.val_guilt_008',
       id: 'guilt_008',
       forFeeling: 'guilty',
       forContext: 'general',
@@ -12238,6 +12296,7 @@ window.SelHub = window.SelHub || {
 
     // ── SHAME ──
     {
+      _k: 'sel.emotions.val_shame_001',
       id: 'shame_001',
       forFeeling: 'ashamed',
       forContext: 'general',
@@ -12248,6 +12307,7 @@ window.SelHub = window.SelHub || {
       example: 'Survivor of harm: "You\'re not what happened to you."'
     },
     {
+      _k: 'sel.emotions.val_shame_002',
       id: 'shame_002',
       forFeeling: 'ashamed',
       forContext: 'general',
@@ -12258,6 +12318,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend ashamed of mental health struggles. You: "I see you as a whole person. This doesn\'t define you."'
     },
     {
+      _k: 'sel.emotions.val_shame_003',
       id: 'shame_003',
       forFeeling: 'ashamed',
       forContext: 'peer',
@@ -12268,6 +12329,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend disclosing something shameful. You: "This doesn\'t change what I think of you."'
     },
     {
+      _k: 'sel.emotions.val_shame_004',
       id: 'shame_004',
       forFeeling: 'ashamed',
       forContext: 'family',
@@ -12278,6 +12340,7 @@ window.SelHub = window.SelHub || {
       example: 'Family member coming out or disclosing trauma. You: "I\'m so glad you told me. That took courage."'
     },
     {
+      _k: 'sel.emotions.val_shame_005',
       id: 'shame_005',
       forFeeling: 'ashamed',
       forContext: 'self',
@@ -12288,6 +12351,7 @@ window.SelHub = window.SelHub || {
       example: 'You, in a shame spiral: "I am a whole person. One part of me is hurting, but I am not just that part."'
     },
     {
+      _k: 'sel.emotions.val_shame_006',
       id: 'shame_006',
       forFeeling: 'ashamed',
       forContext: 'general',
@@ -12298,6 +12362,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend disclosing shameful thing. You: "Shame thrives in secrecy. Telling me weakens it."'
     },
     {
+      _k: 'sel.emotions.val_shame_007',
       id: 'shame_007',
       forFeeling: 'ashamed',
       forContext: 'general',
@@ -12308,6 +12373,7 @@ window.SelHub = window.SelHub || {
       example: 'Survivor speaking. You: "You did not deserve that."'
     },
     {
+      _k: 'sel.emotions.val_shame_008',
       id: 'shame_008',
       forFeeling: 'ashamed',
       forContext: 'general',
@@ -12318,6 +12384,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend ashamed of disclosure. You: "You can be ashamed and still be loved. Both are happening right now."'
     },
     {
+      _k: 'sel.emotions.val_shame_009',
       id: 'shame_009',
       forFeeling: 'ashamed',
       forContext: 'general',
@@ -12328,6 +12395,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend ashamed of "weird" parts. You: "Even the parts you hate are welcome here."'
     },
     {
+      _k: 'sel.emotions.val_shame_010',
       id: 'shame_010',
       forFeeling: 'ashamed',
       forContext: 'general',
@@ -12340,6 +12408,7 @@ window.SelHub = window.SelHub || {
 
     // ── LONELINESS ──
     {
+      _k: 'sel.emotions.val_lone_001',
       id: 'lone_001',
       forFeeling: 'lonely',
       forContext: 'general',
@@ -12350,6 +12419,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend feeling alone. You: "I\'m here."'
     },
     {
+      _k: 'sel.emotions.val_lone_002',
       id: 'lone_002',
       forFeeling: 'lonely',
       forContext: 'general',
@@ -12360,6 +12430,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend isolated. You: "Loneliness is awful and you don\'t deserve it."'
     },
     {
+      _k: 'sel.emotions.val_lone_003',
       id: 'lone_003',
       forFeeling: 'lonely',
       forContext: 'peer',
@@ -12370,6 +12441,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend ashamed of feeling lonely. You: "Wanting connection isn\'t weakness. It\'s human."'
     },
     {
+      _k: 'sel.emotions.val_lone_004',
       id: 'lone_004',
       forFeeling: 'lonely',
       forContext: 'family',
@@ -12380,6 +12452,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend lonely despite social circle. You: "Even surrounded by people, you can feel alone. That\'s real."'
     },
     {
+      _k: 'sel.emotions.val_lone_005',
       id: 'lone_005',
       forFeeling: 'lonely',
       forContext: 'self',
@@ -12390,6 +12463,7 @@ window.SelHub = window.SelHub || {
       example: 'You, lonely: "I can be lonely AND reach for someone. Both happen at once."'
     },
     {
+      _k: 'sel.emotions.val_lone_006',
       id: 'lone_006',
       forFeeling: 'lonely',
       forContext: 'general',
@@ -12402,6 +12476,7 @@ window.SelHub = window.SelHub || {
 
     // ── EXCITEMENT ──
     {
+      _k: 'sel.emotions.val_exc_001',
       id: 'exc_001',
       forFeeling: 'excited',
       forContext: 'general',
@@ -12412,6 +12487,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend got into a program: "I love how excited you are!"'
     },
     {
+      _k: 'sel.emotions.val_exc_002',
       id: 'exc_002',
       forFeeling: 'excited',
       forContext: 'general',
@@ -12422,6 +12498,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend with news. You: "Tell me everything."'
     },
     {
+      _k: 'sel.emotions.val_exc_003',
       id: 'exc_003',
       forFeeling: 'excited',
       forContext: 'peer',
@@ -12432,6 +12509,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend bursting with joy. You: "Your joy is contagious."'
     },
     {
+      _k: 'sel.emotions.val_exc_004',
       id: 'exc_004',
       forFeeling: 'excited',
       forContext: 'family',
@@ -12442,6 +12520,7 @@ window.SelHub = window.SelHub || {
       example: 'Family member celebrating. You: "I\'m so happy for you."'
     },
     {
+      _k: 'sel.emotions.val_exc_005',
       id: 'exc_005',
       forFeeling: 'excited',
       forContext: 'self',
@@ -12452,6 +12531,7 @@ window.SelHub = window.SelHub || {
       example: 'You, alone, after good news: "I get to be excited. I don\'t have to dim this for anyone."'
     },
     {
+      _k: 'sel.emotions.val_exc_006',
       id: 'exc_006',
       forFeeling: 'excited',
       forContext: 'general',
@@ -12464,6 +12544,7 @@ window.SelHub = window.SelHub || {
 
     // ── PRIDE ──
     {
+      _k: 'sel.emotions.val_pride_001',
       id: 'pride_001',
       forFeeling: 'proud',
       forContext: 'general',
@@ -12474,6 +12555,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend who passed a big exam: "You worked so hard for this. You earned it."'
     },
     {
+      _k: 'sel.emotions.val_pride_002',
       id: 'pride_002',
       forFeeling: 'proud',
       forContext: 'general',
@@ -12484,6 +12566,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend after accomplishment: "Celebrate this. You earned the joy too."'
     },
     {
+      _k: 'sel.emotions.val_pride_003',
       id: 'pride_003',
       forFeeling: 'proud',
       forContext: 'self',
@@ -12494,6 +12577,7 @@ window.SelHub = window.SelHub || {
       example: 'You, after accomplishment: "I\'m proud of myself, and I don\'t have to apologize for that."'
     },
     {
+      _k: 'sel.emotions.val_pride_004',
       id: 'pride_004',
       forFeeling: 'proud',
       forContext: 'family',
@@ -12504,6 +12588,7 @@ window.SelHub = window.SelHub || {
       example: 'Family member after long-time goal: "I\'ve watched you grow into this. I\'m so proud."'
     },
     {
+      _k: 'sel.emotions.val_pride_005',
       id: 'pride_005',
       forFeeling: 'proud',
       forContext: 'peer',
@@ -12514,6 +12599,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend who accomplished something. You: "You should be proud. I am."'
     },
     {
+      _k: 'sel.emotions.val_pride_006',
       id: 'pride_006',
       forFeeling: 'proud',
       forContext: 'general',
@@ -12526,6 +12612,7 @@ window.SelHub = window.SelHub || {
 
     // ── CONFUSION ──
     {
+      _k: 'sel.emotions.val_conf_001',
       id: 'conf_001',
       forFeeling: 'confused',
       forContext: 'general',
@@ -12536,6 +12623,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend confused about life direction. You: "It\'s okay not to know yet."'
     },
     {
+      _k: 'sel.emotions.val_conf_002',
       id: 'conf_002',
       forFeeling: 'confused',
       forContext: 'general',
@@ -12546,6 +12634,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend confused about a decision. You: "Confusion is the first step to clarity, not its opposite."'
     },
     {
+      _k: 'sel.emotions.val_conf_003',
       id: 'conf_003',
       forFeeling: 'confused',
       forContext: 'peer',
@@ -12556,6 +12645,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend confused. You: "Want to talk it out? Sometimes saying it out loud helps it sort."'
     },
     {
+      _k: 'sel.emotions.val_conf_004',
       id: 'conf_004',
       forFeeling: 'confused',
       forContext: 'self',
@@ -12566,6 +12656,7 @@ window.SelHub = window.SelHub || {
       example: 'You, navigating a decision: "I\'m allowed to not have it figured out. I get to take my time."'
     },
     {
+      _k: 'sel.emotions.val_conf_005',
       id: 'conf_005',
       forFeeling: 'confused',
       forContext: 'general',
@@ -12576,6 +12667,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend stuck on a decision. You: "Sometimes the answer comes from waiting, not pushing."'
     },
     {
+      _k: 'sel.emotions.val_conf_006',
       id: 'conf_006',
       forFeeling: 'confused',
       forContext: 'family',
@@ -12588,6 +12680,7 @@ window.SelHub = window.SelHub || {
 
     // ── HOPELESSNESS ──
     {
+      _k: 'sel.emotions.val_hope_001',
       id: 'hope_001',
       forFeeling: 'hopeless',
       forContext: 'general',
@@ -12598,6 +12691,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in despair. You: "Right now you can\'t see a way through. That\'s real."'
     },
     {
+      _k: 'sel.emotions.val_hope_002',
       id: 'hope_002',
       forFeeling: 'hopeless',
       forContext: 'general',
@@ -12608,6 +12702,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in deep despair. You: "You don\'t have to feel hope to be safe today. You just have to be here."'
     },
     {
+      _k: 'sel.emotions.val_hope_003',
       id: 'hope_003',
       forFeeling: 'hopeless',
       forContext: 'general',
@@ -12618,6 +12713,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend talking about hopelessness. You: "988 is always available. Call or text. They get this."'
     },
     {
+      _k: 'sel.emotions.val_hope_004',
       id: 'hope_004',
       forFeeling: 'hopeless',
       forContext: 'peer',
@@ -12628,6 +12724,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in despair, trying to explain. You: "You don\'t have to convince me you have reasons to feel this. I believe you."'
     },
     {
+      _k: 'sel.emotions.val_hope_005',
       id: 'hope_005',
       forFeeling: 'hopeless',
       forContext: 'self',
@@ -12638,6 +12735,7 @@ window.SelHub = window.SelHub || {
       example: 'You, in despair: "I am here today. That is enough today."'
     },
     {
+      _k: 'sel.emotions.val_hope_006',
       id: 'hope_006',
       forFeeling: 'hopeless',
       forContext: 'general',
@@ -12648,6 +12746,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in despair. You: "I\'m not going anywhere. We can sit in this together."'
     },
     {
+      _k: 'sel.emotions.val_hope_007',
       id: 'hope_007',
       forFeeling: 'hopeless',
       forContext: 'general',
@@ -12658,6 +12757,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in long depression. You: "Sometimes the body needs to feel hopeless before it can heal. We\'re not skipping this step."'
     },
     {
+      _k: 'sel.emotions.val_hope_008',
       id: 'hope_008',
       forFeeling: 'hopeless',
       forContext: 'general',
@@ -12670,6 +12770,7 @@ window.SelHub = window.SelHub || {
 
     // ── ANXIETY about specific things ──
     {
+      _k: 'sel.emotions.val_aspec_001',
       id: 'aspec_001',
       forFeeling: 'anxious',
       forContext: 'general',
@@ -12680,6 +12781,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend with test anxiety. You: "Test anxiety is real. Your nervous system thinks this is a tiger."'
     },
     {
+      _k: 'sel.emotions.val_aspec_002',
       id: 'aspec_002',
       forFeeling: 'anxious',
       forContext: 'peer',
@@ -12690,6 +12792,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend with social anxiety. You: "Social anxiety isn\'t shyness. It\'s your brain on high alert. You\'re not being weird."'
     },
     {
+      _k: 'sel.emotions.val_aspec_003',
       id: 'aspec_003',
       forFeeling: 'anxious',
       forContext: 'general',
@@ -12700,6 +12803,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend before performance. You: "Performance anxiety means you care. We can work with that."'
     },
     {
+      _k: 'sel.emotions.val_aspec_004',
       id: 'aspec_004',
       forFeeling: 'anxious',
       forContext: 'self',
@@ -12710,6 +12814,7 @@ window.SelHub = window.SelHub || {
       example: 'You, before a high-stakes thing: "My anxiety about this specific thing is valid. The stakes feel high because they are."'
     },
     {
+      _k: 'sel.emotions.val_aspec_005',
       id: 'aspec_005',
       forFeeling: 'anxious',
       forContext: 'general',
@@ -12720,6 +12825,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend anxious before performance. You: "You don\'t have to be calm to perform well. Anxious people perform all the time."'
     },
     {
+      _k: 'sel.emotions.val_aspec_006',
       id: 'aspec_006',
       forFeeling: 'anxious',
       forContext: 'general',
@@ -12732,6 +12838,7 @@ window.SelHub = window.SelHub || {
 
     // ── "I DON\'T KNOW WHAT TO SAY" honest phrases ──
     {
+      _k: 'sel.emotions.val_idk_001',
       id: 'idk_001',
       forFeeling: 'sad',
       forContext: 'general',
@@ -12742,6 +12849,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend with devastating news. You: "I don\'t have words. I\'m just here."'
     },
     {
+      _k: 'sel.emotions.val_idk_002',
       id: 'idk_002',
       forFeeling: 'overwhelmed',
       forContext: 'general',
@@ -12752,6 +12860,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend with unfixable hard situation. You: "There\'s nothing to fix. I\'m sitting with you."'
     },
     {
+      _k: 'sel.emotions.val_idk_003',
       id: 'idk_003',
       forFeeling: 'sad',
       forContext: 'peer',
@@ -12762,6 +12871,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in deep grief. You: "I don\'t know what to say, but I love you and I\'m not leaving."'
     },
     {
+      _k: 'sel.emotions.val_idk_004',
       id: 'idk_004',
       forFeeling: 'sad',
       forContext: 'general',
@@ -12772,6 +12882,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend with massive loss. You: "This is bigger than my words. I just want you to know I see you."'
     },
     {
+      _k: 'sel.emotions.val_idk_005',
       id: 'idk_005',
       forFeeling: 'sad',
       forContext: 'general',
@@ -12782,6 +12893,7 @@ window.SelHub = window.SelHub || {
       example: 'Friend in experience you haven\'t had. You: "I\'m not going to pretend I know what this is like. I\'m here however you need me."'
     },
     {
+      _k: 'sel.emotions.val_idk_006',
       id: 'idk_006',
       forFeeling: 'sad',
       forContext: 'general',
@@ -18096,6 +18208,21 @@ var EMOTION_JOURNAL_TEMPLATES = [
         if (typeof v !== 'string') return '';
         return (p && p._k) ? __alloT(p._k + '_s' + i + '_opt' + j, v) : v;
       };
+      // VALIDATION_PHRASES rows can also arrive from toolData, so both
+      // helpers fall back when _k is absent.
+      var _valText = function (p, field) {
+        if (!p) return '';
+        var v = p[field];
+        if (typeof v !== 'string') return '';
+        return p._k ? __alloT(p._k + '_' + field, v) : v;
+      };
+      var _valAlts = function (p) {
+        if (!p || !Array.isArray(p.alternatives)) return [];
+        return p.alternatives.map(function (v, i) {
+          return (p._k && typeof v === 'string')
+            ? __alloT(p._k + '_alt' + i, v) : v;
+        });
+      };
       var _emoWord = function (id) {
         if (!id) return id;
         var label = String(id).charAt(0).toUpperCase() + String(id).slice(1);
@@ -21688,7 +21815,8 @@ if (activeTab === 'vocab') {
         })
       ),
       filtered.length > 60 ? h('div', { style: { padding: 14, textAlign: 'center', color: P.textMuted, fontSize: 12 } },
-        'Showing first 60 of ' + filtered.length + '. Refine your filter or search to narrow down.'
+        __alloT('sel.emotions.vocab_showing_first', 'Showing first 60 of %s. Refine your filter or search to narrow down.')
+            .replace('%s', String(filtered.length))
       ) : null
     );
   }
@@ -21701,7 +21829,7 @@ if (activeTab === 'vocab') {
 var validationContent = null;
 if (activeTab === 'validation') {
   if (typeof VALIDATION_PHRASES === 'undefined' || !VALIDATION_PHRASES.length) {
-    validationContent = h('div', { style: { padding: 40, textAlign: 'center', color: P.textMuted } }, 'Validation phrase bank loading...');
+    validationContent = h('div', { style: { padding: 40, textAlign: 'center', color: P.textMuted } }, __alloT('sel.emotions.val_loading', 'Validation phrase bank loading...'));
   } else {
     var vFeeling = d.vFeeling || 'sad';
     var feelings = ['sad','angry','scared','frustrated','overwhelmed','jealous','guilty','ashamed','lonely','excited','proud','confused','hopeless','anxious'];
@@ -21709,8 +21837,8 @@ if (activeTab === 'validation') {
     validationContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: ST('#fbbf24') } }, 'Validation Phrases: '),
-          'What to say when a friend or family member feels something hard. These are NOT "solving" — they\'re witnessing. Validation = "I see you, you make sense, you\'re not alone."'
+          h('strong', { style: { color: ST('#fbbf24') } }, __alloT('sel.emotions.val_heading', 'Validation Phrases: ')),
+          __alloT('sel.emotions.val_intro', 'What to say when a friend or family member feels something hard. These are NOT "solving" — they\'re witnessing. Validation = "I see you, you make sense, you\'re not alone."')
         )
       ),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -21719,22 +21847,26 @@ if (activeTab === 'validation') {
           return h('button', { key: f,
             onClick: function() { upd({ vFeeling: f }); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 12px', borderRadius: 16, border: '1px solid ' + (sel ? '#5eead4' : P.borderDim), background: sel ? '#14b8a655' : P.card, color: sel ? '#5eead4' : P.text2, fontSize: 12, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
-          }, f);
+          }, __alloT('sel.emotions.val_feel_' + f, f));
         })
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
         filtered.map(function(p) {
           return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.border) } },
-            h('div', { style: { color: ST('#5eead4'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, 'For ' + (p.forContext || 'general')),
-            h('p', { style: { margin: 0, color: P.text, fontSize: 15, fontWeight: 600, lineHeight: 1.55, fontStyle: 'italic' } }, '"' + p.phrase + '"'),
-            p.whyItWorks ? h('p', { style: { margin: '8px 0 0', color: P.textMuted, fontSize: 11, lineHeight: 1.5 } }, p.whyItWorks) : null,
+            h('div', { style: { color: ST('#5eead4'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } },
+              __alloT('sel.emotions.val_for_context', 'For %s')
+                .replace('%s', __alloT('sel.emotions.val_ctx_' + (p.forContext || 'general'),
+                                       p.forContext || 'general'))),
+            h('p', { style: { margin: 0, color: P.text, fontSize: 15, fontWeight: 600, lineHeight: 1.55, fontStyle: 'italic' } }, '"' + _valText(p, 'phrase') + '"'),
+            p.whyItWorks ? h('p', { style: { margin: '8px 0 0', color: P.textMuted, fontSize: 11, lineHeight: 1.5 } }, _valText(p, 'whyItWorks')) : null,
             p.alternatives && p.alternatives.length ? h('details', { style: { marginTop: 6 } },
-              h('summary', { style: { cursor: 'pointer', color: ST('#5eead4'), fontSize: 11 } }, 'Variations'),
+              h('summary', { style: { cursor: 'pointer', color: ST('#5eead4'), fontSize: 11 } }, __alloT('sel.emotions.val_variations', 'Variations')),
               h('ul', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 12, lineHeight: 1.5 } },
-                p.alternatives.map(function(a, i) { return h('li', { key: i, style: { fontStyle: 'italic' } }, '"' + a + '"'); })
+                _valAlts(p).map(function(a, i) { return h('li', { key: i, style: { fontStyle: 'italic' } }, '"' + a + '"'); })
               )
             ) : null,
-            p.avoidSaying ? h('div', { style: { marginTop: 8, padding: '6px 8px', borderRadius: 6, background: '#7f1d1d', color: '#fecaca', fontSize: 11, lineHeight: 1.5 } }, '✗ Don\'t say: ' + p.avoidSaying) : null
+            p.avoidSaying ? h('div', { style: { marginTop: 8, padding: '6px 8px', borderRadius: 6, background: '#7f1d1d', color: '#fecaca', fontSize: 11, lineHeight: 1.5 } }, '✗ ' + __alloT('sel.emotions.val_avoid_prefix', 'Don\'t say: %s')
+              .replace('%s', _valText(p, 'avoidSaying'))) : null
           );
         })
       )
