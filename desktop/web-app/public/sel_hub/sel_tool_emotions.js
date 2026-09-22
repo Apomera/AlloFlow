@@ -9800,6 +9800,7 @@ window.SelHub = window.SelHub || {
   var COMPOUND_EMOTIONS = [
     // ===== PLUTCHIK PRIMARY DYADS (adjacent on the wheel) =====
     {
+      _k: 'sel.emotions.cmp_love',
       id: 'love',
       name: 'Love',
       components: [
@@ -9827,6 +9828,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) places love as the primary dyad of joy + trust. Sternberg\'s triangular theory adds intimacy, passion, and commitment. Bowlby\'s attachment theory frames love as a safety system.'
     },
     {
+      _k: 'sel.emotions.cmp_submission',
       id: 'submission',
       name: 'Submission',
       components: [
@@ -9854,6 +9856,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) lists submission as the trust+fear primary dyad. Polyvagal theory (Porges) describes fawn/appease as a survival branch alongside fight, flight, and freeze.'
     },
     {
+      _k: 'sel.emotions.cmp_awe',
       id: 'awe',
       name: 'Awe',
       components: [
@@ -9881,6 +9884,7 @@ window.SelHub = window.SelHub || {
       research: 'Keltner & Haidt (2003) defined awe as perceived vastness + need for accommodation. Stellar et al. (2015) found awe reduces inflammatory markers. Plutchik places it as fear+surprise.'
     },
     {
+      _k: 'sel.emotions.cmp_disapproval',
       id: 'disapproval',
       name: 'Disapproval',
       components: [
@@ -9908,6 +9912,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) lists disapproval as the surprise+sadness primary dyad. Haidt (2003) treats disapproval as a moral signal preceding anger or contempt.'
     },
     {
+      _k: 'sel.emotions.cmp_remorse',
       id: 'remorse',
       name: 'Remorse',
       components: [
@@ -9935,6 +9940,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) lists remorse as sadness+disgust. Tangney & Dearing (2002) show guilt/remorse predicts repair behavior, while shame predicts withdrawal.'
     },
     {
+      _k: 'sel.emotions.cmp_contempt',
       id: 'contempt',
       name: 'Contempt',
       components: [
@@ -9962,6 +9968,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) places contempt as disgust+anger. Gottman (1999) identifies contempt as the #1 predictor of divorce among the \"Four Horsemen.\" Haidt (1999) treats contempt as a moral other-condemning emotion.'
     },
     {
+      _k: 'sel.emotions.cmp_aggressiveness',
       id: 'aggressiveness',
       name: 'Aggressiveness',
       components: [
@@ -9989,6 +9996,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) lists aggressiveness as anger+anticipation. Bushman & Anderson (2001) distinguish reactive vs. proactive aggression. Assertiveness is the prosocial channel of the same fuel.'
     },
     {
+      _k: 'sel.emotions.cmp_optimism',
       id: 'optimism',
       name: 'Optimism',
       components: [
@@ -18022,6 +18030,29 @@ var EMOTION_JOURNAL_TEMPLATES = [
         if (!b) return '';
         return b._k ? __alloT(b._k + '_desc', b.desc) : (b.desc || '');
       };
+      // COMPOUND_EMOTIONS rows can also come from toolData, so each
+      // helper falls back when _k is absent.
+      var _cmpText = function (em, field) {
+        if (!em) return '';
+        var v = em[field];
+        if (typeof v !== 'string') return '';
+        return em._k ? __alloT(em._k + '_' + field, v) : v;
+      };
+      var _cmpBand = function (em, group, b) {
+        if (!em) return '';
+        var obj = em[group];
+        if (!obj || typeof obj !== 'object') return '';
+        var v = obj[b];
+        if (typeof v !== 'string') return '';
+        return em._k ? __alloT(em._k + '_' + group + '_' + b, v) : v;
+      };
+      var _cmpList = function (em, field) {
+        if (!em || !Array.isArray(em[field])) return [];
+        return em[field].map(function (v, i) {
+          return (em._k && typeof v === 'string')
+            ? __alloT(em._k + '_' + field + '_' + i, v) : v;
+        });
+      };
       var _emoWord = function (id) {
         if (!id) return id;
         var label = String(id).charAt(0).toUpperCase() + String(id).slice(1);
@@ -18665,14 +18696,14 @@ var EMOTION_JOURNAL_TEMPLATES = [
               ),
               h('button', { 'aria-label': 'Next Question',
                 onClick: function() { generateQuiz(); },
-                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#6d28d9', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, 'Next Question \u2192')
             ),
 
             // Start quiz if no question loaded
             !quizDef && h('button', { 'aria-label': 'Start Quiz!',
               onClick: function() { generateQuiz(); },
-              style: { display: 'block', margin: '20px auto', padding: '14px 32px', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { display: 'block', margin: '20px auto', padding: '14px 32px', borderRadius: 10, border: 'none', background: '#6d28d9', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'Start Quiz!')
           );
         }
@@ -19009,7 +19040,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
               });
               if (Object.keys(intensities).length >= 3) tryAwardBadge('intensity_range');
             },
-            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
           }, checkinStrategy ? '\u2705 Save Feeling + Next Step' : '\u2705 Log This Feeling'),
 
           // Body Sensations Map (shows when a family is selected)
@@ -19163,7 +19194,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                     onClick: function() {
                       upd({ faceIdx: faceIdx + 1, faceRevealed: null });
                     },
-                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                   }, 'Next Face \u2192')
                 )
           );
@@ -19330,7 +19361,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   if (soundEnabled) sfxReveal();
                   awardXP(15);
                 },
-                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#ec4899', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#be185d', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, 'See Their Perspective \u2192')
             ),
 
@@ -19367,7 +19398,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
               ),
               h('button', { 'aria-label': 'Next Empathy Scenario',
                 onClick: function() { upd({ empathyIdx: empathyIdx + 1, empathyAnswer: null, empathyRevealed: false }); },
-                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#ec4899', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#be185d', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, 'Next Empathy Scenario \u2192')
             )
           );
@@ -19430,7 +19461,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 if (soundEnabled) sfxReveal();
                 awardXP(10);
               },
-              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'See What Others Feel \u2192')
           ),
 
@@ -19482,7 +19513,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
             }, '\uD83C\uDF00 ' + __alloT('sel.emotions.scen_mixed_badge', 'I see \u2014 there can be mixed emotions!')),
             h('button', { 'aria-label': 'Next Scenario',
               onClick: function() { upd({ scenarioIdx: scenarioIdx + 1, scenarioAnswer: null, scenarioRevealed: false }); },
-              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'Next Scenario \u2192')
           )
         );
@@ -19764,7 +19795,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   if (newEntries.length >= 3) tryAwardBadge('journal_3');
                   if (newEntries.length >= 10) tryAwardBadge('journal_10');
                 },
-                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
               callGemini && journalDraft.trim().length > 10 && h('button', {
@@ -19818,7 +19849,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   });
                 },
                 disabled: journalAiLoading,
-                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: journalAiLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }
+                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#6d28d9', color: '#fff', fontWeight: 700, fontSize: 13, cursor: journalAiLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }
               },
                 Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
                 journalAiLoading ? 'Thinking...' : 'Ask AI Coach'
@@ -20873,7 +20904,7 @@ if (activeTab === 'arc') {
       h('h3', { style: { color: P.text, fontSize: 18, fontWeight: 700, marginBottom: 8 } }, 'No mood data yet'),
       h('p', { style: { color: P.textMuted, fontSize: 13, lineHeight: 1.5 } }, 'Check in with your emotions on the Check-In tab. Your last 14 days of check-ins will show up here as a chart you can share with a counselor or trusted adult.'),
       h('button', { onClick: function() { upd('activeTab', 'checkin'); if (soundEnabled) sfxClick(); },
-        style: { marginTop: 14, padding: '8px 18px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 14, padding: '8px 18px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, 'Go check in now')
     );
   } else {
@@ -21033,7 +21064,7 @@ if (activeTab === 'nameit') {
               style: { padding: '8px 18px', borderRadius: 6, border: 'none', background: '#5eead4', color: P.bg, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
             }, 'Finish ✓') :
             h('button', { onClick: function() { upd({ niStep: niStep + 1 }); if (soundEnabled) sfxClick(); },
-              style: { padding: '8px 16px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '8px 16px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
             }, 'Next →')
         )
       );
@@ -21291,7 +21322,7 @@ if (activeTab === 'empathy_mirror') {
             style: { padding: '8px 14px', borderRadius: 6, border: ('1px solid ' + P.borderDim), background: P.bg, color: P.textMuted, fontSize: 13, cursor: 'pointer' }
           }, '← Previous story'),
           h('button', { onClick: function() { upd({ emIdx: (emIdx + 1) % stories.length, emRevealed: false, emGuess: null }); if (soundEnabled) sfxClick(); },
-            style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, 'Next story →')
         )
       ) : h('div', { style: { padding: 20, textAlign: 'center', color: P.textMuted } }, 'No stories for your grade level yet.')
@@ -21364,7 +21395,7 @@ if (activeTab === 'micro') {
             style: { padding: '8px 14px', borderRadius: 6, border: ('1px solid ' + P.borderDim), background: P.bg, color: P.textMuted, fontSize: 13, cursor: 'pointer' }
           }, '← Previous'),
           h('button', { onClick: function() { upd({ miIdx: (miIdx + 1) % MICROEXPRESSIONS.length, miRevealed: false, miGuess: null }); if (soundEnabled) sfxClick(); },
-            style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, 'Next →')
         )
       )
@@ -21379,7 +21410,7 @@ if (activeTab === 'micro') {
 var compoundContent = null;
 if (activeTab === 'compounds') {
   if (typeof COMPOUND_EMOTIONS === 'undefined' || !COMPOUND_EMOTIONS.length) {
-    compoundContent = h('div', { style: { padding: 40, textAlign: 'center', color: P.textMuted } }, 'Compound emotions library loading...');
+    compoundContent = h('div', { style: { padding: 40, textAlign: 'center', color: P.textMuted } }, __alloT('sel.emotions.cmp_loading', 'Compound emotions library loading...'));
   } else {
     var cmpCategory = d.cmpCategory || 'all';
     var cmpSearch = (d.cmpSearch || '').toLowerCase();
@@ -21388,13 +21419,13 @@ if (activeTab === 'compounds') {
     var filtered = COMPOUND_EMOTIONS.filter(function(e) {
       if (cmpCategory !== 'all' && e.category !== cmpCategory) return false;
       if (!cmpSearch) return true;
-      return (e.name || '').toLowerCase().indexOf(cmpSearch) !== -1;
+      return _cmpText(e, 'name').toLowerCase().indexOf(cmpSearch) !== -1;
     });
     compoundContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: ST('#fbbf24') } }, 'Compound Emotions: '),
-          'Most feelings are blends of two or more primary emotions. Plutchik mapped dyads (joy + trust = love; fear + surprise = awe; disgust + anger = contempt). Self-conscious emotions (shame, pride, guilt) need awareness of self.'
+          h('strong', { style: { color: ST('#fbbf24') } }, __alloT('sel.emotions.cmp_heading', 'Compound Emotions: ')),
+          __alloT('sel.emotions.cmp_intro', 'Most feelings are blends of two or more primary emotions. Plutchik mapped dyads (joy + trust = love; fear + surprise = awe; disgust + anger = contempt). Self-conscious emotions (shame, pride, guilt) need awareness of self.')
         )
       ),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
@@ -21403,10 +21434,10 @@ if (activeTab === 'compounds') {
           return h('button', { key: c,
             onClick: function() { upd({ cmpCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : P.borderDim), background: sel ? '#fbbf2433' : P.card, color: sel ? '#fde68a' : P.text2, fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
-          }, c);
+          }, __alloT('sel.emotions.cmp_cat_' + c, c));
         })
       ),
-      h('input', { type: 'search', 'aria-label': 'Search compound emotions', placeholder: '🔎 Search...', value: d.cmpSearch || '',
+      h('input', { type: 'search', 'aria-label': __alloT('sel.emotions.cmp_search_label', 'Search compound emotions'), placeholder: '🔎 ' + __alloT('sel.emotions.cmp_search_ph', 'Search...'), value: d.cmpSearch || '',
         onChange: function(e) { upd({ cmpSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: ('1px solid ' + P.border), background: P.bg, color: P.text3, fontSize: 13, marginBottom: 14 }
       }),
@@ -21417,30 +21448,32 @@ if (activeTab === 'compounds') {
             role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ cmpOpen: isOpen ? null : em.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' } },
-              h('h4', { style: { margin: 0, color: P.text, fontSize: 16, fontWeight: 800 } }, em.name),
-              em.category ? h('span', { style: { fontSize: 10, color: ST('#fbbf24'), textTransform: 'uppercase' } }, em.category) : null
+              h('h4', { style: { margin: 0, color: P.text, fontSize: 16, fontWeight: 800 } }, _cmpText(em, 'name')),
+              em.category ? h('span', { style: { fontSize: 10, color: ST('#fbbf24'), textTransform: 'uppercase' } },
+                __alloT('sel.emotions.cmp_cat_' + em.category, em.category)) : null
             ),
             em.components && em.components.length ? h('div', { style: { color: ST('#a78bfa'), fontSize: 11, marginTop: 4 } }, em.components.map(function(c) { return c.emotion + (c.strength ? ' (' + Math.round(c.strength * 100) + '%)' : ''); }).join(' + ')) : null,
-            h('p', { style: { margin: '6px 0', color: P.text2, fontSize: 12, lineHeight: 1.55 } }, (em.definition || {})[band]),
+            h('p', { style: { margin: '6px 0', color: P.text2, fontSize: 12, lineHeight: 1.55 } }, _cmpBand(em, 'definition', band)),
             isOpen ? h('div', null,
-              em.feelsLike ? h('p', { style: { margin: '8px 0 0', color: ST('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, '"' + em.feelsLike + '"') : null,
-              em.bodyFeels && em.bodyFeels.length ? h('div', { style: { marginTop: 6, color: P.textMuted, fontSize: 11 } }, 'Body: ' + em.bodyFeels.join(', ')) : null,
+              em.feelsLike ? h('p', { style: { margin: '8px 0 0', color: ST('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, '"' + _cmpText(em, 'feelsLike') + '"') : null,
+              em.bodyFeels && em.bodyFeels.length ? h('div', { style: { marginTop: 6, color: P.textMuted, fontSize: 11 } },
+                __alloT('sel.emotions.cmp_body_prefix', 'Body: %s').replace('%s', _cmpList(em, 'bodyFeels').join(', '))) : null,
               em.triggers && em.triggers.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, 'Common triggers'),
+                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, __alloT('sel.emotions.cmp_sec_triggers', 'Common triggers')),
                 h('ul', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
-                  em.triggers.map(function(t, i) { return h('li', { key: i }, t); })
+                  _cmpList(em, 'triggers').map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null,
               em.helpfulNext && em.helpfulNext.length ? h('details', { open: true, style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: ST('#5eead4'), fontSize: 11, fontWeight: 600 } }, 'Helpful next'),
+                h('summary', { style: { cursor: 'pointer', color: ST('#5eead4'), fontSize: 11, fontWeight: 600 } }, __alloT('sel.emotions.cmp_sec_helpful', 'Helpful next')),
                 h('ul', { style: { margin: '4px 0 0 18px', color: ST('#a7f3d0'), fontSize: 11, lineHeight: 1.5 } },
-                  em.helpfulNext.map(function(t, i) { return h('li', { key: i }, t); })
+                  _cmpList(em, 'helpfulNext').map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null,
               em.unhelpfulNext && em.unhelpfulNext.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, 'What doesn\'t help'),
+                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, __alloT('sel.emotions.cmp_sec_unhelpful', 'What doesn\'t help')),
                 h('ul', { style: { margin: '4px 0 0 18px', color: ST('#fde68a'), fontSize: 11, lineHeight: 1.5 } },
-                  em.unhelpfulNext.map(function(t, i) { return h('li', { key: i }, t); })
+                  _cmpList(em, 'unhelpfulNext').map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null
             ) : null
@@ -21710,7 +21743,7 @@ if (activeTab === 'strategies') {
                 h('p', { style: { margin: '4px 0 0', color: P.text2, fontSize: 13 } }, e.shortDesc)
               ),
               h('button', { onClick: function() { upd({ stOpen: isOpen ? null : e.id }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 12px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '5px 12px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, isOpen ? 'Close' : 'See strategies')
             ),
             isOpen ? h('div', { style: { marginTop: 12 } },
