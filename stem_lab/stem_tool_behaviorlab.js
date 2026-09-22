@@ -1469,9 +1469,7 @@ dataRef.current = d;
 
           var blReinforcements = d.blReinforcements || 0;
 
-          var blTarget = d.blTarget || 'pressLever';
 
-          var blLightOn = d.blLightOn === undefined ? true : d.blLightOn;
 
           var blLightColor = d.blLightColor || 'green';
 
@@ -1532,13 +1530,10 @@ dataRef.current = d;
 
           var blSandboxTarget = d.blSandboxTarget || 'pressLever';
 
-          var blParticles = d.blParticles || [];
 
-          var blDustMotes = d.blDustMotes || [];
 
           var blTotalTicks = d.blTotalTicks || 0;
 
-          var blCorrectReinforcements = d.blCorrectReinforcements || 0;
 
           var blBreathPhase = (Date.now() / 1000) % (Math.PI * 2);
 
@@ -1572,7 +1567,6 @@ dataRef.current = d;
 
           var blEarTwitchSeed = d.blEarTwitchSeed || Math.random() * 1000;
 
-          var blSpinAngle = d.blSpinAngle || 0;
 
           var blRecentActions = d.blRecentActions || [];
 
@@ -1608,15 +1602,8 @@ dataRef.current = d;
           var blSchedCanvas = d.blSchedCanvas || false;
           var blSchedPaused = d.blSchedPaused !== false;
           var blSchedTick = d.blSchedTick || 0;
-          var blSchedData = d.blSchedData || { FR: [], VR: [], FI: [], VI: [] };
           var blMatrixIdx = d.blMatrixIdx === undefined ? null : d.blMatrixIdx;
-          var blTokenBalance = d.blTokenBalance || 0;
-          var blTokenLog = d.blTokenLog || [];
-          var blTokenRewards = d.blTokenRewards || [];
           var blShowCondCompare = d.blShowCondCompare || false;
-          var blShowBipPlanner = d.blShowBipPlanner || false;
-          var blBipStep = d.blBipStep || 0;
-          var blBipData = d.blBipData || { behavior: '', antecedent: '', consequence: '', func: '', replacement: '', strategy: '' };
 
           // Wave 3 state
           var blScenarioIdx = d.blScenarioIdx || 0;
