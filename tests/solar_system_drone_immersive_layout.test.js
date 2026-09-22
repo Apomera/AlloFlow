@@ -131,6 +131,62 @@ describe('Solar System surface-ops immersive layout', () => {
     expect(detail.getAttribute('data-solarsystem-immersive')).toBe('true');
   });
 
+  it('lifts the science ticker off the rocky-world traverse panel', () => {
+    // Measured in Chromium at 1280/1024/900/760px: the traverse panel (310px
+    // wide, z-index 15) sat directly on the ticker's right end at EVERY width,
+    // and at 760px left only 164px of visible bar for a ~590px fact. The ticker
+    // now takes its own row above it on rocky worlds; fluid worlds build no
+    // traverse panel and keep the bottom row.
+    const source = readFileSync(SOURCE, 'utf8');
+
+    const bottom = source.match(/var tickerBottom = isFluid \? (\d+) : (\d+);/);
+    expect(bottom, 'could not read the ticker row offset').toBeTruthy();
+    const fluidBottom = Number(bottom[1]);
+    const rockyBottom = Number(bottom[2]);
+
+    const traverse = source.match(/roverTraversePanel\.style\.cssText = 'position:absolute;right:\d+px;bottom:(\d+)px/);
+    expect(traverse, 'could not read the traverse panel geometry').toBeTruthy();
+    const traverseBottom = Number(traverse[1]);
+
+    // On a rocky world the ticker must start above the traverse panel's own box.
+    expect(
+      rockyBottom,
+      `ticker bottom:${rockyBottom}px still sits inside the traverse panel at bottom:${traverseBottom}px`,
+    ).toBeGreaterThan(traverseBottom);
+
+    // Fluid worlds have no traverse panel, so the ticker should NOT be pushed up.
+    expect(fluidBottom, 'fluid worlds have no traverse panel to clear').toBeLessThan(rockyBottom);
+  });
+
+  it('keeps the science ticker clear of the minimap', () => {
+    // Both sit at the bottom of the scene at z-index 10, so whichever is
+    // appended last simply paints over the other -- the ticker is appended
+    // first, so the minimap wins. A full-width ticker therefore ran its own
+    // rotating science facts underneath the minimap. Above ~1000px the centered
+    // text is too short to reach it, and at <=640px a media query hides the
+    // ticker outright, so the damage sat in the 641px-1000px tablet band where
+    // nothing was watching.
+    //
+    // Derive both boxes from the source rather than pinning today's numbers, so
+    // retuning either panel keeps this honest.
+    const source = readFileSync(SOURCE, 'utf8');
+
+    const ticker = source.match(/ticker\.style\.cssText = 'position:absolute;bottom:' \+ tickerBottom \+ 'px;left:\d+px;right:(\d+)px/);
+    expect(ticker, 'could not read the ticker geometry').toBeTruthy();
+    const tickerRight = Number(ticker[1]);
+
+    const map = source.match(/mapPanel\.style\.cssText = 'position:absolute;bottom:\d+px;right:(\d+)px;width:(\d+)px/);
+    expect(map, 'could not read the minimap geometry').toBeTruthy();
+    const mapRight = Number(map[1]);
+    const mapWidth = Number(map[2]);
+
+    // The ticker's right edge must clear the minimap's left edge.
+    expect(
+      tickerRight,
+      `ticker right:${tickerRight}px runs under the minimap, which occupies the rightmost ${mapRight + mapWidth}px`,
+    ).toBeGreaterThanOrEqual(mapRight + mapWidth);
+  });
+
   it('gives the scene more height than the chrome it replaced', async () => {
     await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'drone' });
 

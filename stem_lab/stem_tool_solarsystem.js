@@ -21033,7 +21033,26 @@ const d = labToolData.solarSystem || {};
                         var ticker = document.createElement('div');
                         ticker.setAttribute('data-drone-ticker', 'true');
 
-                        ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:linear-gradient(180deg,rgba(15,23,42,0.80) 0%,rgba(7,11,24,0.90) 100%);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.35);text-align:center;transition:opacity 0.5s;box-shadow:inset 0 1px 0 rgba(251,191,36,0.20),0 0 16px rgba(251,191,36,0.08),0 4px 12px rgba(7,11,24,0.50)';
+                        // The ticker must end where the bottom-right panels begin, or it
+                        // renders its own rotating science facts underneath them. It is
+                        // the FIRST overlay appended, so at equal z-index everything else
+                        // paints over it. Above ~1000px the centered text is short enough
+                        // not to reach, and at <=640px a media query hides the ticker, so
+                        // the damage sat unwatched in the 641px-1000px tablet band.
+                        //
+                        // The ticker is the FIRST overlay appended, so at equal z-index
+                        // everything in the bottom-right paints over it. Measured in a
+                        // real browser at 1280/1024/900/760px: a full-width bar ran its
+                        // own rotating science facts under the minimap (160px) and, on
+                        // rocky worlds, under the field-traverse panel (310px) as well --
+                        // at 760px that left 164px of visible bar for a ~590px fact.
+                        //
+                        // Clear the minimap horizontally, and on rocky worlds sit ABOVE
+                        // the traverse panel rather than shrink into it, so the bar keeps
+                        // usable width at every size. Fluid worlds (gas probe, ocean
+                        // submersible) build no traverse panel and stay on the bottom row.
+                        var tickerBottom = isFluid ? 8 : 166;
+                        ticker.style.cssText = 'position:absolute;bottom:' + tickerBottom + 'px;left:8px;right:184px;background:linear-gradient(180deg,rgba(15,23,42,0.80) 0%,rgba(7,11,24,0.90) 100%);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.35);text-align:center;transition:opacity 0.5s;box-shadow:inset 0 1px 0 rgba(251,191,36,0.20),0 0 16px rgba(251,191,36,0.08),0 4px 12px rgba(7,11,24,0.50)';
 
                         // Categorized facts with icons
 
