@@ -404,6 +404,31 @@
     };
   }
 
+  // Pure form of the double-number-line scaffold, so a test can read the value
+  // the diagram actually shows. Computing it inside the render closure meant
+  // the only gate possible was one that recomputed it independently -- which
+  // passes no matter what the code does.
+  //
+  // Shows the UNIT RATE, not the scale factor between the two known marks.
+  // The scale factor for 3 km -> 7 km is 2.333 once rounded for display, and
+  // 18 x 2.333 = 41.994, which the grader rejects against a key of 42.
+  function numberLineScaffold(model) {
+    var rows = model && model[1], labels = (model && model[0]) || [];
+    if (!Array.isArray(rows) || rows.length < 2) return null;
+    var known = rows[1];
+    if (!Array.isArray(known) || !known[0]) return null;
+    var unitRate = known[1] / known[0];
+    if (!isFinite(unitRate)) return null;
+    function strip(v) {
+      var out = String(v == null ? "" : v).trim();
+      if (out.charAt(out.length - 1) === ")") {
+        var open = out.lastIndexOf("(");
+        if (open > 0) out = out.slice(0, open).trim();
+      }
+      return out;
+    }
+    return { unitRate: unitRate, shown: roundTo(unitRate, 6), unitLabel: strip(labels[0]), valueLabel: strip(labels[1]) };
+  }
   root.RatioLabPure = {
     buildUnitComparison: buildUnitComparison,
     gcd: gcd,
@@ -417,6 +442,7 @@
     formatUnitRateEvidence: formatUnitRateEvidence,
     positiveAxisMaximum: positiveAxisMaximum,
     roundTo: roundTo,
+    numberLineScaffold: numberLineScaffold,
     percentSegmentFills: percentSegmentFills,
     percentTapeModel: percentTapeModel,
     percentTapeSummary: percentTapeSummary,
@@ -1335,9 +1361,18 @@
               h('summary', { className: 'cursor-pointer text-sm font-bold' }, t('stem.ratios.model_this_problem', 'Model this problem')),
               mode === 'numberLine' && h('div', { className: 'overflow-x-auto mt-3', tabIndex: 0, role: 'region', 'aria-label': t('stem.ratios.aligned_line_region', 'Aligned quantities on a double number line') }, (function() {
                 var rows = model[1], domain = rows[rows.length - 1][0];
-                var multiplier = rows[rows.length - 1][0] / rows[1][0];
+                // The scaffold used to print the scale factor between the two
+                // known marks, rounded to three places. For 3 km -> 7 km that
+                // rendered as "x 2.333", and 18 x 2.333 = 41.994, which the
+                // checker rejects against a key of 42: a student who followed the
+                // on-screen instruction exactly was marked wrong. It also
+                // contradicted every challenge explain text, which teaches the
+                // unit rate. The unit rate is exact whenever the rate is, and it
+                // is the method the answer key already uses.
+                var scaffold = numberLineScaffold(model);
+                var scaffoldText = scaffold ? (t("stem.ratios.per_one", "1 ") + scaffold.unitLabel + " → " + scaffold.shown + " " + scaffold.valueLabel) : "";
                 return h('svg', { viewBox: '0 0 360 220', role: 'img', 'aria-labelledby': 'ratio-model-title-' + challenge.id, style: { width: '100%', minWidth: 240, display: 'block' }, 'data-linked-ratio-line': challenge.id },
-                  h('title', { id: 'ratio-model-title-' + challenge.id }, model[0].join(' / ') + '. ' + t('stem.ratios.aligned_line_description', 'Vertically aligned marks represent equivalent quantities. The missing value remains a question mark.')),
+                  h('title', { id: 'ratio-model-title-' + challenge.id }, model[0].join(' / ') + '. ' + t('stem.ratios.aligned_line_description', 'Vertically aligned marks represent equivalent quantities. The missing value remains a question mark.') + ' ' + scaffoldText + '.'),
                   [0,1].map(function(axis) {
                     var y = axis ? 170 : 65;
                     return h('g', { key: axis },
@@ -1348,7 +1383,7 @@
                         h('text', { x: x, y: y + 28, fill: text, textAnchor: 'middle', fontSize: 17, fontWeight: 700 }, row[axis])); }));
                   }),
                   rows.map(function(row,index) { var x = 35 + row[0] / domain * 290; return h('line', { key: index, x1: x, x2: x, y1: 99, y2: 130, stroke: muted, strokeDasharray: '4 4' }); }),
-                  h('text', { x: 180, y: 118, textAnchor: 'middle', fill: text, fontSize: 14, fontWeight: 700 }, '× ' + formatNumber(multiplier) + ' → ' + t('stem.ratios.both_quantities', 'both quantities')));
+                  h('text', { x: 180, y: 118, textAnchor: 'middle', fill: text, fontSize: 14, fontWeight: 700 }, scaffoldText));
               })()),
               ['ratio-paint','ratio-simplify','ratio-scale'].indexOf(challenge.id) >= 0 && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3', 'data-ratio-scaling': challenge.id }, model[0].map(function(label,index) {
                 var operation = challenge.id === 'ratio-paint' ? '× 4' : challenge.id === 'ratio-simplify' ? '÷ 6' : '× 6';
