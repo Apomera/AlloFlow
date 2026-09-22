@@ -137,6 +137,38 @@ test.describe('Raptor Lab glossary index', () => {
     expect(await page.locator('.rh-gloss-index-link[data-has-terms="false"]').count()).toBeGreaterThan(3);
   });
 
+  // The lab ships three glossaries and all three had the same shape of defect:
+  // an alphabet that restarts partway through, and prose stating a count that had
+  // drifted from the array it describes (Deep Glossary B said "50 more advanced
+  // terms" over 61; Final Vocabulary said "50 final glossary terms" over 255).
+  for (const g of [
+    { id: 'glossary2', name: 'Deep Glossary B', termSel: '.text-sm.font-bold.text-indigo-300', countSel: '.text-xs.text-indigo-300.font-mono' },
+    { id: 'glossary3', name: 'Final Vocabulary', termSel: '.text-sm.font-bold.text-teal-300', countSel: '.text-xs.text-teal-300.font-mono' },
+  ]) {
+    test(`${g.name} is sorted, deduplicated, and states no stale count`, async ({ page }) => {
+      await page.evaluate((id: string) => {
+        const d = (window as any).__toolData;
+        d.raptorHunt = Object.assign({}, d.raptorHunt, { activeSection: id });
+        (window as any).__rerender();
+      }, g.id);
+      await page.waitForSelector(`[id="rh-panel-${g.id}"]`);
+
+      const names: string[] = await page.locator(`[id="rh-panel-${g.id}"] ${g.termSel}`).allTextContents();
+      const keys = names.map((n) => n.trim().toLowerCase());
+      expect(keys.length).toBeGreaterThan(30);
+      expect(keys).toEqual([...keys].sort());
+      expect(new Set(keys).size).toBe(keys.length);
+
+      // The live counter agrees with what is on screen.
+      const counter = await page.locator(`[id="rh-panel-${g.id}"] ${g.countSel}`).first().textContent();
+      expect(counter?.trim()).toBe(`${keys.length} terms`);
+
+      // The intro carries no hardcoded total to drift out of step with it.
+      const intro = await page.locator(`[id="rh-panel-${g.id}"] .rh-st-banner-copy, [id="rh-panel-${g.id}"] .text-sm.mt-1`).first().textContent();
+      expect(intro || '').not.toMatch(/\b\d{2,4}\s+(?:more\s+|final\s+)?(?:advanced\s+)?(?:glossary\s+)?terms\b/i);
+    });
+  }
+
   test('deals each term once in the flashcard deck', async ({ page }) => {
     const listed = await page.locator(TERMS).count();
     await page.getByRole('button', { name: /Flashcards/ }).click();

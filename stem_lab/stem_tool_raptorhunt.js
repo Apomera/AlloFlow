@@ -7264,10 +7264,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
-  // NEW v0.45: DEEP GLOSSARY B — 50 more advanced terms
+  // NEW v0.45: DEEP GLOSSARY B — advanced terms beyond the main glossary
   // ───────────────────────────────────────────────────────────
+  // The intro deliberately carries no count. It used to open "50 more advanced
+  // terms" while the array held 61 and the live counter beside it printed "61
+  // terms" — two numbers contradicting each other on one screen. A count written
+  // into prose goes stale the first time a term is added; the counter reads the
+  // array, so let that be the only place a number comes from.
   var DEEP_GLOSSARY_B = {
-    intro: '50 more advanced terms beyond the main glossary — pulled from raptor research literature + specialty fields.',
+    intro: 'Advanced terms beyond the main glossary — pulled from raptor research literature + specialty fields.',
     terms: [
       { term: 'Allopreening', def: 'Two birds preen each other. Strengthens pair bond. Common in raptor pairs.' },
       { term: 'Altricial', def: 'Hatched helpless + naked. Raptor chicks are altricial. Opposite of precocial (chickens, ducks).' },
@@ -8388,7 +8393,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // NEW v0.53: FINAL VOCABULARY — 50 final terms
   // ───────────────────────────────────────────────────────────
   var GLOSSARY_C = {
-    intro: '50 final glossary terms specific to expert/scientific contexts.',
+    // No count in the prose: it read "50 final glossary terms" while the array held
+    // 255 and the counter beside it printed "255 terms". The counter reads the data,
+    // so it is the only place a number should come from.
+    intro: 'Final glossary terms specific to expert/scientific contexts.',
     terms: [
       { term: 'Achromaticity', def: 'Lack of color difference — characteristic of some owl photo-receptor states in dim light.' },
       { term: 'Adaptation', def: 'Heritable trait that increases fitness in particular environment.' },
@@ -31316,9 +31324,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderGlossary2() {
         var search2 = (rh.glossary2Search || '').toLowerCase();
         function setSearch2(s) { setRH({ glossary2Search: s }); }
+        // Three entries sit out of order in the source array (Carunculate/Carrion/
+        // Carrier, and Nictitating membrane/Niche partitioning). Sort a copy rather
+        // than the shared array, which would mutate module state on every render.
+        // This list has no duplicates today; deduplicate anyway so it cannot quietly
+        // acquire one, as both of the other two glossaries here did.
+        var deepBest = {};
+        DEEP_GLOSSARY_B.terms.forEach(function(t) {
+          var key = t.term.toLowerCase().replace(/\s+/g, ' ').trim();
+          var prev = deepBest[key];
+          if (!prev || (t.def || '').length > (prev.def || '').length) deepBest[key] = t;
+        });
+        var deepTerms = Object.keys(deepBest).map(function(k) { return deepBest[k]; }).sort(function(a, b) {
+          var x = a.term.toLowerCase(), y = b.term.toLowerCase();
+          return x < y ? -1 : x > y ? 1 : 0;
+        });
         var filtered = search2
-          ? DEEP_GLOSSARY_B.terms.filter(function(t) { return t.term.toLowerCase().indexOf(search2) !== -1 || t.def.toLowerCase().indexOf(search2) !== -1; })
-          : DEEP_GLOSSARY_B.terms;
+          ? deepTerms.filter(function(t) { return t.term.toLowerCase().indexOf(search2) !== -1 || t.def.toLowerCase().indexOf(search2) !== -1; })
+          : deepTerms;
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-blue-900/40 border border-indigo-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
@@ -33792,9 +33815,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function renderGlossary3() {
         var search3 = (rh.glossary3Search || '').toLowerCase();
         function setSearch3(s) { setRH({ glossary3Search: s }); }
+        // Like the main glossary, this array restarts the alphabet partway through
+        // (Zoonotic is followed by Abiotic) and repeats two terms. Deduplicate on
+        // the fuller definition and sort a copy, leaving the shared array untouched.
+        var finalBest = {};
+        GLOSSARY_C.terms.forEach(function(t) {
+          var key = t.term.toLowerCase().replace(/\s+/g, ' ').trim();
+          var prev = finalBest[key];
+          if (!prev || (t.def || '').length > (prev.def || '').length) finalBest[key] = t;
+        });
+        var finalTerms = Object.keys(finalBest).map(function(k) { return finalBest[k]; }).sort(function(a, b) {
+          var x = a.term.toLowerCase(), y = b.term.toLowerCase();
+          return x < y ? -1 : x > y ? 1 : 0;
+        });
         var filtered = search3
-          ? GLOSSARY_C.terms.filter(function(t) { return t.term.toLowerCase().indexOf(search3) !== -1 || t.def.toLowerCase().indexOf(search3) !== -1; })
-          : GLOSSARY_C.terms;
+          ? finalTerms.filter(function(t) { return t.term.toLowerCase().indexOf(search3) !== -1 || t.def.toLowerCase().indexOf(search3) !== -1; })
+          : finalTerms;
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-teal-900/40 to-cyan-900/40 border border-teal-700/40 rounded-xl p-5' },
             h('div', { className: 'flex items-start gap-3' },
