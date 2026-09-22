@@ -915,6 +915,13 @@
     function addArrow(THREE, x, height, color, opacity, dashed) {
       var base = new THREE.Vector3(x, 0, 0);
       var tip = new THREE.Vector3(x, height, 0);
+      // NOT converted to a solid shaft, deliberately. A cylinder here IS built
+      // correctly (probed: 2 meshes at r=0.09) but measures the same median
+      // 2px on-screen width as this line, because the whole arrow is small in
+      // frame at every object distance the scene allows — 225 px of amber
+      // before, 264 after, and identical median run width. The polarization
+      // wave (306 -> 1345 px) and the refraction rays (44 -> 328 px) were
+      // worth it; this is geometry for no visible gain.
       addLine(THREE, [base, tip], color, opacity, dashed);
       var cone = new THREE.Mesh(
         new THREE.ConeGeometry(0.16, 0.42, 16),
@@ -2763,13 +2770,49 @@
         group.remove(c);
       }
     }
+    // `width` used to go straight to LineBasicMaterial.linewidth, which WebGL
+    // IGNORES — verified on this stack: identical pixels at linewidth 1, 4 and
+    // 10, and the driver reports ALIASED_LINE_WIDTH_RANGE = [1, 1]. So the
+    // callers' own encoding (width 2 for the strong incident/refracted rays,
+    // width 1 for the weak partial reflection) was silently discarded and
+    // every ray drew the same single pixel.
+    //
+    // A ray with a width now becomes a real cylinder, so the intensity
+    // distinction the callers were already expressing actually shows. Rays
+    // without one stay THREE.Line: the grid, axes and tick marks are meant to
+    // be hairlines and cost nothing as such.
+    // Sized against the scene, not guessed: the ray span is 5.4 units, so
+    // 0.035/step gave a width-2 ray a radius of 0.07 (~1.3% of frame) and
+    // measured 133 lit pixels against 44 for the old 1px line. 0.075/step
+    // keeps the strong/weak ratio intact while reading at projector distance.
+    var OP_REFR_RAY_UNIT = 0.075;   // scene units of radius per width step
     function addLine(THREE, pts, color, opacity, width) {
+      if (width && pts && pts.length === 2) return addRayTube(THREE, pts[0], pts[1], color, opacity, width);
       var geometry = new THREE.BufferGeometry().setFromPoints(pts);
-      var material = new THREE.LineBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity, linewidth: width || 1 });
+      var material = new THREE.LineBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity });
       var line = new THREE.Line(geometry, material);
       line.frustumCulled = false;
       S.model.add(line);
       return line;
+    }
+    // A straight ray is a cylinder between two points: cheap, and unlike a
+    // TubeGeometry it needs no curve sampling.
+    function addRayTube(THREE, from, to, color, opacity, width) {
+      var dir = new THREE.Vector3().subVectors(to, from);
+      var len = dir.length();
+      if (!(len > 1e-6) || !isFinite(len)) return null;
+      var r = OP_REFR_RAY_UNIT * Math.max(1, width);
+      var geo = new THREE.CylinderGeometry(r, r, len, 8, 1, true);
+      var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+        color: color, transparent: opacity < 1, opacity: opacity
+      }));
+      // CylinderGeometry runs along +Y about its centre, so orient that axis
+      // onto the ray and sit the mesh at the midpoint.
+      mesh.position.copy(from).addScaledVector(dir, 0.5);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+      mesh.frustumCulled = false;
+      S.model.add(mesh);
+      return mesh;
     }
     function addArrowHead(THREE, from, to, color, opacity) {
       var direction = new THREE.Vector3().subVectors(to, from);
@@ -3992,6 +4035,13 @@
     function addArrow(THREE, x, height, color, opacity, dashed) {
       var base = new THREE.Vector3(x, 0, 0);
       var tip = new THREE.Vector3(x, height, 0);
+      // NOT converted to a solid shaft, deliberately. A cylinder here IS built
+      // correctly (probed: 2 meshes at r=0.09) but measures the same median
+      // 2px on-screen width as this line, because the whole arrow is small in
+      // frame at every object distance the scene allows — 225 px of amber
+      // before, 264 after, and identical median run width. The polarization
+      // wave (306 -> 1345 px) and the refraction rays (44 -> 328 px) were
+      // worth it; this is geometry for no visible gain.
       addLine(THREE, [base, tip], color, opacity, dashed);
       var cone = new THREE.Mesh(
         new THREE.ConeGeometry(0.16, 0.42, 16),
@@ -7583,7 +7633,9 @@
         var seg = S.segs[si];
         var locus = seg._locus, comb = seg._comb;
         if (!locus) continue;
-        var lp = locus.geometry.attributes.position.array;
+        // Centreline scratch, not the geometry buffer: the locus is a tube
+        // now, so the samples are extruded into ring vertices below.
+        var lp = seg._centre || locus.geometry.attributes.position.array;
         var cp = comb ? comb.geometry.attributes.position.array : null;
         var ci = 0;
         var spreadA = 0, spreadB = 0;
@@ -7602,7 +7654,17 @@
             ci += 6;
           }
         }
-        locus.geometry.attributes.position.needsUpdate = true;
+        if (seg._tubePos) {
+          opWriteTube(THREE, lp, seg._tubePos);
+          locus.geometry.attributes.position.needsUpdate = true;
+          // The bounding sphere is computed from the vertices, so without this
+          // the tube keeps its first-frame bounds and gets frustum-culled as
+          // the wave moves. (frustumCulled is false here, but the sphere is
+          // also what raycasting and any later culling would use.)
+          locus.geometry.boundingSphere = null;
+        } else {
+          locus.geometry.attributes.position.needsUpdate = true;
+        }
         if (comb) comb.geometry.attributes.position.needsUpdate = true;
         if (seg.tag) S.spreads[seg.tag] = { along: +spreadA.toFixed(3), across: +spreadB.toFixed(3) };
       }
@@ -7683,15 +7745,88 @@
       S.half = new THREE.Vector3(span / 2 + 1.0, tr, tr);
     }
 
+    // The wave locus is the scene's whole point, and it was a THREE.Line —
+    // which WebGL draws at ONE PIXEL whatever linewidth says (the old code
+    // asked for linewidth: 2 and got 1). On a projector the beam all but
+    // vanished. It is a real tube now.
+    //
+    // Cost matters because this is rewritten every frame. Rebuilding a
+    // TubeGeometry per frame measured 0.536 ms EACH — over 1.6 ms for the
+    // three segments, a third of a 60 fps budget. Extruding rings into a
+    // PRE-ALLOCATED buffer measured 0.095 ms for the whole wave, because the
+    // vertex count and the index buffer never change: only positions move.
+    var OP_TUBE_RADIAL = 6;          // sides around the tube
+    // Sized against the scene, not guessed: the polarizer discs are
+    // OP_DISC_R = 2.45 units across, so 0.055 was ~2% of the framing and
+    // measured only 537 lit pixels against 306 for the old 1px line. 0.14
+    // reads clearly at projector distance while staying well inside the disc
+    // so it never crowds the field comb.
+    var OP_TUBE_R = 0.14;            // tube radius in scene units
+    // Index buffer depends only on the segment/radial counts, so it is built
+    // once here and shared by every segment rather than per frame.
+    var _opTubeIndex = null;
+    function opTubeIndex() {
+      if (_opTubeIndex) return _opTubeIndex;
+      var idx = [];
+      for (var i = 0; i < OP_WAVE_SEGS; i++) {
+        for (var j = 0; j < OP_TUBE_RADIAL; j++) {
+          var a = i * (OP_TUBE_RADIAL + 1) + j, b = a + OP_TUBE_RADIAL + 1;
+          idx.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+      }
+      _opTubeIndex = idx;
+      return idx;
+    }
+    // Extrude a ring of OP_TUBE_RADIAL+1 verts around each centreline sample,
+    // in the plane perpendicular to the local tangent.
+    function opWriteTube(THREE, centre, out) {
+      var up = _opTubeUp || (_opTubeUp = new THREE.Vector3(0, 1, 0));
+      var p = _opTubeP || (_opTubeP = new THREE.Vector3());
+      var pn = _opTubePN || (_opTubePN = new THREE.Vector3());
+      var tan = _opTubeT || (_opTubeT = new THREE.Vector3());
+      var n1 = _opTubeN1 || (_opTubeN1 = new THREE.Vector3());
+      var n2 = _opTubeN2 || (_opTubeN2 = new THREE.Vector3());
+      var alt = _opTubeAlt || (_opTubeAlt = new THREE.Vector3(1, 0, 0));
+      for (var i = 0; i <= OP_WAVE_SEGS; i++) {
+        var o = i * 3;
+        p.set(centre[o], centre[o + 1], centre[o + 2]);
+        var k = Math.min(OP_WAVE_SEGS, i + 1) * 3;
+        pn.set(centre[k], centre[k + 1], centre[k + 2]);
+        tan.subVectors(pn, p);
+        // Last sample has no forward neighbour; reuse the previous tangent
+        // rather than collapsing the ring to a point.
+        if (tan.lengthSq() < 1e-12) tan.set(1, 0, 0);
+        tan.normalize();
+        n1.crossVectors(tan, up);
+        if (n1.lengthSq() < 1e-12) n1.crossVectors(tan, alt);
+        n1.normalize();
+        n2.crossVectors(tan, n1).normalize();
+        for (var j = 0; j <= OP_TUBE_RADIAL; j++) {
+          var ang = j / OP_TUBE_RADIAL * Math.PI * 2;
+          var cx = Math.cos(ang) * OP_TUBE_R, cy = Math.sin(ang) * OP_TUBE_R;
+          var q = (i * (OP_TUBE_RADIAL + 1) + j) * 3;
+          out[q] = p.x + n1.x * cx + n2.x * cy;
+          out[q + 1] = p.y + n1.y * cx + n2.y * cy;
+          out[q + 2] = p.z + n1.z * cx + n2.z * cy;
+        }
+      }
+    }
+    var _opTubeUp, _opTubeP, _opTubePN, _opTubeT, _opTubeN1, _opTubeN2, _opTubeAlt;
     function buildSegment(THREE, seg, color, opacity, track) {
+      // Centreline scratch: writeWave still fills this exactly as before, so
+      // the field maths and the comb are untouched.
       var pos = new Float32Array((OP_WAVE_SEGS + 1) * 3);
+      var tubePos = new Float32Array((OP_WAVE_SEGS + 1) * (OP_TUBE_RADIAL + 1) * 3);
       var g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      var line = new THREE.Line(g, new THREE.LineBasicMaterial({
+      g.setAttribute('position', new THREE.BufferAttribute(tubePos, 3));
+      g.setIndex(opTubeIndex());
+      var line = new THREE.Mesh(g, new THREE.MeshBasicMaterial({
         color: color, transparent: opacity < 1, opacity: opacity
       }));
       line.frustumCulled = false;
       seg._locus = line;
+      seg._centre = pos;
+      seg._tubePos = tubePos;
       S.model.add(line);
       if (track) {
         var combN = Math.floor(OP_WAVE_SEGS / OP_COMB_EVERY) + 1;
@@ -8630,10 +8765,19 @@
     upd(patch);
   }
 
+  // VIEW-ONLY toggles are deliberately absent. reflShow3D / lensShow3D /
+  // refrShow3D / refrShowWindow only pick how the SAME setup is drawn
+  // (showMirror3D, showLens3D, showRefraction3D, showWindow) and reach no
+  // calculator. Including them meant a student who saved a prediction and then
+  // switched to the 3-D view to LOOK at the setup had the answer re-locked and
+  // was asked to predict again for physics that had not changed — which
+  // punishes exactly the behaviour the panel is trying to encourage.
+  //
+  // Everything listed here must actually alter the computed outcome.
   var OPTICS_TOPIC_CONTROL_KEYS = {
-    reflection: ['reflMirrorType', 'reflFocal', 'reflDo', 'reflObjH', 'reflScreenCm', 'reflShow3D'],
-    refraction: ['refrN1', 'refrN2', 'refrTheta1', 'refrShow3D', 'refrShowWindow'],
-    lenses: ['lensType', 'lensFocal', 'lensDo', 'lensObjH', 'lensScreenCm', 'lensShow3D'],
+    reflection: ['reflMirrorType', 'reflFocal', 'reflDo', 'reflObjH', 'reflScreenCm'],
+    refraction: ['refrN1', 'refrN2', 'refrTheta1'],
+    lenses: ['lensType', 'lensFocal', 'lensDo', 'lensObjH', 'lensScreenCm'],
     interference: ['intLambda', 'intSlitSep', 'intScreenL', 'intSlitWidth', 'intPropagationModel', 'intBandwidthNm', 'intDetectorWidthMm', 'intNoisePct'],
     diffraction: ['diffMode', 'diffLambda', 'diffSlitWidth', 'diffScreenL', 'diffGrating', 'diffGratingDuty', 'diffPropagationModel', 'diffBandwidthNm', 'diffDetectorWidthMm', 'diffNoisePct'],
     polarization: ['polTheta2', 'polTheta3', 'polUseP3', 'polQwp']

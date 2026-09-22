@@ -60,6 +60,145 @@ test.describe('Optics — reduced motion mid-session', () => {
       .toBeLessThan(Math.max(3, before * 0.25));
   });
 
+  test('the light wave is solid geometry, not a 1px line', async ({ page }) => {
+    // The wave locus IS the lesson in this scene, and it was a THREE.Line —
+    // which WebGL renders at one pixel whatever linewidth asks for. Count the
+    // construction rather than walking a scene graph the tool closes over: a
+    // graph walk would pass vacuously on an empty result.
+    //
+    // The ZERO is the load-bearing half. Other furniture in this scene (the
+    // axis, the disc rims, the field comb) is legitimately still Line /
+    // LineSegments, so counting meshes alone would stay green with the wave
+    // reverted.
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(
+      () => !!(window as any).StemLab?._registry?.opticsLab, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const T = (window as any).THREE, w = window as any;
+      w.__tally = { indexedMeshes: 0, wavePlainLines: 0 };
+      const Mesh = T.Mesh;
+      T.Mesh = function (geo: any, mat: any) {
+        // The wave tube is the only indexed BufferGeometry mesh built here.
+        if (geo && geo.index && geo.attributes && geo.attributes.position) w.__tally.indexedMeshes++;
+        return new Mesh(geo, mat);
+      };
+      T.Mesh.prototype = Mesh.prototype;
+      const Line = T.Line;
+      T.Line = function (geo: any, mat: any) {
+        // A wave-locus line has one vertex per wave sample and no index.
+        const n = geo && geo.attributes && geo.attributes.position
+          ? geo.attributes.position.count : 0;
+        if (n > 100 && !(geo && geo.index)) w.__tally.wavePlainLines++;
+        return new Line(geo, mat);
+      };
+      T.Line.prototype = Line.prototype;
+    });
+    await page.evaluate(() => (window as any).__mount({
+      opticsLab: { mode: 'polarization', polAnimate: true },
+    }));
+    await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+    await page.waitForTimeout(1200);
+
+    const tally = await page.evaluate(() => (window as any).__tally);
+    expect(tally.wavePlainLines, 'the wave locus is still a plain 1px THREE.Line').toBe(0);
+    expect(tally.indexedMeshes, 'no indexed tube mesh was built for the wave')
+      .toBeGreaterThan(0);
+  });
+
+  test('the wave is thicker on screen than a 1px line would be', async ({ page }) => {
+    // Construction counts prove a Mesh was BUILT; only pixels prove it is
+    // visible. readPixels is no good here: the renderer does not set
+    // preserveDrawingBuffer, so the buffer is cleared after compositing and
+    // reads back empty (measured: 0 non-background pixels while the scene was
+    // rendering fine). A screenshot captures the COMPOSITED frame instead.
+    await harness.mount(page, { opticsLab: { mode: 'polarization', polAnimate: false } });
+    await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+    await page.waitForTimeout(1500);
+
+    const shot = await page.locator('#wrap canvas').first().screenshot({ timeout: 30000 });
+    const amber = await page.evaluate(async (b64: string) => {
+      const img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/png;base64,' + b64; });
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d');
+      if (!g) return null;
+      g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      // The beam is amber (0xfbbf24) against a dark scene; the slate axis and
+      // disc rims are not red-dominant, so they do not register.
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i] > 150 && d[i + 1] > 100 && d[i + 2] < 90) n++;
+      }
+      return n;
+    }, shot.toString('base64'));
+
+    expect(amber, 'could not decode the canvas screenshot').not.toBeNull();
+    // Guard: something must have rendered at all.
+    expect(amber!, 'nothing amber rendered — the beam is missing entirely').toBeGreaterThan(0);
+    // The floor is MEASURED, not guessed. Same scene, same camera, same
+    // screenshot path:
+    //   original THREE.Line locus .... 306 px
+    //   tube at r=0.14 .............. 1345 px
+    // 800 sits well clear of the line and well under the tube, so it catches
+    // a revert to the 1px locus without being brittle about antialiasing or
+    // a small radius tweak.
+    expect(amber!, `the beam covers only ${amber} px — a 1px line measured 306`)
+      .toBeGreaterThan(800);
+  });
+
+  test('refraction rays are solid, so width 2 vs 1 actually reads as intensity', async ({ page }) => {
+    // The refraction scene passed `width: 2` for the strong incident and
+    // refracted rays and `width: 1` for the weak partial reflection, straight
+    // into LineBasicMaterial.linewidth — which WebGL ignores. Every ray drew
+    // one pixel and the intensity encoding the code was already expressing
+    // never reached the screen.
+    //
+    // Measure the composited frame: readPixels is useless here because the
+    // renderer does not set preserveDrawingBuffer.
+    await harness.mount(page, {
+      opticsLab: { mode: 'refraction', refrShow3D: true, refrN1: 1, refrN2: 1.52, refrTheta1: 30 },
+    });
+    await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+    await page.waitForTimeout(1500);
+
+    const shot = await page.locator('#wrap canvas').first().screenshot({ timeout: 30000 });
+    const counts = await page.evaluate(async (b64: string) => {
+      const img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/png;base64,' + b64; });
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d');
+      if (!g) return null;
+      g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, c.width, c.height).data;
+      // Incident ray is amber 0xfbbf24; refracted is cyan 0x22d3ee.
+      let amber = 0, cyan = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], gg = d[i + 1], b = d[i + 2];
+        if (r > 150 && gg > 100 && b < 90) amber++;
+        else if (r < 110 && gg > 140 && b > 170) cyan++;
+      }
+      return { amber, cyan };
+    }, shot.toString('base64'));
+
+    expect(counts, 'could not decode the refraction canvas').not.toBeNull();
+    // Guard: the rays must have rendered at all before any size claim.
+    expect(counts!.amber, 'no amber incident ray rendered').toBeGreaterThan(0);
+    expect(counts!.cyan, 'no cyan refracted ray rendered').toBeGreaterThan(0);
+    // The floor is MEASURED, not guessed. Same scene, same camera, same
+    // screenshot path:
+    //   original 1px THREE.Line rays .... 44 px (amber)
+    //   cylinders at 0.075/width step ... 328 px
+    // 150 sits well clear of the line and well under the tube, so it catches a
+    // revert without being brittle about antialiasing or a radius tweak.
+    expect(counts!.amber, `incident ray covers ${counts!.amber} px — a 1px line measured 44`)
+      .toBeGreaterThan(150);
+    expect(counts!.cyan, `refracted ray covers ${counts!.cyan} px — a 1px line measured far less`)
+      .toBeGreaterThan(150);
+  });
+
   test('the polarization scene frees its GL context when the view unmounts', async ({ page }) => {
     // Optics does NOT route through StemLab.releaseGl (unlike most GL tools);
     // each of its five renderers calls forceContextLoss() directly. That is a
