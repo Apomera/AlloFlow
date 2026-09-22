@@ -407,6 +407,26 @@
 [data-rh-station] .rh-st-card-label{display:block;margin-bottom:5px!important;font-size:10px!important;letter-spacing:.07em;text-transform:uppercase;}
 [data-rh-station] .rh-st-card-body{font-size:13px!important;line-height:1.6!important;}
 
+/* -- Glossary letter index ------------------------------------------------
+   The unfiltered glossary is ~6,300px of uninterrupted rows. The bar sticks
+   under the panel so the alphabet stays reachable while scrolling, and the
+   letter headings give the scroll position a landmark. */
+[data-rh-station] .rh-gloss-index{position:sticky;top:4px;z-index:4;display:flex;flex-wrap:wrap;gap:3px;padding:7px 8px;border:1px solid var(--rh-st-line);border-radius:11px;background:rgba(2,6,23,.92);backdrop-filter:blur(8px);box-shadow:0 8px 22px rgba(2,6,23,.32);}
+[data-rh-station] .rh-gloss-index-link{display:grid;place-items:center;min-width:25px;min-height:25px;padding:0 4px;border-radius:7px;color:#fcd34d;font:800 11px/1 ui-monospace,Menlo,monospace;text-decoration:none;transition:background-color .14s,color .14s;}
+[data-rh-station] .rh-gloss-index-link:hover{background:rgba(251,191,36,.16);}
+/* A letter with no matches stays in place so the bar does not reflow, but it is
+   visibly and programmatically inert rather than a link that goes nowhere. */
+[data-rh-station] .rh-gloss-index-link[data-has-terms="false"]{color:#64748b;cursor:default;}
+[data-rh-station] .rh-gloss-index-link[data-has-terms="false"]:hover{background:transparent;}
+/* The index bar is sticky at top:4px and ~41px tall, so it covers 0-45px. A jump
+   target has to clear that AND leave the heading room to read as a heading rather
+   than as a strip wedged under the bar, hence the margin is the bar's extent plus
+   a gap, not just its height. */
+[data-rh-station] .rh-gloss-letter{display:flex;align-items:center;gap:9px;margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--rh-st-line);scroll-margin-top:69px;}
+[data-rh-station] .rh-gloss-letter:focus-visible{outline:3px solid var(--rh-cyan,#67e8f9);outline-offset:4px;border-radius:4px;}
+[data-rh-station] .rh-gloss-letter-mark{color:#fcd34d;font:900 17px/1 ui-monospace,Menlo,monospace;letter-spacing:-.02em;}
+[data-rh-station] .rh-gloss-letter-count{color:#94a3b8;font:800 9px/1 ui-sans-serif,system-ui;letter-spacing:.08em;}
+
 /* Reduced motion and forced colors: keep the structure, drop the decoration. */
 @media(prefers-reduced-motion:reduce){[data-rh-station] .rh-st-chips>button{transition:none!important;}[data-rh-station] .rh-st-chips>button:hover{transform:none!important;}}
 @media(forced-colors:active){
@@ -417,6 +437,11 @@
 [data-rh-station] .rh-st-card::before{background:CanvasText;opacity:1;}
 [data-rh-station] .rh-st-chips>button{border-color:ButtonText;background:ButtonFace;color:ButtonText;}
 [data-rh-station] .rh-st-chips>button[aria-pressed="true"],[data-rh-station] .rh-st-chips>button[aria-selected="true"]{border-color:Highlight;box-shadow:inset 0 0 0 2px Highlight;}
+[data-rh-station] .rh-gloss-index{background:Canvas;border-color:CanvasText;box-shadow:none;backdrop-filter:none;}
+[data-rh-station] .rh-gloss-index-link{color:LinkText;}
+[data-rh-station] .rh-gloss-index-link[data-has-terms="false"]{color:GrayText;}
+[data-rh-station] .rh-gloss-letter{border-bottom-color:CanvasText;}
+[data-rh-station] .rh-gloss-letter-mark,[data-rh-station] .rh-gloss-letter-count{color:CanvasText;}
 }
 @container (max-width:600px){
 [data-rh-station] .rh-st-banner{padding:16px!important;}
@@ -33902,6 +33927,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var glossCategory = rh.glossCategory || 'all';
         function setSearch(s) { setRH({ glossSearch: s }); }
         function setCat(c) { setRH({ glossCategory: c }); }
+        var GLOSS_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        // Terms are English headwords here, but fold accents anyway so a term like
+        // "Élan" indexes under E rather than falling into the # bucket.
+        function glossLetter(term) {
+          var first = String(term || '').trim().charAt(0).toUpperCase();
+          if (first.normalize) first = first.normalize('NFD').replace(/[̀-ͯ]/g, '');
+          return /[A-Z]/.test(first) ? first : '#';
+        }
+        function rhPrefersReducedMotion() {
+          return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        }
         // ── NEW v0.12: Categorize terms ──
         // Assign categories by term-keyword inference
         function categorize(term, def) {
@@ -33914,7 +33950,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (/accipiter|buteo|raptor|falconidae|zygodactyl|anisodactyl/i.test(t + ' ' + d)) return 'taxonomy';
           return 'other';
         }
-        var categorized = GLOSSARY.map(function(g) { return Object.assign({}, g, { cat: categorize(g.term, g.def) }); });
+        // GLOSSARY is two term lists that were concatenated without merging: it runs
+        // A-Z once, restarts at A partway through, and defines 9 terms twice (one of
+        // the second copies even reads "See Wing Loading in base glossary"). So the
+        // page advertises an A-Z reference while more than half of it sits past Z,
+        // a lookup for a duplicated term yields two entries, the flashcard deck
+        // deals the same card twice, and the headline count is inflated.
+        //
+        // Normalise here rather than editing the data, so the list, the flashcards
+        // and every count share one source. Of two entries for a term, keep the
+        // fuller definition -- but a definition that opens by pointing at the other
+        // copy ("See Wing Loading in base glossary") loses regardless of length:
+        // once the copies are merged that reference dangles, and the reader is
+        // already at the entry it is sending them to.
+        function glossKey(term) { return term.toLowerCase().replace(/\s+/g, ' ').trim(); }
+        function glossRefersOut(def) { return /^\s*see\s+/i.test(def || ''); }
+        function glossBetter(candidate, incumbent) {
+          var candRef = glossRefersOut(candidate.def), holdRef = glossRefersOut(incumbent.def);
+          if (candRef !== holdRef) return !candRef;
+          return (candidate.def || '').length > (incumbent.def || '').length;
+        }
+        var glossBest = {};
+        var glossOrder = [];
+        GLOSSARY.forEach(function(g) {
+          var key = glossKey(g.term);
+          var prev = glossBest[key];
+          if (!prev) { glossBest[key] = g; glossOrder.push(key); return; }
+          if (glossBetter(g, prev)) glossBest[key] = g;
+        });
+        var glossTerms = glossOrder.map(function(key) { return glossBest[key]; });
+        glossTerms.sort(function(a, b) { return glossKey(a.term) < glossKey(b.term) ? -1 : glossKey(a.term) > glossKey(b.term) ? 1 : 0; });
+        var categorized = glossTerms.map(function(g) { return Object.assign({}, g, { cat: categorize(g.term, g.def) }); });
         var categories = [
           { id: 'all', label: 'All' },
           { id: 'anatomy', label: __alloT('stem.raptorhunt.anatomy_2', '🦴 Anatomy'), color: 'amber' },
@@ -33939,7 +34005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-2' },
               h('div', null,
                 h('div', { className: 'text-lg font-bold text-amber-200 mb-1 tracking-tight' }, __alloT('stem.raptorhunt.raptor_glossary', '📖 Raptor Glossary')),
-                h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, GLOSSARY.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, taxonomy, and physics.')
+                h('div', { className: 'text-sm text-slate-300 leading-relaxed' }, glossTerms.length + ' terms — A-Z reference covering anatomy, behavior, conservation, falconry, taxonomy, and physics.')
               ),
               // ── NEW v0.17: Mode toggle ──
               h('div', { className: 'flex gap-1 bg-slate-900/60 rounded-lg p-1' },
@@ -33964,8 +34030,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var fc = rh.flashcard || { deckIdx: 0, flipped: false, knownIds: {}, reviewedIds: {}, sessionStart: Date.now() };
             function setFC(patch) { setRH({ flashcard: Object.assign({}, fc, patch) }); }
             // Build deck — prefer terms not yet marked "known"
-            var deck = GLOSSARY.filter(function(g) { return !fc.knownIds[g.term]; });
-            if (deck.length === 0) deck = GLOSSARY; // reset cycle
+            // Deal from the deduplicated list, or the same term comes round twice.
+            var deck = glossTerms.filter(function(g) { return !fc.knownIds[g.term]; });
+            if (deck.length === 0) deck = glossTerms; // reset cycle
             var card = deck[fc.deckIdx % deck.length];
             var reviewedCount = Object.keys(fc.reviewedIds || {}).length;
             var knownCount = Object.keys(fc.knownIds || {}).length;
@@ -34074,7 +34141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           glossMode === 'list' && h('div', { className: 'flex flex-wrap gap-1.5' },
             categories.map(function(c) {
               var active = glossCategory === c.id;
-              var count = c.id === 'all' ? GLOSSARY.length : (catCounts[c.id] || 0);
+              var count = c.id === 'all' ? glossTerms.length : (catCounts[c.id] || 0);
               return h('button', {
                 key: c.id,
                 onClick: function() { setCat(c.id); },
@@ -34088,22 +34155,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
 
           // Results count (list mode only)
-          glossMode === 'list' && h('div', { className: 'text-[10px] text-slate-400' }, filtered.length + ' of ' + GLOSSARY.length + ' terms shown' + (glossSearch ? ' (search: ' + glossSearch + ')' : '') + (glossCategory !== 'all' ? ' (category: ' + glossCategory + ')' : '')),
+          glossMode === 'list' && h('div', { className: 'text-[10px] text-slate-400' }, filtered.length + ' of ' + glossTerms.length + ' terms shown' + (glossSearch ? ' (search: ' + glossSearch + ')' : '') + (glossCategory !== 'all' ? ' (category: ' + glossCategory + ')' : '')),
+
+          // ── Letter index ──
+          // The unfiltered list is ~6,300px of uninterrupted rows. An A-Z reference
+          // is navigated by letter, so show the alphabet and group the entries under
+          // it. Letters with no match stay visible but inert, so the alphabet does
+          // not reflow as the filters narrow it.
+          glossMode === 'list' && filtered.length > 0 && (function() {
+            var present = {};
+            filtered.forEach(function(g) { present[glossLetter(g.term)] = true; });
+            // Always show A-Z so the bar does not reflow as filters narrow it, but
+            // append any bucket the data actually produced outside that range (a
+            // term starting with a digit lands in '#'), or those rows would be
+            // rendered with no way to reach them from the index.
+            var letters = GLOSS_ALPHABET.slice();
+            Object.keys(present).forEach(function(key) {
+              if (letters.indexOf(key) === -1) letters.push(key);
+            });
+            return h('nav', { className: 'rh-gloss-index', 'aria-label': __alloT('stem.raptorhunt.jump_to_letter', 'Jump to letter') },
+              letters.map(function(letter) {
+                var has = !!present[letter];
+                return h('a', {
+                  key: letter,
+                  href: has ? '#rh-gloss-letter-' + letter : undefined,
+                  className: 'rh-gloss-index-link',
+                  'data-has-terms': has ? 'true' : 'false',
+                  'aria-disabled': has ? undefined : 'true',
+                  tabIndex: has ? undefined : -1,
+                  onClick: has ? function(event) {
+                    // Manage focus as well as scroll, or a keyboard user is moved
+                    // visually while their focus stays behind in the index.
+                    event.preventDefault();
+                    var target = document.getElementById('rh-gloss-letter-' + letter);
+                    if (!target) return;
+                    target.scrollIntoView({ block: 'start', behavior: rhPrefersReducedMotion() ? 'auto' : 'smooth' });
+                    target.focus({ preventScroll: true });
+                  } : function(event) { event.preventDefault(); },
+                  'aria-label': has
+                    ? __alloFill(__alloT('stem.raptorhunt.a11y_jump_to_letter', 'Jump to {value1}'), { value1: letter })
+                    : __alloFill(__alloT('stem.raptorhunt.a11y_no_terms_for_letter', 'No terms under {value1}'), { value1: letter })
+                }, letter);
+              })
+            );
+          })(),
 
           // Glossary entries (list mode only)
           glossMode === 'list' && (filtered.length === 0 ? h('div', { className: 'text-center text-slate-500 italic py-8' }, __alloT('stem.raptorhunt.no_matches', 'No matches.')) :
-            h('div', { className: 'space-y-2' },
-              filtered.map(function(g, i) {
-                var catColors = { anatomy: 'amber', physics: 'cyan', behavior: 'indigo', falconry: 'orange', taxonomy: 'emerald', conservation: 'green', other: 'slate' };
-                var cc = catColors[g.cat] || 'slate';
-                return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded p-3' },
-                  h('div', { className: 'flex items-baseline gap-2' },
-                    h('div', { className: 'text-sm font-bold text-amber-300 flex-shrink-0' }, g.term),
-                    h('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full bg-' + cc + '-900/40 text-' + cc + '-300 border border-' + cc + '-700/40 font-mono uppercase' }, g.cat),
-                    h('div', { className: 'text-xs text-slate-200 leading-relaxed flex-1' }, g.def)
-                  )
-                );
-              })
+            h('div', { className: 'space-y-4' },
+              (function() {
+                // filtered is already sorted, so a single pass yields the groups.
+                var groups = [];
+                filtered.forEach(function(g) {
+                  var letter = glossLetter(g.term);
+                  var last = groups[groups.length - 1];
+                  if (!last || last.letter !== letter) groups.push({ letter: letter, items: [g] });
+                  else last.items.push(g);
+                });
+                return groups.map(function(group) {
+                  return h('section', { key: group.letter, 'aria-labelledby': 'rh-gloss-letter-' + group.letter },
+                    h('h3', {
+                      id: 'rh-gloss-letter-' + group.letter,
+                      className: 'rh-gloss-letter',
+                      tabIndex: -1
+                    },
+                      h('span', { className: 'rh-gloss-letter-mark' }, group.letter),
+                      h('span', { className: 'rh-gloss-letter-count' }, group.items.length)
+                    ),
+                    h('div', { className: 'space-y-2' },
+                      group.items.map(function(g, i) {
+                        var catColors = { anatomy: 'amber', physics: 'cyan', behavior: 'indigo', falconry: 'orange', taxonomy: 'emerald', conservation: 'green', other: 'slate' };
+                        var cc = catColors[g.cat] || 'slate';
+                        return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded p-3' },
+                          h('div', { className: 'flex items-baseline gap-2' },
+                            h('div', { className: 'text-sm font-bold text-amber-300 flex-shrink-0' }, g.term),
+                            h('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full bg-' + cc + '-900/40 text-' + cc + '-300 border border-' + cc + '-700/40 font-mono uppercase' }, g.cat),
+                            h('div', { className: 'text-xs text-slate-200 leading-relaxed flex-1' }, g.def)
+                          )
+                        );
+                      })
+                    )
+                  );
+                });
+              })()
             ))
         );
       }
