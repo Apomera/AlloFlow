@@ -3454,6 +3454,351 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   ];
 
   // ─────────────────────────────────────────────────────
+  // CALL SKETCH MODELS — the acoustic model behind every tone sketch.
+  // The tone sketch, the rhythm strip, the spectrogram, the call-shape
+  // badge and the text alternative are ALL derived from this one table,
+  // so what a student hears, sees and reads about a call agree with each
+  // other. Earlier the sketch was reverse-engineered from the mnemonic
+  // TEXT: every species played at one songbird pitch (a Mourning Dove
+  // cooed at 2.8 kHz) and description words like "Mechanical RATTLE —
+  // like a wooden noisemaker" were sung syllable by syllable.
+  //
+  // Per note: hz (start pitch), to (end pitch for a slurred note), dur
+  // and gap in seconds, emph (accented), trill (amplitude-modulation Hz
+  // for a buzzy/wavering note), pulse (Hz for a mechanical rattle),
+  // quality: whistle | coo | hoot | harsh | buzz | rattle. Pitches are
+  // field-guide approximations of the real call, not measurements.
+  // Gate: tests/birdlab_call_sketch_model.test.js.
+  // ─────────────────────────────────────────────────────
+  var CALL_SKETCHES = {
+    robin_call: { label: 'Caroling song: three short phrases', notes: [
+      { syl: 'cheer', hz: 2400, to: 2900, dur: 0.18, gap: 0.03 },
+      { syl: 'i', hz: 2800, dur: 0.10, gap: 0.03 },
+      { syl: 'ly', hz: 2500, dur: 0.14, gap: 0.28 },
+      { syl: 'cheer', hz: 2600, to: 3100, dur: 0.18, gap: 0.03 },
+      { syl: 'up', hz: 2700, dur: 0.12, gap: 0.28, emph: true },
+      { syl: 'cheer', hz: 2900, dur: 0.16, gap: 0.03 },
+      { syl: 'i', hz: 3100, dur: 0.10, gap: 0.03 },
+      { syl: 'o', hz: 2400, dur: 0.18, gap: 0.05 }
+    ] },
+    chickadee_call: { label: 'the whistled "fee-bee" song (the buzzy chick-a-dee is the call)', notes: [
+      { syl: 'fee', hz: 4000, dur: 0.45, gap: 0.06, emph: true },
+      { syl: 'bee', hz: 3550, dur: 0.50, gap: 0.05 }
+    ] },
+    cardinal_call: { label: 'slurred "what-cheer" whistles', notes: [
+      { syl: 'what', hz: 2600, to: 3800, dur: 0.16, gap: 0.04 },
+      { syl: 'cheer', hz: 3900, to: 2300, dur: 0.32, gap: 0.12, emph: true },
+      { syl: 'cheer', hz: 3900, to: 2300, dur: 0.32, gap: 0.10 },
+      { syl: 'cheer', hz: 3900, to: 2300, dur: 0.32, gap: 0.05 }
+    ] },
+    towhee_call: { label: '"drink-your-tea" with a trilled "tea"', notes: [
+      { syl: 'drink', hz: 2900, dur: 0.12, gap: 0.05 },
+      { syl: 'your', hz: 2300, dur: 0.12, gap: 0.05 },
+      { syl: 'teeee', hz: 4700, dur: 0.65, gap: 0.05, trill: 30, quality: 'buzz', emph: true }
+    ] },
+    wts_call: { label: 'two long clear whistles, then quick triplets', notes: [
+      { syl: 'Old', hz: 3900, dur: 0.50, gap: 0.07, emph: true },
+      { syl: 'Sam', hz: 4400, dur: 0.45, gap: 0.09, emph: true },
+      { syl: 'Pea', hz: 4300, dur: 0.12, gap: 0.04 },
+      { syl: 'bo', hz: 4300, dur: 0.12, gap: 0.04 },
+      { syl: 'dy', hz: 4300, dur: 0.12, gap: 0.09 },
+      { syl: 'Pea', hz: 4300, dur: 0.12, gap: 0.04 },
+      { syl: 'bo', hz: 4300, dur: 0.12, gap: 0.04 },
+      { syl: 'dy', hz: 4300, dur: 0.12, gap: 0.09 },
+      { syl: 'Pea', hz: 4300, dur: 0.12, gap: 0.04 },
+      { syl: 'bo', hz: 4300, dur: 0.12, gap: 0.04 },
+      { syl: 'dy', hz: 4300, dur: 0.12, gap: 0.05 }
+    ] },
+    titmouse_call: { label: 'ringing "peter" repeated', notes: [
+      { syl: 'pe', hz: 3400, dur: 0.12, gap: 0.03, emph: true },
+      { syl: 'ter', hz: 2900, dur: 0.14, gap: 0.10 },
+      { syl: 'pe', hz: 3400, dur: 0.12, gap: 0.03, emph: true },
+      { syl: 'ter', hz: 2900, dur: 0.14, gap: 0.10 },
+      { syl: 'pe', hz: 3400, dur: 0.12, gap: 0.03, emph: true },
+      { syl: 'ter', hz: 2900, dur: 0.14, gap: 0.10 },
+      { syl: 'pe', hz: 3400, dur: 0.12, gap: 0.03, emph: true },
+      { syl: 'ter', hz: 2900, dur: 0.14, gap: 0.05 }
+    ] },
+    barredowl_call: { label: 'eight low hoots, the last one sliding down', quality: 'hoot', notes: [
+      { syl: 'who', hz: 500, dur: 0.25, gap: 0.08 },
+      { syl: 'cooks', hz: 480, dur: 0.20, gap: 0.08 },
+      { syl: 'for', hz: 470, dur: 0.20, gap: 0.08 },
+      { syl: 'you?', hz: 520, dur: 0.30, gap: 0.35 },
+      { syl: 'who', hz: 500, dur: 0.25, gap: 0.08 },
+      { syl: 'cooks', hz: 480, dur: 0.20, gap: 0.08 },
+      { syl: 'for', hz: 470, dur: 0.20, gap: 0.08 },
+      { syl: 'you-all', hz: 540, to: 380, dur: 0.55, gap: 0.05, emph: true }
+    ] },
+    mourningdove_call: { label: 'soft low cooing: the second note rises, then three lower notes', quality: 'coo', notes: [
+      { syl: 'hoo', hz: 450, dur: 0.30, gap: 0.03 },
+      { syl: 'OO', hz: 600, to: 520, dur: 0.45, gap: 0.35, emph: true },
+      { syl: 'hoo', hz: 440, dur: 0.40, gap: 0.30 },
+      { syl: 'hoo', hz: 440, dur: 0.40, gap: 0.30 },
+      { syl: 'hoo', hz: 430, dur: 0.45, gap: 0.05 }
+    ] },
+    rwbb_call: { label: 'two harsh notes climbing into a buzzy trill', notes: [
+      { syl: 'konk', hz: 900, dur: 0.12, gap: 0.04, quality: 'harsh' },
+      { syl: 'la', hz: 1600, dur: 0.10, gap: 0.04, quality: 'harsh' },
+      { syl: 'reeee', hz: 3200, dur: 0.70, gap: 0.05, trill: 40, quality: 'buzz', emph: true }
+    ] },
+    vireo_call: { label: 'short phrases, like a question and an answer', notes: [
+      { syl: 'here', hz: 3000, dur: 0.12, gap: 0.03 },
+      { syl: 'I', hz: 3300, dur: 0.10, gap: 0.03 },
+      { syl: 'am', hz: 3600, dur: 0.14, gap: 0.30 },
+      { syl: 'where', hz: 3600, dur: 0.12, gap: 0.03 },
+      { syl: 'are', hz: 3100, dur: 0.10, gap: 0.03 },
+      { syl: 'you?', hz: 2900, to: 3400, dur: 0.16, gap: 0.05 }
+    ] },
+    kingfisher_call: { label: 'a dry mechanical rattle', quality: 'rattle', notes: [
+      { syl: 'rattle', hz: 2200, to: 2000, dur: 1.20, gap: 0.05, pulse: 16, emph: true }
+    ] },
+    jay_call: { label: 'the harsh, falling "jay" scream', quality: 'harsh', notes: [
+      { syl: 'JAY', hz: 3200, to: 2400, dur: 0.35, gap: 0.08, emph: true },
+      { syl: 'jay', hz: 3000, to: 2300, dur: 0.30, gap: 0.05 }
+    ] },
+    yellowthroat_call: { label: 'bouncy three-note "witchity" repeated', notes: [
+      { syl: 'wit', hz: 4200, dur: 0.09, gap: 0.02 },
+      { syl: 'chi', hz: 3400, dur: 0.09, gap: 0.02 },
+      { syl: 'ty', hz: 4600, dur: 0.10, gap: 0.06 },
+      { syl: 'wit', hz: 4200, dur: 0.09, gap: 0.02 },
+      { syl: 'chi', hz: 3400, dur: 0.09, gap: 0.02 },
+      { syl: 'ty', hz: 4600, dur: 0.10, gap: 0.06 },
+      { syl: 'wit', hz: 4200, dur: 0.09, gap: 0.02 },
+      { syl: 'chi', hz: 3400, dur: 0.09, gap: 0.02 },
+      { syl: 'ty', hz: 4600, dur: 0.10, gap: 0.06 },
+      { syl: 'wit', hz: 4200, dur: 0.09, gap: 0.02 },
+      { syl: 'ch', hz: 3400, dur: 0.12, gap: 0.05, emph: true }
+    ] },
+    pileated_call: { label: 'the loud "kuk-kuk-kuk" series (drumming is separate)', quality: 'harsh', notes: [
+      { syl: 'kuk', hz: 1000, dur: 0.12, gap: 0.10 },
+      { syl: 'kuk', hz: 1040, dur: 0.12, gap: 0.10 },
+      { syl: 'kuk', hz: 1080, dur: 0.12, gap: 0.10, emph: true },
+      { syl: 'kuk', hz: 1080, dur: 0.12, gap: 0.10, emph: true },
+      { syl: 'kuk', hz: 1080, dur: 0.12, gap: 0.10, emph: true },
+      { syl: 'kuk', hz: 1040, dur: 0.12, gap: 0.10 },
+      { syl: 'kuk', hz: 1000, dur: 0.12, gap: 0.10 },
+      { syl: 'kuk', hz: 1000, dur: 0.12, gap: 0.05 }
+    ] },
+    loon_call: { label: 'the tremolo ("laughing" call), not the long wail', notes: [
+      { syl: 'tremolo', hz: 800, to: 1000, dur: 1.00, gap: 0.15, trill: 12, emph: true },
+      { syl: 'tremolo', hz: 900, to: 1050, dur: 0.80, gap: 0.05, trill: 12 }
+    ] }
+  };
+  FAMOUS_CALLS.forEach(function(c) { if (CALL_SKETCHES[c.id]) c.sketch = CALL_SKETCHES[c.id]; });
+
+  // Pure helpers (no React, no DOM) so a test can feed the product's own
+  // model through the product's own classifier.
+  var BIRDLAB_SPECTROGRAM_RANGE = { min: 300, max: 8000 };
+  var BIRDLAB_CALL_REGISTER = { lowMax: 1000, midMax: 2500 };
+  function birdLabSemitones(fromHz, toHz) { return 12 * Math.log(toHz / fromHz) / Math.LN2; }
+  // 0 = bottom of the spectrogram (300 Hz), 1 = top (8 kHz), log scale
+  // like a real spectrogram so an owl and a warbler land where they belong.
+  function birdLabFreqToUnit(hz) {
+    var lo = Math.log(BIRDLAB_SPECTROGRAM_RANGE.min), hi = Math.log(BIRDLAB_SPECTROGRAM_RANGE.max);
+    var c = Math.max(BIRDLAB_SPECTROGRAM_RANGE.min, Math.min(BIRDLAB_SPECTROGRAM_RANGE.max, Number(hz) || BIRDLAB_SPECTROGRAM_RANGE.min));
+    return (Math.log(c) - lo) / (hi - lo);
+  }
+  // Legacy fallback: a call with no sketch model still gets a rhythm
+  // outline from its mnemonic text (one songbird pitch, text heuristics).
+  function birdLabMnemonicTones(mnemonic) {
+    if (!mnemonic) return [];
+    var s = String(mnemonic).replace(/^["']|["']$/g, '').replace(/[()]/g, '');
+    var phrases = s.split(/\s+/).filter(Boolean);
+    var notes = [];
+    var basePitch = 2800;
+    phrases.forEach(function(phrase, pi) {
+      var syllables = phrase.split('-').filter(Boolean);
+      syllables.forEach(function(rawSyl, si) {
+        var letters = rawSyl.replace(/[^a-zA-Z]/g, '');
+        if (!letters) return;
+        var isUpper = letters === letters.toUpperCase() && letters.length > 1;
+        var hasRepeatedVowel = /(EE|OO|AA|II|UU|ee|oo){2,}|EE{1,}|OO{1,}/i.test(rawSyl) || /[A-Z]{4,}/.test(letters);
+        var hasBang = /[!]+/.test(rawSyl);
+        var hasQuestion = /[?]+/.test(rawSyl);
+        var pitch = basePitch;
+        if (isUpper)          pitch += 350;
+        if (hasRepeatedVowel) pitch += 500;
+        if (hasBang)          pitch += 250;
+        var prevSyl = si > 0 ? syllables[si - 1] : null;
+        var isRepeatOfPrev = prevSyl && prevSyl.replace(/[^a-zA-Z]/g, '').toLowerCase() === letters.toLowerCase();
+        if (!isRepeatOfPrev && si > 0 && !hasRepeatedVowel) pitch -= 120;
+        if (hasQuestion) pitch += 600;
+        var dur = Math.max(0.12, Math.min(0.45, 0.06 + letters.length * 0.04));
+        if (hasRepeatedVowel) dur = Math.min(0.65, dur * 1.5);
+        notes.push({ freq: pitch, endFreq: pitch, dur: dur, gap: 0.04, emph: isUpper || hasBang, syl: rawSyl, quality: 'whistle', trill: 0, pulse: 0 });
+      });
+      if (pi < phrases.length - 1 && notes.length) notes[notes.length - 1].gap = 0.18;
+    });
+    return notes;
+  }
+  // Model → playable/drawable note list. Accepts a FAMOUS_CALLS entry
+  // (uses its sketch), any object with a mnemonic, or a bare string.
+  function birdLabCallTones(call) {
+    if (!call) return [];
+    if (typeof call === 'string') return birdLabMnemonicTones(call);
+    var sketch = call.sketch;
+    if (!sketch || !Array.isArray(sketch.notes) || !sketch.notes.length) return birdLabMnemonicTones(call.mnemonic);
+    return sketch.notes.map(function(n) {
+      var hz = Number(n.hz) || 1000;
+      return {
+        freq: hz,
+        endFreq: Number(n.to) || hz,
+        dur: Math.max(0.03, Number(n.dur) || 0.15),
+        gap: n.gap == null ? 0.04 : Math.max(0, Number(n.gap) || 0),
+        emph: !!n.emph,
+        syl: n.syl || '',
+        quality: n.quality || sketch.quality || 'whistle',
+        trill: Number(n.trill) || 0,
+        pulse: Number(n.pulse) || 0
+      };
+    });
+  }
+  function birdLabTrendFollowers(seq, sign) {
+    if (seq.length < 2) return 1;
+    var ok = 0;
+    for (var i = 1; i < seq.length; i++) if (birdLabSemitones(seq[i - 1], seq[i]) * sign >= -0.5) ok++;
+    return ok / (seq.length - 1);
+  }
+  // A series is "repeated" when a short pattern (period p) recurs at
+  // least three times, allowing up to two lead-in notes ("what-cheer
+  // cheer cheer", "Old Sam Peabody Peabody Peabody").
+  function birdLabIsRepeatedSeries(notes) {
+    var n = notes.length;
+    for (var offset = 0; offset <= 2; offset++) {
+      var m = n - offset;
+      if (m < 3 || m / n < 0.75) continue;
+      for (var p = 1; p <= Math.floor(m / 3); p++) {
+        var ok = true;
+        for (var i = offset; i + p < n; i++) {
+          var a = notes[i], b = notes[i + p];
+          if (Math.abs(birdLabSemitones(a.freq, b.freq)) > 0.75) { ok = false; break; }
+          var r = a.dur / b.dur;
+          if (r > 1.4 || r < 1 / 1.4) { ok = false; break; }
+        }
+        if (ok) return true;
+      }
+    }
+    return false;
+  }
+  // The field-guide word for the call's overall pattern. Pitch distances
+  // are in semitones (perceived), so a 150 Hz step counts for an owl at
+  // 500 Hz but not for a warbler at 4 kHz.
+  // 'rattle' | 'trill' | 'two-note' | 'arch' | 'repeated' | 'rising' |
+  // 'falling' | 'steady' | 'phrases' | 'complex'
+  function birdLabClassifyCallShape(notes) {
+    if (!notes || !notes.length) return null;
+    var total = 0, trillDur = 0, pulseDur = 0;
+    notes.forEach(function(n) { total += n.dur; if (n.pulse) pulseDur += n.dur; else if (n.trill) trillDur += n.dur; });
+    if (total > 0 && pulseDur / total >= 0.5) return 'rattle';
+    if (total > 0 && trillDur / total >= 0.5) return 'trill';
+    var starts = notes.map(function(n) { return n.freq; });
+    var trend = [];
+    notes.forEach(function(n) {
+      trend.push(n.freq);
+      if (n.endFreq && Math.abs(birdLabSemitones(n.freq, n.endFreq)) >= 0.5) trend.push(n.endFreq);
+    });
+    var minF = Math.min.apply(null, trend), maxF = Math.max.apply(null, trend);
+    var rangeSt = birdLabSemitones(minF, maxF);
+    if (notes.length === 1) {
+      if (rangeSt >= 3) return trend[trend.length - 1] > trend[0] ? 'rising' : 'falling';
+      return 'steady';
+    }
+    var rapid = notes.length >= 4 && rangeSt < 2 &&
+      notes.every(function(n) { return n.dur < 0.2; }) &&
+      notes.slice(0, -1).every(function(n) { return n.gap <= 0.05; });
+    if (rapid) return 'trill';
+    if (notes.length === 2 && Math.abs(birdLabSemitones(starts[0], starts[1])) >= 2) return 'two-note';
+    var peak = 0;
+    for (var i = 1; i < trend.length; i++) if (trend[i] > trend[peak]) peak = i;
+    if (peak > 0 && peak < trend.length - 1) {
+      var rise = birdLabSemitones(trend[0], trend[peak]);
+      var fall = birdLabSemitones(trend[trend.length - 1], trend[peak]);
+      if (rise >= 3 && fall >= 3 &&
+          birdLabTrendFollowers(trend.slice(0, peak + 1), 1) >= 0.65 &&
+          birdLabTrendFollowers(trend.slice(peak), -1) >= 0.65) return 'arch';
+    }
+    if (birdLabIsRepeatedSeries(notes)) return 'repeated';
+    var delta = birdLabSemitones(trend[0], trend[trend.length - 1]);
+    if (Math.abs(delta) >= 3 && birdLabTrendFollowers(trend, delta > 0 ? 1 : -1) >= 0.65) return delta > 0 ? 'rising' : 'falling';
+    if (rangeSt < 2) return 'steady';
+    var phrases = 1;
+    notes.slice(0, -1).forEach(function(n) { if (n.gap >= 0.2) phrases++; });
+    if (phrases >= 2) return 'phrases';
+    return 'complex';
+  }
+  function birdLabCallRegister(notes) {
+    if (!notes || !notes.length) return null;
+    var f = notes.map(function(n) { return n.freq; }).sort(function(a, b) { return a - b; });
+    var median = f.length % 2 ? f[(f.length - 1) / 2] : (f[f.length / 2 - 1] + f[f.length / 2]) / 2;
+    if (median < BIRDLAB_CALL_REGISTER.lowMax) return 'low';
+    if (median < BIRDLAB_CALL_REGISTER.midMax) return 'mid';
+    return 'high';
+  }
+  function birdLabCallQuality(notes) {
+    if (!notes || !notes.length) return null;
+    var byDur = {};
+    notes.forEach(function(n) { byDur[n.quality] = (byDur[n.quality] || 0) + n.dur; });
+    var best = null;
+    Object.keys(byDur).forEach(function(q) { if (best == null || byDur[q] > byDur[best]) best = q; });
+    return best;
+  }
+  var BIRDLAB_CALL_WORDS = {
+    register: { low: 'low-pitched', mid: 'mid-pitched', high: 'high-pitched' },
+    quality: { whistle: 'clear, whistled', coo: 'soft, cooing', hoot: 'hooted', harsh: 'harsh, nasal', buzz: 'buzzy', rattle: 'dry, rattling' },
+    shape: {
+      rising: 'climbing in pitch', falling: 'dropping in pitch by the end', steady: 'all on one pitch',
+      arch: 'rising, then falling', trill: 'the long note is a rapid, buzzy trill', rattle: 'a dry mechanical rattle',
+      repeated: 'the same short pattern repeated', phrases: 'short phrases with different shapes', complex: 'a mixed pattern'
+    }
+  };
+  // Plain-language text alternative for the audio. Never names the
+  // species, so Listen & Identify can show it before the reveal.
+  // `t(key, fallback)` and `fill(template, values)` are optional
+  // translators; without them the English fallbacks are used.
+  function birdLabDescribeCall(call, t, fill) {
+    var notes = birdLabCallTones(call);
+    if (!notes.length) return null;
+    var tr = typeof t === 'function' ? t : function(k, fb) { return fb; };
+    var fl = typeof fill === 'function' ? fill : function(tpl, v) { return String(tpl).replace(/{([A-Za-z0-9_]+)}/g, function(m, k) { return Object.prototype.hasOwnProperty.call(v, k) ? String(v[k]) : m; }); };
+    var shape = birdLabClassifyCallShape(notes);
+    var register = birdLabCallRegister(notes);
+    var quality = birdLabCallQuality(notes);
+    var seconds = 0;
+    notes.forEach(function(n, i) { seconds += n.dur + (i < notes.length - 1 ? n.gap : 0); });
+    seconds = Math.round(seconds * 10) / 10;
+    var trillNotes = notes.filter(function(n) { return n.trill && !n.pulse; }).length;
+    var info = {
+      shape: shape, register: register, quality: quality, count: notes.length, seconds: seconds,
+      hasTrill: trillNotes > 0, trillOnly: trillNotes === notes.length,
+      secondLower: notes.length >= 2 ? notes[1].freq < notes[0].freq : false
+    };
+    var regWord = tr('stem.birdlab.sketch_register_' + register, BIRDLAB_CALL_WORDS.register[register]);
+    var qualWord = tr('stem.birdlab.sketch_quality_' + quality, BIRDLAB_CALL_WORDS.quality[quality] || quality);
+    var shapeWord = shape === 'two-note'
+      ? (info.secondLower ? tr('stem.birdlab.sketch_shape_two_note_lower', 'two pitches, the second lower') : tr('stem.birdlab.sketch_shape_two_note_higher', 'two pitches, the second higher'))
+      : tr('stem.birdlab.sketch_shape_' + String(shape).replace('-', '_'), BIRDLAB_CALL_WORDS.shape[shape] || shape);
+    if (shape === 'rattle') {
+      info.text = fl(tr('stem.birdlab.sketch_desc_rattle', 'A {register}, dry mechanical rattle, about {seconds} s long.'), { register: regWord, seconds: seconds });
+    } else if (shape === 'trill' && info.trillOnly) {
+      info.text = fl(tr('stem.birdlab.sketch_desc_tremolo', 'A {register} wavering trill, about {seconds} s long.'), { register: regWord, seconds: seconds });
+    } else {
+      info.text = fl(tr('stem.birdlab.sketch_desc', '{count} {register}, {quality} notes; {shape}. About {seconds} s.'), { count: notes.length, register: regWord, quality: qualWord, shape: shapeWord, seconds: seconds });
+      if (info.hasTrill && shape !== 'trill') info.text += ' ' + tr('stem.birdlab.sketch_ends_in_trill', 'Ends in a buzzy trill.');
+    }
+    return info;
+  }
+  try {
+    window.__alloBirdLabPure = Object.assign(window.__alloBirdLabPure || {}, {
+      FAMOUS_CALLS: FAMOUS_CALLS, CALL_SKETCHES: CALL_SKETCHES,
+      SPECTROGRAM_RANGE: BIRDLAB_SPECTROGRAM_RANGE, CALL_REGISTER: BIRDLAB_CALL_REGISTER,
+      semitones: birdLabSemitones, freqToUnit: birdLabFreqToUnit,
+      mnemonicTones: birdLabMnemonicTones, callTones: birdLabCallTones,
+      classifyCallShape: birdLabClassifyCallShape, callRegister: birdLabCallRegister,
+      callQuality: birdLabCallQuality, describeCall: birdLabDescribeCall
+    });
+  } catch (e) {}
+
+  // ─────────────────────────────────────────────────────
   // HABITAT BIRD MAP — Phase 3 Habitat Match data
   // For each habitat, the species that legitimately belong + species
   // commonly mistaken to belong (to make the matching game challenging).
@@ -18203,42 +18548,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // here is the mnemonic — once you have "drink-your-tea" etched in
       // your head, towhees become unmissable in the field.
       // ─────────────────────────────────────────────────────
-      // Visual rhythm strip from a mnemonic string. Splits on whitespace into
-      // phrases, then hyphens into syllables, and assigns each syllable a bar
-      // height/width based on emphasis cues (ALL-CAPS, repeated vowels, trailing
-      // punctuation). Helps students see the song's cadence + emphasis pattern,
-      // not just read the words.
-      function songRhythmStrip(mnemonic, color) {
-        if (!mnemonic) return null;
-        var clean = mnemonic.replace(/^["']|["']$/g, '').replace(/[()]/g, '');
-        var phrases = clean.split(/\s+/).filter(Boolean);
+      // Visual rhythm strip — timing + emphasis only, derived from the
+      // call's sketch model (bar width = note length, gap = silence,
+      // taller = accented, dashed = trill/rattle). Falls back to the
+      // mnemonic-text heuristic for a call with no model.
+      function songRhythmStrip(call, color) {
+        var notes = birdLabCallTones(call);
+        if (!notes.length) return null;
+        var PX = 36;
         var bars = [];
         var x = 0;
         var beatColor = color || '#7c3aed';
-        phrases.forEach(function(phrase, pi) {
-          var syllables = phrase.split('-').filter(Boolean);
-          syllables.forEach(function(rawSyl) {
-            var letters = rawSyl.replace(/[^a-zA-Z]/g, '');
-            if (!letters) return;
-            var isUpper = letters === letters.toUpperCase() && letters.length > 1;
-            var hasRepeatedVowel = /(EE|OO|AA|II|UU|ee|oo){2,}|EE{1,}!|OO{1,}!/i.test(rawSyl) || /[A-Z]{4,}/.test(letters);
-            var hasBang = /[!]+/.test(rawSyl);
-            var hasQuestion = /[?]+/.test(rawSyl);
-            var height = 8;
-            if (isUpper) height += 4;
-            if (hasRepeatedVowel) height += 6;
-            if (hasBang) height += 4;
-            // Width tracks syllable length
-            var width = Math.max(3, Math.min(10, letters.length));
-            bars.push({
-              x: x, w: width, h: height,
-              emph: isUpper || hasRepeatedVowel || hasBang,
-              question: hasQuestion
-            });
-            x += width + 2;
+        notes.forEach(function(n) {
+          var width = Math.max(3, Math.round(n.dur * PX));
+          var height = 8 + (n.emph ? 6 : 0) + ((n.trill || n.pulse) ? 3 : 0);
+          bars.push({
+            x: x, w: width, h: height,
+            emph: !!n.emph,
+            question: /\?$/.test(n.syl || ''),
+            modulated: !!(n.trill || n.pulse)
           });
-          // Phrase gap (between distinct phrases)
-          x += 6;
+          x += width + Math.max(2, Math.round((n.gap || 0) * PX));
         });
         var totalW = Math.max(60, x);
         return h('svg', {
@@ -18249,16 +18579,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         },
           // Baseline
           h('line', { x1: 0, y1: 24, x2: totalW, y2: 24, stroke: '#cbd5e1', strokeWidth: 0.6 }),
-          // Bars (one per syllable)
+          // Bars (one per note)
           bars.map(function(b, i) {
             return h('rect', { key: 'b' + i,
               x: b.x, y: 24 - b.h, width: b.w, height: b.h,
               rx: 1.2,
               fill: beatColor,
-              opacity: b.emph ? 0.95 : 0.55
+              opacity: b.modulated ? 0.4 : (b.emph ? 0.95 : 0.55),
+              stroke: b.modulated ? beatColor : 'none',
+              strokeWidth: b.modulated ? 0.8 : 0,
+              strokeDasharray: b.modulated ? '1.5,1' : undefined
             });
           }),
-          // Trailing question-mark hint (if last syllable is a question)
+          // Trailing question-mark hint (if last note is a question)
           bars.length > 0 && bars[bars.length - 1].question && h('text', {
             x: bars[bars.length - 1].x + bars[bars.length - 1].w + 3, y: 18,
             fontSize: 9, fontWeight: 'bold', fill: beatColor
@@ -18266,95 +18599,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         );
       }
 
-      // Visual SPECTROGRAM strip — same mnemonic → frequency-vs-time view.
-      // Pairs with songRhythmStrip (which shows only timing): each note is
-      // rendered as a thin horizontal band at its actual pitch, so students
-      // can see the SHAPE of the call (rising? falling? steady? "see-bee"?).
-      // This is how field guides teach call ID — the spectrogram silhouette
-      // is the visual fingerprint. UDL: pairs the audio playback with a
-      // visual representation for learners who decode visuals faster than
-      // sustained audio.
-      // Classify the OVERALL CALL SHAPE from a note list. Returns one of:
-      // 'rising' | 'falling' | 'steady' | 'two-note' | 'trill' | 'complex'.
-      // This is the language real field guides use to describe call patterns;
-      // the spectrogram visualizes it, this descriptor names it.
-      function classifyCallShape(notes) {
-        if (!notes || notes.length === 0) return null;
-        if (notes.length === 1) return 'steady';
-        // Frequency stats
-        var freqs = notes.map(function(n) { return n.freq; });
-        var minF = Math.min.apply(null, freqs);
-        var maxF = Math.max.apply(null, freqs);
-        var range = maxF - minF;
-        var first = notes[0].freq;
-        var last = notes[notes.length - 1].freq;
-        var delta = last - first;
-        // Trill: 4+ short repeating same-freq notes
-        if (notes.length >= 4 && range < 120) {
-          var allShort = notes.every(function(n) { return n.dur < 0.2; });
-          if (allShort) return 'trill';
-        }
-        // Two-note: exactly 2 distinct freqs
-        if (notes.length === 2 && range > 200) return 'two-note';
-        // Steady: range under 150 Hz
-        if (range < 150) return 'steady';
-        // Rising / falling: overall trend strong + monotonic-ish
-        if (Math.abs(delta) > 250) {
-          // Check monotonic-ish: count notes that follow the trend
-          var sign = delta > 0 ? 1 : -1;
-          var followers = 0;
-          for (var i = 1; i < notes.length; i++) {
-            if ((notes[i].freq - notes[i - 1].freq) * sign >= -30) followers++;
-          }
-          if (followers / (notes.length - 1) >= 0.65) {
-            return delta > 0 ? 'rising' : 'falling';
-          }
-        }
-        return 'complex';
-      }
-
-      // Visual SPECTROGRAM strip — same mnemonic → frequency-vs-time view.
-      // v2: includes an animated playhead that sweeps across during playback +
-      // a call-shape descriptor badge that translates the silhouette into the
-      // field-guide language students need to read real bird guides.
-      // `isPlaying` (optional) toggles the playhead sweep animation.
-      function songSpectrogram(mnemonic, color, isPlaying) {
-        if (!mnemonic) return null;
-        var notes = mnemonicToTones(mnemonic);
-        if (!notes.length) return null;
-        var stripColor = color || '#0ea5e9';
-        // Time scale: pixels per second so the strip is comfortable to read.
-        var PX_PER_SEC = 90;
-        var H = 56;
-        var leftPad = 24;  // room for frequency-axis label
-        // Build x-positions in seconds first
-        var tCursor = 0;
-        var noteRects = notes.map(function(n) {
-          var rect = { x0: tCursor, x1: tCursor + n.dur, freq: n.freq, emph: n.emph };
-          tCursor += n.dur + n.gap;
-          return rect;
-        });
-        var totalSec = tCursor;
-        var widthPx = leftPad + Math.max(60, totalSec * PX_PER_SEC);
-        // Frequency range: songbird mid 2300–3500 Hz works for our mnemonic synth.
-        // Pad ±100 Hz so notes don't sit flush against edges.
-        var FMIN = 2200, FMAX = 3500;
-        function freqToY(f) {
-          var clamped = Math.max(FMIN, Math.min(FMAX, f));
-          // Higher freq = top of strip (smaller y)
-          return 4 + (1 - (clamped - FMIN) / (FMAX - FMIN)) * (H - 14);
-        }
-        // Classify the call shape for the descriptor badge
-        var shape = classifyCallShape(notes);
-        var shapeLabels = {
+      // Field-guide shape vocabulary for the badge under the spectrogram.
+      // The shape itself comes from birdLabClassifyCallShape (pure, in the
+      // IIFE scope) so the badge, the audio and the drawing cannot drift.
+      function callShapeLabels() {
+        return {
           rising:    { icon: '↗', text: __alloT('stem.birdlab.rising', 'Rising'),   bg: '#0e7490', fg: '#cffafe' },
           falling:   { icon: '↘', text: __alloT('stem.birdlab.falling', 'Falling'),  bg: '#a16207', fg: '#fef3c7' },
           steady:    { icon: '→', text: __alloT('stem.birdlab.steady', 'Steady'),   bg: '#475569', fg: '#e2e8f0' },
-          'two-note':{ icon: '⤴', text: 'Two-note', bg: '#7c3aed', fg: '#ede9fe' },
+          'two-note':{ icon: '⤴', text: __alloT('stem.birdlab.two_note', 'Two-note'), bg: '#7c3aed', fg: '#ede9fe' },
+          arch:      { icon: '⌒', text: __alloT('stem.birdlab.rise_then_fall', 'Rise, then fall'), bg: '#0f766e', fg: '#ccfbf1' },
           trill:     { icon: '∿', text: __alloT('stem.birdlab.trill', 'Trill'),    bg: '#be185d', fg: '#fce7f3' },
+          rattle:    { icon: '⋯', text: __alloT('stem.birdlab.rattle', 'Rattle'),   bg: '#9a3412', fg: '#ffedd5' },
+          repeated:  { icon: '⟳', text: __alloT('stem.birdlab.repeated_series', 'Repeated series'), bg: '#5b21b6', fg: '#ede9fe' },
+          phrases:   { icon: '…', text: __alloT('stem.birdlab.short_phrases', 'Short phrases'), bg: '#1e40af', fg: '#dbeafe' },
           complex:   { icon: '⤳', text: __alloT('stem.birdlab.complex', 'Complex'),  bg: '#1e40af', fg: '#dbeafe' }
         };
-        var shapeStyle = shape && shapeLabels[shape];
+      }
+
+      // Visual SPECTROGRAM strip — frequency-vs-time view of the SAME
+      // sketch model the audio plays. Log-frequency axis from 300 Hz to
+      // 8 kHz like a real spectrogram, so a Barred Owl's hoots sit near
+      // the bottom and a chickadee's whistle near the top: register is
+      // the first thing a birder listens for. Slurred notes draw as
+      // slopes, trills as wavy lines, rattles as a dashed pulse train.
+      // Below the strip: the call-shape badge and a plain-language text
+      // alternative (both derived from the same notes). UDL: pairs the
+      // audio with a visual + a textual channel.
+      // opts.hideSyllables — omit the syllable labels (Listen & Identify
+      // must not print the mnemonic words before the reveal).
+      function songSpectrogram(call, color, isPlaying, opts) {
+        opts = opts || {};
+        var notes = birdLabCallTones(call);
+        if (!notes.length) return null;
+        var info = birdLabDescribeCall(call, __alloT, __alloFill);
+        var stripColor = color || '#0ea5e9';
+        var PX_PER_SEC = 90;
+        var H = 66;
+        var leftPad = 34;  // room for the frequency-axis labels
+        var labelRow = opts.hideSyllables ? 0 : 10;
+        var plotTop = 4;
+        var plotBottom = H - 4 - labelRow;
+        var plotH = plotBottom - plotTop;
+        var tCursor = 0;
+        var segs = notes.map(function(n) {
+          var seg = { x0: tCursor, x1: tCursor + n.dur, f0: n.freq, f1: n.endFreq || n.freq, emph: n.emph, trill: n.trill, pulse: n.pulse, syl: n.syl };
+          tCursor += n.dur + n.gap;
+          return seg;
+        });
+        var totalSec = tCursor;
+        var widthPx = leftPad + Math.max(60, totalSec * PX_PER_SEC);
+        function freqToY(f) { return plotTop + (1 - birdLabFreqToUnit(f)) * plotH; }
+        var shapeStyle = info && info.shape && callShapeLabels()[info.shape];
 
         // Inject playhead CSS once per page
         try {
@@ -18374,42 +18670,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         } catch (e) { /* SSR-safe */ }
 
         var sweepDistance = (widthPx - leftPad - 2);
-        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+        var axisInk = 'var(--allo-stem-text-soft, #475569)';
+        var ticks = [{ f: 1000, label: '1 kHz' }, { f: 4000, label: '4 kHz' }];
+        return h('div', {
+          className: 'birdlab-call-sketch',
+          'data-birdlab-call-shape': info.shape,
+          'data-birdlab-call-register': info.register,
+          'data-birdlab-call-quality': info.quality,
+          style: { display: 'flex', flexDirection: 'column', gap: 2 }
+        },
           h('svg', {
             viewBox: '0 0 ' + widthPx + ' ' + H,
             width: '100%',
             style: { maxWidth: widthPx + 'px', height: H, display: 'block' },
             'aria-hidden': 'true'
           },
-            // Spectrogram background panel (dark like a real spectrogram)
+            // Spectrogram background panel (dark like a real spectrogram;
+            // inks inside it are fixed light, the axis labels outside it
+            // take the card's theme ink).
             h('rect', { x: leftPad, y: 2, width: widthPx - leftPad - 2, height: H - 4,
               rx: 3, fill: '#0f172a', opacity: 0.92 }),
-            // Faint frequency grid lines (3 horizontal divisions)
-            [0.25, 0.5, 0.75].map(function(gp, i) {
-              var y = 4 + gp * (H - 14);
-              return h('line', { key: 'gl' + i,
-                x1: leftPad, x2: widthPx - 2, y1: y, y2: y,
-                stroke: '#334155', strokeWidth: 0.5, strokeDasharray: '2,3' });
-            }),
-            // Frequency-axis labels (just "high"/"low" — kid-friendly)
-            h('text', { x: 2, y: 9, fontSize: 7, fontWeight: 'bold', fill: '#0ea5e9' }, 'high'),
-            h('text', { x: 2, y: H - 6, fontSize: 7, fontWeight: 'bold', fill: '#0ea5e9' }, 'low'),
-            h('text', { x: 2, y: H / 2 + 3, fontSize: 6, fill: '#64748b' }, 'pitch'),
-            // Each note: a thin colored band centered on its frequency.
-            noteRects.map(function(r, i) {
-              var x = leftPad + r.x0 * PX_PER_SEC;
-              var w = Math.max(4, (r.x1 - r.x0) * PX_PER_SEC);
-              var y = freqToY(r.freq);
-              // Color shifts up with emphasis (cyan → amber for emphasized notes)
-              var fill = r.emph ? '#fbbf24' : stripColor;
-              return h('g', { key: 'sp' + i },
-                // Soft glow (wider, fainter)
-                h('rect', { x: x - 0.5, y: y - 3, width: w + 1, height: 9,
-                  rx: 4, fill: fill, opacity: 0.22 }),
-                // Solid band
-                h('rect', { x: x, y: y - 1.5, width: w, height: 4,
-                  rx: 2, fill: fill, opacity: r.emph ? 0.95 : 0.85 })
+            ticks.map(function(tk, i) {
+              var y = freqToY(tk.f);
+              return h('g', { key: 'tk' + i },
+                h('line', { x1: leftPad, x2: widthPx - 2, y1: y, y2: y, stroke: '#334155', strokeWidth: 0.5, strokeDasharray: '2,3' }),
+                h('text', { x: leftPad - 3, y: y + 2, fontSize: 6, textAnchor: 'end', style: { fill: axisInk } }, tk.label)
               );
+            }),
+            h('text', { x: 2, y: 9, fontSize: 7, fontWeight: 'bold', style: { fill: axisInk } }, __alloT('stem.birdlab.high', 'high')),
+            h('text', { x: 2, y: plotBottom + 1, fontSize: 7, fontWeight: 'bold', style: { fill: axisInk } }, __alloT('stem.birdlab.low', 'low')),
+            segs.map(function(s, i) {
+              var x = leftPad + s.x0 * PX_PER_SEC;
+              var w = Math.max(4, (s.x1 - s.x0) * PX_PER_SEC);
+              var y0 = freqToY(s.f0), y1 = freqToY(s.f1);
+              var fill = s.emph ? '#fbbf24' : stripColor;
+              var parts = [];
+              if (s.pulse) {
+                var step = PX_PER_SEC / s.pulse;
+                for (var px = 0; px < w; px += step) {
+                  var yy = y0 + (y1 - y0) * (px / w);
+                  parts.push(h('rect', { key: 'p' + px, x: x + px, y: yy - 2.5, width: Math.max(1.2, step * 0.45), height: 5, rx: 1, fill: fill, opacity: 0.9 }));
+                }
+              } else if (s.trill) {
+                var pts = [];
+                var stepT = Math.max(2, PX_PER_SEC / s.trill / 2);
+                var k = 0;
+                for (var px2 = 0; px2 <= w; px2 += stepT, k++) {
+                  var yt = y0 + (y1 - y0) * (px2 / w) + (k % 2 ? 3 : -3);
+                  pts.push((x + px2).toFixed(1) + ',' + yt.toFixed(1));
+                }
+                parts.push(h('polyline', { key: 't', points: pts.join(' '), fill: 'none', stroke: fill, strokeWidth: 1.8, strokeLinejoin: 'round', opacity: 0.95 }));
+              } else if (Math.abs(y1 - y0) >= 1.5) {
+                parts.push(h('line', { key: 'g0', x1: x, y1: y0, x2: x + w, y2: y1, stroke: fill, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.22 }));
+                parts.push(h('line', { key: 'g1', x1: x, y1: y0, x2: x + w, y2: y1, stroke: fill, strokeWidth: 4, strokeLinecap: 'round', opacity: s.emph ? 0.95 : 0.85 }));
+              } else {
+                parts.push(h('rect', { key: 'r0', x: x - 0.5, y: y0 - 3, width: w + 1, height: 9, rx: 4, fill: fill, opacity: 0.22 }));
+                parts.push(h('rect', { key: 'r1', x: x, y: y0 - 1.5, width: w, height: 4, rx: 2, fill: fill, opacity: s.emph ? 0.95 : 0.85 }));
+              }
+              if (!opts.hideSyllables && s.syl) {
+                parts.push(h('text', { key: 'l', x: x + w / 2, y: H - 4, fontSize: 6, textAnchor: 'middle', fill: '#cbd5e1' }, s.syl));
+              }
+              return h('g', { key: 'sp' + i }, parts);
             }),
             // Animated playhead — vertical line that sweeps across during
             // playback. Keyed by `isPlaying` so toggling restarts the animation.
@@ -18424,10 +18745,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               }
             })
           ),
-          // Call-shape descriptor — small badge under the strip
-          shapeStyle && h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 } },
-            h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.birdlab.shape', 'Shape')),
-            h('span', {
+          // Call-shape badge + text alternative for the audio
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' } },
+            shapeStyle && h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.birdlab.shape', 'Shape')),
+            shapeStyle && h('span', {
               style: {
                 display: 'inline-flex', alignItems: 'center', gap: 4,
                 padding: '1px 7px', borderRadius: 999,
@@ -18438,26 +18759,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('span', { 'aria-hidden': true, style: { fontSize: 11 } }, shapeStyle.icon),
               shapeStyle.text
             ),
-            h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-              ({
-                rising: 'pitch climbs upward',
-                falling: 'pitch drops downward',
-                steady: 'pitch stays level',
-                'two-note': 'two distinct pitches',
-                trill: 'rapid same-pitch repetition',
-                complex: 'mixed pattern'
-              })[shape] || ''
-            )
+            h('span', { className: 'birdlab-call-sketch-desc', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } },
+              __alloT('stem.birdlab.sounds_like', 'Sounds like: ') + info.text)
           )
         );
       }
 
       // ───────────────────────────────────────────────
-      // Web Audio "tone sketch" — synthesized whistled
-      // rhythms from a mnemonic. Each syllable maps to a
-      // sine-tone burst with pitch / duration cues.
-      // Not a real recording (copyright); a rhythmic outline
-      // students can hear before opening Merlin Bird ID.
+      // Web Audio "tone sketch" — synthesized from the call's sketch
+      // model: pitch, slur, length, accent and voice quality per note
+      // (sine whistles and coos, filtered sawtooth for harsh notes,
+      // amplitude-modulated trills and rattles). Not a real recording
+      // (copyright); an outline students can hear before opening Merlin.
       // ───────────────────────────────────────────────
       var __birdAudioCtx = null;
       var __birdAudioStop = null;
@@ -18470,79 +18783,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           return __birdAudioCtx;
         } catch (_) { return null; }
       }
-      function mnemonicToTones(mnemonic) {
-        if (!mnemonic) return [];
-        // Strip surrounding quotes / parens
-        var s = mnemonic.replace(/^["']|["']$/g, '').replace(/[()]/g, '');
-        var phrases = s.split(/\s+/).filter(Boolean);
-        var notes = [];
-        var basePitch = 2800; // typical songbird mid range
-        phrases.forEach(function(phrase, pi) {
-          var syllables = phrase.split('-').filter(Boolean);
-          syllables.forEach(function(rawSyl, si) {
-            var letters = rawSyl.replace(/[^a-zA-Z]/g, '');
-            if (!letters) return;
-            var isUpper = letters === letters.toUpperCase() && letters.length > 1;
-            var hasRepeatedVowel = /(EE|OO|AA|II|UU|ee|oo){2,}|EE{1,}|OO{1,}/i.test(rawSyl) || /[A-Z]{4,}/.test(letters);
-            var hasBang = /[!]+/.test(rawSyl);
-            var hasQuestion = /[?]+/.test(rawSyl);
-            // Pitch
-            var pitch = basePitch;
-            if (isUpper)          pitch += 350;
-            if (hasRepeatedVowel) pitch += 500;  // sustained higher tone
-            if (hasBang)          pitch += 250;
-            // Each successive syllable in a phrase drops slightly (natural fall-off)
-            // unless it's a repeated word — common pattern (peter peter peter, chick-a-dee-dee-dee)
-            var prevSyl = si > 0 ? syllables[si - 1] : null;
-            var isRepeatOfPrev = prevSyl && prevSyl.replace(/[^a-zA-Z]/g, '').toLowerCase() === letters.toLowerCase();
-            if (!isRepeatOfPrev && si > 0 && !hasRepeatedVowel) pitch -= 120;
-            // Question — last syllable rises
-            if (hasQuestion) pitch += 600;
-            // Duration: roughly tied to letters; clamp 0.12–0.45s
-            var dur = Math.max(0.12, Math.min(0.45, 0.06 + letters.length * 0.04));
-            // Repeated-vowel words get a longer sustain
-            if (hasRepeatedVowel) dur = Math.min(0.65, dur * 1.5);
-            notes.push({ freq: pitch, dur: dur, gap: 0.04, emph: isUpper || hasBang });
-          });
-          // Phrase boundary: longer pause between phrases
-          if (pi < phrases.length - 1 && notes.length) {
-            notes[notes.length - 1].gap = 0.18;
-          }
-        });
-        return notes;
-      }
-      function playToneSketch(mnemonic, onDone) {
+      function playToneSketch(call, onDone) {
         var ctx = getBirdAudioCtx();
         if (!ctx) { if (onDone) onDone(); return; }
         // Stop any previous playback
         if (__birdAudioStop) { try { __birdAudioStop(); } catch (_) {} __birdAudioStop = null; }
         // Resume context if suspended (autoplay policy)
         try { if (ctx.state === 'suspended') ctx.resume(); } catch (_) {}
-        var notes = mnemonicToTones(mnemonic);
+        var notes = birdLabCallTones(call);
         if (!notes.length) { if (onDone) onDone(); return; }
         var t = ctx.currentTime + 0.05;
-        var oscs = [];
+        var sources = [];
         notes.forEach(function(n) {
+          var q = n.quality || 'whistle';
           var osc = ctx.createOscillator();
+          osc.type = (q === 'harsh' || q === 'buzz') ? 'sawtooth' : (q === 'rattle' ? 'square' : 'sine');
+          var f0 = n.freq, f1 = n.endFreq || n.freq;
+          osc.frequency.setValueAtTime(f0, t);
+          if (f1 !== f0) osc.frequency.exponentialRampToValueAtTime(f1, t + n.dur);
+          else osc.frequency.linearRampToValueAtTime(f0 * (n.emph ? 1.02 : 0.99), t + n.dur * 0.7);
+          // Loudness by voice: pure tones are quiet per unit gain, sawtooth
+          // and square are rich in harmonics and need much less.
+          var peak = (q === 'coo' || q === 'hoot') ? 0.22 : (q === 'harsh' || q === 'buzz') ? 0.07 : q === 'rattle' ? 0.06 : 0.17;
+          if (n.emph) peak *= 1.25;
+          var attack = (q === 'coo' || q === 'hoot') ? 0.06 : 0.015;
           var gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(n.freq, t);
-          // Pitch variation across the note for a more bird-like quality
-          osc.frequency.linearRampToValueAtTime(n.freq * (n.emph ? 1.04 : 0.985), t + n.dur * 0.7);
-          gain.gain.setValueAtTime(0, t);
-          gain.gain.linearRampToValueAtTime(n.emph ? 0.22 : 0.16, t + 0.02);
+          gain.gain.setValueAtTime(0.0001, t);
+          gain.gain.linearRampToValueAtTime(peak, t + attack);
+          gain.gain.setValueAtTime(peak, t + Math.max(attack, n.dur - 0.05));
           gain.gain.exponentialRampToValueAtTime(0.0008, t + n.dur);
-          osc.connect(gain).connect(ctx.destination);
+          var chain = osc;
+          if (osc.type !== 'sine') {
+            var lp = ctx.createBiquadFilter();
+            lp.type = 'lowpass';
+            lp.frequency.value = Math.min(12000, f0 * 3);
+            osc.connect(lp);
+            chain = lp;
+          }
+          var modHz = n.pulse || n.trill;
+          if (modHz) {
+            // Amplitude modulation: base 0.5 + LFO swing 0.5 → 0..1
+            var am = ctx.createGain();
+            am.gain.value = 0.5;
+            var lfo = ctx.createOscillator();
+            lfo.type = n.pulse ? 'square' : 'sine';
+            lfo.frequency.value = modHz;
+            var lfoGain = ctx.createGain();
+            lfoGain.gain.value = 0.5;
+            lfo.connect(lfoGain).connect(am.gain);
+            lfo.start(t);
+            lfo.stop(t + n.dur + 0.02);
+            sources.push(lfo);
+            chain.connect(am);
+            chain = am;
+          }
+          chain.connect(gain).connect(ctx.destination);
           osc.start(t);
           osc.stop(t + n.dur + 0.02);
-          oscs.push(osc);
+          sources.push(osc);
           t += n.dur + n.gap;
         });
         // Stop function
         var stopped = false;
         var stopFn = function() {
           if (stopped) return; stopped = true;
-          oscs.forEach(function(o) { try { o.stop(); } catch (_) {} });
+          sources.forEach(function(o) { try { o.stop(); } catch (_) {} });
         };
         __birdAudioStop = stopFn;
         // Fire onDone after the last note ends
@@ -18627,7 +18932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             : ('Not quite — answer was ' + listenState.target.species)
           );
         }
-        function toggleTonePlayback(id, mnemonic) {
+        function toggleTonePlayback(id, call) {
           if (playingId === id) {
             // Stop
             if (__birdAudioStop) { try { __birdAudioStop(); } catch (_) {} __birdAudioStop = null; }
@@ -18639,7 +18944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           if (__birdAudioStop) { try { __birdAudioStop(); } catch (_) {} __birdAudioStop = null; }
           setPlayingId(id);
           announce(__alloT('stem.birdlab.sr_playing_tone_sketch', 'Playing tone sketch'));
-          playToneSketch(mnemonic, function() {
+          playToneSketch(call, function() {
             setPlayingId(function(curr) { return curr === id ? null : curr; });
           });
         }
@@ -18843,7 +19148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       h('div', { className: 'flex items-center justify-between gap-2 mb-1 flex-wrap' },
                         h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900' }, __alloT('stem.birdlab.mnemonic', '🎵 Mnemonic')),
                         h('button', {
-                          onClick: function() { toggleTonePlayback(c.id, c.mnemonic); },
+                          onClick: function() { toggleTonePlayback(c.id, c); },
                           'aria-pressed': isPlaying ? 'true' : 'false',
                           'aria-label': (isPlaying ? 'Stop tone sketch' : 'Play tone sketch') + ' for ' + c.species,
                           className: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.6875rem] font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
@@ -18857,17 +19162,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         )
                       ),
                       h('p', { className: 'text-sm text-slate-800 italic mb-1.5' }, c.mnemonic),
+                      c.sketch && c.sketch.label && h('p', { className: 'text-[0.625rem] text-violet-800 mb-1.5', 'data-birdlab-sketch-label': c.id },
+                        h('strong', null, __alloT('stem.birdlab.sketch_plays', 'Sketch plays: ')), c.sketch.label),
                       // Rhythm strip — visual cadence (time only)
                       h('div', { className: 'flex items-end gap-2 mt-1.5 pt-1.5 border-t border-violet-200' },
                         h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-violet-700 flex-shrink-0', style: { lineHeight: '22px' } }, __alloT('stem.birdlab.rhythm', 'Rhythm')),
-                        h('div', { style: { flex: 1, minWidth: 0 } }, songRhythmStrip(c.mnemonic, '#7c3aed'))
+                        h('div', { style: { flex: 1, minWidth: 0 } }, songRhythmStrip(c, '#7c3aed'))
                       ),
                       // Spectrogram strip — frequency-vs-time view of the same call.
                       // Animated playhead sweeps across during playback, pairing
                       // the audio with the visual silhouette field guides use.
                       h('div', { className: 'flex items-start gap-2 mt-1.5 pt-1.5 border-t border-violet-100' },
                         h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-cyan-700 flex-shrink-0', style: { lineHeight: '14px', paddingTop: 2 } }, __alloT('stem.birdlab.spectrogram', 'Spectrogram')),
-                        h('div', { style: { flex: 1, minWidth: 0 } }, songSpectrogram(c.mnemonic, '#22d3ee', isPlaying))
+                        h('div', { style: { flex: 1, minWidth: 0 } }, songSpectrogram(c, '#22d3ee', isPlaying))
                       ),
                       isPlaying && h('div', { className: 'mt-1 text-[0.625rem] italic text-violet-700', 'aria-live': 'polite' },
                         __alloT('stem.birdlab.playing_synthesized_rhythm_open_merlin', '🎶 Playing synthesized rhythm — open Merlin Bird ID for the real recording.'))
@@ -18902,7 +19209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('div', { className: 'flex items-center justify-between gap-2 mb-1 flex-wrap' },
                       h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700' }, __alloT('stem.birdlab.match_this_call_to_the_species', 'Match this call to the species')),
                       h('button', {
-                        onClick: function() { toggleTonePlayback(quizPlayId, current.mnemonic); },
+                        onClick: function() { toggleTonePlayback(quizPlayId, current); },
                         'aria-pressed': isQuizPlaying ? 'true' : 'false',
                         'aria-label': (isQuizPlaying ? 'Stop tone sketch' : 'Play tone sketch'),
                         className: 'inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
@@ -18919,7 +19226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     // Rhythm strip — gives a second visual cue beyond just the words
                     h('div', { className: 'p-2 bg-white border border-violet-300 rounded-lg mb-2' },
                       h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-violet-700 mb-1' }, __alloT('stem.birdlab.rhythm_pattern', '🎵 Rhythm pattern')),
-                      songRhythmStrip(current.mnemonic, '#7c3aed')
+                      songRhythmStrip(current, '#7c3aed')
                     ),
                     h('p', { className: 'text-sm text-slate-700' }, current.description),
                     h('p', { className: 'text-xs text-slate-700 mt-1' }, h('strong', null, 'Habitat: '), current.habitat)
@@ -19089,7 +19396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         : 'Press play to hear the synthesized rhythm. Pick the species you think it is.'),
                     // Big play button
                     h('button', {
-                      onClick: function() { toggleTonePlayback(listenPlayId, lt.target.mnemonic); },
+                      onClick: function() { toggleTonePlayback(listenPlayId, lt.target); },
                       'aria-pressed': isListenPlaying ? 'true' : 'false',
                       'aria-label': (isListenPlaying ? 'Stop tone sketch' : 'Play tone sketch') + ' for the hidden species',
                       className: 'inline-flex items-center justify-center gap-2 rounded-full font-black transition focus:outline-none focus:ring-4 ring-violet-500/40 shadow-lg',
@@ -19105,6 +19412,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     }, isListenPlaying ? '■' : '▶'),
                     h('div', { className: 'text-[0.6875rem] mt-2 text-slate-700 italic' },
                       isListenPlaying ? '🎶 Playing rhythm sketch…' : 'Synthesized rhythm only — open Merlin for the real call.')
+                  ),
+                  // Visual + text alternative to the audio: the same sketch the
+                  // play button voices, drawn without its syllable labels so the
+                  // mnemonic words cannot give the species away before the reveal.
+                  h('div', { className: 'mb-4 p-3 bg-slate-100 border border-violet-200 rounded-lg text-left', 'data-birdlab-listen-spectrogram': 'true' },
+                    h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-cyan-800 mb-1' }, __alloT('stem.birdlab.spectrogram_of_the_hidden_call', 'Spectrogram of the hidden call')),
+                    songSpectrogram(lt.target, '#22d3ee', isListenPlaying, { hideSyllables: !revealed })
                   ),
                   // Choices
                   h('div', { className: 'space-y-2' },
