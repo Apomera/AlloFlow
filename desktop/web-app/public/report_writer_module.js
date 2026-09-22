@@ -79,15 +79,160 @@
         return token || 'standard';
     };
 
+    // ─── Score classification: ONE table for the display, the AI prompt and the verifier ───
+    // Publishers name score ranges differently, and the names collide: "Very Low"
+    // is 70-79 on the WISC-V but 69 and below on the WJ IV. A label means nothing
+    // without its instrument. Instruments in RW_INSTRUMENT_SYSTEMS use their own
+    // manual's bands. Any other instrument shows a generic WISC-V-style label, and
+    // the verifier accepts a label if ANY system on the same scale uses it for that
+    // score, because it cannot know which manual the clinician followed. GARS-3 is
+    // deliberately unclassified: its Autism Index is a likelihood scale, not an
+    // ability score. Bands run high to low; `min` is inclusive. Colour carries
+    // meaning: red/orange mark a clinical concern (see verifyChunk). Every band is
+    // listed in docs/clinical_validation_log.md for sign-off against the manuals.
+    const RW_SCORE_SYSTEMS = {
+        wechsler5: { name: 'WISC-V', scale: 'ss100', bands: [
+            [130, 'Extremely High', 'emerald'], [120, 'Very High', 'green'], [110, 'High Average', 'teal'],
+            [90, 'Average', 'sky'], [80, 'Low Average', 'amber'], [70, 'Very Low', 'orange'], [-Infinity, 'Extremely Low', 'red']] },
+        wechslerClassic: { name: 'traditional Wechsler (WAIS-IV, WPPSI-IV, WISC-IV)', scale: 'ss100', bands: [
+            [130, 'Very Superior', 'emerald'], [120, 'Superior', 'green'], [110, 'High Average', 'teal'],
+            [90, 'Average', 'sky'], [80, 'Low Average', 'amber'], [70, 'Borderline', 'orange'], [-Infinity, 'Extremely Low', 'red']] },
+        woodcockJohnson: { name: 'WJ IV', scale: 'ss100', bands: [
+            [131, 'Very Superior', 'emerald'], [121, 'Superior', 'green'], [111, 'High Average', 'teal'],
+            [90, 'Average', 'sky'], [80, 'Low Average', 'amber'], [70, 'Low', 'orange'], [-Infinity, 'Very Low', 'red']] },
+        kaufman: { name: 'KABC-II', scale: 'ss100', bands: [
+            [131, 'Upper Extreme', 'emerald'], [116, 'Above Average', 'green'], [85, 'Average', 'sky'],
+            [70, 'Below Average', 'orange'], [-Infinity, 'Lower Extreme', 'red']] },
+        dasII: { name: 'DAS-II', scale: 'ss100', bands: [
+            [130, 'Very High', 'emerald'], [120, 'High', 'green'], [110, 'Above Average', 'teal'],
+            [90, 'Average', 'sky'], [80, 'Below Average', 'amber'], [70, 'Low', 'orange'], [-Infinity, 'Very Low', 'red']] },
+        vineland3: { name: 'Vineland-3', scale: 'ss100', bands: [
+            [130, 'High', 'emerald'], [115, 'Moderately High', 'green'], [86, 'Adequate', 'sky'],
+            [71, 'Moderately Low', 'orange'], [-Infinity, 'Low', 'red']] },
+        bascClinical: { name: 'BASC-3 clinical scales', scale: 't50', bands: [
+            [70, 'Clinically Significant', 'red'], [60, 'At-Risk', 'orange'], [41, 'Average', 'sky'],
+            [31, 'Low', 'slate'], [-Infinity, 'Very Low', 'slate']] },
+        bascAdaptive: { name: 'BASC-3 adaptive scales', scale: 't50', bands: [
+            [70, 'Very High', 'emerald'], [60, 'High', 'green'], [41, 'Average', 'sky'],
+            [31, 'At-Risk', 'orange'], [-Infinity, 'Clinically Significant', 'red']] },
+        conners: { name: 'Conners 4', scale: 't50', bands: [
+            [70, 'Very Elevated', 'red'], [65, 'Elevated', 'orange'], [60, 'High Average', 'amber'],
+            [40, 'Average', 'sky'], [-Infinity, 'Low', 'slate']] },
+        brief2: { name: 'BRIEF-2', scale: 't50', bands: [
+            [70, 'Clinically Elevated', 'red'], [65, 'Potentially Clinically Elevated', 'orange'],
+            [60, 'Mildly Elevated', 'amber'], [-Infinity, 'Within Normal Limits', 'sky']] },
+        srs2: { name: 'SRS-2', scale: 't50', bands: [
+            [76, 'Severe Range', 'red'], [66, 'Moderate Range', 'red'], [60, 'Mild Range', 'orange'],
+            [-Infinity, 'Within Normal Limits', 'sky']] },
+        bot2: { name: 'BOT-2', scale: 'ss50', bands: [
+            [70, 'Well-Above Average', 'emerald'], [60, 'Above Average', 'green'], [41, 'Average', 'sky'],
+            [31, 'Below Average', 'orange'], [-Infinity, 'Well-Below Average', 'red']] },
+    };
+    const RW_BASC_ADAPTIVE_SCALES = new Set(['Adaptive Skills', 'Adaptability', 'Social Skills', 'Leadership', 'Study Skills', 'Functional Communication', 'Activities of Daily Living']);
+    // Instruments whose own manual's bands are encoded above. 'basc' splits by
+    // scale direction; anything absent falls back to RW_GENERIC_SYSTEM.
+    const RW_INSTRUMENT_SYSTEMS = {
+        'WISC-V': 'wechsler5', 'WJ-IV COG': 'woodcockJohnson', 'WJ-IV ACH': 'woodcockJohnson', 'KABC-II': 'kaufman',
+        'Vineland-3': 'vineland3', 'Conners-4': 'conners', 'BRIEF-2': 'brief2', 'SRS-2': 'srs2', 'BOT-2': 'bot2',
+        'BASC-3 (Parent)': 'basc', 'BASC-3 (Teacher)': 'basc', 'GARS-3': 'unclassified',
+    };
+    const RW_GENERIC_SYSTEM = { ss100: 'wechsler5', t50: 'bascClinical', ss50: 'bot2' };
+    const RW_SCALE_STATS = { ss100: [100, 15], t50: [50, 10], ss50: [50, 10], ss10: [10, 3] };
+    const rwSystemKeyFor = (assessment, subtest) => {
+        const key = RW_INSTRUMENT_SYSTEMS[assessment];
+        if (key === 'basc') return RW_BASC_ADAPTIVE_SCALES.has(subtest) ? 'bascAdaptive' : 'bascClinical';
+        return key || null;
+    };
+    const rwScoreScale = (scoreType, assessment, subtest) => {
+        const key = rwSystemKeyFor(assessment, subtest);
+        if (RW_SCORE_SYSTEMS[key]) return RW_SCORE_SYSTEMS[key].scale;
+        const type = normalizeReportScoreType(scoreType);
+        if (type === 't_score') return 't50';
+        if (type === 'scaled_score') return 'ss10';
+        return 'ss100';
+    };
+    const rwBand = (systemKey, score) => {
+        const bands = RW_SCORE_SYSTEMS[systemKey].bands;
+        for (let i = 0; i < bands.length; i++) {
+            if (score >= bands[i][0]) return { label: bands[i][1], color: bands[i][2] };
+        }
+        return null;
+    };
+    const rwLabelRange = (systemKey, label) => {
+        const bands = RW_SCORE_SYSTEMS[systemKey].bands;
+        const i = bands.findIndex(b => b[1] === label);
+        if (i < 0) return null;
+        const min = bands[i][0], max = i === 0 ? Infinity : bands[i - 1][0] - 1;
+        return min === -Infinity ? `${max} and below` : (max === Infinity ? `${min} and above` : `${min}-${max}`);
+    };
+    const rwClassifyScore = (score, scoreType, assessment, subtest) => {
+        const value = Number(score);
+        const own = rwSystemKeyFor(assessment, subtest);
+        if (own === 'unclassified') return { label: `See ${assessment} manual`, color: 'slate', system: null, unclassified: true };
+        const key = RW_SCORE_SYSTEMS[own] ? own : RW_GENERIC_SYSTEM[rwScoreScale(scoreType, assessment, subtest)];
+        if (!key || !Number.isFinite(value)) return { label: 'Unclassified', color: 'slate', system: null, unclassified: true };
+        const band = rwBand(key, value);
+        return { label: band.label, color: band.color, system: key, systemName: RW_SCORE_SYSTEMS[key].name, generic: key !== own };
+    };
+    const rwScorePercentile = (score, scoreType, assessment, subtest) => {
+        const stats = RW_SCALE_STATS[rwScoreScale(scoreType, assessment, subtest)] || RW_SCALE_STATS.ss100;
+        const z = (Number(score) - stats[0]) / stats[1];
+        const t = 1 / (1 + 0.3275911 * Math.abs(z) / Math.SQRT2);
+        const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z / 2);
+        const pct = Math.round(0.5 * (1 + (z < 0 ? -erf : erf)) * 1000) / 10;
+        return Math.min(99.5, Math.max(0.5, pct));
+    };
+    // Draft phrases the verifier reads as a classification claim, longest first.
+    // "Low", "High" and "Elevated" are ordinary words too, so they only count as
+    // "<word> range". Intensified informal phrases map to '' (recognised, never
+    // checked) so "significantly below average" is not misread as a band name.
+    const RW_LABEL_PHRASES = (() => {
+        const map = {};
+        Object.values(RW_SCORE_SYSTEMS).forEach(sys => sys.bands.forEach(([, label]) => {
+            const lower = label.toLowerCase();
+            if (label === 'Low' || label === 'High' || label === 'Elevated') { map[lower + ' range'] = label; return; }
+            map[lower] = label;
+            map[lower.replace(/-/g, ' ')] = label;
+        }));
+        Object.assign(map, { 'high-average': 'High Average', 'low-average': 'Low Average', 'clinical range': 'Clinically Significant', 'wnl': 'Within Normal Limits' });
+        ['significantly', 'far'].forEach(w => { map[w + ' below average'] = ''; map[w + ' above average'] = ''; });
+        return Object.entries(map).sort((a, b) => b[0].length - a[0].length);
+    })();
+    // Is `citedLabel` a correct name for this score? 'terminology' = another
+    // system uses that word for this score at the SAME level of concern (e.g. the
+    // WAIS-IV-era "Borderline" for a WISC-V 75); it informs, it never blocks
+    // export. A word that softens the concern is a mismatch: Conners' "High
+    // Average" for a BASC-3 T of 63 would hide that the BASC-3 calls it At-Risk.
+    const rwConcernTier = (color) => ({ red: 3, orange: 2, amber: 1 })[color] || 0;
+    const rwCheckClassification = (entry, citedLabel) => {
+        const score = Number(entry.score);
+        const own = rwSystemKeyFor(entry.assessment, entry.subtest);
+        if (own === 'unclassified' || !citedLabel || !Number.isFinite(score)) return { status: 'unchecked' };
+        const scale = rwScoreScale(entry.scoreType, entry.assessment, entry.subtest);
+        const usesLabel = Object.keys(RW_SCORE_SYSTEMS).filter(k => RW_SCORE_SYSTEMS[k].scale === scale && rwLabelRange(k, citedLabel));
+        if (usesLabel.length === 0) return { status: 'unchecked' };
+        const covering = usesLabel.filter(k => rwBand(k, score).label === citedLabel);
+        const expected = rwClassifyScore(score, entry.scoreType, entry.assessment, entry.subtest);
+        if (!RW_SCORE_SYSTEMS[own]) return covering.length > 0 ? { status: 'ok', expected } : { status: 'mismatch', expected };
+        if (expected.label === citedLabel) return { status: 'ok', expected };
+        const ownRange = rwLabelRange(own, citedLabel);
+        if (ownRange) return { status: 'mismatch', expected, citedRange: ownRange };
+        const sameConcern = covering.filter(k => rwConcernTier(rwBand(k, score).color) === rwConcernTier(expected.color));
+        if (sameConcern.length > 0) return { status: 'terminology', expected, alsoUsedBy: sameConcern.map(k => RW_SCORE_SYSTEMS[k].name) };
+        return { status: 'mismatch', expected };
+    };
+
     // Architecture B: inline JS port of the deterministic psycheck verifier.
-    // The body is autogenerated from web/psycheck.html in the psycheck repo
-    // (https://github.com/.../psycheck) via tools/sync_alloflow.py.
+    // It began as a copy of web/psycheck.html in the separate psycheck repo, but
+    // AlloFlow's copy has since diverged (score-type normalisation, the shared
+    // classification table above, and AlloFlow-only helpers after the IIFE).
+    // Do NOT run psycheck's tools/sync_alloflow.py against this file: it would
+    // restore the old single-vocabulary bands and delete those helpers.
     // FERPA: zero network calls, zero persistence; the result is consumed
     // by the existing render-only discrepancyReport useState.
-    // ─── PSYCHECK-INLINE-BEGIN ─── (managed by tools/sync_alloflow.py)
+    // ─── PSYCHECK-INLINE-BEGIN ─── (maintained here; see note above)
 // Inline JS port of the deterministic verifier from
 // https://github.com/.../psycheck (psycheck/web/psycheck.html).
-// Regenerate via: python tools/sync_alloflow.py
 //
 // FERPA INVARIANT: this port runs ENTIRELY in the browser. No
 // network calls. No persistence. The result is consumed by the
@@ -98,8 +243,9 @@ if (typeof window !== 'undefined' && !window.AlloPsycheck) {
     'use strict';
 
 // ════════════════════════════════════════════════════════════════════════
-// LEXICON DATA — mirrors psycheck/lexicon.py. Keep in sync.
-// Regenerate from Python source via: python tools/sync_lexicon.py
+// LEXICON DATA — assessment and subtest aliases. Score bands and the
+// classification vocabulary are NOT here: they live in RW_SCORE_SYSTEMS above,
+// shared with the display, so the verifier and the UI cannot disagree.
 // ════════════════════════════════════════════════════════════════════════
 
 // ─── LEXICON-SYNC-BEGIN ─── (managed by tools/sync_lexicon.py)
@@ -285,63 +431,6 @@ const SUBTEST_ALIASES = {
   }
 };
 
-const STANDARD_SCORE_BANDS = [
-  [130, 200, "Very Superior"],
-  [120, 129, "Superior"],
-  [110, 119, "High Average"],
-  [90, 109, "Average"],
-  [80, 89, "Low Average"],
-  [70, 79, "Below Average"],
-  [0, 69, "Extremely Low"],
-];
-
-const T_SCORE_BANDS = [
-  [70, 200, "Clinically Significant"],
-  [65, 69, "At-Risk"],
-  [60, 64, "High Average"],
-  [40, 59, "Average"],
-  [35, 39, "Low"],
-  [0, 34, "Very Low"],
-];
-
-const CLASSIFICATION_ALIASES = {
-  "very superior": "Very Superior",
-  "extremely high": "Very Superior",
-  "exceptionally high": "Very Superior",
-  "well above average": "Very Superior",
-  "superior": "Superior",
-  "above average": "Superior",
-  "well above average range": "Superior",
-  "high average": "High Average",
-  "high-average": "High Average",
-  "above average range": "High Average",
-  "high normal": "High Average",
-  "average": "Average",
-  "average range": "Average",
-  "within normal limits": "Average",
-  "wnl": "Average",
-  "low average": "Low Average",
-  "low-average": "Low Average",
-  "low average range": "Low Average",
-  "low normal": "Low Average",
-  "below average": "Below Average",
-  "below average range": "Below Average",
-  "borderline": "Below Average",
-  "well below average": "Below Average",
-  "extremely low": "Extremely Low",
-  "exceptionally low": "Extremely Low",
-  "very low": "Extremely Low",
-  "well below average range": "Extremely Low",
-  "clinically significant": "Clinically Significant",
-  "clinically elevated": "Clinically Significant",
-  "clinical range": "Clinically Significant",
-  "at risk": "At-Risk",
-  "at-risk": "At-Risk",
-  "elevated": "At-Risk",
-  "mildly elevated": "At-Risk",
-  "low": "Low"
-};
-
 // ─── LEXICON-SYNC-END ───
 
 // ════════════════════════════════════════════════════════════════════════
@@ -370,39 +459,19 @@ function canonicalSubtest(assessment, raw) {
   return table[normalize(raw)] || null;
 }
 
+// Classification and percentile delegate to the module-level RW_SCORE_SYSTEMS
+// helpers, which know each instrument's own bands and scale (BOT-2 is mean 50).
 function canonicalClassification(raw) {
-  return CLASSIFICATION_ALIASES[normalize(raw)] || null;
+  const hit = RW_LABEL_PHRASES.find(([phrase]) => phrase === normalize(raw));
+  return hit ? (hit[1] || null) : null;
 }
 
-function classifyScore(score, scoreType) {
-  const bands = (normalizeScoreType(scoreType) === 't_score') ? T_SCORE_BANDS : STANDARD_SCORE_BANDS;
-  for (const [lo, hi, label] of bands) {
-    if (score >= lo && score <= hi) return label;
-  }
-  return 'Unknown';
+function classifyScore(score, scoreType, assessment, subtest) {
+  return rwClassifyScore(score, scoreType, assessment, subtest).label;
 }
 
-// Abramowitz & Stegun 7.1.26 erf approximation
-function _erf(z) {
-  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
-  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
-  const sign = z < 0 ? -1 : 1;
-  const x = Math.abs(z) / Math.sqrt(2);
-  const t = 1 / (1 + p * x);
-  const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-  return sign * y;
-}
-
-function scoreToPercentile(score, scoreType) {
-  let mean, sd;
-  if (normalizeScoreType(scoreType) === 't_score') { mean = 50; sd = 10; }
-  else { mean = 100; sd = 15; }
-  const z = (score - mean) / sd;
-  const p = 0.5 * (1 + _erf(z));
-  let pct = Math.round(p * 1000) / 10;
-  if (pct < 0.5) pct = 0.5;
-  if (pct > 99.5) pct = 99.5;
-  return pct;
+function scoreToPercentile(score, scoreType, assessment, subtest) {
+  return rwScorePercentile(score, scoreType, assessment, subtest);
 }
 
 function allSubtestVariantsFor(assessment) {
@@ -513,9 +582,7 @@ function findSubtestAtOrBefore(text, charPos, assessment, windowChars = 200) {
 function findClassificationAtOrAfter(text, charPos, windowChars = 80) {
   const window = sliceUntilSentenceEnd(text, charPos, windowChars).toLowerCase();
   let best = null, bestPos = window.length;
-  const sorted = Object.entries(CLASSIFICATION_ALIASES)
-    .sort((a, b) => b[0].length - a[0].length);
-  for (const [variant, canonical] of sorted) {
+  for (const [variant, canonical] of RW_LABEL_PHRASES) {
     const re = variantToPattern(variant);
     const m = re.exec(window);
     if (m && m.index < bestPos) {
@@ -523,7 +590,9 @@ function findClassificationAtOrAfter(text, charPos, windowChars = 80) {
       best = canonical;
     }
   }
-  if (best !== null && hasInterveningScore(window, bestPos)) return null;
+  // '' marks an informal phrase ("significantly below average"): recognised
+  // so a shorter band name inside it is not misread, but never checked.
+  if (!best || hasInterveningScore(window, bestPos)) return null;
   return best;
 }
 
@@ -607,21 +676,13 @@ function normalizeScoreEntry(raw) {
   };
 }
 
-function deriveClassification(entry) {
-  if (entry.classification) {
-    const c = canonicalClassification(entry.classification);
-    if (c) return c;
-    return entry.classification;
-  }
-  return classifyScore(entry.score, entry.score_type);
-}
-
 function derivePercentile(entry) {
   if (entry.percentile !== null && entry.percentile !== undefined) return entry.percentile;
-  return scoreToPercentile(entry.score, entry.score_type);
+  return scoreToPercentile(entry.score, entry.score_type, entry.assessment, entry.subtest);
 }
 
-function compareCitationToSource(citation, sources) {
+// `notes` collects non-blocking terminology notes; findings block export.
+function compareCitationToSource(citation, sources, notes) {
   const findings = [];
   if (!citation.assessment || !citation.subtest) return findings;
 
@@ -679,20 +740,36 @@ function compareCitationToSource(citation, sources) {
     return findings;
   }
 
-  // Classification
+  // Classification. The label is judged against the score's RANGE on the
+  // instrument's own scale, never against a stored label: a label copied into
+  // the input when the score was entered can itself be stale or wrong.
   if (citation.classification) {
-    const expected = deriveClassification(matched);
-    const cited = canonicalClassification(citation.classification) || citation.classification;
-    if (expected !== cited) {
+    const cited = citation.classification;
+    const check = rwCheckClassification({ score: matched.score, scoreType: matched.score_type, assessment: matched.assessment, subtest: matched.subtest }, cited);
+    const expected = check.expected && check.expected.label;
+    const system = check.expected && check.expected.generic ? 'a WISC-V-style classification' : `the ${check.expected && check.expected.systemName}`;
+    if (check.status === 'mismatch') {
       findings.push({
         kind: 'classification_mismatch',
-        detail: `Draft labels ${citation.assessment} ${citation.subtest} as '${cited}' but the score ${matched.score} maps to '${expected}'.`,
+        detail: `Draft labels ${citation.assessment} ${citation.subtest} as '${cited}' but ${system} places ${matched.score} in '${expected}'.`
+          + (check.citedRange ? ` (${check.expected.systemName} uses '${cited}' for ${check.citedRange}.)` : '')
+          + (check.expected.generic ? ` No common scoring system calls ${matched.score} '${cited}'; confirm against the ${citation.assessment} manual.` : ''),
         draft_says: `${citation.subtest} = '${cited}'`,
         data_shows: `${citation.subtest} = '${expected}' (score ${matched.score})`,
         assessment: citation.assessment,
         subtest: citation.subtest,
         span: citation.span,
-        confidence: 'high',
+        confidence: check.expected.generic ? 'medium' : 'high',
+      });
+    } else if (check.status === 'terminology' && notes) {
+      notes.push({
+        kind: 'classification_terminology',
+        detail: `'${cited}' is the ${check.alsoUsedBy.join(' / ')} term for this range; the ${check.expected.systemName} manual calls ${matched.score} '${expected}'.`,
+        draft_says: `${citation.subtest} = '${cited}'`,
+        suggested: expected,
+        assessment: citation.assessment,
+        subtest: citation.subtest,
+        span: citation.span,
       });
     }
   }
@@ -720,12 +797,12 @@ function compareCitationToSource(citation, sources) {
 function verifyDraft(rawSources, draftText) {
   const sources = rawSources.map(normalizeScoreEntry);
   const citations = extractScoreCitations(draftText);
-  const verified = [], discrepancies = [], inconclusive = [];
+  const verified = [], discrepancies = [], inconclusive = [], terminologyNotes = [];
   const citedPairs = new Set();
 
   for (const c of citations) {
     if (c.confidence === 'low') { inconclusive.push(c); continue; }
-    const findings = compareCitationToSource(c, sources);
+    const findings = compareCitationToSource(c, sources, terminologyNotes);
     if (findings.length > 0) discrepancies.push(...findings);
     else verified.push(c);
     if (c.assessment && c.subtest) citedPairs.add(c.assessment + ' :: ' + c.subtest);
@@ -735,6 +812,7 @@ function verifyDraft(rawSources, draftText) {
 
   return {
     verified, discrepancies, inconclusive,
+    terminology_notes: terminologyNotes,
     omitted_scores: omitted,
     sources_provided: sources.length,
     citations_extracted: citations.length,
@@ -751,6 +829,7 @@ const KIND_LABEL = {
   percentile_mismatch: 'Percentile mismatch',
   subtest_attribution: 'Subtest attribution swap (CRITICAL)',
   omission: 'Score in input not discussed in draft',
+  classification_terminology: 'Classification term (range correct, manual uses another word)',
 };
 
 function toMarkdown(result) {
@@ -778,6 +857,14 @@ function toMarkdown(result) {
       lines.push(`- **Confidence:** ${d.confidence}`);
       lines.push('');
     });
+  }
+
+  const notes = Array.isArray(result.terminology_notes) ? result.terminology_notes : [];
+  if (notes.length > 0) {
+    lines.push('## Terminology notes (non-blocking)');
+    lines.push('');
+    for (const n of notes) lines.push(`- ${n.assessment} ${n.subtest}: ${n.detail}`);
+    lines.push('');
   }
 
   if (result.omitted_scores.length > 0) {
@@ -824,6 +911,7 @@ function toMarkdown(result) {
       verifyDraft: verifyDraftPublic,
       // Internals exposed for in-AlloFlow self-test only:
       _classifyScore: classifyScore,
+      _checkClassification: rwCheckClassification,
       _extractScoreCitations: extractScoreCitations,
     });
   })();
@@ -998,15 +1086,6 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
             { ageMin: 5, ageMax: 5, typicalMin: 2500, typicalMax: 5000, unit: 'words' },
         ],
     };
-    const SCORE_CLASSIFICATIONS = [
-        { min: 130, max: 999, label: 'Very Superior', color: 'emerald' },
-        { min: 120, max: 129, label: 'Superior', color: 'green' },
-        { min: 110, max: 119, label: 'High Average', color: 'teal' },
-        { min: 90, max: 109, label: 'Average', color: 'sky' },
-        { min: 80, max: 89, label: 'Low Average', color: 'amber' },
-        { min: 70, max: 79, label: 'Borderline', color: 'orange' },
-        { min: 0, max: 69, label: 'Extremely Low', color: 'red' },
-    ];
     const ASSESSMENT_PRESETS = {
         'WISC-V': { subtests: ['Full Scale IQ', 'Verbal Comprehension', 'Visual Spatial', 'Fluid Reasoning', 'Working Memory', 'Processing Speed'], scoreType: 'standard', mean: 100, sd: 15 },
         'WIAT-4': { subtests: ['Total Achievement', 'Reading Composite', 'Math Composite', 'Written Language', 'Word Reading', 'Spelling', 'Numerical Operations'], scoreType: 'standard', mean: 100, sd: 15 },
@@ -1026,34 +1105,9 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         'BOT-2': { subtests: ['Total Motor Composite', 'Fine Manual Control', 'Manual Coordination', 'Body Coordination', 'Strength and Agility'], scoreType: 'standard', mean: 50, sd: 10 },
         'Custom Assessment': { subtests: [], scoreType: 'standard', mean: 100, sd: 15 },
     };
-    const BASC_ADAPTIVE_SCALES = new Set(['Adaptive Skills', 'Adaptability', 'Social Skills', 'Leadership', 'Functional Communication', 'Activities of Daily Living']);
-    const classifyDisplayScore = (score, scoreType = 'standard', assessment = '', subtest = '') => {
-        const normalizedType = normalizeReportScoreType(scoreType);
-        const isBascAdaptive = assessment.startsWith('BASC-3') && BASC_ADAPTIVE_SCALES.has(subtest);
-        if (normalizedType === 't_score' && isBascAdaptive) {
-            if (score <= 30) return { label: 'Clinically Significant', color: 'red' };
-            if (score <= 40) return { label: 'At-Risk', color: 'orange' };
-            if (score <= 60) return { label: 'Average', color: 'sky' };
-            return { label: 'Above Average', color: 'green' };
-        }
-        if (normalizedType === 't_score') {
-            if (score >= 70) return { label: 'Clinically Significant', color: 'red' };
-            if (score >= 65) return { label: 'At-Risk', color: 'orange' };
-            if (score >= 60) return { label: 'High Average', color: 'amber' };
-            if (score >= 40) return { label: 'Average', color: 'sky' };
-            if (score >= 35) return { label: 'Low', color: 'amber' };
-            return { label: 'Very Low', color: 'red' };
-        }
-        const preset = ASSESSMENT_PRESETS[assessment];
-        if (preset && preset.mean === 50 && preset.sd === 10) {
-            if (score >= 70) return { label: 'Well-Above Average', color: 'emerald' };
-            if (score >= 60) return { label: 'Above Average', color: 'green' };
-            if (score >= 41) return { label: 'Average', color: 'sky' };
-            if (score >= 31) return { label: 'Below Average', color: 'orange' };
-            return { label: 'Well-Below Average', color: 'red' };
-        }
-        return SCORE_CLASSIFICATIONS.find(c => score >= c.min && score <= c.max) || { label: 'Unknown', color: 'slate' };
-    };
+    // The badge, the AI prompt and the psycheck verifier all read RW_SCORE_SYSTEMS.
+    const classifyDisplayScore = (score, scoreType = 'standard', assessment = '', subtest = '') =>
+        rwClassifyScore(score, scoreType, assessment, subtest);
 
     // ─── Tier 1 RAG: Clinical Reference Tables ─────────────────────────
     const SCORE_INTERPRETATION_GUIDES = {
@@ -1583,6 +1637,19 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
                 if (!isPlainObject(row) || typeof row.assessment !== 'string' || typeof row.subtest !== 'string' || !Number.isFinite(Number(row.score))) {
                     throw new Error(`Score row ${index + 1} is invalid`);
                 }
+            });
+            // Labels are derived data. A saved report keeps the label from the day
+            // the score was entered, so recompute it: reports saved before the
+            // per-instrument bands would otherwise feed old labels to the AI.
+            data.scoreEntries = data.scoreEntries.map(row => {
+                const c = classifyDisplayScore(Number(row.score), row.scoreType, row.assessment, row.subtest);
+                return { ...row, classification: c.label, classColor: c.color };
+            });
+        }
+        if (data.factChunks) {
+            data.factChunks = data.factChunks.map(chunk => {
+                if (!isPlainObject(chunk) || chunk.type !== 'score' || typeof chunk.source !== 'string' || !Number.isFinite(Number(chunk.value))) return chunk;
+                return { ...chunk, classification: classifyDisplayScore(Number(chunk.value), chunk.scoreType, chunk.source, chunk.field).label };
             });
         }
         if (data.reportGenPasses != null && (!Number.isInteger(Number(data.reportGenPasses)) || Number(data.reportGenPasses) < 1 || Number(data.reportGenPasses) > 5)) {
@@ -2695,12 +2762,13 @@ Extract 5-20 key facts. Be precise and factual.`;
                 if (c.type === 'score' && age) {
                     const display = classifyDisplayScore(Number(c.value), c.scoreType, c.source, c.field);
                     const preset = ASSESSMENT_PRESETS[c.source];
-                    const isLowStandardConcern = normalizeReportScoreType(c.scoreType) === 'standard' && (!preset || preset.mean === 100) && Number(c.value) < 85;
+                    // Not for unclassified scales: a LOW GARS-3 Autism Index means autism is unlikely.
+                    const isLowStandardConcern = !display.unclassified && normalizeReportScoreType(c.scoreType) === 'standard' && (!preset || preset.mean === 100) && Number(c.value) < 85;
                     const isConcern = display.color === 'red' || display.color === 'orange' || isLowStandardConcern;
                     if (isConcern) {
                         devNormResult = { type: 'deficit', label: display.label, color: display.color === 'orange' ? 'orange' : 'red', explanation: `Score of ${c.value} (${display.label}) warrants clinician review for a ${age}-year-old using the selected measure's score direction and metric` };
                     } else {
-                        devNormResult = { type: 'appropriate', label: 'Within Expected Range', color: 'green', explanation: `Score of ${c.value} (${c.classification}) is within the expected range for a ${age}-year-old` };
+                        devNormResult = { type: 'appropriate', label: 'Within Expected Range', color: 'green', explanation: `Score of ${c.value} (${display.label}) is within the expected range for a ${age}-year-old` };
                     }
                 }
                 return { ...c, verified: true, immutable: true, verifiedAt: new Date().toISOString(), devNormResult };
@@ -4632,6 +4700,18 @@ Return ONLY valid JSON:
                                         (s.classification ? `(${s.classification})` : ''))
                                 )
                             )
+                        ),
+                    // Terminology notes: the range is right but the manual uses a
+                    // different word. Informational; they do not block export.
+                    discrepancyReport && Array.isArray(discrepancyReport.terminology_notes) && discrepancyReport.terminology_notes.length > 0
+                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-[11px]' },
+                            h('div', { className: 'font-bold text-slate-700 mb-1' },
+                                `📖 ${discrepancyReport.terminology_notes.length} terminology note(s), not blocking:`),
+                            h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
+                                discrepancyReport.terminology_notes.map((n, i) =>
+                                    h('li', { key: i }, `${n.assessment || ''} ${n.subtest || ''}: ${n.detail || ''}`)
+                                )
+                            )
                         )
                 ),
                 // Generated sections with evidence mapping & per-section controls
@@ -5051,6 +5131,7 @@ Return ONLY valid JSON:
     window.AlloModules.ReportWriterUtils = Object.freeze({
         normalizeScoreType: normalizeReportScoreType,
         classifyDisplayScore,
+        assessmentPresets: ASSESSMENT_PRESETS,
         validateReportPayload,
         validateDiscrepancyPayload,
         getTranslationLanguageMeta,

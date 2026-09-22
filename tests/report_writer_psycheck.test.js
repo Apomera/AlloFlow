@@ -38,13 +38,16 @@ const SOURCES = [
 const kinds = (r) => r.discrepancies.map((d) => d.kind);
 
 describe('classifyScore — standard + T-score bands', () => {
-  it('standard-score classification bands', () => {
+  // A standard score with no named instrument gets the generic WISC-V-style
+  // labels. Per-instrument bands are pinned against the manuals in
+  // report_writer_score_classification.test.js.
+  it('standard-score classification bands (generic, no instrument named)', () => {
     expect(PC._classifyScore(100, 'standard')).toBe('Average');
     expect(PC._classifyScore(112, 'standard')).toBe('High Average');
-    expect(PC._classifyScore(125, 'standard')).toBe('Superior');
-    expect(PC._classifyScore(135, 'standard')).toBe('Very Superior');
+    expect(PC._classifyScore(125, 'standard')).toBe('Very High');
+    expect(PC._classifyScore(135, 'standard')).toBe('Extremely High');
     expect(PC._classifyScore(85, 'standard')).toBe('Low Average');
-    expect(PC._classifyScore(75, 'standard')).toBe('Below Average');
+    expect(PC._classifyScore(75, 'standard')).toBe('Very Low');
     expect(PC._classifyScore(65, 'standard')).toBe('Extremely Low');
   });
   it('T-score classification bands', () => {
