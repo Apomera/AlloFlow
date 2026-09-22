@@ -28604,7 +28604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('button', { onClick: next.action, style: { minHeight: '42px', padding: '10px 18px', borderRadius: '9px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: 'var(--rr-cyan-ink, #ffffff)', fontSize: '12px', fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' } }, 'Continue learning')
             );
           })(),
-          h('nav', { className: 'rr-learning-path', 'aria-label': __alloT('stem.roadready.learning_path', 'Road rules learning path') },
+          h('nav', { className: 'rr-learning-path', 'aria-label': __alloT('stem.roadready.road_rules_learning_path', 'Road rules learning path') },
             [
               { title: 'Read the road', detail: 'Learn what signs, signals and lane markings ask you to do.', view: 'signsView' },
               { title: 'Practice one skill', detail: 'Start on a quiet street. Scan, signal and make a complete stop.', view: 'scenarioBriefing' },

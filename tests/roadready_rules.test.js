@@ -69,6 +69,18 @@ function viewBlock(src, view) {
   return src.slice(start, next === -1 ? src.length : next);
 }
 
+// The tool catalog (`var features = [...]` + `var goals = [...]`) is defined once
+// at render scope and feeds both the menu and the Help Hub, so feature-card
+// assertions read it from wherever it lives rather than from the helpHub branch.
+function catalogBlock(src) {
+  const start = src.indexOf('var features = [');
+  expect(start).toBeGreaterThanOrEqual(0);
+  const goals = src.indexOf('var goals = [', start);
+  expect(goals).toBeGreaterThan(start);
+  const end = src.indexOf('\n        ];', goals);
+  return src.slice(start, end === -1 ? src.length : end);
+}
+
 function windowAfter(text, needle, chars = 1600) {
   const start = text.indexOf(needle);
   expect(start).toBeGreaterThanOrEqual(0);
@@ -1333,7 +1345,7 @@ describe('RoadReady rules-of-road content', () => {
       const block = viewBlock(src, 'helpHub');
 
       for (const view of HELP_HUB_RULE_VIEWS) {
-        const card = windowAfter(block, `view: '${view}'`, 700);
+        const card = windowAfter(catalogBlock(src), `view: '${view}'`, 700);
 
         expect(card).toContain('goal:');
         expect(card).toContain('icon:');
@@ -1352,9 +1364,9 @@ describe('RoadReady rules-of-road content', () => {
   it('keeps Help Hub feature counts aligned with actual RoadReady content', () => {
     for (const relPath of ROADREADY_FILES) {
       const src = readRoadReady(relPath);
-      const block = viewBlock(src, 'helpHub');
-
-      expect(src).toContain(`${SCRIPTED_DRILL_IDS.rightOfWay.length} "who goes first?" scenarios`);
+      // Every menu tile is built from the catalog now, so the catalog description
+      // is the one count that must stay current (the menu subtitle is gone).
+      const block = catalogBlock(src);
       expect(block).toContain(`${SCRIPTED_DRILL_IDS.rightOfWay.length} right-of-way and intersection puzzles.`);
       expect(block).toContain(`Parking Practice (${PARKING_SCENARIOS.length + 3} Scenarios)`);
       expect(block).toContain(`Tire blowout, brake failure, hydroplane — ${SCRIPTED_DRILL_IDS.emergencyHandbook.length} critical responses.`);
