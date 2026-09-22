@@ -39,11 +39,21 @@ The false positive was the only reason anyone looked.
 
 ## Scope
 
-~355 candidate prose strings in 852 lines. Not attempted here: it is a
-separate surface from the emotions tool, it needs its own key namespace
-(`sel.safety.*`), and crisis copy should be reviewed by someone who can sign
-off on the clinical wording in Spanish rather than accepted from a
-translation pass.
+**17 rendered prose strings**, 7 of which carry a crisis number.
+
+An earlier revision of this file said "~355 candidate prose strings". That
+was wrong: the regex behind it counted code fragments (`use strict`, operator
+pieces split across concatenations) and, in a second pass, AI-prompt text and
+HTML report templates that no student ever sees. Counting only what is passed
+to `h(...)` as a child, assigned to `textContent`, or used as an
+`aria-label` / `title` / `placeholder` gives 17.
+
+The gap is real but small and tractable -- roughly an hour of wiring, not a
+translation project. What makes it serious is placement, not volume.
+
+Not attempted here: it needs its own key namespace (`sel.safety.*`), and
+crisis copy should be reviewed by someone who can sign off on the clinical
+wording in Spanish rather than accepted from a translation pass.
 
 Numbers that must survive any translation of this file, verbatim:
 988, 741741, 911, 1-866-488-7386 (Trevor Project).
