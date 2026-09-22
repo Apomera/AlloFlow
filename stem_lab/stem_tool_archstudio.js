@@ -4326,6 +4326,11 @@ function __alloAST(k, fb) {
         summary: { blockCount: bundle.blockCount, triangleCount: bundle.triangleCount }
       };
       if (typeof announceToSR === 'function') announceToSR(__alloAST('stem.archstudio.sr_building_handed_to_print_lab_as_an_stl_model_open', 'Building handed to Print Lab as an STL model. Opening Print Lab.'));
+      // Activating a tool is not loading it. Print Lab is a lazily fetched CDN plugin
+      // and ctx.setStemLabTool only sets the active tool id, so without this request the
+      // download does not begin until the host's render-time safety net notices an
+      // unrequested tool -- leaving the student on a loading skeleton.
+      try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded('printLab'); } catch (loadError) {}
       ctx.setStemLabTool('printLab');
     };
 

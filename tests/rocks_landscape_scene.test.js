@@ -396,3 +396,91 @@ describe('the caption cannot collide with the diagram it labels', () => {
     expect(hint.props.children).toContain('Vertical scale is exaggerated');
   });
 });
+
+// ── Label geometry ──
+// Shortening the caption (above) treated a symptom: the pills themselves had
+// no bounds check at all, so ANY label that outgrew its slot — a longer
+// translation, a wider font, a narrower canvas — ran off the edge or straight
+// through its neighbour. Measured on a real canvas, 'Heat & Pressure' crossed
+// 'Cross-Section View' and pushed 'pressure' off the right edge at 390px.
+// rkLsPill now clamps to the frame and lifts off boxes already placed, so this
+// pins the OUTCOME (no overlap, nothing off-canvas) rather than any one label.
+function geometryContext(W, H) {
+  const boxes = [];
+  const state = { font: '', textAlign: 'left' };
+  const gradient = { addColorStop() {} };
+  let cur = null;
+  const target = {
+    measureText: (t) => ({ width: String(t).length * 5 }),
+    createLinearGradient: () => gradient,
+    createRadialGradient: () => gradient,
+    // Pills are the only thing drawn as a rounded rect then filled with the
+    // slate pill colour; capture the rect and pair it with the text that follows.
+    rect: (x, y, w, h) => { cur = { x, y, w, h }; },
+    fillText: (t, x, y) => {
+      const width = String(t).length * 5;
+      const a = state.textAlign;
+      const x0 = a === 'center' ? x - width / 2 : a === 'right' ? x - width : x;
+      boxes.push({ t: String(t), x0, x1: x0 + width, y0: y - 10, y1: y + 3 });
+    },
+  };
+  const ctx = new Proxy(target, {
+    get(t, prop) {
+      if (prop in t) return t[prop];
+      if (prop === 'roundRect') return undefined;
+      if (typeof prop !== 'string') return undefined;
+      return () => undefined;
+    },
+    set(t, prop, v) { state[prop] = v; t[prop] = v; return true; },
+  });
+  return { ctx, boxes };
+}
+
+describe('landscape label geometry', () => {
+  // The narrow end is where the collision actually appeared; the wide end
+  // proves the clamp does not disturb a scene that already fits.
+  [[374, 280], [816, 486], [1148, 656]].forEach(([W, H]) => {
+    it(`keeps every label on-canvas and off its neighbours at ${W}x${H}`, () => {
+      const node = renderLandscape();
+      const canvas = findAll(node, (n) => n.type === 'canvas' && n.props['data-rocks-canvas'])[0];
+      const ref = canvas.ref || canvas.props.ref;
+      const rec = geometryContext(W, H);
+      ref({
+        offsetWidth: W, offsetHeight: H, width: 0, height: 0, isConnected: true, style: {}, dataset: {},
+        getContext: () => rec.ctx,
+        addEventListener() {}, removeEventListener() {}, setAttribute() {},
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: W, height: H }),
+      });
+
+      // Only the flat pill/caption labels: 'younger' is drawn inside a
+      // rotate()/translate() so its untransformed coordinates are meaningless here.
+      const PILLS = ['Cooling', 'Weathering & erosion', 'Deposition', 'Heat & Pressure', 'Melting', 'pressure', 'uplift'];
+      const placed = rec.boxes.filter((b) => PILLS.indexOf(b.t) !== -1);
+      expect(placed.length, 'pills drawn').toBeGreaterThanOrEqual(PILLS.length);
+
+      placed.forEach((b) => {
+        expect(b.x0, `${b.t} off left edge`).toBeGreaterThanOrEqual(-1);
+        expect(b.x1, `${b.t} off right edge`).toBeLessThanOrEqual(W + 1);
+        expect(b.y0, `${b.t} off top edge`).toBeGreaterThanOrEqual(-1);
+        expect(b.y1, `${b.t} off bottom edge`).toBeLessThanOrEqual(H + 1);
+      });
+
+      for (let i = 0; i < placed.length; i++) {
+        for (let j = i + 1; j < placed.length; j++) {
+          const a = placed[i], b = placed[j];
+          const ix = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
+          const iy = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
+          expect(ix > 1 && iy > 1, `${a.t} overlaps ${b.t}`).toBe(false);
+        }
+      }
+    });
+  });
+
+  it('gives the landscape the full width of the tool shell', () => {
+    // max-w-4xl pinned the canvas to 892px on a 1440px screen: the scene sat
+    // small in whitespace and the labels had to crowd.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    expect(src).toContain('max-w-6xl mx-auto animate-in fade-in duration-200');
+    expect(src).not.toContain('max-w-4xl mx-auto animate-in');
+  });
+});

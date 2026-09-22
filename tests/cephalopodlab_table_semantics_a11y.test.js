@@ -43,6 +43,13 @@ beforeEach(() => {
   loadTool(SOURCE, 'cephalopodLab');
 });
 
+// Rendering the whole 22k-line tool in jsdom is slow and highly variable:
+// measured 929ms..8.54s for a single test across six runs on an unmodified
+// checkout, so vitest's 5s default sits inside the noise band and this suite
+// failed at random. Each `it` carries an explicit budget instead.
+// NOTE: describe.configure does not exist in this vitest version.
+const RENDER_TIMEOUT_MS = 20000;
+
 describe('Cephalopod Lab table semantics', () => {
   it('marks matrix and observation-table relationships', () => {
     expectCompleteTableSemantics(renderSection('compcog'));
@@ -63,13 +70,13 @@ describe('Cephalopod Lab table semantics', () => {
         },
       })
     );
-  });
+  }, RENDER_TIMEOUT_MS);
 
   it('marks comparison, sample-data, and taxonomy table relationships', () => {
     expectCompleteTableSemantics(renderSection('compare'));
     expectCompleteTableSemantics(renderSection('sampleData'));
     expectCompleteTableSemantics(renderSection('taxonomy'));
-  });
+  }, RENDER_TIMEOUT_MS);
 
   it('keeps all eight table declarations captioned in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
@@ -78,9 +85,9 @@ describe('Cephalopod Lab table semantics', () => {
     expect(source.match(/h\('caption'/g)).toHaveLength(8);
     expect(source).toContain("scope: 'col'");
     expect(source).toContain("scope: 'row'");
-  });
+  }, RENDER_TIMEOUT_MS);
 
   it('preserves byte-for-byte deploy parity', () => {
     expect(readFileSync(DEPLOY, 'utf8')).toBe(readFileSync(SOURCE, 'utf8'));
-  });
+  }, RENDER_TIMEOUT_MS);
 });

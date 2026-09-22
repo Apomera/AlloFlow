@@ -8132,6 +8132,12 @@ const d = labToolData.artStudio || {};
                 window.__alloPrintLabPendingHandoff = handoffPayload;
                 if (ctx && typeof ctx.setStemLabTool === 'function') {
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_handed_to_print_lab', 'Sculpture handed to Print Lab as an editable recipe. Opening Print Lab.'));
+                  // Activating a tool is not loading it. Print Lab is a lazily fetched CDN
+                  // plugin and ctx.setStemLabTool only sets the active tool id, so without
+                  // this request the download does not begin until the host's render-time
+                  // safety net notices an unrequested tool -- after navigation, and after
+                  // the give-up timer below has already discarded the handoff.
+                  try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded('printLab'); } catch (loadError) {}
                   ctx.setStemLabTool('printLab');
                   // ctx.setStemLabTool exists in every host, but the loader substitutes a
                   // silent no-op when the surrounding app supplied no real setter, so
@@ -8139,12 +8145,27 @@ const d = labToolData.artStudio || {};
                   // deletes the handoff as it mounts; if it is still the object we just
                   // wrote, nothing opened and the student was told otherwise.
                   if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
-                    window.setTimeout(function () {
+                    // A fixed deadline cannot tell "still downloading" from "never opened",
+                    // and this branch DELETES the handoff, so giving up early left a
+                    // slow-loading Print Lab mounting with nothing to consume. Poll the
+                    // loader's own state and surrender only on a real failure or a genuine
+                    // stall.
+                    var printLabDeadline = Date.now() + 20000;
+                    var giveUpOnPrintLab = function () {
                       if (window.__alloPrintLabPendingHandoff !== handoffPayload) return;
                       delete window.__alloPrintLabPendingHandoff;
                       if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.print_lab_did_not_open', 'Print Lab did not open here. Export the model JSON and load it in Print Lab instead.'), 'info');
                       if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_print_lab_did_not_open', 'Print Lab did not open. Export the model JSON and load it in Print Lab instead.'));
-                    }, 1200);
+                    };
+                    var awaitPrintLab = function () {
+                      if (window.__alloPrintLabPendingHandoff !== handoffPayload) return;
+                      var pluginState = null;
+                      try { pluginState = typeof window.__alloGetStemPluginState === 'function' ? window.__alloGetStemPluginState('printLab') : null; } catch (stateError) { pluginState = null; }
+                      if (pluginState && pluginState.status === 'error') { giveUpOnPrintLab(); return; }
+                      if (Date.now() >= printLabDeadline) { giveUpOnPrintLab(); return; }
+                      window.setTimeout(awaitPrintLab, 250);
+                    };
+                    window.setTimeout(awaitPrintLab, 400);
                   }
                 } else {
                   delete window.__alloPrintLabPendingHandoff;

@@ -1,7 +1,7 @@
 {
  "note": "Raw source.slice(source.indexOf(...)) uses per test file. Ratchet: counts may only go DOWN. Use tests/helpers/anchored_slice.js in new tests.",
- "updated": "2026-09-20",
- "totalUses": 3129,
+ "updated": "2026-09-21",
+ "totalUses": 3169,
  "files": {
   "tests/active_content_scan_bookmarks_forms.test.js": 2,
   "tests/active_content_scan_completeness.test.js": 4,
@@ -615,7 +615,7 @@
   "tests/norm_token_drift.test.js": 1,
   "tests/nuclearlab_consistency.test.js": 3,
   "tests/nuclearlab_contrast_a11y.test.js": 1,
-  "tests/nuclearlab_science.test.js": 5,
+  "tests/nuclearlab_science.test.js": 6,
   "tests/ocr_accuracy.test.js": 1,
   "tests/ocr_column_reorder.test.js": 1,
   "tests/ocr_coverage_net.test.js": 1,
@@ -716,7 +716,7 @@
   "tests/remediation_deepdive_fixes.test.js": 4,
   "tests/remediation_evidence_invariants_20260723.test.js": 1,
   "tests/remediation_followup_fidelity.test.js": 2,
-  "tests/remediation_form_association_index.test.js": 3,
+  "tests/remediation_form_association_index.test.js": 5,
   "tests/remediation_form_context.test.js": 1,
   "tests/remediation_gate_regressions.test.js": 1,
   "tests/remediation_handoff_2026_08_03.test.js": 3,
@@ -1178,6 +1178,13 @@
   "tests/titration_volume_contributions.test.js": 2,
   "tests/video_studio_prepared_files.test.js": 3,
   "tests/word_sounds_board_lifecycle.test.js": 1,
-  "tests/word_sounds_family_pack_parity.test.js": 1
+  "tests/word_sounds_family_pack_parity.test.js": 1,
+  "tests/remediation_form_native_contract.test.js": 1,
+  "tests/sel_lazy_load.test.js": 5,
+  "tests/stem_catalog_search_matching.test.js": 4,
+  "tests/stem_hub_session_surfaces.test.js": 15,
+  "tests/stem_plugin_render_error_surface.test.js": 2,
+  "tests/stem_quest_hook_resilience.test.js": 5,
+  "tests/vacuous_pin_discovery.test.js": 5
  }
 }

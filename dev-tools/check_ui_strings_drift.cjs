@@ -56,13 +56,22 @@ function normalize(text, dropEmoji) {
 
 // One source of truth for "a fallback this gate can see". Both the STEM tools
 // (stem.<tool>.<key>) and the non-STEM CDN modules (<module>.<key>) use it.
-// Note it matches SINGLE-quoted fallbacks only — that is deliberate and is why
-// conversions must re-quote: a double-quoted fallback parses and runs fine and
-// is invisible here, so the source can be reworded while ui_strings keeps
-// shipping the old text forever.
+//
+// It accepts EITHER quote style on both the key and the fallback. It used to
+// take single quotes only, which silently excluded every double-quoted call —
+// dynamic_assessment_module.js writes all 105 of its daText("ns.key","English")
+// calls that way, so none of them were ever compared, and three had drifted,
+// including a privacy line telling the user something the source does not say.
+//
+// Translator spellings: the campaign emits t() and __alloT(); daText is that
+// file's own wrapper. Add a name here when a module introduces another, or its
+// keys silently leave coverage.
+const TFNS = '(?:__alloT|daText|t)';
 function fallbackRe(prefix, ns) {
   const head = prefix ? prefix + "\\." + ns : ns;
-  return new RegExp("(?:__alloT|t)\\(\\s*'" + head + "\\.([A-Za-z0-9_]+)'\\s*,\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*\\)", 'g');
+  const key = "(?:'" + head + "\\.([A-Za-z0-9_]+)'|\"" + head + "\\.([A-Za-z0-9_]+)\")";
+  const fb = "(?:'((?:[^'\\\\]|\\\\.)*)'|\"((?:[^\"\\\\]|\\\\.)*)\")";
+  return new RegExp(TFNS + "\\(\\s*" + key + "\\s*,\\s*" + fb + "\\s*\\)", 'g');
 }
 
 // Compare every fallback in `src` against the ui_strings bank that overrides it.
@@ -71,11 +80,15 @@ function compare(src, file, ns, bank, prefix, drift) {
   let checked = 0;
   const seen = new Set();
   for (const m of src.matchAll(fallbackRe(prefix, ns))) {
-    const key = m[1];
+    // Key and fallback each have a single- and a double-quoted alternative, so
+    // exactly one of each pair is defined.
+    const key = m[1] !== undefined ? m[1] : m[2];
+    const rawFallback = m[3] !== undefined ? m[3] : m[4];
+    if (key === undefined || rawFallback === undefined) continue;
     if (seen.has(key) || !(key in bank)) continue;
     seen.add(key);
     checked += 1;
-    const fallback = unescapeJs(m[2]);
+    const fallback = unescapeJs(rawFallback);
     if (normalize(bank[key]) === normalize(fallback)) continue;
     drift.push({
       id: ns + '.' + key,
@@ -111,8 +124,9 @@ function scan() {
   // the only way a student reaches the text at all.
   for (const file of fs.readdirSync(ROOT).filter((f) => /_module\.js$/.test(f))) {
     const src = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    // Either quote style, same reason as fallbackRe.
     const namespaces = new Set(
-      [...src.matchAll(/(?:__alloT|t)\(\s*'([a-z][a-z0-9_]*)\.[a-z0-9_]+'\s*,\s*'/g)]
+      [...src.matchAll(/(?:__alloT|daText|t)\(\s*['"]([a-z][a-z0-9_]*)\.[a-z0-9_]+['"]\s*,\s*['"]/g)]
         .map((m) => m[1])
         .filter((ns) => ns !== 'stem' && ns !== 'common')
     );
@@ -146,6 +160,15 @@ function selftest() {
   const n2 = compare(probeStem, 'stem_tool_probe.js', 'probe', bank, 'stem', drift2);
   const okStem = n2 === 1 && drift2.length === 1;
 
+  // Double quotes on BOTH key and fallback, via a file's own wrapper. This is
+  // how dynamic_assessment_module.js writes all 105 of its calls; while the
+  // matcher took single quotes only, none of them were ever compared and three
+  // had drifted unnoticed.
+  const probeDq = String.raw`x = { title: daText("ns_probe.k", "English text") };`;
+  const drift3 = [];
+  const n3 = compare(probeDq, 'dq_probe.js', 'ns_probe', bank, null, drift3);
+  const okDq = n3 === 1 && drift3.length === 1;
+
   // And the live tree must actually be reaching both paths.
   const live = scan();
   const liveStem = live.drift.some((d) => d.tool.startsWith('stem_tool_'));
@@ -153,10 +176,11 @@ function selftest() {
 
   console.log('  module-namespace matcher: ' + (okModule ? 'OK' : 'DEAD'));
   console.log('  stem-namespace matcher  : ' + (okStem ? 'OK' : 'DEAD'));
+  console.log('  double-quoted matcher   : ' + (okDq ? 'OK' : 'DEAD'));
   console.log('  live scan reaches stem_lab tools : ' + (liveStem ? 'yes' : 'NO'));
   console.log('  live scan reaches root modules   : ' + (liveModule ? 'yes' : 'NO'));
   console.log('  fallbacks compared: ' + live.checked);
-  const pass = okModule && okStem;
+  const pass = okModule && okStem && okDq;
   console.log(pass ? '✓ selftest: both matchers fire.' : '✗ selftest: a matcher is dead.');
   process.exitCode = pass ? 0 : 1;
 }

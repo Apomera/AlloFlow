@@ -3746,20 +3746,48 @@ const d = labToolData.rocks || {};
             // Pills that carry a hitId are clickable: they record their box for
             // onRockClick / onRockMove (reset every frame in drawLandscape).
             var rkLsHits = [];
+            // Boxes already placed this frame, so a pill can be nudged off one it
+            // would otherwise sit on top of. Reset every frame in drawLandscape.
+            var rkLsPillBoxes = [];
             function rkLsPill(text, lx, ly, align, hitId) {
               ctx.save();
               ctx.setLineDash([]);
-              ctx.textAlign = align || 'left'; ctx.textBaseline = 'alphabetic';
+              ctx.textBaseline = 'alphabetic';
               ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
               var tw = ctx.measureText(text).width;
               var padX = 5 * dpr, boxH = 14 * dpr;
               var bx = (align === 'center' ? lx - tw / 2 : lx) - padX, by = ly - 10 * dpr, bw = tw + padX * 2;
+              // ── Keep the pill inside the canvas ──
+              // These anchors are fractions of W/H, so a label that is wider than
+              // its slot (a long translation, a wider font, a narrow canvas) used
+              // to run off the edge or straight through its neighbour: at portrait
+              // width 'Heat & Pressure' crossed 'Cross-Section View' and pushed
+              // 'pressure' off the right edge. Clamp to the frame first...
+              var edge = 3 * dpr;
+              if (bx + bw > W - edge) bx = W - edge - bw;
+              if (bx < edge) bx = edge;
+              if (by + boxH > H - edge) by = H - edge - boxH;
+              if (by < edge) by = edge;
+              // ...then lift off any pill already drawn this frame. Vertical only:
+              // the x anchor is what ties a label to the feature it names.
+              for (var pi = 0; pi < rkLsPillBoxes.length; pi++) {
+                var pb = rkLsPillBoxes[pi];
+                if (bx + bw > pb.x && bx < pb.x + pb.w && by + boxH > pb.y && by < pb.y + pb.h) {
+                  var lifted = pb.y - boxH - 2 * dpr;
+                  by = (lifted >= edge) ? lifted : pb.y + pb.h + 2 * dpr;
+                  if (by + boxH > H - edge) by = H - edge - boxH;
+                  if (by < edge) by = edge;
+                }
+              }
+              rkLsPillBoxes.push({ x: bx, y: by, w: bw, h: boxH });
               if (hitId) rkLsHits.push({ id: hitId, x: bx / W, y: by / H, w: bw / W, h: boxH / H });
               rkLsRR(bx, by, bw, boxH, 4 * dpr);
               ctx.fillStyle = 'rgba(15,23,42,0.82)';
               ctx.fill();
               ctx.fillStyle = '#ffffff';
-              ctx.fillText(text, lx, ly);
+              // Draw from the box, not the original anchor: clamping may have moved it.
+              ctx.textAlign = 'left';
+              ctx.fillText(text, bx + padX, by + boxH - 4 * dpr);
               ctx.restore();
             }
             function rkLsProcess(zoneId) {
@@ -3848,6 +3876,7 @@ const d = labToolData.rocks || {};
               var P = rkLsPrep();
               var i, j;
               rkLsHits.length = 0;
+              rkLsPillBoxes.length = 0;
               ctx.clearRect(0, 0, W, H);
 
               // ── Sky: deep zenith to hazy horizon, sun, drifting clouds ──
@@ -4317,6 +4346,19 @@ const d = labToolData.rocks || {};
                 }
               });
 
+              // Reserve the caption's strip on the canvas floor BEFORE any pill is
+              // placed. The caption is painted last (below) but occupies the same
+              // bottom band the cycle pills anchor to, so without this the
+              // 'Heat & Pressure' pill lands straight on top of it.
+              (function () {
+                ctx.save();
+                ctx.font = (10 * dpr) + 'px monospace';
+                var capX = dsX + 8 * dpr + ctx.measureText(__alloT('stem.rocks.ls_depth_bottom', '~35 km · hot')).width + 14 * dpr;
+                var capW = ctx.measureText('🪨 ' + __alloT('stem.rocks.ls_cross_section', 'Cross-Section View')).width;
+                rkLsPillBoxes.push({ x: capX, y: H - 8 * dpr - 10 * dpr, w: capW, h: 14 * dpr });
+                ctx.restore();
+              })();
+
               // ── Rock-cycle arrows with heads and flowing dashes ──
               var cyc = 'rgba(255,255,255,0.75)';
               // Igneous → weathering → sediment
@@ -4566,7 +4608,12 @@ const d = labToolData.rocks || {};
 
 
 
-          return React.createElement("div", { ref: rocksRootCleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+          // max-w-6xl, not 4xl: the landscape cross-section is the widest thing
+          // this tool draws and 4xl pinned it to 892px on a 1440px screen — the
+          // scene sat small in a lot of whitespace and the cycle labels had to
+          // crowd. Siblings (angles, calculus, birdlab, arithmetic) already use
+          // 5xl/6xl, so this stays in-house.
+          return React.createElement("div", { ref: rocksRootCleanupRef, className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
 
             // Header
 
@@ -4711,7 +4758,7 @@ const d = labToolData.rocks || {};
 
               // Height follows width on narrow screens so the scene keeps its shape
               // (a fixed 520px at phone width squeezed it and collided the labels).
-              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: 'clamp(280px, 58vw, 520px)' } },
+              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: 'clamp(280px, 58vw, 660px)' } },
 
                 React.createElement("canvas", {
 

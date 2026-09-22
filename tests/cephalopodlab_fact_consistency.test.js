@@ -214,7 +214,49 @@ describe('Cephalopod Lab lesson plans can actually be run', () => {
   it('tracks the deepest point of a dive and reports it at the end', () => {
     expect(src).toMatch(/deepestY: 0\.55/);
     expect(src).toMatch(/if \(gameState\.verticalY < gameState\.runStats\.deepestY\) gameState\.runStats\.deepestY = gameState\.verticalY;/);
-    expect(src).toMatch(/statCard\('Deepest', Math\.abs\(rs\.deepestY\)/);
+    expect(src).toMatch(/statCard\('Deepest', formatDepthM\(rs\.deepestY\)/);
+  });
+
+  // The same lesson teaches "1 atm per 10 m of depth" and asks students to
+  // "calculate the pressure at 1000 m, 3000 m, and 7000 m" and then check
+  // their answers against "simulator behavior". The HUD used to print the raw
+  // scene unit as metres, so the deepest reachable point read "45m" next to a
+  // zone card claiming "Hadal zone, 4000m+", and there was nothing to check
+  // against. Depth is now reported in the real metres each zone claims, with
+  // the hydrostatic pressure beside it.
+  it('reports depth in real metres and the pressure that goes with it', () => {
+    // Every zone declares the real depth band its description already states.
+    // Contiguous: each zone starts where the one above it ended, or the HUD
+    // depth reads backwards at the boundary (the behavioural test below
+    // sweeps the whole column to prove it never does).
+    ['realMinM: 0, realMaxM: 5', 'realMinM: 5, realMaxM: 30',
+     'realMinM: 30, realMaxM: 1000', 'realMinM: 1000, realMaxM: 4000',
+     'realMinM: 4000, realMaxM: 7000'].forEach((frag) => {
+      expect(src).toContain(frag);
+    });
+    // Pressure follows the rule the warm-up demonstrates: 1 atm of air + 1 per 10 m.
+    expect(src).toMatch(/return 1 \+ realDepthFor\(y\) \/ 10;/);
+    // and both reach the player, in the live HUD and the end-of-dive summary.
+    expect(src).toContain("formatDepthM(gameState.verticalY) + 'm · ' + pressureAtmFor(gameState.verticalY).toFixed(0) + ' atm");
+    expect(src).toMatch(/statCard\('Pressure there', pressureAtmFor\(rs\.deepestY\)/);
+  });
+
+  // Pressure damage was a flat 8 HP/s that began the instant a shallow species
+  // crossed into the deep zone, with no flash, no caption, no sound and no HUD
+  // row. Health just fell, indistinguishable from a bite the student never saw.
+  it('warns before pressure damage and signals it while it happens', () => {
+    // A warning band above crush depth that costs no health.
+    expect(src).toContain('var PRESSURE_WARN_BAND_M = 400;');
+    expect(src).toMatch(/realM > crushM - PRESSURE_WARN_BAND_M/);
+    // Damage is graded by how far past crush depth you are, not a cliff.
+    expect(src).toMatch(/var pDmg = 3 \+ over \* 11;/);
+    // and it announces itself on every channel the sim uses for damage.
+    expect(src).toContain("pushCaption(__alloT('stem.cephalopodlab.caption_pressure_crushing'");
+    expect(src).toContain("clAnnounce(__alloT('stem.cephalopodlab.sr_crushing_pressure'");
+    expect(src).toContain('CRUSHING PRESSURE —');
+    expect(src).toContain('PRESSURE BUILDING —');
+    // Deep-adapted species stay exempt — that contrast is the lesson's point.
+    expect(src).toMatch(/var crushM = isDeepSpecies\(species\.id\) \? Infinity : CRUSH_DEPTH_M;/);
   });
 
   it('reports the other quantities its lesson plans ask students to record', () => {
@@ -257,5 +299,454 @@ describe('Cephalopod Lab shows labels, not data keys', () => {
     expect(src).toMatch(/borderBottom: '2px solid rgba\(167,139,250,0\.4\)' \} \}, clHumaniseKey\(k\)\);/);
     // "sd" is an abbreviation, not a word: humanising it to "Sd" reads worse
     expect(src).toMatch(/var CL_KEY_ABBREV = \{ sd: 'SD'/);
+  });
+});
+
+// The tests above pin the source text. These RUN the depth model, by lifting
+// the real DEPTH_ZONES table and the real conversion functions out of the
+// file and evaluating them, so a change to the numbers has to keep the
+// behaviour the lesson plans depend on rather than just keep the wording.
+describe('Cephalopod Lab depth model behaves the way its lessons assume', () => {
+  // Lift the zone table + conversions straight out of the tool source. If the
+  // shape ever changes these throw, which is the point — a silent skip here
+  // would let the model drift away from the prose that describes it.
+  const zonesSrc = src.slice(src.indexOf('var DEPTH_ZONES = {'), src.indexOf('function depthZoneFor(y)'));
+  const fnsSrc = src.slice(src.indexOf('function depthZoneFor(y)'), src.indexOf('function isDeepSpecies'));
+  // __alloT is the i18n wrapper; inside the table it only wraps display names.
+  const harness = 'var __alloT = function (k, fallback) { return fallback; };\n'
+    + zonesSrc + fnsSrc
+    + '\nreturn { DEPTH_ZONES: DEPTH_ZONES, depthZoneFor: depthZoneFor, realDepthFor: realDepthFor, pressureAtmFor: pressureAtmFor, formatDepthM: formatDepthM };';
+  // eslint-disable-next-line no-new-func
+  const model = new Function(harness)();
+
+  const CRUSH_DEPTH_M = Number(/var CRUSH_DEPTH_M = (\d+);/.exec(src)[1]);
+  const WARN_BAND_M = Number(/var PRESSURE_WARN_BAND_M = (\d+);/.exec(src)[1]);
+  // The descent speed a non-deep species actually moves at (Q/Z handling).
+  const SHALLOW_VERT_SPEED = 2.5;
+
+  it('declares depth bands that join up, deepest zone to shallowest', () => {
+    // Derived from the table itself rather than restated here, so this keeps
+    // holding if the numbers change for a good reason.
+    const order = ['surface', 'reef', 'midwater', 'deep', 'abyssal'];
+    for (let i = 1; i < order.length; i += 1) {
+      const above = model.DEPTH_ZONES[order[i - 1]];
+      const here = model.DEPTH_ZONES[order[i]];
+      expect(here.realMinM).toBe(above.realMaxM);
+      // and the scene-Y bands have to meet too, or depthZoneFor leaves a hole.
+      expect(here.maxY).toBe(above.minY);
+    }
+  });
+
+  it('starts the dive on the reef, not in midwater', () => {
+    // The octopus rests at y = 0.55 just above a seafloor at y ~ 0, and
+    // gameState declares currentDepthZone: 'reef' at that altitude.
+    const spawnY = Number(/verticalY: ([\d.]+),/.exec(src)[1]);
+    expect(model.depthZoneFor(spawnY)).toBe('reef');
+    expect(src).toMatch(/currentDepthZone: 'reef'/);
+    // and the reef is a shallow, safe, breathable-looking number.
+    expect(model.realDepthFor(spawnY)).toBeLessThan(50);
+  });
+
+  it('agrees with the "1 atm per 10 m" rule the warm-up demonstrates', () => {
+    // Surface is one atmosphere of air and nothing else.
+    expect(model.pressureAtmFor(20)).toBeCloseTo(1, 5);
+    // and every depth adds exactly one atm per 10 m on top of that.
+    [-1, -5, -8, -14, -20, -33, -45].forEach((y) => {
+      expect(model.pressureAtmFor(y)).toBeCloseTo(1 + model.realDepthFor(y) / 10, 6);
+    });
+  });
+
+  it('can actually reach the depths the formative check asks students to compute', () => {
+    // "Calculate the pressure at 1000 m, 3000 m, and 7000 m." All three have
+    // to be somewhere in the playable column or the step cannot be checked.
+    [1000, 3000, 7000].forEach((target) => {
+      let reached = false;
+      for (let y = 18; y >= -45; y -= 0.01) {
+        if (Math.abs(model.realDepthFor(y) - target) < 25) { reached = true; break; }
+      }
+      expect(reached).toBe(true);
+    });
+    // and the driver question's "300 atmospheres" is reachable too.
+    expect(model.pressureAtmFor(-45)).toBeGreaterThan(300);
+  });
+
+  it('never reports a depth that goes backwards as you descend', () => {
+    // A student reading the HUD while holding Z must see the number rise
+    // monotonically; a zone boundary that overlaps would make it stutter.
+    let prev = -Infinity;
+    for (let y = 18; y >= -45; y -= 0.05) {
+      const d = model.realDepthFor(y);
+      expect(d).toBeGreaterThanOrEqual(prev - 1e-9);
+      prev = d;
+    }
+  });
+
+  it('gives the player a readable warning before pressure starts hurting', () => {
+    // Sweep the column and measure how long the warning band lasts at the
+    // speed a shallow species descends. A band that flicks past in a fraction
+    // of a second is a cliff with a label on it, not a warning.
+    let warnUnits = 0;
+    const step = 0.005;
+    for (let y = 18; y >= -45; y -= step) {
+      const d = model.realDepthFor(y);
+      if (d > CRUSH_DEPTH_M - WARN_BAND_M && d <= CRUSH_DEPTH_M) warnUnits += step;
+    }
+    const warnSeconds = warnUnits / SHALLOW_VERT_SPEED;
+    expect(warnSeconds).toBeGreaterThan(1.0);
+  });
+
+  it('leaves the reef and the surface completely safe', () => {
+    // Nothing a student does in the habitat the tool is actually about
+    // should cost health to depth.
+    for (let y = 18; y >= -1; y -= 0.05) {
+      expect(model.realDepthFor(y)).toBeLessThan(CRUSH_DEPTH_M - WARN_BAND_M);
+    }
+  });
+
+  it('formats deep readouts without implying false precision', () => {
+    // Past 1000 m the column is compressed enough that single metres are
+    // noise; the readout rounds to 10 m there but stays exact up top.
+    expect(model.formatDepthM(-20)).toBe('4000');
+    expect(Number(model.formatDepthM(-20)) % 10).toBe(0);
+    expect(model.formatDepthM(0.55)).toBe(model.realDepthFor(0.55).toFixed(0));
+  });
+});
+
+// The sim states in five places — glossary, Q&A, escape-tactics card, the
+// controls card ("crawl ... oxygen-cheap") and a graded quiz citing O'Dor 1988
+// + Bartol 2010 — that jetting is ~5x more expensive than crawling. The hunger
+// drain was a flat 1.6/s regardless of behaviour, so jetting cost stamina but
+// never a calorie: the headline simulation contradicted the number it grades
+// students on, and nothing in the run summary let anyone notice.
+describe('Cephalopod Lab charges the metabolic cost it teaches', () => {
+  const BASAL = Number(/var BASAL_HUNGER_RATE = ([\d.]+);/.exec(src)[1]);
+  const CRAWL = Number(/var CRAWL_LOCOMOTION_RATE = ([\d.]+);/.exec(src)[1]);
+  const MULT = Number(/var JET_COST_MULTIPLIER = (\d+);/.exec(src)[1]);
+
+  // Mirror of the drain the loop computes, kept in terms of the real constants.
+  const rateFor = (mode) => BASAL + (mode === 'jet' ? CRAWL * MULT : mode === 'crawl' ? CRAWL : 0);
+
+  it('uses the multiplier the quiz marks correct', () => {
+    // The quiz's correct option and its explanation both say 5x.
+    expect(src).toContain("'5x more expensive'), correct: true");
+    expect(MULT).toBe(5);
+  });
+
+  it('applies the multiplier to locomotion, not to basal metabolism', () => {
+    // Scaling the whole drain would charge basal metabolism five times over.
+    const jetLocomotion = rateFor('jet') - BASAL;
+    const crawlLocomotion = rateFor('crawl') - BASAL;
+    expect(jetLocomotion / crawlLocomotion).toBeCloseTo(MULT, 6);
+  });
+
+  it('leaves ordinary crawling balanced exactly as it was', () => {
+    // The tool shipped a flat 1.6/s for years; crawling play must not change.
+    expect(rateFor('crawl')).toBeCloseTo(1.6, 6);
+  });
+
+  it('makes holding still cheaper than moving, which is what camo play needs', () => {
+    expect(rateFor('rest')).toBeLessThan(rateFor('crawl'));
+    expect(rateFor('crawl')).toBeLessThan(rateFor('jet'));
+  });
+
+  it('still leaves a jetting dive survivable', () => {
+    // Stamina (100 max, 45/s drain, 18/s regen) caps sustained jetting at a
+    // ~29% duty cycle. At that mix a full belly has to last long enough to
+    // cross the reef and catch something, or the cost is a punishment rather
+    // than a trade-off. Crabs refill 15-30.
+    const duty = (100 / 45) / ((100 / 45) + (100 / 18));
+    const mixed = rateFor('jet') * duty + rateFor('crawl') * (1 - duty);
+    const seconds = 100 / mixed;
+    expect(seconds).toBeGreaterThan(35);
+    expect(seconds).toBeLessThan(63);   // and it must genuinely cost something
+  });
+
+  it('exempts the fin-propelled dumbo octopus, as its own description claims', () => {
+    // "lowest energy cost per movement" — it would be a contradiction to bill
+    // it the squid's jet premium.
+    expect(src).toContain("lowest energy cost per movement");
+    expect(src).toMatch(/if \(isJetting && species\.specialAbility === 'finPropulsion'\) \{\s*\n\s*locomotionCost = CRAWL_LOCOMOTION_RATE;/);
+  });
+
+  it('bills turning as movement, so the two HUD rows cannot disagree', () => {
+    // `isMoving` is translation OR turning — the same predicate that resets
+    // stationaryTime and that the substrate row prints as "still"/"moving".
+    // Billing only moveFwd would print "moving" and "resting 1.0 cal/s" on
+    // the same frame while the player turns in place.
+    expect(src).toMatch(/var isMoving = moveFwd !== 0 \|\| turn !== 0;/);
+    expect(src).toMatch(/else if \(isMoving\) locomotionCost = CRAWL_LOCOMOTION_RATE;/);
+    expect(src).toContain('gameState.isMovingOnFloor = isMoving;');
+    // and the substrate row still keys off the same stationaryTime it always did
+    expect(src).toContain("gameState.stationaryTime > 0.5 ? ' · still' : ' · moving'");
+  });
+
+  it('shows the burn rate live and reports the budget at the end', () => {
+    // A cost the player cannot see is just a bar draining faster for no reason.
+    expect(src).toContain("hungerRateHud.toFixed(1) + ' cal/s'");
+    expect(src).toMatch(/statCard\('Time jetting'/);
+    expect(src).toMatch(/statCard\('Calories burned'/);
+    expect(src).toMatch(/jetMs: 0,/);
+    expect(src).toMatch(/caloriesBurned: 0,/);
+  });
+});
+
+// A carried/dropped shelter is meant to work as a den: the tool's own
+// shelter cards advertise a camo bonus and "ambush from the shelter", and
+// coconut-octopus tool use is one of the headline biology facts. The shelter
+// block set gameState.inDen, but the authoritative den scan further down the
+// same frame resets that flag before the HUD and half the predators read it.
+// The result was a shelter that warded off the shark and the zone predators
+// (which run BEFORE the reset) but not the grouper or the moray (which run
+// after), while the HUD never said "IN DEN" at all.
+describe('Cephalopod Lab shelters count as dens for everything, not just some things', () => {
+  it('records shelter cover in its own flag rather than one that gets reset', () => {
+    // Writing gameState.inDen at the shelter site is the bug; it must set a
+    // flag that survives the later scan.
+    expect(src).toContain('gameState.inShelterDen = nearAnyShelterDen;');
+    expect(src).not.toMatch(/if \(nearAnyShelterDen && !gameState\.inDen\) \{\s*\n\s*gameState\.inDen = true;/);
+  });
+
+  it('folds shelter cover into the same flag every consumer reads', () => {
+    // The HUD, the regen, and all four predator families read gameState.inDen.
+    expect(src).toContain('if (gameState.inShelterDen) gameState.inDen = true;');
+  });
+
+  it('keeps a real den stronger than an improvised shelter', () => {
+    expect(src).toMatch(/var _denRegen = gameState\.inDen \? 12 : \(gameState\.inShelterDen \? 8 : 0\);/);
+  });
+
+  it('regenerates once per frame, never twice', () => {
+    // Two regen sites that can both fire in one frame would silently double
+    // the rate for anyone standing in a shelter inside a den.
+    const regenSites = src.match(/gameState\.health = Math\.min\(gameState\.maxHealth, gameState\.health \+ [^)]*\* dt\)/g) || [];
+    // den regen is now a single site driven by _denRegen; the other legitimate
+    // site is the separate mimic/rest recovery block.
+    expect(regenSites.some((s) => s.includes('_denRegen'))).toBe(true);
+    expect(regenSites.filter((s) => /\+ (8|12) \* dt/.test(s)).length).toBe(0);
+  });
+});
+
+// Ink used to work two incompatible ways. The grouper and the moray gated
+// attack INITIATION on `!gameState.isInked` — total immunity — while the shark
+// and the zone predators merely halved their detection range and never broke
+// off a charge at all. So the defence was absolute against two predators and
+// close to worthless against the one that hits hardest (45 damage), and the
+// HUD announced "predators can't see you" over the top of both behaviours.
+// Derby 2007/2014, which this tool cites five times, describe a cloud that
+// degrades vision and chemoreception and may even draw a predator toward it.
+describe('Cephalopod Lab ink degrades detection instead of switching it off', () => {
+  it('routes every predator through one shared factor', () => {
+    expect(src).toContain('var INK_DETECTION_FACTOR = 0.5;');
+    // All four families read the same constant rather than a private number.
+    const uses = (src.match(/INK_DETECTION_FACTOR/g) || []).length;
+    expect(uses).toBeGreaterThanOrEqual(5);   // 1 declaration + >=4 call sites
+  });
+
+  it('no longer gates attack initiation on being inked', () => {
+    // These were the immunity checks. Their absence is the fix.
+    expect(src).not.toMatch(/grDist < grEffectiveRange && !gameState\.isInked/);
+    expect(src).not.toMatch(/mDistHome < morayEffectiveRange && !gameState\.isInked/);
+    // and both now fold ink into the range calculation instead.
+    expect(src).toMatch(/grEffectiveRange = gr\.aggroRange[\s\S]{0,200}?gameState\.isInked \? INK_DETECTION_FACTOR/);
+    expect(src).toMatch(/morayEffectiveRange = me\.aggroRange[\s\S]{0,200}?gameState\.isInked \? INK_DETECTION_FACTOR/);
+  });
+
+  it('lets ink break off a charge from the hard hitters too', () => {
+    // The shark's charge ignored ink entirely, so the pseudomorph escape the
+    // glossary describes did not exist against it.
+    expect(src).toMatch(/if \(gameState\.inDen \|\| gameState\.isInked \|\| sk\.stateTimer > 4\)/);
+    expect(src).toMatch(/if \(gameState\.inDen \|\| zpInkEscapes \|\| zpud\.stateTimer > 4\.5\)/);
+  });
+
+  it('keeps the two hunters it already models as ink-resistant resistant', () => {
+    // zpInkMod 0.6 marks these two; the escape must respect that rather than
+    // handing ink a blanket win and flattening the depth-zone contrast.
+    expect(src).toMatch(/zpInkMod = \(zpud\.kind === 'spermWhale' \|\| zpud\.kind === 'giantSquid'\) \? 0\.6/);
+    expect(src).toMatch(/zpInkEscapes = gameState\.isInked &&\s*\n\s*zpud\.kind !== 'spermWhale' && zpud\.kind !== 'giantSquid';/);
+  });
+
+  it('stops telling the player ink makes them unseeable', () => {
+    expect(src).not.toMatch(/predators can.{0,2}t see you/);
+    expect(src).toContain('INKED — harder to track, breaks off attacks');
+  });
+});
+
+// The ink HUD said "recharging Ns" and the screen reader said "Ink
+// recharging", but nothing in the file ever increments inkReserves — the 8s
+// window only gates when the NEXT dot may be spent. Once all three were gone
+// the row read "depleted" for the rest of the dive. The mechanic matches the
+// tool's own cited biology (Derby 2014: "3-5 squirts per refill cycle
+// (~30 days)"), so the labels were the thing that was wrong.
+describe('Cephalopod Lab ink labels describe the mechanic that exists', () => {
+  it('never claims a reserve recharges', () => {
+    // Nothing refills a reserve, so no label may promise one.
+    expect(src).not.toMatch(/recharging/);
+    expect(src).not.toMatch(/Ink recharging/);
+  });
+
+  it('still has exactly one place that spends a reserve and none that grants one', () => {
+    expect((src.match(/gameState\.inkReserves--/g) || []).length).toBe(1);
+    expect(src).not.toMatch(/inkReserves\+\+/);
+    expect(src).not.toMatch(/inkReserves = gameState\.inkReserves \+/);
+    expect(src).not.toMatch(/inkReserves \+= /);
+  });
+
+  it('names what the 8s window actually is, and says the sac will not refill', () => {
+    expect(src).toContain('refilling siphon ');
+    expect(src).toContain('sac empty — no refill this dive');
+    expect(src).toContain('Siphon refilling — ');
+    expect(src).toContain('Ink sac empty. It does not refill during a dive.');
+  });
+
+  it('tells the player up front, on the controls card, that ink is finite', () => {
+    // The card used to read "3 charges, 8s cooldown between", which reads as
+    // a regenerating resource.
+    expect(src).not.toContain('Ink defense — 3 charges');
+    expect(src).toMatch(/Ink — 3 per dive, 8s between\..*never comes back mid-dive/);
+  });
+
+  it('keeps the two species the tool says do not ink unable to ink', () => {
+    expect(src).toMatch(/canInk = species\.id !== 'dumboOcto' && species\.id !== 'vampireSquid'/);
+  });
+});
+
+// detectSubstrate samples X/Z only, so substrate camouflage used to work
+// identically whether the animal lay on the sand or hovered 40 m up in open
+// water. That contradicts this tool's own taxonomy, which separates
+// background matching (benthic, needs something behind you) from
+// counter-illumination (the open-water answer, modelled on the bobtail squid).
+describe('Cephalopod Lab background matching needs a background', () => {
+  const FLOOR = Number(/var FLOOR_REST_Y = ([\d.]+);/.exec(src)[1]);
+  const FADE = Number(/var SUBSTRATE_CAMO_FADE_M = ([\d.]+);/.exec(src)[1]);
+  const contact = (y) => Math.max(0, 1 - Math.abs(y - FLOOR) / FADE);
+
+  it('gives full substrate camo to an animal resting on the floor', () => {
+    // The spawn altitude is the resting altitude; normal seafloor play must
+    // be completely unaffected by this rule.
+    const spawnY = Number(/verticalY: ([\d.]+),/.exec(src)[1]);
+    expect(spawnY).toBe(FLOOR);
+    expect(contact(spawnY)).toBe(1);
+  });
+
+  it('fades the substrate component out in BOTH directions', () => {
+    // Descending into open water leaves the substrate behind just as surely
+    // as rising above it. A one-sided clamp would keep full camo all the way
+    // down to the abyssal floor.
+    expect(src).toContain('var distFromFloor = Math.abs(gameState.verticalY - FLOOR_REST_Y);');
+    expect(contact(FLOOR + FADE)).toBe(0);
+    expect(contact(FLOOR - FADE)).toBe(0);
+    expect(contact(-20)).toBe(0);
+  });
+
+  it('multiplies it into camoEff rather than replacing the other factors', () => {
+    expect(src).toMatch(/camoEff = matchScore \* stillnessBonus \* species\.camoQualityMul \* substrateContact;/);
+  });
+
+  it('leaves counter-illumination working in open water', () => {
+    // The bobtail squid's ventral glow is exactly the open-water answer, so
+    // it must be added AFTER the substrate fade, not scaled by it.
+    const fadeAt = src.indexOf('* substrateContact;');
+    const ciAt = src.indexOf("species.specialAbility === 'counterIllumination'");
+    expect(fadeAt).toBeGreaterThan(0);
+    expect(ciAt).toBeGreaterThan(fadeAt);
+    expect(src).toMatch(/camoEff = Math\.min\(1, gameState\.camoEff \+ 0\.5 \* gameState\.counterIlluminationActive\)/);
+  });
+
+  it('keeps the reef floor generous enough to still play the camo game', () => {
+    // Crabs sit at floor level, so hunting must not be penalised. Require a
+    // comfortable band of near-full contact around the resting altitude.
+    expect(contact(FLOOR + 1)).toBeGreaterThan(0.6);
+    expect(contact(FLOOR - 1)).toBeGreaterThan(0.6);
+  });
+
+  it('tells the player why camo dropped instead of just sagging the bar', () => {
+    expect(src).toContain('off the bottom — nothing behind you to match');
+    // and the shell species gets its own explanation rather than a dead 0%.
+    expect(src).toContain('shell — no chromatophores, camo cannot rise');
+    expect(src).toMatch(/species\.camoQualityMul === 0/);
+  });
+});
+
+
+// The Field Guide ships a PREY table with calories and a difficulty rating,
+// and the 3D sim hands out hunger and score for catching the same animals.
+// Nothing kept the two in agreement and they had inverted: the clam is the
+// SMALLEST meal (60 cal) and the EASIEST catch (difficulty 2) in the table,
+// but the sim paid it the most hunger (50) AND the most score (3) of any
+// prey, while the crab paid the least. A student who reads the Field Guide
+// and then plays the sim gets opposite answers about what is worth hunting.
+// These tests read BOTH tables out of the source and compare them, rather
+// than restating either set of numbers here.
+describe('Cephalopod Lab sim payouts agree with the Field Guide prey table', () => {
+  // --- the taught table ---
+  const taught = {};
+  const preyRe = /\{ id: '(crab|fish|clam)', name: '[^']*', emoji: '[^']*', difficulty: (\d+), calories: (\d+),/g;
+  for (let m = preyRe.exec(src); m; m = preyRe.exec(src)) {
+    taught[m[1]] = { difficulty: Number(m[2]), calories: Number(m[3]) };
+  }
+
+  // --- what the sim actually pays ---
+  const crabTypes = {};
+  const crabRe = /(rock|red|hermit):\s+\{ score: (\d+), hunger: (\d+),/g;
+  for (let m = crabRe.exec(src); m; m = crabRe.exec(src)) {
+    crabTypes[m[1]] = { score: Number(m[2]), hunger: Number(m[3]) };
+  }
+  const clamPay = /gameState\.score \+= (\d+);\s*\n\s*gameState\.hunger = Math\.min\(gameState\.maxHunger, gameState\.hunger \+ (\d+)\);/;
+  const payouts = [...src.matchAll(new RegExp(clamPay.source, 'g'))]
+    .map((m) => ({ score: Number(m[1]), hunger: Number(m[2]) }));
+
+  it('reads both tables out of the source', () => {
+    // If these ever stop matching, the tests below would silently pass on an
+    // empty set. Fail loudly instead.
+    ['crab', 'fish', 'clam'].forEach((k) => expect(taught[k]).toBeTruthy());
+    ['rock', 'red', 'hermit'].forEach((k) => expect(crabTypes[k]).toBeTruthy());
+    expect(payouts.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('teaches fish > crab > clam by calories, and pays them in that order', () => {
+    expect(taught.fish.calories).toBeGreaterThan(taught.crab.calories);
+    expect(taught.crab.calories).toBeGreaterThan(taught.clam.calories);
+
+    const fish = payouts.find((p) => p.hunger === 50);
+    const clam = payouts.find((p) => p.hunger === 30);
+    expect(fish).toBeTruthy();
+    expect(clam).toBeTruthy();
+
+    const crabHungers = Object.values(crabTypes).map((c) => c.hunger);
+    const crabAvg = crabHungers.reduce((a, b) => a + b, 0) / crabHungers.length;
+
+    expect(fish.hunger).toBeGreaterThan(crabAvg);
+    expect(crabAvg).toBeGreaterThan(clam.hunger);
+  });
+
+  it('pays hunger as the taught calories halved, for every prey', () => {
+    // One scale, derived from the table, rather than three invented numbers.
+    const fish = payouts.find((p) => p.hunger === 50);
+    const clam = payouts.find((p) => p.hunger === 30);
+    expect(fish.hunger).toBe(taught.fish.calories / 2);
+    expect(clam.hunger).toBe(taught.clam.calories / 2);
+    // the crab's three varieties straddle its taught value
+    const crabTarget = taught.crab.calories / 2;
+    const hungers = Object.values(crabTypes).map((c) => c.hunger);
+    expect(Math.min(...hungers)).toBeLessThanOrEqual(crabTarget);
+    expect(Math.max(...hungers)).toBeGreaterThanOrEqual(crabTarget);
+  });
+
+  it('scores by how hard the prey is to catch, not by how big it is', () => {
+    expect(taught.fish.difficulty).toBeGreaterThan(taught.crab.difficulty);
+    expect(taught.crab.difficulty).toBeGreaterThan(taught.clam.difficulty);
+
+    const fish = payouts.find((p) => p.hunger === 50);
+    const clam = payouts.find((p) => p.hunger === 30);
+    const crabScores = Object.values(crabTypes).map((c) => c.score);
+
+    expect(fish.score).toBeGreaterThan(Math.min(...crabScores));
+    expect(Math.min(...crabScores)).toBeGreaterThan(clam.score);
+  });
+
+  it('stops advertising the clam as the jackpot', () => {
+    expect(src).not.toContain('big calorie payoff');
+    expect(src).not.toContain('Pays out big calorie reward');
+    expect(src).toContain('small but reliable meal');
   });
 });

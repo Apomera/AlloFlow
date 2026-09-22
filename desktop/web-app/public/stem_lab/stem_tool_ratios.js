@@ -72,7 +72,7 @@
 
   var CHALLENGES = {
     ratioTable: [
-      { id: 'ratio-paint', prompt: 'A paint mix uses 3 cups blue for every 5 cups white. If there are 20 cups of white, how many cups of blue are needed?', answer: 12, suffix: 'cups', hint: 'Five was multiplied by 4, so multiply three by 4 too.', explain: '3:5 and 12:20 are equivalent because both quantities were multiplied by 4.' },
+      { id: 'ratio-paint', ratioPair: [3, 5, 12, 20], prompt: 'A paint mix uses 3 cups blue for every 5 cups white. If there are 20 cups of white, how many cups of blue are needed?', answer: 12, suffix: 'cups', hint: 'Five was multiplied by 4, so multiply three by 4 too.', explain: '3:5 and 12:20 are equivalent because both quantities were multiplied by 4.' },
       { id: 'ratio-simplify', prompt: 'Simplify the ratio 18:24. Enter your answer with a colon.', answers: ['3:4', '3/4'], hint: 'Divide both terms by their greatest common factor, 6.', explain: '18 \u00F7 6 = 3 and 24 \u00F7 6 = 4, so the simplest ratio is 3:4.' },
       { id: 'ratio-scale', prompt: 'Scale the ratio 7:4 by a factor of 6. What is the second quantity?', answer: 24, hint: 'Multiply the second quantity by the scale factor.', explain: '4 \u00D7 6 = 24, while the first quantity becomes 7 \u00D7 6 = 42.' }
     ],
@@ -311,6 +311,44 @@
     return isFinite(numeric) ? numeric : null;
   }
 
+  // Wrong answers returned the same static hint forever, no matter what the
+  // student actually did. The most important misconception in this whole
+  // topic is additive reasoning -- on 3:5 -> ?:20 a student adds the same 15
+  // to both parts and answers 18 instead of 12 -- and the tool could already
+  // prove that is what happened. This names the error instead of restating
+  // the hint. It returns null unless it is confident, so a plain slip still
+  // falls through to the challenge hint.
+  function diagnoseRatioAnswer(challenge, rawAnswer) {
+    if (!challenge || challenge.answers) return null;
+    var numeric = parseNumericChallengeAnswer(normalizeAnswer(rawAnswer));
+    if (numeric == null || !isFinite(numeric)) return null;
+    var key = Number(challenge.answer);
+    if (!isFinite(key) || numeric === key) return null;
+    var pair = challenge.ratioPair;
+    if (pair && pair.length === 4) {
+      var a = Number(pair[0]), b = Number(pair[1]), d = Number(pair[3]);
+      // Additive: the student added (d - b) to a instead of scaling by d / b.
+      if (isFinite(a) && isFinite(b) && isFinite(d) && b !== 0) {
+        var additive = a + (d - b);
+        if (numeric === additive && additive !== key) {
+          return { kind: "additive", added: d - b, factor: d / b,
+            message: "You added " + (d - b) + " to both parts. Ratios keep the same MULTIPLIER, not the same difference: " + b + " was multiplied by " + (d / b) + ", so multiply " + a + " by " + (d / b) + " too." };
+        }
+      }
+    }
+    // Off by a power of ten: the relationship is right, the place value is not.
+    for (var e = -3; e <= 3; e++) {
+      if (e === 0) continue;
+      if (Math.abs(numeric * Math.pow(10, e) - key) <= 1e-9 * Math.max(1, Math.abs(key))) {
+        return { kind: "placeValue", message: "Your reasoning gives the right digits, but the value is off by a factor of " + Math.pow(10, Math.abs(e)) + ". Check where the decimal point or the zeros belong." };
+      }
+    }
+    // Inverted: the student scaled the wrong way round.
+    if (key !== 0 && Math.abs(numeric - 1 / key) <= 1e-9) {
+      return { kind: "inverted", message: "That is the reciprocal. Check which quantity you are scaling up and which you are scaling down." };
+    }
+    return null;
+  }
   function challengeIsCorrect(challenge, rawAnswer) {
     var normalized = normalizeAnswer(rawAnswer);
     if (!normalized) return false;
@@ -404,6 +442,31 @@
     };
   }
 
+  // Pure form of the double-number-line scaffold, so a test can read the value
+  // the diagram actually shows. Computing it inside the render closure meant
+  // the only gate possible was one that recomputed it independently -- which
+  // passes no matter what the code does.
+  //
+  // Shows the UNIT RATE, not the scale factor between the two known marks.
+  // The scale factor for 3 km -> 7 km is 2.333 once rounded for display, and
+  // 18 x 2.333 = 41.994, which the grader rejects against a key of 42.
+  function numberLineScaffold(model) {
+    var rows = model && model[1], labels = (model && model[0]) || [];
+    if (!Array.isArray(rows) || rows.length < 2) return null;
+    var known = rows[1];
+    if (!Array.isArray(known) || !known[0]) return null;
+    var unitRate = known[1] / known[0];
+    if (!isFinite(unitRate)) return null;
+    function strip(v) {
+      var out = String(v == null ? "" : v).trim();
+      if (out.charAt(out.length - 1) === ")") {
+        var open = out.lastIndexOf("(");
+        if (open > 0) out = out.slice(0, open).trim();
+      }
+      return out;
+    }
+    return { unitRate: unitRate, shown: roundTo(unitRate, 6), unitLabel: strip(labels[0]), valueLabel: strip(labels[1]) };
+  }
   root.RatioLabPure = {
     buildUnitComparison: buildUnitComparison,
     gcd: gcd,
@@ -417,11 +480,13 @@
     formatUnitRateEvidence: formatUnitRateEvidence,
     positiveAxisMaximum: positiveAxisMaximum,
     roundTo: roundTo,
+    numberLineScaffold: numberLineScaffold,
     percentSegmentFills: percentSegmentFills,
     percentTapeModel: percentTapeModel,
     percentTapeSummary: percentTapeSummary,
     parseNumericChallengeAnswer: parseNumericChallengeAnswer,
     challengeIsCorrect: challengeIsCorrect,
+    diagnoseRatioAnswer: diagnoseRatioAnswer,
     canonicalChallengeAnswer: canonicalChallengeAnswer,
     challenges: CHALLENGES
   };
@@ -1208,13 +1273,17 @@
           }
           if (firstSolve) notify(t('stem.ratios.challenge_solved_15_xp', "Challenge solved! +15 XP"), 'success');
         } else {
+          // Name the specific error when it can be proved; otherwise keep the
+          // challenge's own hint rather than guessing at what went wrong.
+          var diagnosis = diagnoseRatioAnswer(challenge, scopedChallengeAnswer);
+          var wrongAnswerHelp = diagnosis ? diagnosis.message : challenge.hint;
           update(function(current) {
             var missed = Object.assign({}, current.missedChallenges || {});
             missed[challenge.id] = true;
             return { missedChallenges: missed, challengeAttempts: (current.challengeAttempts || 0) + 1,
-              challengeFeedback: { challengeId: challenge.id, correct: false, message: t('stem.ratios.not_yet', "Not yet. ") + challenge.hint } };
+              challengeFeedback: { challengeId: challenge.id, correct: false, message: t('stem.ratios.not_yet', "Not yet. ") + wrongAnswerHelp } };
           });
-          announce(t('stem.ratios.not_yet', "Not yet. ") + challenge.hint);
+          announce(t('stem.ratios.not_yet', "Not yet. ") + wrongAnswerHelp);
         }
       }
 
@@ -1335,9 +1404,18 @@
               h('summary', { className: 'cursor-pointer text-sm font-bold' }, t('stem.ratios.model_this_problem', 'Model this problem')),
               mode === 'numberLine' && h('div', { className: 'overflow-x-auto mt-3', tabIndex: 0, role: 'region', 'aria-label': t('stem.ratios.aligned_line_region', 'Aligned quantities on a double number line') }, (function() {
                 var rows = model[1], domain = rows[rows.length - 1][0];
-                var multiplier = rows[rows.length - 1][0] / rows[1][0];
+                // The scaffold used to print the scale factor between the two
+                // known marks, rounded to three places. For 3 km -> 7 km that
+                // rendered as "x 2.333", and 18 x 2.333 = 41.994, which the
+                // checker rejects against a key of 42: a student who followed the
+                // on-screen instruction exactly was marked wrong. It also
+                // contradicted every challenge explain text, which teaches the
+                // unit rate. The unit rate is exact whenever the rate is, and it
+                // is the method the answer key already uses.
+                var scaffold = numberLineScaffold(model);
+                var scaffoldText = scaffold ? (t("stem.ratios.per_one", "1 ") + scaffold.unitLabel + " → " + scaffold.shown + " " + scaffold.valueLabel) : "";
                 return h('svg', { viewBox: '0 0 360 220', role: 'img', 'aria-labelledby': 'ratio-model-title-' + challenge.id, style: { width: '100%', minWidth: 240, display: 'block' }, 'data-linked-ratio-line': challenge.id },
-                  h('title', { id: 'ratio-model-title-' + challenge.id }, model[0].join(' / ') + '. ' + t('stem.ratios.aligned_line_description', 'Vertically aligned marks represent equivalent quantities. The missing value remains a question mark.')),
+                  h('title', { id: 'ratio-model-title-' + challenge.id }, model[0].join(' / ') + '. ' + t('stem.ratios.aligned_line_description', 'Vertically aligned marks represent equivalent quantities. The missing value remains a question mark.') + ' ' + scaffoldText + '.'),
                   [0,1].map(function(axis) {
                     var y = axis ? 170 : 65;
                     return h('g', { key: axis },
@@ -1348,7 +1426,7 @@
                         h('text', { x: x, y: y + 28, fill: text, textAnchor: 'middle', fontSize: 17, fontWeight: 700 }, row[axis])); }));
                   }),
                   rows.map(function(row,index) { var x = 35 + row[0] / domain * 290; return h('line', { key: index, x1: x, x2: x, y1: 99, y2: 130, stroke: muted, strokeDasharray: '4 4' }); }),
-                  h('text', { x: 180, y: 118, textAnchor: 'middle', fill: text, fontSize: 14, fontWeight: 700 }, '× ' + formatNumber(multiplier) + ' → ' + t('stem.ratios.both_quantities', 'both quantities')));
+                  h('text', { x: 180, y: 118, textAnchor: 'middle', fill: text, fontSize: 14, fontWeight: 700 }, scaffoldText));
               })()),
               ['ratio-paint','ratio-simplify','ratio-scale'].indexOf(challenge.id) >= 0 && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3', 'data-ratio-scaling': challenge.id }, model[0].map(function(label,index) {
                 var operation = challenge.id === 'ratio-paint' ? '× 4' : challenge.id === 'ratio-simplify' ? '÷ 6' : '× 6';

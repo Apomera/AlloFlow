@@ -32,6 +32,14 @@ const git = (args) => {
 };
 
 // Discover pairs from the build scripts themselves, so a new module is covered the day it appears.
+//
+// FAIL-OPEN GUARD (2026-09-21). Every path below resolves against ROOT, so relocating the
+// *_source.jsx files out of the repo root would make each existsSync fail, every pair be skipped,
+// and this gate print "0 source/module pair(s) checked ... OK" — green, while covering nothing.
+// That is the silent coverage loss this gate exists to prevent, turned on the gate itself.
+// So a builder naming a pair we cannot resolve is now a HARD FAILURE, and PAIR_FLOOR asserts the
+// discovered count never collapses even if some other discovery step silently stops matching.
+const unresolved = [];
 function discoverPairs() {
   const pairs = [];
   for (const f of fs.readdirSync(ROOT)) {
@@ -45,7 +53,10 @@ function discoverPairs() {
     // Generated-file notices can name the builder before the actual output.
     const mod = (body.match(/[a-z0-9_]+_module\.js/ig) || []).find(name => !name.startsWith('_build_'));
     if (!src || !mod) continue;
-    if (!fs.existsSync(path.join(ROOT, src)) || !fs.existsSync(path.join(ROOT, mod))) continue;
+    const missing = [];
+    if (!fs.existsSync(path.join(ROOT, src))) missing.push(src);
+    if (!fs.existsSync(path.join(ROOT, mod))) missing.push(mod);
+    if (missing.length) { unresolved.push({ builder: f, missing: missing }); continue; }
     pairs.push({ builder: f, source: src, module: mod });
   }
   return pairs.sort((a, b) => a.source.localeCompare(b.source));
@@ -90,6 +101,27 @@ const known = new Set(baseline.stale || []);
 
 const introduced = stale.filter((s) => !known.has(s.module));
 const fixed = Array.from(known).filter((m) => !staleNames.includes(m));
+
+// Floor for discovered pairs. 147 resolved on 2026-09-21. Lower it only alongside a deliberate,
+// explained reduction in builders — never to make a red gate go green.
+const PAIR_FLOOR = 140;
+
+if (unresolved.length) {
+  console.error('');
+  console.error('FAIL — ' + unresolved.length + ' builder(s) name a source/module pair that cannot be found under the repo root.');
+  console.error('Each one is a pair this gate is no longer checking. If files moved, teach discovery the new');
+  console.error('location; do not let them be skipped:');
+  for (const u of unresolved) console.error('  ' + u.builder + ' -> missing ' + u.missing.join(', '));
+  process.exit(1);
+}
+
+if (pairs.length < PAIR_FLOOR) {
+  console.error('');
+  console.error('FAIL — only ' + pairs.length + ' source/module pair(s) discovered, below the floor of ' + PAIR_FLOOR + '.');
+  console.error('Discovery has probably stopped matching (moved files, renamed builders), which would leave this');
+  console.error('gate reporting OK while checking almost nothing.');
+  process.exit(1);
+}
 
 console.log('check_module_freshness: ' + pairs.length + ' source/module pair(s) checked, ' + stale.length + ' stale (' + known.size + ' baselined).');
 

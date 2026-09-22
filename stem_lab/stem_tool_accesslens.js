@@ -143,6 +143,20 @@
     };
   }
 
+  // getUserMedia failures are not interchangeable. Telling a student on a
+  // laptop with no rear camera to allow permissions, and offering a pop-out
+  // window that will fail the same way, is wrong advice three times out of
+  // four. Names come from the Media Capture spec; older engines used the
+  // legacy aliases, so both are mapped.
+  function cameraFailureReason(error) {
+    var name = error && (error.name || error.code);
+    name = typeof name === 'string' ? name : '';
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') return 'denied';
+    if (name === 'NotFoundError' || name === 'DevicesNotFoundError' || name === 'OverconstrainedError' || name === 'ConstraintNotSatisfiedError') return 'none';
+    if (name === 'NotReadableError' || name === 'TrackStartError' || name === 'AbortError') return 'inuse';
+    if (name === 'TypeError') return 'unsupported';
+    return 'other';
+  }
   function splitDataUrl(dataUrl) {
     if (typeof dataUrl !== 'string') return null;
     var m = dataUrl.match(/^data:([^;,]+);base64,(.+)$/);
@@ -198,6 +212,7 @@
     var sErr = useState(''); var err = sErr[0], setErr = sErr[1];
     var sResults = useState({}); var results = sResults[0], setResults = sResults[1];
     var sCam = useState('idle'); var camState = sCam[0], setCamState = sCam[1]; // idle|starting|live|denied
+    var sCamWhy = useState(''); var camReason = sCamWhy[0], setCamReason = sCamWhy[1]; // '' | denied | none | inuse | unsupported | other
     var sLang = useState('Spanish'); var targetLang = sLang[0], setTargetLang = sLang[1];
     var sReaderPx = useState(24); var readerPx = sReaderPx[0], setReaderPx = sReaderPx[1];
     var sAnswers = useState({}); var answers = sAnswers[0], setAnswers = sAnswers[1];
@@ -209,6 +224,12 @@
     var streamRef = useRef(null);
     var lensWinRef = useRef(null);
     var busyRef = useRef(''); busyRef.current = busy;
+    // Which photo an in-flight analysis belongs to. Without this, clearing or
+    // replacing a photo mid-analysis still let the old result land: the student
+    // got an authoritative description of a photo that is no longer there. For
+    // a blind student -- this tool's headline user -- there is no visual cue
+    // that the description is stale, so it is the worst failure mode here.
+    var photoTokenRef = useRef(0);
 
     var announce = useCallback(function (m) {
       setLiveMsg(String(m || ''));
@@ -280,8 +301,11 @@
     // ── photo intake: everything funnels through here; downscale to <=1024px
     //    JPEG so the AI payload stays small ──
     function acceptPhoto(dataUrl, sourceLabel) {
+      // Claim this decode. A later photo bumps the token and wins.
+      var token = ++photoTokenRef.current;
       var img = new Image();
       img.onload = function () {
+        if (token !== photoTokenRef.current) return;
         try {
           var maxDim = 1024;
           var w = img.width, hgt = img.height;
@@ -293,7 +317,7 @@
           cv.getContext('2d').drawImage(img, 0, 0, cw, chg);
           var out = cv.toDataURL('image/jpeg', 0.85);
           setPhoto({ dataUrl: out });
-          setResults({}); setAnswers({}); setErr('');
+          setResults({}); setAnswers({}); setErr(''); setBusy('');
           stopSpeech();
           markQuest('captured');
           announce(_t('stem.accessLens.sr_photo_ready', 'Photo ready. Choose a lens mode and press Analyze.'));
@@ -302,6 +326,7 @@
         }
       };
       img.onerror = function () {
+        if (token !== photoTokenRef.current) return;
         setErr(_t('stem.accessLens.err_photo', 'That photo could not be loaded. Please try another one.'));
       };
       img.src = dataUrl;
@@ -324,19 +349,24 @@
     function startLiveCamera() {
       setErr('');
       if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setCamReason('unsupported');
         setCamState('denied');
         return;
       }
       setCamState('starting');
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false })
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }, audio: false })
         .then(function (stream) {
           streamRef.current = stream;
+          setCamReason('');
           setCamState('live');
           announce(_t('stem.accessLens.sr_cam_live', 'Live camera started. Press Snap photo when ready.'));
         })
-        .catch(function () {
-          // NotAllowedError in the Canvas iframe lands here → offer the
-          // companion-window escape hatch (and the file picker always works).
+        .catch(function (error) {
+          // The error was discarded, so a laptop with no rear camera, a camera
+          // already in use, and a real permission refusal all told the student
+          // the same thing: that the camera is blocked and to try the pop-out
+          // window, which fails identically for three of the four.
+          setCamReason(cameraFailureReason(error));
           setCamState('denied');
         });
     }
@@ -369,7 +399,8 @@
     }
 
     function clearPhoto() {
-      setPhoto(null); setResults({}); setAnswers({}); setErr('');
+      photoTokenRef.current++;
+      setPhoto(null); setResults({}); setAnswers({}); setErr(''); setBusy('');
       stopSpeech();
       announce(_t('stem.accessLens.sr_cleared', 'Photo cleared. Nothing was saved.'));
     }
@@ -386,8 +417,12 @@
         m === 'translate' ? translatePrompt(targetLang || 'Spanish') :
         inquirePrompt(band);
       setBusy(m); setErr('');
+      var token = photoTokenRef.current;
       announce(_t('stem.accessLens.sr_analyzing', 'Analyzing your photo.'));
       vision(prompt, parts.base64, parts.mime).then(function (text) {
+        // The photo this describes is gone or replaced; saying anything now
+        // would attach it to whatever is on screen instead.
+        if (token !== photoTokenRef.current) return;
         setBusy('');
         if (!text) {
           setErr(_t('stem.accessLens.err_ai', 'The AI could not answer right now. Please try again.'));
@@ -406,6 +441,7 @@
         else markQuest('inquired');
         announce(_t('stem.accessLens.sr_done', 'Analysis ready.'));
       }).catch(function () {
+        if (token !== photoTokenRef.current) return;
         setBusy('');
         setErr(_t('stem.accessLens.err_ai', 'The AI could not answer right now. Please try again.'));
       });
@@ -464,9 +500,14 @@
       return h('div', { style: Object.assign({ background: C.panel, border: '1px solid ' + C.border, borderRadius: '12px', padding: '12px 14px' }, style || {}) }, children);
     }
 
+    // The old wording was 11px in the faintest palette colour and told the
+    // reader to 'check it against what you can observe yourself' -- advice a
+    // blind student, the headline user of this tool, cannot act on. It now
+    // names checks that do not require sight, and uses the warn palette at
+    // body size so it is legible to the low-vision students who need it.
     function aiDisclaimer() {
-      return h('div', { role: 'note', style: { fontSize: '11px', color: C.sub, marginTop: '8px', lineHeight: 1.5 } },
-        _t('stem.accessLens.disclaimer', 'AI answer; it can be wrong. Check it against what you can observe yourself.'));
+      return h('div', { role: 'note', style: { fontSize: '13px', color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px', marginTop: '8px', lineHeight: 1.5 } },
+        _t('stem.accessLens.disclaimer', 'This is an AI guess and it can be confidently wrong. It can miss things that are there and describe things that are not. Ask someone you trust, take another photo from a different angle, or check another way before you rely on it.'));
     }
 
     function speakBtn(text) {
@@ -483,6 +524,19 @@
         h('div', { style: { fontSize: '11.5px', color: C.text, lineHeight: 1.5 } },
           h('strong', null, _t('stem.accessLens.privacy_title', 'Your photo stays yours.')), ' ',
           _t('stem.accessLens.privacy_body', 'Photos are never saved by AlloFlow and are only sent to the AI when you press an Analyze button. Please point your camera at things, not at people.'))));
+
+
+      // Scene-description models miss things that are present and invent things
+      // that are not. Every mainstream tool in this category ships this warning,
+      // because a student who learns here that 'it describes what is in front of
+      // me' will use it outside the classroom. It sits in the capture panel, next
+      // to the privacy notice, so it is read BEFORE the first photo rather than
+      // under a result. role=note keeps it out of the way of repeat users.
+      kids.push(h('div', { key: 'safety', role: 'note', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '10px', padding: '8px 10px', marginBottom: '8px' } },
+        h('span', { 'aria-hidden': 'true', style: { fontSize: '15px' } }, '⚠️'),
+        h('div', { style: { fontSize: '13px', color: C.text, lineHeight: 1.5 } },
+          h('strong', null, _t('stem.accessLens.safety_title', 'This is for learning, not for staying safe.')), ' ',
+          _t('stem.accessLens.safety_body', 'Do not use Access Lens to cross a road, to check whether a path is clear, to identify medicine, to tell if food is safe to eat, or to read a warning label. It can miss a hazard completely. For anything where being wrong would hurt, ask a person.'))));
 
       if (camState === 'live' || camState === 'starting') {
         kids.push(h('div', { key: 'live', style: { display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' } },
@@ -503,13 +557,17 @@
           }, '📷 ' + _t('stem.accessLens.take_photo', 'Take or choose a photo')),
           btn('🎥 ' + _t('stem.accessLens.live_camera', 'Live camera'), startLiveCamera, { key: 'livecam', title: _t('stem.accessLens.live_camera_title', 'Show a live preview and snap from it') })
         ];
-        if (camState === 'denied') {
+        if (camState === 'denied' && camReason !== 'none' && camReason !== 'unsupported') {
           row.push(btn('🪟 ' + _t('stem.accessLens.popout', 'Open camera window'), openLensWindow, { key: 'popout', title: _t('stem.accessLens.popout_title', 'Opens a separate window where the camera is allowed') }));
         }
         kids.push(h('div', { key: 'row', style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } }, row));
         if (camState === 'denied') {
-          kids.push(h('div', { key: 'denied', style: { fontSize: '11.5px', color: C.sub, lineHeight: 1.5 } },
-            _t('stem.accessLens.denied_note', 'The live camera is blocked inside this app view. The photo button above still works everywhere, or use the camera window.')));
+          kids.push(h('div', { key: 'denied', role: 'status', style: { fontSize: '13px', color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px', lineHeight: 1.5 } },
+            camReason === 'none' ? _t('stem.accessLens.denied_none', 'This device does not have a camera this app can use. The photo button above still works: you can choose a picture that is already on the device.')
+            : camReason === 'inuse' ? _t('stem.accessLens.denied_inuse', 'Another app is using the camera right now. Close the other app, such as a video call, and press Live camera again. The photo button above still works meanwhile.')
+            : camReason === 'unsupported' ? _t('stem.accessLens.denied_unsupported', 'This browser will not give the page a live camera. The photo button above still works: you can take or choose a picture with it.')
+            : camReason === 'denied' ? _t('stem.accessLens.denied_perm', 'Camera permission was refused. You can allow it in the browser address bar and press Live camera again, open the camera window, or use the photo button above.')
+            : _t('stem.accessLens.denied_note', 'The live camera did not start. The photo button above still works everywhere, or try the camera window.')));
         }
       }
 
@@ -778,4 +836,11 @@
       return ctx.React.createElement(AccessLens, { ctx: ctx });
     }
   });
+
+  // Exposed so the camera-failure mapping can be tested directly. A test that
+  // only greps the source proves the names are spelled, not that they map.
+  if (typeof window !== 'undefined') {
+    window.AccessLensPure = window.AccessLensPure || {};
+    window.AccessLensPure.cameraFailureReason = cameraFailureReason;
+  }
 })();

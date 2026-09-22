@@ -930,3 +930,97 @@ describe('every Print Lab handoff survives the trip', () => {
     expect(printLab).toContain('React.useState(pendingHandoff ? pendingHandoff.bytes : null)');
   });
 });
+
+// Activating a STEM tool is NOT the same as loading it. `ctx.setStemLabTool` is the raw
+// useState setter from AlloFlowANTI.txt (`const [stemLabTool, setStemLabTool] = useState(null)`)
+// wrapped only by the host's _deferSafe; it changes the active tool id and nothing else.
+// Print Lab is one of ~150 lazily fetched CDN plugins, so the app-owned launchers all call
+// _alloRequestStemPlugin / __alloEnsureStemPluginLoaded FIRST (see _openStemTool, the
+// freeForms bridge and the shell deep link in AlloFlowANTI.txt). The Print Lab senders did
+// not, so the plugin download only began inside stem_lab_module.js's render-time safety net
+// — AFTER navigation. That download is advertised as "1-2 seconds" while Geometry World's
+// stranded-build timer fires at 1200ms, so the sender reclaimed the handoff and downloaded a
+// fallback STL before Print Lab ever mounted to consume it: "Send to Print Lab" landed the
+// student on a loading skeleton, then an empty Design tab plus a surprise file.
+describe('every Print Lab sender requests the plugin before it navigates', () => {
+  const NAVIGATING_SENDERS = [
+    'stem_lab/stem_tool_geometryworld_builder.js',
+    'stem_lab/stem_tool_archstudio.js',
+    'stem_lab/stem_tool_artstudio.js',
+  ];
+
+  it.each(NAVIGATING_SENDERS)('%s starts the printLab plugin fetch before setStemLabTool', (file) => {
+    const source = readFileSync(file, 'utf8');
+    const navigate = source.indexOf("setStemLabTool('printLab')");
+    expect(navigate, file + ' navigates to printLab').toBeGreaterThan(-1);
+    // The request must be in the same synchronous handler, ahead of the navigation.
+    const beforeNavigation = source.slice(Math.max(0, navigate - 2000), navigate);
+    expect(beforeNavigation, file + ' requests the printLab plugin before navigating')
+      .toMatch(/__alloEnsureStemPluginLoaded\(\s*'printLab'\s*\)/);
+  });
+
+  // The reason must stay true: the host's own launcher requests the plugin, and the
+  // ctx setter handed to plugins does not. If the host ever starts requesting the plugin
+  // inside setStemLabTool itself, this gate can be retired.
+  it('the host launcher requests the plugin and the ctx setter still does not', () => {
+    const host = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    const opener = host.slice(host.indexOf('function _openStemTool('), host.indexOf('function _openStemTool(') + 400);
+    expect(opener).toContain('window.__alloEnsureStemPluginLoaded(id)');
+    expect(opener).toContain('setStemLabTool(id)');
+    // _safeSetStemLabTool only adds universe cleanup + the render-deferral wrapper.
+    const wrapper = host.slice(host.indexOf('var _safeSetStemLabTool ='), host.indexOf('var _safeSetStemLabTab ='));
+    expect(wrapper).not.toContain('__alloEnsureStemPluginLoaded');
+  });
+});
+
+// The Showcase ("creations") view is a SECOND route to Print Lab, separate from the builder
+// dock's "Send to Print Lab" button. Its "Use & export" panel offers both a Print Lab handoff
+// and a standalone STL for a student who wants to use their own slicer. The underlying
+// functions are covered in geometry_world_selected_files.test.js, but nothing pinned that the
+// PANEL is wired to them -- and a broken wire is exactly the failure that shipped here once
+// (the bridge worked; nothing had ever requested the Print Lab plugin). Both routes must stay
+// reachable, and the standalone download must stay a real file for third-party software.
+describe('the Showcase creations view keeps both Print Lab and a slicer-ready file', () => {
+  const showcasePanel = () => {
+    const open = BUILDER_SOURCE.indexOf("id:'gwe-showcase-files'");
+    expect(open, 'the Showcase export panel exists').toBeGreaterThan(-1);
+    const end = BUILDER_SOURCE.indexOf('gwe-file-photo', open);
+    expect(end, 'the panel body is bounded').toBeGreaterThan(open);
+    return BUILDER_SOURCE.slice(open, end);
+  };
+
+  it('wires the panel button to the same Print Lab handoff the dock uses', () => {
+    const panel = showcasePanel();
+    expect(panel).toContain('Open in Print Lab');
+    expect(panel).toContain('openSelectedBuildInPrintLab(ctx)');
+  });
+
+  it('offers a standalone STL download beside it, so a student can use their own slicer', () => {
+    const panel = showcasePanel();
+    expect(panel).toContain('Download STL');
+    expect(panel).toContain('selectedBuildStlDownload(ctx)');
+    // The unit must be stated in the panel: a bare STL carries no unit metadata, so a student
+    // importing into Cura/PrusaSlicer needs to know it is already millimetres at 100%.
+    expect(panel).toMatch(/mm per block/);
+  });
+
+  // A slicer reads geometry, not our metadata. Two properties decide whether the downloaded
+  // file is actually printable elsewhere, and both are produced in the builder, not Print Lab.
+  it('writes Z-up millimetre geometry, the convention third-party slicers expect', () => {
+    // Geometry World is Y-up; STL/slicer beds are Z-up. The conversion lives in the writer so
+    // BOTH the Print Lab handoff and the standalone download get it.
+    expect(BUILDER_SOURCE).toContain('function worldToStl(v) { return [v[0], -v[2], v[1]]; }');
+    const writer = BUILDER_SOURCE.slice(BUILDER_SOURCE.indexOf('function writeBinaryStl('), BUILDER_SOURCE.indexOf('function buildGeometryWorldStl('));
+    expect(writer, 'every vertex and normal is converted on write').toContain('worldToStl(triangle.n).concat(worldToStl(triangle.v[0]), worldToStl(triangle.v[1]), worldToStl(triangle.v[2]))');
+    // The download is scaled into real millimetres and says so in the 80-byte STL header.
+    const scaler = BUILDER_SOURCE.slice(BUILDER_SOURCE.indexOf('function scaleStlForDownload('), BUILDER_SOURCE.indexOf('function selectedBuildStlDownload('));
+    expect(scaler).toContain("'Geometry World; coordinates in mm; '+unitMm+' mm per block'");
+  });
+
+  it('unions adjacent block faces so the export is a solid, not overlapping cubes', () => {
+    // Interior faces between touching blocks would leave internal walls that slicers either
+    // reject or print as wasted material; unionSurface drops them and the topology is reported.
+    expect(BUILDER_SOURCE).toContain('triangles = unionSurface(perBlock, selected);');
+    expect(BUILDER_SOURCE).toContain('topology:surfaceTopology(triangles)');
+  });
+});

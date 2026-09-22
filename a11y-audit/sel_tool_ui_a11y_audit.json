@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T23:53:21.433Z",
+  "generatedAt": "2026-09-22T10:31:55.338Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 430221,
+      "renderedBytes": 430254,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 143407,
+          "renderedBytes": 143418,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 143407,
+          "renderedBytes": 143418,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 143407,
+          "renderedBytes": 143418,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -922,7 +922,7 @@
     {
       "id": "emotions",
       "label": "Emotions Explorer",
-      "renderedBytes": 76242,
+      "renderedBytes": 78783,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -930,7 +930,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 25414,
+          "renderedBytes": 26261,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -939,7 +939,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 25414,
+          "renderedBytes": 26261,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -948,7 +948,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 25414,
+          "renderedBytes": 26261,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1897,7 +1897,7 @@
     {
       "id": "safety",
       "label": "Safety & Boundaries",
-      "renderedBytes": 86097,
+      "renderedBytes": 86322,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1905,7 +1905,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 28699,
+          "renderedBytes": 28774,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1914,7 +1914,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 28699,
+          "renderedBytes": 28774,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1923,7 +1923,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 28699,
+          "renderedBytes": 28774,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

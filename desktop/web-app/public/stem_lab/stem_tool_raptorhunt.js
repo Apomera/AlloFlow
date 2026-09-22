@@ -1031,7 +1031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       stoopDiveBonus: 2.2, pullupG: 10 },
 
     { id: 'harpyEagle', name: 'Harpy Eagle', scientific: 'Harpia harpyja', emoji: '🦅', family: 'Accipitridae', isOwl: false,
-      massKg: 7.5, wingspanM: 2.05, wingAreaSqM: 0.50, wingLoading: 15.0, aspectRatio: 5.6,
+      massKg: 7.5, wingspanM: 2.05, wingAreaSqM: 0.75, wingLoading: 10.0, aspectRatio: 5.6,
       maxLevelMph: 50, stoopMph: 80,
       talonForcePsi: 530, talonLengthMm: 125,
       visualAcuityX: 4.5, foveaCount: 2, visualFieldDeg: 220,
@@ -24435,7 +24435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('input', { type: 'range', min: 0.02, max: 1.0, step: 0.01, value: pr.wingArea,
                   onInput: function(e) { setPR({ wingArea: parseFloat(e.target.value) }); },
                   className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.wing_area_m', 'Wing area m²') }),
-                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.kestrel_0_05_peregrine_0_11_golden_0_6', 'Kestrel 0.05 · peregrine 0.11 · golden 0.65 · harpy 0.50'))
+                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.wing_area_examples_hint', 'Kestrel 0.04 · peregrine 0.11 · golden 0.65 · harpy 0.75'))
               )
             )
           ),

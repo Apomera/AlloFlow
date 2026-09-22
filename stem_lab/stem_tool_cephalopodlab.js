@@ -9810,14 +9810,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       var DEPTH_ZONES = {
         surface: {
           minY: 8.0, maxY: 20.0,
+          realMinM: 0, realMaxM: 5,   // real-ocean depth this zone represents
           name: __alloT('stem.cephalopodlab.surface', 'Surface'), icon: '☀️',
           fogColor: 0x4a90c0, fogFar: 80,
           ambientHex: 0x6b95b8, sunHex: 0xfff8e0,
           pressureDanger: false,
-          description: __alloT('stem.cephalopodlab.photic_zone_0_20m_surface_light_penetr', 'Photic zone, 0-20m. Surface light penetrates fully.'),
+          description: __alloT('stem.cephalopodlab.photic_zone_0_5m_surface_light_penetr', 'Photic zone, 0-5m. Surface light penetrates fully.'),
         },
         reef: {
-          minY: 1.0, maxY: 8.0,
+          // The seafloor sits at y~0 and the octopus rests at y=0.55, so the
+          // reef band has to reach below 1.0 — it used to start at 1.0, which
+          // put the spawn point in "Midwater" on the HUD from the first frame
+          // while gameState.currentDepthZone still claimed 'reef'.
+          minY: -1.0, maxY: 8.0,
+          realMinM: 5, realMaxM: 30,   // real-ocean depth this zone represents
           name: __alloT('stem.cephalopodlab.reef', 'Reef'), icon: '🪸',
           fogColor: 0x0e3d5c, fogFar: 70,
           ambientHex: 0x3a5876, sunHex: 0xb8e6f0,
@@ -9825,15 +9831,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           description: __alloT('stem.cephalopodlab.coral_reef_habitat_5_30m_most_octopuse', 'Coral reef habitat, 5-30m. Most octopuses live here.'),
         },
         midwater: {
-          minY: -8.0, maxY: 1.0,
+          minY: -8.0, maxY: -1.0,
+          realMinM: 30, realMaxM: 1000,   // real-ocean depth this zone represents
           name: __alloT('stem.cephalopodlab.midwater', 'Midwater'), icon: '🌊',
           fogColor: 0x062840, fogFar: 50,
           ambientHex: 0x244668, sunHex: 0x6890b0,
           pressureDanger: false,
-          description: __alloT('stem.cephalopodlab.twilight_zone_200_1000m_cuttlefish_and', 'Twilight zone, 200-1000m. Cuttlefish and squid common.'),
+          description: __alloT('stem.cephalopodlab.twilight_zone_30_1000m_cuttlefish_and', 'Open water below the reef, 30-1000m. Cuttlefish and squid common; the twilight zone proper starts at 200m.'),
         },
         deep: {
           minY: -20.0, maxY: -8.0,
+          realMinM: 1000, realMaxM: 4000,   // real-ocean depth this zone represents
           name: __alloT('stem.cephalopodlab.deep', 'Deep'), icon: '🌑',
           fogColor: 0x021428, fogFar: 35,
           ambientHex: 0x1a2840, sunHex: 0x405888,
@@ -9841,7 +9849,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           description: __alloT('stem.cephalopodlab.bathypelagic_1000_4000m_dumbo_octopus_', 'Bathypelagic, 1000-4000m. Dumbo octopus and vampire squid territory.'),
         },
         abyssal: {
-          minY: -50.0, maxY: -20.0,
+          minY: -45.0, maxY: -20.0,   // -45 is the vertical travel clamp, so 7000 m is reachable
+          realMinM: 4000, realMaxM: 7000,   // real-ocean depth this zone represents
           name: __alloT('stem.cephalopodlab.abyssal', 'Abyssal'), icon: '⚫',
           fogColor: 0x000810, fogFar: 25,
           ambientHex: 0x101830, sunHex: 0x203850,
@@ -9856,6 +9865,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         if (y >= DEPTH_ZONES.deep.minY) return 'deep';
         return 'abyssal';
       }
+      // ─── Scene units → real ocean depth ───────────────────────────
+      // The playable water column is ~65 scene units tall, but the zones it
+      // represents span 0-7000 m of real ocean. The HUD used to print the raw
+      // scene unit as "m", so the abyssal floor read "45m" while the zone card
+      // beside it said "Hadal zone, 4000m+", and the pressure-and-depth lesson
+      // ("1 atm per 10 m"; "calculate the pressure at 1000 m, 3000 m, 7000 m")
+      // could not be checked against anything the sim displayed.
+      // Each zone's scene-Y band is mapped linearly onto the real depth band
+      // its own description already claims, so the readout agrees with the
+      // zone card, with the lesson plan, and with the pressure model below.
+      function realDepthFor(y) {
+        var zone = DEPTH_ZONES[depthZoneFor(y)];
+        var span = zone.maxY - zone.minY;
+        // Clamp: y can sit outside the band at the very top/bottom of travel.
+        var t = span > 0 ? (zone.maxY - y) / span : 0;
+        t = Math.max(0, Math.min(1, t));
+        return zone.realMinM + t * (zone.realMaxM - zone.realMinM);
+      }
+      // Hydrostatic pressure at a real depth: 1 atm of air above, plus 1 atm
+      // per 10 m of seawater — the rule the warm-up demonstrates with a syringe.
+      function pressureAtmFor(y) {
+        return 1 + realDepthFor(y) / 10;
+      }
+      function formatDepthM(y) {
+        var m = realDepthFor(y);
+        return m >= 1000 ? (Math.round(m / 10) * 10).toFixed(0) : m.toFixed(0);
+      }
+      // Below this real depth a shallow-water cephalopod starts taking
+      // pressure damage. ~1000 m is where the sim's own zone table puts the
+      // top of the bathypelagic, and it is the shallowest depth the lesson
+      // asks students to compute a pressure for (101 atm).
+      // ─── Metabolic cost of moving ────────────────────────────────
+      // Hunger is the sim's calorie budget. It is split into a basal rate
+      // that runs whatever the animal does, and a locomotion rate on top.
+      // Crawling costs the locomotion rate once; jetting costs it
+      // JET_COST_MULTIPLIER times, which is the figure this tool teaches and
+      // quizzes (O'Dor 1988; Bartol et al. 2010 — jet propulsion is ~5x more
+      // expensive than equivalent fin swimming / crawling).
+      // Sum at rest = 1.0/s, crawling = 1.6/s (the old flat rate, preserved so
+      // ordinary crawling play is balanced exactly as before), jetting = 4.0/s.
+      var BASAL_HUNGER_RATE = 1.0;
+      var CRAWL_LOCOMOTION_RATE = 0.6;
+      var JET_COST_MULTIPLIER = 5;
+      // ─── Ink ─────────────────────────────────────────────────────
+      // How much of a predator's detection range survives an ink cloud.
+      // Ink degrades detection, it does not switch it off: Derby 2007/2014
+      // describe a cloud that disrupts vision AND chemoreception and may even
+      // draw a predator toward the cloud while the octopus leaves elsewhere.
+      // The grouper and the moray used to gate attack INITIATION on
+      // `!isInked`, i.e. total immunity, while the shark only had its range
+      // halved — so ink was absolute against two predators and nearly
+      // worthless against the hardest-hitting one. One factor for all of them.
+      // ─── Substrate camouflage falloff ────────────────────────────
+      // The altitude the octopus sits at when resting on the seafloor, and
+      // how far above it substrate matching survives. Background matching is
+      // a benthic trick: off the bottom there is nothing behind you to match.
+      var FLOOR_REST_Y = 0.55;
+      var SUBSTRATE_CAMO_FADE_M = 3.0;
+      var INK_DETECTION_FACTOR = 0.5;
+      var CRUSH_DEPTH_M = 1000;
+      // How far above crush depth the warning band starts. This is sized in
+      // DESCENT TIME, not by taste: the midwater zone compresses
+      // 800 m into 7 scene units, so a 150 m band was only 1.3 scene units —
+      // about half a second at the 2.5 u/s descent speed, which is a cliff
+      // wearing a warning label rather than an actual warning. 400 m gives
+      // ~1.4 s in the band: long enough to read the HUD row and press Q.
+      var PRESSURE_WARN_BAND_M = 400;
       function isDeepSpecies(speciesId) {
         return speciesId === 'dumboOcto' || speciesId === 'vampireSquid';
       }
@@ -10867,11 +10943,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 { k: 'W A S D', d: 'Crawl — slow, stealthy, oxygen-cheap', color: '#86efac' },
                 { k: 'SPACE', d: 'Jet propulsion — burst speed, drains stamina', color: '#60a5fa' },
                 { k: 'CLICK', d: 'Pounce nearest crab or fish in range', color: '#fbbf24' },
-                { k: 'HOLD E', d: 'Drill open a clam (1.8s, big calorie payoff)', color: '#fb923c' },
-                { k: 'I', d: 'Ink defense — 3 charges, 8s cooldown between', color: '#a78bfa' },
+                { k: 'HOLD E', d: 'Drill open a clam \u2014 1.8s exposed, small but reliable meal', color: '#fb923c' },
+                { k: 'I', d: 'Ink — 3 per dive, 8s between. The sac takes ~30 days to refill, so it never comes back mid-dive', color: '#a78bfa' },
                 { k: 'G', d: 'Grab / drop shelter (coconut, bottle, conch)', color: '#a07840' },
                 { k: 'M / H / B', d: 'Species ability — mimic (M) / hypnotic (H) / burglar alarm (B)', color: '#fbbf24' },
-                { k: 'Q / Z', d: 'Ascend / descend through depth zones', color: '#60a5fa' },
+                { k: 'Q / Z', d: 'Ascend / descend — below ~1000 m pressure crushes all but the deep-sea species', color: '#60a5fa' },
                 { k: 'ESC', d: 'Pause / resume the dive', color: 'var(--allo-stem-text, #cbd5e1)' },
                 { k: '(passive)', d: 'Camouflage — settle on a substrate to blend', color: '#22d3ee' }
               ].map(function(c, i) {
@@ -11635,10 +11711,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         //       closes the tool-cycle loop. Real biology: hermit crabs are
         //       walking conch-shell donors; an octopus that catches one
         //       gets dinner AND a portable shelter.
+        // Hunger values are the Field Guide's own calorie figures halved, so
+        // the sim and the table it ships cannot disagree about which prey is
+        // the bigger meal. The crab is 80 cal there, i.e. 40 hunger; the three
+        // varieties spread around that centre rather than inventing a scale.
+        // Score follows the table's DIFFICULTY rather than its calories.
         var CRAB_TYPES = {
-          rock:   { score: 1, hunger: 22, fleeMul: 1.0, sizeMul: 1.0, color: 0xa54a30, clawColor: 0xc25a3e, legColor: 0x8a3520, dropShelter: null },
-          red:    { score: 2, hunger: 30, fleeMul: 1.5, sizeMul: 1.15, color: 0xd33728, clawColor: 0xef5341, legColor: 0xa12018, dropShelter: null },
-          hermit: { score: 1, hunger: 15, fleeMul: 0.55, sizeMul: 0.9, color: 0xa07840, clawColor: 0xc4955a, legColor: 0x806030, dropShelter: 'conch' },
+          rock:   { score: 2, hunger: 40, fleeMul: 1.0, sizeMul: 1.0, color: 0xa54a30, clawColor: 0xc25a3e, legColor: 0x8a3520, dropShelter: null },
+          red:    { score: 3, hunger: 46, fleeMul: 1.5, sizeMul: 1.15, color: 0xd33728, clawColor: 0xef5341, legColor: 0xa12018, dropShelter: null },
+          hermit: { score: 2, hunger: 32, fleeMul: 0.55, sizeMul: 0.9, color: 0xa07840, clawColor: 0xc4955a, legColor: 0x806030, dropShelter: 'conch' },
         };
         var crabs = [];
         function spawnCrab(type) {
@@ -12761,7 +12842,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // ─── Clams (half-buried, drill mechanic) ───
         // Hold E within DRILL_RANGE for DRILL_DURATION seconds to drill open.
         // Cancellable: if octopus moves away or takes damage, drill resets.
-        // Pays out big calorie reward (large hunger refill + score boost).
+        // Small but reliable: the Field Guide rates the clam 60 cal /
+        // difficulty 2, so it is the least food and the easiest catch.
+        // The cost is the 1.8s you spend stationary and exposed.
         var DRILL_RANGE = 1.2;
         var DRILL_DURATION = 1.8;   // seconds
         var clams = [];
@@ -13314,7 +13397,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               statCard('Max camo', maxCamoPct + '%', '#22d3ee') +
               statCard('Longest still', maxStillSec + 's', '#22d3ee') +
               statCard('Longest squeeze', maxSqueezeSec + 's', '#fbbf24') +
-              statCard('Deepest', Math.abs(rs.deepestY).toFixed(1) + 'm · ' + DEPTH_ZONES[depthZoneFor(rs.deepestY)].name, '#38bdf8') +
+              statCard('Deepest', formatDepthM(rs.deepestY) + 'm · ' + DEPTH_ZONES[depthZoneFor(rs.deepestY)].name, '#38bdf8') +
+              statCard('Pressure there', pressureAtmFor(rs.deepestY).toFixed(0) + ' atm', '#38bdf8') +
+              (rs.pressureDamage > 0 ? statCard('Lost to pressure', rs.pressureDamage.toFixed(0) + ' HP', '#fca5a5') : '') +
+              statCard('Time jetting', (rs.jetMs / 1000).toFixed(1) + 's', '#60a5fa') +
+              statCard('Calories burned', rs.caloriesBurned.toFixed(0), '#fbbf24') +
               statCard('Dens used', rs.densVisited, '#22c55e') +
               statCard('Ink uses', rs.inkUsed, '#a78bfa') +
               statCard('Bites taken', rs.bites, '#fca5a5') +
@@ -13395,6 +13482,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           dayPeriodMs: 180000,
           lastInputAt: Date.now(),
           verticalY: 0.55,             // current octopus depth altitude
+          pressureStrain: 0,           // 0 safe, -1 warning band, 0..1 taking damage
+          pressureCueAt: 0,            // last time a pressure cue fired (ms)
           currentDepthZone: 'reef',    // resolved from verticalY each frame
           previousDepthZone: 'reef',   // for transition detection
           // Species-ability state
@@ -13422,6 +13511,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             maxCamoEff: 0,
             maxStationaryMs: 0,
             deepestY: 0.55,          // starting altitude; only ever lowered
+            pressureDamage: 0,       // total HP lost to depth, for the lesson's record step
+            jetMs: 0,                // ms spent jetting, for the energy-budget readout
+            caloriesBurned: 0,       // total hunger units spent this dive
             longestSqueezeMs: 0,
             currentSqueezeStart: 0,
             // Per-run a11y telemetry — what palette/captions actually shipped
@@ -13531,9 +13623,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             scene.background.b += (zoneB * dayMix - scene.background.b) * 1.5 * dt;
             scene.fog.color.copy(scene.background);
             scene.fog.far += (zone.fogFar - scene.fog.far) * 1.5 * dt;
-            // Pressure damage to non-deep species in deep/abyssal zones
-            if (zone.pressureDanger && !isDeepSpecies(species.id)) {
-              gameState.health = Math.max(0, gameState.health - 8 * dt);
+            // ─── Pressure strain (graded, and it tells you) ───────
+            // This used to be a flat 8 HP/s drain the moment a shallow
+            // species crossed into the deep zone, with no flash, no sound,
+            // no caption and no HUD row: health simply fell and a student
+            // could not tell depth from a predator bite they never saw. It
+            // also read as a cliff — fine at one metre, dying at the next —
+            // which is the opposite of what the lesson teaches.
+            //
+            // Now strain scales with how far past the species' crush depth
+            // you are, and the dive announces itself on the way down:
+            //   * a WARNING band in the ~150 m above crush depth, where no
+            //     damage is taken yet but the HUD, a caption and a screen
+            //     vignette all say the squeeze is coming;
+            //   * damage past crush depth ramping 3 → 14 HP/s, so shallow
+            //     water near the boundary is survivable and the abyss is not.
+            // Deep-adapted species (dumbo, vampire squid) are exempt, which
+            // is the contrast the "what's different about Dumbo?" step asks
+            // students to observe.
+            var crushM = isDeepSpecies(species.id) ? Infinity : CRUSH_DEPTH_M;
+            var realM = realDepthFor(gameState.verticalY);
+            gameState.pressureStrain = 0;
+            if (realM > crushM) {
+              // 0 at crush depth → 1 at 2000 m past it.
+              var over = Math.min(1, (realM - crushM) / 2000);
+              gameState.pressureStrain = over;
+              var pDmg = 3 + over * 11;
+              gameState.health = Math.max(0, gameState.health - pDmg * dt);
+              gameState.runStats.pressureDamage += pDmg * dt;
+              if (now - gameState.pressureCueAt > 1400) {
+                gameState.pressureCueAt = now;
+                damageFlash.style.opacity = '0.55';
+                setTimeout(function() { damageFlash.style.opacity = '0'; }, 200);
+                pushCaption(__alloT('stem.cephalopodlab.caption_pressure_crushing', 'Mantle crushing under pressure'), 'damage');
+                clAnnounce(__alloT('stem.cephalopodlab.sr_crushing_pressure', 'Crushing pressure — ascend with Q'));
+              }
+            } else if (realM > crushM - PRESSURE_WARN_BAND_M) {
+              // Warning band: no damage, but make the danger legible.
+              gameState.pressureStrain = -1;
+              if (now - gameState.pressureCueAt > 4000) {
+                gameState.pressureCueAt = now;
+                pushCaption(__alloT('stem.cephalopodlab.caption_pressure_building', 'Pressure building — near crush depth'), 'predator');
+                clAnnounce(__alloT('stem.cephalopodlab.sr_pressure_building', 'Pressure building. Crush depth is close.'));
+              }
             }
             // Transition popup on entering deeper zone (first time)
             if (gameState.previousDepthZone !== gameState.currentDepthZone) {
@@ -13543,10 +13675,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             }
 
             // ─── Hunger drain + starvation damage ────────────────
-            // Hunger drains slowly while alive; auto-damage kicks in once
-            // it hits zero. Eating crabs/clams/fish refills it in their
-            // respective hunt blocks below.
-            gameState.hunger = Math.max(0, gameState.hunger - 1.6 * dt);
+            // Hunger drains while alive; auto-damage kicks in once it hits
+            // zero. Eating crabs/clams/fish refills it in their respective
+            // hunt blocks below.
+            //
+            // The drain used to be a flat 1.6/s no matter what the animal was
+            // doing, so jetting cost STAMINA but never a single calorie. This
+            // tool states in five places — the glossary, the Q&A, the escape-
+            // tactics card, the controls card ("crawl … oxygen-cheap") and a
+            // graded quiz question citing O'Dor 1988 + Bartol 2010 — that jet
+            // propulsion is ~5x more expensive than crawling. The headline
+            // simulation contradicted the number it quizzes students on.
+            //
+            // Split the drain the way the literature does: a basal cost that
+            // runs whatever you do, plus a locomotion cost that the 5x applies
+            // to. Scaling the WHOLE drain by 5 would charge basal metabolism
+            // five times over — wrong biology, and it empties a full belly in
+            // 24s, which is not a survivable sim.
+            // `isMoving` (translation OR turning) is the same predicate the
+            // camouflage system uses to reset stationaryTime, and the same one
+            // the substrate row prints as "still" / "moving". Billing only
+            // forward motion here would have the HUD say "moving" and
+            // "resting 1.0 cal/s" on the same frame while the player turns.
+            var locomotionCost = 0;   // genuinely still: basal only
+            if (isJetting) locomotionCost = CRAWL_LOCOMOTION_RATE * JET_COST_MULTIPLIER;
+            else if (isMoving) locomotionCost = CRAWL_LOCOMOTION_RATE;
+            // Dumbo octopus: fin propulsion really is the cheap option. Real
+            // biology — it is why they can hold station at 3000 m on almost
+            // nothing. Its jet is already stamina-free above; make it calorie-
+            // cheap too rather than charging it the squid's 5x.
+            if (isJetting && species.specialAbility === 'finPropulsion') {
+              locomotionCost = CRAWL_LOCOMOTION_RATE;
+            }
+            var hungerRate = BASAL_HUNGER_RATE + locomotionCost;
+            // Stashed for the HUD, which also renders while paused / game over
+            // where the per-frame movement locals are out of scope.
+            gameState.hungerRate = hungerRate;
+            gameState.isJetting = isJetting;
+            gameState.isMovingOnFloor = isMoving;
+            gameState.hunger = Math.max(0, gameState.hunger - hungerRate * dt);
+            if (isJetting) gameState.runStats.jetMs += dt * 1000;
+            gameState.runStats.caloriesBurned += hungerRate * dt;
             if (gameState.hunger <= 0) {
               gameState.health = Math.max(0, gameState.health - 5 * dt);
             }
@@ -13583,7 +13752,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             var matchScore = Math.max(0, 1 - colorDelta * 2.5);
             gameState.stationaryTime = isMoving ? 0 : Math.min(3, gameState.stationaryTime + dt);
             var stillnessBonus = Math.min(1, gameState.stationaryTime / 2.0);
-            gameState.camoEff = matchScore * stillnessBonus * species.camoQualityMul;
+            // Background matching needs a background BEHIND you. detectSubstrate
+            // samples X/Z only, so hovering 40 m up in open water used to grant
+            // the same seafloor camo as lying on the sand — which contradicts
+            // this tool's own taxonomy, where open water is the job of
+            // counter-illumination (modelled separately, on the bobtail squid)
+            // rather than of substrate matching. Fade the substrate component
+            // out as the animal leaves the floor: full on the bottom, gone by
+            // SUBSTRATE_CAMO_FADE_M above it.
+            var distFromFloor = Math.abs(gameState.verticalY - FLOOR_REST_Y);
+            var substrateContact = Math.max(0, 1 - distFromFloor / SUBSTRATE_CAMO_FADE_M);
+            gameState.substrateContact = substrateContact;
+            gameState.camoEff = matchScore * stillnessBonus * species.camoQualityMul * substrateContact;
             // Carrying a shelter adds a flat camo bonus per type.
             if (carriedShelter) {
               var ccBonus = SHELTER_TYPES[carriedShelter.userData.shelterType].camoBonus;
@@ -13798,10 +13978,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 break;
               }
             }
-            if (nearAnyShelterDen && !gameState.inDen) {
-              gameState.inDen = true;
-              gameState.health = Math.min(gameState.maxHealth, gameState.health + 8 * dt);
-            }
+            // Remember it; the authoritative den scan further down resets
+            // gameState.inDen every frame, so setting the flag here would be
+            // wiped before the HUD, the grouper and the moray ever read it.
+            // That is exactly what used to happen: sheltering under a dropped
+            // coconut regenerated health and warded off the shark and the
+            // zone predators (they run BEFORE the reset) but not the grouper
+            // or the moray (they run AFTER it), and the HUD never said "IN
+            // DEN" at all. Same shelter, opposite answers, no explanation.
+            gameState.inShelterDen = nearAnyShelterDen;
 
             // ─── Mimic-octopus impersonation (hold M) ───────────
             // Costs stamina while held. Visually fades in red spike-tendrils
@@ -14038,7 +14223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var zpCamoMod = (zpud.kind === 'spermWhale' || zpud.kind === 'anglerfish') ? 0.4 : 1.0;
               var zpInkMod = (zpud.kind === 'spermWhale' || zpud.kind === 'giantSquid') ? 0.6 : 1.0;
               var effectiveRange = zpud.aggroRange * (1 - 0.6 * gameState.camoEff * zpCamoMod) *
-                                    (gameState.isInked ? 0.5 * zpInkMod : 1) *
+                                    (gameState.isInked ? INK_DETECTION_FACTOR * zpInkMod : 1) *
                                     (gameState.isMimicking ? 0.6 : 1);
               if (zpud.state === 'patrol') {
                 zpud.patrolAngle += (Math.random() - 0.5) * 0.05;
@@ -14071,7 +14256,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   zpud.state = zpud.attacksRemaining > 0 ? 'patrol' : 'leaving';
                   zpud.cooldownUntil = now + 5000;
                 }
-                if (gameState.inDen || zpud.stateTimer > 4.5) {
+                // Ink breaks off the charge, except for the two hunters this
+                // file already models as ink-resistant (zpInkMod 0.6): the
+                // sperm whale hunts by echolocation and the giant squid is
+                // itself an inker. Keeping that exception means ink stays a
+                // reef tactic that genuinely fails in the deep, which is the
+                // contrast the depth zones are there to teach.
+                var zpInkEscapes = gameState.isInked &&
+                  zpud.kind !== 'spermWhale' && zpud.kind !== 'giantSquid';
+                if (gameState.inDen || zpInkEscapes || zpud.stateTimer > 4.5) {
                   zpud.state = 'patrol';
                   zpud.cooldownUntil = now + 4000;
                 }
@@ -14117,7 +14310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var skDist = Math.sqrt(sdx * sdx + sdz * sdz);
               // Camo helps 30% (vs 70%); ink half-blocks
               var skCamo = 1 - 0.3 * gameState.camoEff;
-              var skInkBlock = gameState.isInked ? 0.5 : 1.0;
+              var skInkBlock = gameState.isInked ? INK_DETECTION_FACTOR : 1.0;
               // Mimic further halves shark's perceived range
               var skMimicBlock = gameState.isMimicking ? 0.5 : 1.0;
               var skEffectiveRange = sk.aggroRange * skCamo * skInkBlock * skMimicBlock;
@@ -14161,7 +14354,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   sk.state = sk.attacksRemaining > 0 ? 'hunting' : 'leaving';
                   sk.cooldownUntil = now + 4000;
                 }
-                if (gameState.inDen || sk.stateTimer > 4) {
+                // Ink breaks off a charge, as it already did for the grouper
+                // and the moray. This is the pseudomorph escape the tool's own
+                // glossary describes — the predator commits to the decoy blob
+                // while the octopus leaves. Without it, ink did nothing at all
+                // against the one predator that hits hardest.
+                if (gameState.inDen || gameState.isInked || sk.stateTimer > 4) {
                   sk.state = 'hunting';
                   sk.cooldownUntil = now + 4000;
                 }
@@ -14431,8 +14629,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var glowT = Math.max(0, Math.min(1, (DEN_RADIUS * 1.6 - dDist) / DEN_RADIUS));
               dens[di].glow.material.opacity = glowT * 0.55;
             }
-            if (gameState.inDen) {
-              gameState.health = Math.min(gameState.maxHealth, gameState.health + 12 * dt);
+            // A carried/dropped shelter is a den too — weaker regen than a
+            // real den, but it has to count for the SAME set of consumers
+            // (HUD, regen, every predator) or it protects against some
+            // threats and not others for no reason a player can see.
+            var _denRegen = gameState.inDen ? 12 : (gameState.inShelterDen ? 8 : 0);
+            if (gameState.inShelterDen) gameState.inDen = true;
+            if (_denRegen > 0) {
+              gameState.health = Math.min(gameState.maxHealth, gameState.health + _denRegen * dt);
             }
             if (gameState.inDen && !gameState.previousInDen) {
               gameState.runStats.densVisited++;
@@ -14524,8 +14728,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var grDx = octopus.position.x - grouper.position.x;
               var grDz = octopus.position.z - grouper.position.z;
               var grDist = Math.sqrt(grDx * grDx + grDz * grDz);
-              var grEffectiveRange = gr.aggroRange * (1 - 0.7 * gameState.camoEff) * (gameState.isMimicking ? 0.5 : 1);
-              if (grDist < grEffectiveRange && !gameState.isInked && !gameState.inDen && now > gr.cooldownUntil) {
+              // Ink degrades detection; it does not switch it off. `!isInked`
+              // used to gate initiation outright, which made ink absolute
+              // protection from the grouper and the moray while only halving
+              // the shark's range — so the heaviest hitter on the reef (45
+              // damage) largely ignored the defence the HUD called total.
+              // Derby 2007/2014: ink disrupts vision AND chemoreception and
+              // may even draw a predator toward the cloud. Graded, not binary.
+              var grEffectiveRange = gr.aggroRange * (1 - 0.7 * gameState.camoEff) *
+                                     (gameState.isInked ? INK_DETECTION_FACTOR : 1) *
+                                     (gameState.isMimicking ? 0.5 : 1);
+              if (grDist < grEffectiveRange && !gameState.inDen && now > gr.cooldownUntil) {
                 gr.state = 'attacking';
                 gr.stateTimer = 0;
                 sfxPredatorAlert();
@@ -14584,8 +14797,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
                 });
                 clams = clams.filter(function(c) { return c !== nearestClam; });
-                gameState.score += 3;
-                gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 50);
+                // Field Guide: clam is 60 cal, difficulty 2 - the SMALLEST meal and
+                // the easiest catch of the three. It used to pay the most of any prey
+                // on both axes, inverting the table the Field Guide teaches.
+                gameState.score += 1;
+                gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 30);
                 gameState.runStats.clams++;
                 unlockAchievement('firstClam');
                 gameState.drillingClam = null;
@@ -14813,8 +15029,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   if (o.geometry) o.geometry.dispose();
                   if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); }
                 });
-                gameState.score += 2;
-                gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 32);
+                // Field Guide: fish is 100 cal, difficulty 6 - the biggest meal and
+                // the hardest catch of the three.
+                gameState.score += 3;
+                gameState.hunger = Math.min(gameState.maxHunger, gameState.hunger + 50);
                 gameState.runStats.fish++;
                 unlockAchievement('firstFish');
                 try {
@@ -14851,10 +15069,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             } else {
               if (inkRequested) {
                 // Tried to ink but blocked (no reserves, or cooldown, or already inked)
-                if (gameState.inkReserves <= 0) clAnnounce(__alloT('stem.cephalopodlab.sr_out_of_ink', 'Out of ink'));
+                if (gameState.inkReserves <= 0) clAnnounce(__alloT('stem.cephalopodlab.sr_out_of_ink_no_refill', 'Ink sac empty. It does not refill during a dive.'));
                 else if (now <= gameState.inkCooldownUntil) {
                   var remCd = Math.ceil((gameState.inkCooldownUntil - now) / 1000);
-                  clAnnounce('Ink recharging — ' + remCd + 's');
+                  clAnnounce('Siphon refilling — ' + remCd + 's');
                 }
               }
               inkRequested = false;
@@ -14885,8 +15103,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               // Eel is more aggressive at night (longer effective range).
               // Camouflage shrinks effective range; den blocks aggression.
               var nightBoost = 1 + nightFactor * 0.5;
-              var morayEffectiveRange = me.aggroRange * nightBoost * (1 - 0.7 * gameState.camoEff);
-              if (mDistHome < morayEffectiveRange && !gameState.isInked && !gameState.inDen && now > me.cooldownUntil) {
+              var morayEffectiveRange = me.aggroRange * nightBoost * (1 - 0.7 * gameState.camoEff) *
+                                        (gameState.isInked ? INK_DETECTION_FACTOR : 1);
+              if (mDistHome < morayEffectiveRange && !gameState.inDen && now > me.cooldownUntil) {
                 me.state = 'attacking';
                 me.stateTimer = 0;
                 clAnnounce(__alloT('stem.cephalopodlab.sr_moray_eel_attacking', 'Moray eel attacking'));
@@ -14965,6 +15184,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // lookup; localStorage is NOT touched every frame — the settings
           // are cached on `gameState.a11y` once at run start).
           var elapsed = Math.floor((now - gameState.startTime) / 1000);
+          // Burn-rate readout inputs. Default to basal so the row still reads
+          // sensibly on the first frame and while paused / game over.
+          var hungerRateHud = gameState.hungerRate || BASAL_HUNGER_RATE;
+          var isJettingHud = !gameState.paused && !gameState.gameOver && !!gameState.isJetting;
+          var movingHud = !gameState.paused && !gameState.gameOver && !!gameState.isMovingOnFloor;
           var hp = gameState.health / gameState.maxHealth * 100;
           var sp = gameState.stamina / gameState.maxStamina * 100;
           var hg = gameState.hunger / gameState.maxHunger * 100;
@@ -14997,12 +15221,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           }
           hud.innerHTML =
             '<div style="font-weight:bold;border-bottom:1px solid rgba(180,140,40,0.4);padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between">' + species.emoji + ' ' + species.name + '<span style="font-weight:400;font-size:11px;color:#cbd5e1">' + phaseEmoji + ' ' + phaseLabel + '</span></div>' +
-            '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px;display:flex;justify-content:space-between"><span>' + DEPTH_ZONES[gameState.currentDepthZone].icon + ' ' + DEPTH_ZONES[gameState.currentDepthZone].name + ' Zone</span><span>' + Math.abs(gameState.verticalY).toFixed(0) + 'm</span></div>' +
+            '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px;display:flex;justify-content:space-between"><span>' + DEPTH_ZONES[gameState.currentDepthZone].icon + ' ' + DEPTH_ZONES[gameState.currentDepthZone].name + ' Zone</span><span>' + formatDepthM(gameState.verticalY) + 'm · ' + pressureAtmFor(gameState.verticalY).toFixed(0) + ' atm</span></div>' +
             '<div style="display:flex;align-items:center;gap:6px">HEALTH&nbsp;' + bar(hp, hpColor) + '<span style="color:' + hpColor + ';min-width:30px;text-align:right">' + gameState.health.toFixed(0) + '</span></div>' +
             '<div style="display:flex;align-items:center;gap:6px">STAMINA ' + bar(sp, _staminaColor) + '<span style="color:' + _staminaColor + ';min-width:30px;text-align:right">' + gameState.stamina.toFixed(0) + '</span></div>' +
             '<div style="display:flex;align-items:center;gap:6px">HUNGER&nbsp; ' + bar(hg, hgColor) + '<span style="color:' + hgColor + ';min-width:30px;text-align:right">' + gameState.hunger.toFixed(0) + '</span></div>' +
+            // Burn rate, so the 5x jet cost is legible as it happens rather
+            // than only as a bar that drains faster for no visible reason.
+            '<div style="font-size:10px;color:' + (isJettingHud ? '#fca5a5' : '#94a3b8') + ';margin-left:54px;margin-top:-2px">' +
+              (isJettingHud ? '⚡ jetting ' : movingHud ? '🦵 crawling ' : '⏸ resting ') +
+              hungerRateHud.toFixed(1) + ' cal/s' +
+              (isJettingHud ? ' · ' + JET_COST_MULTIPLIER + '× crawl' : '') +
+            '</div>' +
             '<div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px">CAMO&nbsp;&nbsp;&nbsp;' + bar(camo, camoColor) + '<span style="color:' + camoColor + ';min-width:30px;text-align:right">' + camo.toFixed(0) + '%</span></div>' +
-            '<div style="font-size:10px;color:#94a3b8;margin-left:54px;margin-top:-2px">' + subIcon + ' on ' + gameState.currentSubstrate.replace('_', ' ') + (gameState.stationaryTime > 0.5 ? ' · still' : ' · moving') + '</div>' +
+            (species.camoQualityMul === 0
+              ? '<div style="font-size:10px;color:#e8c4a8;margin-left:54px;margin-top:-2px">🐚 shell — no chromatophores, camo cannot rise</div>'
+              : (gameState.substrateContact < 0.99
+                ? '<div style="font-size:10px;color:#fbbf24;margin-left:54px;margin-top:-2px">🌊 off the bottom — nothing behind you to match (' + Math.round((gameState.substrateContact || 0) * 100) + '%)</div>'
+                : '<div style="font-size:10px;color:#94a3b8;margin-left:54px;margin-top:-2px">' + subIcon + ' on ' + gameState.currentSubstrate.replace('_', ' ') + (gameState.stationaryTime > 0.5 ? ' · still' : ' · moving') + '</div>')) +
             '<div style="border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between"><span>SCORE <span style="color:' + _scoreColor + ';font-weight:bold">' + gameState.score + '</span></span><span>TIME <span style="color:#fff">' + elapsed + 's</span></span></div>' +
             // INK row: shows reserves (3 dots) + cooldown timer if on cd
             (function() {
@@ -15015,12 +15250,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var cdLine = '';
               if (gameState.inkReserves > 0 && now < gameState.inkCooldownUntil) {
                 var remCd = Math.ceil((gameState.inkCooldownUntil - now) / 1000);
-                cdLine = '<span style="color:#fbbf24;font-size:10px;margin-left:6px">recharging ' + remCd + 's</span>';
+                cdLine = '<span style="color:#fbbf24;font-size:10px;margin-left:6px">refilling siphon ' + remCd + 's</span>';
               } else if (gameState.inkReserves === 0) {
-                cdLine = '<span style="color:#fca5a5;font-size:10px;margin-left:6px">depleted</span>';
+                cdLine = '<span style="color:#fca5a5;font-size:10px;margin-left:6px">sac empty — no refill this dive</span>';
               }
               return '<div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px">INK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + dots + cdLine + '</div>';
             })() +
+            // Pressure state: the strain band is the only damage source with
+            // no on-screen actor, so it has to name itself in the HUD.
+            (gameState.pressureStrain === -1
+              ? '<div style="color:#fbbf24;font-weight:bold;margin-top:5px;font-size:11px">🫧 PRESSURE BUILDING — crush depth near · Q to ascend</div>'
+              : gameState.pressureStrain > 0
+                ? '<div style="color:#fca5a5;font-weight:bold;margin-top:5px;font-size:11px">🩸 CRUSHING PRESSURE — ' + (3 + gameState.pressureStrain * 11).toFixed(0) + ' HP/s · Q to ascend</div>'
+                : '') +
             (gameState.inDen ? '<div style="color:' + _denColor + ';font-weight:bold;margin-top:5px;font-size:11px">🏠 IN DEN — safe, regenerating</div>' : '') +
             (carriedShelter ? (function() {
               var sht = SHELTER_TYPES[carriedShelter.userData.shelterType];
@@ -15028,7 +15270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                           carriedShelter.userData.shelterType === 'conch' ? '🐚' : '🥥';
               return '<div style="color:' + _shelterColor + ';font-weight:bold;margin-top:5px;font-size:11px">' + emoji + ' CARRYING ' + sht.label + ' — +' + (sht.camoBonus * 100).toFixed(0) + '% camo · drop with G</div>';
             })() : '') +
-            (gameState.isInked ? '<div style="color:' + _inkColor + ';font-weight:bold;margin-top:5px;font-size:11px">⚫ INKED — predators can\'t see you</div>' : '') +
+            (gameState.isInked ? '<div style="color:' + _inkColor + ';font-weight:bold;margin-top:5px;font-size:11px">⚫ INKED — harder to track, breaks off attacks</div>' : '') +
             (gameState.drillProgress > 0 && gameState.drillProgress < 1 ? '<div style="color:#fbbf24;font-weight:bold;margin-top:5px;font-size:11px">🔧 Drilling clam ' + (gameState.drillProgress * 100).toFixed(0) + '%</div>' : '') +
             (gameState.hunger <= 0 ? '<div style="color:#fca5a5;font-weight:bold;margin-top:5px;font-size:11px">⚠ STARVING — eat soon</div>' : '') +
             (gameState.gameOver ? '<div style="color:#fca5a5;font-weight:bold;font-size:11px;margin-top:8px;text-align:center">💀 End-of-dive stats →</div>' : '') +

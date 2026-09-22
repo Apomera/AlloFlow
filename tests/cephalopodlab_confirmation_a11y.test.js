@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+﻿import { beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
   loadTool,
@@ -27,6 +27,13 @@ beforeEach(() => {
   loadTool(SOURCE, 'cephalopodLab');
 });
 
+// Rendering the whole 22k-line tool in jsdom is slow and highly variable:
+// measured 929ms..8.54s for a single test across six runs on an unmodified
+// checkout, so vitest's 5s default sits inside the noise band and this suite
+// failed at random. Each `it` carries an explicit budget instead.
+// NOTE: describe.configure does not exist in this vitest version.
+const RENDER_TIMEOUT_MS = 20000;
+
 describe('Cephalopod Lab abandon-day confirmation accessibility', () => {
   it('renders a labelled modal alert dialog with safe action order', () => {
     const container = renderConfirmation();
@@ -47,7 +54,7 @@ describe('Cephalopod Lab abandon-day confirmation accessibility', () => {
       'Cancel',
       'Abandon day',
     ]);
-  });
+  }, RENDER_TIMEOUT_MS);
 
   it('implements focus entry, trapping, Escape cancellation, and restoration', () => {
     const source = readFileSync(SOURCE, 'utf8');
@@ -59,7 +66,7 @@ describe('Cephalopod Lab abandon-day confirmation accessibility', () => {
     expect(source).toContain('document.activeElement === last');
     expect(source).toContain('restoreDayAbandonFocus(trigger)');
     expect(source).toContain('tabIndex: -1, style: rootStyle');
-  });
+  }, RENDER_TIMEOUT_MS);
 
   it('removes the native confirmation API and retains explicit dialog state', () => {
     const source = readFileSync(SOURCE, 'utf8');
@@ -67,9 +74,9 @@ describe('Cephalopod Lab abandon-day confirmation accessibility', () => {
     expect(source).not.toMatch(/\bconfirm\s*\(/);
     expect(source).toContain('dayAbandonConfirmOpen: false');
     expect(source).toContain("role: 'alertdialog'");
-  });
+  }, RENDER_TIMEOUT_MS);
 
   it('preserves byte-for-byte deploy parity', () => {
     expect(readFileSync(DEPLOY, 'utf8')).toBe(readFileSync(SOURCE, 'utf8'));
-  });
+  }, RENDER_TIMEOUT_MS);
 });

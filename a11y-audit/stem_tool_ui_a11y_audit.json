@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T13:11:13.796Z",
+  "generatedAt": "2026-09-21T20:22:30.234Z",
   "source": {
     "stemToolFileCount": 150,
     "registeredToolCount": 152
@@ -1084,7 +1084,7 @@
         "habitat"
       ],
       "desc": "Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.",
-      "renderedBytes": 17865,
+      "renderedBytes": 30463,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -1093,13 +1093,13 @@
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 22,
+        "buttons": 29,
         "roleButtons": 0,
-        "fields": 1,
+        "fields": 6,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 7,
+        "headings": 9,
         "links": 5,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2149,7 +2149,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 41983,
+      "renderedBytes": 41962,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -2269,7 +2269,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Author, validate, and preview new STEAM Lab / SEL Hub plugins — describe one in plain language (AI builds a conforming plugin) or hand-code against the contract, with a live in-sandbox render-smoke and the same contract gate the deploy pipeline runs. Teacher / developer tool.",
-      "renderedBytes": 7816,
+      "renderedBytes": 7858,
       "settlePasses": 1,
       "auditedAs": "teacher-mode",
       "standardShell": true,
@@ -2640,7 +2640,7 @@
         "block builder"
       ],
       "desc": "Explore guided geometry lessons or open a free-build sandbox, measure connected creations, and continue selected builds in Print Lab.",
-      "renderedBytes": 20239,
+      "renderedBytes": 20236,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -3495,7 +3495,7 @@
         "why lead does not stop neutrons"
       ],
       "desc": "Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, an evidence challenge for testing nuclear claims, why the same accident gets two death tolls a hundredfold apart, the three accidents in honest numbers, what to do with the waste, and where small modular reactors really stand.",
-      "renderedBytes": 204850,
+      "renderedBytes": 205273,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -3913,7 +3913,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 19342,
+      "renderedBytes": 19337,
       "settlePasses": 2,
       "auditedAs": "default",
       "standardShell": true,
@@ -4910,7 +4910,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 39960,
+      "renderedBytes": 39962,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,

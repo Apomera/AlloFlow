@@ -293,9 +293,48 @@
     return { status: reasonable ? 'reasonable' : 'far', reasonable: reasonable, benchmark: target, tolerance: tolerance };
   }
 
+  // Pure place-value walkthrough, extracted from renderModel so the SEQUENCE of
+  // exchanges can be tested. The final total was always right, which is why a
+  // defect that only affected the intermediate steps — the part a student
+  // actually reads — survived every existing test.
+  //
+  // Subtraction settles one place at a time, right to left: exchange only when
+  // this place is short, then remove this place's digit before moving left.
+  // `labels` are structural, not display copy, so tests do not pin translations.
+  function placeValueStages(op, left, right, places) {
+    places = places || Math.max(2, String(Math.max(op === 'add' ? left + right : left, 1)).length);
+    var counts = [], i;
+    for (i = 0; i < places; i++) {
+      counts.push(Math.floor(left / Math.pow(10, i)) % 10 + (op === 'add' ? Math.floor(right / Math.pow(10, i)) % 10 : 0));
+    }
+    var stages = [{ counts: counts.slice(), kind: 'start', place: null, donor: null }];
+    function push(kind, place, donor) { stages.push({ counts: counts.slice(), kind: kind, place: place, donor: donor == null ? null : donor }); }
+    if (op === 'add') {
+      for (var p = 0; p < places - 1; p++) {
+        if (counts[p] >= 10) { counts[p] -= 10; counts[p + 1]++; push('exchange', p, p + 1); }
+      }
+    }
+    if (op === 'subtract') {
+      for (var sp = 0; sp < places; sp++) {
+        var need = Math.floor(right / Math.pow(10, sp)) % 10;
+        if (counts[sp] < need) {
+          var donor = sp + 1;
+          while (donor < places && counts[donor] === 0) donor++;
+          if (donor < places) {
+            for (var k = donor; k > sp; k--) { counts[k]--; counts[k - 1] += 10; push('exchange', k - 1, k); }
+          }
+        }
+        if (need) { counts[sp] -= need; push('remove', sp, null); }
+      }
+      push('summary', null, null);
+    }
+    return { places: places, stages: stages, total: counts.reduce(function (sum, n, idx) { return sum + n * Math.pow(10, idx); }, 0) };
+  }
+
   window.ArithmeticStrategyPure = {
     calculate: calculate,
     splitPlaceValue: splitPlaceValue,
+    placeValueStages: placeValueStages,
     strategySteps: strategySteps,
     estimateFor: estimateFor,
     estimatePlan: estimatePlan,
@@ -638,24 +677,45 @@
           var counts = Array.from({ length: places }, function(_, i) { return Math.floor(left / Math.pow(10, i)) % 10 + (op === 'add' ? Math.floor(right / Math.pow(10, i)) % 10 : 0); });
           var stages = [{ counts: counts.slice(), note: op === 'add' ? t('stem.arithmetic.combine_places', 'Combine the units in matching places. Each disk is worth the value printed inside it.') : t('stem.arithmetic.start_quantity', 'Start with the first number. Exchange a larger unit when a place needs more disks.') }];
           function saveStage(note, kind) { stages.push({ counts: counts.slice(), note: note, kind: kind || 'exchange' }); }
-          for (var p = 0; p < places - 1; p++) {
-            var unit = Math.pow(10, p);
-            if (op === 'add' && counts[p] >= 10) {
-              counts[p] -= 10; counts[p + 1]++;
-              saveStage('10 × ' + unit + ' = 1 × ' + (unit * 10) + '. ' + t('stem.arithmetic.exchange_conserves', 'Exchange the disks; the total stays the same.'));
-            }
-            if (op === 'subtract' && counts[p] < Math.floor(right / unit) % 10) {
-              var donor = p + 1;
-              while (donor < places && counts[donor] === 0) donor++;
-              for (var k = donor; k > p && donor < places; k--) {
-                counts[k]--; counts[k - 1] += 10;
-                saveStage('1 × ' + Math.pow(10, k) + ' = 10 × ' + Math.pow(10, k - 1) + '. ' + t('stem.arithmetic.exchange_conserves', 'Exchange the disks; the total stays the same.'));
+          if (op === 'add') {
+            for (var p = 0; p < places - 1; p++) {
+              var unit = Math.pow(10, p);
+              if (counts[p] >= 10) {
+                counts[p] -= 10; counts[p + 1]++;
+                saveStage('10 × ' + unit + ' = 1 × ' + (unit * 10) + '. ' + t('stem.arithmetic.exchange_conserves', 'Exchange the disks; the total stays the same.'));
               }
             }
           }
+          // Subtraction resolves ONE PLACE AT A TIME, right to left: exchange only
+          // when this place is short, then remove this place's digit before moving
+          // on. Borrowing for every place first and removing everything at the end
+          // left a place holding 13 disks for the rest of the walkthrough — the
+          // exact "more than nine in a place" idea the model exists to rule out —
+          // and made a later, genuinely necessary exchange look like it jumped
+          // backwards. A place can still briefly hold up to 19 while it is being
+          // worked on; that is what regrouping actually looks like.
           if (op === 'subtract') {
-            counts = counts.map(function(n, i) { return n - Math.floor(right / Math.pow(10, i)) % 10; });
-            saveStage(t('stem.arithmetic.remove_second', 'Now remove the second quantity: ') + left + ' − ' + right + ' = ' + (left - right), 'remove');
+            for (var sp = 0; sp < places; sp++) {
+              var spUnit = Math.pow(10, sp), need = Math.floor(right / spUnit) % 10;
+              if (counts[sp] < need) {
+                var donor = sp + 1;
+                while (donor < places && counts[donor] === 0) donor++;
+                if (donor < places) {
+                  for (var k = donor; k > sp; k--) {
+                    counts[k]--; counts[k - 1] += 10;
+                    saveStage('1 × ' + Math.pow(10, k) + ' = 10 × ' + Math.pow(10, k - 1) + '. ' + t('stem.arithmetic.exchange_conserves', 'Exchange the disks; the total stays the same.'));
+                  }
+                }
+              }
+              if (need) {
+                counts[sp] -= need;
+                saveStage(t('stem.arithmetic.remove_from_place', 'Remove ') + need + ' × ' + spUnit + '. ' + t('stem.arithmetic.place_now_settled', 'This place is finished; move left.'), 'remove');
+              }
+            }
+            // Closing frame: nothing moves, so it is a summary, not a 'remove'
+            // step. Marking it 'remove' would make the comparison panel claim a
+            // subtraction happened between two identical stages.
+            saveStage(t('stem.arithmetic.every_place_settled', 'Every place is settled: ') + left + ' − ' + right + ' = ' + (left - right), 'summary');
           }
           var signature = op + ':' + left + ':' + right;
           var step = d.exchangeSignature === signature ? clampInt(d.exchangeStep, 0, stages.length - 1, 0) : 0;
@@ -681,7 +741,7 @@
             previousStage && h('div', { className:'rounded-lg p-3 space-y-2', style:{background:card, border:'1px solid '+border}, 'data-step-comparison':stage.kind },
               h('p', {className:'text-sm'}, h('strong', null, t('stem.arithmetic.before_step', 'Before this step: ')), stageExpression(previousStage)+' = '+stageTotal(previousStage)),
               h('p', {className:'text-sm'}, h('strong', null, t('stem.arithmetic.after_step', 'After this step: ')), stageExpression(stage)+' = '+stageTotal(stage)),
-              h('p', {className:'text-sm font-bold', 'data-value-change':true}, stage.kind === 'remove' ? t('stem.arithmetic.removal_changes_value', 'Taking away changes the value: ') + stageTotal(previousStage)+' − '+right+' = '+total : t('stem.arithmetic.exchange_keeps_value', 'The grouping changes, but both representations have value ') + total + '.')),
+              h('p', {className:'text-sm font-bold', 'data-value-change':true}, stage.kind === 'remove' ? t('stem.arithmetic.removal_changes_value', 'Taking away changes the value: ') + stageTotal(previousStage)+' − '+(stageTotal(previousStage)-total)+' = '+total : stage.kind === 'summary' ? t('stem.arithmetic.nothing_left_to_exchange', 'Nothing moves in this step; every place is already settled. Value: ') + total + '.' : t('stem.arithmetic.exchange_keeps_value', 'The grouping changes, but both representations have value ') + total + '.')),
             h('p', { className: 'font-mono text-sm', 'data-model-total': total }, stage.counts.map(function(n,i) { return n ? n + ' × ' + Math.pow(10,i) : null; }).filter(Boolean).reverse().join(' + ') + (total ? ' = ' + total : '0 = 0')),
             h('div', { className: 'flex flex-wrap gap-2' },
               h('button', { type: 'button', disabled: step === 0, className: 'rounded-lg border px-3 py-2 text-sm disabled:opacity-50', onClick: function() { update({ exchangeSignature: signature, exchangeStep: step - 1 }); } }, t('stem.arithmetic.previous_exchange', 'Previous step')),
@@ -718,8 +778,19 @@
                 var w = 340 * part.col / right, ht = 200 * part.row / left;
                 return h('g', { key: part.label },
                   h('rect', { x: 10 + 340 * part.x / right, y: 10 + 200 * part.y / left, width: w, height: ht, fill: ['#ddd6fe','#c4b5fd','#a78bfa','#ede9fe'][i], stroke: '#4c1d95', strokeWidth: 1, 'data-partial-product': part.row * part.col }),
-                  w >= 22 && ht >= 22 && h('text', { x: 10 + 340 * (part.x + part.col / 2) / right, y: 10 + 200 * (part.y + part.row / 2) / left, textAnchor: 'middle', dominantBaseline: 'central', fill: '#0f172a', fontSize: 16, fontWeight: 800 }, part.label));
-              }))), h('div', { className: 'rounded-lg p-3 text-sm', style: { background: '#f5f3ff' } }, partials.map(function(part) { return h('p', { key: part.label }, part.label + ': ' + part.row + ' × ' + part.col + ' = ' + part.row * part.col); }),
+                  (function() {
+                    var cx = 10 + 340 * (part.x + part.col / 2) / right, cy = 10 + 200 * (part.y + part.row / 2) / left;
+                    if (w >= 22 && ht >= 22) {
+                      return h('text', { x: cx, y: cy, textAnchor: 'middle', dominantBaseline: 'central', fill: '#0f172a', fontSize: 16, fontWeight: 800, 'data-partial-label': part.label }, part.label);
+                    }
+                    var right_edge = 10 + 340 * (part.x + part.col) / right;
+                    var outside = right_edge + 6 <= 348;
+                    var lx = outside ? right_edge + 6 : 10 + 340 * part.x / right - 6;
+                    return h('g', { key: 'lead-' + part.label },
+                      h('line', { x1: outside ? right_edge : 10 + 340 * part.x / right, y1: cy, x2: lx, y2: cy, stroke: '#4c1d95', strokeWidth: 1 }),
+                      h('text', { x: outside ? lx + 2 : lx - 2, y: cy, textAnchor: outside ? 'start' : 'end', dominantBaseline: 'central', fill: '#0f172a', fontSize: 12, fontWeight: 800, 'data-partial-label': part.label }, part.label));
+                  })());
+              }))), h('div', { className: 'rounded-lg p-3 text-sm', style: { background: isContrast ? '#000000' : (isDark ? '#2e1065' : '#f5f3ff'), color: isContrast ? '#ffffff' : (isDark ? '#ede9fe' : '#1e1b4b'), border: isContrast ? '1px solid #ffffff' : 'none' } }, partials.map(function(part) { return h('p', { key: part.label }, part.label + ': ' + part.row + ' × ' + part.col + ' = ' + part.row * part.col); }),
                 h('p', { className: 'font-bold mt-2' }, partials.map(function(part) { return part.row * part.col; }).join(' + ') + ' = ' + left * right)))
           );
         }

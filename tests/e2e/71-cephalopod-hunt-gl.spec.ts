@@ -42,6 +42,19 @@ const harness = new GlHarness({
                lost: gl ? gl.isContextLost() : null, styleW: c.style.width, hud: !!c.parentElement.querySelector('div'),
                wrapW: Math.round(document.querySelector('#wrap').getBoundingClientRect().width), rootW: Math.round(document.querySelector('#wrap > *').getBoundingClientRect().width) };
     };
+    // The HUD is a plain div sibling of the canvas; read its text so a test
+    // can assert what a student actually sees, not just that pixels changed.
+    window.__hud = function () {
+      var c = document.querySelector('#wrap canvas[role="application"]');
+      if (!c) return null;
+      var divs = c.parentElement.querySelectorAll('div');
+      var best = '';
+      for (var i = 0; i < divs.length; i++) {
+        var t = divs[i].textContent || '';
+        if (t.indexOf('HEALTH') >= 0 && t.length > best.length) best = t;
+      }
+      return best;
+    };
   `,
 });
 
@@ -107,6 +120,193 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     // the whole point: the canvas box must track the parent box, not its first measurement
     expect(Math.abs(narrow.canvas.w - narrow.parent.w)).toBeLessThanOrEqual(2);
     expect(Math.abs(narrow.canvas.h - narrow.parent.h)).toBeLessThanOrEqual(2);
+  });
+
+  // The depth readout used to print the raw scene unit as metres, so the
+  // deepest reachable point read "45m" beside a zone card claiming "4000m+",
+  // and the pressure lesson had nothing to check its arithmetic against.
+  test('the HUD reports a real reef depth and pressure on arrival', async ({ page }) => {
+    await harness.mount(page, DIVE);
+    await page.waitForTimeout(2000);
+    const hud = await page.evaluate(() => (window as any).__hud());
+    expect(hud).toBeTruthy();
+    // Reef zone, a plausible shallow depth, and the matching pressure.
+    expect(hud).toMatch(/Reef Zone/);
+    const m = /(\d+)m · (\d+) atm/.exec(hud);
+    expect(m).not.toBeNull();
+    const depth = Number(m![1]);
+    const atm = Number(m![2]);
+    expect(depth).toBeGreaterThan(0);
+    expect(depth).toBeLessThan(60);          // a reef, not the abyss
+    expect(atm).toBe(Math.round(1 + depth / 10));   // 1 atm per 10 m
+  });
+
+  // Pressure damage used to start with no flash, caption, sound or HUD row.
+  test('descending warns about pressure before it starts doing damage', async ({ page }) => {
+    await harness.mount(page, DIVE);
+    await page.waitForTimeout(1800);
+    const canvas = page.locator('#wrap canvas[role="application"]');
+    await canvas.click({ position: { x: 20, y: 20 } });
+
+    // Hold Z and sample the HUD on the way down.
+    const seen = { warning: false, crushing: false };
+    let warnedBeforeDamage = false;
+    await page.keyboard.down('KeyZ');
+    for (let i = 0; i < 40; i += 1) {
+      await page.waitForTimeout(150);
+      const hud: string = await page.evaluate(() => (window as any).__hud() || '');
+      if (hud.indexOf('PRESSURE BUILDING') >= 0) seen.warning = true;
+      if (hud.indexOf('CRUSHING PRESSURE') >= 0) {
+        if (seen.warning) warnedBeforeDamage = true;
+        seen.crushing = true;
+        break;
+      }
+    }
+    await page.keyboard.up('KeyZ');
+
+    expect(seen.warning).toBe(true);
+    expect(seen.crushing).toBe(true);
+    // The warning has to come first, or it is not a warning.
+    expect(warnedBeforeDamage).toBe(true);
+    save('hunt_4_pressure.png', await page.locator('#wrap').screenshot());
+  });
+
+  // Jetting used to cost stamina but not a single calorie, contradicting the
+  // 5x figure this tool quizzes students on. Measure both drains in the real
+  // engine: a unit test cannot see that the HUD row renders or that the
+  // hunger bar actually falls faster with Space held.
+  // Jetting used to cost stamina but not a single calorie, contradicting the
+  // 5x figure this tool quizzes students on. Measure both drains in the real
+  // engine: a unit test cannot see that the HUD row renders or that the
+  // hunger bar actually falls faster with Space held.
+  test('jetting burns calories faster than crawling, and says so', async ({ page }) => {
+    await harness.mount(page, DIVE);
+    await page.waitForTimeout(1800);
+    const canvas = page.locator('#wrap canvas[role="application"]');
+    await canvas.click({ position: { x: 20, y: 20 } });
+
+    const readHud = () => page.evaluate(() => ((window as any).__hud() || '').replace(/ /g, ' '));
+    // Regex literals, not `new RegExp('...' + '\s*')`: a single-backslash
+    // string collapses '\s' to 's' and the pattern silently never matches,
+    // which reads as "the HUD has no HUNGER row" rather than as a typo.
+    const HUNGER_RE = /HUNGER\s*(\d+)/;
+    const STAMINA_RE = /STAMINA\s*(\d+)/;
+    const numFrom = (hud: string, re: RegExp) => {
+      const m = re.exec(hud);
+      return m ? Number(m[1]) : null;
+    };
+
+    // The HUD prints hunger as an integer, so a 3s window resolves to only a
+    // handful of units and rounding swamps the difference. Measure over a
+    // window long enough that the drop is tens of units, and let stamina
+    // refill (100 max, 18/s regen) before the jet leg so Space actually jets
+    // rather than idling against an empty bar.
+    const LEG_MS = 9000;
+
+    await page.keyboard.down('KeyW');
+    const crawlStart = numFrom(await readHud(), HUNGER_RE);
+    expect(crawlStart).not.toBeNull();
+    await page.waitForTimeout(600);
+    const crawlHud = await readHud();
+    await page.waitForTimeout(LEG_MS - 600);
+    const crawlEnd = numFrom(await readHud(), HUNGER_RE);
+    await page.keyboard.up('KeyW');
+    const crawlDrop = crawlStart! - crawlEnd!;
+
+    // The row has to name the crawl state and its rate while it happens.
+    expect(crawlHud).toMatch(/crawling [\d.]+ cal\/s/);
+
+    // Let stamina come back before the jet leg.
+    await page.waitForTimeout(6000);
+    expect(numFrom(await readHud(), STAMINA_RE)).toBeGreaterThan(80);
+
+    await page.keyboard.down('KeyW');
+    await page.keyboard.down('Space');
+    const jetStart = numFrom(await readHud(), HUNGER_RE);
+    await page.waitForTimeout(600);
+    const jetHud = await readHud();
+    await page.waitForTimeout(LEG_MS - 600);
+    const jetEnd = numFrom(await readHud(), HUNGER_RE);
+    await page.keyboard.up('Space');
+    await page.keyboard.up('KeyW');
+    const jetDrop = jetStart! - jetEnd!;
+
+    // Sampled 600ms in, while stamina certainly still has ~2.2s of jet in it.
+    expect(jetHud).toMatch(/jetting [\d.]+ cal\/s/);
+    expect(jetHud).toContain('5× crawl');
+
+    // Stamina caps sustained jetting at a ~29% duty cycle, so a 9s jet leg
+    // costs roughly 9 * 2.3 = 21 cal against the crawl leg's 9 * 1.6 = 14.
+    // Require a real margin so frame-timing noise cannot pass this for free,
+    // but do not assume the full 4.0/s that only continuous jetting would give.
+    expect(jetDrop).toBeGreaterThan(crawlDrop + 3);
+    save('hunt_5_energy.png', await page.locator('#wrap').screenshot());
+  });
+
+  // The ink HUD row used to promise "predators can't see you" while the code
+  // only halved the shark's detection range and never broke off its charge.
+  test('inking reports what ink actually does', async ({ page }) => {
+    await harness.mount(page, DIVE);
+    await page.waitForTimeout(1800);
+    const canvas = page.locator('#wrap canvas[role="application"]');
+    await canvas.click({ position: { x: 20, y: 20 } });
+
+    const readHud = () => page.evaluate(() => ((window as any).__hud() || '').replace(/ /g, ' '));
+
+    // Three reserve dots before, two after — ink is a limited resource and the
+    // HUD has to show the spend.
+    const before = await readHud();
+    expect(before).toMatch(/INK/);
+
+    await page.keyboard.press('KeyI');
+    await page.waitForTimeout(500);
+    const inked = await readHud();
+
+    // The row says what ink does, and no longer overclaims invisibility.
+    expect(inked).toContain('INKED');
+    expect(inked).toContain('harder to track');
+    expect(inked).not.toMatch(/can.{0,2}t see you/);
+
+    // Ink is temporary (3.2s), so the row must clear itself again.
+    await page.waitForTimeout(3600);
+    const cleared = await readHud();
+    expect(cleared).not.toContain('INKED');
+    save('hunt_6_ink.png', await page.locator('#wrap').screenshot());
+  });
+
+  // Substrate camouflage used to work identically 40 m up in open water,
+  // because detectSubstrate samples X/Z only. Prove the falloff runs.
+  test('camouflage fades when the animal leaves the bottom', async ({ page }) => {
+    await harness.mount(page, DIVE);
+    await page.waitForTimeout(2200);
+    const canvas = page.locator('#wrap canvas[role="application"]');
+    await canvas.click({ position: { x: 20, y: 20 } });
+
+    const readHud = () => page.evaluate(() => ((window as any).__hud() || '').replace(/ /g, ' '));
+    const CAMO_RE = /CAMO\s*(\d+)%/;
+    const camo = async () => {
+      const m = CAMO_RE.exec(await readHud());
+      return m ? Number(m[1]) : null;
+    };
+
+    // Settle on the bottom: camo climbs as stationaryTime builds.
+    await page.waitForTimeout(2500);
+    const onFloor = await camo();
+    expect(onFloor).not.toBeNull();
+    expect(onFloor!).toBeGreaterThan(40);
+
+    // Rise into open water and hold still there. Stillness is unchanged, so
+    // any drop is the substrate falloff and nothing else.
+    await page.keyboard.down('KeyQ');
+    await page.waitForTimeout(2000);
+    await page.keyboard.up('KeyQ');
+    await page.waitForTimeout(2500);
+    const aloft = await camo();
+    const hud = await readHud();
+
+    expect(aloft!).toBeLessThan(onFloor!);
+    expect(hud).toContain('off the bottom');
+    save('hunt_7_camo.png', await page.locator('#wrap').screenshot());
   });
 
   test('surfacing releases the WebGL context', async ({ page }) => {

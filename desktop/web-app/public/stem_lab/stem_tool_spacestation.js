@@ -296,6 +296,63 @@
   // the label lying about it.
   var QUIZ_PASS = Math.ceil(QUIZ.length * 0.7);
 
+  // ── Orbit Lab challenges ────────────────────────────────────────────────
+  // Four questions that cannot be answered by reading a slider, because each
+  // one turns on the counter-intuitive DIRECTION of v = sqrt(GM/r) rather than
+  // on a magnitude. Every number a challenge quotes is DERIVED from issOrbit()
+  // at call time -- the same function the live readouts and the fast-facts
+  // card use -- so a change to the orbital model can never leave a challenge
+  // grading against a stale figure, and no number in a feedback string can
+  // drift out of agreement with the panel directly above it.
+  function issChallengeBank() {
+    var iss = issOrbit(ISS_REF_ALT);
+    var chase = issOrbit(ISS_REF_ALT - 40);
+    var high = issOrbit(1000);
+    var decayed = issOrbit(ISS_REF_ALT - 36);
+    return [
+      {
+        id: 'phasing',
+        prompt: 'Your cargo ship is 30 km BEHIND the station, in the same ' + ISS_REF_ALT + ' km orbit. To catch up, you should:',
+        options: [
+          { id: 'speedup', label: 'Fire forward to speed up and close the gap', feedback: 'This is the driving answer, and it is exactly why rendezvous has to be computed rather than eyeballed. Firing forward raises your orbit, and a higher orbit is SLOWER: ' + iss.v.toFixed(2) + ' km/s at ' + ISS_REF_ALT + ' km against ' + chase.v.toFixed(2) + ' km/s at ' + (ISS_REF_ALT - 40) + ' km. You take longer per lap and fall further behind.' },
+          { id: 'slowdown', label: 'Fire backward to drop into a lower, faster orbit', correct: true, feedback: 'Correct, and it is genuinely strange. Slowing down drops you to a lower orbit, where orbital speed is HIGHER (' + chase.v.toFixed(2) + ' km/s at ' + (ISS_REF_ALT - 40) + ' km against ' + iss.v.toFixed(2) + ' km/s) and the lap is shorter (' + chase.minutes.toFixed(1) + ' min against ' + iss.minutes.toFixed(1) + ' min). You gain about ' + Math.round((iss.minutes - chase.minutes) * 60) + ' seconds of lead per orbit, then raise back up to meet the station.' },
+          { id: 'sideways', label: 'Thrust sideways to slide along the orbit', feedback: 'There is nothing to slide along. A sideways burn tilts your orbital PLANE, which is the most expensive manoeuvre in orbit, and it does not move you along the track toward the station at all.' }
+        ],
+        why: 'This is the phasing manoeuvre every visiting vehicle flies. Lower means faster, so you catch up from below.'
+      },
+      {
+        id: 'reboost',
+        prompt: 'The station loses roughly 50-100 m of altitude a day to drag. Left alone for a year with no reboost, what happens to its orbital SPEED?',
+        options: [
+          { id: 'slower', label: 'It slows down, because drag is friction', feedback: 'Drag does take energy out, which is why the orbit decays at all. But energy is not speed here: as the orbit shrinks, r gets smaller and sqrt(GM/r) gets BIGGER. The station ends up moving faster while losing energy.' },
+          { id: 'faster', label: 'It speeds up, even though drag is removing energy', correct: true, feedback: 'Correct, and this is the drag paradox. Drag lowers the orbit, and a lower orbit is a faster one. Losing 100 m a day for a year is about 36 km, taking orbital speed from ' + iss.v.toFixed(3) + ' to ' + decayed.v.toFixed(3) + ' km/s. The station goes faster all the way down, until the air gets thick enough to end it.' },
+          { id: 'same', label: 'Speed is unchanged; only the altitude drops', feedback: 'Altitude and speed are locked together by v = sqrt(GM/r). You cannot change one without the other -- that constraint is what makes an orbit an orbit rather than a free choice of two numbers.' }
+        ],
+        why: 'Drag removes ENERGY, and a lower orbit has less energy but more speed. This one trips up almost everybody the first time.'
+      },
+      {
+        id: 'higher',
+        prompt: 'Some people suggest parking the station higher, at 1000 km, to escape drag. What does that cost the crew?',
+        options: [
+          { id: 'nothing', label: 'Nothing much — it is a straightforwardly better orbit', feedback: 'Drag really would almost vanish. But 1000 km sits inside the inner Van Allen belt, where trapped protons raise crew radiation dose sharply, and every kilogram of cargo costs more to lift that high. It is a trade, not an upgrade.' },
+          { id: 'radiation', label: 'Far more radiation, and less cargo mass per flight', correct: true, feedback: 'Correct. 1000 km is inside the inner Van Allen belt. You also give up speed and gain time per lap: ' + high.v.toFixed(2) + ' km/s and ' + high.minutes.toFixed(1) + ' min per orbit, against ' + iss.v.toFixed(2) + ' km/s and ' + iss.minutes.toFixed(1) + ' min at ' + ISS_REF_ALT + ' km. About 400 km is the compromise between drag below and radiation above.' },
+          { id: 'gravity', label: 'The crew would feel noticeable gravity again', feedback: 'They would not. Earth’s gravity at 1000 km is still roughly three quarters of its surface strength. Weightlessness comes from FALLING freely, not from being beyond gravity, and that is just as true at 1000 km as at ' + ISS_REF_ALT + '.' }
+        ],
+        why: 'Altitude is a trade, not a ladder: drag below you, radiation and launch cost above you.'
+      },
+      {
+        id: 'weightless',
+        prompt: 'Why do astronauts float, if gravity at ' + ISS_REF_ALT + ' km is still about 90% as strong as it is on the ground?',
+        options: [
+          { id: 'nogravity', label: 'They are far enough away that gravity is negligible', feedback: 'Gravity at ' + ISS_REF_ALT + ' km is about 90% of its surface value, nowhere near negligible. If gravity really were absent, the station would fly off in a straight line instead of curving around Earth.' },
+          { id: 'falling', label: 'The station and crew are falling together, and missing Earth', correct: true, feedback: 'Correct. Gravity is precisely what holds the orbit. The station is in continuous free fall while moving sideways fast enough (' + iss.v.toFixed(2) + ' km/s) that it keeps missing the ground. Crew and walls fall at the same rate, so nothing presses on anything, and that absence of contact force is what "weightless" actually means.' },
+          { id: 'vacuum', label: 'There is no air, so there is nothing to weigh them down', feedback: 'Air is not what makes you heavy. A vacuum chamber on the ground does not make you float. Weight comes from gravity, and you feel it only when something stops you from falling.' }
+        ],
+        why: 'Weightlessness is free fall, not the absence of gravity. This single misconception sits underneath most of the others.'
+      }
+    ];
+  }
+
   var FAST_FACTS = [
     ['Altitude', '~400-420 km'], ['Speed', _issRefOrbit.v.toFixed(2) + ' km/s'], ['Orbit period', '~' + _issRefOrbit.minutes.toFixed(0) + ' min'],
     ['Sunrises/day', String(Math.round(1440 / _issRefOrbit.minutes))], ['Truss length', '109 m'], ['Mass', '~420,000 kg'],
@@ -853,6 +910,11 @@
       { id: 'iss_freeflight', label: 'Complete 3 free-flight navigation challenges', icon: '\uD83E\uDDED', check: function (d) { var n = (((d && d.spaceStation) || {}).interiorNav) || {}; return [n.preciseHatch, n.handrailStop, (n.cargoClear || n.cargoSecured), n.transferComplete, n.worksiteComplete, n.orientationRecovered, n.routeComplete].filter(Boolean).length >= 3; } },
       { id: 'iss_ops', label: 'Simulate a full station orbit', icon: '📡', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.opsRuns || 0) >= 1; } },
       { id: 'iss_orbit', label: 'Change the orbit in the Orbit Lab', icon: '🧮', check: function (d) { var s = (d && d.spaceStation) || {}; return !!s.orbitTouched; } },
+      // Three CORRECT predictions, not three attempts: the hook is for the
+      // reasoning, and a student clicking every option until one sticks has
+      // not done the thing this asks for.
+      { id: 'iss_predict', label: 'Predict 3 orbit changes correctly', icon: '🔮', check: function (d) { var s = (d && d.spaceStation) || {}; return (Array.isArray(s.orbitPredictLog) ? s.orbitPredictLog : []).filter(function (row) { return row && row.correct; }).length >= 3; } },
+      { id: 'iss_challenge', label: 'Solve 2 orbit challenges', icon: '🎯', check: function (d) { var s = (d && d.spaceStation) || {}; var done = (s.orbitChallengeDone && typeof s.orbitChallengeDone === 'object' && !Array.isArray(s.orbitChallengeDone)) ? s.orbitChallengeDone : {}; return Object.keys(done).filter(function (k) { return !!done[k]; }).length >= 2; } },
       { id: 'iss_quiz', label: 'Score ' + QUIZ_PASS + '+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= QUIZ_PASS; } },
       { id: 'iss_dock', label: 'Achieve a soft-capture docking', icon: '🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.dockWins || 0) >= 1; } },
       { id: 'iss_eva', label: 'Complete the spacewalk pump repair', icon: '🧑‍🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return !!(s.eva && s.eva.done && !s.eva.failMsg); } }
@@ -913,7 +975,10 @@
             interiorView: '3d', interiorNav: freshInteriorNavigation(),
             researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
             opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
-            orbitAlt: 420, orbitInc: 51.6, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
+            orbitAlt: 420, orbitInc: 51.6,
+            orbitPredictRef: 420, orbitPredictPick: null, orbitPredictAlt: null, orbitPredictLog: [],
+            orbitChallenge: null, orbitChallengePick: null, orbitChallengeDone: {},
+            quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
             seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0, mapView: 'overview', mapCutaway: false,
             askInput: '', askAnswer: '', askLoading: false
           } });
@@ -5778,6 +5843,115 @@
         : orbitAlt <= 1000 ? 'Drag is tiny here, but you are entering the inner Van Allen radiation zone territory — crew dose climbs.'
         : 'Very little drag — but radiation is far worse, and cargo rockets can carry less mass this high.';
 
+      // ── Orbit Lab: predict before you see ──────────────────────────────
+      // The Orbit Lab's own intro names the misconception ("LOWER orbits are
+      // FASTER ... breaks driving intuition") and then never makes the student
+      // confront it: the readouts update live while the slider moves, so the
+      // wrong intuition is overwritten before it is ever stated. A student who
+      // believes "higher = faster" can leave having watched the correct number
+      // the entire time without ever noticing their own model was wrong.
+      //
+      // So the SOLVED rows are hidden until a direction is committed for the
+      // CURRENT altitude. The gate keys on the altitude itself: move the
+      // slider and it becomes a new question, the same way each Optics setup
+      // is its own question. The reference is the altitude last answered for,
+      // so "faster or slower than what?" always has an answer on screen.
+      //
+      // Only the DERIVED quantities are withheld. The altitude, the orbit
+      // diagram, the drag/radiation band and the trade-off report all stay
+      // visible: the point is to withhold the answer, not the setup, and a
+      // student who cannot see what they are changing cannot form a
+      // prediction at all.
+      var ORBIT_PREDICT_TOLERANCE = 5;   // km — inside this, it is the same orbit
+      var orbitPredictRef = Math.max(200, Math.min(2000, Number(d.orbitPredictRef) || ISS_REF_ALT));
+      // Stored as a NUMBER so the key survives the JSON round-trip a saved
+      // project makes. Compared with a tolerance rather than ===, because the
+      // slider steps in 10 km and a stored float from an older build should
+      // still match the altitude it was saved against.
+      var _rawPredictAlt = Number(d.orbitPredictAlt);
+      var orbitPredictAlt = isFinite(_rawPredictAlt) ? _rawPredictAlt : null;
+      var orbitPredictPick = (d.orbitPredictPick === 'faster' || d.orbitPredictPick === 'slower' || d.orbitPredictPick === 'same') ? d.orbitPredictPick : null;
+      // Committed only when the saved pick belongs to the altitude on screen.
+      var orbitPredictCommitted = !!orbitPredictPick && orbitPredictAlt != null && Math.abs(orbitPredictAlt - orbitAlt) < 0.5;
+      // A prediction made at a DIFFERENT altitude is not an error and is not
+      // thrown away — it is simply no longer the answer to this question.
+      var orbitPredictStale = !!orbitPredictPick && !orbitPredictCommitted;
+      // At the reference altitude there is nothing to predict a change FROM,
+      // so the gate opens rather than posing an unanswerable question.
+      var orbitPredictMoved = Math.abs(orbitAlt - orbitPredictRef) >= ORBIT_PREDICT_TOLERANCE;
+      var orbitAnswerVisible = orbitPredictCommitted || !orbitPredictMoved;
+      // Truth comes from the SAME issOrbit() the readouts use, never from a
+      // second copy of the rule: if the physics is ever changed, the graded
+      // answer changes with it instead of silently grading against the old one.
+      var _orbitRefOrbit = issOrbit(orbitPredictRef);
+      var orbitPredictTruth = (orbitV - _orbitRefOrbit.v) > 0.001 ? 'faster'
+        : (_orbitRefOrbit.v - orbitV) > 0.001 ? 'slower' : 'same';
+      var orbitPredictCorrect = orbitPredictCommitted && orbitPredictPick === orbitPredictTruth;
+      var orbitPredictLog = Array.isArray(d.orbitPredictLog) ? d.orbitPredictLog.filter(function (row) { return row && typeof row === 'object'; }) : [];
+      var orbitPredictHits = orbitPredictLog.filter(function (row) { return row.correct; }).length;
+
+      function commitOrbitPrediction(pick) {
+        if (pick !== 'faster' && pick !== 'slower' && pick !== 'same') return;
+        var correct = pick === orbitPredictTruth;
+        // Newest first, capped: this is a learning trail, not a database, and
+        // an unbounded array would grow into every saved project forever.
+        var nextLog = [{
+          from: Math.round(orbitPredictRef), to: Math.round(orbitAlt),
+          pick: pick, truth: orbitPredictTruth, correct: correct,
+          fromV: Number(_orbitRefOrbit.v.toFixed(3)), toV: Number(orbitV.toFixed(3))
+        }].concat(orbitPredictLog).slice(0, 8);
+        upd({ orbitPredictPick: pick, orbitPredictAlt: orbitAlt, orbitPredictLog: nextLog, orbitTouched: true });
+        announceToSR(__alloFill(__alloT('stem.spacestation.sr_orbit_prediction_result',
+          'Prediction {value1}. Moving from {value2} to {value3} kilometers makes the station {value4}: {value5} against {value6} kilometers per second. The solved rows are now shown.'),
+          { value1: correct ? 'correct' : 'incorrect', value2: Math.round(orbitPredictRef), value3: Math.round(orbitAlt),
+            value4: orbitPredictTruth === 'same' ? 'travel at the same speed' : orbitPredictTruth,
+            value5: orbitV.toFixed(2), value6: _orbitRefOrbit.v.toFixed(2) }));
+      }
+      // Moving on sets the NEW reference to the altitude just answered, so the
+      // next question is "faster or slower than where you are now" rather than
+      // every question being measured against 420 km forever.
+      function nextOrbitPrediction() {
+        upd({ orbitPredictRef: orbitAlt, orbitPredictPick: null, orbitPredictAlt: null });
+        announceToSR(__alloFill(__alloT('stem.spacestation.sr_orbit_reference_moved',
+          'Reference altitude is now {value1} kilometers. Move the altitude slider to set up the next prediction.'), { value1: Math.round(orbitAlt) }));
+      }
+
+      // ── Orbit Lab challenge state ──────────────────────────────────────
+      var ORBIT_CHALLENGES = issChallengeBank();
+      var orbitChallengeId = ORBIT_CHALLENGES.some(function (c) { return c.id === d.orbitChallenge; }) ? d.orbitChallenge : null;
+      var orbitChallenge = orbitChallengeId ? ORBIT_CHALLENGES.filter(function (c) { return c.id === orbitChallengeId; })[0] : null;
+      // The pick is only meaningful for the challenge it was made on, so it is
+      // validated against THAT challenge's options rather than merely being a
+      // non-empty string — a stale id from a saved project would otherwise
+      // render a debrief for an option that no longer exists.
+      var orbitChallengePick = null;
+      if (orbitChallenge && typeof d.orbitChallengePick === 'string') {
+        var _pickMatch = orbitChallenge.options.filter(function (o) { return o.id === d.orbitChallengePick; })[0];
+        if (_pickMatch) orbitChallengePick = d.orbitChallengePick;
+      }
+      var orbitChallengeDone = (d.orbitChallengeDone && typeof d.orbitChallengeDone === 'object' && !Array.isArray(d.orbitChallengeDone)) ? d.orbitChallengeDone : {};
+      // Counts only ids this build still defines, so a renamed challenge can
+      // never inflate the "solved N of 4" tally above the number on screen.
+      var orbitChallengeSolved = ORBIT_CHALLENGES.filter(function (c) { return orbitChallengeDone[c.id]; }).length;
+
+      function answerOrbitChallenge(challenge, optionId) {
+        if (!challenge) return;
+        var option = challenge.options.filter(function (o) { return o.id === optionId; })[0];
+        if (!option) return;
+        var patch = { orbitChallengePick: optionId, orbitTouched: true };
+        // Solved is recorded only on a CORRECT answer, and never un-recorded:
+        // a student who reopens a challenge they already got right and tries a
+        // wrong option to read its feedback should not lose the credit.
+        if (option.correct) {
+          var nextDone = Object.assign({}, orbitChallengeDone);
+          nextDone[challenge.id] = true;
+          patch.orbitChallengeDone = nextDone;
+        }
+        upd(patch);
+        announceToSR(__alloFill(__alloT('stem.spacestation.sr_orbit_challenge_result',
+          '{value1}. {value2}'), { value1: option.correct ? 'Correct' : 'Not quite', value2: option.feedback }));
+      }
+
       // ── AI: Ask Mission Control ──
       function askMissionControl(q) {
         var clean = typeof q === 'string' ? q.trim().slice(0, 400) : '';
@@ -8616,12 +8790,17 @@
         var speedDelta = orbitV - referenceV;
         var periodDelta = orbitT - referenceT;
         var atReference = orbitAlt === referenceAlt;
-        var comparisonText = atReference ? 'ISS REFERENCE // 420 KM' : 'VS 420 KM // DELTA V ' + (speedDelta >= 0 ? '+' : '') + speedDelta.toFixed(2) + ' KM/S // DELTA T ' + (periodDelta >= 0 ? '+' : '') + periodDelta.toFixed(1) + ' MIN';
+        // The signed delta answers the prediction question outright, so it is
+        // withheld alongside the solved rows. The altitude comparison is not:
+        // knowing you are above or below 420 km is the SETUP, not the answer.
+        var comparisonText = atReference ? 'ISS REFERENCE // 420 KM'
+          : !orbitAnswerVisible ? 'VS 420 KM // ' + (orbitAlt > referenceAlt ? 'HIGHER' : 'LOWER') + ' // SPEED HIDDEN UNTIL YOU PREDICT'
+          : 'VS 420 KM // DELTA V ' + (speedDelta >= 0 ? '+' : '') + speedDelta.toFixed(2) + ' KM/S // DELTA T ' + (periodDelta >= 0 ? '+' : '') + periodDelta.toFixed(1) + ' MIN';
         var theta = -0.58;
         var stationX = 320 + Math.cos(theta) * orbitRx;
         var stationY = 140 + Math.sin(theta) * orbitRy;
         return h('div', { className: 'iss-learning-visual iss-orbit-visual' },
-          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbit_diagram_at_kilometers_altitude_moving_kil', 'Orbit diagram at {value1} kilometers altitude, moving {value2} kilometers per second with a period of {value3} minutes. {value4}.'), { value1: orbitAlt, value2: orbitV.toFixed(2), value3: orbitT.toFixed(1), value4: comparisonText.toLowerCase() })},
+          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbit_diagram_at_kilometers_altitude_moving_kil', 'Orbit diagram at {value1} kilometers altitude, moving {value2} kilometers per second with a period of {value3} minutes. {value4}.'), { value1: orbitAlt, value2: orbitAnswerVisible ? orbitV.toFixed(2) : 'an amount hidden until you predict', value3: orbitAnswerVisible ? orbitT.toFixed(1) : 'a hidden number of', value4: comparisonText.toLowerCase() })},
             h('defs', null,
               h('radialGradient', { id: 'iss-orbit-earth', cx: '35%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '52%', stopColor: '#1863a0' }), h('stop', { offset: '100%', stopColor: '#071c3b' })),
               h('filter', { id: 'iss-orbit-cloud', x: '-60%', y: '-180%', width: '220%', height: '460%' }, h('feGaussianBlur', { stdDeviation: 3 })),
@@ -8650,7 +8829,7 @@
               h('rect', { x: 31, y: -10, width: 14, height: 20, rx: 2, fill: '#c58a20', stroke: '#fbbf24' }),
               h('circle', { cx: 0, cy: 0, r: 3, fill: '#38bdf8' })),
             h('line', { x1: stationX + 6, y1: stationY - 10, x2: stationX + 77, y2: stationY - 29, stroke: '#4ade80', strokeWidth: 2.5, markerEnd: 'url(#iss-velocity-arrow)' }),
-            h('text', { x: stationX + 44, y: stationY - 35, textAnchor: 'middle', fill: '#86efac', fontSize: 9, fontWeight: 850 }, orbitV.toFixed(2) + ' km/s'),
+            h('text', { x: stationX + 44, y: stationY - 35, textAnchor: 'middle', fill: orbitAnswerVisible ? '#86efac' : '#94a3b8', fontSize: 9, fontWeight: 850 }, orbitAnswerVisible ? (orbitV.toFixed(2) + ' km/s') : '? km/s'),
             h('line', { x1: 320, y1: 84, x2: 320, y2: 37, stroke: '#fbbf24', strokeWidth: 1.4, strokeDasharray: '3 3' }),
             h('text', { x: 330, y: 48, fill: '#fde68a', fontSize: 10, fontWeight: 800 }, orbitAlt + ' km'),
             h('text', { x: 22, y: 28, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.5 }, 'ORBITAL PROFILE // LIVE MODEL'),
@@ -8961,6 +9140,163 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
           ), '#38bdf8');
       }
 
+      // ── Orbit Lab: the prediction gate panel ───────────────────────────
+      // Step 1 of the Orbit Lab. It sits ABOVE the readouts it gates, so a
+      // student meets the question before the answer rather than scrolling
+      // back up to a prompt they have already seen resolved.
+      function renderOrbitPredictGate() {
+        var delta = orbitAlt - orbitPredictRef;
+        var refV = _orbitRefOrbit.v;
+        var refT = _orbitRefOrbit.minutes;
+        var PICKS = [
+          { id: 'faster', label: 'Faster', hint: 'more km/s than at ' + Math.round(orbitPredictRef) + ' km' },
+          { id: 'slower', label: 'Slower', hint: 'fewer km/s than at ' + Math.round(orbitPredictRef) + ' km' },
+          // Neutrally worded, like the other two. "altitude changes, speed
+          // does not" editorialised: it told the student this option was the
+          // wrong one before they had reasoned about it, which is exactly the
+          // giveaway the gate exists to prevent.
+          { id: 'same', label: 'About the same', hint: 'about the same km/s as at ' + Math.round(orbitPredictRef) + ' km' }
+        ];
+        var heading = orbitAnswerVisible
+          ? __alloT('stem.spacestation.orbit_predict_open', '1 · Prediction log')
+          : __alloT('stem.spacestation.orbit_predict_gate', '1 · Predict first');
+        return h('div', {
+          id: 'iss-orbit-predict', role: 'region',
+          'aria-label': __alloT('stem.spacestation.a11y_orbit_prediction', 'Orbit prediction'),
+          style: {
+            margin: '0 0 12px', padding: '10px 12px', borderRadius: 10,
+            background: 'rgba(14,165,233,0.07)', border: '1px solid rgba(56,189,248,0.3)'
+          }
+        },
+          h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 } }, heading),
+
+          // ── Not yet moved: nothing to predict from ──
+          !orbitPredictMoved ? h('div', null,
+            h('p', { style: { margin: '0 0 4px', fontSize: 12, color: TEXT, lineHeight: 1.55 } },
+              __alloFill(__alloT('stem.spacestation.orbit_predict_idle',
+                'You are at the reference altitude, {value1} km, where the solved numbers are shown. Drag the altitude slider below to somewhere new — then, before the answer comes back, you will be asked which way orbital speed went.'),
+                { value1: Math.round(orbitPredictRef) })),
+            orbitPredictLog.length ? h('p', { style: { margin: 0, fontSize: 11, color: SOFT, lineHeight: 1.5 } },
+              __alloFill(__alloT('stem.spacestation.orbit_predict_tally', 'Predictions so far: {value1} right out of {value2}.'),
+                { value1: orbitPredictHits, value2: orbitPredictLog.length })) : null
+          ) : null,
+
+          // ── Moved, not yet committed: the question ──
+          (orbitPredictMoved && !orbitPredictCommitted) ? h('div', null,
+            h('p', { style: { margin: '0 0 7px', fontSize: 12.5, color: TEXT, lineHeight: 1.55 } },
+              __alloFill(__alloT('stem.spacestation.orbit_predict_question',
+                'You moved from {value1} km to {value2} km — {value3}. At {value1} km the station travels {value4} km/s and laps Earth in {value5} min. At {value2} km, will it be travelling:'),
+                { value1: Math.round(orbitPredictRef), value2: Math.round(orbitAlt),
+                  value3: delta > 0 ? (Math.round(Math.abs(delta)) + ' km HIGHER') : (Math.round(Math.abs(delta)) + ' km LOWER'),
+                  value4: refV.toFixed(2), value5: refT.toFixed(1) })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_predict_direction', 'Predict the direction of the change in orbital speed'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              PICKS.map(function (p) {
+                return h('button', {
+                  key: p.id, type: 'button', onClick: function () { commitOrbitPrediction(p.id); },
+                  style: { flex: '1 1 150px', minHeight: 44, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: PANEL, color: TEXT, border: '1px solid #475569' }
+                },
+                  h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#bae6fd' } }, p.label),
+                  h('div', { style: { fontSize: 10, color: SOFT, marginTop: 1, lineHeight: 1.35 } }, p.hint));
+              })),
+            h('p', { style: { margin: '7px 0 0', fontSize: 11, color: SOFT, lineHeight: 1.5 } },
+              __alloT('stem.spacestation.orbit_predict_why_hidden', 'Orbital speed, period, orbits per day and sunrises are hidden until you commit. Everything else — the diagram, the altitude band, the trade-off report — stays on screen to reason from.')),
+            orbitPredictStale ? h('p', { style: { margin: '6px 0 0', fontSize: 11, color: '#fdba74', lineHeight: 1.5 } },
+              __alloT('stem.spacestation.orbit_predict_stale', 'Your last prediction was for a different altitude, so it no longer unlocks this one. This is a new question.')) : null
+          ) : null,
+
+          // ── Committed: the comparison ──
+          orbitPredictCommitted ? h('div', null,
+            h('div', { role: 'status', style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'baseline' } },
+              h('strong', { style: { fontSize: 13, fontWeight: 900, color: orbitPredictCorrect ? '#4ade80' : '#fbbf24' } },
+                orbitPredictCorrect ? __alloT('stem.spacestation.orbit_predict_right', '✓ You predicted it') : __alloT('stem.spacestation.orbit_predict_wrong', '✗ Not what happened')),
+              h('span', { style: { fontSize: 12, color: TEXT, lineHeight: 1.55 } },
+                __alloFill(__alloT('stem.spacestation.orbit_predict_compare',
+                  'You said {value1}. Going {value2} from {value3} km to {value4} km, orbital speed went {value5}: {value6} → {value7} km/s.'),
+                  { value1: orbitPredictPick === 'same' ? 'about the same' : orbitPredictPick,
+                    value2: delta > 0 ? 'up' : 'down',
+                    value3: Math.round(orbitPredictRef), value4: Math.round(orbitAlt),
+                    value5: orbitPredictTruth === 'same' ? 'nowhere' : orbitPredictTruth,
+                    value6: refV.toFixed(2), value7: orbitV.toFixed(2) }))),
+            // The explanation runs on the DIRECTION that actually occurred, not
+            // on whether the student was right: a correct guess for the wrong
+            // reason needs the mechanism just as much as a wrong one does.
+            h('p', { style: { margin: '7px 0 0', padding: '7px 9px', borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #38bdf8', fontSize: 11.5, color: TEXT, lineHeight: 1.55 } },
+              orbitPredictTruth === 'slower'
+                ? __alloT('stem.spacestation.orbit_predict_ex_slower', 'You went UP, so r got bigger, and v = √(GM/r) got smaller. Higher orbits are slower AND longer: less speed over a bigger circle, so the period climbs twice over. Going up costs fuel and buys you a slower lap.')
+                : orbitPredictTruth === 'faster'
+                  ? __alloT('stem.spacestation.orbit_predict_ex_faster', 'You went DOWN, so r got smaller, and v = √(GM/r) got bigger. This is the part that breaks driving intuition: dropping lower makes you FASTER, which is why a spacecraft chasing the station slows down to catch up.')
+                  : __alloT('stem.spacestation.orbit_predict_ex_same', 'The altitudes are close enough that the speed barely moves — but it is not truly identical. Every distinct r has exactly one orbital speed; there is no altitude band where you get to choose.')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 8 } },
+              h('button', {
+                type: 'button', onClick: nextOrbitPrediction,
+                style: { minHeight: 32, padding: '6px 11px', borderRadius: 7, cursor: 'pointer', fontSize: 11.5, fontWeight: 800, background: 'rgba(14,165,233,0.18)', color: '#bae6fd', border: '1px solid rgba(56,189,248,0.45)' }
+              }, __alloFill(__alloT('stem.spacestation.orbit_predict_next', 'Predict again from {value1} km'), { value1: Math.round(orbitAlt) })),
+              h('span', { style: { fontSize: 11, color: SOFT } },
+                __alloFill(__alloT('stem.spacestation.orbit_predict_tally', 'Predictions so far: {value1} right out of {value2}.'),
+                  { value1: orbitPredictHits, value2: orbitPredictLog.length })))
+          ) : null,
+
+          // ── The trail ──
+          orbitPredictLog.length > 1 ? h('details', { style: { marginTop: 8 } },
+            h('summary', { style: { cursor: 'pointer', fontSize: 11, fontWeight: 700, color: SOFT } },
+              __alloFill(__alloT('stem.spacestation.orbit_predict_history', 'Your last {value1} predictions'), { value1: orbitPredictLog.length })),
+            h('ul', { style: { margin: '6px 0 0', padding: '0 0 0 18px', fontSize: 11, color: SOFT, lineHeight: 1.65 } },
+              orbitPredictLog.map(function (row, i) {
+                return h('li', { key: i },
+                  h('span', { style: { color: row.correct ? '#4ade80' : '#fbbf24', fontWeight: 800 } }, row.correct ? '✓ ' : '✗ '),
+                  row.from + ' → ' + row.to + ' km: you said ' + row.pick + ', it was ' + row.truth +
+                  ' (' + Number(row.fromV).toFixed(2) + ' → ' + Number(row.toV).toFixed(2) + ' km/s)');
+              }))) : null
+        );
+      }
+
+      // ── Orbit Lab: the challenge deck ──────────────────────────────────
+      // Four questions that a slider cannot answer, because each turns on a
+      // direction rather than a magnitude. They come AFTER the designer, so a
+      // student has the instrument in hand before being asked to reason with
+      // it rather than about it.
+      function renderOrbitChallenges() {
+        return card(__alloFill(__alloT('stem.spacestation.orbit_challenges', '🎯 Orbit challenges — {value1} of {value2} solved'),
+          { value1: orbitChallengeSolved, value2: ORBIT_CHALLENGES.length }),
+          h('div', null,
+            h('p', { style: { margin: '0 0 9px', fontSize: 12, color: SOFT, lineHeight: 1.55 } },
+              __alloT('stem.spacestation.orbit_challenges_intro', 'These cannot be answered by dragging the slider — every one of them turns on WHICH WAY the physics goes, not how big the number is. Use the designer above to test your reasoning before you commit.')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_choose_challenge', 'Choose an orbit challenge'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              ORBIT_CHALLENGES.map(function (c, i) {
+                var on = orbitChallengeId === c.id;
+                var solved = !!orbitChallengeDone[c.id];
+                return h('button', {
+                  key: c.id, type: 'button', 'aria-pressed': on,
+                  onClick: function () { upd({ orbitChallenge: on ? null : c.id, orbitChallengePick: null }); },
+                  style: { minHeight: 34, padding: '6px 11px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', background: on ? 'rgba(56,189,248,0.2)' : PANEL, color: on ? '#7dd3fc' : TEXT, border: '1px solid ' + (on ? '#38bdf8' : '#334155') }
+                }, (solved ? '✓ ' : '') + __alloFill(__alloT('stem.spacestation.orbit_challenge_n', 'Challenge {value1}'), { value1: i + 1 }));
+              })),
+            orbitChallenge ? (function () {
+              var picked = orbitChallengePick ? orbitChallenge.options.filter(function (o) { return o.id === orbitChallengePick; })[0] : null;
+              return h('div', null,
+                h('p', { style: { margin: '0 0 8px', fontSize: 12.5, fontWeight: 700, color: TEXT, lineHeight: 1.55 } }, orbitChallenge.prompt),
+                h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_challenge_options', 'Answer options'), style: { display: 'grid', gap: 6 } },
+                  orbitChallenge.options.map(function (o) {
+                    var chosen = orbitChallengePick === o.id;
+                    // Correctness is revealed only on the option the student
+                    // actually chose. Colouring every option the moment one is
+                    // picked would hand over the remaining answers for free.
+                    var border = chosen ? (o.correct ? '#4ade80' : '#fbbf24') : '#334155';
+                    return h('button', {
+                      key: o.id, type: 'button', 'aria-pressed': chosen,
+                      onClick: function () { answerOrbitChallenge(orbitChallenge, o.id); },
+                      style: { minHeight: 40, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', fontSize: 12, lineHeight: 1.5, background: chosen ? 'rgba(2,6,23,0.55)' : PANEL, color: TEXT, border: '1px solid ' + border }
+                    }, (chosen ? (o.correct ? '✓ ' : '✗ ') : '') + o.label);
+                  })),
+                picked ? h('div', { role: 'status', style: { marginTop: 9, padding: '8px 10px', borderRadius: 8, background: 'rgba(2,6,23,0.45)', borderLeft: '3px solid ' + (picked.correct ? '#4ade80' : '#fbbf24'), fontSize: 11.5, color: TEXT, lineHeight: 1.6 } },
+                  picked.feedback,
+                  picked.correct ? h('p', { style: { margin: '7px 0 0', fontSize: 11, color: SOFT, lineHeight: 1.5 } },
+                    h('strong', { style: { color: '#7dd3fc' } }, __alloT('stem.spacestation.orbit_challenge_takeaway', 'Takeaway: ')), orbitChallenge.why) : null) : null);
+            })() : h('p', { style: { margin: 0, fontSize: 11.5, color: SOFT, lineHeight: 1.55 } },
+              __alloT('stem.spacestation.orbit_challenge_pick', 'Pick a challenge above to begin.'))
+          ), '#fbbf24');
+      }
+
       function renderOrbit() {
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
@@ -8969,6 +9305,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
             h('div', null,
               renderOrbitVisual(),
               renderOrbitEnvironmentBand(),
+              renderOrbitPredictGate(),
               h('label', { htmlFor: 'iss-orbit-alt', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: SOFT, marginBottom: 4 } },
                 h('span', null, __alloT('stem.spacestation.altitude', 'Orbital altitude')),
                 h('span', { style: { color: '#7dd3fc', fontWeight: 800 }, 'aria-hidden': 'true' }, orbitAlt + ' km')),
@@ -8984,9 +9321,20 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
                  ['Orbit period', orbitT.toFixed(1) + ' min'],
                  ['Orbits per day', orbitsPerDay.toFixed(1)],
                  ['Sunrises per day', Math.round(orbitsPerDay) + '']].map(function (p, i) {
-                  return h('div', { className: 'iss-fact-item', key: i, style: { padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid #334155' } },
+                  // Each tile keeps its slot and its label whether or not the
+                  // answer is unlocked; only the VALUE is withheld. The panel
+                  // therefore does not reflow when a prediction is committed,
+                  // and the student can see precisely which four quantities are
+                  // being held back rather than watching UI appear from
+                  // nowhere. aria-hidden is NOT used on the placeholder: that a
+                  // value is being withheld is itself information a
+                  // screen-reader user needs in order to know to answer first.
+                  return h('div', { className: 'iss-fact-item', key: i, 'data-iss-orbit-locked': orbitAnswerVisible ? null : 'true', style: { padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid ' + (orbitAnswerVisible ? '#334155' : 'rgba(56,189,248,0.3)') } },
                     h('div', { style: { fontSize: 10, color: SOFT, textTransform: 'uppercase' } }, p[0]),
-                    h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginTop: 2 } }, p[1]));
+                    orbitAnswerVisible
+                      ? h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginTop: 2 } }, p[1])
+                      : h('div', { style: { fontSize: 12.5, fontWeight: 700, color: SOFT, marginTop: 2, letterSpacing: '0.04em' } },
+                          __alloT('stem.spacestation.orbit_locked_value', '— predict first')));
                 })),
               h('div', { id: 'iss-orbit-tradeoff', style: { marginTop: 10, padding: 8, borderRadius: 8, background: 'rgba(251,146,60,0.1)', borderLeft: '3px solid #fb923c', fontSize: 12, color: TEXT, lineHeight: 1.55 } },
                 h('strong', { style: { color: '#fdba74' } }, __alloT('stem.spacestation.tradeoff', 'Trade-off report: ')), dragNote),
@@ -8994,6 +9342,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
                 __alloT('stem.spacestation.orbit_note', 'Notice the counter-intuitive part: LOWER orbits are FASTER. To catch up with something ahead of you in orbit, you briefly slow down and drop lower. Orbital mechanics breaks driving intuition — which is why dockings are computed, not eyeballed.'))
             ), '#38bdf8'),
           renderInclinationLab(),
+          renderOrbitChallenges(),
           card(__alloT('stem.spacestation.why_400', '🎯 Why ~400 km?'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 12.5, color: TEXT, lineHeight: 1.8 } },
               h('li', null, __alloT('stem.spacestation.why1', 'Low enough for cargo and crew rockets to carry useful mass, and below the worst radiation zones.')),
@@ -9335,7 +9684,12 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
             h('p', { className: 'iss-subtitle', style: { fontSize: 12, color: SOFT, margin: 0 } }, __alloT('stem.spacestation.subtitle', 'The International Space Station: 420 tonnes of engineering falling around the planet at 7.66 km/s, continuously inhabited for over 25 years.'))),
           h('div', { className: 'iss-orbit-mark', 'aria-hidden': 'true' }, h('span', { className: 'iss-orbit-core' }, '\uD83C\uDF0D')),
           h('div', { className: 'iss-status-strip', role: 'list', 'aria-label': __alloT('stem.spacestation.orbit_status', 'Current station reference data') },
-            [['Orbit altitude', '~' + orbitAlt + ' km'], ['Velocity', orbitV.toFixed(2) + ' km/s'], ['Orbit period', orbitT.toFixed(0) + ' minutes'], ['Crew shift', Object.keys(d.interiorDone || {}).filter(function (key) { return !!d.interiorDone[key]; }).length + ' / 5 jobs']].map(function (metric, i) { return h('div', { key: i, className: 'iss-status-item', role: 'listitem' }, h('span', { className: 'iss-status-label' }, metric[0]), h('strong', { className: 'iss-status-value' }, metric[1])); }))),
+            [['Orbit altitude', '~' + orbitAlt + ' km'],
+             // Gated ONLY while the Orbit tab is the tab asking the question:
+             // on every other tab there is no open prediction, so the live
+             // numbers belong here exactly as they always did.
+             ['Velocity', (tab === 'orbit' && !orbitAnswerVisible) ? '? km/s' : (orbitV.toFixed(2) + ' km/s')],
+             ['Orbit period', (tab === 'orbit' && !orbitAnswerVisible) ? '? minutes' : (orbitT.toFixed(0) + ' minutes')], ['Crew shift', Object.keys(d.interiorDone || {}).filter(function (key) { return !!d.interiorDone[key]; }).length + ' / 5 jobs']].map(function (metric, i) { return h('div', { key: i, className: 'iss-status-item', role: 'listitem' }, h('span', { className: 'iss-status-label' }, metric[0]), h('strong', { className: 'iss-status-value' }, metric[1])); }))),
         h('div', { className: 'iss-tablist', role: 'tablist', 'aria-label': __alloT('stem.spacestation.sections', 'Space Station sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
           TABS.map(function (t2, ti) {
             var on = tab === t2.id;

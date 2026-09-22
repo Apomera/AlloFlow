@@ -100,7 +100,9 @@ const BASE = {
   researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {},
   cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
   opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
-  orbitAlt: 420, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
+  orbitAlt: 420, orbitPredictRef: 420, orbitPredictPick: null, orbitPredictAlt: null, orbitPredictLog: [],
+  orbitChallenge: null, orbitChallengePick: null, orbitChallengeDone: {},
+  quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
   seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0, mapView: 'overview', mapCutaway: false,
   askInput: '', askAnswer: '', askLoading: false,
 };
@@ -2180,8 +2182,133 @@ describe('space station tool', () => {
       }
     });
 
+    // ── Orbit Lab prediction gate ──────────────────────────────────────────
+    // The gate exists because the Orbit Lab's own intro names the "lower is
+    // faster" misconception and then never makes a student confront it: the
+    // readouts updated live while the slider moved, so the wrong intuition was
+    // overwritten before it was ever stated. These cases pin the property that
+    // matters -- that the ANSWER is withheld until a direction is committed --
+    // rather than pinning the copy, which is free to be reworded.
+    it('withholds the solved orbit rows until a direction is predicted', () => {
+      // Moved 420 -> 250 with no prediction: the four derived quantities are
+      // hidden. 7.76 km/s is the correct value AT 250 km, so asserting its
+      // absence is asserting the gate actually closed rather than that some
+      // unrelated string changed.
+      const gated = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420 });
+      expect(gated).toContain('predict first');
+      expect(gated).not.toContain('7.76 km/s');
+      // The SETUP stays on screen: a student who cannot see what they changed
+      // cannot form a prediction at all.
+      expect(gated).toContain('250 km');
+      expect(gated).toContain('Severe drag');
+      expect(gated).toContain('ALTITUDE ENVIRONMENT');
+
+      // Committing a direction reveals them.
+      const open = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 250 });
+      expect(open).toContain('7.76 km/s');
+      expect(open).not.toContain('predict first');
+    });
+
+    it('grades the prediction from the same physics the readouts use', () => {
+      // Dropping from 420 to 250 km makes the station FASTER -- the answer that
+      // contradicts driving intuition, and the whole reason the gate is here.
+      const right = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 250 });
+      expect(right).toContain('You predicted it');
+      const wrong = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'slower', orbitPredictAlt: 250 });
+      expect(wrong).toContain('Not what happened');
+      // Climbing is the mirror case: 420 -> 1500 km is SLOWER.
+      const climbRight = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500, orbitPredictRef: 420, orbitPredictPick: 'slower', orbitPredictAlt: 1500 });
+      expect(climbRight).toContain('You predicted it');
+      const climbWrong = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 1500 });
+      expect(climbWrong).toContain('Not what happened');
+    });
+
+    it('explains the mechanism even when the student guessed right', () => {
+      // A correct guess for the wrong reason needs the mechanism just as much
+      // as a wrong one does, so the explanation keys on the direction that
+      // actually occurred rather than on whether the student was right.
+      const right = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 250 });
+      expect(right).toContain('You predicted it');
+      expect(right).toContain('breaks driving intuition');
+      const wrong = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'slower', orbitPredictAlt: 250 });
+      expect(wrong).toContain('breaks driving intuition');
+    });
+
+    it('treats a prediction made at another altitude as a new question', () => {
+      // The pick belongs to orbitPredictAlt 250, but the slider is now at 600:
+      // the gate must close again rather than unlocking on a stale answer.
+      const stale = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 600, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 250 });
+      expect(stale).toContain('predict first');
+      expect(stale).toContain('no longer unlocks this one');
+    });
+
+    it('opens the gate at the reference altitude, where there is nothing to predict from', () => {
+      // "Faster or slower than what?" has no answer when you have not moved,
+      // so the gate opens rather than posing an unanswerable question.
+      const atRef = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 420, orbitPredictRef: 420 });
+      expect(atRef).not.toContain('predict first');
+      expect(atRef).toContain('7.66 km/s');
+    });
+
+    it('does not leak the answer through the diagram or the status strip', () => {
+      // The status strip prints velocity on EVERY tab and defeated the gate
+      // outright before it was covered; the diagram carried the signed delta,
+      // which answers "which way did it go" more directly than the value does.
+      const gated = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420 });
+      expect(gated).not.toContain('7.76 km/s');
+      expect(gated).not.toContain('DELTA V');
+      expect(gated).toContain('SPEED HIDDEN UNTIL YOU PREDICT');
+      expect(gated).toContain('? km/s');
+      // On any OTHER tab there is no open question, so the live station
+      // numbers belong in the strip exactly as they always did.
+      const elsewhere = mountWithSeed({ ...BASE, tab: 'map', orbitAlt: 250, orbitPredictRef: 420 });
+      expect(elsewhere).toContain('7.76 km/s');
+    });
+
+    it('offers orbit challenges whose numbers come from the orbital model', () => {
+      const html = mountWithSeed({ ...BASE, tab: 'orbit' });
+      expect(html).toContain('Orbit challenges');
+      expect(html).toContain('0 of 4 solved');
+      // Opening a challenge shows its prompt and options but no verdict yet.
+      const open = mountWithSeed({ ...BASE, tab: 'orbit', orbitChallenge: 'phasing' });
+      expect(open).toContain('30 km BEHIND the station');
+      expect(open).toContain('lower, faster orbit');
+      expect(open).not.toContain('Takeaway');
+      // Answering correctly reveals the mechanism AND the takeaway. The
+      // feedback quotes 7.66 km/s, which is issOrbit(420) -- derived from the
+      // same function the readouts use, never a second hand-typed copy.
+      const solved = mountWithSeed({ ...BASE, tab: 'orbit', orbitChallenge: 'phasing', orbitChallengePick: 'slowdown', orbitChallengeDone: { phasing: true } });
+      expect(solved).toContain('7.66 km/s');
+      expect(solved).toContain('Takeaway');
+      expect(solved).toContain('1 of 4 solved');
+      // A wrong answer explains why it is wrong and withholds the takeaway.
+      const missed = mountWithSeed({ ...BASE, tab: 'orbit', orbitChallenge: 'phasing', orbitChallengePick: 'speedup' });
+      expect(missed).toContain('driving answer');
+      expect(missed).not.toContain('Takeaway');
+    });
+
+    it('survives a saved project whose prediction and challenge state is malformed', () => {
+      // Saved projects are INPUT. A string where an object belongs, an array
+      // where a map belongs, or an id this build no longer defines must not
+      // blank the tab.
+      const hostile = mountWithSeed({
+        ...BASE, tab: 'orbit',
+        orbitPredictRef: 'nonsense', orbitPredictPick: 'sideways', orbitPredictAlt: 'x',
+        orbitPredictLog: 'not-an-array',
+        orbitChallenge: 'no-such-challenge', orbitChallengePick: 'no-such-option',
+        orbitChallengeDone: ['array', 'not', 'map'],
+      });
+      expect(hostile).toContain('Orbit challenges');
+      // The bogus done-array must not inflate the tally above what is shown.
+      expect(hostile).toContain('0 of 4 solved');
+      expect(hostile).toContain('Pick a challenge above to begin');
+    });
+
     it('computes real orbital mechanics in the Orbit Lab', () => {
-      const html = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250 });
+      // orbitPredictRef moves with orbitAlt: this case tests the physics,
+      // not the prediction gate, so the tool sits at its own reference
+      // altitude and the solved rows are shown as they always were.
+      const html = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 250 });
       // v = sqrt(398600.4418 / 6621) = 7.76 km/s
       expect(html).toContain('7.76 km/s');
       expect(html).toContain('Severe drag');
@@ -2189,7 +2316,7 @@ describe('space station tool', () => {
       expect(html).toContain('SEVERE DRAG');
       expect(html).toContain('VS 420 KM');
       expect(html).toContain('DELTA V +');
-      const high = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500 });
+      const high = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500, orbitPredictRef: 1500 });
       expect(high).toContain('radiation');
       expect(high).toContain('RADIATION EXPOSURE RISES');
       const issBand = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 420 });

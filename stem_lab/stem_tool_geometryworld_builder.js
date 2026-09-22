@@ -2226,20 +2226,44 @@
       // the STL download below when it did not.
       announce(ctx, 'Selected build prepared locally. Opening Print Lab.', 'success');
       var switched = false;
+      // Activating a tool is not loading it: ctx.setStemLabTool only sets the active
+      // tool id, and Print Lab is a lazily fetched CDN plugin. Without this request the
+      // download did not start until the host's render-time safety net noticed an
+      // unrequested tool, which is AFTER navigation -- and that fetch takes longer than
+      // the 1200ms stranded-build timer below, so the handoff was reclaimed and a
+      // fallback STL downloaded before Print Lab ever mounted to consume it.
+      try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded('printLab'); } catch (loadError) {}
       try { ctx.setStemLabTool('printLab'); switched = true; } catch (navError) { switched = false; }
       if (switched && typeof window !== 'undefined') {
-        window.setTimeout(function () {
-          // The handoff is deleted by Print Lab once it mounts and consumes it.
-          // Still sitting there means no Print Lab ever picked it up.
+        // A fixed deadline cannot tell "Print Lab is still downloading" from "Print Lab
+        // never opened". On a cold cache or a school connection the plugin fetch easily
+        // outlasts any hard-coded wait, and giving up early strands a handoff that was
+        // about to be consumed. Poll the loader's own state instead and only fall back on
+        // a real failure, or once the request has plainly stopped making progress.
+        var strandedDeadline = Date.now() + 20000;
+        var strandBuild = function (message, tone) {
           if (window.__alloPrintLabPendingHandoff !== handoffMarker) return;
+          delete window.__alloPrintLabPendingHandoff;
           var stranded = printUnit(context.unitMm);
           try {
             downloadBlob(new Blob([scaleStlForDownload(bundle.buffer, stranded)], { type: 'model/stl' }), 'geometry-world-selected-build-mm.stl');
-            announce(ctx, 'Print Lab did not open here, so the STL was downloaded in millimeters at ' + stranded + ' mm per block. Import it at 100% scale.', 'info');
+            announce(ctx, message + ' The STL was downloaded in millimeters at ' + stranded + ' mm per block. Import it at 100% scale.', tone || 'info');
           } catch (dlError) {
             announce(ctx, 'Print Lab could not be opened from this screen. Use Download STL to save the build instead.', 'error');
           }
-        }, 1200);
+        };
+        var checkPrintLabArrival = function () {
+          // The handoff is deleted by Print Lab once it mounts and consumes it.
+          // Still sitting there means no Print Lab has picked it up yet.
+          if (window.__alloPrintLabPendingHandoff !== handoffMarker) return;
+          var pluginState = null;
+          try { pluginState = typeof window.__alloGetStemPluginState === 'function' ? window.__alloGetStemPluginState('printLab') : null; } catch (stateError) { pluginState = null; }
+          var status = pluginState && pluginState.status ? pluginState.status : '';
+          if (status === 'error') { strandBuild('Print Lab could not be loaded here.', 'error'); return; }
+          if (Date.now() >= strandedDeadline) { strandBuild('Print Lab did not open here.', 'info'); return; }
+          window.setTimeout(checkPrintLabArrival, 250);
+        };
+        window.setTimeout(checkPrintLabArrival, 400);
       }
     } else {
       // The Print Lab handoff carries block units plus an explicit scale. A
