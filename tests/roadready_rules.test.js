@@ -1071,7 +1071,9 @@ describe('RoadReady rules-of-road content', () => {
         'Do not cut into a funeral procession already moving through your path.',
       ]);
 
-      const mooseFogScenario = src.match(/id: 'fog_zone'[\s\S]*?exp: '([^']*)'/)?.[0];
+      // The explanation may be a bare literal or wrapped for translation:
+      //   exp: __alloT('stem.roadready.moosesafety_exp3', '...')
+      const mooseFogScenario = src.match(/id: 'fog_zone'[\s\S]*?exp: (?:__alloT\('[^']+', )?'((?:[^'\\]|\\.)*)'/)?.[0];
       expect(mooseFogScenario).toBeTruthy();
       expect(mooseFogScenario).toContain('Hazard flashers can confuse other drivers while moving; save them for an actual hazard or when stopped/disabled.');
 

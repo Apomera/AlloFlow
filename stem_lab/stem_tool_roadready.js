@@ -30354,7 +30354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     choiceIndices.map(function(idx, ci) {
                       var isCorr = ci === correctPos;
                       var picked = quizAnswered === ci;
-                      var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                      var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                       var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                       return h('button', { key: ci,
                         disabled: answered,
@@ -30375,7 +30375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     choiceIndices.map(function(idx, ci) {
                       var isCorr = ci === correctPos;
                       var picked = quizAnswered === ci;
-                      var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                      var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                       var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                       return h('button', { key: ci,
                         disabled: answered,
@@ -30665,9 +30665,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (showResult) {
                 if (correct) { bg = 'rgba(74,222,128,0.15)'; border = '#4ade80'; }
                 else if (chosen) { bg = 'rgba(239,68,68,0.15)'; border = '#ef4444'; }
-                else { bg = '#1e293b'; border = '#334155'; }
+                else { bg = 'var(--allo-stem-panel, #1e293b)'; border = 'var(--allo-stem-border, #334155)'; }
               } else {
-                bg = '#1e293b'; border = '#334155';
+                bg = 'var(--allo-stem-panel, #1e293b)'; border = 'var(--allo-stem-border, #334155)';
               }
               return h('button', { key: i, disabled: showResult,
                 onClick: function() {
@@ -32031,7 +32031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = scState.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', {
                     key: ci,
@@ -32267,7 +32267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = state.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -32447,7 +32447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = state.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -32620,7 +32620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = state.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -32779,7 +32779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = state.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -32952,7 +32952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = state.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -33127,7 +33127,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = state.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -33300,7 +33300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = state.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -33473,7 +33473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sc.choices.map(function(ch, ci) {
                   var picked = state.answered === ci;
                   var isCorr = ci === sc.correct;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -33706,7 +33706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 wl.choices.map(function(c, ci) {
                   var picked = st.answered === ci;
                   var isCorr = ci === wl.correctIdx;
-                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.15)' : picked ? 'rgba(239,68,68,0.15)' : '#1e293b') : '#1e293b';
+                  var bg = answered ? (isCorr ? 'rgba(74,222,128,0.15)' : picked ? 'rgba(239,68,68,0.15)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                   var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                   return h('button', { key: ci,
                     disabled: answered,
@@ -34384,7 +34384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cur.choices.map(function(c, ci) {
                 var picked = rAnswered === ci;
                 var isCorr = ci === cur.correct;
-                var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : '#1e293b') : '#1e293b';
+                var bg = answered ? (isCorr ? 'rgba(74,222,128,0.2)' : picked ? 'rgba(239,68,68,0.2)' : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
                 var bd = answered ? (isCorr ? '#4ade80' : picked ? '#ef4444' : '#334155') : '#334155';
                 return h('button', { key: ci,
                   disabled: answered,
@@ -35334,7 +35334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cur.choices.map(function(c, ci) {
               var picked = ppAnswered === ci;
               var isSafe = c.safe;
-              var bg = answered ? (picked ? (isSafe ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)') : '#1e293b') : '#1e293b';
+              var bg = answered ? (picked ? (isSafe ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)') : 'var(--allo-stem-panel, #1e293b)') : 'var(--allo-stem-panel, #1e293b)';
               var bd = answered ? (picked ? (isSafe ? '#4ade80' : '#ef4444') : '#334155') : '#334155';
               return h('button', { key: ci,
                 disabled: answered,
