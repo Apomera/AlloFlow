@@ -298,3 +298,29 @@ test('a blocked copy offers the report as selectable text instead of failing sil
  await expect(area).toHaveValue(/PATCHES EXAMINED/);
  await audit(page);
 });
+
+test('the glossary is collapsed by default, opens to real definitions, and audits clean',async({page})=>{
+ await mount(page);
+ const gloss=page.locator('.bf-glossary');
+ // Collapsed by default, so it never pushes the investigations off screen.
+ await expect(gloss).toHaveJSProperty('open',false);
+ await expect(gloss.locator('[data-gloss-term="Chrysalis / pupa"]')).toBeHidden();
+ await gloss.getByText(/words used in this lab/).click();
+ await expect(gloss).toHaveJSProperty('open',true);
+ const entry=gloss.locator('[data-gloss-term="Chrysalis / pupa"]');
+ await expect(entry).toBeVisible();
+ await expect(entry).toContainText('does not feed');
+ await expect(entry).toContainText('standing');
+ await expect(gloss.locator('[data-gloss-term]')).toHaveCount(12);
+ // Axe with the panel OPEN: a collapsed details hides its contents from the
+ // audit, so checking only the closed state would prove nothing.
+ await audit(page);
+ await gloss.screenshot({path:'scratch/butterfly-habitat/glossary.png'});
+ await page.evaluate(()=>{const w=window as any;w.__ctx.isDark=true;w.__ctx.isContrast=true;w.__rerender();});
+ // The panel must STAY open across a theme change: a reader part-way through
+ // the definitions should not be collapsed back to the top by switching theme.
+ await expect(gloss).toHaveJSProperty('open',true);
+ await expect(entry).toBeVisible();
+ await gloss.screenshot({path:'scratch/butterfly-habitat/glossary-contrast.png'});
+ await audit(page);
+});

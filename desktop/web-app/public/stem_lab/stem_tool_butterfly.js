@@ -281,6 +281,51 @@
     return pairs;
   }
 
+  // ── Glossary ──────────────────────────────────────────────────────────
+  // The lab is rated for grades 4-12 and its own copy leans on terms a
+  // younger reader will not have: host plant, chrysalis, instar, restoration.
+  // Definitions are written against the cited sources, and each one says how
+  // the term is used HERE so the glossary and the activities cannot drift.
+  var GLOSSARY = Object.freeze([
+    Object.freeze({term:'Host plant',
+      definition:'The plant a caterpillar can actually eat. Female monarchs lay eggs on milkweed because monarch caterpillars eat only milkweed. A plant can be full of flowers and still not be a host plant.',
+      here:'In this lab, "milkweed leaves present" is what makes a patch a host plant for monarchs.'}),
+    Object.freeze({term:'Nectar plant',
+      definition:'A flowering plant whose nectar feeds adult butterflies. Nectar fuels flight and egg-laying, but it is not food for caterpillars.',
+      here:'Examining a flowering patch refills your flight energy meter. That is the adult stage feeding.'}),
+    Object.freeze({term:'Milkweed',
+      definition:'The group of plants (genus Asclepias) that monarch caterpillars depend on. Its flowers also offer nectar, so milkweed can serve both the adult and the caterpillar.',
+      here:'Common milkweed (Asclepias syriaca) is the one patch here that provides both resources.'}),
+    Object.freeze({term:'Larva / caterpillar',
+      definition:'The feeding and growing stage that hatches from the egg. A monarch caterpillar grows through five stages, shedding its skin between them.',
+      here:'This is the stage that stops a generation when no milkweed is within reach.'}),
+    Object.freeze({term:'Instar',
+      definition:'One growth step between two moults. A monarch caterpillar passes through five instars, getting larger at each.',
+      here:'The lab shows the caterpillar as one step. Instars are what that single step is made of.'}),
+    Object.freeze({term:'Chrysalis / pupa',
+      definition:'The stage inside which a caterpillar reorganises into an adult butterfly. It hangs from a stem or other support and does not feed.',
+      here:'It needs the plants left standing. That is why a midsummer cut can end a generation that had everything it needed to eat.'}),
+    Object.freeze({term:'Metamorphosis',
+      definition:'The whole change from egg to caterpillar to chrysalis to adult, in which the animal is rebuilt rather than simply growing bigger.',
+      here:'Following a generation walks through these four stages in order.'}),
+    Object.freeze({term:'Generation / brood',
+      definition:'One round of the life cycle, from eggs laid to the adults that emerge from them.',
+      here:'"Follow a generation" tracks one of these on a patch you have examined.'}),
+    Object.freeze({term:'Habitat restoration',
+      definition:'Planting or managing land so it provides what a species needs. For monarchs that means milkweed for caterpillars and nectar flowers for adults, protected from things like poorly timed mowing.',
+      here:'The fourth patch is yours to restore. Each plan changes what the plot offers.'}),
+    Object.freeze({term:'Resource',
+      definition:'Something an organism needs and uses. Different stages of one species can need completely different resources.',
+      here:'This lab tracks two: nectar for adults, and milkweed leaves for caterpillars.'}),
+    Object.freeze({term:'Evidence',
+      definition:'A record of something you observed, which can support or contradict a claim. What you did not observe is not evidence, however reasonable it sounds.',
+      here:'The claim panel only counts patches you examined, generations you followed and seasons you ran.'}),
+    Object.freeze({term:'Prediction',
+      definition:'What you expect to happen, stated before you find out. A prediction that turns out wrong is still useful: it tells you your reasoning needs changing.',
+      here:'Every activity here asks for one first, and records whether it matched.'})
+  ]);
+  function glossaryTerm(name){return GLOSSARY.find(function(g){return g.term===name;})||null;}
+
   // ── Field report ──────────────────────────────────────────
   // A learner can build real evidence here and then have no way to hand it to a
   // teacher. The report is assembled ONLY from records they made: nothing is
@@ -646,6 +691,7 @@
     @media(max-width:1000px){.bf-layout{grid-template-columns:1fr}.bf-aside{display:grid;grid-template-columns:1fr 1fr;gap:14px}.bf-panel+.bf-panel{margin-top:0}.bf-stage{height:480px}}
     @media(max-width:580px){.bfl{padding:12px;border-radius:12px}.bf-header{gap:8px}.bf-mark{display:none}.bf-aside,.bf-bottom{grid-template-columns:1fr}.bf-stage{height:390px}.bf-overlay{padding:10px}.bf-toolbar{gap:6px}.bf-toolbar button{flex:1;padding:9px}.bf-toolbar .bf-spacer{display:none}.bf-scene-badge{font-size:11px}.bf-bottom{gap:14px}.bf-life span{min-width:100px}}
     .bf-cycle{margin-top:18px!important;border-top:4px solid #5a6f8c}.bf-cycle-head{display:flex;gap:16px;justify-content:space-between;align-items:start}.bf-cycle-head p{max-width:780px}.bf-cycle-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}.bf-cycle fieldset{border:0;margin:0;padding:0;min-width:0}.bf-cycle legend,.bf-cycle label{display:block;font-weight:750;margin-bottom:8px}.bf-cycle-choices{display:grid;gap:8px}.bf-cycle-choices button{text-align:left}.bf-cycle-choices small{display:block;font-weight:400;margin-top:3px}.bf-cycle select{display:block;width:100%;min-height:46px;margin:8px 0 12px;padding:10px;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-panel);color:var(--bf-ink);font:inherit}.bf-cycle select:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bf-cycle-actions{display:flex;flex-wrap:wrap;gap:8px}
+    .bf-glossary{margin-top:18px!important;border-top:4px solid #6b5a7c}.bf-glossary summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:750}.bf-glossary dl{margin:14px 0 0;display:grid;gap:12px}.bf-glossary div{border:1px solid var(--bf-line);border-left:4px solid #6b5a7c;border-radius:12px;padding:12px 14px;background:var(--bf-panel)}.bf-glossary dt{font-weight:750;font-size:15px}.bf-glossary dd{margin:5px 0 0;font-size:14px}.bf-glossary dd.bf-gloss-here{margin-top:7px;font-size:13px;color:var(--bf-muted);border-top:1px solid var(--bf-line);padding-top:7px}@media(min-width:860px){.bf-glossary dl{grid-template-columns:1fr 1fr}}
     .bf-report{margin-top:18px!important;border-top:4px solid #4a6b7c}.bf-report-head{display:flex;gap:16px;justify-content:space-between;align-items:start;flex-wrap:wrap}.bf-report-head p{max-width:780px}.bf-report-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.bf-report pre{margin:12px 0 0;padding:14px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-panel);font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto}.bf-report textarea{width:100%;margin-top:12px;padding:12px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-panel);color:var(--bf-ink);font:12px/1.5 ui-monospace,Menlo,monospace}.bf-report textarea:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}
     .bf-season{margin-top:18px!important;border-top:4px solid #7a5c2e}.bf-season-head{display:flex;gap:16px;justify-content:space-between;align-items:start}.bf-season-head p{max-width:780px}.bf-season-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}.bf-season label{display:block;font-weight:750;margin-bottom:8px}.bf-season select{display:block;width:100%;min-height:46px;margin:8px 0 12px;padding:10px;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-panel);color:var(--bf-ink);font:inherit}.bf-season select:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bf-season-actions{display:flex;flex-wrap:wrap;gap:8px}.bf-season-current{font-size:12px;font-weight:700;color:var(--bf-muted);border:1px solid var(--bf-line);border-radius:30px;padding:7px 12px;flex-shrink:0}
     .bf-weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0;list-style:none;padding:0}.bf-weeks li{border:1px solid var(--bf-line);border-radius:11px;padding:11px;background:var(--bf-panel)}.bf-weeks b{display:block;color:var(--bf-muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase}.bf-weeks strong{display:block;margin-top:2px}.bf-weeks small{display:block;color:var(--bf-muted);font-size:12px;margin-top:5px}.bf-weeks li[data-state="cleared"]{border-left:4px solid var(--bf-accent);padding-left:8px}.bf-weeks li[data-state="cut"]{border-left:4px solid #b45b0c;padding-left:8px}.bf-weeks li[data-state="missing"]{border-left:4px solid #8a8f7a;padding-left:8px}.bf-season-feedback{min-height:50px;margin-top:12px;font-size:14px}.bf-seasons{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:15px;font-size:13px}.bf-seasons th,.bf-seasons td{border-bottom:1px solid var(--bf-line);text-align:left;padding:10px 8px;overflow-wrap:anywhere;vertical-align:top}.bf-seasons caption{text-align:left;font-weight:750;font-size:15px;padding-bottom:7px}.bf-seasons td span{display:block;color:var(--bf-muted);font-size:12px}
@@ -919,6 +965,15 @@
               h('ul',{className:'bf-evidence'},verdict.evidence.lines.map(function(line,i){return h('li',{key:i,'data-evidence':line.kind},line.text);}))
             ):h('p',{className:'bf-help'},'You have not recorded anything yet. Examine a patch to begin.')):null,
           h('div',{role:'status','aria-live':'polite'},answer||(verdict?verdict.verdict+' '+verdict.why:'')))),
+      h('details',{className:'bf-panel bf-glossary','aria-label':'Glossary'},
+        h('summary',null,'Glossary \u00b7 ' + GLOSSARY.length + ' words used in this lab'),
+        h('p',{className:'bf-help'},'Each entry says what the word means in general, then how this lab uses it.'),
+        h('dl',null,GLOSSARY.map(function(g){
+          return h('div',{key:g.term,'data-gloss-term':g.term},
+            h('dt',null,g.term),
+            h('dd',null,g.definition),
+            h('dd',{className:'bf-gloss-here'},g.here));
+        }))),
       h('section',{className:'bf-panel bf-report','aria-label':'Field report','data-bf-report-copied':copyState||''},
         h('div',{className:'bf-report-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Take your evidence with you'),h('h3',null,'Field report'),
           h('p',{className:'bf-help'},reportEmpty?'Once you have examined a patch, compared a planting, followed a generation or run a season, your records collect here as text you can copy.':'Everything you have recorded, as plain text. Nothing here is inferred — it lists only what you did.')),
@@ -937,7 +992,7 @@
     );
   }
   window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
-  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,broodIsCurrent:broodIsCurrent,broodRowsFor:broodRowsFor,fieldReport:fieldReport,reportLines:reportLines,reportIsEmpty:reportIsEmpty,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
+  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,broodIsCurrent:broodIsCurrent,broodRowsFor:broodRowsFor,fieldReport:fieldReport,reportLines:reportLines,reportIsEmpty:reportIsEmpty,glossary:GLOSSARY,glossaryTerm:glossaryTerm,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
     cleanLifecycle:cleanLifecycle,clampStage:clampStage,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
     claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor};
