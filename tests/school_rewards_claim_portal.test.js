@@ -11,6 +11,8 @@ const source = readFileSync('apps_script/school_rewards/Portal.html', 'utf8');
 const opened = [];
 // jsdom portal boots are slow under a full-suite run; the 5s default flakes.
 vi.setConfig({ testTimeout: 30000 });
+const ART_KEY = 'alloflow_school_rewards_coupon_art_v1';
+const REENCODED = 'data:image/jpeg;base64,UkVFTkNPREVE';
 const WEB_APP = 'https://script.google.com/macros/s/AKfycbxFICTIONAL_DEPLOYMENT_ID/exec';
 function withWebAppUrl(h) { h.setActive(ADMIN); h.call('setupSchoolRewardsRepository', { allowedDomain: DOMAIN, schoolName: 'Pilot School', webAppUrl: WEB_APP }); }
 afterEach(() => opened.splice(0).forEach(app => app.dom.window.close()));
@@ -32,6 +34,11 @@ async function open(repository, email, options = {}) {
     w.document.createElement = tag => { const n = create(tag); if (String(tag).toLowerCase() === 'script') setTimeout(() => n.onerror && n.onerror(new w.Event('error')), 0); return n; };
   }
   if (options.claim !== undefined) w.document.body.setAttribute('data-school-rewards-claim', options.claim);
+  let imageMode = options.image || 'ok'; const canvas = [];
+  w.Image = class { set src(v) { this._src = v; setTimeout(() => { if (imageMode === 'broken') { if (this.onerror) this.onerror(); } else { this.naturalWidth = 2800; this.naturalHeight = 1400; if (this.onload) this.onload(); } }, 0); } get src() { return this._src; } };
+  w.HTMLCanvasElement.prototype.getContext = function () { const c = this; return { fillStyle: '', fillRect() {}, drawImage(img) { canvas.push({ w: c.width, h: c.height, drew: String(img.src).slice(0, 22) }); } }; };
+  w.HTMLCanvasElement.prototype.toDataURL = function (type, quality) { canvas.push({ type, q: quality }); return REENCODED; };
+  for (const [key, value] of Object.entries(options.localStorage || {})) w.localStorage.setItem(key, value);
   let pending = 0; const script = {};
   Object.defineProperty(script, 'run', { get() {
     let resolve, reject, runner;
@@ -43,15 +50,25 @@ async function open(repository, email, options = {}) {
       };
     } }); return runner;
   } }); w.google = { script };
-  const app = { dom, calls, errors, prints, $: s => w.document.querySelector(s), $$: s => [...w.document.querySelectorAll(s)],
+  const app = { dom, calls, errors, prints, canvas, imageMode: mode => { imageMode = mode; }, $: s => w.document.querySelector(s), $$: s => [...w.document.querySelectorAll(s)],
     rpcCount: name => calls.filter(c => c.method === name).length,
     set(selector, value) { const n = this.$(selector); n.value = value; n.dispatchEvent(new w.Event('change', { bubbles: true })); },
     async settle() { let idle = 0; for (let i = 0; i < 400; i++) { await new Promise(r => setTimeout(r, 5)); if (!pending && !this.$('#notice').classList.contains('busy')) { if (++idle === 3) return; } else idle = 0; } throw Error('Portal did not settle'); },
     async click(selector) { this.$(selector).click(); await this.settle(); },
-    async mint(count = 3) { this.set('#claim-points', '20'); this.set('#claim-category', seededCategory(repository).id); this.set('#claim-reason', 'Read 20 minutes at home'); this.set('#claim-count', String(count)); await this.$('#claim-form').onsubmit({ preventDefault() {} }); await this.settle(); },
+    async chooseArt(file) { const input = this.$('#claim-art'); Object.defineProperty(input, 'files', { value: [file], configurable: true }); input.dispatchEvent(new w.Event('change')); await this.settle(); },
+    async mint(count = 3) { this.set('#claim-form #claim-points', '20'); this.set('#claim-form #claim-category', seededCategory(repository).id); this.set('#claim-form #claim-reason', 'Read 20 minutes at home'); this.set('#claim-form #claim-count', String(count)); await this.$('#claim-form').onsubmit({ preventDefault() {} }); await this.settle(); },
   };
   opened.push(app); w.eval(source.match(/<script>([\s\S]*)<\/script>/)[1]); await app.settle(); return app;
 }
+
+describe('portal markup', () => {
+  it('gives every element a unique id, so $(id) reaches the control the code means', () => {
+    const markup = source.slice(0, source.indexOf('<script>'));
+    const ids = [...markup.matchAll(/ id="([^"]+)"/g)].map(m => m[1]);
+    expect(ids.length).toBeGreaterThan(200);
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+  });
+});
 
 describe('staff coupon sheet', () => {
   it('mints from the form, lists one-shot links, and prints a coupon per code with a QR of that link only', async () => {
@@ -119,6 +136,96 @@ describe('staff coupon sheet', () => {
   });
 });
 
+describe('coupon art', () => {
+  const png = w => new w.File([new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])], 'art.png', { type: 'image/png' });
+
+  it('redraws a picked picture as a JPEG, prints it behind every coupon with the QR on its own tile, and remembers the design on this device', async () => {
+    const h = harness(); setup(h); withWebAppUrl(h);
+    const app = await open(h, STAFF, { qr: 'present' });
+    expect(app.$('#claim-art-preview .coupon')).not.toBeNull();
+    expect(app.$('#claim-art-preview .coupon-art')).toBeNull();
+    expect(app.$('#claim-ink-label').hidden).toBe(true);
+    await app.chooseArt(png(app.dom.window));
+    expect(app.$('#notice').textContent).toBe('Coupon background saved on this device.');
+    // 2800x1400 is capped at 1400 on the long edge and re-encoded, which also drops photo metadata.
+    expect(app.canvas).toEqual([{ w: 1400, h: 700, drew: 'data:image/png;base64,' }, { type: 'image/jpeg', q: 0.9 }]);
+    expect(app.$('#claim-art-preview .coupon-art').getAttribute('src')).toBe(REENCODED);
+    expect(app.$('#claim-ink-label').hidden).toBe(false);
+    expect(app.$('#claim-art-clear').hidden).toBe(false);
+    // The preview never carries a scannable code.
+    expect(app.$('#claim-art-preview .coupon-qr-placeholder')).not.toBeNull();
+    expect(app.$('#claim-art-preview svg')).toBeNull();
+    app.set('#claim-coupon-title', 'Room 5A Reading');
+    expect(app.$('#claim-art-preview .coupon-title').textContent).toBe('Room 5A Reading');
+    app.set('#claim-layout', 'bottom'); app.set('#claim-ink', 'light');
+    await app.mint(2);
+    await app.click('#claim-print');
+    const coupons = app.$$('#claim-coupons .coupon');
+    expect(coupons).toHaveLength(2);
+    for (const coupon of coupons) {
+      expect([...coupon.classList].sort()).toEqual(['coupon', 'has-art', 'ink-light', 'layout-bottom']);
+      expect(coupon.querySelector('img.coupon-art').getAttribute('src')).toBe(REENCODED);
+      expect(coupon.querySelector('img.coupon-art').getAttribute('alt')).toBe('');
+      expect(coupon.querySelector('.coupon-qr svg').getAttribute('data-qr')).toBe(coupon.querySelector('.coupon-code').textContent);
+    }
+    const saved = JSON.parse(app.dom.window.localStorage.getItem(ART_KEY));
+    expect(saved).toEqual({ art: REENCODED, layout: 'bottom', ink: 'light' });
+    const again = await open(h, STAFF, { qr: 'present', localStorage: { [ART_KEY]: JSON.stringify(saved) } });
+    expect(again.$('#claim-layout').value).toBe('bottom');
+    expect(again.$('#claim-ink').value).toBe('light');
+    expect(again.$('#claim-art-preview .coupon-art').getAttribute('src')).toBe(REENCODED);
+    expect(again.$('#claim-art-status').textContent).toBe('Background saved on this device only.');
+  });
+
+  it('refuses SVG, GIF, oversized and undecodable files and leaves the design untouched', async () => {
+    const h = harness(); setup(h);
+    const app = await open(h, STAFF, { qr: 'present' });
+    const w = app.dom.window;
+    await app.chooseArt(new w.File(['<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>'], 'x.svg', { type: 'image/svg+xml' }));
+    expect(app.$('#notice').textContent).toBe('Choose a PNG or JPEG image.');
+    await app.chooseArt(new w.File([new Uint8Array([71, 73, 70, 56])], 'x.gif', { type: 'image/gif' }));
+    expect(app.$('#notice').textContent).toBe('Choose a PNG or JPEG image.');
+    await app.chooseArt(new w.File([new Uint8Array(8 * 1024 * 1024 + 1)], 'big.jpg', { type: 'image/jpeg' }));
+    expect(app.$('#notice').textContent).toBe('That image is too large. Choose one under 8 MB.');
+    app.imageMode('broken');
+    await app.chooseArt(png(w));
+    expect(app.$('#notice').textContent).toBe('That image could not be read. Try another file.');
+    expect(app.canvas).toEqual([]);
+    expect(app.$('#claim-art-preview .coupon-art')).toBeNull();
+    expect(w.localStorage.getItem(ART_KEY)).toBeNull();
+  });
+
+  it('ignores a tampered or foreign saved design instead of rendering it', async () => {
+    const h = harness(); setup(h);
+    for (const art of ['data:image/svg+xml;base64,PHN2Zy8+', 'javascript:alert(1)', 'data:image/png;base64,AAAA" onerror="alert(1)', 'https://tracker.example/pixel.png']) {
+      const app = await open(h, STAFF, { localStorage: { [ART_KEY]: JSON.stringify({ art, layout: '"><img src=x onerror=alert(1)>', ink: 'neon' }) } });
+      expect(app.$('#claim-art-preview .coupon-art')).toBeNull();
+      expect(app.$('#claim-layout').value).toBe('right');
+      expect(app.$('#claim-ink').value).toBe('dark');
+      expect(app.$('#claim-art-preview .coupon').className).toBe('coupon layout-right ink-dark');
+    }
+    const broken = await open(h, STAFF, { localStorage: { [ART_KEY]: '{not json' } });
+    expect(broken.$('#claim-art-preview .coupon')).not.toBeNull();
+    expect(broken.errors).toEqual([]);
+  });
+
+  it('removing the background returns to plain coupons and forgets the art on this device', async () => {
+    const h = harness(); setup(h); withWebAppUrl(h);
+    const app = await open(h, STAFF, { qr: 'present' });
+    await app.chooseArt(png(app.dom.window));
+    await app.click('#claim-art-clear');
+    expect(app.$('#notice').textContent).toBe('Coupon background removed.');
+    expect(app.$('#claim-art-preview .coupon-art')).toBeNull();
+    expect(app.$('#claim-art-clear').hidden).toBe(true);
+    expect(app.$('#claim-ink-label').hidden).toBe(true);
+    expect(JSON.parse(app.dom.window.localStorage.getItem(ART_KEY)).art).toBe('');
+    await app.mint(1);
+    await app.click('#claim-print');
+    expect(app.$('#claim-coupons .coupon').classList.contains('has-art')).toBe(false);
+    expect(app.$$('#claim-coupons img')).toHaveLength(0);
+  });
+});
+
 describe('recent batches', () => {
   it('lists batches after minting, reprints only the unused codes, and cancels from the list', async () => {
     const h = harness(); setup(h); withWebAppUrl(h);
@@ -159,7 +266,7 @@ describe('student entry from a scanned link', () => {
     expect(app.$('#claim-card').hidden).toBe(false);
     expect(app.$('#claim-title').textContent).toBe('Points added to your balance');
     expect(app.$('#claim-metric').textContent).toBe('+20');
-    expect(app.$('#claim-reason').textContent).toBe('Read 20 minutes at home');
+    expect(app.$('#claim-result-reason').textContent).toBe('Read 20 minutes at home');
     expect(app.$('#claim-balance-value').textContent).toBe('20');
     expect(app.rpcCount('getSchoolRewardsBootstrap')).toBeGreaterThanOrEqual(2);
     expect(app.$('#metric-students').textContent).toBe('20 pts');
