@@ -326,7 +326,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   function mmEntryPeakG(angleDeg) {
     return Math.round((4 + (Math.abs(angleDeg) - 5.3) * 2.08) * 10) / 10;
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, entryPeakG: mmEntryPeakG }); } catch (e) {}
+  // Powered descent, final approach, in REAL time. The computer flies the braking
+  // phase from 15 km (P63/P64); the student takes over 300 m up, as Armstrong did at
+  // about 140 m. One engine: tilting it is the only way to move sideways, so every
+  // change of drift is paid for in fuel, and fuel burns with throttle, counted in
+  // seconds of HOVER, which is how Apollo counted it ("60 seconds", "30 seconds").
+  var MM_DESCENT = {
+    g: 1.62, maxAcc: 4.0, maxTilt: 0.35,
+    handoverAlt: 300, handoverVv: -9, handoverHv: 4,
+    pilotFuel: 110, skipFuel: 25, skipDrift: 7,
+    landV: 3, landH: 5
+  };
+  var MM_CALLOUT_BANDS = [250, 200, 150, 100, 75, 50, 30, 20, 10, 5];
+  var MM_FUEL_CALLS = [60, 30, 0];
+  // One fixed 1/60 s step. st = { alt, vVel, hVel, fuel, thrust, tilt }, mutated.
+  function mmDescentStep(st, input, dt) {
+    if (input.thrust) st.thrust = Math.min(1, st.thrust + 0.03); else st.thrust *= 0.95;
+    var cmd = input.left ? -MM_DESCENT.maxTilt : input.right ? MM_DESCENT.maxTilt : 0;
+    st.tilt += (cmd - st.tilt) * 0.07;   // eased, so the vehicle swings rather than snapping
+    var acc = st.fuel > 0 ? st.thrust * MM_DESCENT.maxAcc : 0;
+    st.vVel += (-MM_DESCENT.g + acc * Math.cos(st.tilt)) * dt;
+    st.hVel += acc * Math.sin(st.tilt) * dt;
+    st.alt += st.vVel * dt;
+    st.fuel = Math.max(0, st.fuel - (acc / MM_DESCENT.g) * dt);
+    return st;
+  }
+  // Score and its parts, so the breakdown under the score shows the points actually
+  // earned (it used to print "Soft touch +30 | Low drift +20" whatever happened).
+  function mmLandingScore(vAbs, hAbs, fuelSec) {
+    var parts = [
+      { label: 'Soft touch', pts: vAbs < 1 ? 30 : vAbs < 2 ? 20 : 10 },
+      { label: 'Low drift', pts: hAbs < 1 ? 20 : hAbs < 2.5 ? 10 : 0 },
+      { label: 'Fuel reserve', pts: fuelSec >= 30 ? 30 : fuelSec >= 15 ? 20 : fuelSec > 0 ? 10 : 0 },
+      { label: 'Margin bonus', pts: Math.min(20, Math.floor(Math.max(0, fuelSec) / 3)) }
+    ];
+    var total = parts.reduce(function (a, p) { return a + p.pts; }, 0);
+    var grade = total >= 90 ? 'A+' : total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 50 ? 'C' : 'D';
+    return { total: total, grade: grade, parts: parts };
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, landingScore: mmLandingScore }); } catch (e) {}
 
   function _seededRand(seed) {
     var s = (seed * 16807 + 1) % 2147483647;
@@ -588,9 +626,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         d: 2.5 + cScale * 74
       });
     }
-    var terPos = terGeo.attributes.position;
-    for (var vi = 0; vi < terPos.count; vi++) {
-      var vx = terPos.getX(vi), vz = terPos.getZ(vi);
+    // One height function, shared by the mesh and by everything that must sit ON the
+    // ground. The lander used to hold a fixed height above y = 0 while drift slid
+    // relief of +-110 units under it, so after touchdown the camera could end up
+    // inside a hill looking at the ground's underside.
+    function terrainHeight(vx, vz) {
       // Rolling mare relief under the craters.
       var hgt = Math.sin(vx * 0.0042) * 7 + Math.cos(vz * 0.0035) * 6
               + Math.sin((vx + vz) * 0.0011) * 11
@@ -607,8 +647,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           else hgt += cr.d * 0.32 * (1 - (tq - 1) / 0.35);
         }
       }
-      terPos.setY(vi, hgt);
+      return hgt;
     }
+    var terPos = terGeo.attributes.position;
+    for (var vi = 0; vi < terPos.count; vi++) terPos.setY(vi, terrainHeight(terPos.getX(vi), terPos.getZ(vi)));
     terGeo.computeVertexNormals();
     // Lunar albedo is about 0.12 — darker than worn asphalt. Photographs read
     // bright only because the Moon sits against pure black with no atmosphere to
@@ -807,7 +849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var alt = Math.max(0, s.alt);
       var tilt = s.tilt || 0;
       var thrust = s.thrust || 0;
-      var burning = thrust > 0.1 && s.fuel > 0;
+      var burning = thrust > 0.1 && s.fuel > 0 && !s.done;   // the plume stayed lit on a crashed lander
 
       // The lander holds a fixed world point and the GROUND moves, so craters
       // stream past under lateral drift the way they really would from the
@@ -816,12 +858,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // that only the coarse skirt is in frame; compressed this way, 15 km still
       // reads as "very high" while the last 200 m — the part actually flown —
       // gets most of the visual range.
-      var altUnits = 2.2 + 96 * Math.log(1 + alt / 60) / Math.log(1 + 15000 / 60);
-      lm.position.set(0, altUnits, 0);
+      var altUnits = 2.2 + 96 * Math.log(1 + alt / 60) / Math.log(1 + MM_DESCENT.handoverAlt / 60);   // full visual range across the part actually flown
       lm.rotation.z = -tilt;
       var wrap = TERRAIN_SPAN / 24;
       terrain.position.x = -((s.groundX || 0) % wrap);
       terrain.position.z = -((s.groundZ || 0) % wrap);
+      // The terrain slides and the lander does not, so read the ground under it.
+      var groundH = terrainHeight(-terrain.position.x, -terrain.position.z);
+      lm.position.set(0, groundH + altUnits, 0);
+      dust.position.y = groundH;
 
       sun.target.position.copy(lm.position);
       sun.position.set(lm.position.x - 700, lm.position.y + 260, lm.position.z + 360);
@@ -864,10 +909,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // size all the way down instead of shrinking to a speck for most of the run.
       var back = 12 + altUnits * 0.42;
       var up = 4 + altUnits * 0.30;
-      camera.position.set(lm.position.x + back * 0.34, lm.position.y + up, lm.position.z + back);
+      var camX = lm.position.x + back * 0.34, camZ = lm.position.z + back;
+      var camFloor = terrainHeight(camX - terrain.position.x, camZ - terrain.position.z) + 3;
+      camera.position.set(camX, Math.max(lm.position.y + up, camFloor), camZ);
       // Look progressively further ahead of the vehicle as height grows, so high
       // up you read the approach and low down you read the touchdown point.
-      camera.lookAt(lm.position.x, Math.max(0, lm.position.y - 2 - altUnits * 0.22), lm.position.z);
+      camera.lookAt(lm.position.x, Math.max(groundH, lm.position.y - 2 - altUnits * 0.22), lm.position.z);
 
       // Stars ride the camera so they never parallax — at this range they are
       // effectively at infinity, and drifting them would read as tumbling.
@@ -1446,9 +1493,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
       // ── Difficulty Settings (expanded with event parameters) ──
       var DIFFICULTIES = {
-        tourist:    { label: t('stem.moonmission.tourist', 'Tourist'),    icon: '\uD83C\uDF1F', desc: t('stem.moonmission.guided_gentle_margins', 'Guided \u2014 gentler gravity, extra fuel and O\u2082, best option hinted'), gravity: 0.5, fuel: 150, o2Rate: 0.1, eventFreq: 0.55, showEffects: true, showOptimalHint: true },
-        pilot:     { label: t('stem.moonmission.pilot', 'Pilot'),      icon: '\u2B50', desc: t('stem.moonmission.standard_apollo_parameters', 'Standard Apollo parameters'), gravity: 1.62, fuel: 100, o2Rate: 0.3, eventFreq: 0.6, showEffects: true, showOptimalHint: false },
-        commander: { label: t('stem.moonmission.commander', 'Commander'),  icon: '\uD83C\uDFC5', desc: t('stem.moonmission.realistic_tight_fuel_budget_faster_o_d', 'Realistic \u2014 tight fuel budget, faster O\u2082 drain'), gravity: 1.62, fuel: 70, o2Rate: 0.6, eventFreq: 0.9, showEffects: false, showOptimalHint: false }
+        tourist:    { label: t('stem.moonmission.tourist', 'Tourist'),    icon: '\uD83C\uDF1F', desc: t('stem.moonmission.guided_gentle_margins', 'Guided \u2014 extra fuel and O\u2082, best option hinted. The Moon\'s gravity is the same in every mode.'), gravity: 1.62, fuel: 160, o2Rate: 0.1, eventFreq: 0.55, showEffects: true, showOptimalHint: true },
+        pilot:     { label: t('stem.moonmission.pilot', 'Pilot'),      icon: '\u2B50', desc: t('stem.moonmission.standard_apollo_parameters', 'Standard Apollo parameters'), gravity: 1.62, fuel: 110, o2Rate: 0.3, eventFreq: 0.6, showEffects: true, showOptimalHint: false },
+        commander: { label: t('stem.moonmission.commander', 'Commander'),  icon: '\uD83C\uDFC5', desc: t('stem.moonmission.realistic_tight_fuel_budget_faster_o_d', 'Realistic \u2014 tight fuel budget, faster O\u2082 drain'), gravity: 1.62, fuel: 90, o2Rate: 0.6, eventFreq: 0.9, showEffects: false, showOptimalHint: false }
       };
       // Any key of DIFFICULTIES. The type-guard pass listed only two of the three, so
       // choosing Tourist stored 'tourist' and then played Pilot with Pilot checked.
@@ -3007,28 +3054,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             if (choice) {
               return phaseStatus(true, '',
                 choice === 'corrected'
-                  ? 'Mid-course correction complete. You are back on the nominal path, and the descent stage is carrying 8% less fuel because of it.'
+                  ? 'Mid-course correction complete. The Service Module\'s engine put you back on the nominal path, and the landing keeps its full fuel budget.'
                   : 'Correction declined. You will arrive off the nominal path and faster across the ground, which the landing will have to absorb.');
             }
             return h('div', { className: 'mb-2 rounded-xl p-3 border border-amber-500/50 bg-slate-900' },
               h('p', { className: 'text-[0.6875rem] font-bold text-amber-200 mb-1' },
                 '\u26A0\uFE0F MID-COURSE CORRECTION \u2014 your TLI burn was ' + acc.offByDeg + '\u00B0 off the aim point'),
               h('p', { className: 'text-[0.6875rem] text-amber-50 mb-2 leading-relaxed' },
-                'A small error at the burn becomes a large one over 384,400 km. Apollo carried propellant for exactly this and used it on nearly every flight. Correcting costs fuel the Lunar Module will want later; not correcting means you cross the surface faster when you try to land.'),
+                'A small error at the burn becomes a large one over 384,400 km. Apollo carried propellant for exactly this and used it on nearly every flight. Correcting now costs a little Service Module propellant. Not correcting lets the error grow, and the Lunar Module pays for it at the landing in hover fuel and drift.'),
               h('div', { className: 'flex gap-2 flex-wrap' },
                 h('button', {
-                  'aria-label': t('stem.moonmission.burn_the_correction', 'Burn the mid-course correction. Costs 8 percent of the descent fuel and puts you back on the nominal trajectory.'),
+                  'aria-label': t('stem.moonmission.burn_the_correction', 'Burn the mid-course correction with the Service Module engine. Puts you back on the nominal trajectory; the landing keeps its full fuel budget.'),
                   onClick: function() {
                     upd('mccChoice', 'corrected');
-                    log('\uD83D\uDEE0\uFE0F Mid-course correction burned \u2014 back on the nominal path, 8% descent fuel spent.');
+                    log('\uD83D\uDEE0\uFE0F Mid-course correction burned \u2014 back on the nominal path.');
                     addXP(15);
                     if (addToast) addToast('\uD83D\uDEE0\uFE0F Correction burned. Back on track, with a lighter fuel margin for the landing.', 'success');
-                    if (typeof announceToSR === 'function') announceToSR('Mid-course correction executed. Trajectory nominal, descent fuel reduced by 8 percent.');
+                    if (typeof announceToSR === 'function') announceToSR('Mid-course correction executed. Trajectory nominal; the landing keeps its full fuel budget.');
                   },
                   className: 'flex-1 min-w-[150px] py-2 rounded-lg text-[0.6875rem] font-bold text-white bg-emerald-700 hover:bg-emerald-800'
-                }, t('stem.moonmission.burn_correction_label', '\uD83D\uDEE0\uFE0F Burn the correction (\u22128% descent fuel)')),
+                }, t('stem.moonmission.burn_correction_label', '\uD83D\uDEE0\uFE0F Burn the correction now')),
                 h('button', {
-                  'aria-label': t('stem.moonmission.press_on_uncorrected', 'Press on without correcting. Saves fuel but you arrive off the nominal path with more horizontal speed to bleed off during landing.'),
+                  'aria-label': t('stem.moonmission.press_on_uncorrected', 'Press on without correcting. Saves Service Module propellant now, but the landing starts with less hover fuel and more drift.'),
                   onClick: function() {
                     upd('mccChoice', 'skipped');
                     log('\u27A1\uFE0F Correction declined \u2014 arriving off-nominal to save fuel.');
@@ -3037,7 +3084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (typeof announceToSR === 'function') announceToSR('Correction declined. You will arrive off the nominal path with additional horizontal speed at the landing.');
                   },
                   className: 'flex-1 min-w-[150px] py-2 rounded-lg text-[0.6875rem] font-bold text-white bg-slate-600 hover:bg-slate-700'
-                }, t('stem.moonmission.press_on_label', '\u27A1\uFE0F Press on, keep the fuel'))
+                }, t('stem.moonmission.press_on_label', '\u27A1\uFE0F Press on without correcting'))
               )
             );
           })(),
@@ -3266,7 +3313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           !d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
             h('div', { className: 'text-4xl mb-3' }, '\u2B07\uFE0F'),
             h('h4', { className: 'text-lg font-black mb-2' }, t('stem.moonmission.powered_descent_2', 'Powered Descent')),
-            h('p', { className: 'text-xs text-slate-200 mb-4' }, 'You are piloting the Lunar Module to the Moon\'s surface. Control your thrust to land softly!'),
+            h('p', { className: 'text-xs text-slate-200 mb-4' }, 'The computer has flown the braking phase down from 15 km. You take the controls 300 m up, as Armstrong did at about 140 m, and land it yourself. Fuel is counted in seconds of hover, the way Apollo counted it.'),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-4 max-w-sm mx-auto' },
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2B06\uFE0F'),
@@ -3276,7 +3323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2194\uFE0F'),
                 h('p', { className: 'text-[0.6875rem] font-bold text-sky-300' }, t('stem.moonmission.a_d_or', 'A/D or \u2190/\u2192')),
-                h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.lateral_movement', 'Lateral movement'))
+                h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.lateral_movement', 'Tilt the engine to push sideways (burns fuel)'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83C\uDFAF'),
@@ -3293,8 +3340,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               (d.mccChoice === 'corrected' ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-orange-500/10 border-orange-500/30') },
               h('p', { className: 'text-[0.6875rem] font-bold ' + (d.mccChoice === 'corrected' ? 'text-emerald-300' : 'text-orange-300') },
                 d.mccChoice === 'corrected'
-                  ? '\uD83D\uDEE0\uFE0F You burned the mid-course correction, so you start on the nominal path \u2014 with 8% less fuel in the tank.'
-                  : '\u27A1\uFE0F You declined the correction, so you arrive off-nominal: about 44% more horizontal speed to kill before you can touch down.')
+                  ? '\uD83D\uDEE0\uFE0F You burned the mid-course correction with the Service Module\'s engine, so you arrive on the nominal path with the full landing fuel budget.'
+                  : '\u27A1\uFE0F You declined the correction, so the descent computer had to steer out the error during braking: ' + MM_DESCENT.skipFuel + ' fewer seconds of hover fuel, and ' + MM_DESCENT.skipDrift + ' m/s more drift to cancel.')
             ),
             h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-sm mx-auto' },
               h('p', { className: 'text-[0.6875rem] text-amber-300 font-bold mb-1' }, t('stem.moonmission.tips_from_mission_control', '\u26A0\uFE0F Tips from Mission Control:')),
@@ -3302,7 +3349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('li', null, t('stem.moonmission.start_slowing_down_early_moon_gravity_', 'Start slowing down early \u2014 Moon gravity is gentle but relentless')),
                 h('li', null, t('stem.moonmission.watch_your_fuel_gauge_you_can_t_thrust', 'Watch your fuel gauge \u2014 you can\'t thrust without fuel!')),
                 h('li', null, t('stem.moonmission.reduce_horizontal_speed_before_focusin', 'Reduce horizontal speed before focusing on vertical')),
-                h('li', null, t('stem.moonmission.the_real_apollo_11_landed_with_only_25', 'The real Apollo 11 landed with only 25 seconds of fuel left!'))
+                h('li', null, t('stem.moonmission.the_real_apollo_11_landed_with_only_25', 'Apollo 11 touched down just after Houston called "30 seconds" of fuel left.'))
               )
             ),
             h('button', {
@@ -3317,7 +3364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('canvas', { 
                 'data-descent-canvas': 'true',
                 role: 'application',
-                'aria-label': t('stem.moonmission.interactive_lunar_descent_piloting_gam', 'Interactive lunar descent piloting game. Use W or Up Arrow for thrust, A and D or Left and Right arrows for lateral movement. Land with vertical speed under 3 meters per second and horizontal speed under 5 meters per second.'),
+                'aria-label': t('stem.moonmission.interactive_lunar_descent_piloting_gam', 'Interactive lunar descent piloting game. Use W or Up Arrow for thrust, A and D or Left and Right arrows to tilt the engine and push sideways. Land with vertical speed under 3 meters per second and horizontal speed under 5 meters per second.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._descentInit) return;
@@ -3326,20 +3373,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 420;
                   cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H)) { W = nw; H = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); if (d3) d3.resize(nw, nh); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
-                  var alt = 15000; // meters
-                  var vVel = -20; // vertical velocity (negative = descending)
+                  // ── Real time, from the hand-over ──
+                  // The old game started at 15 km and integrated altitude 31x faster than
+                  // speed (alt += vVel * 0.5 per 1/60 s step), so "down 3 m/s" had nothing
+                  // to do with how fast the ground came up: 100 m at 3 m/s was followed by
+                  // touchdown 1.1 s later. Now the whole approach runs at real speed.
+                  var alt = MM_DESCENT.handoverAlt;
+                  var vVel = MM_DESCENT.handoverVv;   // negative = descending
                   // ── Where the trans-lunar decisions actually land ──
-                  // Burning the mid-course correction costs 8% of the descent fuel;
-                  // declining it means arriving with ~44% more ground speed to bleed off.
-                  // Getting the TLI burn inside its window costs neither. Without this the
-                  // coast was a sentence about consequences and the descent never knew.
+                  // A correction burned on the coast used the Service Module's engine and
+                  // costs the landing nothing. Declining it leaves an error the descent
+                  // computer has to steer out during braking: less hover fuel at the
+                  // hand-over and extra drift to cancel. Cheap early, expensive late.
                   var _mcc = d.mccChoice || null;
-                  var hVel = 500 + (_mcc === 'skipped' ? 220 : 0);
-                  var fuel = ((diffSettings && diffSettings.fuel) || 100) - (_mcc === 'corrected' ? 8 : 0);
+                  var hVel = MM_DESCENT.handoverHv + (_mcc === 'skipped' ? MM_DESCENT.skipDrift : 0);
+                  var fuel = ((diffSettings && diffSettings.fuel) || MM_DESCENT.pilotFuel) - (_mcc === 'skipped' ? MM_DESCENT.skipFuel : 0);   // seconds of hover
+                  var _calloutBandIdx = 0;
+                  var _fuelCallIdx = 0;
+                  while (_fuelCallIdx < MM_FUEL_CALLS.length && MM_FUEL_CALLS[_fuelCallIdx] >= fuel) _fuelCallIdx++;
                   var thrust = 0;
                   var landed = false;
                   var crashed = false;
-                  var alarms = [];
                   var landingRecorded = false;   // outcome is written to state exactly once
                   // Attitude. A rocket has no sideways thruster worth the name: it TILTS and
                   // points its main engine, so the same burn that holds you up also pushes
@@ -3369,8 +3423,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var keys = {};
                   var padCtl = { thrust: false, left: false, right: false };   // on-screen pad, same effect as the keys
                   cvEl.tabIndex = 0;
-                  cvEl.addEventListener('keydown', function(e) { var k = e.key.toLowerCase(); if (['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d',' '].indexOf(k) === -1) return; keys[e.key] = true; e.preventDefault(); });   // only game keys — Tab must escape (WCAG 2.1.2)
-                  cvEl.addEventListener('keyup', function(e) { keys[e.key] = false; });
+                  cvEl.addEventListener('keydown', function(e) { var k = e.key.toLowerCase(); if (['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d',' '].indexOf(k) === -1) return; keys[k] = true; e.preventDefault(); });   // only game keys — Tab must escape (WCAG 2.1.2)
+                  cvEl.addEventListener('keyup', function(e) { keys[String(e.key).toLowerCase()] = false; });
+                  // Case-folded, and released when focus leaves: releasing Shift before W,
+                  // or tabbing away mid-burn, left the engine firing with nobody at the stick.
+                  cvEl.addEventListener('blur', function() { keys = {}; });
                   cvEl.focus();
 
                   // ── Flight callouts ──
@@ -3404,6 +3461,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     _lastCallout = text;
                     if (calloutEl) calloutEl.textContent = text;
                   }
+                  callout('You have control: ' + Math.round(alt) + ' m up, down ' + Math.abs(vVel).toFixed(1) + ' m/s, drifting '
+                    + Math.abs(hVel).toFixed(1) + ' m/s, ' + Math.round(fuel) + ' s of fuel. The computer flew the braking phase from 15 km, through program alarms 1202 and 1201.');
 
                   // ── On-screen flight controls ──
                   // Shown to everyone, not just touch devices: the landing was the one
@@ -3427,6 +3486,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   }
 
                   function drawDescent() {
+                    // After touchdown the loop only ticks on a timer and writes nothing to
+                    // the DOM, so the parent-watching MutationObserver never fired and Retry
+                    // Landing / Begin EVA left the WebGL context behind.
+                    if (!document.contains(cvEl)) { if (d3) { try { d3.dispose(); } catch (_goneErr) {} d3 = null; } return; }
                     tick++;
                     // Attach here rather than in the ref: by the first frame React has
                     // committed and the canvas is really in the document.
@@ -3449,16 +3512,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                     for (var _ps = 0; _ps < _steps && !landed && !crashed; _ps++) {
                       // Controls: up arrow = thrust, left/right = horizontal adjust
-                      if (padCtl.thrust || keys['ArrowUp'] || keys['w'] || keys['W']) {
-                        thrust = Math.min(1, thrust + 0.03);
-                        if (fuel > 0) fuel -= 0.08;
-                      } else {
-                        thrust *= 0.95;
-                      }
-                      var tiltCmd = 0;
-                      if (padCtl.left || keys['ArrowLeft'] || keys['a'] || keys['A']) { hVel -= 0.5; tiltCmd = -0.32; }
-                      if (padCtl.right || keys['ArrowRight'] || keys['d'] || keys['D']) { hVel += 0.5; tiltCmd = 0.32; }
-                      tilt += (tiltCmd - tilt) * 0.07;   // eased, so the vehicle swings rather than snapping
+                      // Sideways used to be free: the keys added 0.5 m/s a step with no
+                      // thrust and no fuel, and hVel *= 0.999 bled drift away like air
+                      // drag on an airless Moon. Now the only sideways force is the tilted
+                      // main engine, so declining the mid-course correction really costs.
+                      var _in = {
+                        thrust: !!(padCtl.thrust || keys['arrowup'] || keys['w']),
+                        left: !!(padCtl.left || keys['arrowleft'] || keys['a']),
+                        right: !!(padCtl.right || keys['arrowright'] || keys['d'])
+                      };
 
                       // Publish the flight state next to the canvas. The HUD is painted
                       // pixels, so without this nothing outside the loop can see the
@@ -3475,45 +3537,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var _dsT = thrust.toFixed(2);
                       if (cvEl.dataset.descentThrust !== _dsT) cvEl.dataset.descentThrust = _dsT;
 
-                      // Integrate the ground track the 3D terrain slides along. Scaled
-                      // to the same 0.02 m-to-unit budget the lander altitude uses, so
-                      // crater drift and descent rate stay in the same world.
-                      groundX += hVel * 0.008;
-                      groundZ += Math.abs(vVel) * 0.002;
+                      // Integrate the ground track the 3D terrain slides along, at about
+                      // 0.6 scene units per metre, the scale the scene has near the ground.
+                      groundX += hVel * (PHYS_STEP_MS / 1000) * 0.6;
 
-                      // Band-gated callouts, in the shape Apollo actually used: how high,
-                      // how fast down. Bands rather than a live number, so a screen reader
-                      // hears ten useful lines instead of a thousand.
-                      var band = alt > 10000 ? 10000 : alt > 5000 ? 5000 : alt > 3000 ? 3000
-                        : alt > 2000 ? 2000 : alt > 1000 ? 1000 : alt > 500 ? 500
-                        : alt > 200 ? 200 : alt > 100 ? 100 : alt > 50 ? 50 : alt > 20 ? 20 : 0;
-                      var rate = Math.abs(vVel).toFixed(0);
-                      var lateral = Math.abs(hVel).toFixed(0);
-                      var fuelBand = fuel <= 0 ? 'dry' : fuel < 10 ? 'low10' : fuel < 25 ? 'low25' : 'ok';
-                      if (fuelBand === 'dry') {
+                      // Callouts fire when a line is CROSSED, not whenever a live number
+                      // changes: the old strip re-announced ~30 times a second (it printed
+                      // integer drift) and printed the band floor ("5,000 m") while the HUD
+                      // read 8.7 km. Apollo's shape: how high, how fast down, how fast across,
+                      // and the fuel calls.
+                      var rate = Math.abs(vVel).toFixed(1);
+                      var lateral = Math.abs(hVel).toFixed(1);
+                      var _bandHit = null, _fuelHit = null;
+                      while (_calloutBandIdx < MM_CALLOUT_BANDS.length && alt <= MM_CALLOUT_BANDS[_calloutBandIdx]) { _bandHit = MM_CALLOUT_BANDS[_calloutBandIdx]; _calloutBandIdx++; }
+                      while (_fuelCallIdx < MM_FUEL_CALLS.length && fuel <= MM_FUEL_CALLS[_fuelCallIdx]) { _fuelHit = MM_FUEL_CALLS[_fuelCallIdx]; _fuelCallIdx++; }
+                      if (_fuelHit === 0) {
                         callout('\u26A0 FUEL GONE \u2014 no thrust left. ' + Math.round(alt) + ' m up, falling at ' + rate + ' m/s.');
-                      } else if (band <= 100 && band > 0) {
-                        callout(band + ' m \u2014 down ' + rate + ' m/s, drifting ' + lateral + ' m/s. Under 3 and 5 to land.');
-                      } else if (band === 0) {
-                        callout('Contact imminent \u2014 down ' + rate + ' m/s, drifting ' + lateral + ' m/s.');
-                      } else if (fuelBand === 'low10') {
-                        callout('\u26A0 Fuel ' + Math.round(fuel) + '% \u2014 ' + Math.round(alt) + ' m up, down ' + rate + ' m/s.');
-                      } else {
-                        callout(band.toLocaleString() + ' m \u2014 down ' + rate + ' m/s, drifting ' + lateral + ' m/s'
-                          + (fuelBand === 'low25' ? ' \u2022 fuel ' + Math.round(fuel) + '%' : ''));
+                      } else if (_fuelHit != null) {
+                        callout('\u26A0 ' + _fuelHit + ' SECONDS of fuel \u2014 ' + Math.round(alt) + ' m up, down ' + rate + ' m/s.');
+                      } else if (_bandHit != null) {
+                        callout(_bandHit + ' m \u2014 down ' + rate + ' m/s, drifting ' + lateral + ' m/s' + (_bandHit <= 50 ? '. Under 3 and 5 to land.' : '.'));
                       }
 
-                      // Physics
-                      var gravity = (diffSettings && diffSettings.gravity) || 1.62; // Moon gravity m/s^2 (difficulty-scaled)
-                      var thrustForce = thrust * (fuel > 0 ? 4 : 0);
-                      vVel += (-gravity + thrustForce) * 0.016;
-                      hVel *= 0.999;
-                      alt += vVel * 0.5;
-
-                      // Program alarms
-                      if (alt < 500 && alarms.indexOf('1202') === -1) {
-                        alarms.push('1202');
-                      }
+                      // Physics: one real-time step, the same function the tests fly.
+                      var _st = { alt: alt, vVel: vVel, hVel: hVel, fuel: fuel, thrust: thrust, tilt: tilt };
+                      mmDescentStep(_st, _in, PHYS_STEP_MS / 1000);
+                      alt = _st.alt; vVel = _st.vVel; hVel = _st.hVel; fuel = _st.fuel; thrust = _st.thrust; tilt = _st.tilt;
 
                       // Landing check
                       if (alt <= 0) {
@@ -3522,7 +3571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         if (_vAbs < 3 && _hAbs < 5) {
                           landed = true;
                           callout('\uD83C\uDF15 CONTACT LIGHT \u2014 touchdown at ' + _vAbs.toFixed(1) + ' m/s, drift '
-                            + _hAbs.toFixed(1) + ' m/s, fuel ' + Math.round(fuel) + '%. The Eagle has landed.');
+                            + _hAbs.toFixed(1) + ' m/s, ' + Math.round(fuel) + ' s of fuel left. The Eagle has landed.');
                           if (typeof announceToSR === 'function') announceToSR('Touchdown. Vertical speed ' + _vAbs.toFixed(1)
                             + ' meters per second, lateral drift ' + _hAbs.toFixed(1) + '. The Eagle has landed.');
                         } else {
@@ -3552,7 +3601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.clearRect(0, 0, W, H);
                       d3.update({
                         alt: alt, tilt: tilt, thrust: thrust, fuel: fuel,
-                        groundX: groundX, groundZ: groundZ, tick: tick
+                        groundX: groundX, groundZ: groundZ, tick: tick, done: landed || crashed
                       });
                     }
                     if (!d3) {
@@ -3710,8 +3759,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillStyle = '#fff'; ctx.font = '12px monospace';
                     ctx.fillText(hVel.toFixed(1) + ' m/s', 12, 86);
                     ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 9px monospace'; ctx.fillText('FUEL', 12, 100);
-                    ctx.fillStyle = fuel < 20 ? '#ef4444' : '#22c55e'; ctx.font = '12px monospace';
-                    ctx.fillText(fuel.toFixed(0) + '%', 50, 100);
+                    ctx.fillStyle = fuel < 30 ? '#ef4444' : fuel < 60 ? '#fbbf24' : '#22c55e'; ctx.font = '12px monospace';
+                    ctx.fillText(Math.max(0, fuel).toFixed(0) + ' s', 50, 100);
 
                     // Right HUD \u2014 drops below the left panel on narrow canvases so the
                     // two fixed-width boxes can't overlap (they collided under ~305px).
@@ -3723,84 +3772,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillStyle = '#fbbf24'; ctx.fillRect(W - 136, 22, 120 * thrust, 8);
                     ctx.fillStyle = '#94a3b8'; ctx.font = '9px system-ui';
                     ctx.fillText('\u2191 or W = thrust', W - 12, 46);
-                    ctx.fillText('\u2190\u2192 or A/D = lateral', W - 12, 58);
+                    ctx.fillText('\u2190\u2192 or A/D = tilt', W - 12, 58);
                     ctx.fillText('Land: V < 3 m/s, H < 5 m/s', W - 12, 72);
                     ctx.restore();
 
-                    // Alarm
-                    if (alarms.length > 0 && tick % 60 < 30) {
+                    // Outcome, on its own backing panel and fitted to the canvas width. At
+                    // phone width the old centred lines, and a 1202 banner that blinked on
+                    // from 500 m through touchdown, printed straight over both HUD boxes.
+                    function outcomePanel(lines) {
+                      var maxW = W - 24, y0 = H * 0.34;
+                      ctx.save();
                       ctx.textAlign = 'center';
-                      ctx.fillStyle = '#fbbf24';
-                      ctx.font = 'bold 12px monospace';
-                      // Kept clear of the landed/crashed banners below (H*0.18 and
-                      // H*0.20): with both up at once the two texts overprinted and
-                      // neither could be read.
-                      ctx.fillText('\u26A0 PROGRAM ALARM 1202 \u2014 EXECUTIVE OVERFLOW', W * 0.5, H * 0.07);
-                      ctx.font = '9px system-ui';
-                      ctx.fillStyle = '#94a3b8';
-                      ctx.fillText('(Same alarm Armstrong got \u2014 computer overloaded but mission continues!)', W * 0.5, H * 0.11);
+                      var fitted = lines.map(function (ln) {
+                        var size = ln.size;
+                        ctx.font = (ln.bold ? 'bold ' : '') + size + 'px system-ui';
+                        while (size > 8 && ctx.measureText(ln.text).width > maxW - 16) {
+                          size -= 1;
+                          ctx.font = (ln.bold ? 'bold ' : '') + size + 'px system-ui';
+                        }
+                        return { text: ln.text, color: ln.color, font: ctx.font, size: size, w: ctx.measureText(ln.text).width };
+                      });
+                      var boxW = Math.min(maxW, Math.max.apply(null, fitted.map(function (f) { return f.w; })) + 24);
+                      var boxH = fitted.reduce(function (a, f) { return a + f.size + 6; }, 14);
+                      ctx.fillStyle = 'rgba(2,6,23,0.84)';
+                      ctx.fillRect(W * 0.5 - boxW / 2, y0 - 8, boxW, boxH);
+                      var y = y0;
+                      fitted.forEach(function (f) { ctx.font = f.font; ctx.fillStyle = f.color; y += f.size; ctx.fillText(f.text, W * 0.5, y); y += 6; });
+                      ctx.restore();
                     }
 
-                    // Landed!
                     if (landed) {
-                      ctx.textAlign = 'center';
-                      ctx.fillStyle = '#22c55e';
-                      ctx.font = 'bold 20px system-ui';
-                      ctx.fillText('\uD83C\uDF15 "The Eagle has landed!"', W * 0.5, H * 0.18);
-                      ctx.font = '12px system-ui';
-                      ctx.fillStyle = '#e2e8f0';
-                      ctx.fillText('Touchdown! V: ' + Math.abs(vVel).toFixed(1) + ' m/s \u2022 Fuel remaining: ' + fuel.toFixed(0) + '%', W * 0.5, H * 0.24);
-                      // Landing score
-                      var landingScore = 0;
-                      var landingGrade = 'C';
-                      if (Math.abs(vVel) < 1) { landingScore += 30; } else if (Math.abs(vVel) < 2) { landingScore += 20; } else { landingScore += 10; }
-                      if (Math.abs(hVel) < 2) { landingScore += 20; } else if (Math.abs(hVel) < 4) { landingScore += 10; }
-                      if (fuel > 20) { landingScore += 30; } else if (fuel > 10) { landingScore += 20; } else if (fuel > 0) { landingScore += 10; }
-                      landingScore += Math.min(20, Math.floor(fuel * 0.2)); // bonus for extra fuel
-                      if (landingScore >= 90) landingGrade = 'A+'; else if (landingScore >= 80) landingGrade = 'A'; else if (landingScore >= 70) landingGrade = 'B'; else if (landingScore >= 50) landingGrade = 'C';
+                      var _score = mmLandingScore(Math.abs(vVel), Math.abs(hVel), fuel);
                       // Persist the result once. It was computed and painted every frame but
                       // never left the canvas, so the debrief could not report how the student
-                      // actually flew the landing — the one piloting task in the whole mission.
+                      // actually flew the landing, the one piloting task in the whole mission.
                       if (!landingRecorded) {
                         landingRecorded = true;
-                        var _lr = { crashed: false, score: landingScore, grade: landingGrade, vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel) };
+                        var _lr = { crashed: false, score: _score.total, grade: _score.grade, vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel), fuelUnit: 's' };
                         upd('landingResult', _lr);
-                        log('🌕 Touchdown — landing score ' + landingScore + '/100 (grade ' + landingGrade + ')');
-                        if (landingScore >= 80) addXP(20);
-                        if (typeof announceToSR === 'function') announceToSR('The Eagle has landed. Vertical speed ' + Math.abs(vVel).toFixed(1) + ' meters per second, fuel remaining ' + Math.round(fuel) + ' percent. Landing score ' + landingScore + ' out of 100, grade ' + landingGrade + '.');
+                        log('\uD83C\uDF15 Touchdown \u2014 landing score ' + _score.total + '/100 (grade ' + _score.grade + ')');
+                        if (_score.total >= 80) addXP(20);
+                        if (typeof announceToSR === 'function') announceToSR('The Eagle has landed. Vertical speed ' + Math.abs(vVel).toFixed(1) + ' meters per second, ' + Math.round(fuel) + ' seconds of fuel left. Landing score ' + _score.total + ' out of 100, grade ' + _score.grade + '.');
                       }
-                      ctx.font = 'bold 14px system-ui';
-                      ctx.fillStyle = landingScore >= 80 ? '#22c55e' : landingScore >= 50 ? '#fbbf24' : '#f97316';
-                      ctx.fillText('Landing Score: ' + landingScore + '/100 (Grade: ' + landingGrade + ')', W * 0.5, H * 0.30);
-                      ctx.font = '9px system-ui'; ctx.fillStyle = '#94a3b8';
-                      ctx.fillText('Soft touch +30 | Low drift +20 | Fuel bonus +' + Math.min(20, Math.floor(fuel * 0.2)) + ' | Reserve +' + (fuel > 20 ? 30 : fuel > 10 ? 20 : fuel > 0 ? 10 : 0), W * 0.5, H * 0.34);
-                      ctx.fillStyle = '#94a3b8'; ctx.font = '10px system-ui';
-                      ctx.fillText('Click "Begin EVA" to walk on the Moon!', W * 0.5, H * 0.40);
+                      outcomePanel([
+                        { text: '\uD83C\uDF15 "The Eagle has landed!"', size: 18, bold: true, color: '#22c55e' },
+                        { text: 'Touchdown at ' + Math.abs(vVel).toFixed(1) + ' m/s, drift ' + Math.abs(hVel).toFixed(1) + ' m/s, ' + Math.round(fuel) + ' s of fuel left', size: 12, color: '#e2e8f0' },
+                        { text: 'Landing score ' + _score.total + '/100 (grade ' + _score.grade + ')', size: 14, bold: true, color: _score.total >= 80 ? '#22c55e' : _score.total >= 50 ? '#fbbf24' : '#f97316' },
+                        { text: _score.parts.map(function (p) { return p.label + ' +' + p.pts; }).join('  |  '), size: 10, color: '#cbd5e1' },
+                        { text: 'Begin EVA below to walk on the Moon.', size: 10, color: '#cbd5e1' }
+                      ]);
                     }
 
-                    // Crashed
                     if (crashed) {
                       if (!landingRecorded) {
                         landingRecorded = true;
-                        var _cr = { crashed: true, score: 0, grade: '\u2014', vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel) };
+                        var _cr = { crashed: true, score: 0, grade: '\u2014', vVel: Math.abs(vVel), hVel: Math.abs(hVel), fuel: Math.round(fuel), fuelUnit: 's' };
                         upd('landingResult', _cr);
                         log('\u26A0\uFE0F Hard landing \u2014 impact at ' + Math.abs(vVel).toFixed(1) + ' m/s (limit 3 m/s)');
                         if (typeof announceToSR === 'function') announceToSR('Hard landing. Impact at ' + Math.abs(vVel).toFixed(1) + ' meters per second against a 3 meter per second limit. Use Retry Landing to fly the descent again, or proceed to the moonwalk.');
                       }
-                      ctx.textAlign = 'center';
-                      ctx.fillStyle = '#ef4444';
-                      ctx.font = 'bold 18px system-ui';
-                      ctx.fillText('\u26A0 HARD LANDING', W * 0.5, H * 0.2);
-                      ctx.font = '11px system-ui';
-                      ctx.fillStyle = '#f87171';
-                      ctx.fillText('Impact V: ' + Math.abs(vVel).toFixed(1) + ' m/s (limit: 3 m/s) \u2014 use "Retry Landing" below', W * 0.5, H * 0.26);
+                      outcomePanel([
+                        { text: '\u26A0 HARD LANDING', size: 18, bold: true, color: '#f87171' },
+                        { text: 'Impact at ' + Math.abs(vVel).toFixed(1) + ' m/s down, ' + Math.abs(hVel).toFixed(1) + ' m/s across (limits 3 and 5)', size: 12, color: '#fecaca' },
+                        { text: 'Use Retry Landing below to fly it again.', size: 11, color: '#e2e8f0' }
+                      ]);
                     }
 
                     if (!d3) drawVignette(ctx, W, H, 0.2);
                     if (!landed && !crashed && document.contains(cvEl)) requestAnimationFrame(drawDescent);
                     else {
                       // One more frame render for final state
-                      if (document.contains(cvEl)) setTimeout(function() { drawDescent(); }, 100);   // stop re-rendering the frozen frame forever after unmount
+                      setTimeout(function() { drawDescent(); }, 100);   // drawDescent returns (and releases the scene) once the canvas is gone
                     }
                   }
                   // ── Bring up the 3D world behind the HUD ──
@@ -3896,7 +3938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center gap-2 flex-wrap', 'data-descent-footer': 'true' },
-              h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.w_thrust_ad_lateral_land_gently', '\u2191/W = thrust \u2022 \u2190\u2192/AD = lateral \u2022 Land gently!')),
+              h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.w_thrust_ad_lateral_land_gently', '\u2191/W = thrust \u2022 \u2190\u2192/AD = tilt\u2022 Land gently!')),
               // The crash screen has always told students to "try again" \u2014 but nothing
               // offered a retry, and the frozen canvas never resets itself. Dropping
               // descentStarted unmounts the canvas, so pressing Begin Descent builds a
@@ -7812,8 +7854,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     : '\u27A1\uFE0F CORRECTION DECLINED \u2014 arrived off-nominal'),
                 h('p', { className: 'text-[0.6875rem] text-slate-200' },
                   d.mccChoice === 'corrected'
-                    ? 'It cost 8% of the descent fuel, which is the trade Apollo made on almost every flight: spend a little early so the landing does not have to absorb it.'
-                    : 'You kept the fuel and paid for it at the landing, with about 44% more ground speed to kill. Cheap early, expensive late.')
+                    ? 'It used a little Service Module propellant on the coast, the trade Apollo made on almost every flight: fix a small error early, while it is still small.'
+                    : 'The error grew all the way to the Moon, and the landing paid for it: ' + MM_DESCENT.skipFuel + ' fewer seconds of hover fuel and ' + MM_DESCENT.skipDrift + ' m/s more drift. Cheap early, expensive late.')
               ),
               // Landing performance \u2014 computed inside the descent canvas and, until now,
               // thrown away with it. The one piloting task in the mission deserves a line
@@ -7824,11 +7866,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ? '\u26A0\uFE0F HARD LANDING \u2014 impact at ' + d.landingResult.vVel.toFixed(1) + ' m/s (limit 3 m/s)'
                     : '\uD83C\uDF15 TOUCHDOWN \u2014 landing score ' + d.landingResult.score + '/100 (grade ' + d.landingResult.grade + ')'),
                 h('p', { className: 'text-[0.6875rem] text-slate-200' },
-                  'Vertical ' + d.landingResult.vVel.toFixed(1) + ' m/s \u2022 lateral drift ' + d.landingResult.hVel.toFixed(1) + ' m/s \u2022 fuel remaining ' + d.landingResult.fuel + '%'),
+                  'Vertical ' + d.landingResult.vVel.toFixed(1) + ' m/s \u2022 lateral drift ' + d.landingResult.hVel.toFixed(1) + ' m/s \u2022 ' + (d.landingResult.fuelUnit === 's' ? d.landingResult.fuel + ' s of hover fuel left' : 'fuel remaining ' + d.landingResult.fuel + '%')),
                 h('p', { className: 'text-[0.6875rem] text-slate-200 mt-0.5' },
                   d.landingResult.crashed
                     ? 'Apollo 11 touched down at about 0.5 m/s. Bleed vertical speed early \u2014 Moon gravity is gentle, but it never lets up.'
-                    : 'For scale: Apollo 11 landed at roughly 0.5 m/s with about 25 seconds of hover fuel left.')
+                    : 'For scale: Apollo 11 touched down at roughly 0.5 m/s, just after Houston called "30 seconds" of fuel.')
               ),
               // Surface experiment \u2014 the one thing you left behind that is still working.
               d.seismoDeployed && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
