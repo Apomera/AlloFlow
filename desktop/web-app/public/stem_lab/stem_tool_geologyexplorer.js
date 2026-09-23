@@ -218,6 +218,27 @@
              y: fpClampN(Math.round((NY - 1) / 2 - wy / VOXEL), 0, NY - 1),
              z: fpClampN(Math.round(wz / VOXEL + (NZ - 1) / 2), 0, NZ - 1) };
   }
+  // Top-surface height of a first-person collision prop at (wx, wz), or null outside its
+  // footprint. Cones follow the rugged volcano profile: a straight flank up to the summit
+  // ring, then a shallow caldera. PURE — unit-tested.
+  function fpPropSurfaceY(prop, wx, wz) {
+    if (!prop) return null;
+    var dx = wx - prop.x, dz = wz - prop.z, d = Math.sqrt(dx * dx + dz * dz);
+    if (!(d <= prop.r)) return null;
+    if (prop.kind !== 'cone') return prop.base + prop.h;
+    var run = Math.max(1e-6, prop.r - (prop.rTop || 0));
+    var y = prop.base + Math.min(prop.h, (prop.r - d) * prop.h / run);
+    if (prop.crater && prop.rTop && d < prop.rTop) y -= prop.crater * Math.pow(1 - d / prop.rTop, 1.35);
+    return y;
+  }
+  // Size-attenuated points balloon as they drift past a first-person eye (a 0.42 puff at
+  // 0.3 units is ~300 px), which washed the whole view out after every dig. Cap on-screen size.
+  function capPointSize3d(material3d, maxPx3d) {
+    material3d.onBeforeCompile = function (shader3d) {
+      shader3d.vertexShader = shader3d.vertexShader.replace('#include <fog_vertex>', '#include <fog_vertex>\n\tgl_PointSize = min( gl_PointSize, ' + maxPx3d.toFixed(1) + ' );');
+    };
+    return material3d;
+  }
   function fpExplorerMode(sceneId) { return sceneId === 'deepEarth' ? 'fly' : 'mine'; }
   // Gameplay properties are deliberately keyed by the material's physical state,
   // not by its colour. Water can be entered and swum through; molten cells are a
@@ -929,6 +950,9 @@
   function fpSeedPose(sceneId) {                              // grounded eye-point for surfaces; radial midpoint for Deep Earth flight
     if (sceneId === 'deepEarth') return { pos: { x: 0, y: 0, z: WORLD.d * 0.46 }, yaw: 0, pitch: 0 };
     if (sceneId === 'geode') return { pos: { x: 0, y: 0, z: 0 }, yaw: 0, pitch: -0.18 };   // begin in the hollow; gravity settles you on its crystal floor
+    // Crust: yaw 0 stared into the volcano from 1.6 units away. Face the open ground with the
+    // volcano off to the right; pitch -0.3 still puts the reticle on ground within reach.
+    if (sceneId === 'crust') return { pos: { x: 0, y: WORLD.h * 0.5 + VOXEL * 1.58, z: WORLD.d * 0.28 }, yaw: 0.9, pitch: -0.3 };
     return { pos: { x: 0, y: WORLD.h * 0.5 + VOXEL * 1.58, z: WORLD.d * 0.28 }, yaw: 0, pitch: -0.42 };
   }
   function fpBob(time, moving, reduced, amp) { return (reduced || !moving) ? 0 : Math.sin(time * 9) * amp; }   // reduced-motion / idle → no bob
@@ -3008,6 +3032,7 @@
       depthWrite: false,
       blending: THREE.AdditiveBlending
     });
+    capPointSize3d(atmosphereMoteMaterial3d, 18);   // additive motes near a first-person eye flashed white otherwise
     var atmosphereMotes3d = new THREE.Points(atmosphereMoteGeometry3d, atmosphereMoteMaterial3d);
     scene.add(atmosphereMotes3d);
     var geologyHazeSprites3d = [];
@@ -3793,14 +3818,15 @@
     excavationChipGeometry3d.setAttribute('position', new THREE.BufferAttribute(excavationChipPositions3d, 3));
     var excavationDustMaterial3d = new THREE.PointsMaterial({
       color: 0xc4a982, map: geologyDustTexture3d, alphaTest: 0.012,
-      size: 0.42, transparent: true, opacity: 0,
+      size: 0.42 * VOXEL, transparent: true, opacity: 0,
       depthWrite: false, blending: THREE.NormalBlending
     });
     var excavationChipMaterial3d = new THREE.PointsMaterial({
       color: 0xe2d4c2, map: geologyChipTexture3d, alphaTest: 0.08,
-      size: 0.13, transparent: true, opacity: 0,
+      size: 0.13 * VOXEL, transparent: true, opacity: 0,
       depthWrite: false
     });
+    capPointSize3d(excavationDustMaterial3d, 44); capPointSize3d(excavationChipMaterial3d, 22);
     var excavationDustPoints3d = new THREE.Points(excavationDustGeometry3d, excavationDustMaterial3d);
     var excavationChipPoints3d = new THREE.Points(excavationChipGeometry3d, excavationChipMaterial3d);
     excavationDustPoints3d.visible = false; excavationChipPoints3d.visible = false;
@@ -4290,6 +4316,7 @@
     // Scene-native relief gives the flat voxel surface the landforms students
     // expect to connect with each tectonic process.
     var geologyLandformGroup3d = new THREE.Group();
+    var fpProps3d = [];   // solid surface props (volcanoes, peaks, trees, boulders) the first-person walker collides with
     var geologyLandformMeshes3d = [];
     var geologyLandformGeometries3d = [];
     var geologyLandformMaterials3d = [];
@@ -4317,10 +4344,12 @@
       geologyLandformMeshes3d.push(mesh3d);
       return mesh3d;
     }
-    function addRuggedGeologyCone3d(x3d, z3d, radius3d, height3d, color3d, seed3d, landformStyle3d, baseY3d) {
+    function ruggedSummitRadius3d(radius3d, landformStyle3d) { return radius3d * (landformStyle3d === 'shield-island' ? 0.17 : (landformStyle3d === 'alpine' ? 0.05 : 0.12)); }
+    function ruggedCraterDepth3d(height3d, landformStyle3d) { return landformStyle3d === 'alpine' ? 0 : height3d * (landformStyle3d === 'shield-island' ? 0.085 : 0.105); }
+    function buildRuggedLandformGeometry3d(radius3d, height3d, color3d, seed3d, landformStyle3d) {
       var isShieldIsland3d = landformStyle3d === 'shield-island';
       var isAlpine3d = landformStyle3d === 'alpine';           // sharp horn, no crater, snow above the tree line
-      var summitRadius3d = radius3d * (isShieldIsland3d ? 0.17 : (isAlpine3d ? 0.05 : 0.12));
+      var summitRadius3d = ruggedSummitRadius3d(radius3d, landformStyle3d);
       var landformGeometry3d = new THREE.CylinderGeometry(
         summitRadius3d,
         radius3d,
@@ -4359,7 +4388,7 @@
           landformY3d = height3d * 0.5 + Math.sin(landformAngle3d * 2 + seed3d) * height3d * 0.012;   // keep the horn sharp
         } else if (landformY3d > height3d * 0.485) {
           var calderaRatio3d = Math.min(1, landformRadial3d / (summitRadius3d * 1.04));
-          landformY3d = height3d * 0.5 - height3d * (isShieldIsland3d ? 0.085 : 0.105) *
+          landformY3d = height3d * 0.5 - ruggedCraterDepth3d(height3d, landformStyle3d) *
             Math.pow(1 - calderaRatio3d, 1.35);
         } else if (Math.abs(landformY3d) < height3d * 0.44) {
           landformY3d += Math.sin(landformAngle3d * 3 + seed3d + landformHeightRatio3d * 4.2) *
@@ -4380,6 +4409,17 @@
       }
       landformGeometry3d.setAttribute('color', new THREE.BufferAttribute(landformVertexColors3d, 3));
       landformGeometry3d.computeVertexNormals();
+      return landformGeometry3d;
+    }
+    // A walkable, solid cone matching the rugged mesh's profile (base ring, flat-ish summit,
+    // optional caldera), so the explorer climbs a volcano instead of walking through it.
+    function fpConeProp3d(x3d, z3d, radius3d, height3d, landformStyle3d, baseY3d, obj3d, rayObj3d) {
+      return { kind: 'cone', x: x3d, z: z3d, r: radius3d, rTop: ruggedSummitRadius3d(radius3d, landformStyle3d), h: height3d,
+        base: baseY3d, crater: ruggedCraterDepth3d(height3d, landformStyle3d), stand: true, obj: obj3d, ray: rayObj3d || obj3d };
+    }
+    function addRuggedGeologyCone3d(x3d, z3d, radius3d, height3d, color3d, seed3d, landformStyle3d, baseY3d) {
+      var isShieldIsland3d = landformStyle3d === 'shield-island';
+      var landformGeometry3d = buildRuggedLandformGeometry3d(radius3d, height3d, color3d, seed3d, landformStyle3d);
       var landformMaterial3d = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         vertexColors: true,
@@ -4395,6 +4435,7 @@
       landformMesh3d.receiveShadow = geologyHighDetail3d;
       geologyLandformGeometries3d.push(landformGeometry3d);
       geologyLandformMaterials3d.push(landformMaterial3d);
+      fpProps3d.push(fpConeProp3d(x3d, z3d, radius3d, height3d, landformStyle3d, landformMesh3d.position.y - height3d * 0.5, landformMesh3d));
       return registerGeologyLandform3d(landformMesh3d, z3d, radius3d, false);
     }
     function addGeologySurfaceStrip3d(x3d, width3d, color3d, emissive3d, opacity3d) {
@@ -4956,9 +4997,13 @@
     var ventY = surfTopY + 2.0;          // vent at the top of the cone
     var eruptT = -1, erupted = false;
     var volcano = new THREE.Group();
-    var coneGeo = new THREE.ConeGeometry(2.3, 2.4, 24, 1, true);
-    var coneMat = new THREE.MeshStandardMaterial({ color: 0x39323a, roughness: 0.95, metalness: 0.04, side: THREE.DoubleSide });
+    // Same rugged, rock-textured relief as the other scenes' volcanoes (was a smooth untextured
+    // cone that filled the first-person view as a flat grey wall).
+    var coneGeo = buildRuggedLandformGeometry3d(2.3, 2.4, 0x4a403d, 5.3, 'volcanic-arc');
+    var coneMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: rockSurfaceTexture3d, bumpMap: rockSurfaceTexture3d, bumpScale: 0.043, roughness: 0.92, metalness: 0.03 });
     var coneMesh = new THREE.Mesh(coneGeo, coneMat); coneMesh.position.set(0, surfTopY + 1.2, 0); volcano.add(coneMesh);
+    coneMesh.castShadow = geologyHighDetail3d; coneMesh.receiveShadow = geologyHighDetail3d;
+    fpProps3d.push(fpConeProp3d(0, 0, 2.3, 2.4, 'volcanic-arc', surfTopY, volcano, coneMesh));
     var craterGeo = new THREE.SphereGeometry(0.6, 16, 12);
     var craterMat = new THREE.MeshStandardMaterial({ color: 0xff6a1e, emissive: 0xff4500, emissiveIntensity: 1.3, transparent: true, opacity: 0.0 });
     var craterGlow = new THREE.Mesh(craterGeo, craterMat); craterGlow.position.set(0, ventY - 0.25, 0); craterGlow.visible = false; volcano.add(craterGlow);
@@ -5097,7 +5142,9 @@
         if (SCENE.id === 'collision' && v.key === 'summitLimestone') col.lerp(WHITE, 0.5);   // snow line: the summit reads white from any distance
         // when a rock type is selected, make every voxel of that type glow and let
         // the rest recede — so its distribution through the crust pops out.
-        if (highlightKey && !(SCENE.id === 'deepEarth' && geologyScienceStage3d > 0)) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
+        // Not in first person: every dig selects the exposed layer, and tinting all of it
+        // toward white washed the whole ground out around the explorer.
+        if (highlightKey && !fp.active && !(SCENE.id === 'deepEarth' && geologyScienceStage3d > 0)) { if (v.key === highlightKey) col.lerp(WHITE, 0.42); else col.multiplyScalar(0.5); }
         mesh.setColorAt(i, col);
         var voxelGlowStrength3d = geologyGlowStrength3d(v);
         if (voxelGlowStrength3d > 0 &&
@@ -5162,8 +5209,9 @@
         var leaf = new THREE.Mesh(leafGeo, lm); leaf.position.y = 0.82;
         var leaf2 = new THREE.Mesh(leafGeo, lm); leaf2.position.y = 1.18; leaf2.scale.set(0.68, 0.68, 0.68);
         g.add(trunk); g.add(leaf); g.add(leaf2); g.scale.set(sc, sc, sc);
-        g.position.set(p[0], p[1] + 0.5, p[2]); g.userData = { x: x, z: z };
+        g.position.set(p[0], p[1] + VOXEL * 0.5, p[2]); g.userData = { x: x, z: z };   // stand on the top face at every detail level (a fixed +0.5 floated them at High)
         scene.add(g); treeMeshes.push(g);
+        fpProps3d.push({ kind: 'cyl', x: p[0], z: p[2], r: 0.15 * sc, h: 1.6 * sc, base: p[1] + VOXEL * 0.5, stand: false, obj: g, ray: g });
       }
       // boulders — a few scattered rocks for surface detail
       var rockGeo = new THREE.DodecahedronGeometry(0.32, 0), rockMat = new THREE.MeshStandardMaterial({ color: 0x8a8576, roughness: 1.0, flatShading: true });
@@ -5173,8 +5221,9 @@
         var rs = 0.7 + (((rx * 5 + rz * 3) % 10) / 10) * 0.6;
         var rock = new THREE.Mesh(rockGeo, rockMat);
         rock.scale.set(rs, rs * 0.7, rs); rock.rotation.set(rx, rz, rx + rz);
-        rock.position.set(rp[0], rp[1] + 0.6, rp[2]); rock.userData = { x: rx, z: rz };
+        rock.position.set(rp[0], rp[1] + VOXEL * 0.5 + 0.1, rp[2]); rock.userData = { x: rx, z: rz };
         scene.add(rock); treeMeshes.push(rock);
+        fpProps3d.push({ kind: 'cyl', x: rp[0], z: rp[2], r: 0.28 * rs, h: 0.1 + 0.2 * rs, base: rp[1] + VOXEL * 0.5, stand: true, obj: rock, ray: rock });
       }
       eng._treeGeo = [trunkGeo, leafGeo, rockGeo]; eng._treeMat = [trunkMat, rockMat].concat(leafMats);
     })();
@@ -5182,14 +5231,37 @@
     var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), down = null;
     var FP_EYE_HEIGHT = VOXEL * 1.55, FP_BODY_HEIGHT = VOXEL * 1.78, FP_RADIUS = VOXEL * 0.27;
     var FP_GRAVITY = VOXEL * 18, FP_JUMP_SPEED = VOXEL * 6.2, FP_REACH = VOXEL * 6;
+    // Highest ledge the walker climbs without jumping. A whole voxel (1.0) still needs a jump;
+    // rubble, boulders, volcano flanks and uneven dug floors are walked over.
+    var FP_STEP = VOXEL * 0.55;
     function fpVoxelAtWorld(wx, wy, wz) {
       if (wx < -WORLD.w * 0.5 || wx > WORLD.w * 0.5 || wy < -WORLD.h * 0.5 || wy > WORLD.h * 0.5 || wz < -WORLD.d * 0.5 || wz > WORLD.d * 0.5) return null;
       var v = fpWorldToVoxel(wx, wy, wz), voxel = voxelByKey[v.x + ',' + v.y + ',' + v.z];
       return (voxel && visible(voxel)) ? voxel : null;
     }
+    function fpPropLive(prop) { for (var o = prop.obj; o && o !== scene; o = o.parent) { if (!o.visible) return false; } return true; }
+    // Standable props only block below their top minus a step, so a flank or boulder is
+    // walked onto (the ground search lifts the walker) instead of stopping it dead.
+    function fpPropSolidAt(wx, wy, wz) {
+      for (var pi = 0; pi < fpProps3d.length; pi++) {
+        var prop = fpProps3d[pi], top = fpPropSurfaceY(prop, wx, wz);
+        if (top != null && wy >= prop.base - VOXEL * 0.05 && wy < (prop.stand ? top - FP_STEP : top) && fpPropLive(prop)) return true;
+      }
+      return false;
+    }
+    function fpPropGroundY(wx, wz, maxFeetY) {
+      var best = null;
+      for (var pi = 0; pi < fpProps3d.length; pi++) {
+        var prop = fpProps3d[pi]; if (!prop.stand) continue;
+        var top = fpPropSurfaceY(prop, wx, wz);
+        if (top != null && top <= maxFeetY + FP_STEP && (best == null || top > best) && fpPropLive(prop)) best = top;
+      }
+      return best;
+    }
     function fpPointSolid(wx, wy, wz) {
       var voxel = fpVoxelAtWorld(wx, wy, wz);
-      return !!(voxel && fpMaterialPhysics(voxel.key).kind === 'solid');
+      if (voxel && fpMaterialPhysics(voxel.key).kind === 'solid') return true;
+      return fpProps3d.length ? fpPropSolidAt(wx, wy, wz) : false;
     }
     function fpMediumAt(wx, eyeY, wz) {
       var samples = [eyeY - FP_EYE_HEIGHT * 0.72, eyeY - FP_EYE_HEIGHT * 0.28, eyeY];
@@ -5330,7 +5402,7 @@
       if (fp.tool === 'drill' && fp.drillHeld && !fp.drillOverheated && !fp.mining && chainNow >= fp.drillNextAt) fpMineAtCrosshair(false, true);
     }
     function fpBodyBlocked(wx, eyeY, wz) {
-      var feet = eyeY - FP_EYE_HEIGHT + VOXEL * 0.08;
+      var feet = eyeY - FP_EYE_HEIGHT + FP_STEP + VOXEL * 0.02;   // anything lower is a step the ground search climbs
       var head = eyeY + (FP_BODY_HEIGHT - FP_EYE_HEIGHT) - VOXEL * 0.08;
       var ys = [feet, (feet + head) * 0.5, head];
       var offsets = [[0, 0], [FP_RADIUS, 0], [-FP_RADIUS, 0], [0, FP_RADIUS], [0, -FP_RADIUS]];
@@ -5349,8 +5421,9 @@
           var voxel = voxelByKey[col.x + ',' + vy + ',' + col.z];
           if (!voxel || !visible(voxel) || fpMaterialPhysics(voxel.key).kind !== 'solid') continue;
           var top = worldPos(voxel)[1] + VOXEL * 0.5;
-          if (top <= maxFeetY + VOXEL * 0.2 && (best == null || top > best)) best = top;
+          if (top <= maxFeetY + FP_STEP && (best == null || top > best)) best = top;
         }
+        if (fpProps3d.length) { var propTop = fpPropGroundY(sx, sz, maxFeetY); if (propTop != null && (best == null || propTop > best)) best = propTop; }
       }
       return best == null ? null : best + FP_EYE_HEIGHT;
     }
@@ -5522,6 +5595,14 @@
         : 'That is magma: molten rock above ~1000 °C, so no pick or drill can bite it. You returned to your last safe foothold. Tip: the baked rim around the chamber (contact metamorphism) shows how far its heat reached.');
       if (window._alloHaptic) { try { window._alloHaptic('error'); } catch (e) {} }
     }
+    // A horizontal move is allowed when the body fits at the current height and, if the ground
+    // there is a step higher, the body still fits once lifted onto it (no stepping into a ceiling).
+    function fpMoveAllowed(wx, wz) {
+      if (fpBodyBlocked(wx, fp.pos.y, wz)) return false;
+      if (!fp.onGround) return true;
+      var ground = fpGroundEyeY(wx, wz, fp.pos.y - FP_EYE_HEIGHT);
+      return ground == null || ground <= fp.pos.y + 1e-4 || !fpBodyBlocked(wx, ground, wz);
+    }
     function fpWalkStep(dt, fwd) {
       var medium = fpMediumAt(fp.pos.x, fp.pos.y, fp.pos.z);
       if (medium.kind === 'hazard') { fpHazardRespawn(); return; }
@@ -5546,16 +5627,22 @@
       var minX = -WORLD.w * 0.5 + FP_RADIUS, maxX = WORLD.w * 0.5 - FP_RADIUS;
       var minZ = -WORLD.d * 0.5 + FP_RADIUS, maxZ = WORLD.d * 0.5 - FP_RADIUS;
       var nx = fpClampN(fp.pos.x + fp.velocity.x * dt, minX, maxX);
-      if (!fpBodyBlocked(nx, fp.pos.y, fp.pos.z)) fp.pos.x = nx; else { fp.velocity.x = 0; if (Math.abs(ix) > 0.05) fpMarkBlocked(); }
+      if (fpMoveAllowed(nx, fp.pos.z)) fp.pos.x = nx; else { fp.velocity.x = 0; if (Math.abs(ix) > 0.05) fpMarkBlocked(); }
       var nz = fpClampN(fp.pos.z + fp.velocity.z * dt, minZ, maxZ);
-      if (!fpBodyBlocked(fp.pos.x, fp.pos.y, nz)) fp.pos.z = nz; else { fp.velocity.z = 0; if (Math.abs(iz) > 0.05) fpMarkBlocked(); }
+      if (fpMoveAllowed(fp.pos.x, nz)) fp.pos.z = nz; else { fp.velocity.z = 0; if (Math.abs(iz) > 0.05) fpMarkBlocked(); }
       if (!inFluid) fp.velocity.y -= FP_GRAVITY * dt;
       var nextEyeY = fp.pos.y + fp.velocity.y * dt;
+      var wasGrounded = fp.onGround;
       if (fp.velocity.y > 0 && fpBodyBlocked(fp.pos.x, nextEyeY, fp.pos.z)) {
         fp.velocity.y = 0; fpMarkBlocked();
       } else {
         var floorEyeY = fpGroundEyeY(fp.pos.x, fp.pos.z, fp.pos.y - FP_EYE_HEIGHT);
-        if (fp.velocity.y <= 0 && floorEyeY != null && nextEyeY <= floorEyeY) {
+        if (!inFluid && wasGrounded && fp.velocity.y <= 0 && floorEyeY != null && floorEyeY < fp.pos.y && fp.pos.y - floorEyeY <= FP_STEP) {
+          // Down a flank or off a small ledge: stay planted (camera eases) instead of hopping.
+          fp.stepLift = fpClampN((fp.stepLift || 0) - (fp.pos.y - floorEyeY), -FP_STEP, FP_STEP);
+          fp.pos.y = floorEyeY; fp.velocity.y = 0; fp.onGround = true;
+        } else if (fp.velocity.y <= 0 && floorEyeY != null && nextEyeY <= floorEyeY) {
+          if (wasGrounded && floorEyeY > fp.pos.y) fp.stepLift = fpClampN((fp.stepLift || 0) + (floorEyeY - fp.pos.y), -FP_STEP, FP_STEP);
           // Hard landing → brief camera dip + haptic, so a drop down a shaft has weight
           // (skipped under reduced motion; the dip decays in applyFP).
           if (!fp.onGround && fp.velocity.y < -FP_JUMP_SPEED * 0.85) {
@@ -5610,7 +5697,7 @@
       var seed = safe;
       if (!seed) { var landing = fpLandingPose(SCENE.id); if (!landing.ok) return fpBail(landing.cause); seed = landing; }
       fp.pos = { x: seed.pos.x, y: seed.pos.y, z: seed.pos.z }; fp.yaw = seed.yaw; fp.pitch = seed.pitch;
-      fp.velocity = { x: 0, y: 0, z: 0 }; fp.onGround = false; fp.jumpLatch = false; fp.mining = null; fpSetMiningProgress(0, false);
+      fp.velocity = { x: 0, y: 0, z: 0 }; fp.onGround = false; fp.jumpLatch = false; fp.mining = null; fp.stepLift = 0; fpSetMiningProgress(0, false);
       return { mode: fp.mode, sceneId: SCENE.id, relocated: !!seed.relocated };
     }
     function fpMiningProgressNode() {
@@ -5650,14 +5737,26 @@
       label.textContent = material.name + ' · ' + profile.label + (profile.mineable ? (fp.tool === 'drill' ? ' · hold X to drill' : ' · click or X to dig') : ' · cannot excavate');
       label.setAttribute('data-target-ready', profile.mineable ? 'true' : 'false');
     }
+    function fpPropRayDistance() {                            // nearest live prop along the current reticle ray (raycaster already set)
+      var nearest = Infinity;
+      for (var pi = 0; pi < fpProps3d.length; pi++) {
+        var prop = fpProps3d[pi], dx = prop.x - fp.pos.x, dz = prop.z - fp.pos.z;
+        if (!prop.ray || Math.sqrt(dx * dx + dz * dz) > FP_REACH + prop.r || !fpPropLive(prop)) continue;
+        var propHits = raycaster.intersectObject(prop.ray, true);
+        if (propHits.length && propHits[0].distance < nearest) nearest = propHits[0].distance;
+      }
+      return nearest;
+    }
     function fpTargetVoxel() {
       if (!fp.active) return null;
       var oldFar = raycaster.far; raycaster.far = FP_REACH;
       pointer.set(0, 0); camera.updateMatrixWorld();
       raycaster.setFromCamera(pointer, camera);
       var hits = raycaster.intersectObject(mesh, false), v = null;
+      var propNear = fpPropRayDistance();                     // a volcano, tree or boulder in front hides the rock behind it
       raycaster.far = oldFar;
       for (var hi = 0; hi < hits.length; hi++) {
+        if (hits[hi].distance > propNear) break;
         var candidate = instanceToVoxel[hits[hi].instanceId];
         if (candidate && fpMaterialPhysics(candidate.key).kind !== 'fluid') { v = candidate; break; }
       }
@@ -6744,8 +6843,9 @@ function updateCoreRig3d(dt3d) {
         if (opts.onFpBail) { try { opts.onFpBail({ reason: landing.cause }); } catch (e) {} }
         return;
       }
-      fp.active = true; fp.reduced = !!(o && o.reduced); fp.fallLoopCount = 0;
+      fp.active = true; fp.reduced = !!(o && o.reduced); fp.fallLoopCount = 0; fp.stepLift = 0; fp.landDip = 0;
       landingMarker3d.visible = false; landingBeam3d.visible = false; updateLandingPin3d(); updateLayerCallout3d(); updateHoverCard3d(null);
+      if (highlightKey) rebuild();                            // drop the orbit-view type tint while walking
       fp.layersReached = {}; fp.enteredAt = (window.performance && performance.now) ? performance.now() : Date.now(); heatVignetteLevel = -1;
       undoPreviewRequested = false; updateUndoPreview();
       fp.savedPos = camera.position.clone();
@@ -6779,6 +6879,7 @@ function updateCoreRig3d(dt3d) {
       if (fp.savedPos) camera.position.copy(fp.savedPos);
       if (controls) { if (fp.savedTgt) controls.target.copy(fp.savedTgt); controls.enabled = fp.savedEnabled; controls.update(); }
       else if (fp.savedTgt) camera.lookAt(fp.savedTgt);
+      if (!eng.disposed && highlightKey) rebuild();            // restore the type tint for the orbit view
       if (!eng.disposed) updateLandingMarker3d();
       if (opts.onFpExit) opts.onFpExit();
     }
@@ -6810,6 +6911,7 @@ function updateCoreRig3d(dt3d) {
       var moving = !!(fp.input.fwd || fp.input.strafe || (fp.mode === 'fly' && fp.input.vert));
       var bob = fpBob(t, moving && (fp.mode === 'fly' || fp.onGround), fp.reduced, fp.mode === 'mine' ? 0.035 : 0.05);
       if (fp.landDip) { bob -= fp.landDip; fp.landDip *= Math.exp(-11 * dt); if (fp.landDip < 0.002) fp.landDip = 0; }
+      if (fp.stepLift) { bob -= fp.stepLift; fp.stepLift *= Math.exp(-14 * dt); if (Math.abs(fp.stepLift) < 0.002) fp.stepLift = 0; }   // ease the eye over steps
       camera.position.set(fp.pos.x, fp.pos.y + bob, fp.pos.z);
       camera.lookAt(fp.pos.x + fwd.x, fp.pos.y + fwd.y, fp.pos.z + fwd.z);
       fpTargetVoxel();
@@ -6965,7 +7067,14 @@ function updateCoreRig3d(dt3d) {
     eng.setUndoPreview = function (b) { undoPreviewRequested = !!b; return updateUndoPreview(); };
     eng.setWaterTable = function (b) { waterTableOn = !!b; waterMesh.visible = waterTableOn && !focusLens; };
     eng.erupt = function () { startEruption(); };
-    eng.setHighlight = function (k) { highlightKey = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null; hoverBox.visible = false; updateHoverCard3d(null); rebuild(); if (focusLens) fpReseatIfUnsupported('lens'); };
+    eng.setHighlight = function (k) {
+      var next = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null, changed = next !== highlightKey;
+      highlightKey = next; hoverBox.visible = false; updateHoverCard3d(null);
+      // Every dig re-selects the exposed layer, usually the same one: skip the full rebuild
+      // when nothing changed, and in first person unless the focus lens depends on the key.
+      if (changed && (!fp.active || focusLens)) rebuild();
+      if (focusLens) fpReseatIfUnsupported('lens');
+    };
     eng.setFocusLens = function (b) { focusLens = !!b; if (focusLens) { excavate = false; undoPreviewRequested = false; } hoverBox.visible = false; rebuild(); fpReseatIfUnsupported('lens'); };
     eng.setScienceStage = function (n) { geologyScienceStage3d = Math.max(0, Math.min(2, Math.round(Number(n) || 0))); rebuild(); return geologyScienceStage3d; };
     eng.getVisualState = function () { return { coreRigDeployed: coreRigState3d.deployed, coreRigStage: coreRigState3d.stage, coreRigSampleCount: coreRigState3d.samples.length, surveyActive: surveyBox.visible, focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, redoCount: excavationRedo.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
@@ -7079,7 +7188,7 @@ function updateCoreRig3d(dt3d) {
     window.__alloGeologyPure = {
       rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, collisionKeyAt: collisionKeyAt, collisionTopo: collisionTopo, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount,
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, collisionGeotherm: collisionGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
-      fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
+      fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpPropSurfaceY: fpPropSurfaceY, capPointSize3d: capPointSize3d, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
       coreRigSupported: coreRigSupported, coreRigAngleDegrees: coreRigAngleDegrees, coreRigPath: coreRigPath, coreRigStopReason: coreRigStopReason, coreRigDrillDuration: coreRigDrillDuration, coreRigReportSummary: coreRigReportSummary, coreRigGradeForScore: coreRigGradeForScore, coreRigEvaluation: coreRigEvaluation, coreRigResearchReward: coreRigResearchReward, advanceCoreRigResearch: advanceCoreRigResearch, coreRigStopLabel: coreRigStopLabel, coreRigFeedProfile: coreRigFeedProfile, coreRigFormationLoad: coreRigFormationLoad, coreRigIntegrityLoss: coreRigIntegrityLoss, coreRigIntegrityFromStress: coreRigIntegrityFromStress, coreRigQualitySummary: coreRigQualitySummary, coreRigTrajectoryScan: coreRigTrajectoryScan, coreRigTrajectorySnapshot: coreRigTrajectorySnapshot, coreRigTrajectorySummary: coreRigTrajectorySummary, coreRigBoreBrief: coreRigBoreBrief, coreRigCoreCassette: coreRigCoreCassette, coreRigCompressedCore: coreRigCompressedCore, coreRigCompareReports: coreRigCompareReports, coreRigNextExperiment: coreRigNextExperiment, coreRigReportStableId: coreRigReportStableId, coreRigIntervalScanMs: coreRigIntervalScanMs, coreRigIntervalScanning: coreRigIntervalScanning, coreRigIntervalFeedback: coreRigIntervalFeedback, coreRigFormationCue: coreRigFormationCue, coreRigChallengeProgress: coreRigChallengeProgress, coreRigProgramKey: coreRigProgramKey, coreRigProgramCatalog: coreRigProgramCatalog, coreRigProgramRating: coreRigProgramRating, coreRigCertificationTier: coreRigCertificationTier, coreRigCertificationReward: coreRigCertificationReward, coreRigCertificationXpTarget: coreRigCertificationXpTarget, normalizeCoreRigPrograms: normalizeCoreRigPrograms, advanceCoreRigCertification: advanceCoreRigCertification, coreRigCertificationSummary: coreRigCertificationSummary, coreRigCertificationGuidance: coreRigCertificationGuidance, coreRigCertificationTiers: coreRigCertificationTiers, coreRigAngles: function () { return Object.assign({}, CORE_RIG_ANGLES); }, coreRigDepths: function () { return CORE_RIG_DEPTHS.slice(); }, coreRigFeedModes: function () { return Object.keys(CORE_RIG_FEED_MODES); },
       fieldExpeditions: function () { return FIELD_EXPEDITIONS; }, sceneVoxelKeys: function (sceneId) { return SCENES[sceneId] ? SCENES[sceneId].voxelKeys.slice() : []; }, fieldExpeditionFor: fieldExpeditionFor, beginFieldRun: beginFieldRun, retireFieldRunEntry: retireFieldRunEntry, advanceFieldRun: advanceFieldRun, fieldRunReward: fieldRunReward, fieldRankForXp: fieldRankForXp, fieldSpecimenName: fieldSpecimenName, fieldCollectibleKeys: fieldCollectibleKeys, recordFieldDiscovery: recordFieldDiscovery, fieldDiscoveryProgress: fieldDiscoveryProgress, fieldJournalEntries: fieldJournalEntries, fieldJournalSummary: fieldJournalSummary,
       fpExplorerMode: fpExplorerMode, fpSeedPose: fpSeedPose, fpLandingSearch: fpLandingSearch, layerExtent: layerExtent, layerCauseText: layerCauseText, typeInkFor: typeInkFor, typeColors: function () { return Object.assign({}, TYPE_COLOR); }, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
@@ -7125,8 +7234,11 @@ function updateCoreRig3d(dt3d) {
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       function upd(key, val) { if (ctx.update) ctx.update('geologyExplorer', key, val); }
       var typeInk = function (type) { return typeInkFor(type, isDark); };
+      var finePointer = (function () { try { return !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches); } catch (e) { return false; } })();
 
       // ── hooks (all unconditional) ──
+      var frx = React.useState(false); var fieldRunExpanded = frx[0], setFieldRunExpanded = frx[1];   // first-person Field Run card starts compact
+      var fkv = React.useState(true); var fpKeysVisible = fkv[0], setFpKeysVisible = fkv[1];          // key legend shows briefly on entry, then folds away
       var containerRef = React.useRef(null);
       var fsRef = React.useRef(null);
       var fsToggleRef = React.useRef(null);
@@ -8009,6 +8121,9 @@ function updateCoreRig3d(dt3d) {
             ? 'Mine mode on. W A S D or arrow keys walk, Space jumps, Shift sprints, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, R deploys the directional core rig, G surveys a Field Run target, Z undoes, Y redoes, and H returns home. Escape exits.'
             : 'Deep Earth flight on. W A S D or arrow keys fly, Q and E move up and down, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, Enter excavates instantly, Z undoes, Y redoes, and H returns home. Escape exits.';
           announce(t('stem.geology.fp_on', fpInstructions));
+          setFpKeysVisible(true);
+          var keysTimer = setTimeout(function () { setFpKeysVisible(false); }, 12000);   // legend folds into a Keys button so the view stays clear
+          return function () { clearTimeout(keysTimer); };
         } else {
           setFpHud(null);
           try { var pf = fpPrevFocusRef.current; if (pf && pf.focus) pf.focus(); else if (fpToggleRef.current) fpToggleRef.current.focus(); } catch (e) {}
@@ -10085,9 +10200,10 @@ function updateCoreRig3d(dt3d) {
           var rank = fieldRankForXp(book.xp), rankRange = rank.nextThreshold == null ? 1 : Math.max(1, rank.nextThreshold - rank.threshold);
           var rankProgress = rank.nextThreshold == null ? 100 : Math.max(0, Math.min(100, Math.round(((Number(book.xp) || 0) - rank.threshold) / rankRange * 100)));
           var discoveryProgress = fieldDiscoveryProgress(scene, book.discoveredByScene);
+          var expanded = !!fieldRunExpanded, detailsId = 'geology-field-run-details-' + scene;
           var content = entry.active
             ? [
-                h('p', { key: 'brief', className: 'mt-1 text-[10px] leading-snug text-slate-300' }, contract.brief),
+                expanded ? h('p', { key: 'brief', className: 'mt-1 text-[10px] leading-snug text-slate-300' }, contract.brief) : null,
                 h('ol', { key: 'targets', className: 'mt-1.5 grid gap-0.5', 'aria-label': t('stem.geology.a11y.specimens_in_collection_order', 'Specimens in collection order') }, contract.targets.map(function (key, index) {
                   var done = index < collected.length;
                   var current = index === collected.length && !entry.ready;
@@ -10104,19 +10220,20 @@ function updateCoreRig3d(dt3d) {
                     ])
               ]
             : [
-                h('p', { key: 'brief', className: 'mt-1 text-[10px] leading-snug text-slate-300' }, 'Next: ' + contract.label + ' · ' + contract.brief),
-                h('button', { key: 'start', type: 'button', onClick: function () { startFieldRun(scene); }, className: 'mt-2 min-h-10 w-full rounded-md border border-amber-300 bg-amber-500 px-2 text-[10px] font-extrabold text-amber-950 shadow', 'aria-label': tf('stem.geology.a11y.start_field_run', 'Start field run: {label}', { label: contract.label })}, 'Start 3-specimen run')
+                expanded ? h('p', { key: 'brief', className: 'mt-1 text-[10px] leading-snug text-slate-300' }, 'Next: ' + contract.label + ' · ' + contract.brief) : null,
+                h('button', { key: 'start', type: 'button', onClick: function () { startFieldRun(scene); }, className: 'mt-1.5 min-h-9 w-full rounded-md border border-amber-300 bg-amber-500 px-2 text-[10px] font-extrabold text-amber-950 shadow', 'aria-label': tf('stem.geology.a11y.start_field_run', 'Start field run: {label}', { label: contract.label })}, 'Start 3-specimen run')
               ];
-          return h('section', { 'data-geology-field-run': 'true', 'data-state': entry.ready ? 'ready' : (entry.active ? 'active' : 'available'), className: 'absolute left-2 top-28 z-10 rounded-lg border border-amber-300/50 bg-slate-950/90 p-2 text-white shadow-xl ' + (coreRigHud && coreRigHud.deployed ? 'hidden md:block' : ''), style: { width: 'min(220px, calc(100% - 5.5rem))' }, role: 'region', 'aria-label': t('stem.geology.a11y.field_run_contract', 'Field run contract') }, [
+          return h('section', { 'data-geology-field-run': 'true', 'data-expanded': expanded ? 'true' : 'false', 'data-state': entry.ready ? 'ready' : (entry.active ? 'active' : 'available'), className: 'absolute left-2 top-28 z-10 rounded-lg border border-amber-300/50 bg-slate-950/90 p-2 text-white shadow-xl ' + (coreRigHud && coreRigHud.deployed ? 'hidden md:block' : ''), style: { width: expanded ? 'min(220px, calc(100% - 5.5rem))' : 'min(176px, calc(100% - 5.5rem))' }, role: 'region', 'aria-label': t('stem.geology.a11y.field_run_contract', 'Field run contract') }, [
             h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
               h('h3', { key: 'title', className: 'truncate text-[11px] font-extrabold text-amber-200' }, '🧭 ' + heading),
-              h('span', { key: 'xp', className: 'shrink-0 text-[10px] font-bold text-emerald-300', title: (book.total || 0) + ' field runs completed' }, (book.xp || 0) + ' XP')
+              h('span', { key: 'xp', className: 'shrink-0 text-[10px] font-bold text-emerald-300', title: (book.total || 0) + ' field runs completed' }, (book.xp || 0) + ' XP'),
+              h('button', { key: 'toggle', type: 'button', 'data-geology-field-run-toggle': 'true', 'aria-expanded': expanded ? 'true' : 'false', 'aria-controls': expanded ? detailsId : undefined, 'aria-label': expanded ? 'Hide field run details' : 'Show field run details', onClick: function () { setFieldRunExpanded(!expanded); }, className: 'shrink-0 min-h-6 min-w-6 rounded border border-slate-500/60 bg-slate-800 px-1 text-[10px] font-bold text-slate-100' }, expanded ? '▾' : '▸')
             ]),
-            h('div', { key: 'rank', className: 'mt-1', 'data-geology-field-rank': rank.label }, [
+            expanded ? h('div', { key: 'rank', id: detailsId, className: 'mt-1', 'data-geology-field-rank': rank.label }, [
               h('div', { key: 'labels', className: 'flex justify-between gap-2 text-[10px] font-semibold text-slate-300' }, [h('span', { key: 'current' }, rank.label), h('span', { key: 'next' }, rank.nextLabel ? rank.remaining + ' XP to ' + rank.nextLabel : 'Top rank')]),
               h('div', { key: 'track', className: 'mt-0.5 h-1 overflow-hidden rounded-full bg-slate-700', role: 'progressbar', 'aria-label': t('stem.geology.a11y.field_rank_progress', 'Field rank progress'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rankProgress }, h('span', { className: 'block h-full rounded-full bg-emerald-400', style: { width: rankProgress + '%' } })),
               h('div', { key: 'journal', 'data-geology-field-journal': 'true', className: 'mt-1 flex items-center justify-between gap-2 text-[10px] font-semibold ' + (discoveryProgress.complete ? 'text-emerald-300' : 'text-cyan-200') }, [h('span', { key: 'label' }, '📓 Scene specimens'), h('span', { key: 'count' }, discoveryProgress.found + '/' + discoveryProgress.total + (discoveryProgress.complete ? ' complete' : ' logged'))])
-            ])
+            ]) : null
           ].concat(content));
         }
         function coreRigConsole() {
@@ -10563,14 +10680,16 @@ function updateCoreRig3d(dt3d) {
             h('option', { value: 'standard' }, t('stem.geology.detail_std', 'Detail: Standard')),
             h('option', { value: 'high' }, t('stem.geology.detail_high', 'Detail: High'))),
           // first-person touch pad: walk + jump on surface scenes, six-axis movement in Deep Earth
-          (fpOn && !rigDeployed) ? h('div', { className: 'absolute bottom-2 left-2 z-10 grid gap-1', style: { gridTemplateColumns: 'repeat(3, auto)' }, role: 'group', 'aria-label': fpWalkScene ? 'First-person walk and jump controls' : 'First-person flight controls' },
+          // On a mouse + keyboard device the pad is a backup, so it recedes until pointed at or focused; touch keeps it solid.
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-move-pad': finePointer ? 'recessed' : 'solid', className: 'absolute bottom-2 left-2 z-10 grid gap-1 transition-opacity ' + (finePointer ? 'opacity-50 hover:opacity-100 focus-within:opacity-100' : ''), style: { gridTemplateColumns: 'repeat(3, auto)' }, role: 'group', 'aria-label': fpWalkScene ? 'First-person walk and jump controls' : 'First-person flight controls' },
             emptyCell('a'), padBtn('▲', 'fwd', 1, 'Move forward'), emptyCell('b'),
             padBtn('◀', 'strafe', -1, 'Move left'), padBtn('▼', 'fwd', -1, 'Move back'), padBtn('▶', 'strafe', 1, 'Move right'),
             fpWalkScene ? emptyCell('walk-a') : padBtn('⤒', 'vert', 1, 'Move up'),
             fpWalkScene ? padBtn('⇧', 'jump', 1, 'Jump') : emptyCell('c'),
             fpWalkScene ? emptyCell('walk-b') : padBtn('⤓', 'vert', -1, 'Move down')) : null,
           // on-screen key legend (visual; SR gets layer announcements via the live region)
-          (fpOn && !rigDeployed) ? h('div', { className: 'absolute bottom-2 left-1/2 z-10 hidden max-w-[58%] -translate-x-1/2 rounded-md px-2 py-1 text-center text-[10px] sm:block ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', fpWalkScene ? 'WASD walk · 1 pick · 2 drill · hold X dig · R core rig · G survey · Z/Y undo/redo · H home' : 'WASD fly · 1 pick · 2 drill · hold X dig · G survey · Z/Y undo/redo · H home')) : null,
+          (fpOn && !rigDeployed && fpKeysVisible) ? h('div', { 'data-geology-key-legend': 'true', className: 'absolute bottom-2 left-1/2 z-10 hidden max-w-[58%] -translate-x-1/2 rounded-md px-2 py-1 text-center text-[10px] sm:block ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', fpWalkScene ? 'WASD walk · 1 pick · 2 drill · hold X dig · R core rig · G survey · Z/Y undo/redo · H home' : 'WASD fly · 1 pick · 2 drill · hold X dig · G survey · Z/Y undo/redo · H home')) : null,
+          (fpOn && !rigDeployed && !fpKeysVisible) ? h('button', { type: 'button', 'data-geology-key-legend-toggle': 'true', onClick: function () { setFpKeysVisible(true); }, className: 'absolute bottom-2 left-1/2 z-10 hidden min-h-8 -translate-x-1/2 rounded-md border px-2 text-[10px] font-bold sm:block ' + (isDark ? 'border-slate-600 bg-slate-900/70 text-slate-200' : 'border-slate-300 bg-white/80 text-slate-700'), 'aria-label': 'Show keyboard controls', title: 'Show keyboard controls' }, '⌨ Keys') : null,
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-reticle': 'true', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded border border-white/55 bg-black/15 text-xl font-light leading-none text-white shadow-[0_1px_6px_rgba(0,0,0,.8)]', 'aria-hidden': 'true' }, '+') : null,
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-target': 'true', 'data-target-ready': 'false', 'data-target-key': '__none', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 mt-6 -translate-x-1/2 rounded-full border border-white/20 bg-slate-950/75 px-2.5 py-1 text-[10px] font-bold text-slate-100 shadow-lg', 'aria-hidden': 'true' }, 'Aim at an exposed block') : null,
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-progress-shell': 'true', 'data-active': 'false', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 mt-14 h-1.5 w-28 -translate-x-1/2 overflow-hidden rounded-full border border-white/20 bg-slate-950/70 opacity-40 data-[active=true]:opacity-100', 'aria-hidden': 'true' },
