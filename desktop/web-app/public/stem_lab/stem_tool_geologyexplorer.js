@@ -243,6 +243,45 @@
     if (prop.crater && prop.rTop && d < prop.rTop) y -= prop.crater * Math.pow(1 - d / prop.rTop, 1.35);
     return y;
   }
+  // ── Diggable relief (pure). Peaks and volcanoes are smooth cones drawn above the voxel
+  // block, so their rock cannot be carved voxel by voxel. Each keeps a height map of how far the
+  // pickaxe has cut it down (RELIEF_G² cells over its footprint). Its surface is the lower of
+  // the cone profile and the cut; a spot cut to the base is dug through to the rock below. ──
+  var RELIEF_G = 28;
+  function reliefCreate(prop) {
+    var top = Math.round((prop.base + prop.h + 0.05) * 1000) / 1000, cut = new Float64Array(RELIEF_G * RELIEF_G);   // doubles: heights save and replay exactly
+    cut.fill(top);
+    return { G: RELIEF_G, x0: prop.x - prop.r, z0: prop.z - prop.r, size: prop.r * 2, base: prop.base, top: top, cut: cut };
+  }
+  function reliefSample(relief, wx, wz) {                    // bilinear over cell centres; uncut outside
+    var G = relief.G, cs = relief.size / G, fx = (wx - relief.x0) / cs - 0.5, fz = (wz - relief.z0) / cs - 0.5;
+    if (fx < -0.5 || fz < -0.5 || fx > G - 0.5 || fz > G - 0.5) return relief.top;
+    var ix = Math.max(0, Math.min(G - 2, Math.floor(fx))), iz = Math.max(0, Math.min(G - 2, Math.floor(fz)));
+    var tx = Math.max(0, Math.min(1, fx - ix)), tz = Math.max(0, Math.min(1, fz - iz)), c = relief.cut;
+    return (c[iz * G + ix] * (1 - tx) + c[iz * G + ix + 1] * tx) * (1 - tz) + (c[(iz + 1) * G + ix] * (1 - tx) + c[(iz + 1) * G + ix + 1] * tx) * tz;
+  }
+  function reliefThroughAt(relief, wx, wz) {                 // the cell under (wx, wz) is cut down to the base
+    var G = relief.G, cs = relief.size / G, ix = Math.floor((wx - relief.x0) / cs), iz = Math.floor((wz - relief.z0) / cs);
+    return ix >= 0 && iz >= 0 && ix < G && iz < G && relief.cut[iz * G + ix] <= relief.base + 0.02;
+  }
+  // One strike: the bottom of a ball of radius R (edge ragged by ±jitter/2) centred at (cx, cy, cz)
+  // becomes the new surface, never below the base. A height map has no overhangs, so lowering a
+  // cell removes all the rock above it: a cell whose surface (surfaceAt) stands more than `rise`
+  // above the ball is left alone, or a sideways swing would slice a slot to the summit.
+  // Returns [cell, before, after] for each cell cut.
+  function reliefBite(relief, cx, cy, cz, R, jitter, surfaceAt, rise) {
+    var out = [], G = relief.G, cs = relief.size / G, span = Math.ceil(R * 1.25 / cs) + 1, j = jitter == null ? 0.4 : jitter;
+    var gx = Math.floor((cx - relief.x0) / cs), gz = Math.floor((cz - relief.z0) / cs);
+    for (var iz = Math.max(0, gz - span); iz <= Math.min(G - 1, gz + span); iz++) for (var ix = Math.max(0, gx - span); ix <= Math.min(G - 1, gx + span); ix++) {
+      var i = iz * G + ix, px = relief.x0 + (ix + 0.5) * cs, pz = relief.z0 + (iz + 0.5) * cs;
+      var d2 = (px - cx) * (px - cx) + (pz - cz) * (pz - cz), reach = R * (1 - j / 2 + j * digNoise(ix * 3 + 11, iz * 5 + 7, Math.round(cy * 8)));
+      if (d2 >= reach * reach) continue;
+      if (surfaceAt) { var surf = surfaceAt(px, pz, i); if (surf == null || surf > cy + reach + (rise || 0)) continue; }
+      var next = Math.round(Math.max(relief.base, cy - Math.sqrt(reach * reach - d2)) * 1000) / 1000;
+      if (next < relief.cut[i] - 1e-4) { out.push([i, relief.cut[i], next]); relief.cut[i] = next; }
+    }
+    return out;
+  }
   // Size-attenuated points balloon as they drift past a first-person eye (a 0.42 puff at
   // 0.3 units is ~300 px), which washed the whole view out after every dig. Cap on-screen size.
   function capPointSize3d(material3d, maxPx3d) {
@@ -278,17 +317,37 @@
     for (var i = 0; i < len; i++) { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; data[i] = ((s >>> 0) / 4294967295) * 2 - 1; }
     return (geoSfxNoiseBuf = buf);
   }
+  // One output bus per context: dry to the speakers, plus a dark feedback delay whose level
+  // follows how deep underground the explorer is, so a shaft sounds enclosed.
+  var geoBus = null;
+  function geoOutput(ac) {
+    if (geoBus && geoBus.ac === ac) return geoBus.input;
+    try {
+      var input = ac.createGain(), delay = ac.createDelay(1), feedback = ac.createGain(), tone = ac.createBiquadFilter(), wet = ac.createGain();
+      delay.delayTime.value = 0.16; feedback.gain.value = 0.32; tone.type = 'lowpass'; tone.frequency.value = 1800; wet.gain.value = 0;
+      input.connect(ac.destination); input.connect(delay); delay.connect(tone); tone.connect(wet); wet.connect(ac.destination); tone.connect(feedback); feedback.connect(delay);
+      geoBus = { ac: ac, input: input, wet: wet, level: 0 };
+      return input;
+    } catch (e) { return ac.destination; }
+  }
+  function geoSfxSetEcho(level) {
+    if (!geoBus) return;
+    var next = Math.max(0, Math.min(1, Number(level) || 0));
+    if (Math.abs(next - geoBus.level) < 0.02) return;
+    geoBus.level = next;
+    try { geoBus.wet.gain.setTargetAtTime(next * 0.45, geoBus.ac.currentTime, 0.2); } catch (e) {}
+  }
   function geoGrain(ac, t, dur, type, freq, q, gain, offset) {
     var src = ac.createBufferSource(); src.buffer = geoNoise(ac);
     var filter = ac.createBiquadFilter(); filter.type = type; filter.frequency.value = freq; filter.Q.value = q;
     var g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(Math.max(0.0002, gain), t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.connect(filter); filter.connect(g); g.connect(ac.destination); src.start(t, offset || 0, dur + 0.02);
+    src.connect(filter); filter.connect(g); g.connect(geoOutput(ac)); src.start(t, offset || 0, dur + 0.02);
   }
   function geoTone(ac, t, dur, type, freq, gain, endFreq) {
     var o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(freq, t);
     if (endFreq) o.frequency.exponentialRampToValueAtTime(endFreq, t + dur);
     g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(Math.max(0.0002, gain), t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + dur + 0.02);
+    o.connect(g); g.connect(geoOutput(ac)); o.start(t); o.stop(t + dur + 0.02);
   }
   function geoSfxStrike(label, intensity) {
     var ac = geoAudio(); if (!ac) return;
@@ -314,6 +373,31 @@
     var ac = geoAudio(); if (!ac) return;
     try { var t = ac.currentTime + 0.005; if (kind === 'hazard') geoGrain(ac, t, 0.32, 'highpass', 2600, 0.7, 0.07, 0); else geoTone(ac, t, 0.12, 'sine', 180, 0.08, 120); } catch (e) {}
   }
+  function geoSfxStep(label, strength, climbing) {
+    var ac = geoAudio(); if (!ac) return;
+    try {
+      var p = geoDigSound(label), k = strength == null ? 1 : strength, t = ac.currentTime + 0.002;
+      if (climbing) { geoGrain(ac, t, 0.09, 'bandpass', p.band * 0.8, 0.9, 0.06, Math.random() * 0.4); return; }   // boots scraping rock
+      geoGrain(ac, t, 0.045 + 0.02 * k, 'lowpass', p.band * (0.45 + Math.random() * 0.15), 0.9, 0.08 * k, Math.random() * 0.4);
+      if (k > 1.2) geoTone(ac, t, 0.12, 'sine', 70, 0.1 * (k - 1), 45);   // landing thump
+    } catch (e) {}
+  }
+  function geoSfxSplash(strength) {                             // into water: a slap, then bubbles rising (more, the harder the fall)
+    var ac = geoAudio(); if (!ac) return;
+    try {
+      var k = Math.max(0.2, Math.min(1.6, strength == null ? 1 : strength)), t = ac.currentTime + 0.004;
+      geoGrain(ac, t, 0.1 + 0.12 * k, 'lowpass', 1100 + 500 * k, 0.7, 0.07 * k, Math.random() * 0.2);
+      for (var i = 0, n = 1 + Math.round(k * 2); i < n; i++) { var bt = t + 0.05 + i * (0.04 + Math.random() * 0.05), f = 320 + Math.random() * 260; geoTone(ac, bt, 0.07, 'sine', f, 0.035 * k, f * 1.9); }
+    } catch (e) {}
+  }
+  function geoSfxSeep() {                                       // groundwater welling into a fresh hole: a trickle and low gulps
+    var ac = geoAudio(); if (!ac) return;
+    try {
+      var t = ac.currentTime + 0.01;
+      geoGrain(ac, t, 0.45, 'bandpass', 700, 0.8, 0.035, 0);
+      for (var i = 0; i < 4; i++) { var bt = t + 0.12 + i * 0.13 + Math.random() * 0.05, f = 180 + Math.random() * 140; geoTone(ac, bt, 0.09, 'sine', f, 0.04, f * 1.6); }
+    } catch (e) {}
+  }
   function geoSfxFind(shape) {                                  // a specimen broke free: a bright two-note chime
     var ac = geoAudio(); if (!ac) return;
     try { var t = ac.currentTime + 0.01, base = shape === 'fossil' ? 660 : 880; geoTone(ac, t, 0.18, 'sine', base, 0.07); geoTone(ac, t + 0.09, 0.26, 'sine', base * 1.26, 0.07); } catch (e) {}
@@ -335,7 +419,7 @@
         var n = ac.createBufferSource(); n.buffer = geoNoise(ac); n.loop = true;
         var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.2;
         var g = ac.createGain(); g.gain.setValueAtTime(0.0001, ac.currentTime); g.gain.linearRampToValueAtTime(0.055, ac.currentTime + 0.06);
-        o.connect(lp); lp.connect(g); n.connect(bp); bp.connect(g); g.connect(ac.destination); o.start(); n.start();
+        o.connect(lp); lp.connect(g); n.connect(bp); bp.connect(g); g.connect(geoOutput(ac)); o.start(); n.start();
         geoDrillVoice = { ac: ac, o: o, n: n, bp: bp, g: g };
       }
       var tt = ac.currentTime;
@@ -421,7 +505,9 @@
     return null;
   }
   // Dig history entries: 'x,y,z' (legacy whole-cell dig), { c: { id: [before, after] } } (a
-  // strike), or { b: { id: state } } (a folded base snapshot, never undone). The oldest
+  // strike), { r: reliefId, h: [[cell, before, after], ...] } (a strike on a peak or volcano;
+  // before null = uncut), or { b: { id: state }, rb: { reliefId: { cell: height } } } (a folded
+  // base snapshot, never undone). The oldest
   // entries fold into one base so saved progress stays small. PURE — tested by replay.
   function digEntryStates(entry) {
     if (typeof entry === 'string') { var one = {}; one[entry] = '0'; return one; }
@@ -434,12 +520,23 @@
     (history || []).forEach(function (entry) { var st = digEntryStates(entry); for (var id in st) state[id] = st[id]; });
     return state;
   }
+  function digReliefReplay(history) {                       // { reliefId: { cell: height } } after replaying
+    var state = {};
+    (history || []).forEach(function (entry) {
+      if (!entry || typeof entry !== 'object') return;
+      if (entry.rb) Object.keys(entry.rb).forEach(function (rid) { var m = state[rid] || (state[rid] = {}); Object.keys(entry.rb[rid]).forEach(function (cell) { m[cell] = entry.rb[rid][cell]; }); });
+      if (entry.r != null && Array.isArray(entry.h)) { var m2 = state[entry.r] || (state[entry.r] = {}); entry.h.forEach(function (ch) { m2[ch[0]] = ch[2]; }); }
+    });
+    return state;
+  }
   function digFoldHistory(history, max, keep) {
     if (!Array.isArray(history) || history.length <= max) return history;
     var cut = history.length - keep, base = {};
     for (var i = 0; i < cut; i++) { var st = digEntryStates(history[i]); for (var id in st) base[id] = st[id]; }
     Object.keys(base).forEach(function (id) { if (base[id] === 'F') delete base[id]; });
-    return [{ b: base }].concat(history.slice(cut));
+    var folded = { b: base }, reliefBase = digReliefReplay(history.slice(0, cut));
+    if (Object.keys(reliefBase).length) folded.rb = reliefBase;
+    return [folded].concat(history.slice(cut));
   }
   // ── Specimens hidden in the rock (pure placement). Each sits in one INNER small voxel of its
   // host cell, so it shows only once digging opens a face beside it, and a strike that takes
@@ -463,7 +560,7 @@
       tells: 'Most of the upper mantle is peridotite, a rock made mostly of green olivine. It is solid rock, even though it is very hot, because the pressure is so high. Yet over millions of years it flows slowly, like very stiff putty.' },
     bridgmanite:  { scene: 'deepEarth', host: 'lowerMantle', chance: 0.25, salt: 5, shape: 'gem', color: 0x94a3b8, icon: '🔘', name: 'Bridgmanite', hint: 'In the lower mantle',
       tells: 'Bridgmanite is Earth’s most common mineral: most of the lower mantle is made of it. It forms only under crushing lower-mantle pressure, so we know it from lab experiments and tiny grains in a shocked meteorite.' },
-    eclogiteGarnet: { scene: 'subduction', host: 'slab', chance: 0.3, salt: 6, shape: 'gem', color: 0xb91c1c, icon: '💎', name: 'Eclogite garnet', hint: 'In the sinking ocean plate, deep down',
+    eclogiteGarnet: { scene: 'subduction', host: 'slab', minDepthKm: 50, chance: 0.3, salt: 6, shape: 'gem', color: 0xb91c1c, icon: '💎', name: 'Eclogite garnet', hint: 'In the sinking ocean plate, deep down',
       tells: 'As the ocean plate sinks, heat and pressure change the basalt in its crust, without melting, into eclogite, a rock of red garnet and green pyroxene. Eclogite is denser than the mantle around it, which helps pull the slab down.' },
     wedgeOlivine: { scene: 'subduction', host: 'wedge', chance: 0.3, salt: 7, shape: 'gem', color: 0x65a30d, icon: '🟢', name: 'Olivine from the wedge', hint: 'In the mantle wedge above the slab',
       tells: 'The mantle wedge is peridotite, mostly green olivine. Water released from the sinking slab lowers its melting point, so a small part of it melts and feeds the volcanoes.' },
@@ -490,17 +587,81 @@
     for (var id in SPECIMENS) {
       var s = SPECIMENS[id], salt = s.salt || 0;                // each kind rolls its own dice, so two finds can share a host rock
       if (s.scene !== sceneId || [].concat(s.host).indexOf(key) < 0 || digNoise(x * 7 + 1 + salt * 31, y * 13 + 2, z * 5 + 3 + salt * 17) >= s.chance) continue;
+      if (s.minDepthKm && (y + 0.5) * KM_PER_VOXEL < s.minDepthKm) continue;   // eclogite needs the pressure found only deep down
       if (s.touching && !(keyAt && SPECIMEN_NEIGHBOURS.some(function (d) { return keyAt(x + d[0], y + d[1], z + d[2]) === s.touching; }))) continue;   // skarn grows only at the contact
       return { kind: id, key: key, shape: s.shape, color: s.color, icon: s.icon, name: s.name, tells: s.tells };
     }
     return null;
   }
+  // Mohs hardness of each find (reviewed): [lowest, highest], null where one value would mislead,
+  // with what the number belongs to and a caveat. A steel knife or pick is about 5.5.
+  var SPECIMEN_MOHS = {
+    'fossil-sandstone': { mohs: null, note: 'A plant fossil is a carbon film on the rock: no single hardness.' },
+    'fossil-shale': { mohs: [3, 3], label: 'Trilobite shell (calcite)', note: 'Graptolites are a carbon film, with no single value.' },
+    'fossil-limestone': { mohs: [3, 3], label: 'Calcite shells' },
+    skarnGarnet: { mohs: [6.5, 7.5], label: 'Garnet' },
+    quartzVein: { mohs: [7, 7], label: 'Quartz' },
+    schistGarnet: { mohs: [7, 7.5], label: 'Almandine garnet' },
+    summitFossil: { mohs: [3, 3], label: 'Calcite shells' },
+    amethystPoint: { mohs: [7, 7], label: 'Amethyst (quartz)' },
+    agateSlice: { mohs: [6.5, 7], label: 'Chalcedony' },
+    diamond: { mohs: [10, 10], label: 'Diamond' },
+    mantleOlivine: { mohs: [6.5, 7], label: 'Olivine' },
+    bridgmanite: { mohs: null, note: 'Never scratch-tested: it is stable only at lower-mantle pressure, and the only known natural grains are microscopic, in a meteorite.' },
+    eclogiteGarnet: { mohs: [7, 7.5], label: 'Garnet' },
+    wedgeOlivine: { mohs: [6.5, 7], label: 'Olivine' },
+    pumice: { mohs: [5, 6], label: 'Glass walls', note: 'It crumbles because it is full of gas holes, not because it is soft.' },
+    sulfideChimney: { mohs: [6, 6.5], label: 'Pyrite', note: 'A chimney also holds softer minerals such as sphalerite (3.5–4).' },
+    basaltRecord: { mohs: null, note: 'A rock is a mix of minerals; Mohs hardness is for single minerals.' },
+    oozeMicrofossils: { mohs: [3, 3], label: 'Calcite shells', note: 'Some ooze is silica (opal) shells, 5.5–6. The ooze itself is soft mud; only the shells are hard.' },
+    islandOlivine: { mohs: [6.5, 7], label: 'Olivine' },
+    reefCoral: { mohs: [3, 3], label: 'Calcite', note: 'Living reef coral builds aragonite (3.5–4); in fossils this old it has usually turned to calcite.' }
+  };
+  // One saved dig as words: its layers top to bottom with depths; in the crust, once it passes two
+  // sedimentary layers, the superposition reading. PURE.
+  function digLogSummary(layers, sceneId) {
+    var list = (layers || []).map(function (l) { return l.name + ' (≈ ' + l.depthKm + ' km)'; }).join(' → ');
+    var sedimentary = (layers || []).filter(function (l) { return SED_FOSSIL[l.key]; }).length;
+    return list + (sceneId === 'crust' && sedimentary >= 2 ? '. Deeper layers formed first, so the rock got older as you dug (superposition).' : '.');
+  }
+  // What shows on the face of a block that still hides a find: the clue a geologist would notice,
+  // never the find's name. PURE.
+  var SPECIMEN_SIGNS = {
+    skarnGarnet: 'dark red grains glint in this rock', quartzVein: 'a thin white vein shows here',
+    schistGarnet: 'red grains glint in this schist', summitFossil: 'shell fragments show on this face',
+    amethystPoint: 'a purple glint inside', agateSlice: 'bands of colour show here', diamond: 'a hard, bright glint inside',
+    mantleOlivine: 'green grains glint in this rock', wedgeOlivine: 'green grains glint in this rock', islandOlivine: 'green grains glint in this rock',
+    bridgmanite: 'a dense grey glint inside', eclogiteGarnet: 'red grains glint here', pumice: 'frothy, bubble-filled rock here',
+    sulfideChimney: 'a metallic shine here', basaltRecord: 'fresh dark basalt, worth sampling', oozeMicrofossils: 'fine pale mud full of tiny grains',
+    reefCoral: 'coral traces show on this face'
+  };
+  function specimenSign(kind) { return SPECIMEN_SIGNS[kind] || (/^fossil-/.test(kind) ? 'fossil traces show on this face' : 'something glints inside'); }
+  // 'harder' (lowest ≥ 6), 'softer' (highest ≤ 5) or 'about' as hard as steel (~5.5); null = no value. PURE.
+  function mohsVsSteel(range) { if (!range) return null; return range[0] >= 6 ? 'harder' : (range[1] <= 5 ? 'softer' : 'about'); }
+  function mohsLine(kind) {
+    var m = SPECIMEN_MOHS[kind]; if (!m) return null;
+    if (!m.mohs) return { text: m.note, vs: null };
+    var value = m.mohs[0] === m.mohs[1] ? String(m.mohs[0]) : m.mohs[0] + '–' + m.mohs[1], vs = mohsVsSteel(m.mohs);
+    var steel = vs === 'harder' ? 'harder than steel: it would scratch your pick' : (vs === 'softer' ? 'softer than steel: your pick scratches it' : 'about as hard as steel');
+    return { text: (m.label ? m.label + ': ' : '') + 'hardness ' + value + ' (Mohs), ' + steel + '.' + (m.note ? ' ' + m.note : ''), vs: vs };
+  }
   // Every find a scene hides, with where to look: the collection panel lists found and still-hidden ones.
   function sceneSpecimenCatalog(sceneId) {
     var out = [];
-    if (sceneId === 'crust') Object.keys(SED_FOSSIL).forEach(function (key) { var f = FOSSILS[key]; out.push({ kind: 'fossil-' + key, icon: f.icon, name: f.name, hint: 'In the ' + ROCKS[key].name.toLowerCase() + ' layer' }); });
-    Object.keys(SPECIMENS).forEach(function (id) { var sp = SPECIMENS[id]; if (sp.scene === sceneId) out.push({ kind: id, icon: sp.icon, name: sp.name, hint: sp.hint }); });
+    if (sceneId === 'crust') Object.keys(SED_FOSSIL).forEach(function (key) { var f = FOSSILS[key]; out.push({ kind: 'fossil-' + key, icon: f.icon, name: f.name, hint: 'In the ' + ROCKS[key].name.toLowerCase() + ' layer', tells: f.tells, hardness: mohsLine('fossil-' + key), shape: 'fossil', color: FOSSIL_LOOK[key] || 0xe7dcc6 }); });
+    Object.keys(SPECIMENS).forEach(function (id) { var sp = SPECIMENS[id]; if (sp.scene === sceneId) out.push({ kind: id, icon: sp.icon, name: sp.name, hint: sp.hint, tells: sp.tells, hardness: mohsLine(id), shape: sp.shape, color: sp.color }); });
     return out;
+  }
+  // Finds dug free, per world and across all of them (a kind counts once, however many were found). PURE.
+  function findsProgress(specimensFound) {
+    var byScene = {}, found = 0, total = 0;
+    Object.keys(SCENES).forEach(function (sid) {
+      var catalog = sceneSpecimenCatalog(sid), mine = (specimensFound && specimensFound[sid]) || {};
+      var n = catalog.filter(function (c) { return (mine[c.kind] || 0) > 0; }).length;
+      byScene[sid] = { found: n, total: catalog.length, complete: catalog.length > 0 && n === catalog.length };
+      found += n; total += catalog.length;
+    });
+    return { found: found, total: total, byScene: byScene };
   }
   // One of the 8 inner small voxels of a cell (never on its outer faces), so nothing shows
   // until the explorer has dug into the cell.
@@ -516,6 +677,28 @@
   // How dark it is for an eye this far below the untouched ground: none at the surface, full
   // after a couple of voxels down. PURE, tested.
   function undergroundDarkness(depthBelowGround, voxel) { var d = (Number(depthBelowGround) - voxel * 0.2) / (voxel * 2.2); return d > 0 ? (d < 1 ? d : 1) : 0; }
+  // Crust water table height (world y): perched in the sandstone aquifer, above the shale aquitard,
+  // at every detail level. PURE — tested against the strata generator.
+  function waterTableY(ny, voxel) { return ((ny - 1) / 2 - 1.8 * ny / 12) * voxel; }
+  // Climbing, PURE (the engine passes its own world queries), tested. body = { eye, radius, step,
+  // voxel }. Grip: a rock face within an arm's reach ahead, at mid-body or just above a step; the
+  // reach is long because a sub-voxel lip at the foot of a dug wall stops the body short of the face.
+  function fpClimbGrip(pos, fx, fz, body, rockAt) {
+    var reach = body.radius + body.voxel * 0.35, x = pos.x + fx * reach, z = pos.z + fz * reach;
+    return !!(rockAt(x, pos.y - body.eye * 0.5, z) || rockAt(x, pos.y - body.eye + body.step + body.voxel * 0.05, z));
+  }
+  // Mantle: the nearest spot ahead whose ground is higher than the eye, within an arm's reach of
+  // the feet, where the body fits. groundAt(x, z, maxFeetY) → eye height or null.
+  function fpMantleTarget(pos, fx, fz, body, bounds, groundAt, blockedAt) {
+    var feetY = pos.y - body.eye;
+    for (var i = 0; i <= 6; i++) {
+      var d = body.voxel * (0.2 + i * 0.1);
+      var x = fpClampN(pos.x + fx * d, bounds.minX, bounds.maxX), z = fpClampN(pos.z + fz * d, bounds.minZ, bounds.maxZ);
+      var g = groundAt(x, z, feetY + body.voxel * 1.05 - body.step);
+      if (g != null && g > pos.y + body.voxel * 0.02 && !blockedAt(x, g, z)) return { x: x, y: g, z: z };
+    }
+    return null;
+  }
   function fpExplorerMode(sceneId) { return sceneId === 'deepEarth' ? 'fly' : 'mine'; }
   // Gameplay properties are deliberately keyed by the material's physical state,
   // not by its colour. Water can be entered and swum through; molten cells are a
@@ -3228,6 +3411,32 @@
     var headlamp3d = new THREE.SpotLight(0xffe7c2, 0, WORLD.h * 0.9, 0.62, 0.55, 1.6);
     scene.add(headlamp3d); scene.add(headlamp3d.target);
     var underground3d = 0, fogBaseColor3d = new THREE.Color(0x0a1322), fogCaveColor3d = new THREE.Color(0x05070a);
+    // The tool in the explorer's hand, bottom right of the first-person view.
+    var toolView3d = new THREE.Group(), toolSwing3d = new THREE.Group(), toolGeos3d = [], toolMats3d = [];
+    function toolPart3d(geometry3d, color3d, extra3d) {
+      var material3d = new THREE.MeshStandardMaterial(Object.assign({ color: color3d, roughness: 0.55, metalness: 0.2, depthTest: false, depthWrite: false }, extra3d || {}));
+      var part3d = new THREE.Mesh(geometry3d, material3d); part3d.renderOrder = 1000; part3d.frustumCulled = false;
+      toolGeos3d.push(geometry3d); toolMats3d.push(material3d); return part3d;
+    }
+    var pickView3d = new THREE.Group();
+    var pickHandle3d = toolPart3d(new THREE.CylinderGeometry(0.011, 0.014, 0.34, 8), 0x7c4a26, { roughness: 0.85, metalness: 0 });
+    var pickHead3d = toolPart3d(new THREE.BoxGeometry(0.2, 0.026, 0.03), 0x8f98a3, { metalness: 0.75, roughness: 0.35 });
+    var pickTip3d = toolPart3d(new THREE.ConeGeometry(0.016, 0.07, 8), 0xb8c0ca, { metalness: 0.8, roughness: 0.3 });
+    pickHead3d.position.y = 0.16; pickTip3d.position.set(-0.13, 0.16, 0); pickTip3d.rotation.z = Math.PI / 2;
+    pickHead3d.renderOrder = pickTip3d.renderOrder = 1001;
+    pickView3d.add(pickHandle3d); pickView3d.add(pickHead3d); pickView3d.add(pickTip3d);
+    var drillView3d = new THREE.Group();
+    var drillBody3d = toolPart3d(new THREE.CylinderGeometry(0.034, 0.034, 0.17, 14), 0x1d4ed8, { roughness: 0.45, metalness: 0.3 });
+    var drillGrip3d = toolPart3d(new THREE.BoxGeometry(0.03, 0.1, 0.04), 0x1f2937, { roughness: 0.8, metalness: 0 });
+    var drillBitMat3d = new THREE.MeshStandardMaterial({ color: 0xc7ced6, metalness: 0.85, roughness: 0.25, emissive: 0x000000, depthTest: false, depthWrite: false });
+    var drillBit3d = new THREE.Mesh(new THREE.ConeGeometry(0.017, 0.12, 10), drillBitMat3d); drillBit3d.renderOrder = 1001; drillBit3d.frustumCulled = false;
+    toolGeos3d.push(drillBit3d.geometry); toolMats3d.push(drillBitMat3d);
+    drillBody3d.rotation.x = Math.PI / 2; drillGrip3d.position.set(0, -0.06, 0.03); drillBit3d.rotation.x = -Math.PI / 2; drillBit3d.position.z = -0.145;
+    drillView3d.add(drillBody3d); drillView3d.add(drillGrip3d); drillView3d.add(drillBit3d);
+    pickView3d.scale.setScalar(0.62); pickView3d.position.set(0, -0.02, 0); drillView3d.scale.setScalar(0.8); drillView3d.position.set(0, 0.035, 0);
+    toolSwing3d.add(pickView3d); toolSwing3d.add(drillView3d); toolView3d.add(toolSwing3d);
+    toolView3d.visible = false; scene.add(toolView3d);
+    var toolState3d = { recover: 0, lastMiningId: null, spin: 0 };
     var geologyHeatLightConfig3d = {
       crust: { color: 0xff5522, intensity: 1.8, flicker: 0.38 },
       geode: { color: 0x8b5cf6, intensity: 0.72, flicker: 0.08 },
@@ -3269,10 +3478,10 @@
       if (!entry || typeof entry !== 'object') return;
       var states = digEntryStates(entry), applied = false;
       Object.keys(states).forEach(function (id) { var cell = voxelByKey[id]; if (cell && cell.key !== 'void') { applyCellState(id, states[id]); applied = true; } });
-      if (applied) excavationHistory.push(entry);
+      if (applied || entry.rb || (entry.r != null && Array.isArray(entry.h))) excavationHistory.push(entry);   // relief is applied once the landforms exist
     });
     initialRedo.forEach(function (entry) {
-      if (typeof entry !== 'string') { if (entry && typeof entry === 'object' && entry.c) excavationRedo.push(entry); return; }
+      if (typeof entry !== 'string') { if (entry && typeof entry === 'object' && (entry.c || (entry.r != null && Array.isArray(entry.h)))) excavationRedo.push(entry); return; }
       var voxel = voxelByKey[entry];
       if (voxel && voxel.key !== 'void' && !removed[entry] && excavationRedo.indexOf(entry) < 0) excavationRedo.push(entry);
     });
@@ -4697,7 +4906,7 @@
       return causticTexture3d;
     }
     var geologyWaterTexture3d = makeGeologyWaterTexture3d();
-    var WATER_Y = ((NY - 1) / 2 - 1.8 * NY / 12) * VOXEL; // water table perched in the sandstone, above the shale (depth scales with detail)
+    var WATER_Y = waterTableY(NY, VOXEL);                 // water table perched in the sandstone, above the shale (depth scales with detail)
     var waterMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(WORLD.w, WORLD.d),
       new THREE.MeshPhysicalMaterial({
@@ -4709,6 +4918,15 @@
       })
     );
     waterMesh.rotation.x = -Math.PI / 2; waterMesh.position.set(0, WATER_Y, 0); waterMesh.visible = false; waterMesh.renderOrder = 1; scene.add(waterMesh);
+    // Groundwater in the dig: below the water table the sandstone's pores are full of water, so a
+    // hole dug down past the table fills to the table (the water level in a well IS the water
+    // table). Tracked per small-voxel column; drawn as a water surface at WATER_Y in each flooded one.
+    var groundwater3d = !!(SCENE.features && SCENE.features.water), groundwaterFlooded3d = {}, groundwaterCount3d = 0, groundwaterNoted3d = false;
+    var groundwaterRow3d = Math.floor((NY / 2 - WATER_Y / VOXEL) * DIG_SUB);   // small-voxel row the table runs through
+    var groundwaterGeo3d = new THREE.PlaneGeometry(VOXEL / DIG_SUB, VOXEL / DIG_SUB); groundwaterGeo3d.rotateX(-Math.PI / 2);
+    var groundwaterMat3d = new THREE.MeshStandardMaterial({ color: 0x2f7fd8, emissive: 0x0b2f5c, transparent: true, opacity: 0.62, roughness: 0.08, metalness: 0.05, depthWrite: false, side: THREE.DoubleSide });
+    var groundwaterCap3d = 1024, groundwaterMesh3d = new THREE.InstancedMesh(groundwaterGeo3d, groundwaterMat3d, groundwaterCap3d);
+    groundwaterMesh3d.count = 0; groundwaterMesh3d.frustumCulled = false; groundwaterMesh3d.renderOrder = 2; scene.add(groundwaterMesh3d);
 
     // ── Volcano: the EXTRUSIVE counterpart to the intrusive pluton (erupt() animates it) ──
     var surfTopY = ((NY - 1) / 2 + 0.5) * VOXEL;   // world Y of the ground surface
@@ -4808,8 +5026,8 @@
         summitRadius3d,
         radius3d,
         height3d,
-        geologyHighDetail3d ? 40 : 28,
-        geologyHighDetail3d ? 8 : 6,
+        geologyHighDetail3d ? 128 : 96,                         // dense enough for a pickaxe to dent (see diggable relief)
+        geologyHighDetail3d ? 32 : 24,
         false
       );
       var landformPositions3d = landformGeometry3d.attributes.position;
@@ -4867,9 +5085,10 @@
     }
     // A walkable, solid cone matching the rugged mesh's profile (base ring, flat-ish summit,
     // optional caldera), so the explorer climbs a volcano instead of walking through it.
-    function fpConeProp3d(x3d, z3d, radius3d, height3d, landformStyle3d, baseY3d, obj3d, rayObj3d) {
+    function fpConeProp3d(x3d, z3d, radius3d, height3d, landformStyle3d, baseY3d, obj3d, rayObj3d, rockKey3d) {
       return { kind: 'cone', x: x3d, z: z3d, r: radius3d, rTop: ruggedSummitRadius3d(radius3d, landformStyle3d), h: height3d,
-        base: baseY3d, crater: ruggedCraterDepth3d(height3d, landformStyle3d), stand: true, obj: obj3d, ray: rayObj3d || obj3d };
+        base: baseY3d, crater: ruggedCraterDepth3d(height3d, landformStyle3d), stand: true, obj: obj3d, ray: rayObj3d || obj3d, rockKey: rockKey3d || null,
+        label: landformStyle3d === 'alpine' ? 'Mountain peak' : (landformStyle3d === 'shield-island' ? 'Island volcano' : 'Volcano cone') };
     }
     function addRuggedGeologyCone3d(x3d, z3d, radius3d, height3d, color3d, seed3d, landformStyle3d, baseY3d) {
       var isShieldIsland3d = landformStyle3d === 'shield-island';
@@ -5457,7 +5676,7 @@
     var coneMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: rockSurfaceTexture3d, bumpMap: rockSurfaceTexture3d, bumpScale: 0.043, roughness: 0.92, metalness: 0.03 });
     var coneMesh = new THREE.Mesh(coneGeo, coneMat); coneMesh.position.set(0, surfTopY + 1.2, 0); volcano.add(coneMesh);
     coneMesh.castShadow = geologyHighDetail3d; coneMesh.receiveShadow = geologyHighDetail3d;
-    fpProps3d.push(fpConeProp3d(0, 0, 2.3, 2.4, 'volcanic-arc', surfTopY, volcano, coneMesh));
+    fpProps3d.push(fpConeProp3d(0, 0, 2.3, 2.4, 'volcanic-arc', surfTopY, volcano, coneMesh, 'basalt'));   // built of lava, not the soil it sits on
     var craterGeo = new THREE.SphereGeometry(0.6, 16, 12);
     var craterMat = new THREE.MeshStandardMaterial({ color: 0xff6a1e, emissive: 0xff4500, emissiveIntensity: 1.3, transparent: true, opacity: 0.0 });
     var craterGlow = new THREE.Mesh(craterGeo, craterMat); craterGlow.position.set(0, ventY - 0.25, 0); craterGlow.visible = false; volcano.add(craterGlow);
@@ -5671,6 +5890,7 @@
       }
       mesh.count = i; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       rebuildSubs3d();
+      updateGroundwater3d();
       glowVoxelGeometry3d.setDrawRange(0, glowVoxelCount3d);
       glowVoxelGeometry3d.attributes.position.needsUpdate = true;
       glowVoxelGeometry3d.attributes.color.needsUpdate = true;
@@ -5720,7 +5940,7 @@
         g.add(trunk); g.add(leaf); g.add(leaf2); g.scale.set(sc, sc, sc);
         g.position.set(p[0], p[1] + VOXEL * 0.5, p[2]); g.userData = { x: x, z: z };   // stand on the top face at every detail level (a fixed +0.5 floated them at High)
         scene.add(g); treeMeshes.push(g);
-        fpProps3d.push({ kind: 'cyl', x: p[0], z: p[2], r: 0.15 * sc, h: 1.6 * sc, base: p[1] + VOXEL * 0.5, stand: false, obj: g, ray: g });
+        fpProps3d.push({ kind: 'cyl', x: p[0], z: p[2], r: 0.15 * sc, h: 1.6 * sc, base: p[1] + VOXEL * 0.5, stand: false, obj: g, ray: g, label: 'Tree' });
       }
       // boulders — a few scattered rocks for surface detail
       var rockGeo = new THREE.DodecahedronGeometry(0.32, 0), rockMat = new THREE.MeshStandardMaterial({ color: 0x8a8576, roughness: 1.0, flatShading: true });
@@ -5732,9 +5952,68 @@
         rock.scale.set(rs, rs * 0.7, rs); rock.rotation.set(rx, rz, rx + rz);
         rock.position.set(rp[0], rp[1] + VOXEL * 0.5 + 0.1, rp[2]); rock.userData = { x: rx, z: rz };
         scene.add(rock); treeMeshes.push(rock);
-        fpProps3d.push({ kind: 'cyl', x: rp[0], z: rp[2], r: 0.28 * rs, h: 0.1 + 0.2 * rs, base: rp[1] + VOXEL * 0.5, stand: true, obj: rock, ray: rock });
+        fpProps3d.push({ kind: 'cyl', x: rp[0], z: rp[2], r: 0.28 * rs, h: 0.1 + 0.2 * rs, base: rp[1] + VOXEL * 0.5, stand: true, obj: rock, ray: rock, label: 'Boulder' });
       }
       eng._treeGeo = [trunkGeo, leafGeo, rockGeo]; eng._treeMat = [trunkMat, rockMat].concat(leafMats);
+    })();
+    // Diggable relief: each peak or volcano cone gets a height map (reliefCreate), a copy of its
+    // mesh to dent, a mask that opens a hole where it is dug to its base, and the rock it is made of.
+    var reliefProps3d = [], reliefById3d = {};
+    fpProps3d.forEach(function (prop) {
+      if (prop.kind !== 'cone' || !prop.ray || !prop.ray.geometry || !prop.ray.geometry.attributes.position) return;
+      if (prop.obj === volcano && !(SCENE.features && SCENE.features.volcano)) return;
+      var key = prop.rockKey, colAt = fpWorldToVoxel(prop.x, 0, prop.z), topRow = null;
+      for (var ry = 0; ry < NY; ry++) { var rc = cellAt(colAt.x, ry, colAt.z); if (rc && rc.key !== 'void' && !FP_FLUID_MATERIALS[rc.key]) { topRow = ry; if (!key) key = rc.key; break; } }
+      var rockMat = key ? (SCENE.palette[key] || ROCKS[key]) : null;
+      if (!rockMat || !fpMiningProfile(key, rockMat.type).mineable) return;
+      var rel = reliefCreate(prop), geo = prop.ray.geometry;
+      rel.id = reliefProps3d.length; rel.key = key;
+      rel.orig = Float32Array.from(geo.attributes.position.array);
+      rel.origColor = geo.attributes.color ? Float32Array.from(geo.attributes.color.array) : null;
+      rel.rockColor = new THREE.Color(rockMat.color || 0x8a8576).multiplyScalar(0.82);   // freshly dug faces show the rock itself
+      rel.maskData = new Uint8Array(RELIEF_G * RELIEF_G * 4);
+      rel.maskTex = new THREE.DataTexture(rel.maskData, RELIEF_G, RELIEF_G, THREE.RGBAFormat);
+      rel.maskTex.magFilter = THREE.NearestFilter; rel.maskTex.minFilter = THREE.NearestFilter; rel.maskTex.needsUpdate = true;
+      var rect = new THREE.Vector4(rel.x0, rel.z0, rel.size, rel.base);
+      prop.ray.material.onBeforeCompile = function (shader3d) {
+        shader3d.uniforms.geoReliefMask = { value: rel.maskTex }; shader3d.uniforms.geoReliefRect = { value: rect };
+        shader3d.vertexShader = 'varying vec3 vGeoReliefWorld;\n' + shader3d.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n\tvGeoReliefWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
+        shader3d.fragmentShader = 'uniform sampler2D geoReliefMask;\nuniform vec4 geoReliefRect;\nvarying vec3 vGeoReliefWorld;\n' + shader3d.fragmentShader.replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n\tvec2 geoReliefUv = ( vGeoReliefWorld.xz - geoReliefRect.xy ) / geoReliefRect.z;\n\tif ( vGeoReliefWorld.y < geoReliefRect.w + 0.06 && geoReliefUv.x > 0.0 && geoReliefUv.y > 0.0 && geoReliefUv.x < 1.0 && geoReliefUv.y < 1.0 && texture2D( geoReliefMask, geoReliefUv ).r > 0.5 ) discard;');
+      };
+      prop.ray.material.needsUpdate = true;
+      prop.relief = rel;
+      prop.rockCell = { key: key, x: colAt.x, y: topRow == null ? 0 : topRow, z: colAt.z, id: 'relief:' + rel.id, j: 1, relief: prop };
+      reliefProps3d.push(prop); reliefById3d[rel.id] = prop;
+    });
+    function refreshRelief3d(prop) {                          // re-dent the mesh from its original shape and refresh the hole mask
+      var rel = prop.relief, geo = prop.ray.geometry, pos = geo.attributes.position, arr = pos.array, orig = rel.orig;
+      prop.ray.updateWorldMatrix(true, false);
+      var e = prop.ray.matrixWorld.elements;
+      var shiftOnly = Math.abs(e[0] - 1) + Math.abs(e[5] - 1) + Math.abs(e[10] - 1) + Math.abs(e[1]) + Math.abs(e[2]) + Math.abs(e[4]) + Math.abs(e[6]) + Math.abs(e[8]) + Math.abs(e[9]) < 1e-5;
+      if (shiftOnly) {
+        var tx = e[12], ty = e[13], tz = e[14], colors = geo.attributes.color, oc = rel.origColor, rc = rel.rockColor;
+        for (var vi = 0; vi < arr.length; vi += 3) {
+          var wy = orig[vi + 1] + ty, cutY = reliefSample(rel, orig[vi] + tx, orig[vi + 2] + tz), ny = cutY < wy ? cutY : wy;
+          arr[vi + 1] = ny - ty;
+          if (colors && oc) {
+            var t = Math.min(1, Math.max(0, (wy - ny) / 0.22));
+            var band = 0.88 + 0.12 * Math.sin(ny * 15 + 1.3);   // beds (or lava flows) show as bands in a dug wall
+            colors.array[vi] = oc[vi] + (rc.r * band - oc[vi]) * t; colors.array[vi + 1] = oc[vi + 1] + (rc.g * band - oc[vi + 1]) * t; colors.array[vi + 2] = oc[vi + 2] + (rc.b * band - oc[vi + 2]) * t;
+          }
+        }
+        pos.needsUpdate = true; if (colors) colors.needsUpdate = true;
+        geo.computeVertexNormals(); geo.computeBoundingSphere(); geo.computeBoundingBox();
+      }
+      for (var ci = 0; ci < rel.cut.length; ci++) rel.maskData[ci * 4] = rel.cut[ci] <= rel.base + 0.02 ? 255 : 0;
+      rel.maskTex.needsUpdate = true;
+    }
+    (function applySavedRelief3d() {                          // saved digs into peaks and volcanoes
+      var saved = digReliefReplay(excavationHistory);
+      Object.keys(saved).forEach(function (rid) {
+        var rp = reliefById3d[rid]; if (!rp) return;
+        Object.keys(saved[rid]).forEach(function (cell) { var ci = +cell; if (ci >= 0 && ci < rp.relief.cut.length && typeof saved[rid][cell] === 'number') rp.relief.cut[ci] = saved[rid][cell]; });
+        refreshRelief3d(rp);
+      });
     })();
 
     var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), down = null;
@@ -5743,6 +6022,7 @@
     // Highest ledge the walker climbs without jumping. A whole voxel (1.0) still needs a jump;
     // rubble, boulders, volcano flanks and uneven dug floors are walked over.
     var FP_STEP = VOXEL * 0.55;
+    var FP_BODY = { eye: FP_EYE_HEIGHT, radius: FP_RADIUS, step: FP_STEP, voxel: VOXEL };
     function fpVoxelAtWorld(wx, wy, wz) {
       if (wx < -WORLD.w * 0.5 || wx > WORLD.w * 0.5 || wy < -WORLD.h * 0.5 || wy > WORLD.h * 0.5 || wz < -WORLD.d * 0.5 || wz > WORLD.d * 0.5) return null;
       var v = fpWorldToVoxel(wx, wy, wz), voxel = cellAt(v.x, v.y, v.z);
@@ -5751,11 +6031,19 @@
       return voxel;
     }
     function fpPropLive(prop) { for (var o = prop.obj; o && o !== scene; o = o.parent) { if (!o.visible) return false; } return true; }
+    // A prop's top at (wx, wz): the cone profile, lowered by any digging; dug through to the base = no prop there.
+    function fpPropTopAt(prop, wx, wz) {
+      var top = fpPropSurfaceY(prop, wx, wz);
+      if (top == null || !prop.relief) return top;
+      var cutY = reliefSample(prop.relief, wx, wz);
+      if (cutY < top) top = cutY;
+      return top <= prop.relief.base + 0.03 ? null : top;
+    }
     // Standable props only block below their top minus a step, so a flank or boulder is
     // walked onto (the ground search lifts the walker) instead of stopping it dead.
     function fpPropSolidAt(wx, wy, wz) {
       for (var pi = 0; pi < fpProps3d.length; pi++) {
-        var prop = fpProps3d[pi], top = fpPropSurfaceY(prop, wx, wz);
+        var prop = fpProps3d[pi], top = fpPropTopAt(prop, wx, wz);
         if (top != null && wy >= prop.base - VOXEL * 0.05 && wy < (prop.stand ? top - FP_STEP : top) && fpPropLive(prop)) return true;
       }
       return false;
@@ -5764,20 +6052,64 @@
       var best = null;
       for (var pi = 0; pi < fpProps3d.length; pi++) {
         var prop = fpProps3d[pi]; if (!prop.stand) continue;
-        var top = fpPropSurfaceY(prop, wx, wz);
+        var top = fpPropTopAt(prop, wx, wz);
         if (top != null && top <= maxFeetY + FP_STEP && (best == null || top > best) && fpPropLive(prop)) best = top;
       }
       return best;
     }
-    function fpPointSolid(wx, wy, wz) {
+    function fpRockSolid(wx, wy, wz) {
       var voxel = fpVoxelAtWorld(wx, wy, wz);
-      if (voxel && fpMaterialPhysics(voxel.key).kind === 'solid') return true;
+      return !!(voxel && fpMaterialPhysics(voxel.key).kind === 'solid');
+    }
+    function fpPointSolid(wx, wy, wz) {
+      if (fpRockSolid(wx, wy, wz)) return true;
       return fpProps3d.length ? fpPropSolidAt(wx, wy, wz) : false;
+    }
+    // A small-voxel column is flooded when it is dug open at the water-table row and below it (the
+    // hole reaches into the saturated sandstone). Only dug cells count, never cutaway-hidden ones.
+    function updateGroundwater3d() {
+      if (!groundwater3d) return;
+      var flooded = {}, n = 0, cy = (groundwaterRow3d / DIG_SUB) | 0, cyBelow = ((groundwaterRow3d + 1) / DIG_SUB) | 0;
+      if (cy < 0 || cy >= NY) { groundwaterMesh3d.count = 0; return; }
+      var dug = function (gx, gy, gz) { var c = cellAt((gx / DIG_SUB) | 0, (gy / DIG_SUB) | 0, (gz / DIG_SUB) | 0); if (!c || !(removed[c.id] || damaged[c.id])) return false; return !subSolidG(gx, gy, gz); };
+      for (var cx = 0; cx < NX; cx++) for (var cz = 0; cz < NZ; cz++) {
+        var cell = cellAt(cx, cy, cz); if (!cell || !(removed[cell.id] || damaged[cell.id])) continue;
+        for (var lx = 0; lx < DIG_SUB; lx++) for (var lz = 0; lz < DIG_SUB; lz++) {
+          var gx = cx * DIG_SUB + lx, gz = cz * DIG_SUB + lz;
+          if (dug(gx, groundwaterRow3d, gz) && (cyBelow >= NY || dug(gx, groundwaterRow3d + 1, gz))) { flooded[gx + ',' + gz] = 1; n++; }
+        }
+      }
+      if (n > groundwaterCap3d) {
+        scene.remove(groundwaterMesh3d); groundwaterMesh3d.dispose(); groundwaterCap3d = Math.max(n, groundwaterCap3d * 2);
+        groundwaterMesh3d = new THREE.InstancedMesh(groundwaterGeo3d, groundwaterMat3d, groundwaterCap3d); groundwaterMesh3d.frustumCulled = false; groundwaterMesh3d.renderOrder = 2; scene.add(groundwaterMesh3d);
+      }
+      var k = 0;
+      Object.keys(flooded).forEach(function (id) {
+        var parts = id.split(','), wx = ((+parts[0] + 0.5) / DIG_SUB - NX / 2) * VOXEL, wz = ((+parts[1] + 0.5) / DIG_SUB - NZ / 2) * VOXEL;
+        dummy.position.set(wx, WATER_Y, wz); dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); groundwaterMesh3d.setMatrixAt(k++, dummy.matrix);
+      });
+      groundwaterMesh3d.count = k; groundwaterMesh3d.instanceMatrix.needsUpdate = true;
+      groundwaterMesh3d.visible = !focusLens;
+      var first = n > 0 && !groundwaterNoted3d && groundwaterCount3d === 0;
+      groundwaterFlooded3d = flooded; groundwaterCount3d = n;
+      if (first) { groundwaterNoted3d = true; if (opts.onGroundwater) opts.onGroundwater(); }
+    }
+    function groundwaterAt3d(wx, wy, wz) {                   // a point inside the water filling a dug well
+      if (!groundwaterCount3d || !(wy < WATER_Y)) return false;
+      var g = worldToSubG(wx, wy, wz);
+      return !!groundwaterFlooded3d[g[0] + ',' + g[2]] && !subSolidG(g[0], g[1], g[2]);
     }
     function fpMediumAt(wx, eyeY, wz) {
       var samples = [eyeY - FP_EYE_HEIGHT * 0.72, eyeY - FP_EYE_HEIGHT * 0.28, eyeY];
       var fluid = null;
       for (var si = 0; si < samples.length; si++) {
+        if (!fluid && groundwaterAt3d(wx, samples[si], wz)) {  // swimming in your own well
+          // Float with head and shoulders out: push up below the float line, pull down above it, so
+          // the swimmer settles (knees in the water) instead of bobbing across the waterline.
+          var wellPhysics = Object.assign({}, fpMaterialPhysics('oceanWater'));
+          wellPhysics.buoyancy *= fpClampN((WATER_Y + VOXEL * 0.9 - eyeY) / VOXEL, -1, 1);   // a soft spring: settles without overshoot
+          fluid = { kind: 'fluid', voxel: null, physics: wellPhysics, groundwater: true };
+        }
         var voxel = fpVoxelAtWorld(wx, samples[si], wz); if (!voxel) continue;
         var physics = fpMaterialPhysics(voxel.key);
         if (physics.kind === 'hazard') return { kind: 'hazard', voxel: voxel, physics: physics };
@@ -5859,6 +6191,7 @@
         state = 'mining'; text = (fp.mining.tool === 'drill' ? 'Drilling ' : 'Mining ') + fp.mining.profile.label.toLowerCase() + ' rock · ' + Math.min(100, pct) + '%';
       } else if (fp.hazardNearby) { state = 'hazard'; text = 'Heat warning · molten rock within one block' + (here ? ' · ' + temperatureValue(here.tempC) + ' here' : ''); }
       else if (fp.drillOverheated) { state = 'overheated'; text = 'Drill overheated · cooling down'; }
+      else if (fp.climbing) { state = 'climbing'; text = 'Climbing · hold Space and forward'; }
       else if (fp.medium === 'fluid') { state = 'swimming'; text = 'Swimming · Space rises'; }
       else if (now < fp.blockedUntil) { state = 'blocked'; text = 'Blocked · dig or jump to clear a path'; }
       fpUpdateHeatVignette(now); fpCheckLayerMilestone(now);
@@ -6131,7 +6464,34 @@
       var ground = fpGroundEyeY(wx, wz, fp.pos.y - FP_EYE_HEIGHT);
       return ground == null || ground <= fp.pos.y + 1e-4 || !fpBodyBlocked(wx, ground, wz);
     }
+    // The hardness label of the rock at a point (a little ahead when climbing), for footstep voices.
+    function fpGroundSoundLabel(wx, wy, wz, ax, az) {
+      var cell = fpVoxelAtWorld(wx + (ax || 0) * (FP_RADIUS + VOXEL * 0.35), wy, wz + (az || 0) * (FP_RADIUS + VOXEL * 0.35));
+      if (!cell) return 'Dense';
+      var material = SCENE.palette[cell.key] || ROCKS[cell.key] || { type: '' };
+      return fpMiningProfile(cell.key, material.type).label;
+    }
+    // Once per descent: in a hole deeper than a jump, walking into the wall teaches the climb.
+    function fpMaybeClimbHint() {
+      if (fp.climbHintShown || !opts.onFlash) return;
+      var col = fpWorldToVoxel(fp.pos.x, 0, fp.pos.z), top = columnTop3d[col.x + NX * col.z];
+      if (!(top === top) || top - (fp.pos.y - FP_EYE_HEIGHT) < VOXEL * 1.2) return;
+      fp.climbHintShown = true;
+      opts.onFlash('Stuck in a hole? Hold Space (or the jump button) and walk into the wall to climb out. H takes you home.');
+    }
+    // Hauling up over the rim (a mantle) once its top is within an arm's reach of the feet. Dug rims
+    // are often undercut by the crater bites, so a straight climb would stall under the lip.
+    function fpTryMantle(fx, fz) {
+      var hw = WORLD.w * 0.5 - FP_RADIUS, hd = WORLD.d * 0.5 - FP_RADIUS;
+      var to = fpMantleTarget(fp.pos, fx, fz, FP_BODY, { minX: -hw, maxX: hw, minZ: -hd, maxZ: hd }, fpGroundEyeY, fpBodyBlocked);
+      if (!to) return false;
+      fp.stepLift = fpClampN((fp.stepLift || 0) + (to.y - fp.pos.y), -FP_STEP, FP_STEP);
+      fp.pos.x = to.x; fp.pos.z = to.z; fp.pos.y = to.y;
+      fp.velocity.y = 0; fp.onGround = true; fp.fallLoopCount = 0;
+      return true;
+    }
     function fpWalkStep(dt, fwd) {
+      var mediumBefore = fp.medium, entryVy = fp.velocity.y;
       var medium = fpMediumAt(fp.pos.x, fp.pos.y, fp.pos.z);
       if (medium.kind === 'hazard') { fpHazardRespawn(); return; }
       fpSetMedium(medium.kind);
@@ -6144,25 +6504,48 @@
       var blend = 1 - Math.exp(-(il ? (inFluid ? 7 : 14) : 10) * dt);
       fp.velocity.x += (ix * targetSpeed - fp.velocity.x) * blend;
       fp.velocity.z += (iz * targetSpeed - fp.velocity.z) * blend;
+      // Climbing: walking into a rock wall while holding jump pulls the explorer up it (a pick-hold
+      // climb), so a shaft deeper than a jump is never a trap. Rock only: trees, boulders and cones
+      // are not ladders. In a flooded well it starts once the head is out of the water.
+      var climbing = !!(fp.input.jump && fp.input.fwd > 0 &&
+        (!inFluid || fpMediumAt(fp.pos.x, fp.pos.y + FP_EYE_HEIGHT * 0.72, fp.pos.z).kind === 'air') &&
+        fpClimbGrip(fp.pos, fx, fz, FP_BODY, fpRockSolid));
       if (inFluid) {
         fp.onGround = false; fp.jumpLatch = false;
         fp.velocity.y += (fp.input.jump ? FP_JUMP_SPEED * 1.45 : FP_GRAVITY * medium.physics.buoyancy) * dt;
         fp.velocity.y *= Math.exp(-4.2 * dt);
       } else {
-        if (fp.input.jump && fp.onGround && !fp.jumpLatch) { fp.velocity.y = FP_JUMP_SPEED; fp.onGround = false; fp.jumpLatch = true; }
+        if (fp.input.jump && fp.onGround && !fp.jumpLatch && !climbing) { fp.velocity.y = FP_JUMP_SPEED; fp.onGround = false; fp.jumpLatch = true; }
         if (!fp.input.jump) fp.jumpLatch = false;
       }
       var minX = -WORLD.w * 0.5 + FP_RADIUS, maxX = WORLD.w * 0.5 - FP_RADIUS;
       var minZ = -WORLD.d * 0.5 + FP_RADIUS, maxZ = WORLD.d * 0.5 - FP_RADIUS;
+      var stepFromX = fp.pos.x, stepFromZ = fp.pos.z, blockedAhead = false;
       var nx = fpClampN(fp.pos.x + fp.velocity.x * dt, minX, maxX);
-      if (fpMoveAllowed(nx, fp.pos.z)) fp.pos.x = nx; else { fp.velocity.x = 0; if (Math.abs(ix) > 0.05) fpMarkBlocked(); }
+      if (fpMoveAllowed(nx, fp.pos.z)) fp.pos.x = nx; else { fp.velocity.x = 0; if (Math.abs(ix) > 0.05) { fpMarkBlocked(); blockedAhead = true; } }
       var nz = fpClampN(fp.pos.z + fp.velocity.z * dt, minZ, maxZ);
-      if (fpMoveAllowed(fp.pos.x, nz)) fp.pos.z = nz; else { fp.velocity.z = 0; if (Math.abs(iz) > 0.05) fpMarkBlocked(); }
+      if (fpMoveAllowed(fp.pos.x, nz)) fp.pos.z = nz; else { fp.velocity.z = 0; if (Math.abs(iz) > 0.05) { fpMarkBlocked(); blockedAhead = true; } }
+      if (blockedAhead && !climbing && (fp.onGround || inFluid) && fp.input.fwd > 0) fpMaybeClimbHint();
+      if (fp.input.jump && fp.input.fwd > 0 && (climbing || fp.climbing || blockedAhead) && fpTryMantle(fx, fz)) {
+        climbing = false; fp.climbDist = 0; fp.blockedUntil = 0;       // out: the wall no longer blocks
+        fp.jumpLatch = true;                                   // the Space held to climb is not a new jump on the rim
+        geoSfxStep(fpGroundSoundLabel(fp.pos.x, fp.pos.y - FP_EYE_HEIGHT - VOXEL * 0.1, fp.pos.z), 1.1);
+      }
       if (!inFluid) fp.velocity.y -= FP_GRAVITY * dt;
+      if (climbing) {                                          // a steady pull up the wall; a scrape every few hand-holds
+        fp.velocity.y = VOXEL * 1.9; fp.onGround = false; fp.jumpLatch = true;
+        fp.climbDist = (fp.climbDist || 0) + VOXEL * 1.9 * dt;
+        if (fp.climbDist > VOXEL * 0.4) { fp.climbDist = 0; geoSfxStep(fpGroundSoundLabel(fp.pos.x, fp.pos.y - FP_EYE_HEIGHT * 0.5, fp.pos.z, fx, fz), 1, true); }
+      }
+      fp.climbing = climbing;
       var nextEyeY = fp.pos.y + fp.velocity.y * dt;
       var wasGrounded = fp.onGround;
       if (fp.velocity.y > 0 && fpBodyBlocked(fp.pos.x, nextEyeY, fp.pos.z)) {
         fp.velocity.y = 0; fpMarkBlocked();
+        if (climbing) {                                        // an overhang: lean back off the lip and keep climbing
+          var leanX = fp.pos.x - fx * VOXEL * 0.12, leanZ = fp.pos.z - fz * VOXEL * 0.12;
+          if (!fpBodyBlocked(leanX, nextEyeY, leanZ)) { fp.pos.x = leanX; fp.pos.z = leanZ; fp.pos.y = nextEyeY; }
+        }
       } else {
         var floorEyeY = fpGroundEyeY(fp.pos.x, fp.pos.z, fp.pos.y - FP_EYE_HEIGHT);
         if (!inFluid && wasGrounded && fp.velocity.y <= 0 && floorEyeY != null && floorEyeY < fp.pos.y && fp.pos.y - floorEyeY <= FP_STEP) {
@@ -6177,15 +6560,25 @@
             var impact = fpClampN((-fp.velocity.y - FP_JUMP_SPEED * 0.85) / (FP_JUMP_SPEED * 1.6), 0, 1);
             if (!fp.reduced) fp.landDip = VOXEL * (0.04 + impact * 0.1);
             if (impact > 0.35 && window._alloHaptic) { try { window._alloHaptic('bump'); } catch (e) {} }
+            geoSfxStep(fpGroundSoundLabel(fp.pos.x, floorEyeY - FP_EYE_HEIGHT - VOXEL * 0.1, fp.pos.z), 1.2 + impact);
           }
           fp.pos.y = floorEyeY; fp.velocity.y = 0; fp.onGround = true; fp.fallLoopCount = 0;
         } else {
           fp.pos.y = nextEyeY; fp.onGround = false;
         }
       }
+      if (fp.onGround && !inFluid) {
+        fp.stepDist = (fp.stepDist || 0) + Math.sqrt((fp.pos.x - stepFromX) * (fp.pos.x - stepFromX) + (fp.pos.z - stepFromZ) * (fp.pos.z - stepFromZ));
+        if (fp.stepDist > VOXEL * 0.7) { fp.stepDist = 0; geoSfxStep(fpGroundSoundLabel(fp.pos.x, fp.pos.y - FP_EYE_HEIGHT - VOXEL * 0.1, fp.pos.z), fp.input.sprint ? 1.15 : 0.85); }
+      }
       var after = fpMediumAt(fp.pos.x, fp.pos.y, fp.pos.z);
       if (after.kind === 'hazard') { fpHazardRespawn(); return; }
       fpSetMedium(after.kind);
+      // Dropping into water splashes, louder the faster the fall; bobbing at the surface is too slow to.
+      if (fp.medium === 'fluid' && mediumBefore !== 'fluid' && -entryVy > VOXEL * 1.5) {
+        var splashNow = (window.performance && performance.now) ? performance.now() : Date.now();
+        if (splashNow - (fp.splashAt || 0) > 600) { fp.splashAt = splashNow; geoSfxSplash(-entryVy / FP_JUMP_SPEED); }
+      }
       var wasNearHazard = fp.hazardNearby; fp.hazardNearby = fpHazardNearby(fp.pos.x, fp.pos.y, fp.pos.z);
       var safeNow = (window.performance && performance.now) ? performance.now() : Date.now();
       if (fp.hazardNearby && !wasNearHazard && safeNow - (fp.lastHeatWarnAt || 0) > 8000) {
@@ -6253,27 +6646,33 @@
       fp.statusKey = '__refresh';
     }
     function fpCancelMining() { fp.mining = null; fpSetMiningProgress(0, false); }
-    function fpUpdateTargetLabel(v, specimen) {
-      var key = v ? vkey(v) + (specimen ? '#specimen' : '') : '__none';
+    function fpUpdateTargetLabel(v, specimen, prop, sign) {
+      var key = v ? vkey(v) + (specimen ? '#specimen' : '') + (sign ? '#sign' : '') : (prop ? '__prop:' + prop.label : '__none');
       fp.targetKey = key;
       var root = container.parentNode, label = null;
       try { label = root && root.querySelector ? root.querySelector('[data-geology-mining-target]') : null; } catch (e) {}
       if (!label || label.getAttribute('data-target-key') === key) return;
       label.setAttribute('data-target-key', key);
+      if (!v && prop) { label.textContent = prop.label + (prop.stand ? ' · surface relief, not dug here: dig the ground beside it' : ' · dig the ground beside it'); label.setAttribute('data-target-ready', 'false'); return; }
       if (!v) { label.textContent = 'Aim at an exposed block'; label.setAttribute('data-target-ready', 'false'); return; }
       if (specimen) { label.textContent = (specimen.info.icon || '💎') + ' ' + specimen.info.name + ' in the wall · dig it free'; label.setAttribute('data-target-ready', 'true'); return; }
       var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'Rock', type: '' };
       var profile = fpMiningProfile(v.key, material.type);
-      label.textContent = material.name + ' · ' + profile.label + (profile.mineable ? (fp.tool === 'drill' ? ' · hold X to drill' : ' · click or X to dig') : ' · cannot excavate');
+      label.textContent = (v.relief ? v.relief.label + ' · ' + material.name : material.name) + ' · ' + profile.label + (profile.mineable ? (fp.tool === 'drill' ? ' · hold X to drill' : ' · click or X to dig') : ' · cannot excavate') + (sign ? ' · 🔍 ' + sign : '');
+      label.setAttribute('data-target-sign', sign ? 'true' : 'false');
       label.setAttribute('data-target-ready', profile.mineable ? 'true' : 'false');
     }
     function fpPropRayDistance() {                            // nearest live prop along the current reticle ray (raycaster already set)
-      var nearest = Infinity;
+      var nearest = Infinity; fp.propAimed = null;
       for (var pi = 0; pi < fpProps3d.length; pi++) {
         var prop = fpProps3d[pi], dx = prop.x - fp.pos.x, dz = prop.z - fp.pos.z;
         if (!prop.ray || Math.sqrt(dx * dx + dz * dz) > FP_REACH + prop.r || !fpPropLive(prop)) continue;
-        var propHits = raycaster.intersectObject(prop.ray, true);
-        if (propHits.length && propHits[0].distance < nearest) nearest = propHits[0].distance;
+        var propHits = raycaster.intersectObject(prop.ray, true), propHit = null;
+        for (var phi = 0; phi < propHits.length && !propHit; phi++) {
+          var php = propHits[phi].point;                       // a spot dug through to the base is a hole: look past it
+          if (!(prop.relief && php.y < prop.relief.base + 0.06 && reliefThroughAt(prop.relief, php.x, php.z))) propHit = propHits[phi];
+        }
+        if (propHit && propHit.distance < nearest) { nearest = propHit.distance; fp.propAimed = prop; fp.propAimedPoint = [propHit.point.x, propHit.point.y, propHit.point.z]; }
       }
       return nearest;
     }
@@ -6282,6 +6681,13 @@
     function fpStrikePlan(hit, v, tool) {
       var material = SCENE.palette[v.key] || ROCKS[v.key] || { type: '' };
       var strike = digStrike(fpMiningProfile(v.key, material.type).label, tool), r = strike.r, inset = r * 0.35, n = hit.normal;
+      if (hit.relief) {                                        // a peak or volcano: bite its height map where the reticle met it
+        var rw = hit.point, rr = Math.max(strike.r * SUBV, VOXEL * 0.3), jit = 0.4, rcen = [rw[0], rw[1], rw[2]];
+        if (fp.active && fp.mode === 'mine' && Math.hypot(rw[0] - fp.pos.x, rw[2] - fp.pos.z) < FP_RADIUS * 1.8 && rw[1] < fp.pos.y - FP_EYE_HEIGHT + 0.35) {
+          rcen = [fp.pos.x, rw[1], fp.pos.z]; rr = Math.max(rr, FP_RADIUS * 1.8); jit = 0.12;   // under your own feet: body-wide, so you sink into it
+        }
+        return { relief: hit.relief, reliefCentre: rcen, radius: rr, jitter: jit, ms: strike.ms, world: rw.slice(), boxScale: Math.max(0.3, Math.min(1.15, (rr / SUBV * 2 + 0.4) / DIG_SUB)) };
+      }
       var c = [hit.g[0] + 0.5 - n[0] * inset, hit.g[1] + 0.5 - n[1] * inset, hit.g[2] + 0.5 - n[2] * inset];
       var shaft = null;
       if (n[1] === -1 && fp.active && fp.mode === 'mine') {
@@ -6315,9 +6721,17 @@
       var hit = digRayMarch((o.x / VOXEL + NX / 2) * DIG_SUB, (NY / 2 - o.y / VOXEL) * DIG_SUB, (o.z / VOXEL + NZ / 2) * DIG_SUB,
         dir.x * k, -dir.y * k, dir.z * k, Math.min(FP_REACH, propNear), fpTargetSolid);
       var v = hit ? cellAt((hit.g[0] / DIG_SUB) | 0, (hit.g[1] / DIG_SUB) | 0, (hit.g[2] / DIG_SUB) | 0) : null;
-      var aimedSpecimen = v ? specimenByG3d[hit.g.join(',')] : null;   // the first rock the ray meets is exposed by definition
+      if (!v && fp.propAimed && fp.propAimed.relief && fp.propAimedPoint) {   // a peak or volcano in reach: dig into it
+        var rpt = fp.propAimedPoint;
+        hit = { g: worldToSubG(rpt[0], rpt[1], rpt[2]), t: 0, normal: [0, -1, 0], relief: fp.propAimed, point: rpt };
+        v = fp.propAimed.rockCell;
+      }
+      var aimedSpecimen = v && !hit.relief ? specimenByG3d[hit.g.join(',')] : null;   // the first rock the ray meets is exposed by definition
       if (aimedSpecimen && !aimedSpecimen.taken && !aimedSpecimen.sighted) { aimedSpecimen.sighted = true; if (opts.onSpecimenSighted) opts.onSpecimenSighted({ kind: aimedSpecimen.info.kind, name: aimedSpecimen.info.name, icon: aimedSpecimen.info.icon }); }
-      fp.target = v || null; fp.targetHit = v ? hit : null; fpUpdateTargetLabel(v, aimedSpecimen && !aimedSpecimen.taken ? aimedSpecimen : null);
+      var hiddenSpecimen = v && !hit.relief && !(aimedSpecimen && !aimedSpecimen.taken) ? specimenByCell3d[v.id] : null;   // a block still hiding a find shows a sign
+      if (hiddenSpecimen && hiddenSpecimen.taken) hiddenSpecimen = null;
+      if (hiddenSpecimen && !hiddenSpecimen.noticed) { hiddenSpecimen.noticed = true; if (opts.onSpecimenSign) opts.onSpecimenSign({ sign: specimenSign(hiddenSpecimen.info.kind) }); }
+      fp.target = v || null; fp.targetHit = v ? hit : null; fpUpdateTargetLabel(v, aimedSpecimen && !aimedSpecimen.taken ? aimedSpecimen : null, v ? null : fp.propAimed, hiddenSpecimen ? specimenSign(hiddenSpecimen.info.kind) : null);
       if (v) {
         var plan = fpStrikePlan(hit, v, fp.tool);
         fp.targetBoxScale = plan.boxScale;
@@ -7279,7 +7693,7 @@ function updateCoreRig3d(dt3d) {
       if (!chained && fp.lastMineAt && now - fp.lastMineAt < 140) return null;
       fp.lastMineAt = now;
       var v = fpTargetVoxel();
-      if (!v) { if (!chained && opts.onFlash) opts.onFlash('Move closer and aim the reticle at an exposed block.'); return null; }
+      if (!v) { if (!chained && opts.onFlash) opts.onFlash(fp.propAimed ? fp.propAimed.label + ' is surface relief, not dug here. Dig the ground beside it.' : 'Move closer and aim the reticle at an exposed block.'); return null; }
       var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'Rock', type: '' };
       var profile = fpMiningProfile(v.key, material.type);
       if (!profile.mineable) { fp.drillHeld = false; if (!chained) { geoSfxDenied(profile.label === 'Fluid' ? 'fluid' : 'hazard'); if (opts.onFlash) opts.onFlash(profile.reason); } return null; }
@@ -7376,7 +7790,32 @@ function updateCoreRig3d(dt3d) {
       var cell = cellAt((gx / DIG_SUB) | 0, (gy / DIG_SUB) | 0, (gz / DIG_SUB) | 0), material = SCENE.palette[cell.key] || ROCKS[cell.key] || { type: '' };
       return fpMiningProfile(cell.key, material.type).mineable;
     }
+    function carveRelief3d(plan) {
+      var prop = plan.relief, rel = prop.relief, c = plan.reliefCentre;
+      var changes = reliefBite(rel, c[0], c[1], c[2], plan.radius, plan.jitter, function (x, z, cell) {
+        var profileY = fpPropSurfaceY(prop, x, z); return profileY == null ? null : Math.min(profileY, rel.cut[cell]);
+      }, plan.radius * 0.9);
+      if (!changes.length) {                                   // a face too tall to reach: say how to get into it
+        var nowMs = (window.performance && performance.now) ? performance.now() : Date.now();
+        if (opts.onFlash && !(rel.steepHintAt && nowMs - rel.steepHintAt < 6000)) { rel.steepHintAt = nowMs; opts.onFlash('This face of the ' + prop.label.toLowerCase() + ' is too tall to dig into sideways. Aim lower at its foot, or climb on and dig down.'); }
+        return null;
+      }
+      pushHistory3d({ r: rel.id, h: changes.map(function (ch) { return [ch[0], ch[1] >= rel.top - 1e-4 ? null : ch[1], ch[2]]; }) });
+      refreshRelief3d(prop); notifyExcavationChangeSoon();
+      var rock = SCENE.palette[rel.key] || ROCKS[rel.key] || { name: rel.key, color: 0xb7a58f };
+      spawnExcavationBurst3d(prop.rockCell, plan.world, plan.boxScale);
+      spawnDebris3d([plan.world], rock.color, 4, SUBV, fp.active ? fpForward(fp.yaw, fp.pitch) : null);
+      if (!rel.touched) { rel.touched = true; if (opts.onExcavate) opts.onExcavate({ removedKey: rel.key, removedY: prop.rockCell.y, name: rock.name, exposedKey: rel.key, count: undoableCount(), firstPerson: !!fp.active, method: 'strike' }); }
+      if (!rel.throughNoted && opts.onFlash && changes.some(function (ch) { return ch[2] <= rel.base + 0.02; })) {
+        rel.throughNoted = true;
+        var col = fpWorldToVoxel(c[0], 0, c[2]), below = shallowest(col.x, col.z), belowCell = below == null ? null : cellAt(col.x, below, col.z);
+        var belowName = belowCell ? (SCENE.palette[belowCell.key] || ROCKS[belowCell.key] || { name: belowCell.key }).name.toLowerCase() : 'rock';
+        opts.onFlash('You dug through the ' + prop.label.toLowerCase() + ' to the ' + belowName + ' beneath it. Keep digging.');
+      }
+      return { subs: Math.max(6, Math.min(30, changes.length)), cells: 0, firstTouch: 0, cleared: 0, specimens: 0, relief: true, count: undoableCount() };
+    }
     function carveStrike3d(plan, aimedCell) {
+      if (plan.relief) return carveRelief3d(plan);
       var bites = plan.shaft
         ? digShaft(plan.shaft.cx, plan.shaft.cz, plan.shaft.top, plan.shaft.rows, plan.shaft.r, carvableSub3d)
         : digCrater(plan.centre[0], plan.centre[1], plan.centre[2], plan.radius, carvableSub3d);
@@ -7421,6 +7860,11 @@ function updateCoreRig3d(dt3d) {
       return { subs: bites.length, cells: order.length, firstTouch: firstTouch.length, cleared: cleared.length, specimens: takenSpecimens.length, count: undoableCount() };
     }
     function applyEntry3d(entry, undo) {                         // returns the first cell it touched
+      if (entry && entry.r != null && Array.isArray(entry.h)) {
+        var rProp = reliefById3d[entry.r]; if (!rProp) return null;
+        entry.h.forEach(function (ch) { if (ch[0] >= 0 && ch[0] < rProp.relief.cut.length) rProp.relief.cut[ch[0]] = undo ? (ch[1] == null ? rProp.relief.top : ch[1]) : ch[2]; });
+        refreshRelief3d(rProp); return rProp.rockCell;
+      }
       if (typeof entry === 'string') { applyCellState(entry, undo ? 'F' : '0'); return voxelByKey[entry] || null; }
       if (!entry || !entry.c) return null;
       var first = null;
@@ -7447,7 +7891,8 @@ function updateCoreRig3d(dt3d) {
         if (typeof entry === 'string') { var voxel = voxelByKey[entry]; if (!voxel || voxel.key === 'void' || removed[entry]) continue; }
         var first = applyEntry3d(entry, false);
         if (!first) continue;
-        spawnExcavationBurst3d(first); excavationHistory.push(entry); rebuild(); notifyExcavationChange();
+        if (!(entry && entry.r != null)) spawnExcavationBurst3d(first);
+        excavationHistory.push(entry); rebuild(); notifyExcavationChange();
         var material = SCENE.palette[first.key] || ROCKS[first.key] || { name: first.key || 'material' };
         return { key: first.key, y: first.y, name: material.name, count: undoableCount(), redoCount: excavationRedo.length };
       }
@@ -7510,7 +7955,7 @@ function updateCoreRig3d(dt3d) {
         if (opts.onFpBail) { try { opts.onFpBail({ reason: landing.cause }); } catch (e) {} }
         return;
       }
-      fp.active = true; fp.reduced = !!(o && o.reduced); fp.fallLoopCount = 0; fp.stepLift = 0; fp.landDip = 0;
+      fp.active = true; fp.reduced = !!(o && o.reduced); fp.fallLoopCount = 0; fp.stepLift = 0; fp.landDip = 0; fp.climbHintShown = false; fp.stepDist = 0; fp.climbDist = 0;
       landingMarker3d.visible = false; landingBeam3d.visible = false; updateLandingPin3d(); updateLayerCallout3d(); updateHoverCard3d(null);
       if (highlightKey) rebuild();                            // drop the orbit-view type tint while walking
       fp.layersReached = {}; fp.enteredAt = (window.performance && performance.now) ? performance.now() : Date.now(); heatVignetteLevel = -1;
@@ -7601,6 +8046,37 @@ function updateCoreRig3d(dt3d) {
     eng.resize = function () { if (!eng.disposed) resize(); };
 
     var t = 0, raf = null, fpLastFrameAt = 0;
+    // Keep the tool at the camera: wind up through a pick swing and chop on the break; the drill
+    // bit spins while held and glows as it heats. Reduced motion: the tool just sits in the hand.
+    function updateToolView3d(dt3d) {
+      var show = fp.active && !fp.intro && !coreRigState3d.deployed;
+      toolView3d.visible = show; if (!show) return;
+      var drill = fp.tool === 'drill';
+      pickView3d.visible = !drill; drillView3d.visible = drill;
+      toolView3d.position.copy(camera.position); toolView3d.quaternion.copy(camera.quaternion);
+      toolView3d.translateX(0.085); toolView3d.translateY(-0.14); toolView3d.translateZ(-0.36);   // bottom centre-right: the pad and the rock card own the corners
+      var mining = fp.mining, swing = 0;
+      if (!drill && !fp.reduced) {
+        if (mining && mining.tool === 'pick') {
+          var prog = mining.duration > 0 ? Math.min(1, mining.elapsed / mining.duration) : 1;
+          swing = prog < 0.72 ? -1.05 * Math.sin((prog / 0.72) * Math.PI / 2) : -1.05 + 1.6 * ((prog - 0.72) / 0.28);   // wind up, then chop
+          toolState3d.lastMiningId = mining.id; toolState3d.recover = 1;
+        } else if (toolState3d.recover > 0) {
+          toolState3d.recover = Math.max(0, toolState3d.recover - dt3d / 0.2);
+          swing = 0.55 * toolState3d.recover;                  // follow-through, easing back to rest
+        }
+      }
+      toolSwing3d.rotation.set(0.15 + swing, -0.35, 0.42);    // handle rises from the bottom edge, head across the top
+      if (drill) {
+        var running = !!((mining && mining.tool === 'drill') || fp.drillHeld) && !fp.drillOverheated;
+        if (running && !fp.reduced) toolState3d.spin += dt3d * 40;
+        drillBit3d.rotation.y = toolState3d.spin;
+        toolSwing3d.rotation.set(0.05, 0.18, 0);
+        if (running && !fp.reduced) { toolSwing3d.position.set((Math.random() - 0.5) * 0.004, (Math.random() - 0.5) * 0.004, 0); } else toolSwing3d.position.set(0, 0, 0);
+        var heat = Math.max(0, Math.min(1, fp.drillHeat || 0));
+        drillBitMat3d.emissive.setRGB(heat * 0.9, heat * 0.28, 0);   // glows red as it heats
+      } else toolSwing3d.position.set(0, 0, 0);
+    }
     // Eyes adjust over about a second: the deeper the walker's eye below the untouched ground of
     // its column, the dimmer the daylight and the brighter the headlamp; the fog closes in.
     function updateUnderground3d(dt3d) {
@@ -7610,11 +8086,13 @@ function updateCoreRig3d(dt3d) {
         if (top3d === top3d) goal3d = undergroundDarkness(top3d - camera.position.y, VOXEL);
       }
       if (Math.abs(goal3d - underground3d) < 0.002 && underground3d === 0) return;
-      underground3d += (goal3d - underground3d) * (1 - Math.exp(-3 * Math.max(0, dt3d || 0.016)));
+      if (!fp.active) underground3d = 0;                         // back in the orbit view: straight to daylight
+      else underground3d += (goal3d - underground3d) * (1 - Math.exp(-3 * Math.max(0, dt3d || 0.016)));
       if (Math.abs(goal3d - underground3d) < 0.002) underground3d = goal3d;
       var lit3d = 1 - 0.72 * underground3d;
       ambientLight3d.intensity = 0.28 * lit3d; hemiLight3d.intensity = 0.38 * lit3d; keyL.intensity = 0.66 * lit3d; fillL.intensity = 0.23 * lit3d;
       headlamp3d.intensity = 1.5 * underground3d;
+      geoSfxSetEcho(underground3d);
       if (underground3d > 0) {
         var lampFwd3d = fpForward(fp.yaw, fp.pitch);
         headlamp3d.position.copy(camera.position);
@@ -7672,6 +8150,7 @@ function updateCoreRig3d(dt3d) {
       if (!controls) ensureControls();   // OrbitControls may load a moment after the engine starts
       if (fp.active) { try { applyFP(fpDt); fpUpdateMining(fpDt); fpUpdateDrill(fpDt); fpUpdatePlayerStatus(); } catch (e) {} } else if (controls) controls.update();
       try { updateUnderground3d(fpDt); } catch (e) {}
+      try { updateToolView3d(fpDt); } catch (e) {}
       if (landingMarker3d.visible) {                          // gentle scale breath on the pad (no opacity pulse; still under reduced motion)
         var landingPulse3d = reducedMotion3d ? 1 : 1 + 0.07 * Math.sin(t * 2.6);
         landingMarker3d.scale.set(landingPulse3d, landingPulse3d, 1);
@@ -7773,10 +8252,10 @@ function updateCoreRig3d(dt3d) {
     };
     eng.setFocusLens = function (b) { focusLens = !!b; if (focusLens) { excavate = false; undoPreviewRequested = false; } hoverBox.visible = false; rebuild(); fpReseatIfUnsupported('lens'); };
     eng.setScienceStage = function (n) { geologyScienceStage3d = Math.max(0, Math.min(2, Math.round(Number(n) || 0))); rebuild(); return geologyScienceStage3d; };
-    eng.getVisualState = function () { return { coreRigDeployed: coreRigState3d.deployed, coreRigStage: coreRigState3d.stage, coreRigSampleCount: coreRigState3d.samples.length, surveyActive: surveyBox.visible, focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, underground: +underground3d.toFixed(3), headlamp: +headlamp3d.intensity.toFixed(3), subVoxels: subMesh3d.count, damagedCells: Object.keys(damaged).length, debris: debris3d.length, sliceZ: sliceZ, excavate: excavate, excavatedCount: undoableCount(), redoCount: excavationRedo.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
+    eng.getVisualState = function () { return { coreRigDeployed: coreRigState3d.deployed, coreRigStage: coreRigState3d.stage, coreRigSampleCount: coreRigState3d.samples.length, surveyActive: surveyBox.visible, focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, toolInHand: toolView3d.visible ? (fp.tool === 'drill' ? 'drill' : 'pick') : null, groundwater: groundwaterCount3d, reliefs: reliefProps3d.length, reliefCutCells: reliefProps3d.reduce(function (n, rp) { for (var i = 0; i < rp.relief.cut.length; i++) { if (rp.relief.cut[i] < rp.relief.top - 1e-4) n++; } return n; }, 0), underground: +underground3d.toFixed(3), headlamp: +headlamp3d.intensity.toFixed(3), subVoxels: subMesh3d.count, damagedCells: Object.keys(damaged).length, debris: debris3d.length, sliceZ: sliceZ, excavate: excavate, excavatedCount: undoableCount(), redoCount: excavationRedo.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); fpReseatIfUnsupported('history'); };
     eng.reset = function () {
-      removed = {}; damaged = {}; excavationHistory = []; excavationRedo = []; debris3d.length = 0; specimens3d.forEach(function (sp) { sp.taken = false; }); fpCancelMining(); undoPreviewRequested = false; undoPreviewKey = null; surveyBox.visible = false; surveyVoxelKey = null; sliceZ = 0;
+      removed = {}; damaged = {}; excavationHistory = []; excavationRedo = []; debris3d.length = 0; specimens3d.forEach(function (sp) { sp.taken = false; }); reliefProps3d.forEach(function (rp) { rp.relief.cut.fill(rp.relief.top); rp.relief.touched = false; rp.relief.throughNoted = false; refreshRelief3d(rp); }); fpCancelMining(); undoPreviewRequested = false; undoPreviewKey = null; surveyBox.visible = false; surveyVoxelKey = null; sliceZ = 0;
       coreRigState3d.running = false; coreRigState3d.deployed = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = 'Pack ready';
       coreRigState3d.angle = 'vertical'; coreRigState3d.depth = CORE_RIG_DEPTHS[1]; coreRigState3d.origin = null; coreRigState3d.yaw = 0;
       coreRigState3d.path = []; coreRigState3d.cursor = 0; coreRigState3d.samples = []; coreRigState3d.progress = 0; coreRigState3d.heat = 0;
@@ -7831,6 +8310,9 @@ function updateCoreRig3d(dt3d) {
       if (ro) try { ro.disconnect(); } catch (e) {}
       try {
         geo.dispose(); mat.dispose(); subGeo3d.dispose(); debrisGeo3d.dispose(); debrisMat3d.dispose();
+        reliefProps3d.forEach(function (rp) { rp.relief.maskTex.dispose(); });
+        groundwaterGeo3d.dispose(); groundwaterMat3d.dispose();
+        toolGeos3d.forEach(function (g3d) { g3d.dispose(); }); toolMats3d.forEach(function (m3d) { m3d.dispose(); });
         Object.keys(specimenGeos3d).forEach(function (shape3d) { specimenGeos3d[shape3d].dispose(); specimenMats3d[shape3d].dispose(); });
         renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
         coreRigGeometries3d.forEach(function (rigGeometry3d) { rigGeometry3d.dispose(); });
@@ -7888,10 +8370,10 @@ function updateCoreRig3d(dt3d) {
   try {
     window.__alloGeologyPure = {
       rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, collisionKeyAt: collisionKeyAt, collisionTopo: collisionTopo, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount, aoCountGrid: aoCountGrid, digSound: geoDigSound,
-      DIG_SUB: DIG_SUB, digStrike: digStrike, digMaskHex: digMaskHex, digMaskFromHex: digMaskFromHex, digCellState: digCellState, digCrater: digCrater, digShaft: digShaft, undergroundDarkness: undergroundDarkness, sceneSpecimenCatalog: sceneSpecimenCatalog, specimenForCell: specimenForCell, specimenSubOf: specimenSubOf, specimenKinds: function () { return Object.keys(SPECIMENS); }, withInstanceColors3d: withInstanceColors3d, digRayMarch: digRayMarch, digEntryStates: digEntryStates, digReplay: digReplay, digFoldHistory: digFoldHistory,
-      sfx: { strike: geoSfxStrike, chip: geoSfxChip, crumble: geoSfxCrumble, denied: geoSfxDenied, drill: geoSfxDrill, setMuted: function (m) { geoSfxMuted = !!m; }, reset: function () { geoSfxDrill(false); geoSfxCtx = null; geoSfxNoiseBuf = null; }, drillVoice: function () { return geoDrillVoice; } },
+      DIG_SUB: DIG_SUB, digStrike: digStrike, digMaskHex: digMaskHex, digMaskFromHex: digMaskFromHex, digCellState: digCellState, digCrater: digCrater, digShaft: digShaft, reliefCreate: reliefCreate, reliefSample: reliefSample, reliefThroughAt: reliefThroughAt, reliefBite: reliefBite, digReliefReplay: digReliefReplay, undergroundDarkness: undergroundDarkness, waterTableY: waterTableY, mohsVsSteel: mohsVsSteel, mohsLine: mohsLine, specimenSign: specimenSign, digLogSummary: digLogSummary, findsProgress: findsProgress, specimenMohs: function () { return JSON.parse(JSON.stringify(SPECIMEN_MOHS)); }, sceneSpecimenCatalog: sceneSpecimenCatalog, specimenForCell: specimenForCell, specimenSubOf: specimenSubOf, specimenKinds: function () { return Object.keys(SPECIMENS); }, withInstanceColors3d: withInstanceColors3d, digRayMarch: digRayMarch, digEntryStates: digEntryStates, digReplay: digReplay, digFoldHistory: digFoldHistory,
+      sfx: { strike: geoSfxStrike, chip: geoSfxChip, crumble: geoSfxCrumble, denied: geoSfxDenied, drill: geoSfxDrill, setMuted: function (m) { geoSfxMuted = !!m; }, reset: function () { geoSfxDrill(false); geoSfxCtx = null; geoSfxNoiseBuf = null; geoBus = null; }, drillVoice: function () { return geoDrillVoice; }, step: geoSfxStep, setEcho: geoSfxSetEcho, bus: function () { return geoBus; }, splash: geoSfxSplash, seep: geoSfxSeep },
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, collisionGeotherm: collisionGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
-      fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpPropSurfaceY: fpPropSurfaceY, capPointSize3d: capPointSize3d, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
+      fpForward: fpForward, fpClimbGrip: fpClimbGrip, fpMantleTarget: fpMantleTarget, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpPropSurfaceY: fpPropSurfaceY, capPointSize3d: capPointSize3d, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
       coreRigSupported: coreRigSupported, coreRigAngleDegrees: coreRigAngleDegrees, coreRigPath: coreRigPath, coreRigStopReason: coreRigStopReason, coreRigDrillDuration: coreRigDrillDuration, coreRigReportSummary: coreRigReportSummary, coreRigGradeForScore: coreRigGradeForScore, coreRigEvaluation: coreRigEvaluation, coreRigResearchReward: coreRigResearchReward, advanceCoreRigResearch: advanceCoreRigResearch, coreRigStopLabel: coreRigStopLabel, coreRigFeedProfile: coreRigFeedProfile, coreRigFormationLoad: coreRigFormationLoad, coreRigIntegrityLoss: coreRigIntegrityLoss, coreRigIntegrityFromStress: coreRigIntegrityFromStress, coreRigQualitySummary: coreRigQualitySummary, coreRigTrajectoryScan: coreRigTrajectoryScan, coreRigTrajectorySnapshot: coreRigTrajectorySnapshot, coreRigTrajectorySummary: coreRigTrajectorySummary, coreRigBoreBrief: coreRigBoreBrief, coreRigCoreCassette: coreRigCoreCassette, coreRigCompressedCore: coreRigCompressedCore, coreRigCompareReports: coreRigCompareReports, coreRigNextExperiment: coreRigNextExperiment, coreRigReportStableId: coreRigReportStableId, coreRigIntervalScanMs: coreRigIntervalScanMs, coreRigIntervalScanning: coreRigIntervalScanning, coreRigIntervalFeedback: coreRigIntervalFeedback, coreRigFormationCue: coreRigFormationCue, coreRigChallengeProgress: coreRigChallengeProgress, coreRigProgramKey: coreRigProgramKey, coreRigProgramCatalog: coreRigProgramCatalog, coreRigProgramRating: coreRigProgramRating, coreRigCertificationTier: coreRigCertificationTier, coreRigCertificationReward: coreRigCertificationReward, coreRigCertificationXpTarget: coreRigCertificationXpTarget, normalizeCoreRigPrograms: normalizeCoreRigPrograms, advanceCoreRigCertification: advanceCoreRigCertification, coreRigCertificationSummary: coreRigCertificationSummary, coreRigCertificationGuidance: coreRigCertificationGuidance, coreRigCertificationTiers: coreRigCertificationTiers, coreRigAngles: function () { return Object.assign({}, CORE_RIG_ANGLES); }, coreRigDepths: function () { return CORE_RIG_DEPTHS.slice(); }, coreRigFeedModes: function () { return Object.keys(CORE_RIG_FEED_MODES); },
       fieldExpeditions: function () { return FIELD_EXPEDITIONS; }, sceneVoxelKeys: function (sceneId) { return SCENES[sceneId] ? SCENES[sceneId].voxelKeys.slice() : []; }, fieldExpeditionFor: fieldExpeditionFor, beginFieldRun: beginFieldRun, retireFieldRunEntry: retireFieldRunEntry, advanceFieldRun: advanceFieldRun, fieldRunReward: fieldRunReward, fieldRankForXp: fieldRankForXp, fieldSpecimenName: fieldSpecimenName, fieldCollectibleKeys: fieldCollectibleKeys, recordFieldDiscovery: recordFieldDiscovery, fieldDiscoveryProgress: fieldDiscoveryProgress, fieldJournalEntries: fieldJournalEntries, fieldJournalSummary: fieldJournalSummary,
       fpExplorerMode: fpExplorerMode, fpSeedPose: fpSeedPose, fpLandingSearch: fpLandingSearch, layerExtent: layerExtent, layerCauseText: layerCauseText, typeInkFor: typeInkFor, typeColors: function () { return Object.assign({}, TYPE_COLOR); }, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
@@ -8579,12 +9061,47 @@ function updateCoreRig3d(dt3d) {
       // A fossil or crystal a strike broke free. The first fossil of each crust layer keeps its
       // existing journal entry and quest credit (uncoverFossil); every other find is tallied,
       // journaled the first time, and toasted with where it formed.
+      // A small drawing of a find (decorative: its name is printed beside it). viewBox 40×40.
+      function specimenGlyph(item) {
+        var rgb = (item.color || 0x9ca3af) >>> 0, fill = '#' + rgb.toString(16).padStart(6, '0');
+        var luma = 0.2126 * ((rgb >> 16) & 255) + 0.7152 * ((rgb >> 8) & 255) + 0.0722 * (rgb & 255);
+        var line = luma < 110 ? '#e2e8f0' : '#334155', els;   // detail lines contrast with the find's own colour (dark fossils get light lines)
+        var P = function (d, extra) { return h('path', Object.assign({ d: d, fill: fill, stroke: line, strokeWidth: 1.2, strokeLinejoin: 'round' }, extra || {})); };
+        var L = function (d) { return h('path', { d: d, fill: 'none', stroke: line, strokeWidth: 1, strokeLinecap: 'round', opacity: 0.8 }); };
+        var C = function (cx, cy, r, f) { return h('circle', { cx: cx, cy: cy, r: r, fill: f || fill, stroke: line, strokeWidth: 0.9 }); };
+        var k = item.kind;
+        if (k === 'fossil-sandstone') els = [P('M20 36 C8 26 8 11 20 4 C32 11 32 26 20 36 Z'), L('M20 36 L20 6'), L('M20 14 L14 10 M20 20 L12 16 M20 26 L13 23 M20 14 L26 10 M20 20 L28 16 M20 26 L27 23')];
+        else if (k === 'fossil-shale') els = [P('M20 5 C30 5 33 14 32 22 C31 31 25 36 20 36 C15 36 9 31 8 22 C7 14 10 5 20 5 Z'), L('M15 9 L15 33 M25 9 L25 33'), L('M9 16 L31 16 M8 21 L32 21 M9 26 L31 26 M11 31 L29 31')];
+        else if (k === 'fossil-limestone' || k === 'summitFossil') els = [P('M5 31 Q20 1 35 31 Q20 36 5 31 Z'), L('M20 33 L20 8 M20 33 L12 12 M20 33 L28 12 M20 33 L8 21 M20 33 L32 21')];
+        else if (k === 'oozeMicrofossils') els = [C(12, 14, 5), C(26, 11, 4), C(28, 25, 6), C(14, 28, 4), C(20, 20, 2.5)];
+        else if (k === 'reefCoral') els = [L('M20 37 L20 22 M20 22 L12 12 M20 22 L28 10 M12 12 L8 5 M12 12 L15 4 M28 10 L25 3 M28 10 L34 5'), C(8, 5, 2), C(15, 4, 2), C(25, 3, 2), C(34, 5, 2), C(20, 30, 2)];
+        else if (k === 'pumice') els = [P('M8 24 C5 14 12 6 21 7 C31 6 36 15 33 24 C31 33 21 36 15 34 C10 33 9 29 8 24 Z'), C(15, 16, 2.4, isDark ? '#0f172a' : '#ffffff'), C(24, 14, 1.8, isDark ? '#0f172a' : '#ffffff'), C(22, 25, 2.8, isDark ? '#0f172a' : '#ffffff'), C(14, 26, 1.6, isDark ? '#0f172a' : '#ffffff'), C(28, 21, 1.4, isDark ? '#0f172a' : '#ffffff')];
+        else if (k === 'agateSlice') els = [h('ellipse', { cx: 20, cy: 20, rx: 16, ry: 13, fill: fill, stroke: line, strokeWidth: 1.2 }), h('ellipse', { cx: 20, cy: 20, rx: 11, ry: 8.5, fill: 'none', stroke: line, strokeWidth: 1 }), h('ellipse', { cx: 20, cy: 20, rx: 6, ry: 4.5, fill: 'none', stroke: line, strokeWidth: 1 })];
+        else if (k === 'sulfideChimney') els = [P('M6 18 L16 14 L26 18 L16 22 Z'), P('M6 18 L16 22 L16 33 L6 29 Z'), P('M16 22 L26 18 L26 29 L16 33 Z'), P('M18 10 L26 7 L34 10 L26 13 Z'), P('M26 13 L34 10 L34 19 L26 22 Z')];
+        else if (k === 'basaltRecord') els = [P('M7 12 L30 7 L35 26 L12 33 Z'), C(15, 17, 1.2), C(22, 14, 1), C(27, 22, 1.3), C(18, 25, 1), C(25, 28, 0.9)];
+        else if (item.shape === 'prism') els = [P('M20 3 L27 10 L27 31 L20 37 L13 31 L13 10 Z'), L('M20 3 L20 37 M13 10 L27 10')];
+        else els = [P('M20 4 L34 14 L28 34 L12 34 L6 14 Z'), L('M6 14 L34 14 M20 4 L14 14 L20 34 L26 14 Z')];   // a cut gem, olivine grain or crystal
+        return h('svg', { viewBox: '0 0 40 40', width: 26, height: 26, 'aria-hidden': 'true', focusable: 'false', 'data-geology-find-glyph': k, style: { display: 'inline-block', verticalAlign: 'middle', marginRight: '4px', flex: '0 0 auto' } }, els.map(function (el, i) { return React.cloneElement(el, { key: i }); }));
+      }
+      function saveDigLog(sceneId, layers) {
+        var all = Object.assign({}, d.digLogs || {});
+        var entry = { at: Date.now(), layers: layers.map(function (l) { return { key: l.key, name: l.name, depthKm: l.depthKm, color: l.color }; }) };
+        all[sceneId] = (all[sceneId] || []).slice(-3).concat([entry]); upd('digLogs', all);
+        addNotebookEvidence('dig', 'Your dig: ' + entry.layers.length + ' layers', digLogSummary(entry.layers, sceneId), 'dig-' + entry.at);
+      }
       function collectSpecimen(sceneId, found) {
         if (!found || !found.kind) return;
         var all = Object.assign({}, specimensRef.current || {}), mine = Object.assign({}, all[sceneId] || {}), firstOfKind = !mine[found.kind];
         mine[found.kind] = (mine[found.kind] || 0) + 1; all[sceneId] = mine; specimensRef.current = all; upd('specimensFound', all);
         if (found.crustFossil && !(fossilsRef.current || {})[found.key]) { uncoverFossil(found.key); return; }
-        if (firstOfKind) addNotebookEvidence(found.crustFossil ? 'fossil' : 'specimen', found.name, found.tells, found.kind);
+        var hardnessLine = mohsLine(found.kind);
+        if (firstOfKind) addNotebookEvidence(found.crustFossil ? 'fossil' : 'specimen', found.name, found.tells + (hardnessLine ? ' ' + hardnessLine.text : ''), found.kind);
+        var progressNow = findsProgress(all).byScene[sceneId];
+        if (firstOfKind && progressNow && progressNow.complete) {                   // this find was the world's last one
+          var worldLabel = (SCENES[sceneId] && SCENES[sceneId].label) || sceneId, doneMsg = 'Field guide complete for ' + worldLabel.replace(/^\S+\s/, '') + ': you dug free every find this world hides (' + progressNow.total + ' of ' + progressNow.total + ').';
+          addNotebookEvidence('guide', 'Field guide complete', sceneSpecimenCatalog(sceneId).map(function (c) { return c.name; }).join(', ') + '.', 'guide-' + sceneId);
+          setTimeout(function () { addToast('🏆 ' + doneMsg, 'success'); announce(doneMsg); }, 900);   // after the find's own message
+        }
         addToast((found.icon || '💎') + ' ' + found.name + (firstOfKind ? ' found! ' + found.tells : ' · ' + mine[found.kind] + ' found'), 'success');
         announce(firstOfKind ? tf('stem.geology.sr.specimen_found', '{name} found. {tells}', { name: found.name, tells: found.tells }) : tf('stem.geology.sr.specimen_again', '{name}. {count} found so far.', { name: found.name, count: mine[found.kind] }));
       }
@@ -8765,8 +9282,13 @@ function updateCoreRig3d(dt3d) {
             onSelect: function (facts) { selectRock(facts); },
             onUncover: function (k) { uncoverFossil(k); },
             onSpecimen: function (found) { collectSpecimen(scene, found); },
+            onSpecimenSign: function (seen) { announce(tf('stem.geology.sr.specimen_sign', 'On the block at your reticle: {sign}. It may hold a find. Dig into it.', { sign: seen.sign })); },
             onSpecimenSighted: function (seen) { announce(tf('stem.geology.sr.specimen_sighted', '{name} shows in the rock at your reticle. Dig it free.', { name: seen.name })); },
             onFlash: function (m) { addToast(m, 'info'); },
+            onGroundwater: function () {
+              var msg = t('stem.geology.sr.hit_water_table', 'You dug below the water table. Groundwater seeps out of the sandstone (an aquifer) and fills your hole up to the water table: the same level a well dug here would hold. This model squeezes kilometres of rock into one small block; a real water table is usually only metres to tens of metres below the ground.');
+              addToast('💧 ' + msg, 'info'); announce(msg); geoSfxSeep();
+            },
             onLayerMilestone: function (here, n) { awardLayerMilestone(SCENE.id, here, n); },
             onExcavateChange: function (count, state) {
               state = state || { history: [], redo: [] };
@@ -8847,7 +9369,7 @@ function updateCoreRig3d(dt3d) {
           try { fpPrevFocusRef.current = document.activeElement; } catch (e) {}
           setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0);
           var fpInstructions = fpExplorerMode(scene) === 'mine'
-            ? 'Mine mode on. W A S D or arrow keys walk, Space jumps, Shift sprints, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, R deploys the directional core rig, G surveys a Field Run target, Z undoes, Y redoes, and H returns home. Escape exits.'
+            ? 'Mine mode on. W A S D or arrow keys walk, Space jumps, hold Space while walking into a wall to climb, Shift sprints, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, R deploys the directional core rig, G surveys a Field Run target, Z undoes, Y redoes, and H returns home. Escape exits.'
             : 'Deep Earth flight on. W A S D or arrow keys fly, Q and E move up and down, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, Enter excavates instantly, Z undoes, Y redoes, and H returns home. Escape exits.';
           announce(t('stem.geology.fp_on', fpInstructions));
           setFpKeysVisible(true); setFpShaftLog([]);
@@ -8855,6 +9377,7 @@ function updateCoreRig3d(dt3d) {
           return function () { clearTimeout(keysTimer); };
         } else {
           setFpHud(null);
+          if (fpShaftLog.length > 1) saveDigLog(scene, fpShaftLog);   // this descent becomes a column in the journal
           try { var pf = fpPrevFocusRef.current; if (pf && pf.focus) pf.focus(); else if (fpToggleRef.current) fpToggleRef.current.focus(); } catch (e) {}
         }
       }, [fpOn]);
@@ -10375,6 +10898,7 @@ function updateCoreRig3d(dt3d) {
           fieldJournalOpen ? h('div', { key: 'body', id: panelId, className: 'border-t p-3 ' + (isDark ? 'border-slate-700' : 'border-slate-200') }, [
             h('div', { key: 'summary', className: 'flex flex-wrap items-start justify-between gap-2' }, [
               h('p', { key: 'copy', className: 'max-w-sm text-[10.5px] leading-relaxed ' + muted }, 'Mine a material in first person to log it. Logged cards reveal their category and can refocus the 3D model.'),
+              (function () { var fp3 = findsProgress(d.specimensFound); return fp3.found ? h('span', { key: 'finds-all', 'data-geology-finds-total': fp3.found + '/' + fp3.total, className: 'rounded-full border px-2 py-1 text-[10px] font-bold ' + (isDark ? 'border-amber-500/50 text-amber-200' : 'border-amber-300 text-amber-800') }, '💎 ' + fp3.found + '/' + fp3.total + ' finds across worlds') : null; })(),
               h('span', { key: 'all', className: 'rounded-full border px-2 py-1 text-[10px] font-bold ' + (isDark ? 'border-slate-600 text-slate-300' : 'border-slate-300 text-slate-600'), 'data-geology-journal-total': totalProgress.found + '/' + totalProgress.total }, totalProgress.found + '/' + totalProgress.total + ' across worlds')
             ]),
             sceneFindCatalog.length ? h('section', { key: 'finds', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-amber-500/40 bg-amber-950/20' : 'border-amber-200 bg-amber-50'), role: 'region', 'aria-label': t('stem.geology.a11y.finds_in_the_rock', 'Finds in the rock'), 'data-geology-finds': SCENE.id }, [
@@ -10383,14 +10907,39 @@ function updateCoreRig3d(dt3d) {
                 h('span', { key: 'count', className: 'text-[10px] font-bold ' + muted }, sceneFindsFound + '/' + sceneFindCatalog.length + ' found')
               ]),
               h('p', { key: 'how', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, 'Each one hides inside the rock where it really forms. Dig in first person; it shows in the wall before you dig it free.'),
+              sceneFindsFound ? h('p', { key: 'mohs', 'data-geology-mohs-caption': 'true', className: 'mt-1 text-[10px] leading-snug ' + muted }, 'Mohs hardness ranks which mineral scratches which, from talc (1) to diamond (10): a ranking, not a ruler. A steel knife or pick is about 5.5. Hard is not the same as tough: hard crystals can still shatter, and how fast rock digs depends on how tough and cemented it is.') : null,
               h('ul', { key: 'list', className: 'mt-1.5 grid gap-1 sm:grid-cols-2' }, sceneFindCatalog.map(function (item) {
                 var count = sceneFinds[item.kind] || 0;
                 return h('li', { key: item.kind, 'data-geology-find': item.kind, 'data-found': count ? 'true' : 'false', className: 'rounded-md border px-2 py-1 text-[10.5px] ' + (isDark ? 'border-slate-600 bg-slate-900/40' : 'border-slate-200 bg-white') }, [
-                  h('span', { key: 'name', className: 'block font-bold ' + ink }, (count ? item.icon : '❔') + ' ' + (count ? item.name : 'Not found yet') + (count > 1 ? ' ×' + count : '')),
-                  h('span', { key: 'hint', className: 'block leading-snug ' + muted }, (count ? 'Found. ' : 'Look: ') + item.hint)
+                  count
+                    ? h('details', { key: 'card', 'data-geology-find-card': item.kind }, [
+                        h('summary', { key: 'name', className: 'cursor-pointer font-bold ' + ink }, [specimenGlyph(item), h('span', { key: 'n' }, item.name + (count > 1 ? ' ×' + count : ''))]),
+                        h('span', { key: 'tells', className: 'mt-0.5 block leading-snug ' + ink }, item.tells),
+                        item.hardness ? h('span', { key: 'mohs', 'data-geology-mohs': item.hardness.vs || 'none', className: 'mt-0.5 block leading-snug font-semibold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '⛏ ' + item.hardness.text) : null,
+                        h('span', { key: 'where', className: 'mt-0.5 block leading-snug ' + muted }, 'Found: ' + item.hint)
+                      ])
+                    : h('span', { key: 'name', className: 'block font-bold ' + ink }, '❔ Not found yet'),
+                  count ? null : h('span', { key: 'hint', className: 'block leading-snug ' + muted }, 'Look: ' + item.hint)
                 ]);
               }))
             ]) : null,
+            (function () {
+              var logs = ((d.digLogs || {})[SCENE.id] || []).slice(-3).reverse();
+              if (!logs.length) return null;
+              return h('section', { key: 'digs', 'data-geology-dig-logs': logs.length, className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-sky-500/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50'), role: 'region', 'aria-label': t('stem.geology.a11y.your_digs', 'Your digs') }, [
+                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-sky-200' : 'text-sky-800') }, '📏 Your digs'),
+                h('p', { key: 'how', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, SCENE.id === 'crust' ? 'Each column is one dig, top to bottom. Deeper layers formed first: the bottom of each column is the oldest rock you reached (superposition).' : 'Each column is one dig: the layers it passed through, top to bottom.'),
+                h('div', { key: 'cols', className: 'mt-1.5 flex gap-2 overflow-x-auto' }, logs.map(function (log, li) {
+                  return h('ol', { key: log.at, 'data-geology-dig-log': li, 'aria-label': 'Dig ' + (li + 1) + (li === 0 ? ' (most recent)' : '') + ', top to bottom', className: 'min-w-[130px] flex-1 overflow-hidden rounded-md border ' + (isDark ? 'border-slate-600 bg-slate-900/40' : 'border-slate-200 bg-white') }, log.layers.map(function (layer, i) {
+                    return h('li', { key: layer.key + ':' + i, className: 'flex items-stretch gap-1.5 border-b text-[10px] last:border-b-0 ' + (isDark ? 'border-slate-700' : 'border-slate-100') }, [
+                      h('span', { key: 'band', 'aria-hidden': 'true', style: { width: '10px', flex: '0 0 10px', background: '#' + ((layer.color || 0x94a3b8) >>> 0).toString(16).padStart(6, '0') } }),
+                      h('span', { key: 'name', className: 'flex-1 py-1 font-semibold ' + ink }, layer.name),
+                      h('span', { key: 'depth', className: 'py-1 pr-1.5 ' + muted }, '≈ ' + layer.depthKm + ' km')
+                    ]);
+                  }));
+                }))
+              ]);
+            })(),
             h('section', { key: 'assignments', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-violet-500/40 bg-violet-950/20' : 'border-violet-200 bg-violet-50'), role: 'region', 'aria-label': t('stem.geology.a11y.field_assignments', 'Field assignments'), 'data-geology-assignment-board': SCENE.id }, [
               h('div', { key: 'assignment-head', className: 'flex items-center justify-between gap-2' }, [
                 h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, '🧭 Field assignments'),
@@ -11432,7 +11981,7 @@ function updateCoreRig3d(dt3d) {
             fpWalkScene ? padBtn('⇧', 'jump', 1, 'Jump') : emptyCell('c'),
             fpWalkScene ? emptyCell('walk-b') : padBtn('⤓', 'vert', -1, 'Move down')) : null,
           // on-screen key legend (visual; SR gets layer announcements via the live region)
-          (fpOn && !rigDeployed && fpKeysVisible) ? h('div', { 'data-geology-key-legend': 'true', className: 'absolute bottom-2 left-1/2 z-10 hidden max-w-[58%] -translate-x-1/2 rounded-md px-2 py-1 text-center text-[10px] sm:block ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', fpWalkScene ? 'WASD walk · 1 pick · 2 drill · hold X dig · R core rig · G survey · Z/Y undo/redo · H home' : 'WASD fly · 1 pick · 2 drill · hold X dig · G survey · Z/Y undo/redo · H home')) : null,
+          (fpOn && !rigDeployed && fpKeysVisible) ? h('div', { 'data-geology-key-legend': 'true', className: 'absolute bottom-2 left-1/2 z-10 hidden max-w-[58%] -translate-x-1/2 rounded-md px-2 py-1 text-center text-[10px] sm:block ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', fpWalkScene ? 'WASD walk · Space+W climb · 1 pick · 2 drill · hold X dig · R core rig · G survey · Z/Y undo/redo · H home' : 'WASD fly · 1 pick · 2 drill · hold X dig · G survey · Z/Y undo/redo · H home')) : null,
           (fpOn && !rigDeployed && !fpKeysVisible) ? h('button', { type: 'button', 'data-geology-key-legend-toggle': 'true', onClick: function () { setFpKeysVisible(true); }, className: 'absolute bottom-2 left-1/2 z-10 hidden min-h-8 -translate-x-1/2 rounded-md border px-2 text-[10px] font-bold sm:block ' + (isDark ? 'border-slate-600 bg-slate-900/70 text-slate-200' : 'border-slate-300 bg-white/80 text-slate-700'), 'aria-label': 'Show keyboard controls', title: 'Show keyboard controls' }, '⌨ Keys') : null,
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-reticle': 'true', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded border border-white/55 bg-black/15 text-xl font-light leading-none text-white shadow-[0_1px_6px_rgba(0,0,0,.8)]', 'aria-hidden': 'true' }, '+') : null,
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-target': 'true', 'data-target-ready': 'false', 'data-target-key': '__none', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 mt-6 -translate-x-1/2 rounded-full border border-white/20 bg-slate-950/75 px-2.5 py-1 text-[10px] font-bold text-slate-100 shadow-lg', 'aria-hidden': 'true' }, 'Aim at an exposed block') : null,

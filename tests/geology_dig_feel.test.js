@@ -9,7 +9,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
 const root = path.resolve(import.meta.dirname, '..');
-const sourcePath = path.join(root, 'stem_lab', 'stem_tool_geologyexplorer.js');
+// GEO_TEST_SOURCE lets a mutation check load a scratch copy instead of rewriting the shared file.
+const sourcePath = process.env.GEO_TEST_SOURCE || path.join(root, 'stem_lab', 'stem_tool_geologyexplorer.js');
 const deployPath = path.join(root, 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_geologyexplorer.js');
 
 let P;
@@ -117,8 +118,8 @@ describe('rebuild ambient occlusion on a flat grid', () => {
 describe('dig sound', () => {
   function installFakeAudio() {
     const nodes = [];
-    const param = () => ({ value: 0, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {}, setTargetAtTime() {}, cancelScheduledValues() {} });
-    const node = (kind, extra) => { const n = Object.assign({ kind, connect() {}, start() { n.started = true; }, stop() { n.stopped = true; } }, extra); nodes.push(n); return n; };
+    const param = () => { const pr = { value: 0, targets: [], setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {}, setTargetAtTime(v) { pr.targets.push(v); }, cancelScheduledValues() {} }; return pr; };
+    const node = (kind, extra) => { const n = Object.assign({ kind, to: [], connect(x) { n.to.push(x); }, start() { n.started = true; }, stop() { n.stopped = true; } }, extra); nodes.push(n); return n; };
     class FakeAC {
       constructor() { this.currentTime = 0; this.sampleRate = 8000; this.destination = {}; this.state = 'running'; }
       createBuffer(ch, len, rate) { const data = new Float32Array(len); return { sampleRate: rate, getChannelData: () => data }; }
@@ -126,6 +127,7 @@ describe('dig sound', () => {
       createBiquadFilter() { return node('filter', { type: '', frequency: param(), Q: param() }); }
       createGain() { return node('gain', { gain: param() }); }
       createOscillator() { return node('osc', { type: '', frequency: param() }); }
+      createDelay() { return node('delay', { delayTime: param() }); }
     }
     window.AudioContext = FakeAC; window.StemLab.audioContext = undefined;
     P.sfx.reset();
@@ -172,6 +174,55 @@ describe('dig sound', () => {
     P.sfx.strike('Hard'); P.sfx.drill(true, 'Hard', 0.5);
     expect(nodes).toHaveLength(0);
     expect(P.sfx.drillVoice()).toBeNull();
+  });
+
+  it('every sound goes through one bus whose echo follows how deep underground the explorer is', () => {
+    const nodes = installFakeAudio();
+    P.sfx.strike('Hard'); P.sfx.step('Layered');
+    const bus = P.sfx.bus();
+    expect(bus && bus.input && bus.wet).toBeTruthy();
+    expect(nodes.filter((n) => n.kind === 'delay')).toHaveLength(1);                 // one bus, not one per sound
+    const voices = nodes.filter((n) => n.kind === 'gain' && n !== bus.input && n !== bus.wet && !n.to.some((x) => x && x.kind === 'delay'));
+    expect(voices.length).toBeGreaterThan(2);
+    voices.forEach((g) => expect(g.to).toContain(bus.input));                        // never straight to the speakers
+    expect(bus.wet.gain.value).toBe(0);                                             // daylight: dry
+    P.sfx.setEcho(1); expect(bus.wet.gain.targets.slice(-1)[0]).toBeCloseTo(0.45, 6);
+    const calls = bus.wet.gain.targets.length; P.sfx.setEcho(0.995); expect(bus.wet.gain.targets.length).toBe(calls);   // tiny changes are ignored
+    P.sfx.setEcho(0); expect(bus.wet.gain.targets.slice(-1)[0]).toBe(0);
+  });
+
+  it('footsteps are voiced by the rock underfoot; a hard landing thumps; climbing scrapes', () => {
+    const nodes = installFakeAudio();
+    P.sfx.step('Loose'); const soft = nodes.splice(0);
+    expect(soft.filter((n) => n.kind === 'osc')).toHaveLength(0);
+    expect(soft.some((n) => n.kind === 'filter' && n.type === 'lowpass')).toBe(true);
+    P.sfx.step('Hard', 1.8); const land = nodes.splice(0);
+    expect(land.filter((n) => n.kind === 'osc')).toHaveLength(1);
+    P.sfx.step('Hard', 1, true); const scrape = nodes.splice(0);
+    expect(scrape.some((n) => n.kind === 'filter' && n.type === 'bandpass')).toBe(true);
+    expect(scrape.filter((n) => n.kind === 'osc')).toHaveLength(0);
+  });
+
+  it('water: a harder fall splashes with more bubbles; a flooding hole gurgles; both through the bus', () => {
+    const nodes = installFakeAudio();
+    P.sfx.splash(0.3); const soft = nodes.splice(0);
+    P.sfx.splash(1.5); const hard = nodes.splice(0);
+    const oscs = (list) => list.filter((n) => n.kind === 'osc').length;
+    expect(oscs(soft)).toBeGreaterThan(0);
+    expect(oscs(hard)).toBeGreaterThan(oscs(soft));
+    P.sfx.seep(); const seep = nodes.splice(0);
+    expect(oscs(seep)).toBeGreaterThan(1);
+    expect(seep.some((n) => n.kind === 'noise')).toBe(true);
+    const bus = P.sfx.bus();
+    const voices = [...soft, ...hard, ...seep].filter((n) => n.kind === 'gain' && n !== bus.input && n !== bus.wet && !n.to.some((x) => x && x.kind === 'delay'));
+    expect(voices.length).toBeGreaterThan(4);
+    voices.forEach((g) => expect(g.to).toContain(bus.input));
+  });
+
+  it('water sounds are wired: entering water by falling splashes, and the first flood gurgles', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toMatch(/fp\.medium === 'fluid' && mediumBefore !== 'fluid' && -entryVy > VOXEL \* 1\.5\)[\s\S]{0,260}geoSfxSplash\(-entryVy \/ FP_JUMP_SPEED\)/);
+    expect(src).toMatch(/onGroundwater: function \(\) \{[^}]*geoSfxSeep\(\);[^}]*\}/);   // inside the handler, however long its message
   });
 
   it('the drill hum is one looping voice, reused while held and stopped on release', () => {
@@ -413,6 +464,276 @@ describe('underground light', () => {
     expect(P.undergroundDarkness(2.4, V)).toBeCloseTo(1, 9); expect(P.undergroundDarkness(9, V)).toBe(1);
     let last = -1; for (let d = 0; d <= 3; d += 0.1) { const v = P.undergroundDarkness(d, V); expect(v).toBeGreaterThanOrEqual(last); last = v; }
     expect(P.undergroundDarkness(1.3 * 0.64, 0.64)).toBeCloseTo(P.undergroundDarkness(1.3, 1), 9);   // same feel at every detail level
+  });
+});
+
+describe('climbing out of a dug hole', () => {
+  // A shaft 3 deep: ground at y=0 for z<0, the shaft floor at y=-3 for z>=0. Facing -z, the wall is at z=0.
+  const B = { eye: 1.55, radius: 0.27, step: 0.55, voxel: 1 };
+  const rock = (x, y, z) => y < -3 || (z < 0 && y < 0);
+  const tops = (x, z) => (z < 0 ? [0] : [-3]);
+  const groundAt = (x, z, maxFeetY) => {           // the engine's rule: highest top under the 5 foot samples, up to a step above
+    let best = null;
+    for (const [ox, oz] of [[0, 0], [B.radius, 0], [-B.radius, 0], [0, B.radius], [0, -B.radius]]) {
+      for (const t of tops(x + ox, z + oz)) if (t <= maxFeetY + B.step && (best == null || t > best)) best = t;
+    }
+    return best == null ? null : best + B.eye;
+  };
+  const open = () => false;
+  const bounds = { minX: -9, maxX: 9, minZ: -9, maxZ: 9 };
+  const at = (feetY, z) => ({ x: 0, y: feetY + B.eye, z });
+
+  it('grips a dug wall half a voxel ahead (where a lip stops the body), but not across open air', () => {
+    expect(P.fpClimbGrip(at(-3, 0.5), 0, -1, B, rock)).toBe(true);
+    expect(P.fpClimbGrip(at(-3, 0.75), 0, -1, B, rock)).toBe(false);                // out of arm's reach
+    expect(P.fpClimbGrip(at(-3, 0.5), 0, 1, B, rock)).toBe(false);                  // facing into the open shaft
+    expect(P.fpClimbGrip(at(-1.2, 0.5), 0, -1, B, rock)).toBe(true);                // partway up, still on the face
+    expect(P.fpClimbGrip(at(-3, 0.5), 0, -1, B, (x, y, z) => y < -3 || (z < 0 && y < -2.6))).toBe(false);   // a step, walked over
+  });
+
+  it('hauls up onto the rim at the nearest spot a foot reaches it, once the rim is within an arm of the feet', () => {
+    const to = P.fpMantleTarget(at(-0.9, 0.5), 0, -1, B, bounds, groundAt, open);
+    expect(to).not.toBe(null);
+    expect(to.y).toBeCloseTo(B.eye, 9);                                             // standing on the ground at y=0
+    expect(to.z).toBeCloseTo(0.2, 9);                                               // the first spot whose front foot is on the rim
+    expect(P.fpMantleTarget(at(-1.3, 0.5), 0, -1, B, bounds, groundAt, open)).toBe(null);   // still too far below: keep climbing
+    expect(P.fpMantleTarget(at(-3, 0.5), 0, 1, B, bounds, groundAt, open)).toBe(null);      // the floor never counts as a rim
+  });
+
+  it('moves along to where the body fits under an overhang, and never past the world edge', () => {
+    const roof = (x, eyeY, z) => z > -0.2 + 1e-9;
+    const to = P.fpMantleTarget(at(-0.9, 0.5), 0, -1, B, bounds, groundAt, roof);
+    expect(to.z).toBeCloseTo(-0.2, 9);
+    expect(P.fpMantleTarget(at(-0.9, 0.5), 0, -1, B, bounds, groundAt, () => true)).toBe(null);
+    const edge = P.fpMantleTarget(at(-0.9, 0.5), 0, -1, B, { minX: -9, maxX: 9, minZ: 0.25, maxZ: 9 }, groundAt, open);
+    expect(edge.z).toBeCloseTo(0.25, 9);                                            // the nearest rim spot (0.2) lies past the edge: held at it
+  });
+
+  it('the engine climbs rock only, and mantles with its own ground and body tests', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toContain('fpClimbGrip(fp.pos, fx, fz, FP_BODY, fpRockSolid)');
+    expect(src).toContain('fpMantleTarget(fp.pos, fx, fz, FP_BODY, { minX: -hw, maxX: hw, minZ: -hd, maxZ: hd }, fpGroundEyeY, fpBodyBlocked)');
+  });
+});
+
+describe('diggable relief (peaks and volcanoes)', () => {
+  // a cone 2 tall on a base at y=5, footprint radius 1.5, centred at the origin
+  const cone = () => ({ kind: 'cone', x: 0, z: 0, r: 1.5, rTop: 0.2, h: 2, base: 5, crater: 0 });
+  const surfaceOf = (rel, prop) => (x, z, cell) => { const p = P.fpPropSurfaceY(prop, x, z); return p == null ? null : Math.min(p, rel.cut[cell]); };
+
+  it('starts uncut, above the whole cone', () => {
+    const prop = cone(), rel = P.reliefCreate(prop);
+    expect(rel.cut.every((h) => h === rel.top)).toBe(true);
+    expect(rel.top).toBeGreaterThan(prop.base + prop.h);
+    expect(P.reliefSample(rel, 0, 0)).toBeCloseTo(rel.top, 6);
+    expect(P.reliefThroughAt(rel, 0, 0)).toBe(false);
+  });
+
+  it('a bite lowers a ragged bowl around the aim point, never below the base', () => {
+    const prop = cone(), rel = P.reliefCreate(prop);
+    const ch = P.reliefBite(rel, 0, 6.2, 0, 0.5, 0.3);
+    expect(ch.length).toBeGreaterThan(4);
+    ch.forEach(([i, before, after]) => { expect(after).toBeLessThan(before); expect(after).toBeGreaterThanOrEqual(prop.base); expect(rel.cut[i]).toBe(after); });
+    expect(P.reliefSample(rel, 0, 0)).toBeLessThan(6.2 - 0.3);                 // deepest in the middle
+    expect(P.reliefSample(rel, 1.2, 0)).toBeCloseTo(rel.top, 6);                 // untouched outside the bowl
+    for (let k = 0; k < 20; k++) P.reliefBite(rel, 0, P.reliefSample(rel, 0, 0), 0, 0.5, 0.3);
+    expect(Math.min(...rel.cut)).toBeCloseTo(prop.base, 6);                       // dug right down to the base, not past it
+    expect(P.reliefThroughAt(rel, 0, 0)).toBe(true);
+  });
+
+  it('never slices a slot to the summit when swung at sideways', () => {
+    // Each swing lands where a level ray at eye height (aimY) first meets the current surface,
+    // coming in from +x, exactly as the reticle does; 14 swings in a row.
+    const prop = cone(), aimY = P.fpPropSurfaceY(prop, 1.0, 0);
+    const swing = (rel, capped) => {
+      const surf = capped ? surfaceOf(rel, prop) : null;
+      for (let k = 0; k < 14; k++) {
+        let hitX = null;
+        for (let x = 1.5; x >= -1.5; x -= 0.01) { const top = Math.min(P.fpPropSurfaceY(prop, x, 0) ?? -1, P.reliefSample(rel, x, 0)); if (top >= aimY) { hitX = x; break; } }
+        if (hitX == null) break;
+        P.reliefBite(rel, hitX, aimY, 0, 0.4, 0.2, surf, capped ? 0.36 : 0);
+      }
+      return Math.min(P.fpPropSurfaceY(prop, 0, 0), P.reliefSample(rel, 0, 0));
+    };
+    const capped = P.reliefCreate(prop);
+    expect(swing(capped, true)).toBeCloseTo(P.fpPropSurfaceY(prop, 0, 0), 6);    // the summit keeps its height
+    expect(P.reliefSample(capped, 1.0, 0)).toBeLessThan(aimY - 0.2);              // but the flank is scooped
+    expect(swing(P.reliefCreate(prop), false)).toBeLessThan(aimY);                 // uncapped, the swings cut through the middle
+  });
+
+  it('bites are deterministic and stored to the millimetre (they save and replay exactly)', () => {
+    const a = P.reliefCreate(cone()), b = P.reliefCreate(cone());
+    const ca = P.reliefBite(a, 0.3, 6, -0.2, 0.45, 0.4), cb = P.reliefBite(b, 0.3, 6, -0.2, 0.45, 0.4);
+    expect(ca).toEqual(cb);
+    ca.forEach(([, , after]) => expect(Math.round(after * 1000) / 1000).toBeCloseTo(after, 9));
+  });
+
+  it('folding old history keeps every dig into a peak (replay gives the same heights)', () => {
+    const history = [];
+    for (let i = 0; i < 210; i++) {
+      if (i % 3 === 0) history.push({ r: i % 4, h: [[i % 50, null, 6 - (i % 7) * 0.1], [(i + 9) % 50, 6.3, 5.5 + (i % 5) * 0.05]] });
+      else history.push({ c: { [`${i % 9},1,${i % 7}`]: ['F', '0'] } });
+    }
+    const folded = P.digFoldHistory(history, 160, 120);
+    expect(folded[0].rb).toBeTruthy();
+    expect(P.digReliefReplay(folded)).toEqual(P.digReliefReplay(history));
+    expect(P.digReplay(folded)).toEqual(Object.fromEntries(Object.entries(P.digReplay(history)).filter(([, v]) => v !== 'F')));
+    const again = P.digFoldHistory(folded.concat(history.slice(0, 60)), 160, 120);  // folding a fold keeps it too
+    expect(P.digReliefReplay(again)).toEqual(P.digReliefReplay(folded.concat(history.slice(0, 60))));
+  });
+
+  it('relief strikes never masquerade as voxel digs in the history', () => {
+    expect(P.digReplay([{ r: 2, h: [[0, null, 5], [1, null, 5.2]] }])).toEqual({});
+    expect(P.digReliefReplay([{ c: { '1,1,1': ['F', '0'] } }, '2,0,2'])).toEqual({});
+  });
+});
+
+describe('groundwater in the dig', () => {
+  it('the water table sits in the sandstone aquifer, above the shale aquitard, at every detail level', () => {
+    ['low', 'standard', 'high'].forEach((res) => {
+      P.setScene('crust'); P.setGrid(res);
+      const g = P.grid(), wy = P.waterTableY(g.NY, g.VOXEL);
+      const row = Math.floor(g.NY / 2 - wy / g.VOXEL);                             // the cell row the engine floods at
+      expect(P.rockKeyAt(1, row, 1), res).toBe('sandstone');
+      let shaleBelow = false; for (let y = row + 1; y < g.NY && !shaleBelow; y++) shaleBelow = P.rockKeyAt(1, y, 1) === 'shale';
+      expect(shaleBelow, res).toBe(true);
+      expect(P.rockKeyAt(1, row - 1, 1) === 'soil' || P.rockKeyAt(1, row - 1, 1) === 'sandstone', res).toBe(true);   // dry rock above it
+    });
+    P.setScene('crust'); P.setGrid('standard');
+  });
+  it('the engine floods at that table and tells the student why, in words', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toContain('var WATER_Y = waterTableY(NY, VOXEL);');
+    expect(src).toMatch(/fills your hole up to the water table/);
+    expect(src).toMatch(/Groundwater seeps out of the sandstone \(an aquifer\)/);
+  });
+});
+
+describe('field guide: what each find tells you, and how hard it is', () => {
+  const ALL_SCENES = ['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot', 'collision'];
+
+  it('every find in every scene has a reviewed hardness entry, and no entry is orphaned', () => {
+    const catalogKinds = new Set(ALL_SCENES.flatMap((id) => P.sceneSpecimenCatalog(id).map((c) => c.kind)));
+    const tableKinds = new Set(Object.keys(P.specimenMohs()));
+    expect([...catalogKinds].filter((k) => !tableKinds.has(k))).toEqual([]);
+    expect([...tableKinds].filter((k) => !catalogKinds.has(k))).toEqual([]);
+    ALL_SCENES.forEach((id) => P.sceneSpecimenCatalog(id).forEach((c) => {
+      expect(c.tells, c.kind).toBeTruthy();
+      expect(c.hardness && c.hardness.text, c.kind).toBeTruthy();
+    }));
+  });
+
+  it('compares with a steel pick (~5.5) by the reviewed rule: lowest ≥ 6 harder, highest ≤ 5 softer, else about', () => {
+    expect(P.mohsVsSteel([6.5, 7.5])).toBe('harder');
+    expect(P.mohsVsSteel([6, 6.5])).toBe('harder');
+    expect(P.mohsVsSteel([3, 3])).toBe('softer');
+    expect(P.mohsVsSteel([3.5, 4])).toBe('softer');
+    expect(P.mohsVsSteel([5, 6])).toBe('about');
+    expect(P.mohsVsSteel([5.5, 6])).toBe('about');
+    expect(P.mohsVsSteel(null)).toBeNull();
+  });
+
+  it('gets the classroom science right', () => {
+    const line = (k) => P.mohsLine(k);
+    expect(line('diamond').vs).toBe('harder');
+    expect(line('quartzVein').text).toMatch(/Quartz: hardness 7 \(Mohs\), harder than steel/);
+    expect(line('pumice').vs).toBe('about');                                      // glass walls ~5.5, not "harder than steel"
+    expect(line('pumice').text).toMatch(/full of gas holes, not because it is soft/);
+    expect(line('sulfideChimney').text).toMatch(/^Pyrite:/);                        // the mineral, not the chimney
+    expect(line('fossil-shale').text).toMatch(/Graptolites are a carbon film/);
+    expect(line('reefCoral').text).toMatch(/^Calcite: hardness 3/);                 // an old fossil reef is calcite, not aragonite
+    expect(line('basaltRecord').vs).toBeNull();                                     // a rock has no single Mohs value
+    expect(line('bridgmanite').vs).toBeNull();
+    expect(line('bridgmanite').text).toMatch(/stable only at lower-mantle pressure/);
+    expect(line('bridgmanite').text).not.toMatch(/exists only/);
+  });
+
+  it('the panel says Mohs is a ranking and that hard is not tough (so a slow dig never implies a high number)', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toMatch(/a ranking, not a ruler/);
+    expect(src).toMatch(/Hard is not the same as tough/);
+    expect(src).toMatch(/how fast rock digs depends on how tough and cemented it is/);
+  });
+});
+
+describe('signs on the rock: a block that still hides a find', () => {
+  const ALL_SCENES = ['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot', 'collision'];
+  // the distinctive word of each find's name; a sign must describe the rock, never name what is inside
+  const NAME_WORDS = /garnet|quartz|amethyst|agate|diamond|olivine|bridgmanite|eclogite|pumice|pyrite|sulfide|magnet|plankton|ooze|trilobite|graptolite|brachiopod|crinoid|plant/i;
+  it('every find has a sign, and no sign names the find', () => {
+    ALL_SCENES.forEach((id) => P.sceneSpecimenCatalog(id).forEach((c) => {
+      const sign = P.specimenSign(c.kind);
+      expect(sign, c.kind).toBeTruthy();
+      expect(sign.toLowerCase(), c.kind).not.toContain(c.name.toLowerCase());
+      expect(sign, c.kind).not.toMatch(NAME_WORDS);
+    }));
+  });
+  it('an unknown or future find still gets a sensible sign', () => {
+    expect(P.specimenSign('fossil-newlayer')).toMatch(/fossil traces/);
+    expect(P.specimenSign('somethingNew')).toMatch(/glints/);
+  });
+});
+
+describe('your digs: each descent saved as a column', () => {
+  const crustDig = [
+    { key: 'soil', name: 'Soil / Regolith', depthKm: 0 }, { key: 'sandstone', name: 'Sandstone', depthKm: 0.9 },
+    { key: 'shale', name: 'Shale', depthKm: 2.7 }, { key: 'limestone', name: 'Limestone', depthKm: 4.5 }
+  ];
+  it('lists the layers top to bottom with their depths', () => {
+    expect(P.digLogSummary(crustDig, 'crust')).toMatch(/^Soil \/ Regolith \(≈ 0 km\) → Sandstone \(≈ 0\.9 km\) → Shale \(≈ 2\.7 km\) → Limestone \(≈ 4\.5 km\)/);
+  });
+  it('reads superposition only where it applies: two or more sedimentary layers in the crust', () => {
+    expect(P.digLogSummary(crustDig, 'crust')).toMatch(/formed first.*superposition/);
+    expect(P.digLogSummary(crustDig.slice(0, 2), 'crust')).not.toMatch(/superposition/);   // one sedimentary layer is not a sequence
+    expect(P.digLogSummary([{ key: 'crust', name: 'Crust', depthKm: 10 }, { key: 'upperMantle', name: 'Upper mantle', depthKm: 200 }], 'deepEarth')).not.toMatch(/superposition/);
+    expect(P.digLogSummary(crustDig, 'collision')).not.toMatch(/superposition/);     // thrust stacks can put older rock on top
+  });
+  it('the journal saves a descent when first person ends, and keeps the last four', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toContain('if (fpShaftLog.length > 1) saveDigLog(scene, fpShaftLog);');
+    expect(src).toMatch(/all\[sceneId\] = \(all\[sceneId\] \|\| \[\]\)\.slice\(-3\)\.concat\(\[entry\]\)/);
+  });
+});
+
+describe('eclogite forms only deep in the sinking slab', () => {
+  it('every eclogite garnet sits at least 50 km down (true cell depth), at every detail level, and some remain', () => {
+    ['low', 'standard', 'high'].forEach((res) => {
+      P.setScene('subduction'); P.setGrid(res);
+      const g = P.grid(), keyAt = (a, b, c) => (a < 0 || b < 0 || c < 0 || a >= g.NX || b >= g.NY || c >= g.NZ) ? null : P.subductionKeyAt(a, b, c);
+      let placed = 0;
+      for (let x = 0; x < g.NX; x++) for (let y = 0; y < g.NY; y++) for (let z = 0; z < g.NZ; z++) {
+        const s = P.specimenForCell('subduction', P.subductionKeyAt(x, y, z), x, y, z, keyAt);
+        if (s && s.kind === 'eclogiteGarnet') { placed++; expect((y + 0.5) * g.KM_PER_VOXEL, `${res} row ${y}`).toBeGreaterThanOrEqual(50); }
+      }
+      expect(placed, res).toBeGreaterThan(5);
+    });
+    P.setScene('crust'); P.setGrid('standard');
+  }, 60000);
+});
+
+describe('field-guide progress across the seven worlds', () => {
+  const SCENE_IDS = ['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot', 'collision'];
+  it('starts empty, with every world counted', () => {
+    const expectedTotal = SCENE_IDS.reduce((n, id) => n + P.sceneSpecimenCatalog(id).length, 0);
+    const pr = P.findsProgress({});
+    expect(pr.found).toBe(0);
+    expect(pr.total).toBe(expectedTotal);
+    expect(Object.keys(pr.byScene).sort()).toEqual([...SCENE_IDS].sort());
+    SCENE_IDS.forEach((id) => expect(pr.byScene[id].complete, id).toBe(false));
+  });
+  it('counts a kind once however many were dug, and knows when a world is complete', () => {
+    const geode = P.sceneSpecimenCatalog('geode').map((c) => c.kind);
+    const pr = P.findsProgress({ geode: { [geode[0]]: 5 }, ridge: { oozeMicrofossils: 1, notARealFind: 3 } });
+    expect(pr.byScene.geode).toEqual({ found: 1, total: geode.length, complete: false });
+    expect(pr.byScene.ridge.found).toBe(1);                                          // unknown kinds are ignored
+    const all = P.findsProgress({ geode: Object.fromEntries(geode.map((k) => [k, 1])) });
+    expect(all.byScene.geode.complete).toBe(true);
+    expect(all.found).toBe(geode.length);
+  });
+  it('the completion message fires only on the find that completes a world', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toMatch(/if \(firstOfKind && progressNow && progressNow\.complete\)/);
+    expect(src).toMatch(/you dug free every find this world hides/);
   });
 });
 
