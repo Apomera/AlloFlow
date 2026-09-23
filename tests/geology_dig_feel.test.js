@@ -292,6 +292,79 @@ describe('sub-voxel digging', () => {
   });
 });
 
+describe('specimens hidden in the rock', () => {
+  const HOSTS = { skarnGarnet: 'marble', quartzVein: 'intrusion', schistGarnet: 'schist', summitFossil: 'summitLimestone' };
+  function scan(sceneId, res) {
+    P.setScene(sceneId); P.setGrid(res);
+    const g = P.grid(), gen = sceneId === 'crust' ? P.rockKeyAt : P.collisionKeyAt, found = [];
+    const keyAt = (a, b, c) => (a < 0 || b < 0 || c < 0 || a >= g.NX || b >= g.NY || c >= g.NZ) ? null : gen(a, b, c);
+    for (let y = 0; y < g.NY; y++) for (let x = 0; x < g.NX; x++) for (let z = 0; z < g.NZ; z++) {
+      const key = gen(x, y, z), s = P.specimenForCell(sceneId, key, x, y, z, keyAt);
+      if (s) found.push({ key, x, y, z, s, keyAt });
+    }
+    return found;
+  }
+
+  it('skarn garnet grows only where the marble touches the granite', () => {
+    ['low', 'standard', 'high'].forEach((res) => {
+      const skarn = scan('crust', res).filter(({ s }) => s.kind === 'skarnGarnet');
+      expect(skarn.length, res).toBeGreaterThan(0);
+      skarn.forEach(({ x, y, z, keyAt }) => {
+        const touches = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].some(([dx, dy, dz]) => keyAt(x + dx, y + dy, z + dz) === 'intrusion');
+        expect(touches, `${res} ${x},${y},${z}`).toBe(true);
+      });
+    });
+  });
+
+  it('each specimen forms only in its own host rock, in every detail level, and every kind is findable', () => {
+    ['low', 'standard', 'high'].forEach((res) => {
+      const crust = scan('crust', res), collision = scan('collision', res);
+      [...crust, ...collision].forEach(({ key, s }) => {
+        if (s.crustFossil) { expect(['sandstone', 'shale', 'limestone'], res).toContain(key); expect(s.kind).toBe('fossil-' + key); }
+        else expect(key, `${res} ${s.kind}`).toBe(HOSTS[s.kind]);
+      });
+      const kinds = new Set([...crust, ...collision].map(({ s }) => s.kind));
+      ['fossil-sandstone', 'fossil-shale', 'fossil-limestone', 'skarnGarnet', 'quartzVein', 'schistGarnet', 'summitFossil'].forEach((k) => {
+        expect(kinds.has(k), `${res}: ${k}`).toBe(true);
+      });
+    });
+    expect(P.specimenKinds().sort()).toEqual(Object.keys(HOSTS).sort());
+  });
+
+  it('no other scene hides anything (their rock does not hold these)', () => {
+    ['geode', 'deepEarth', 'subduction', 'ridge', 'hotspot'].forEach((id) => {
+      ['marble', 'intrusion', 'schist', 'summitLimestone', 'sandstone', 'shale', 'limestone'].forEach((key) => {
+        for (let x = 0; x < 6; x++) expect(P.specimenForCell(id, key, x, 3, x)).toBeNull();
+      });
+    });
+  });
+
+  it('a specimen sits in an inner small voxel, so it cannot show before the cell is dug into', () => {
+    for (let x = 0; x < 22; x++) for (let z = 0; z < 22; z += 3) for (let y = 0; y < 19; y += 2) {
+      const l = P.specimenSubOf(x, y, z);
+      l.forEach((c) => { expect(c).toBeGreaterThanOrEqual(1); expect(c).toBeLessThanOrEqual(P.DIG_SUB - 2); });
+      expect(P.specimenSubOf(x, y, z)).toEqual(l);
+    }
+  });
+
+  it('the finds teach where they formed: contact for skarn garnet, regional for schist garnet', () => {
+    P.setScene('crust'); P.setGrid('standard');
+    const crust = scan('crust', 'standard'), collision = scan('collision', 'standard');
+    const skarn = crust.find(({ s }) => s.kind === 'skarnGarnet').s, vein = crust.find(({ s }) => s.kind === 'quartzVein').s;
+    const schist = collision.find(({ s }) => s.kind === 'schistGarnet').s, summit = collision.find(({ s }) => s.kind === 'summitFossil').s;
+    expect(skarn.tells).toMatch(/skarn/i); expect(skarn.tells).toMatch(/granite/i); expect(skarn.tells).toMatch(/limestone/i);
+    expect(schist.tells).toMatch(/regional metamorphism/i); expect(schist.tells).toMatch(/without melting/i);
+    expect(vein.tells).toMatch(/younger than the rock it cuts/i);
+    expect(summit.tells).toMatch(/sea floor/i); expect(summit.tells).toMatch(/millions of years/i);
+  });
+
+  it('ripple marks are never presented as a fossil', () => {
+    const sand = scan('crust', 'standard').find(({ s }) => s.kind === 'fossil-sandstone').s;
+    expect(sand.name).not.toMatch(/ripple/i);
+    expect(sand.tells).toMatch(/ripple marks[^.]*not fossils/i);
+  });
+});
+
 describe('mirror', () => {
   it('keeps both app mirrors identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));

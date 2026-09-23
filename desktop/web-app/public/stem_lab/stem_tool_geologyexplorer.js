@@ -60,9 +60,9 @@
   // metamorphism destroy fossils, which is exactly why we date sedimentary strata.
   var FOSSILS = {
     soil:      { icon: '🌱', name: 'Roots & recent shells',          tells: 'Forming today — too young to be an index fossil.' },
-    sandstone: { icon: '🌿', name: 'Plant fossils & ripple marks',   tells: 'Point to rivers, deltas and dunes when the sand was laid down.' },
-    shale:     { icon: '🦐', name: 'Trilobites & graptolites',       tells: 'Lived in calm, deeper water — classic index fossils for dating layers.' },
-    limestone: { icon: '🐚', name: 'Brachiopods, crinoids & coral',  tells: 'Shelly sea-floor life — they mark a warm, shallow sea.' }
+    sandstone: { icon: '🌿', name: 'Plant fossils',                  tells: 'Plant fossils show land was nearby. Ripple marks beside them are not fossils: moving water or wind shaped the sand. Together they point to rivers, deltas or beaches.' },
+    shale:     { icon: '🦐', name: 'Trilobites & graptolites',       tells: 'Trilobites crawled on the sea floor and graptolites drifted in the water above; their remains sank into calm water where fine mud settled. Both are index fossils that help date layers.' },
+    limestone: { icon: '🐚', name: 'Brachiopods, crinoids & coral',  tells: 'Shelly sea-floor life. Many limestones are made mostly of these shells, and they mark a warm, shallow sea.' }
   };
   var SED_FOSSIL = { sandstone: 1, shale: 1, limestone: 1 }; // layers a fossil can be uncovered in (soil is too young)
   // Groundwater behaviour by rock — permeable layers store/transmit water (aquifers),
@@ -314,6 +314,10 @@
     var ac = geoAudio(); if (!ac) return;
     try { var t = ac.currentTime + 0.005; if (kind === 'hazard') geoGrain(ac, t, 0.32, 'highpass', 2600, 0.7, 0.07, 0); else geoTone(ac, t, 0.12, 'sine', 180, 0.08, 120); } catch (e) {}
   }
+  function geoSfxFind(shape) {                                  // a specimen broke free: a bright two-note chime
+    var ac = geoAudio(); if (!ac) return;
+    try { var t = ac.currentTime + 0.01, base = shape === 'fossil' ? 660 : 880; geoTone(ac, t, 0.18, 'sine', base, 0.07); geoTone(ac, t + 0.09, 0.26, 'sine', base * 1.26, 0.07); } catch (e) {}
+  }
   function geoSfxDrill(on, label, heat) {                       // motor hum + grind; pitch climbs with heat
     if (!on) {
       if (geoDrillVoice) {
@@ -437,6 +441,37 @@
     Object.keys(base).forEach(function (id) { if (base[id] === 'F') delete base[id]; });
     return [{ b: base }].concat(history.slice(cut));
   }
+  // ── Specimens hidden in the rock (pure placement). Each sits in one INNER small voxel of its
+  // host cell, so it shows only once digging opens a face beside it, and a strike that takes
+  // that voxel collects it. Each is placed only in the rock where it really forms. ──
+  var SPECIMENS = {
+    skarnGarnet:  { scene: 'crust', host: 'marble', touching: 'intrusion', chance: 0.5, shape: 'gem', color: 0x9b1b30, icon: '💎', name: 'Garnet crystal (skarn)',
+      tells: 'Hot fluids from the granite carried silica and iron into the limestone next to it. They reacted with the limestone’s calcium and grew garnet. This thin zone, called skarn, sits between the granite and the marble, so the crystal marks where magma met limestone.' },
+    quartzVein:   { scene: 'crust', host: 'intrusion', chance: 0.3, shape: 'prism', color: 0xf8fafc, icon: '🔷', name: 'Quartz vein crystal',
+      tells: 'Late in the granite’s cooling, hot water carrying dissolved silica flowed through cracks that opened as the granite cooled and shrank, and left quartz behind. A vein is younger than the rock it cuts.' },
+    schistGarnet: { scene: 'collision', host: 'schist', chance: 0.4, shape: 'gem', color: 0x7f1d1d, icon: '💎', name: 'Garnet in schist',
+      tells: 'Buried about 15 km deep as the plates collided, this rock (once mud) was heated and squeezed. Without melting, new garnet crystals grew inside it. This is regional metamorphism across the whole mountain belt, not a bake from one nearby magma body.' },
+    summitFossil: { scene: 'collision', host: 'summitLimestone', chance: 0.35, shape: 'fossil', color: 0xefe7d6, icon: '🐚', name: 'Marine fossils on the summit',
+      tells: 'Hundreds of millions of years ago, crinoids, trilobites and shelled animals lived on a shallow sea floor, and their broken pieces became part of this limestone. Over millions of years, the collision slowly pushed it up to the peaks.' }
+  };
+  var FOSSIL_LOOK = { sandstone: 0x3b3326, shale: 0x3f3f46, limestone: 0xf1e9d8 };   // carbonised plant · dark trilobite · pale shell
+  var SPECIMEN_NEIGHBOURS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+  function specimenForCell(sceneId, key, x, y, z, keyAt) {
+    if (sceneId === 'crust' && SED_FOSSIL[key] && hasFossilAt(x, y, z)) {
+      var fossil = FOSSILS[key];
+      return { kind: 'fossil-' + key, key: key, crustFossil: true, shape: 'fossil', color: FOSSIL_LOOK[key] || 0xe7dcc6, icon: fossil.icon, name: fossil.name, tells: fossil.tells };
+    }
+    for (var id in SPECIMENS) {
+      var s = SPECIMENS[id];
+      if (s.scene !== sceneId || s.host !== key || digNoise(x * 7 + 1, y * 13 + 2, z * 5 + 3) >= s.chance) continue;
+      if (s.touching && !(keyAt && SPECIMEN_NEIGHBOURS.some(function (d) { return keyAt(x + d[0], y + d[1], z + d[2]) === s.touching; }))) continue;   // skarn grows only at the contact
+      return { kind: id, key: key, shape: s.shape, color: s.color, icon: s.icon, name: s.name, tells: s.tells };
+    }
+    return null;
+  }
+  // One of the 8 inner small voxels of a cell (never on its outer faces), so nothing shows
+  // until the explorer has dug into the cell.
+  function specimenSubOf(x, y, z) { var i = Math.floor(digNoise(x + 101, y + 211, z + 307) * 8); return [1 + (i & 1), 1 + ((i >> 1) & 1), 1 + ((i >> 2) & 1)]; }
   // r128's setColorAt sizes the colour buffer from the CURRENT count, so an instanced mesh that
   // starts at count 0 got a zero-length buffer and drew every instance black. Allocate it at capacity.
   function withInstanceColors3d(instanced3d, capacity3d) {
@@ -3198,6 +3233,16 @@
       var voxel = voxelByKey[entry];
       if (voxel && voxel.key !== 'void' && !removed[entry] && excavationRedo.indexOf(entry) < 0) excavationRedo.push(entry);
     });
+    // Specimens hidden in this world (see specimenForCell): one small voxel each, looked up by
+    // its sub-grid coordinates when a strike takes it.
+    var specimens3d = [], specimenByG3d = {}, specimenByCell3d = {};
+    for (var spi = 0; spi < voxels.length; spi++) {
+      var spCell = voxels[spi], spInfo = specimenForCell(SCENE.id, spCell.key, spCell.x, spCell.y, spCell.z, function (nx, ny, nz) { var nb = cellAt(nx, ny, nz); return nb ? nb.key : null; });
+      if (!spInfo) continue;
+      var spLocal = specimenSubOf(spCell.x, spCell.y, spCell.z);
+      var spRecord = { cell: spCell, g: [spCell.x * DIG_SUB + spLocal[0], spCell.y * DIG_SUB + spLocal[1], spCell.z * DIG_SUB + spLocal[2]], info: spInfo, taken: false };
+      specimens3d.push(spRecord); specimenByG3d[spRecord.g.join(',')] = spRecord; specimenByCell3d[spCell.id] = spRecord;
+    }
     function worldPos(v) { return [(v.x - (NX - 1) / 2) * VOXEL, ((NY - 1) / 2 - v.y) * VOXEL, (v.z - (NZ - 1) / 2) * VOXEL]; }
 
     var geo = new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL);
@@ -3239,6 +3284,59 @@
     mesh.castShadow = geologyHighDetail3d;
     mesh.receiveShadow = geologyHighDetail3d;
     scene.add(mesh); scene.add(subMesh3d);
+    // Exposed specimens: a garnet gem, a tapered six-sided quartz crystal, a flat fossil.
+    var specimenGeos3d = { gem: new THREE.DodecahedronGeometry(0.5, 0), prism: new THREE.CylinderGeometry(0.16, 0.3, 1, 6), fossil: new THREE.SphereGeometry(0.5, 12, 8) };
+    var specimenMats3d = {
+      gem: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.18, metalness: 0.08, emissive: 0x2a0409, flatShading: true }),
+      prism: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.9, flatShading: true }),
+      fossil: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, metalness: 0 })
+    };
+    var specimenMeshes3d = {}, specimenDummy3d = new THREE.Object3D(), specimenColor3d = new THREE.Color();
+    Object.keys(specimenGeos3d).forEach(function (shape3d) {
+      var capacity3d = Math.max(1, specimens3d.filter(function (sp) { return sp.info.shape === shape3d; }).length);
+      var specimenMesh3d = withInstanceColors3d(new THREE.InstancedMesh(specimenGeos3d[shape3d], specimenMats3d[shape3d], capacity3d), capacity3d);
+      specimenMesh3d.instanceMatrix.setUsage(THREE.DynamicDrawUsage); specimenMesh3d.count = 0; specimenMesh3d.frustumCulled = false;
+      specimenMeshes3d[shape3d] = specimenMesh3d; scene.add(specimenMesh3d);
+    });
+    var SPECIMEN_FACES3d = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+    function rebuildSpecimens3d() {
+      var counts3d = { gem: 0, prism: 0, fossil: 0 };
+      for (var si = 0; si < specimens3d.length; si++) {
+        var sp = specimens3d[si], g = sp.g;
+        if (sp.taken || !damaged[sp.cell.id] || !subSolidG(g[0], g[1], g[2])) continue;
+        var open = null;
+        for (var fi = 0; fi < 6 && !open; fi++) { var f = SPECIMEN_FACES3d[fi]; if (!subSolidG(g[0] + f[0], g[1] + f[1], g[2] + f[2])) open = f; }
+        if (!open) continue;                                    // still buried: nothing to see yet
+        var shape = sp.info.shape, target = specimenMeshes3d[shape], n = counts3d[shape];
+        if (n >= target.instanceMatrix.count) continue;
+        var c = subCentreWorld(g[0], g[1], g[2]), spin = digNoise(g[0] + 7, g[1] + 7, g[2] + 7) * 6.28;
+        // poke out through the open face (sub-grid y points down, world y up)
+        specimenDummy3d.position.set(c[0] + open[0] * SUBV * 0.32, c[1] - open[1] * SUBV * 0.32, c[2] + open[2] * SUBV * 0.32);
+        if (shape === 'fossil') {                               // a flat imprint facing the open face
+          specimenDummy3d.rotation.set(open[2] ? Math.PI / 2 : 0, spin, open[0] ? Math.PI / 2 : 0);
+          specimenDummy3d.scale.set(SUBV * 1.3, SUBV * 0.42, SUBV * 1.0);
+        } else if (shape === 'prism') { specimenDummy3d.rotation.set(0.5 * (open[2] || 1), spin, 0.4 * (open[0] || 0)); specimenDummy3d.scale.set(SUBV * 0.8, SUBV * 1.15, SUBV * 0.8); }
+        else { specimenDummy3d.rotation.set(spin, spin * 0.7, spin * 0.3); specimenDummy3d.scale.setScalar(SUBV * 0.9); }
+        specimenDummy3d.updateMatrix(); target.setMatrixAt(n, specimenDummy3d.matrix); target.setColorAt(n, specimenColor3d.setHex(sp.info.color));
+        counts3d[shape] = n + 1;
+      }
+      Object.keys(specimenMeshes3d).forEach(function (shape3d) {
+        var specimenMesh3d = specimenMeshes3d[shape3d];
+        specimenMesh3d.count = counts3d[shape3d]; specimenMesh3d.instanceMatrix.needsUpdate = true; specimenMesh3d.instanceColor.needsUpdate = true;
+      });
+    }
+    // A strike or whole-cell dig that takes a specimen's voxel collects it.
+    function collectSpecimen3d(sp) {
+      if (!sp || sp.taken) return false;
+      sp.taken = true;
+      var c = subCentreWorld(sp.g[0], sp.g[1], sp.g[2]);
+      geoSfxFind(sp.info.shape); spawnDebris3d([c], sp.info.color, 3, SUBV * 0.3);
+      if (window._alloHaptic) { try { window._alloHaptic('achieve'); } catch (e) {} }
+      var found = Object.assign({ sceneId: SCENE.id, depthKm: +(sp.cell.y * KM_PER_VOXEL).toFixed(1) }, sp.info);
+      if (opts.onSpecimen) opts.onSpecimen(found);
+      else if (sp.info.crustFossil && opts.onUncover) opts.onUncover(sp.info.key);
+      return true;
+    }
 
     var geologyAtmosphereColors3d = {
       crust: 0xe7c59a,
@@ -4121,28 +4219,30 @@
       excavationDustPoints3d.visible = !reducedMotion3d;
       excavationChipPoints3d.visible = !reducedMotion3d;
     }
-    function updateExcavationEffects3d() {
+    // Time-based (k = frames at 60 fps this step): a frame-counted puff hung for seconds on a slow device.
+    function updateExcavationEffects3d(dt3d) {
       if (excavationBurstLife3d <= 0) return;
-      excavationBurstLife3d = Math.max(0, excavationBurstLife3d - 0.024);
+      var k = Math.min(3, Math.max(0.1, (Number(dt3d) || 0.016) * 60)), dustDrag = Math.pow(0.96, k), dustLift = Math.pow(0.95, k), chipDrag = Math.pow(0.985, k);
+      excavationBurstLife3d = Math.max(0, excavationBurstLife3d - 0.024 * k);
       excavationFlashMaterial3d.opacity = excavationBurstLife3d > 0
         ? (reducedMotion3d ? 0.72 : excavationBurstLife3d * 0.82) : 0;
       excavationFlashBox3d.scale.setScalar((excavationFlashBox3d.userData.size || 1) * (reducedMotion3d ? 1.04 : 1.02 + (1 - excavationBurstLife3d) * 0.24));
       if (!reducedMotion3d) {
         for (var dustUpdateIndex3d = 0; dustUpdateIndex3d < excavationDustCount3d; dustUpdateIndex3d++) {
-          excavationDustPositions3d[dustUpdateIndex3d * 3] += excavationDustVelocity3d[dustUpdateIndex3d * 3];
-          excavationDustPositions3d[dustUpdateIndex3d * 3 + 1] += excavationDustVelocity3d[dustUpdateIndex3d * 3 + 1];
-          excavationDustPositions3d[dustUpdateIndex3d * 3 + 2] += excavationDustVelocity3d[dustUpdateIndex3d * 3 + 2];
-          excavationDustVelocity3d[dustUpdateIndex3d * 3] *= 0.96;
-          excavationDustVelocity3d[dustUpdateIndex3d * 3 + 1] *= 0.95;
-          excavationDustVelocity3d[dustUpdateIndex3d * 3 + 2] *= 0.96;
+          excavationDustPositions3d[dustUpdateIndex3d * 3] += excavationDustVelocity3d[dustUpdateIndex3d * 3] * k;
+          excavationDustPositions3d[dustUpdateIndex3d * 3 + 1] += excavationDustVelocity3d[dustUpdateIndex3d * 3 + 1] * k;
+          excavationDustPositions3d[dustUpdateIndex3d * 3 + 2] += excavationDustVelocity3d[dustUpdateIndex3d * 3 + 2] * k;
+          excavationDustVelocity3d[dustUpdateIndex3d * 3] *= dustDrag;
+          excavationDustVelocity3d[dustUpdateIndex3d * 3 + 1] *= dustLift;
+          excavationDustVelocity3d[dustUpdateIndex3d * 3 + 2] *= dustDrag;
         }
         for (var chipUpdateIndex3d = 0; chipUpdateIndex3d < excavationChipCount3d; chipUpdateIndex3d++) {
-          excavationChipPositions3d[chipUpdateIndex3d * 3] += excavationChipVelocity3d[chipUpdateIndex3d * 3];
-          excavationChipPositions3d[chipUpdateIndex3d * 3 + 1] += excavationChipVelocity3d[chipUpdateIndex3d * 3 + 1];
-          excavationChipPositions3d[chipUpdateIndex3d * 3 + 2] += excavationChipVelocity3d[chipUpdateIndex3d * 3 + 2];
-          excavationChipVelocity3d[chipUpdateIndex3d * 3 + 1] -= 0.007;
-          excavationChipVelocity3d[chipUpdateIndex3d * 3] *= 0.985;
-          excavationChipVelocity3d[chipUpdateIndex3d * 3 + 2] *= 0.985;
+          excavationChipPositions3d[chipUpdateIndex3d * 3] += excavationChipVelocity3d[chipUpdateIndex3d * 3] * k;
+          excavationChipPositions3d[chipUpdateIndex3d * 3 + 1] += excavationChipVelocity3d[chipUpdateIndex3d * 3 + 1] * k;
+          excavationChipPositions3d[chipUpdateIndex3d * 3 + 2] += excavationChipVelocity3d[chipUpdateIndex3d * 3 + 2] * k;
+          excavationChipVelocity3d[chipUpdateIndex3d * 3 + 1] -= 0.007 * k;
+          excavationChipVelocity3d[chipUpdateIndex3d * 3] *= chipDrag;
+          excavationChipVelocity3d[chipUpdateIndex3d * 3 + 2] *= chipDrag;
         }
         excavationDustGeometry3d.attributes.position.needsUpdate = true;
         excavationChipGeometry3d.attributes.position.needsUpdate = true;
@@ -4158,21 +4258,24 @@
     // Rubble: a strike knocks loose a few chunks of the rock it broke. They tumble, land on the
     // small voxels below (or the floor of the hole), settle, then shrink away. Skipped under
     // reduced motion (the crater and flash still show what happened).
-    var DEBRIS_MAX3d = 72, debris3d = [], debrisScratch3d = new THREE.Object3D(), debrisColor3d = new THREE.Color();
-    var debrisGeo3d = new THREE.BoxGeometry(1, 1, 1), debrisMat3d = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.94, metalness: 0.02 });
+    var DEBRIS_MAX3d = 40, debris3d = [], debrisScratch3d = new THREE.Object3D(), debrisColor3d = new THREE.Color();
+    var debrisGeo3d = new THREE.BoxGeometry(1, 1, 1), debrisMat3d = new THREE.MeshStandardMaterial({ color: 0xffffff, map: rockSurfaceTexture3d, roughness: 0.94, metalness: 0.02 });
     var debrisMesh3d = withInstanceColors3d(new THREE.InstancedMesh(debrisGeo3d, debrisMat3d, DEBRIS_MAX3d), DEBRIS_MAX3d);
     debrisMesh3d.instanceMatrix.setUsage(THREE.DynamicDrawUsage); debrisMesh3d.frustumCulled = false; debrisMesh3d.count = 0;
     scene.add(debrisMesh3d);
-    function spawnDebris3d(points3d, colorHex3d, count3d, spread3d) {
+    function spawnDebris3d(points3d, colorHex3d, count3d, spread3d, away3d) {
       if (reducedMotion3d || !points3d || !points3d.length) return;
+      var ax = away3d ? away3d.x : 0, az = away3d ? away3d.z : 0, al = Math.sqrt(ax * ax + az * az) || 1;
       for (var di = 0; di < count3d; di++) {
         if (debris3d.length >= DEBRIS_MAX3d) debris3d.shift();
         var src3d = points3d[(excavationRandom3d() * points3d.length) | 0], spread = spread3d || 0;
         debris3d.push({
           x: src3d[0] + (excavationRandom3d() - 0.5) * spread, y: src3d[1] + (excavationRandom3d() - 0.5) * spread, z: src3d[2] + (excavationRandom3d() - 0.5) * spread,
-          vx: (excavationRandom3d() - 0.5) * VOXEL * 2.4, vy: VOXEL * (0.9 + excavationRandom3d() * 1.8), vz: (excavationRandom3d() - 0.5) * VOXEL * 2.4,
+          vx: (excavationRandom3d() - 0.5) * VOXEL * 0.9 + (away3d ? ax / al * VOXEL * (0.4 + excavationRandom3d() * 0.6) : 0),
+          vy: VOXEL * (away3d ? 0.1 + excavationRandom3d() * 0.35 : 0.25 + excavationRandom3d() * 0.8),
+          vz: (excavationRandom3d() - 0.5) * VOXEL * 0.9 + (away3d ? az / al * VOXEL * (0.4 + excavationRandom3d() * 0.6) : 0),
           rx: excavationRandom3d() * 6.28, ry: excavationRandom3d() * 6.28, spin: (excavationRandom3d() - 0.5) * 9,
-          s: SUBV * (0.42 + excavationRandom3d() * 0.5), life: 0, settled: false, c: colorHex3d, tint: 0.78 + excavationRandom3d() * 0.32
+          s: SUBV * (0.3 + excavationRandom3d() * 0.4), life: 0, settled: false, c: colorHex3d, tint: 0.72 + excavationRandom3d() * 0.3
         });
       }
     }
@@ -4180,7 +4283,8 @@
     function updateDebris3d(dt) {
       if (!debris3d.length) { debrisMesh3d.count = 0; return; }
       var n = 0, grav = VOXEL * 16;
-      for (var di = debris3d.length - 1; di >= 0; di--) { if ((debris3d[di].life += dt) > 3.4 || debris3d[di].y < -WORLD.h) debris3d.splice(di, 1); }
+      for (var di = debris3d.length - 1; di >= 0; di--) { if ((debris3d[di].life += dt) > 2.6 || debris3d[di].y < -WORLD.h) debris3d.splice(di, 1); }
+      var eye3d = camera.position, nearEye3d = VOXEL * 0.5;
       for (var dj = 0; dj < debris3d.length; dj++) {
         var d = debris3d[dj], half = d.s * 0.5;
         if (!d.settled) {
@@ -4196,7 +4300,9 @@
           } else d.y = ny;
           d.rx += d.spin * dt; d.ry += d.spin * 0.7 * dt;
         }
-        var fade = d.life > 2.6 ? Math.max(0, 1 - (d.life - 2.6) / 0.8) : 1;
+        // a chunk right at a first-person eye would fill the view: skip drawing it there
+        if (fp.active && Math.abs(d.x - eye3d.x) < nearEye3d && Math.abs(d.y - eye3d.y) < nearEye3d && Math.abs(d.z - eye3d.z) < nearEye3d) continue;
+        var fade = d.life > 2.0 ? Math.max(0, 1 - (d.life - 2.0) / 0.6) : 1;
         debrisScratch3d.position.set(d.x, d.y, d.z); debrisScratch3d.rotation.set(d.rx, d.ry, 0); debrisScratch3d.scale.setScalar(Math.max(0.001, d.s * fade));
         debrisScratch3d.updateMatrix(); debrisMesh3d.setMatrixAt(n, debrisScratch3d.matrix);
         debrisMesh3d.setColorAt(n, debrisColor3d.setHex(d.c).multiplyScalar(d.tint)); n++;
@@ -5475,6 +5581,7 @@
         }
       }
       subMesh3d.count = n; subMesh3d.instanceMatrix.needsUpdate = true; if (subMesh3d.instanceColor) subMesh3d.instanceColor.needsUpdate = true;
+      rebuildSpecimens3d();
     }
     // A tree or boulder stands while the small voxels under its middle are still rock.
     function surfacePropStanding3d(x, z) {
@@ -6093,14 +6200,15 @@
       fp.statusKey = '__refresh';
     }
     function fpCancelMining() { fp.mining = null; fpSetMiningProgress(0, false); }
-    function fpUpdateTargetLabel(v) {
-      var key = v ? vkey(v) : '__none';
+    function fpUpdateTargetLabel(v, specimen) {
+      var key = v ? vkey(v) + (specimen ? '#specimen' : '') : '__none';
       fp.targetKey = key;
       var root = container.parentNode, label = null;
       try { label = root && root.querySelector ? root.querySelector('[data-geology-mining-target]') : null; } catch (e) {}
       if (!label || label.getAttribute('data-target-key') === key) return;
       label.setAttribute('data-target-key', key);
       if (!v) { label.textContent = 'Aim at an exposed block'; label.setAttribute('data-target-ready', 'false'); return; }
+      if (specimen) { label.textContent = (specimen.info.icon || '💎') + ' ' + specimen.info.name + ' in the wall · dig it free'; label.setAttribute('data-target-ready', 'true'); return; }
       var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'Rock', type: '' };
       var profile = fpMiningProfile(v.key, material.type);
       label.textContent = material.name + ' · ' + profile.label + (profile.mineable ? (fp.tool === 'drill' ? ' · hold X to drill' : ' · click or X to dig') : ' · cannot excavate');
@@ -6154,7 +6262,8 @@
       var hit = digRayMarch((o.x / VOXEL + NX / 2) * DIG_SUB, (NY / 2 - o.y / VOXEL) * DIG_SUB, (o.z / VOXEL + NZ / 2) * DIG_SUB,
         dir.x * k, -dir.y * k, dir.z * k, Math.min(FP_REACH, propNear), fpTargetSolid);
       var v = hit ? cellAt((hit.g[0] / DIG_SUB) | 0, (hit.g[1] / DIG_SUB) | 0, (hit.g[2] / DIG_SUB) | 0) : null;
-      fp.target = v || null; fp.targetHit = v ? hit : null; fpUpdateTargetLabel(v);
+      var aimedSpecimen = v ? specimenByG3d[hit.g.join(',')] : null;   // the first rock the ray meets is exposed by definition
+      fp.target = v || null; fp.targetHit = v ? hit : null; fpUpdateTargetLabel(v, aimedSpecimen && !aimedSpecimen.taken ? aimedSpecimen : null);
       if (v) {
         var plan = fpStrikePlan(hit, v, fp.tool);
         fp.targetBoxScale = plan.boxScale;
@@ -7185,7 +7294,7 @@ function updateCoreRig3d(dt3d) {
       if (!v || v.key === 'void') return null;
       var id = vkey(v); if (removed[id]) return null;
       var partial = damaged[id] ? digMaskHex(damaged[id]) : null;   // a whole-cell dig of a half-dug cell must undo back to the half
-      spawnExcavationBurst3d(v); spawnDebris3d([worldPos(v)], (SCENE.palette[v.key] || ROCKS[v.key] || { color: 0xb7a58f }).color, 7, VOXEL * 0.5);
+      spawnExcavationBurst3d(v); spawnDebris3d([worldPos(v)], (SCENE.palette[v.key] || ROCKS[v.key] || { color: 0xb7a58f }).color, 5, VOXEL * 0.5);
       removed[id] = 1; delete damaged[id];
       if (partial) { var wholeEntry = { c: {} }; wholeEntry.c[id] = [partial, '0']; pushHistory3d(wholeEntry); } else pushHistory3d(id);
       rebuild(); notifyExcavationChange();
@@ -7193,7 +7302,8 @@ function updateCoreRig3d(dt3d) {
         var digSound = fpMiningProfile(v.key, (SCENE.palette[v.key] || ROCKS[v.key] || {}).type).label;
         geoSfxStrike(digSound); geoSfxCrumble(digSound, 0.5);
       }
-      if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
+      var cellSpecimen = specimenByCell3d[id];                 // digging the whole cell takes whatever it held (if not already dug out)
+      if (cellSpecimen && !cellSpecimen.taken && (!partial || digMaskFromHex(partial)[digSubIndex(cellSpecimen.g[0] - v.x * DIG_SUB, cellSpecimen.g[1] - v.y * DIG_SUB, cellSpecimen.g[2] - v.z * DIG_SUB)])) collectSpecimen3d(cellSpecimen);
       var below = shallowest(v.x, v.z);
       var belowVoxel = below == null ? null : voxelByKey[v.x + ',' + below + ',' + v.z];
       if (belowVoxel && opts.onSelect && method !== 'core-rig') opts.onSelect(rockFacts(belowVoxel.key, belowVoxel.y));
@@ -7216,9 +7326,16 @@ function updateCoreRig3d(dt3d) {
       var bites = plan.shaft
         ? digShaft(plan.shaft.cx, plan.shaft.cz, plan.shaft.top, plan.shaft.rows, plan.shaft.r, carvableSub3d)
         : digCrater(plan.centre[0], plan.centre[1], plan.centre[2], plan.radius, carvableSub3d);
+      // A specimen still buried when the swing lands is left standing in the fresh wall, so the
+      // explorer always sees a find before the next strike digs it free.
+      bites = bites.filter(function (g) {
+        var sp = specimenByG3d[g.join(',')]; if (!sp || sp.taken) return true;
+        return SPECIMEN_FACES3d.some(function (f) { return !subSolidG(g[0] + f[0], g[1] + f[1], g[2] + f[2]); });
+      });
       if (!bites.length) return null;
-      var touched = {}, order = [], points = [];
+      var touched = {}, order = [], points = [], takenSpecimens = [];
       bites.forEach(function (g) {
+        var sp = specimenByG3d[g.join(',')]; if (sp && !sp.taken) takenSpecimens.push(sp);
         var cx = (g[0] / DIG_SUB) | 0, cy = (g[1] / DIG_SUB) | 0, cz = (g[2] / DIG_SUB) | 0, cell = cellAt(cx, cy, cz), id = cell.id;
         if (!touched[id]) { touched[id] = { cell: cell, before: digCellState(damaged[id]) }; order.push(id); if (!damaged[id]) { damaged[id] = new Uint8Array(DIG_SUB3); damaged[id].fill(1); } }
         damaged[id][digSubIndex(g[0] - cx * DIG_SUB, g[1] - cy * DIG_SUB, g[2] - cz * DIG_SUB)] = 0;
@@ -7235,11 +7352,11 @@ function updateCoreRig3d(dt3d) {
       rebuild(true); notifyExcavationChangeSoon();
       var aimedColor = (SCENE.palette[aimedCell.key] || ROCKS[aimedCell.key] || { color: 0xb7a58f }).color;
       spawnExcavationBurst3d(aimedCell, plan.world, plan.boxScale);
-      spawnDebris3d(points, aimedColor, Math.min(10, 3 + Math.round(bites.length / 4)), SUBV * 0.6);
-      // A cell broken into for the first time yields a specimen (field runs, journal) and any fossil it holds.
+      spawnDebris3d(points, aimedColor, Math.min(5, 2 + Math.round(bites.length / 10)), SUBV * 0.6, fp.active ? fpForward(fp.yaw, fp.pitch) : null);
+      takenSpecimens.forEach(collectSpecimen3d);               // a fossil or crystal that broke free with this bite
+      // A cell broken into for the first time yields a field sample (field runs, journal).
       firstTouch.forEach(function (cell) {
         var name = (SCENE.palette[cell.key] || ROCKS[cell.key] || { name: cell.key }).name;
-        if (opts.onUncover && SED_FOSSIL[cell.key] && hasFossilAt(cell.x, cell.y, cell.z)) opts.onUncover(cell.key);
         if (opts.onExcavate) opts.onExcavate({ removedKey: cell.key, removedY: cell.y, name: name, exposedKey: cell.key, count: undoableCount(), firstPerson: !!fp.active, method: 'strike' });
       });
       cleared.forEach(function (cell) { if (surveyVoxelKey === cell.id) { surveyBox.visible = false; surveyVoxelKey = null; } });
@@ -7247,7 +7364,7 @@ function updateCoreRig3d(dt3d) {
         var last = cleared[cleared.length - 1], below = shallowest(last.x, last.z), belowCell = below == null ? null : cellAt(last.x, below, last.z);
         if (belowCell) opts.onSelect(rockFacts(belowCell.key, belowCell.y));
       }
-      return { subs: bites.length, cells: order.length, firstTouch: firstTouch.length, cleared: cleared.length, count: undoableCount() };
+      return { subs: bites.length, cells: order.length, firstTouch: firstTouch.length, cleared: cleared.length, specimens: takenSpecimens.length, count: undoableCount() };
     }
     function applyEntry3d(entry, undo) {                         // returns the first cell it touched
       if (typeof entry === 'string') { applyCellState(entry, undo ? 'F' : '0'); return voxelByKey[entry] || null; }
@@ -7415,7 +7532,10 @@ function updateCoreRig3d(dt3d) {
       var now = (window.performance && performance.now) ? performance.now() : 0;
       if (now - fp.lastHud > 110) {                           // ~9Hz HUD sample; only push on a layer change
         fp.lastHud = now;
-        var p = fpProbe(fp.pos.x, fp.pos.y, fp.pos.z);
+        // Walking: the rock underfoot (matches the depth badge; in a dug shaft the eye is still up
+        // near the old surface). Swimming or flying: where the eye is.
+        var hudY = (fp.mode === 'mine' && fp.medium !== 'fluid') ? fp.pos.y - FP_EYE_HEIGHT - VOXEL * 0.5 : fp.pos.y;
+        var p = fpProbe(fp.pos.x, hudY, fp.pos.z);
         if (p && p.key !== fp.lastKey) { fp.lastKey = p.key; if (opts.onFpProbe) opts.onFpProbe(p); }
       }
     }
@@ -7469,7 +7589,7 @@ function updateCoreRig3d(dt3d) {
         crystalShardMaterials3d[0].emissiveIntensity = reducedMotion3d ? 0.18 : 0.16 + (Math.sin(t * 0.72) + 1) * 0.035;
         crystalShardMaterials3d[1].emissiveIntensity = reducedMotion3d ? 0.22 : 0.19 + (Math.cos(t * 0.81) + 1) * 0.045;
       }
-      updateExcavationEffects3d();
+      updateExcavationEffects3d(fpDt);
       try { updateDebris3d(fpDt); } catch (e) {}
       try { updateEruption(); } catch (e) {}
       if (!controls) ensureControls();   // OrbitControls may load a moment after the engine starts
@@ -7578,7 +7698,7 @@ function updateCoreRig3d(dt3d) {
     eng.getVisualState = function () { return { coreRigDeployed: coreRigState3d.deployed, coreRigStage: coreRigState3d.stage, coreRigSampleCount: coreRigState3d.samples.length, surveyActive: surveyBox.visible, focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, subVoxels: subMesh3d.count, damagedCells: Object.keys(damaged).length, debris: debris3d.length, sliceZ: sliceZ, excavate: excavate, excavatedCount: undoableCount(), redoCount: excavationRedo.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); fpReseatIfUnsupported('history'); };
     eng.reset = function () {
-      removed = {}; damaged = {}; excavationHistory = []; excavationRedo = []; debris3d.length = 0; fpCancelMining(); undoPreviewRequested = false; undoPreviewKey = null; surveyBox.visible = false; surveyVoxelKey = null; sliceZ = 0;
+      removed = {}; damaged = {}; excavationHistory = []; excavationRedo = []; debris3d.length = 0; specimens3d.forEach(function (sp) { sp.taken = false; }); fpCancelMining(); undoPreviewRequested = false; undoPreviewKey = null; surveyBox.visible = false; surveyVoxelKey = null; sliceZ = 0;
       coreRigState3d.running = false; coreRigState3d.deployed = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = 'Pack ready';
       coreRigState3d.angle = 'vertical'; coreRigState3d.depth = CORE_RIG_DEPTHS[1]; coreRigState3d.origin = null; coreRigState3d.yaw = 0;
       coreRigState3d.path = []; coreRigState3d.cursor = 0; coreRigState3d.samples = []; coreRigState3d.progress = 0; coreRigState3d.heat = 0;
@@ -7633,6 +7753,7 @@ function updateCoreRig3d(dt3d) {
       if (ro) try { ro.disconnect(); } catch (e) {}
       try {
         geo.dispose(); mat.dispose(); subGeo3d.dispose(); debrisGeo3d.dispose(); debrisMat3d.dispose();
+        Object.keys(specimenGeos3d).forEach(function (shape3d) { specimenGeos3d[shape3d].dispose(); specimenMats3d[shape3d].dispose(); });
         renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
         coreRigGeometries3d.forEach(function (rigGeometry3d) { rigGeometry3d.dispose(); });
         coreRigMaterials3d.forEach(function (rigMaterial3d) { rigMaterial3d.dispose(); });
@@ -7689,7 +7810,7 @@ function updateCoreRig3d(dt3d) {
   try {
     window.__alloGeologyPure = {
       rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, collisionKeyAt: collisionKeyAt, collisionTopo: collisionTopo, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount, aoCountGrid: aoCountGrid, digSound: geoDigSound,
-      DIG_SUB: DIG_SUB, digStrike: digStrike, digMaskHex: digMaskHex, digMaskFromHex: digMaskFromHex, digCellState: digCellState, digCrater: digCrater, digShaft: digShaft, withInstanceColors3d: withInstanceColors3d, digRayMarch: digRayMarch, digEntryStates: digEntryStates, digReplay: digReplay, digFoldHistory: digFoldHistory,
+      DIG_SUB: DIG_SUB, digStrike: digStrike, digMaskHex: digMaskHex, digMaskFromHex: digMaskFromHex, digCellState: digCellState, digCrater: digCrater, digShaft: digShaft, specimenForCell: specimenForCell, specimenSubOf: specimenSubOf, specimenKinds: function () { return Object.keys(SPECIMENS); }, withInstanceColors3d: withInstanceColors3d, digRayMarch: digRayMarch, digEntryStates: digEntryStates, digReplay: digReplay, digFoldHistory: digFoldHistory,
       sfx: { strike: geoSfxStrike, chip: geoSfxChip, crumble: geoSfxCrumble, denied: geoSfxDenied, drill: geoSfxDrill, setMuted: function (m) { geoSfxMuted = !!m; }, reset: function () { geoSfxDrill(false); geoSfxCtx = null; geoSfxNoiseBuf = null; }, drillVoice: function () { return geoDrillVoice; } },
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, collisionGeotherm: collisionGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpPropSurfaceY: fpPropSurfaceY, capPointSize3d: capPointSize3d, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
@@ -7766,6 +7887,7 @@ function updateCoreRig3d(dt3d) {
       var histTimer = React.useRef(null);
       var fos = React.useState(d.fossils || {}); var found = fos[0], setFound = fos[1];
       var fossilsRef = React.useRef(found); fossilsRef.current = found;
+      var specimensRef = React.useRef(d.specimensFound || {});   // per-scene tally of fossils and crystals dug free
       var cr = React.useState(null); var core = cr[0], setCore = cr[1];
       var cmp = React.useState([]); var compareList = cmp[0], setCompareList = cmp[1];
       var qz = React.useState(false); var quizOn = qz[0], setQuizOn = qz[1];
@@ -8375,6 +8497,18 @@ function updateCoreRig3d(dt3d) {
         }
         addNotebookEvidence('observation', facts.R.name, facts.R.formation + ' ' + facts.R.age, facts.key);
       }
+      // A fossil or crystal a strike broke free. The first fossil of each crust layer keeps its
+      // existing journal entry and quest credit (uncoverFossil); every other find is tallied,
+      // journaled the first time, and toasted with where it formed.
+      function collectSpecimen(sceneId, found) {
+        if (!found || !found.kind) return;
+        var all = Object.assign({}, specimensRef.current || {}), mine = Object.assign({}, all[sceneId] || {}), firstOfKind = !mine[found.kind];
+        mine[found.kind] = (mine[found.kind] || 0) + 1; all[sceneId] = mine; specimensRef.current = all; upd('specimensFound', all);
+        if (found.crustFossil && !(fossilsRef.current || {})[found.key]) { uncoverFossil(found.key); return; }
+        if (firstOfKind) addNotebookEvidence(found.crustFossil ? 'fossil' : 'specimen', found.name, found.tells, found.kind);
+        addToast((found.icon || '💎') + ' ' + found.name + (firstOfKind ? ' found! ' + found.tells : ' · ' + mine[found.kind] + ' found'), 'success');
+        announce(firstOfKind ? tf('stem.geology.sr.specimen_found', '{name} found. {tells}', { name: found.name, tells: found.tells }) : tf('stem.geology.sr.specimen_again', '{name}. {count} found so far.', { name: found.name, count: mine[found.kind] }));
+      }
       function uncoverFossil(key) {
         var cur = fossilsRef.current || {}; if (cur[key]) return; // already collected this layer's fossil
         var nf = Object.assign({}, cur); nf[key] = 1; setFound(nf); upd('fossils', nf);
@@ -8551,6 +8685,7 @@ function updateCoreRig3d(dt3d) {
             initialExcavation: excavationByWorldRef.current[excavationKey] || { history: [], redo: [] },
             onSelect: function (facts) { selectRock(facts); },
             onUncover: function (k) { uncoverFossil(k); },
+            onSpecimen: function (found) { collectSpecimen(scene, found); },
             onFlash: function (m) { addToast(m, 'info'); },
             onLayerMilestone: function (here, n) { awardLayerMilestone(SCENE.id, here, n); },
             onExcavateChange: function (count, state) {
