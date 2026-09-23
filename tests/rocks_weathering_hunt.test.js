@@ -88,7 +88,7 @@ describe('weathering outcrop illustration', () => {
     expect(render(STATES.minimal).markup).toContain('edges stay sharp');
     // Physical weathering makes ANGULAR debris; chemical makes rounded forms.
     expect(render(STATES.physDom).markup).toContain('angular blocks');
-    expect(render(STATES.chemDom).markup).toContain('rounded and pitted');
+        expect(render(Object.assign({ rock: 'limestone' }, STATES.chemDom)).markup).toContain('rounded and pitted');
     expect(render(STATES.mixed).markup).toContain('both signatures');
   });
 
@@ -96,9 +96,43 @@ describe('weathering outcrop illustration', () => {
     const phys = render(STATES.physDom).markup;
     expect(phys).toContain('ice-filled fractures');
     expect(phys).toContain('scree');
-    const chem = render(STATES.chemDom).markup;
+        const chem = render(Object.assign({ rock: 'limestone' }, STATES.chemDom)).markup;
     expect(chem).toContain('solution hollow');
     expect(chem).toContain('dissolving');
+  });
+
+  it('draws the signature of the chosen rock, not limestone for all three', () => {
+    // The chemical picture used to be karst for every rock, so granite grew a
+    // solution cave while its own note said "feldspar slowly turns to clay".
+    const granite = render(Object.assign({ rock: 'granite' }, STATES.chemDom)).markup;
+    expect(granite).toContain('data-rk-wx-scene="chemDom-granite"');
+        expect(granite).not.toContain('solution hollow');
+    // ...and does not DRAW one either: the hollow is the karst cave path.
+    const CAVE = 'M96,84 Q102,68 116,84 Z';
+    expect(render(Object.assign({ rock: 'limestone' }, STATES.chemDom)).markup).toContain(CAVE);
+    expect(granite).not.toContain(CAVE);
+    expect(granite).toContain('feldspar rots to clay');
+    expect(granite).toContain('quartz is left behind as sand');
+    const sand = render(Object.assign({ rock: 'sandstone' }, STATES.chemDom)).markup;
+    expect(sand).toContain('honeycomb');
+        expect(sand).not.toContain('solution hollow');
+    expect(sand).not.toContain(CAVE);
+    expect(render(Object.assign({ rock: 'limestone' }, STATES.physDom)).markup).toContain('bedding planes');
+    expect(render(Object.assign({ rock: 'sandstone' }, STATES.physDom)).markup).toContain('grain by grain');
+  });
+
+  it('draws each rock differently in every state', () => {
+    Object.keys(STATES).forEach((key) => {
+      const svgs = ['granite', 'limestone', 'sandstone'].map((rock) => {
+        const m = render(Object.assign({ rock }, STATES[key])).markup;
+        // The drawing only: the opening tag and the clip ids carry the rock's
+        // name, which would make every pair differ for free.
+        const k = m.indexOf('data-rk-wx-scene');
+        expect(k, rock + ' ' + key).toBeGreaterThan(-1);
+        return m.slice(m.indexOf('>', k) + 1, m.indexOf('</svg>', k)).replace(/rk-wx-clip-[a-zA-Z]+-[a-z]+/g, 'CLIP');
+      });
+      expect(new Set(svgs).size, key).toBe(3);
+    });
   });
 
   it('is driven by the discrete state only, never the raw slider values', () => {
@@ -113,14 +147,16 @@ describe('weathering outcrop illustration', () => {
     expect(svgA).toEqual(svgB);
   });
 
-  it('takes only the discrete state and a translator as input', () => {
+    it('takes only the discrete state, the chosen rock and a translator as input', () => {
     // `T` is the render's __alloT, threaded in so the captions drawn INTO the
     // outcrop and its screen-reader description travel with the language. It is
-    // a translator, not data: the guard below is what keeps slider values out.
+    // a translator, not data. The rock is a category like the state: it picks
+    // WHICH signature is drawn, never how much. The guard below is what keeps
+    // slider values out.
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      expect(src).toContain('function rkWeatheringSvg(h, state, T)');
-      expect(src).toContain('rkWeatheringSvg(h, state, __alloT)');
+      expect(src).toContain('function rkWeatheringSvg(h, state, T, rock)');
+      expect(src).toContain('rkWeatheringSvg(h, state, __alloT, wxRock)');
       const fn = src.slice(src.indexOf('function rkWeatheringSvg'), src.indexOf('// ═══ 🔬 rocks'));
       // No slider names reachable inside the renderer.
       expect(fn).not.toContain('tempSwing');
@@ -207,7 +243,9 @@ describe('weathering outcrop art', () => {
   // One representative setting per reachable state.
   const MINIMAL = { tempSwing: 5, rainfall: 50, pH: 7 };
   const PHYS = { tempSwing: 45, rainfall: 60, pH: 7 };
-  const CHEM = { tempSwing: 5, rainfall: 480, pH: 3.2 };
+    // Limestone: the karst picture ("rounded and pitted") is limestone's; granite
+  // and sandstone draw their own chemical signatures (tested above).
+  const CHEM = { tempSwing: 5, rainfall: 480, pH: 3.2, rock: 'limestone' };
   const MIXED = { tempSwing: 30, rainfall: 400, pH: 4.5 };
 
   it('draws a different outcrop for each of the four states', () => {

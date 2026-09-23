@@ -25,6 +25,20 @@ const PATHS = [
   'desktop/web-app/public/stem_lab/stem_tool_rocks.js',
 ];
 
+// Each grid tile's swatch, found by the tile's own id. These tests used to
+// take the first N <svg>s on the page and assume they were the grid, so any
+// picture added above the grid shifted every rock onto its neighbour's art.
+function gridSwatches(markup) {
+  const out = {};
+  const re = /data-rk-grid-tile="(\w+)"/g;
+  let m;
+  while ((m = re.exec(markup))) {
+    const a = markup.indexOf('<svg', m.index);
+    out[m[1]] = markup.slice(a, markup.indexOf('</svg>', a) + 6);
+  }
+  return out;
+}
+
 function renderRocks(rocksState, extras) {
   const store = { rocks: Object.assign({}, rocksState), rockCycle: {} };
   const ctx = makeCtx(Object.assign({
@@ -381,20 +395,8 @@ describe('specimen art — the picture shows what the words promise', () => {
   /** Each rock's swatch <svg>, keyed by id, from the rocks grid. */
   function swatches() {
     const { markup } = renderRocks({ mode: 'rocks' });
-    const src = readFileSync(ROCKS_FILE, 'utf8');
-    const block = src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('));
-    const ids = [...block.matchAll(/\{ id: '(\w+)', type: '/g)]
-      .filter((m) => block.slice(m.index, block.indexOf('\n', m.index)).includes('desc:'))
-      .map((m) => m[1]);
-    const found = [];
-    let i = 0;
-    while ((i = markup.indexOf('<svg', i)) >= 0) {
-      const end = markup.indexOf('</svg>', i);
-      found.push(markup.slice(i, end + 6));
-      i = end + 6;
-    }
-    const out = {};
-    ids.forEach((id, n) => { out[id] = found[n] || ''; });
+    const out = gridSwatches(markup);
+    expect(Object.keys(out).length, 'grid tiles found').toBe(24);
     return out;
   }
 
@@ -526,14 +528,15 @@ describe('specimen art — the picture shows what the words promise', () => {
     // and schist came back nearly bare — slate and phyllite hid the same bug
     // because lines drawn clear across still read as banding after clipping.
     const svg = swatches().schist;
+    const T = Number(/<svg[^>]*width="([\d.]+)"/.exec(svg)[1]);
     // Require whitespace before the y: a greedy [^>]*y=" happily matches the
     // tail of opacit|y="0.92" and reports the opacity as a coordinate.
     const ys = [...svg.matchAll(/<rect[^>]*\sy="([\d.]+)"/g)].map((m) => parseFloat(m[1]));
     expect(ys.length).toBeGreaterThan(20);
-    // The grid swatch is 54 units; the lozenge spans roughly 0.30-0.70 of it.
+    // The lozenge spans roughly 0.30-0.70 of the tile, whatever its size.
     ys.forEach((y) => {
-      expect(y).toBeGreaterThan(54 * 0.26);
-      expect(y).toBeLessThan(54 * 0.74);
+      expect(y).toBeGreaterThan(T * 0.26);
+      expect(y).toBeLessThan(T * 0.74);
     });
   });
 
@@ -614,19 +617,16 @@ describe('mineral habit — the crystal is the shape the words name', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     const rows = src.split('\n').filter((l) => /\{\s*id:\s*'/.test(l) && /streak:/.test(l) && /luster:/.test(l));
     const ids = rows.map((l) => /\{\s*id:\s*'(\w+)'/.exec(l)[1]);
-    const found = [];
-    // Start at the catalogue grid: the Mohs index strip above it draws ten
-    // swatches of its own, which are not grid tiles.
-    let i = markup.indexOf('data-mineral-grid');
-    expect(i, 'mineral grid marker').toBeGreaterThan(-1);
-    while ((i = markup.indexOf('<svg', i)) >= 0) {
-      const end = markup.indexOf('</svg>', i);
-      found.push(markup.slice(i, end + 6));
-      i = end + 6;
-    }
-    expect(ids.length, 'mineral rows and swatches are out of step').toBe(found.length);
+    // Each tile's swatch, found by the tile's own id. This used to take every
+    // <svg> after the grid marker, so any picture below the grid (the
+    // "Minerals in your life" room now sits there) put the rows out of step.
+    expect(markup.indexOf('data-mineral-grid'), 'mineral grid marker').toBeGreaterThan(-1);
     const out = {};
-    ids.forEach((id, n) => { out[id] = found[n]; });
+    for (const m of markup.matchAll(/data-rk-mineral-tile="(\w+)"/g)) {
+      const a = markup.indexOf('<svg', m.index);
+      out[m[1]] = markup.slice(a, markup.indexOf('</svg>', a) + 6);
+    }
+    expect(Object.keys(out).sort(), 'mineral rows and tiles are out of step').toEqual(ids.slice().sort());
     return out;
   }
 
@@ -650,7 +650,77 @@ describe('mineral habit — the crystal is the shape the words name', () => {
       mica: 'micaceous',
       topaz: 'striated',
       feldspar: 'blocky90',
+      // The 2026-09-23 visual pass: seven minerals whose pictures were the same
+      // cube or parallelogram as a look-alike (halite/diamond; calcite/gypsum/
+      // talc; azurite/corundum; a dark quartz for graphite).
+      calcite: 'rhombohedral',
+      gypsum: 'tabular',
+      talc: 'foliated',
+      diamond: 'octahedral',
+      corundum: 'barrel',
+      graphite: 'platy',
+      sulfur: 'bipyramidal',
     });
+  });
+
+  it('only tags a habit that the mineral\'s own description names', () => {
+    // The rule this block was built on, now checked rather than assumed: a
+    // habit tag may only draw what the words next to the picture say.
+    const WORD = {
+      octahedral: /octahedr/i, dodecahedral: /dodecahedr/i, micaceous: /sheets|layers/i, striated: /striation/i,
+      blocky90: /near 90/i, rhombohedral: /rhombohedral/i, tabular: /tabular/i, foliated: /foliated/i,
+      barrel: /barrel/i, platy: /plates/i, bipyramidal: /pyramid/i,
+    };
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const rows = src.split('\n').filter((l) => /streak:/.test(l) && /luster:/.test(l) && /habit:/.test(l));
+    expect(rows.length).toBe(12);
+    rows.forEach((l) => {
+      const id = /\{\s*id:\s*'(\w+)'/.exec(l)[1];
+      const habit = /habit:\s*'(\w+)'/.exec(l)[1];
+      const desc = /desc:\s*'((?:[^'\\]|\\.)*)'/.exec(l)[1];
+      expect(WORD[habit], habit + ' has no rule').toBeTruthy();
+      expect(desc, id + ' is drawn ' + habit + ' but its description does not say so').toMatch(WORD[habit]);
+    });
+  });
+
+  it('draws each new habit as the shape it names', () => {
+    const s = mineralSwatches();
+    const byLen = (svg, n) => polys(svg).filter((p) => p.length === n).length;
+    // Diamond: an octahedron (two triangles, no cube faces), with its fire.
+    expect(byLen(s.diamond, 4)).toBe(0);
+    expect(byLen(s.diamond, 3)).toBe(2);
+    ['#ef4444', '#3b82f6', '#f59e0b'].forEach((c) => expect(s.diamond, 'fire ' + c).toContain('fill="' + c + '"'));
+    expect(s.halite).not.toContain('fill="#ef4444"');
+    // Calcite: three rhombic faces, none of them square to the tile.
+    const cal = polys(s.calcite);
+    expect(cal.length).toBe(3);
+    cal.forEach((q) => {
+      expect(q.length).toBe(4);
+      const xs = q.map((p) => p[0]), ys = q.map((p) => p[1]);
+      const axisBox = new Set(xs.map((x) => x.toFixed(1))).size === 2 && new Set(ys.map((y) => y.toFixed(1))).size === 2;
+      expect(axisBox, 'a calcite face is an upright rectangle').toBe(false);
+    });
+    // Sulfur: four triangular faces, so it is not magnetite's two.
+    expect(byLen(s.sulfur, 3)).toBe(4);
+    // Graphite: stacked six-sided plates.
+    expect(byLen(s.graphite, 6)).toBeGreaterThanOrEqual(3);
+    // Corundum: curved barrel sides; talc: a curved lump, not a polygon.
+    expect(s.corundum).toMatch(/<path[^>]*d="M[^"]*Q[^"]*"[^>]*stroke="rgba\(0,0,0,0\.55\)"/);
+    expect(polys(s.corundum).length).toBe(0);
+    expect(s.talc).toMatch(/<path[^>]*d="M[^"]* C[^"]*"[^>]*stroke="rgba\(0,0,0,0\.55\)"/);
+    expect(polys(s.talc).length).toBe(0);
+    // Gypsum: a see-through selenite tablet.
+    expect(s.gypsum).toMatch(/fill-opacity="0\.82"/);
+  });
+
+  it('no longer draws the look-alike pairs as the same picture', () => {
+    const s = mineralSwatches();
+    // The outline shapes only: tag and point count of every outlined element.
+    const sig = (svg) => [...svg.matchAll(/<(polygon|path)\b[^>]*stroke="rgba\(0,0,0,0\.55\)"[^>]*>/g)]
+      .map((m) => m[1] + ':' + ((/points="([^"]+)"/.exec(m[0]) || [, ''])[1].trim().split(/\s+/).length || (/ d="([^"]+)"/.exec(m[0]) || [, ''])[1].replace(/[^A-Za-z]/g, '')))
+      .join('|');
+    [['halite', 'diamond'], ['calcite', 'gypsum'], ['calcite', 'talc'], ['gypsum', 'talc'], ['azurite', 'corundum'], ['quartz', 'graphite'], ['magnetite', 'sulfur']]
+      .forEach(([a, b]) => expect(sig(s[a]), a + ' and ' + b + ' have the same outline').not.toBe(sig(s[b])));
   });
 
   it('draws magnetite as an octahedron even though its system is cubic', () => {
@@ -967,17 +1037,15 @@ describe('the catalogue gaps closed in round 15', () => {
 
   it('renders a distinct swatch for each of the two new rocks', () => {
     const { markup } = renderRocks({ mode: 'rocks' });
-    const svgs = [];
-    let i = 0;
-    while ((i = markup.indexOf('<svg', i)) >= 0) { const end = markup.indexOf('</svg>', i); svgs.push(markup.slice(i, end + 6)); i = end + 6; }
+    const tiles = gridSwatches(markup);
     const ids = [...block().matchAll(/\{ id: '(\w+)', type: '/g)]
       .filter((m) => block().slice(m.index, block().indexOf('\n', m.index)).includes('desc:'))
       .map((m) => m[1]);
     expect(ids).toContain('gabbro');
     expect(ids).toContain('breccia');
-    const brecciaSvg = svgs[ids.indexOf('breccia')] || '';
+    const brecciaSvg = tiles.breccia || '';
     expect(brecciaSvg, 'breccia swatch').toContain('<polygon');
-    const conglomSvg = svgs[ids.indexOf('conglom')] || '';
+    const conglomSvg = tiles.conglom || '';
     expect(conglomSvg, 'conglomerate swatch').toContain('<ellipse');
   });
 
@@ -1062,19 +1130,17 @@ describe('the last two catalogue gaps: grain size and organic rock', () => {
 
   it('draws coal and siltstone with their own art, not a shared fallback', () => {
     const { markup } = renderRocks({ mode: 'rocks' });
-    const svgs = [];
-    let i = 0;
-    while ((i = markup.indexOf('<svg', i)) >= 0) { const end = markup.indexOf('</svg>', i); svgs.push(markup.slice(i, end + 6)); i = end + 6; }
+    const tiles = gridSwatches(markup);
     const ids = [...block().matchAll(/\{ id: '(\w+)', type: '/g)]
       .filter((m) => block().slice(m.index, block().indexOf('\n', m.index)).includes('desc:'))
       .map((m) => m[1]);
     expect(ids).toContain('coal');
     expect(ids).toContain('siltstone');
     // Coal: banded, with bright vitrain layers over the dull ones.
-    expect(svgs[ids.indexOf('coal')]).toContain('#cbd5e1');
+    expect(tiles.coal).toContain('#cbd5e1');
     // Siltstone: a dense fine speckle, far more grains than sandstone draws.
-    const silt = (svgs[ids.indexOf('siltstone')].match(/<circle/g) || []).length;
-    const sand = (svgs[ids.indexOf('sandstone')].match(/<circle/g) || []).length;
+    const silt = (tiles.siltstone.match(/<circle/g) || []).length;
+    const sand = (tiles.sandstone.match(/<circle/g) || []).length;
     expect(silt).toBeGreaterThan(sand);
   });
 

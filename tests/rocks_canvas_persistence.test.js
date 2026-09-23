@@ -184,8 +184,8 @@ describe('specimen detail art matches the grid tile', () => {
   it('renders the hand-lens view from the same renderer as the tile', () => {
     const m = markupFor('granite');
     // Tile size and detail size, same specimen, same renderer.
-    expect(m).toContain('rkclip-granite-54');
-    expect(m).toContain('rkclip-granite-100');
+    expect(m).toContain('rkclip-granite-68');
+    expect(m).toContain('rkclip-granite-136');
   });
 
   it('scopes swatch ids per size so one page cannot duplicate a DOM id', () => {

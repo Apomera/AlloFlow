@@ -537,8 +537,10 @@ describe('crystalline swatches tile', () => {
     const at = markup.indexOf('aria-label="Rock texture close-up');
     const svg = markup.slice(markup.indexOf('<svg', at), markup.indexOf('</svg>', at));
     const { sum, n } = grainArea(svg);
-    expect(n).toBeGreaterThanOrEqual(25);
-    // The swatch is 100 x 100; a tiling mosaic covers it to rounding error.
-    expect(Math.abs(sum - 100 * 100) / (100 * 100)).toBeLessThan(0.01);
+        expect(n).toBeGreaterThanOrEqual(25);
+    // The swatch is S x S; a tiling mosaic covers it to rounding error.
+    const W = Number(/^<svg[^>]*width="([0-9.]+)"/.exec(svg)[1]);
+    expect(W).toBeGreaterThanOrEqual(100);
+    expect(Math.abs(sum - W * W) / (W * W)).toBeLessThan(0.01);
   });
 });

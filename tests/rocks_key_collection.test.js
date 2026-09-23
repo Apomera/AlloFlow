@@ -142,9 +142,11 @@ describe('identification key is true to the data', () => {
   });
 
   it('fizzes exactly on the carbonate rocks the acid lab fizzes on', () => {
-    // The rock card's acid lab lists its carbonates inline; the key must agree.
-    const lab = /targetId === 'limestone' \|\| targetId === 'marble' \|\| targetId === 'travertine' \|\| targetId === 'chalk'/.test(SRC);
-    expect(lab).toBe(true);
+    // The rock card's acid lab used to list its carbonates inline, so the two
+    // could drift apart. It now reads this same table (and every rock's
+    // rendered result is checked in rocks_clarity_pass).
+    expect(SRC).toContain('var fizzes = !!RK_KEY_ROCKS_FIZZ[selRock.id];');
+    expect(SRC).not.toContain("targetId === 'limestone'");
     expect(Object.keys(FIZZ).sort()).toEqual(['chalk', 'limestone', 'marble', 'travertine']);
   });
 
