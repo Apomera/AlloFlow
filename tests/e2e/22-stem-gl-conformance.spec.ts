@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { GlHarness } from './helpers/stem_gl_harness';
+import { test, expect, Page } from '@playwright/test';
+import { GlHarness, looksBlank } from './helpers/stem_gl_harness';
 
 /**
  * STEM Lab — WebGL conformance battery.
@@ -13,8 +13,8 @@ import { GlHarness } from './helpers/stem_gl_harness';
  *
  *   live context      — Geometry World mounted a canvas whose scene was dead; the
  *                       throw was swallowed and it just showed nothing.
- *   non-blank         — same failure, seen from the pixels: Galaxy's upscale
- *                       recursion killed 3-D on two quality tiers.
+ *   builds a scene    — same failure, seen from the draw calls and the pixels:
+ *                       Galaxy's upscale recursion killed 3-D on two quality tiers.
  *   stable size       — Geometry World's canvas grew ~8px every 220ms forever, a
  *                       ResizeObserver feeding its own output back in.
  *   fits parent       — the other half of that bug.
@@ -22,7 +22,37 @@ import { GlHarness } from './helpers/stem_gl_harness';
  *                       -bound key handlers with no tabIndex, so a keyboard-only
  *                       student could never walk. Pointer lock hid it from anyone
  *                       testing with a mouse.
- *   releases on unmount — a dead canvas left behind stacked over the live one.
+ *   releases on unmount — a dead canvas left behind stacked over the live one, and
+ *                       a context never lost counts against Chromium's per-process cap.
+ *
+ * HOW THESE CHECKS STAY HONEST (audit 2026-09-22). Every GL fact comes from the
+ * harness's recorder (helpers/stem_gl_harness.ts), never from calling getContext here:
+ * that call CREATES a live context on a canvas the tool never set up, and for months
+ * the molecule row "mounted a live GL context" that only this file had made. So:
+ *   - the GL canvas must carry a context the PAGE created (createdBy 'page');
+ *   - "builds a scene" needs draw calls on that context AND non-blank pixels, read
+ *     with every overlay hidden (a HUD over a dead canvas photographs as content),
+ *     and, where a row sets minMeshes, a three.js mesh census;
+ *   - a tool that asked StemLab.ensureThree for OrbitControls must have been given
+ *     them (the harness stub does not load them; use extraScripts);
+ *   - "releases" requires every context the mount created to be LOST after unmount,
+ *     read before the harness's own cleanup runs. Counting canvases React had already
+ *     removed could not see a leak at all.
+ * The gates themselves are proven able to fail in 22b-stem-gl-harness-selftest.
+ *
+ * Blank-pixel calibration (full battery, 2026-09-22): the 16 real scenes measured a
+ * dominant-colour share of 0.05 to 0.97 (molecule highest) with 3 to 170 significant
+ * colours; a canvas with no GL output measures 1.00 with one colour. looksBlank()
+ * fires at >= 0.995 or < 2 colours.
+ *
+ * RUN IT (16 to 40 minutes on one worker, depending on load; 37 min measured on
+ * 2026-09-22 while other lanes were busy; never alongside another Playwright suite):
+ *   npx playwright test tests/e2e/22-stem-gl-conformance.spec.ts --workers=1 --reporter=list
+ * Judge the run by its EXIT CODE. Retries are OFF in this file: under the config's
+ * retries: 1, a test that failed once and passed on retry was reported "flaky", and
+ * flaky does not fail the exit code, so a red battery could exit 0. Piping through
+ * tail can also cut the summary; read the last "N failed" line or the exit code.
+ * One row: add  -g "molecule"  (the describe titles are "<id> — WebGL conformance").
  *
  * ADDING A TOOL: append to MANIFEST. If its 3-D lives behind state (most do), give
  * the toolData that reaches it — probe the running tool rather than reading it off
@@ -44,15 +74,57 @@ interface ToolEntry {
    * fall back to their 2D view and the battery measures nothing.
    */
   preScripts?: string[];
+  /** Scripts loaded after the registry, before the tool, e.g. OrbitControls. */
+  extraScripts?: string[];
+  /** 'document' for long scrolling tools whose root collapses in a flex row. */
+  layout?: 'viewport' | 'document';
+  /** Floor for the three.js mesh census, for rows whose scene size is known. */
+  minMeshes?: number;
+  /** Serve the app's compiled CSS: for tools sized by Tailwind classes. */
+  appStyles?: boolean;
 }
 
-// Verified by mounting each one: these reach a live GL canvas with no state at all.
+const ORBIT = 'vendor/three-r128/OrbitControls.js';
+
+// Mesh-census floors, from the scenes as first measured with OrbitControls loaded
+// (2026-09-22). A floor, not an exact count: the point is that a scene was BUILT.
+const MOLECULE_MIN_MESHES = 9; // methane, ball-and-stick: 5 atoms + 4 bonds
+const GEOSANDBOX_MIN_MESHES = 2;
+
+// Methane exactly as the tool's own preset list has it. The viewer opens EMPTY
+// (d.atoms defaults to []), so an unseeded row renders lights and no molecule.
+const METHANE = {
+  atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' },
+    { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' },
+    { el: 'H', x: 200, y: 220, color: '#60a5fa' }],
+  bonds: [[0, 1], [0, 2], [0, 3], [0, 4]],
+  formula: 'CH₄',
+};
+
+// Verified by mounting each one: these reach a live GL canvas with no state at all,
+// unless the row says otherwise.
 const MANIFEST: ToolEntry[] = [
   { id: 'solarSystem', file: 'stem_lab/stem_tool_solarsystem.js' },
-  { id: 'galaxy', file: 'stem_lab/stem_tool_galaxy.js' },
+  // Unstyled, its canvas ran 31px past its parent (1278 vs 1247) and failed "fits
+  // parent"; with the app's CSS it fits. That failure was the harness, not the tool.
+  { id: 'galaxy', file: 'stem_lab/stem_tool_galaxy.js', appStyles: true },
   { id: 'geometryWorld', file: 'stem_lab/stem_tool_geometryworld.js', note: 'also mounts a 2D HUD canvas' },
-  { id: 'molecule', file: 'stem_lab/stem_tool_molecule.js' },
-  { id: 'geoSandbox', file: 'stem_lab/stem_tool_geosandbox.js' },
+  // Both ask StemLab.ensureThree for OrbitControls. Without them molecule's initThree
+  // returns before creating a renderer (so this row tested nothing), and geoSandbox
+  // builds a scene with no camera controls, which is not the tool students get.
+  {
+    id: 'molecule', file: 'stem_lab/stem_tool_molecule.js', extraScripts: [ORBIT],
+    state: { molecule: METHANE }, minMeshes: MOLECULE_MIN_MESHES,
+    // Its canvas is sized by Tailwind's w-full h-full; unstyled it is the browser's
+    // default 300x150, which is not the view a student gets.
+    appStyles: true,
+    note: 'methane in the viewer; needs OrbitControls or it never builds a renderer',
+  },
+  {
+    id: 'geoSandbox', file: 'stem_lab/stem_tool_geosandbox.js', extraScripts: [ORBIT],
+    minMeshes: GEOSANDBOX_MIN_MESHES,
+    note: 'default plot; needs OrbitControls for the camera the app gives it',
+  },
   { id: 'geologyExplorer', file: 'stem_lab/stem_tool_geologyexplorer.js' },
   { id: 'echoTrainer', file: 'stem_lab/stem_tool_echotrainer.js', note: 'also mounts a 2D canvas' },
   // First entry that needs STATE to reach its 3D. RoadReady opens on a menu; the
@@ -103,7 +175,15 @@ const MANIFEST: ToolEntry[] = [
     id: 'nuclearLab',
     file: 'stem_lab/stem_tool_nuclearlab.js',
     preScripts: ['stem_lab/stem_lab_module.js'],
-    note: 'reaches 3D on a default mount; also mounts 3 2D canvases',
+    // Its root sets container-type: inline-size, whose intrinsic width is 0, so in
+    // the default flex #wrap the whole lab collapsed to 0px and every canvas was
+    // invisible (all five checks timed out, 2026-09-22). Block flow is how the app
+    // lays it out; 31-nuclearlab-charts does the same by hand.
+    // appStyles too: the viewer's box gets position:relative from a Tailwind class, so
+    // unstyled the absolute mount node filled #wrap and the "reactor" canvas was
+    // 1280x18091, the whole document, instead of the 260px-tall view.
+    layout: 'document', appStyles: true,
+    note: 'reactor core 3D on a default mount (section 20 of a long page); also mounts 2D charts',
   },
   // Nutrient Body Map lives behind the hub; the glass figure builds on the
   // shared bay viewer once view=bodyMap is set (verified by mounting).
@@ -173,11 +253,13 @@ const MANIFEST: ToolEntry[] = [
 // The other 23 WebGL tools reach their 3-D behind state (a mission phase, a tab, a
 // started flag) rather than on a default mount. Each needs its gate discovered by
 // PROBING THE RUNNING TOOL — Moon Mission's turned out to be missionPhase 6 AND an
-// evaStarted flag, and I guessed it wrong twice from the source first. Six of them
-// (anatomy, geoSandbox, magnetism, molecule, particleLab3d, probability) additionally
-// ask for THREE.OrbitControls, which is vendored at vendor/three-r128/OrbitControls.js
-// and attaches to the THREE global — pass it via extraScripts when adding them.
+// evaStarted flag, and I guessed it wrong twice from the source first. Several
+// (anatomy, magnetism, particleLab3d, probability, and molecule/geoSandbox above) ask
+// for THREE.OrbitControls, which is vendored at vendor/three-r128/OrbitControls.js and
+// attaches to the THREE global. Pass it via extraScripts: the first check below fails
+// a row whose tool asked for it and did not get it.
 
+// Everything read from the harness's GL recorder; nothing here calls getContext.
 const PROBES = `
   window.__conform = function () {
     var hit = window.__glCanvas();
@@ -193,28 +275,44 @@ const PROBES = `
     // keyboard, or its key handlers are dead for anyone without a mouse.
     var apps = [];
     var all = document.querySelectorAll('#wrap canvas');
+    var live = 0;
     for (var i = 0; i < all.length; i++) {
       if (all[i].getAttribute('role') === 'application') {
         apps.push({ tabIndex: all[i].tabIndex, focusable: all[i].tabIndex >= 0 });
       }
+      var rec = window.__glRecord(all[i]);
+      if (rec && !rec.ctx.isContextLost()) live++;
     }
     return {
       lost: hit.gl.isContextLost(),
+      createdBy: hit.rec.createdBy,
+      draws: hit.rec.draws,
       box: { w: Math.round(cr.width), h: Math.round(cr.height) },
       parentBox: { w: Math.round(pr.width), h: Math.round(pr.height) },
       appCanvases: apps,
-      glCount: (function () { var n = 0; for (var j = 0; j < all.length; j++) { try { if (all[j].getContext('webgl2') || all[j].getContext('webgl')) n++; } catch (e) {} } return n; })()
+      glCount: live
+    };
+  };
+  // For failure messages: what the page had instead of a GL canvas.
+  window.__conformWhy = function () {
+    return {
+      canvases: [].map.call(document.querySelectorAll('#wrap canvas'), function (c) {
+        var b = c.getBoundingClientRect(); return Math.round(b.width) + 'x' + Math.round(b.height);
+      }),
+      contexts: window.__glContexts(),
+      ensureThree: window.__harnessNotes.ensureThree
     };
   };
 `;
 
-test.describe.configure({ timeout: 150_000 });
+test.describe.configure({ timeout: 150_000, retries: 0 });
 
 for (const tool of MANIFEST) {
   test.describe(`${tool.id} — WebGL conformance`, () => {
     const harness = new GlHarness({
       toolFile: tool.file, toolId: tool.id, width: 1280, height: 820, probes: PROBES,
-      preScripts: tool.preScripts,
+      preScripts: tool.preScripts, extraScripts: tool.extraScripts, layout: tool.layout,
+      appStyles: tool.appStyles,
     });
 
     test.beforeAll(async () => { await harness.start(); });
@@ -222,30 +320,56 @@ for (const tool of MANIFEST) {
     // Chromium caps live WebGL contexts per PROCESS and kills the oldest silently.
     test.afterEach(async ({ page }) => { await harness.destroy(page); });
 
-    test('mounts a live GL context without throwing', async ({ page }) => {
-      await harness.mount(page, tool.state || {});
+    const conform = async (page: Page) => {
       const c = await page.evaluate(() => (window as any).__conform());
+      if (!c) {
+        const why = await page.evaluate(() => (window as any).__conformWhy());
+        expect(c, `${tool.id}: no canvas carries a GL context the page created\n${JSON.stringify(why, null, 1)}`).not.toBeNull();
+      }
+      return c;
+    };
 
-      expect(c, `${tool.id}: no GL canvas`).not.toBeNull();
+    test('mounts a live GL context the tool created, without throwing', async ({ page }) => {
+      await harness.mount(page, tool.state || {});
+      const c = await conform(page);
+
+      expect(c.createdBy, `${tool.id}: the only GL context was created by test code, not the tool`).toBe('page');
       expect(c.lost, `${tool.id}: context lost at mount`).toBe(false);
+
+      const orbit = await page.evaluate(() => ({
+        asked: (window as any).__harnessNotes.ensureThree.some((n: { orbit: boolean }) => n.orbit),
+        present: !!((window as any).THREE && (window as any).THREE.OrbitControls),
+      }));
+      expect(!orbit.asked || orbit.present,
+        `${tool.id} asked StemLab.ensureThree for OrbitControls, which the harness stub does not load, `
+        + `so this row is testing a tool the app never runs. Add '${ORBIT}' to its extraScripts.`).toBe(true);
 
       const errs: string[] = (await page.evaluate(() => (window as any).__events.errors))
         .filter((m: string) => !/ResizeObserver loop/.test(m));
       expect(errs, `${tool.id}: page errors`).toEqual([]);
     });
 
-    test('renders something rather than a blank surface', async ({ page }) => {
+    test('builds a scene: draw calls and non-blank pixels on its own canvas', async ({ page }) => {
       await harness.mount(page, tool.state || {});
-      // Tag the GL canvas first, then photograph exactly that one.
-      await page.evaluate(() => (window as any).__conform());
-      // A dead scene clears to a flat colour, which PNG compresses to a few KB.
-      // Real content runs hundreds of KB, so this floor has a large margin.
-      const shot = await page.locator('[data-gl-under-test]').screenshot({ timeout: 60000 });
-      expect(shot.length, `${tool.id}: canvas looks blank`).toBeGreaterThan(8000);
+      const c = await conform(page);
+      expect(c.draws, `${tool.id}: the GL context has issued no draw calls (it only clears, or never renders)`).toBeGreaterThan(0);
+
+      const scene = await harness.glScene(page);
+      const px = await harness.glPixels(page);
+      const stats = px ? { ...px, png: undefined } : null;
+      test.info().annotations.push({ type: 'gl-evidence', description: JSON.stringify({ draws: c.draws, scene, pixels: stats }) });
+      expect(px, `${tool.id}: no GL canvas to photograph`).not.toBeNull();
+      // Overlays hidden and the CSS background flattened, so only GL output counts.
+      expect(looksBlank(px!), `${tool.id}: canvas pixels are blank\n${JSON.stringify(stats)}`).toBe(false);
+      if (tool.minMeshes) {
+        expect(scene?.visibleMeshes ?? 0,
+          `${tool.id}: three.js scene has too few visible meshes\n${JSON.stringify(scene)}`).toBeGreaterThanOrEqual(tool.minMeshes);
+      }
     });
 
     test('holds a stable size and stays inside its parent', async ({ page }) => {
       await harness.mount(page, tool.state || {});
+      await conform(page);
 
       const samples: string[] = [];
       for (let i = 0; i < 7; i += 1) {
@@ -256,6 +380,7 @@ for (const tool of MANIFEST) {
       expect(distinct.length, `${tool.id}: canvas size unstable\n${distinct.join('\n')}`).toBe(1);
 
       const c = await page.evaluate(() => (window as any).__conform());
+      expect(c.box.w * c.box.h, `${tool.id}: GL canvas has no area (${c.box.w}x${c.box.h})`).toBeGreaterThan(0);
       expect(c.box.w, `${tool.id}: canvas wider than parent`).toBeLessThanOrEqual(c.parentBox.w + 1);
       expect(c.box.h, `${tool.id}: canvas taller than parent`).toBeLessThanOrEqual(c.parentBox.h + 1);
     });
@@ -265,7 +390,8 @@ for (const tool of MANIFEST) {
       // so the whole moonwalk was mouse-only. Pointer lock hid it completely from
       // anyone testing with a mouse.
       await harness.mount(page, tool.state || {});
-      const c = await page.evaluate(() => (window as any).__conform());
+      // Must be the 3D view: with no GL canvas this check would pass on any page.
+      const c = await conform(page);
 
       c.appCanvases.forEach((a: { tabIndex: number; focusable: boolean }) => {
         expect(a.focusable,
@@ -273,12 +399,18 @@ for (const tool of MANIFEST) {
       });
     });
 
-    test('releases its GL canvas on unmount', async ({ page }) => {
+    test('releases every GL context it created on unmount', async ({ page }) => {
       await harness.mount(page, tool.state || {});
-      expect(await page.evaluate(() => (window as any).__conform().glCount)).toBeGreaterThan(0);
+      const c = await conform(page);
+      expect(c.glCount, `${tool.id}: no live GL context to release`).toBeGreaterThan(0);
 
-      await harness.destroy(page);
-      await page.waitForTimeout(500);
+      // Unmount ONLY: the harness's own cleanup (destroy, in afterEach) would lose
+      // every context itself and hide a leak. Tools release on a deferred tick.
+      await harness.unmount(page);
+      const leaked = await harness.leakedAfterUnmount(page);
+      expect(leaked, `${tool.id}: GL context(s) still live after unmount; the tool never `
+        + `lost them (renderer.forceContextLoss / StemLab.releaseGl). Created by:\n`
+        + leaked.map((l) => `  #${l.id} ${l.type} ${l.width}x${l.height} ${l.creator.join(' <- ')}`).join('\n')).toEqual([]);
       expect(await page.evaluate(() => document.querySelectorAll('#wrap canvas').length),
         `${tool.id}: canvas left behind after unmount`).toBe(0);
     });
@@ -370,8 +502,20 @@ test.describe('raptorHunt — deterministic celestial atmosphere', () => {
 
     await command('hold', { key: 'shift', pressed: 1 });
     await expect.poll(async () => (await currentSnapshot()).diveActive, { timeout: 5_000 }).toBe(true);
-    await expect.poll(async () => (await currentSnapshot()).cameraFov, { timeout: 5_000 })
-      .toBeGreaterThan(baselineFlight.cameraFov + 2);
+    // The stoop is gravity-limited (eae303085): the dive FOV widens only once speed
+    // passes 0.8 x level speed, about 1.5 s of SIMULATED time for the bald eagle, and
+    // the sim clamps dt to 0.05 s a frame. At SwiftShader's few frames a second that is
+    // many seconds of wall clock, so the old 5 s poll failed at 70.3 against > 72 on a
+    // working dive. The claim is the direction (a stoop widens the view), not the rate.
+    try {
+      await expect.poll(async () => (await currentSnapshot()).cameraFov, { timeout: 45_000 })
+        .toBeGreaterThan(baselineFlight.cameraFov + 2);
+    } catch (err) {
+      const s = await currentSnapshot();
+      throw new Error(`dive FOV never widened past ${baselineFlight.cameraFov + 2}: `
+        + JSON.stringify({ speedMph: s.speedMph, cameraFov: s.cameraFov, renderFrames: s.renderFrames,
+          baselineSpeedMph: baselineFlight.speedMph }) + '\n' + (err as Error).message);
+    }
     const diveFlight = await currentSnapshot();
     expect(diveFlight.cameraMode).toBe('chase');
     expect(diveFlight.cameraDistanceToRaptor).toBeGreaterThan(1);
@@ -400,7 +544,9 @@ test.describe('raptorHunt — deterministic celestial atmosphere', () => {
     expect(initialAssist.activeTargetIndex).toBeGreaterThanOrEqual(-1);
     expect(initialAssist.activeTargetIndex).toBeLessThan(initialAssist.preyCount);
 
-    const reticle = page.locator('[data-raptor-reticle="true"]');
+    // Two elements carry data-raptor-reticle since 6f0b50fd1 (the React .rh-flight-reticle
+    // and the projected .rh-target-tracker); the edge/offscreen state is the tracker's.
+    const reticle = page.locator('.rh-target-tracker[data-raptor-reticle="true"]');
     await command('targetProbe', { ndcX: 1.6, ndcY: 1.4, ndcZ: 0 });
     await expect.poll(async () => reticle.getAttribute('data-offscreen'), { timeout: 5_000 }).toBe('true');
     const edgeReticle = await reticle.evaluate((element) => {
@@ -439,8 +585,12 @@ test.describe('raptorHunt — deterministic celestial atmosphere', () => {
 
     const horizon = await currentSnapshot();
     expect(horizon.distantTerrainCount).toBeGreaterThan(0);
-    expect(Math.abs(horizon.distantTerrainOffsetX)).toBeLessThan(0.01);
-    expect(Math.abs(horizon.distantTerrainOffsetZ)).toBeLessThan(0.01);
+    // The ranges stay fixed in WORLD space for parallax (ed897988b), so the group sits
+    // at the origin and its offset from the bird is minus the bird's position. The
+    // follow-the-bird contract this used to pin was retired on purpose; see also
+    // raptor-cinematic-rendering.spec.ts.
+    expect(Math.abs(horizon.distantTerrainOffsetX + horizon.raptorPosition.x)).toBeLessThan(0.01);
+    expect(Math.abs(horizon.distantTerrainOffsetZ + horizon.raptorPosition.z)).toBeLessThan(0.01);
     expect(Math.abs(horizon.distantTerrainWorldY)).toBeLessThan(0.01);
 
     const poolCapacity = {

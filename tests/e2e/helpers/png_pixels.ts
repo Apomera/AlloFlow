@@ -60,6 +60,53 @@ export function readPng(buf: Buffer): Pixels {
   };
 }
 
+/**
+ * What a picture contains, as statistics rather than bytes. SwiftShader does not render
+ * the same scene to the same bytes twice, so "is anything drawn" is asked of the colour
+ * distribution: a surface nothing drew on is one flat colour, however it was encoded.
+ * Colours are bucketed to 5 bits per channel, so antialiasing noise within a flat area
+ * does not count as content.
+ */
+export type PixelStats = {
+  width: number;
+  height: number;
+  /** Centre of the most common colour bucket. */
+  dominant: [number, number, number];
+  /** Fraction of pixels in the most common bucket (1 = perfectly flat). */
+  dominantShare: number;
+  /** Buckets holding at least one pixel. */
+  distinctColors: number;
+  /** Buckets holding at least 0.1% of the pixels. */
+  significantColors: number;
+};
+
+export function pixelStats(p: Pixels): PixelStats {
+  const counts = new Uint32Array(32768);
+  for (let y = 0; y < p.height; y += 1) {
+    for (let x = 0; x < p.width; x += 1) {
+      const [r, g, b] = p.at(x, y);
+      counts[((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)] += 1;
+    }
+  }
+  const total = p.width * p.height || 1;
+  let best = 0, distinct = 0, significant = 0;
+  for (let k = 0; k < counts.length; k += 1) {
+    if (!counts[k]) continue;
+    distinct += 1;
+    if (counts[k] >= total * 0.001) significant += 1;
+    if (counts[k] > counts[best]) best = k;
+  }
+  const centre = (v: number) => (v << 3) + 4;
+  return {
+    width: p.width,
+    height: p.height,
+    dominant: [centre((best >> 10) & 31), centre((best >> 5) & 31), centre(best & 31)],
+    dominantShare: counts[best] / total,
+    distinctColors: distinct,
+    significantColors: significant,
+  };
+}
+
 const channel = (c: number) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
 export const luminance = (rgb: [number, number, number]) =>
   0.2126 * channel(rgb[0]) + 0.7152 * channel(rgb[1]) + 0.0722 * channel(rgb[2]);
