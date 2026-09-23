@@ -1,0 +1,7217 @@
+{
+ "generatedAt": "2026-09-23T03:03:15.200Z",
+ "runs": 24,
+ "agg": {
+  "live|fast3g|student": {
+   "n": 2,
+   "failures": [
+    "live-fast3g-student-r3: TimeoutError: page.waitForEvent: Timeout 30000ms exceeded while waiting for event \"filechooser\"\n========================"
+   ],
+   "stringsAt": {
+    "median": null,
+    "range": null
+   },
+   "launchpadDom": {
+    "median": 16458.5,
+    "range": [
+     14832,
+     18085
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 1599,
+    "range": [
+     1502,
+     1696
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 152545.5,
+    "range": [
+     147887,
+     157204
+    ]
+   },
+   "launchpad": {
+    "median": 69144,
+    "range": [
+     67131,
+     71157
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 982.5,
+    "range": [
+     788,
+     1177
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 589.5,
+    "range": [
+     506,
+     673
+    ]
+   },
+   "workspaceReady": {
+    "median": 72196.5,
+    "range": [
+     70246,
+     74147
+    ]
+   },
+   "loadAttempt1": {
+    "median": 72895,
+    "range": [
+     70906,
+     74884
+    ]
+   },
+   "miscReady": {
+    "median": 118323,
+    "range": [
+     113233,
+     123413
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 46312.5,
+    "range": [
+     43264,
+     49361
+    ]
+   },
+   "packLoaded": {
+    "median": 125507,
+    "range": [
+     119924,
+     131090
+    ]
+   },
+   "hubOpen": {
+    "median": 130927,
+    "range": [
+     125709,
+     136145
+    ]
+   },
+   "stationStarted": {
+    "median": 152064,
+    "range": [
+     146834,
+     157294
+    ]
+   },
+   "linkDeadMs": {
+    "median": 21611,
+    "range": [
+     21433,
+     21789
+    ]
+   },
+   "toolLoadMs": {
+    "median": 1775.5,
+    "range": [
+     1182,
+     2369
+    ]
+   },
+   "toolContent": {
+    "median": 154144.5,
+    "range": [
+     149583,
+     158706
+    ]
+   },
+   "clicks": {
+    "median": 9,
+    "range": [
+     9,
+     9
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "queueDrained": {
+    "median": 154080.5,
+    "range": [
+     146038,
+     162123
+    ]
+   },
+   "selHubReady": {
+    "median": 89705,
+    "range": [
+     86626,
+     92784
+    ]
+   },
+   "rootChild": {
+    "median": 6638.5,
+    "range": [
+     6638,
+     6639
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 16558.5,
+    "range": [
+     16477,
+     16640
+    ]
+   },
+   "totalBytes": {
+    "median": 8961131.5,
+    "range": [
+     8960872,
+     8961391
+    ]
+   },
+   "calibMs": {
+    "median": 117.5,
+    "range": [
+     110,
+     125
+    ]
+   },
+   "packSavingEst": {
+    "median": 51059,
+    "range": [
+     47733,
+     54385
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20531.5,
+    "range": [
+     20456,
+     20607
+    ]
+   },
+   "fcp": {
+    "median": 3188,
+    "range": [
+     3092,
+     3284
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3
+   ],
+   "cpuLoad": [
+    97,
+    100
+   ]
+  },
+  "live|fast3g|teacher": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": null,
+    "range": null
+   },
+   "launchpadDom": {
+    "median": 13143,
+    "range": [
+     12535,
+     43831
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 5666,
+    "range": [
+     2767,
+     11733
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 211549,
+    "range": [
+     148952,
+     215037
+    ]
+   },
+   "launchpad": {
+    "median": 67826,
+    "range": [
+     66417,
+     97595
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1074,
+    "range": [
+     710,
+     7630
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 1252,
+    "range": [
+     531,
+     7153
+    ]
+   },
+   "workspaceReady": {
+    "median": 73105,
+    "range": [
+     69825,
+     116857
+    ]
+   },
+   "loadAttempt1": {
+    "median": 74247,
+    "range": [
+     70255,
+     118478
+    ]
+   },
+   "miscReady": {
+    "median": 147258,
+    "range": [
+     116426,
+     177586
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 59583,
+    "range": [
+     46298,
+     73357
+    ]
+   },
+   "packLoaded": {
+    "median": 164811,
+    "range": [
+     125469,
+     187129
+    ]
+   },
+   "hubOpen": {
+    "median": 187180,
+    "range": [
+     128175,
+     193532
+    ]
+   },
+   "stationStarted": {
+    "median": 214892,
+    "range": [
+     149441,
+     215491
+    ]
+   },
+   "linkDeadMs": {
+    "median": 21835,
+    "range": [
+     21649,
+     31590
+    ]
+   },
+   "toolLoadMs": {
+    "median": 1328,
+    "range": [
+     1290,
+     4887
+    ]
+   },
+   "toolContent": {
+    "median": 217215,
+    "range": [
+     151719,
+     226770
+    ]
+   },
+   "clicks": {
+    "median": 14,
+    "range": [
+     14,
+     14
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 5,
+    "range": [
+     5,
+     5
+    ]
+   },
+   "queueDrained": {
+    "median": 228039,
+    "range": [
+     155384,
+     240224
+    ]
+   },
+   "selHubReady": {
+    "median": 93997,
+    "range": [
+     87662,
+     142162
+    ]
+   },
+   "rootChild": {
+    "median": 7372,
+    "range": [
+     6102,
+     26006
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 15165,
+    "range": [
+     6269,
+     16924
+    ]
+   },
+   "totalBytes": {
+    "median": 12779015,
+    "range": [
+     12776943,
+     13037756
+    ]
+   },
+   "calibMs": {
+    "median": 302,
+    "range": [
+     206,
+     306
+    ]
+   },
+   "packSavingEst": {
+    "median": 66911,
+    "range": [
+     53349,
+     85349
+    ]
+   },
+   "linkSavingEst": {
+    "median": 21578,
+    "range": [
+     21410,
+     25167
+    ]
+   },
+   "fcp": {
+    "median": 3008,
+    "range": [
+     2536,
+     12328
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 1,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    null,
+    96,
+    97
+   ]
+  },
+  "live|wifi|student": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": null,
+    "range": null
+   },
+   "launchpadDom": {
+    "median": 7187,
+    "range": [
+     6571,
+     15675
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 4200,
+    "range": [
+     2467,
+     4749
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 86565,
+    "range": [
+     70634,
+     87109
+    ]
+   },
+   "launchpad": {
+    "median": 15685,
+    "range": [
+     14733,
+     18702
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 929,
+    "range": [
+     695,
+     3491
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 673,
+    "range": [
+     562,
+     2991
+    ]
+   },
+   "workspaceReady": {
+    "median": 18038,
+    "range": [
+     17855,
+     24525
+    ]
+   },
+   "loadAttempt1": {
+    "median": 18910,
+    "range": [
+     18712,
+     26186
+    ]
+   },
+   "miscReady": {
+    "median": 38722,
+    "range": [
+     38041,
+     51630
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 21179,
+    "range": [
+     20070,
+     27140
+    ]
+   },
+   "packLoaded": {
+    "median": 49978,
+    "range": [
+     45256,
+     59466
+    ]
+   },
+   "hubOpen": {
+    "median": 67111,
+    "range": [
+     50838,
+     68650
+    ]
+   },
+   "stationStarted": {
+    "median": 89425,
+    "range": [
+     71843,
+     90745
+    ]
+   },
+   "linkDeadMs": {
+    "median": 23162,
+    "range": [
+     21584,
+     24434
+    ]
+   },
+   "toolLoadMs": {
+    "median": 994,
+    "range": [
+     883,
+     1083
+    ]
+   },
+   "toolContent": {
+    "median": 90765,
+    "range": [
+     73101,
+     91858
+    ]
+   },
+   "clicks": {
+    "median": 9,
+    "range": [
+     9,
+     9
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "queueDrained": {
+    "median": 79746,
+    "range": [
+     66970,
+     81905
+    ]
+   },
+   "selHubReady": {
+    "median": 25967,
+    "range": [
+     25686,
+     38262
+    ]
+   },
+   "rootChild": {
+    "median": 3520,
+    "range": [
+     3520,
+     7014
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 17218,
+    "range": [
+     16247,
+     17505
+    ]
+   },
+   "totalBytes": {
+    "median": 9340308,
+    "range": [
+     8973559,
+     9341816
+    ]
+   },
+   "calibMs": {
+    "median": 170,
+    "range": [
+     125,
+     178
+    ]
+   },
+   "packSavingEst": {
+    "median": 30024,
+    "range": [
+     25619,
+     32105
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20118,
+    "range": [
+     19690,
+     20210
+    ]
+   },
+   "fcp": {
+    "median": 1036,
+    "range": [
+     744,
+     3252
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    null,
+    82,
+    100
+   ]
+  },
+  "live|wifi|teacher": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": null,
+    "range": null
+   },
+   "launchpadDom": {
+    "median": 10823,
+    "range": [
+     9020,
+     26774
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 4914,
+    "range": [
+     2404,
+     11371
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 94580,
+    "range": [
+     85637,
+     114750
+    ]
+   },
+   "launchpad": {
+    "median": 19474,
+    "range": [
+     8705,
+     26624
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1470,
+    "range": [
+     1085,
+     5407
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 1035,
+    "range": [
+     796,
+     3950
+    ]
+   },
+   "workspaceReady": {
+    "median": 30933,
+    "range": [
+     13091,
+     35768
+    ]
+   },
+   "loadAttempt1": {
+    "median": 31906,
+    "range": [
+     14386,
+     36954
+    ]
+   },
+   "miscReady": {
+    "median": 65573,
+    "range": [
+     55442,
+     78749
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 28928,
+    "range": [
+     23774,
+     64859
+    ]
+   },
+   "packLoaded": {
+    "median": 78484,
+    "range": [
+     63254,
+     91030
+    ]
+   },
+   "hubOpen": {
+    "median": 83609,
+    "range": [
+     65978,
+     97993
+    ]
+   },
+   "stationStarted": {
+    "median": 105112,
+    "range": [
+     86789,
+     118770
+    ]
+   },
+   "linkDeadMs": {
+    "median": 21576,
+    "range": [
+     21040,
+     22484
+    ]
+   },
+   "toolLoadMs": {
+    "median": 640,
+    "range": [
+     517,
+     817
+    ]
+   },
+   "toolContent": {
+    "median": 105951,
+    "range": [
+     88041,
+     119664
+    ]
+   },
+   "clicks": {
+    "median": 14,
+    "range": [
+     14,
+     14
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 5,
+    "range": [
+     5,
+     5
+    ]
+   },
+   "queueDrained": {
+    "median": 99703,
+    "range": [
+     87913,
+     111656
+    ]
+   },
+   "selHubReady": {
+    "median": 41222,
+    "range": [
+     40751,
+     47746
+    ]
+   },
+   "rootChild": {
+    "median": 6556,
+    "range": [
+     2240,
+     8908
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 18507,
+    "range": [
+     16079,
+     18612
+    ]
+   },
+   "totalBytes": {
+    "median": 12928172,
+    "range": [
+     12776331,
+     13154672
+    ]
+   },
+   "calibMs": {
+    "median": 193,
+    "range": [
+     175,
+     376
+    ]
+   },
+   "packSavingEst": {
+    "median": 40266,
+    "range": [
+     30565,
+     74997
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20138,
+    "range": [
+     16414,
+     20720
+    ]
+   },
+   "fcp": {
+    "median": 2568,
+    "range": [
+     816,
+     7520
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    100,
+    100,
+    100
+   ]
+  },
+  "local|fast3g|student": {
+   "n": 2,
+   "failures": [
+    "local-fast3g-student-r3: TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Crew L"
+   ],
+   "stringsAt": {
+    "median": null,
+    "range": null
+   },
+   "launchpadDom": {
+    "median": 15078.5,
+    "range": [
+     13115,
+     17042
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 1759,
+    "range": [
+     1723,
+     1795
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 134073,
+    "range": [
+     116090,
+     152056
+    ]
+   },
+   "launchpad": {
+    "median": 49166,
+    "range": [
+     31710,
+     66622
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 800,
+    "range": [
+     768,
+     832
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 724.5,
+    "range": [
+     583,
+     866
+    ]
+   },
+   "workspaceReady": {
+    "median": 51700,
+    "range": [
+     33801,
+     69599
+    ]
+   },
+   "loadAttempt1": {
+    "median": 52381,
+    "range": [
+     34428,
+     70334
+    ]
+   },
+   "miscReady": {
+    "median": 96368.5,
+    "range": [
+     78372,
+     114365
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 44735.5,
+    "range": [
+     44657,
+     44814
+    ]
+   },
+   "packLoaded": {
+    "median": 103808.5,
+    "range": [
+     85795,
+     121822
+    ]
+   },
+   "hubOpen": {
+    "median": 110109,
+    "range": [
+     91217,
+     129001
+    ]
+   },
+   "stationStarted": {
+    "median": 132078,
+    "range": [
+     112468,
+     151688
+    ]
+   },
+   "linkDeadMs": {
+    "median": 22558,
+    "range": [
+     21763,
+     23353
+    ]
+   },
+   "toolLoadMs": {
+    "median": 3261.5,
+    "range": [
+     1689,
+     4834
+    ]
+   },
+   "toolContent": {
+    "median": 135832,
+    "range": [
+     117885,
+     153779
+    ]
+   },
+   "clicks": {
+    "median": 9,
+    "range": [
+     9,
+     9
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "queueDrained": {
+    "median": 142364.5,
+    "range": [
+     121175,
+     163554
+    ]
+   },
+   "selHubReady": {
+    "median": 66465,
+    "range": [
+     48091,
+     84839
+    ]
+   },
+   "rootChild": {
+    "median": 6545.5,
+    "range": [
+     6061,
+     7030
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 16182,
+    "range": [
+     15710,
+     16654
+    ]
+   },
+   "totalBytes": {
+    "median": 9772274,
+    "range": [
+     9771310,
+     9773238
+    ]
+   },
+   "calibMs": {
+    "median": 172.5,
+    "range": [
+     172,
+     173
+    ]
+   },
+   "packSavingEst": {
+    "median": 50033,
+    "range": [
+     49845,
+     50221
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20634.5,
+    "range": [
+     20593,
+     20676
+    ]
+   },
+   "fcp": {
+    "median": 2730,
+    "range": [
+     2716,
+     2744
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3
+   ],
+   "cpuLoad": [
+    88,
+    100
+   ]
+  },
+  "local|fast3g|teacher": {
+   "n": 2,
+   "failures": [
+    "local-fast3g-teacher-r3: TimeoutError: locator.waitFor: Timeout 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Mor"
+   ],
+   "stringsAt": {
+    "median": null,
+    "range": null
+   },
+   "launchpadDom": {
+    "median": 19869.5,
+    "range": [
+     17165,
+     22574
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 3474,
+    "range": [
+     3164,
+     3784
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 140793.5,
+    "range": [
+     122726,
+     158861
+    ]
+   },
+   "launchpad": {
+    "median": 50333.5,
+    "range": [
+     31961,
+     68706
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 2243,
+    "range": [
+     1930,
+     2556
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 1162,
+    "range": [
+     791,
+     1533
+    ]
+   },
+   "workspaceReady": {
+    "median": 55927.5,
+    "range": [
+     37559,
+     74296
+    ]
+   },
+   "loadAttempt1": {
+    "median": 57324.5,
+    "range": [
+     39292,
+     75357
+    ]
+   },
+   "miscReady": {
+    "median": 108504,
+    "range": [
+     89680,
+     127328
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 51708.5,
+    "range": [
+     51025,
+     52392
+    ]
+   },
+   "packLoaded": {
+    "median": 116978,
+    "range": [
+     96591,
+     137365
+    ]
+   },
+   "hubOpen": {
+    "median": 119331.5,
+    "range": [
+     99030,
+     139633
+    ]
+   },
+   "stationStarted": {
+    "median": 142673.5,
+    "range": [
+     124668,
+     160679
+    ]
+   },
+   "linkDeadMs": {
+    "median": 23714,
+    "range": [
+     21380,
+     26048
+    ]
+   },
+   "toolLoadMs": {
+    "median": 1414,
+    "range": [
+     1024,
+     1804
+    ]
+   },
+   "toolContent": {
+    "median": 144267.5,
+    "range": [
+     125890,
+     162645
+    ]
+   },
+   "clicks": {
+    "median": 14,
+    "range": [
+     14,
+     14
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 5,
+    "range": [
+     5,
+     5
+    ]
+   },
+   "queueDrained": {
+    "median": 150388.5,
+    "range": [
+     131539,
+     169238
+    ]
+   },
+   "selHubReady": {
+    "median": 73346,
+    "range": [
+     54082,
+     92610
+    ]
+   },
+   "rootChild": {
+    "median": 6791.5,
+    "range": [
+     6325,
+     7258
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 15944,
+    "range": [
+     15551,
+     16337
+    ]
+   },
+   "totalBytes": {
+    "median": 13424442.5,
+    "range": [
+     13423635,
+     13425250
+    ]
+   },
+   "calibMs": {
+    "median": 134.5,
+    "range": [
+     104,
+     165
+    ]
+   },
+   "packSavingEst": {
+    "median": 57803,
+    "range": [
+     56046,
+     59560
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20032,
+    "range": [
+     19911,
+     20153
+    ]
+   },
+   "fcp": {
+    "median": 2740,
+    "range": [
+     2668,
+     2812
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3
+   ],
+   "cpuLoad": [
+    93,
+    100
+   ]
+  },
+  "local|wifi|student": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": null,
+    "range": null
+   },
+   "launchpadDom": {
+    "median": 6412,
+    "range": [
+     4941,
+     15703
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 20559,
+    "range": [
+     2726,
+     25762
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 127520,
+    "range": [
+     78792,
+     179961
+    ]
+   },
+   "launchpad": {
+    "median": 17108,
+    "range": [
+     16596,
+     31632
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 2042,
+    "range": [
+     1618,
+     6819
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 831,
+    "range": [
+     684,
+     5954
+    ]
+   },
+   "workspaceReady": {
+    "median": 36908,
+    "range": [
+     20900,
+     44677
+    ]
+   },
+   "loadAttempt1": {
+    "median": 48380,
+    "range": [
+     22079,
+     49911
+    ]
+   },
+   "miscReady": {
+    "median": 84405,
+    "range": [
+     44907,
+     125763
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 39732,
+    "range": [
+     24242,
+     89502
+    ]
+   },
+   "packLoaded": {
+    "median": 103163,
+    "range": [
+     52275,
+     144797
+    ]
+   },
+   "hubOpen": {
+    "median": 125184,
+    "range": [
+     59096,
+     171463
+    ]
+   },
+   "stationStarted": {
+    "median": 147255,
+    "range": [
+     80401,
+     195980
+    ]
+   },
+   "linkDeadMs": {
+    "median": 22519,
+    "range": [
+     22140,
+     28119
+    ]
+   },
+   "toolLoadMs": {
+    "median": 872,
+    "range": [
+     464,
+     5975
+    ]
+   },
+   "toolContent": {
+    "median": 148079,
+    "range": [
+     81518,
+     205723
+    ]
+   },
+   "clicks": {
+    "median": 9,
+    "range": [
+     9,
+     9
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "queueDrained": {
+    "median": 136949,
+    "range": [
+     76052,
+     186774
+    ]
+   },
+   "selHubReady": {
+    "median": 58121,
+    "range": [
+     29096,
+     59146
+    ]
+   },
+   "rootChild": {
+    "median": 2491,
+    "range": [
+     1761,
+     9128
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 18001,
+    "range": [
+     11499,
+     18706
+    ]
+   },
+   "totalBytes": {
+    "median": 9771455,
+    "range": [
+     9771393,
+     9773239
+    ]
+   },
+   "calibMs": {
+    "median": 189,
+    "range": [
+     148,
+     914
+    ]
+   },
+   "packSavingEst": {
+    "median": 49414,
+    "range": [
+     29652,
+     91646
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20072,
+    "range": [
+     18230,
+     20406
+    ]
+   },
+   "fcp": {
+    "median": 476,
+    "range": [
+     468,
+     1020
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    83,
+    100,
+    null
+   ]
+  },
+  "local|wifi|teacher": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": null,
+    "range": null
+   },
+   "launchpadDom": {
+    "median": 7529,
+    "range": [
+     4739,
+     8586
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 3561,
+    "range": [
+     3146,
+     10013
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 84567,
+    "range": [
+     79872,
+     97512
+    ]
+   },
+   "launchpad": {
+    "median": 18969,
+    "range": [
+     13767,
+     21761
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1395,
+    "range": [
+     1173,
+     2674
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 916,
+    "range": [
+     846,
+     2168
+    ]
+   },
+   "workspaceReady": {
+    "median": 24340,
+    "range": [
+     19381,
+     27100
+    ]
+   },
+   "loadAttempt1": {
+    "median": 25541,
+    "range": [
+     20244,
+     27960
+    ]
+   },
+   "miscReady": {
+    "median": 53439,
+    "range": [
+     41622,
+     64409
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 28308,
+    "range": [
+     21555,
+     36757
+    ]
+   },
+   "packLoaded": {
+    "median": 61029,
+    "range": [
+     51864,
+     73530
+    ]
+   },
+   "hubOpen": {
+    "median": 66397,
+    "range": [
+     54587,
+     78012
+    ]
+   },
+   "stationStarted": {
+    "median": 87667,
+    "range": [
+     83282,
+     99581
+    ]
+   },
+   "linkDeadMs": {
+    "median": 23977,
+    "range": [
+     22652,
+     29305
+    ]
+   },
+   "toolLoadMs": {
+    "median": 739,
+    "range": [
+     414,
+     4982
+    ]
+   },
+   "toolContent": {
+    "median": 89885,
+    "range": [
+     88128,
+     100658
+    ]
+   },
+   "clicks": {
+    "median": 14,
+    "range": [
+     14,
+     14
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 5,
+    "range": [
+     5,
+     5
+    ]
+   },
+   "queueDrained": {
+    "median": 95688,
+    "range": [
+     84843,
+     96276
+    ]
+   },
+   "selHubReady": {
+    "median": 35622,
+    "range": [
+     28593,
+     35839
+    ]
+   },
+   "rootChild": {
+    "median": 3352,
+    "range": [
+     1993,
+     4580
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 17588,
+    "range": [
+     17482,
+     18613
+    ]
+   },
+   "totalBytes": {
+    "median": 13423206,
+    "range": [
+     13421329,
+     13424690
+    ]
+   },
+   "calibMs": {
+    "median": 153,
+    "range": [
+     109,
+     208
+    ]
+   },
+   "packSavingEst": {
+    "median": 34379,
+    "range": [
+     31293,
+     44815
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20098,
+    "range": [
+     15588,
+     20209
+    ]
+   },
+   "fcp": {
+    "median": 1112,
+    "range": [
+     584,
+     2064
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    99,
+    100,
+    100
+   ]
+  }
+ },
+ "rows": [
+  {
+   "tag": "live-fast3g-student-r1",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 18085,
+   "cpuLoad": 97,
+   "calibMs": 125,
+   "harnessOverheadMs": 1502,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 157204,
+   "rootChild": 6639,
+   "domInteractive": 3116,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16477,
+   "fcp": 3092,
+   "launchpad": 71157,
+   "fullPlatformClick": 71326,
+   "roleGate": 72503,
+   "fullPlatformToRoleGate": 1177,
+   "fullPlatformLongTaskMs": 673,
+   "workspaceReady": 74147,
+   "loadItemReady": 74147,
+   "loadAttempt1": 74884,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 123413,
+   "selHubReady": 92784,
+   "loadMissingWindowMs": 49361,
+   "packLoaded": 131090,
+   "packParseMs": 795,
+   "miscFetchMs": 1026,
+   "directionsLink": 135630,
+   "linkClick": 135861,
+   "hubOpen": 136145,
+   "gotItShown": true,
+   "stationStarted": 157294,
+   "toastUnavailable": 157293,
+   "linkDeadMs": 21433,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 157524,
+   "toolLoadMs": 1182,
+   "toolContent": 158706,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 162123,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 76705,
+   "packSavingEst": 54385,
+   "linkSavingEst": 20607,
+   "totalBytes": 8960872,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8957316,
+    "cdnjs.cloudflare.com": 3556
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54192 B]",
+    "/allo-shell-config.json [fetch, 54375 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54411 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54386 B]",
+    "/app/rainbow-book.jpg [image, 3801 B]",
+    "/app/lang/manifest.json [fetch, 54369 B]",
+    "/app/lang/manifest.json [fetch, 54218 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1934,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1622,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 157749,
+    "end": 158423,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-student-r2",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 14832,
+   "cpuLoad": 100,
+   "calibMs": 110,
+   "harnessOverheadMs": 1696,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 147887,
+   "rootChild": 6638,
+   "domInteractive": 3278,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16640,
+   "fcp": 3284,
+   "launchpad": 67131,
+   "fullPlatformClick": 67289,
+   "roleGate": 68077,
+   "fullPlatformToRoleGate": 788,
+   "fullPlatformLongTaskMs": 506,
+   "workspaceReady": 70246,
+   "loadItemReady": 70246,
+   "loadAttempt1": 70906,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 113233,
+   "selHubReady": 86626,
+   "loadMissingWindowMs": 43264,
+   "packLoaded": 119924,
+   "packParseMs": 269,
+   "miscFetchMs": 1016,
+   "directionsLink": 124927,
+   "linkClick": 125045,
+   "hubOpen": 125709,
+   "gotItShown": true,
+   "stationStarted": 146834,
+   "toastUnavailable": 146833,
+   "linkDeadMs": 21789,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 147214,
+   "toolLoadMs": 2369,
+   "toolContent": 149583,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 146038,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 72191,
+   "packSavingEst": 47733,
+   "linkSavingEst": 20456,
+   "totalBytes": 8961391,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8957839,
+    "cdnjs.cloudflare.com": 3552
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54218 B]",
+    "/allo-shell-config.json [fetch, 54368 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54389 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54381 B]",
+    "/app/rainbow-book.jpg [image, 3801 B]",
+    "/app/lang/manifest.json [fetch, 54367 B]",
+    "/app/lang/manifest.json [fetch, 54217 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1933,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1619,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 148240,
+    "end": 149220,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-student-r3",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "3",
+   "failure": "TimeoutError: page.waitForEvent: Timeout 30000ms exceeded while waiting for event \"filechooser\"\n=========================== logs ===========================\nwaiting for event \"filechooser\"\n============================================================",
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\""
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 33780,
+   "cpuLoad": 100,
+   "calibMs": 157,
+   "harnessOverheadMs": 19295,
+   "belowFold": [],
+   "toolContentMinusOverhead": null,
+   "rootChild": 7485,
+   "domInteractive": 3139,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15654,
+   "fcp": 3144,
+   "launchpad": 48455,
+   "fullPlatformClick": 54703,
+   "roleGate": 66300,
+   "fullPlatformToRoleGate": 11597,
+   "fullPlatformLongTaskMs": 16677,
+   "workspaceReady": 82624,
+   "loadItemReady": 82624,
+   "loadAttempt1": 92973,
+   "loadAttempts": null,
+   "sameFileRetryWorked": null,
+   "miscReady": 216112,
+   "selHubReady": 118176,
+   "loadMissingWindowMs": 134778,
+   "packLoaded": null,
+   "packParseMs": null,
+   "miscFetchMs": 2028,
+   "directionsLink": null,
+   "linkClick": null,
+   "hubOpen": null,
+   "gotItShown": false,
+   "stationStarted": null,
+   "toastUnavailable": null,
+   "linkDeadMs": null,
+   "toolLinkOpened": null,
+   "linkDeadClicks": null,
+   "toolRequestedBeforeFallback": null,
+   "toolClick": null,
+   "toolLoadMs": null,
+   "toolContent": null,
+   "clicks": 4,
+   "filePicks": 1,
+   "extraClicks": 1,
+   "extraFilePicks": 0,
+   "queueDrained": null,
+   "queuePeak": 168,
+   "packLoadedFixedEst": null,
+   "packSavingEst": null,
+   "linkSavingEst": null,
+   "totalBytes": 8140831,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8133813,
+    "cdnjs.cloudflare.com": 3552,
+    "cdn.jsdelivr.net": 3466
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54196 B]",
+    "/allo-shell-config.json [fetch, 54373 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54378 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54381 B]",
+    "/app/rainbow-book.jpg [image, 26120 B]",
+    "/app/lang/manifest.json [fetch, 54372 B]",
+    "/app/lang/manifest.json [fetch, 54369 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1922,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1630,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/idb-keyval@6.2.0/dist/umd.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1960,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/lz-string@1.4.4/libs/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1506,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": null
+  },
+  {
+   "tag": "live-fast3g-teacher-r1",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 43831,
+   "cpuLoad": null,
+   "calibMs": 306,
+   "harnessOverheadMs": 5666,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 211549,
+   "rootChild": 26006,
+   "domInteractive": 12275,
+   "clearAllInjected": true,
+   "clearAllShown": false,
+   "clearAllMarginMs": 6269,
+   "fcp": 12328,
+   "launchpad": 97595,
+   "fullPlatformClick": 97731,
+   "roleGate": 105361,
+   "fullPlatformToRoleGate": 7630,
+   "fullPlatformLongTaskMs": 7153,
+   "workspaceReady": 116857,
+   "loadItemReady": 118136,
+   "loadAttempt1": 118478,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 177586,
+   "selHubReady": 142162,
+   "loadMissingWindowMs": 59583,
+   "packLoaded": 187129,
+   "packParseMs": 876,
+   "miscFetchMs": 864,
+   "directionsLink": 192827,
+   "linkClick": 193057,
+   "hubOpen": 193532,
+   "gotItShown": true,
+   "stationStarted": 214892,
+   "toastUnavailable": 214891,
+   "linkDeadMs": 21835,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 215925,
+   "toolLoadMs": 1290,
+   "toolContent": 217215,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 228039,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 120218,
+   "packSavingEst": 66911,
+   "linkSavingEst": 21410,
+   "totalBytes": 13037756,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 12934288,
+    "cdnjs.cloudflare.com": 3541,
+    "cdn.jsdelivr.net": 71798,
+    "raw.githubusercontent.com": 28129
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54308 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54378 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54382 B]",
+    "/allo-shell-config.json [fetch, 54376 B]",
+    "/app/rainbow-book.jpg [image, 263883 B]",
+    "/app/lang/manifest.json [fetch, 54369 B]",
+    "/app/lang/manifest.json [fetch, 54339 B]",
+    "/app/psychometric_probes.json [fetch, 54497 B]",
+    "/app/psychometric_math_probes.json [fetch, 54369 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54367 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 536,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 258,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1973,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1568,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71798,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19691,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6187,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2251,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 216207,
+    "end": 216875,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-teacher-r2",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 13143,
+   "cpuLoad": 96,
+   "calibMs": 302,
+   "harnessOverheadMs": 2767,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 148952,
+   "rootChild": 6102,
+   "domInteractive": 3026,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16924,
+   "fcp": 3008,
+   "launchpad": 66417,
+   "fullPlatformClick": 66426,
+   "roleGate": 67136,
+   "fullPlatformToRoleGate": 710,
+   "fullPlatformLongTaskMs": 531,
+   "workspaceReady": 69825,
+   "loadItemReady": 70157,
+   "loadAttempt1": 70255,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 116426,
+   "selHubReady": 87662,
+   "loadMissingWindowMs": 46298,
+   "packLoaded": 125469,
+   "packParseMs": 811,
+   "miscFetchMs": 1054,
+   "directionsLink": 127600,
+   "linkClick": 127792,
+   "hubOpen": 128175,
+   "gotItShown": true,
+   "stationStarted": 149441,
+   "toastUnavailable": 149440,
+   "linkDeadMs": 21649,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 150391,
+   "toolLoadMs": 1328,
+   "toolContent": 151719,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 155384,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 72120,
+   "packSavingEst": 53349,
+   "linkSavingEst": 21578,
+   "totalBytes": 12779015,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 12675532,
+    "cdnjs.cloudflare.com": 3542,
+    "cdn.jsdelivr.net": 71803,
+    "raw.githubusercontent.com": 28138
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54195 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54444 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54494 B]",
+    "/allo-shell-config.json [fetch, 54366 B]",
+    "/app/rainbow-book.jpg [image, 3801 B]",
+    "/app/lang/manifest.json [fetch, 54491 B]",
+    "/app/lang/manifest.json [fetch, 54214 B]",
+    "/app/psychometric_probes.json [fetch, 54366 B]",
+    "/app/psychometric_math_probes.json [fetch, 54366 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54372 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3471,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1922,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1620,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71803,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19691,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6193,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2254,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 150750,
+    "end": 151612,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-teacher-r3",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 12535,
+   "cpuLoad": 97,
+   "calibMs": 206,
+   "harnessOverheadMs": 11733,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 215037,
+   "rootChild": 7372,
+   "domInteractive": 2537,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15165,
+   "fcp": 2536,
+   "launchpad": 67826,
+   "fullPlatformClick": 67966,
+   "roleGate": 69040,
+   "fullPlatformToRoleGate": 1074,
+   "fullPlatformLongTaskMs": 1252,
+   "workspaceReady": 73105,
+   "loadItemReady": 74090,
+   "loadAttempt1": 74247,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 147258,
+   "selHubReady": 93997,
+   "loadMissingWindowMs": 73357,
+   "packLoaded": 164811,
+   "packParseMs": 4144,
+   "miscFetchMs": 1071,
+   "directionsLink": 181700,
+   "linkClick": 183901,
+   "hubOpen": 187180,
+   "gotItShown": true,
+   "stationStarted": 215491,
+   "toastUnavailable": 215490,
+   "linkDeadMs": 31590,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 221883,
+   "toolLoadMs": 4887,
+   "toolContent": 226770,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 240224,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 79462,
+   "packSavingEst": 85349,
+   "linkSavingEst": 25167,
+   "totalBytes": 12776943,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 12673459,
+    "cdnjs.cloudflare.com": 3551,
+    "cdn.jsdelivr.net": 71801,
+    "raw.githubusercontent.com": 28132
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54193 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54375 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54381 B]",
+    "/allo-shell-config.json [fetch, 54384 B]",
+    "/app/rainbow-book.jpg [image, 3801 B]",
+    "/app/lang/manifest.json [fetch, 54372 B]",
+    "/app/lang/manifest.json [fetch, 54217 B]",
+    "/app/psychometric_probes.json [fetch, 54373 B]",
+    "/app/psychometric_math_probes.json [fetch, 54369 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54374 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 536,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1930,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1621,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71801,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19693,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6188,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2251,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 223202,
+    "end": 225873,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-student-r1",
+   "target": "live",
+   "net": "wifi",
+   "flow": "student",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 15675,
+   "cpuLoad": null,
+   "calibMs": 170,
+   "harnessOverheadMs": 4200,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 86565,
+   "rootChild": 7014,
+   "domInteractive": 3261,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16247,
+   "fcp": 3252,
+   "launchpad": 18702,
+   "fullPlatformClick": 19953,
+   "roleGate": 23444,
+   "fullPlatformToRoleGate": 3491,
+   "fullPlatformLongTaskMs": 2991,
+   "workspaceReady": 24525,
+   "loadItemReady": 24525,
+   "loadAttempt1": 26186,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 51630,
+   "selHubReady": 38262,
+   "loadMissingWindowMs": 27140,
+   "packLoaded": 59466,
+   "packParseMs": 935,
+   "miscFetchMs": 240,
+   "directionsLink": 65144,
+   "linkClick": 66263,
+   "hubOpen": 67111,
+   "gotItShown": true,
+   "stationStarted": 89425,
+   "toastUnavailable": 89424,
+   "linkDeadMs": 23162,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 89682,
+   "toolLoadMs": 1083,
+   "toolContent": 90765,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 79746,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 27361,
+   "packSavingEst": 32105,
+   "linkSavingEst": 19690,
+   "totalBytes": 8973559,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8970019,
+    "cdnjs.cloudflare.com": 3540
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54192 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54377 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54533 B]",
+    "/allo-shell-config.json [fetch, 54390 B]",
+    "/app/lang/manifest.json [fetch, 54383 B]",
+    "/app/rainbow-book.jpg [image, 14585 B]",
+    "/app/lang/manifest.json [fetch, 54377 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 536,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1566,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1974,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 89943,
+    "end": 90637,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-student-r2",
+   "target": "live",
+   "net": "wifi",
+   "flow": "student",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 7187,
+   "cpuLoad": 82,
+   "calibMs": 125,
+   "harnessOverheadMs": 2467,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 70634,
+   "rootChild": 3520,
+   "domInteractive": 738,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 17218,
+   "fcp": 744,
+   "launchpad": 14733,
+   "fullPlatformClick": 15259,
+   "roleGate": 15954,
+   "fullPlatformToRoleGate": 695,
+   "fullPlatformLongTaskMs": 562,
+   "workspaceReady": 17855,
+   "loadItemReady": 17855,
+   "loadAttempt1": 18910,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 38722,
+   "selHubReady": 25967,
+   "loadMissingWindowMs": 21179,
+   "packLoaded": 45256,
+   "packParseMs": 592,
+   "miscFetchMs": 135,
+   "directionsLink": 49955,
+   "linkClick": 50259,
+   "hubOpen": 50838,
+   "gotItShown": true,
+   "stationStarted": 71843,
+   "toastUnavailable": 71842,
+   "linkDeadMs": 21584,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 72107,
+   "toolLoadMs": 994,
+   "toolContent": 73101,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 66970,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 19637,
+   "packSavingEst": 25619,
+   "linkSavingEst": 20118,
+   "totalBytes": 9341816,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 9338266,
+    "cdnjs.cloudflare.com": 3550
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54193 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54408 B]",
+    "/allo-shell-config.json [fetch, 54377 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54384 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54484 B]",
+    "/app/lang/manifest.json [fetch, 54487 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1930,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1620,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 72343,
+    "end": 72574,
+    "transfer": 15595,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-student-r3",
+   "target": "live",
+   "net": "wifi",
+   "flow": "student",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 6571,
+   "cpuLoad": 100,
+   "calibMs": 178,
+   "harnessOverheadMs": 4749,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 87109,
+   "rootChild": 3520,
+   "domInteractive": 1025,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 17505,
+   "fcp": 1036,
+   "launchpad": 15685,
+   "fullPlatformClick": 16198,
+   "roleGate": 17127,
+   "fullPlatformToRoleGate": 929,
+   "fullPlatformLongTaskMs": 673,
+   "workspaceReady": 18038,
+   "loadItemReady": 18038,
+   "loadAttempt1": 18712,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 38041,
+   "selHubReady": 25686,
+   "loadMissingWindowMs": 20070,
+   "packLoaded": 49978,
+   "packParseMs": 1032,
+   "miscFetchMs": 210,
+   "directionsLink": 62295,
+   "linkClick": 66311,
+   "hubOpen": 68650,
+   "gotItShown": true,
+   "stationStarted": 90745,
+   "toastUnavailable": 90745,
+   "linkDeadMs": 24434,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 90975,
+   "toolLoadMs": 883,
+   "toolContent": 91858,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 81905,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 19954,
+   "packSavingEst": 30024,
+   "linkSavingEst": 20210,
+   "totalBytes": 9340308,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 9336764,
+    "cdnjs.cloudflare.com": 3544
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54199 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54398 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54387 B]",
+    "/allo-shell-config.json [fetch, 54375 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54371 B]",
+    "/app/lang/manifest.json [fetch, 54375 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1925,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1619,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 91216,
+    "end": 91347,
+    "transfer": 15638,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-teacher-r1",
+   "target": "live",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 10823,
+   "cpuLoad": 100,
+   "calibMs": 193,
+   "harnessOverheadMs": 11371,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 94580,
+   "rootChild": 6556,
+   "domInteractive": 2635,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16079,
+   "fcp": 2568,
+   "launchpad": 19474,
+   "fullPlatformClick": 23208,
+   "roleGate": 28615,
+   "fullPlatformToRoleGate": 5407,
+   "fullPlatformLongTaskMs": 3950,
+   "workspaceReady": 35768,
+   "loadItemReady": 36741,
+   "loadAttempt1": 36954,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 65573,
+   "selHubReady": 47746,
+   "loadMissingWindowMs": 28928,
+   "packLoaded": 78484,
+   "packParseMs": 990,
+   "miscFetchMs": 274,
+   "directionsLink": 82125,
+   "linkClick": 82628,
+   "hubOpen": 83609,
+   "gotItShown": true,
+   "stationStarted": 105112,
+   "toastUnavailable": 105112,
+   "linkDeadMs": 22484,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 105311,
+   "toolLoadMs": 640,
+   "toolContent": 105951,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 99703,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 38218,
+   "packSavingEst": 40266,
+   "linkSavingEst": 16414,
+   "totalBytes": 12776331,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 12673190,
+    "cdnjs.cloudflare.com": 3547,
+    "cdn.jsdelivr.net": 71468,
+    "raw.githubusercontent.com": 28126
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54204 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54416 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54403 B]",
+    "/allo-shell-config.json [fetch, 54388 B]",
+    "/app/rainbow-book.jpg [image, 3801 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]",
+    "/app/psychometric_probes.json [fetch, 54369 B]",
+    "/app/psychometric_math_probes.json [fetch, 54376 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54369 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1925,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1622,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71468,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19690,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6187,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2249,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 105372,
+    "end": 105800,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-teacher-r2",
+   "target": "live",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 26774,
+   "cpuLoad": 100,
+   "calibMs": 376,
+   "harnessOverheadMs": 2404,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 85637,
+   "rootChild": 8908,
+   "domInteractive": 7520,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18612,
+   "fcp": 7520,
+   "launchpad": 26624,
+   "fullPlatformClick": 27103,
+   "roleGate": 28573,
+   "fullPlatformToRoleGate": 1470,
+   "fullPlatformLongTaskMs": 1035,
+   "workspaceReady": 30933,
+   "loadItemReady": 31703,
+   "loadAttempt1": 31906,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 55442,
+   "selHubReady": 41222,
+   "loadMissingWindowMs": 23774,
+   "packLoaded": 63254,
+   "packParseMs": 644,
+   "miscFetchMs": 139,
+   "directionsLink": 64869,
+   "linkClick": 65213,
+   "hubOpen": 65978,
+   "gotItShown": true,
+   "stationStarted": 86789,
+   "toastUnavailable": 86789,
+   "linkDeadMs": 21576,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 87224,
+   "toolLoadMs": 817,
+   "toolContent": 88041,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 87913,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 32689,
+   "packSavingEst": 30565,
+   "linkSavingEst": 20720,
+   "totalBytes": 12928172,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 12825084,
+    "cdnjs.cloudflare.com": 3543,
+    "cdn.jsdelivr.net": 71459,
+    "raw.githubusercontent.com": 28086
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54196 B]",
+    "/allo-shell-config.json [fetch, 54373 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54428 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54385 B]",
+    "/app/rainbow-book.jpg [image, 153760 B]",
+    "/app/lang/manifest.json [fetch, 54375 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]",
+    "/app/psychometric_probes.json [fetch, 54640 B]",
+    "/app/psychometric_math_probes.json [fetch, 54372 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54380 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 150,
+     "type": "image"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3470,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1620,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1923,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71459,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19691,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6191,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2204,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 87356,
+    "end": 87657,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-teacher-r3",
+   "target": "live",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 9020,
+   "cpuLoad": 100,
+   "calibMs": 175,
+   "harnessOverheadMs": 4914,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 114750,
+   "rootChild": 2240,
+   "domInteractive": 747,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18507,
+   "fcp": 816,
+   "launchpad": 8705,
+   "fullPlatformClick": 9599,
+   "roleGate": 10684,
+   "fullPlatformToRoleGate": 1085,
+   "fullPlatformLongTaskMs": 796,
+   "workspaceReady": 13091,
+   "loadItemReady": 14016,
+   "loadAttempt1": 14386,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 78749,
+   "selHubReady": 40751,
+   "loadMissingWindowMs": 64859,
+   "packLoaded": 91030,
+   "packParseMs": 1207,
+   "miscFetchMs": 440,
+   "directionsLink": 97256,
+   "linkClick": 97730,
+   "hubOpen": 97993,
+   "gotItShown": true,
+   "stationStarted": 118770,
+   "toastUnavailable": 118769,
+   "linkDeadMs": 21040,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 119147,
+   "toolLoadMs": 517,
+   "toolContent": 119664,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 111656,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 16033,
+   "packSavingEst": 74997,
+   "linkSavingEst": 20138,
+   "totalBytes": 13154672,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 13051174,
+    "cdnjs.cloudflare.com": 3563,
+    "cdn.jsdelivr.net": 71804,
+    "raw.githubusercontent.com": 28131
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54196 B]",
+    "/allo-shell-config.json [fetch, 54487 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54539 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54495 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54368 B]",
+    "/app/lang/manifest.json [fetch, 54369 B]",
+    "/app/psychometric_probes.json [fetch, 54367 B]",
+    "/app/psychometric_math_probes.json [fetch, 54620 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54386 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3467,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1920,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1643,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71804,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19691,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6190,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2250,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 119390,
+    "end": 119538,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-fast3g-student-r1",
+   "target": "local",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 78561 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 17042,
+   "cpuLoad": 88,
+   "calibMs": 173,
+   "harnessOverheadMs": 1795,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 116090,
+   "rootChild": 7030,
+   "domInteractive": 2740,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15710,
+   "fcp": 2744,
+   "launchpad": 31710,
+   "fullPlatformClick": 31772,
+   "roleGate": 32604,
+   "fullPlatformToRoleGate": 832,
+   "fullPlatformLongTaskMs": 583,
+   "workspaceReady": 33801,
+   "loadItemReady": 33801,
+   "loadAttempt1": 34428,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 78372,
+   "selHubReady": 48091,
+   "loadMissingWindowMs": 44657,
+   "packLoaded": 85795,
+   "packParseMs": 512,
+   "miscFetchMs": 1010,
+   "directionsLink": 90434,
+   "linkClick": 90705,
+   "hubOpen": 91217,
+   "gotItShown": true,
+   "stationStarted": 112468,
+   "toastUnavailable": 112467,
+   "linkDeadMs": 21763,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 113051,
+   "toolLoadMs": 4834,
+   "toolContent": 117885,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 121175,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 35950,
+   "packSavingEst": 49845,
+   "linkSavingEst": 20593,
+   "totalBytes": 9771310,
+   "bytesBy": {
+    "127.0.0.1:3000": 5068355,
+    "alloflow-cdn.pages.dev": 3760285,
+    "cdnjs.cloudflare.com": 3541,
+    "": -1,
+    "cdn.jsdelivr.net": 933367,
+    "huggingface.co": 5763
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1926,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1615,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5221,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122357,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 6819,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 108710,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690260,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1030,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 945,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1918,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1022,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/release.json 1 KB",
+    "/audio_bank/phonemes.json 403 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 114629,
+    "end": 115383,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-fast3g-student-r2",
+   "target": "local",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 114930 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 13115,
+   "cpuLoad": 100,
+   "calibMs": 172,
+   "harnessOverheadMs": 1723,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 152056,
+   "rootChild": 6061,
+   "domInteractive": 2715,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16654,
+   "fcp": 2716,
+   "launchpad": 66622,
+   "fullPlatformClick": 66665,
+   "roleGate": 67433,
+   "fullPlatformToRoleGate": 768,
+   "fullPlatformLongTaskMs": 866,
+   "workspaceReady": 69599,
+   "loadItemReady": 69599,
+   "loadAttempt1": 70334,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 114365,
+   "selHubReady": 84839,
+   "loadMissingWindowMs": 44814,
+   "packLoaded": 121822,
+   "packParseMs": 250,
+   "miscFetchMs": 1017,
+   "directionsLink": 128132,
+   "linkClick": 128335,
+   "hubOpen": 129001,
+   "gotItShown": true,
+   "stationStarted": 151688,
+   "toastUnavailable": 151685,
+   "linkDeadMs": 23353,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 152090,
+   "toolLoadMs": 1689,
+   "toolContent": 153779,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 163554,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 71601,
+   "packSavingEst": 50221,
+   "linkSavingEst": 20676,
+   "totalBytes": 9773238,
+   "bytesBy": {
+    "127.0.0.1:3000": 5068355,
+    "alloflow-cdn.pages.dev": 3760255,
+    "cdnjs.cloudflare.com": 3546,
+    "": -1,
+    "cdn.jsdelivr.net": 935323,
+    "huggingface.co": 5760
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 675,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1926,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1620,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5519,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122658,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 7157,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 109087,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690902,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1029,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 945,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1916,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1022,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 0 KB",
+    "/audio_bank_kokoro.json 71 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/release.json 1 KB",
+    "/audio_bank/phonemes.json 403 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 152404,
+    "end": 153168,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-fast3g-student-r3",
+   "target": "local",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "3",
+   "failure": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Crew Launch Week 1/ }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" aria-disabled=\"false\" aria-label=\"Open: Crew Launch Week 1: Norms We Can Name and Keep\" class=\"min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-",
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 113935 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 14513,
+   "cpuLoad": 100,
+   "calibMs": 157,
+   "harnessOverheadMs": 1350,
+   "belowFold": [
+    "open-directions"
+   ],
+   "toolContentMinusOverhead": null,
+   "rootChild": 6367,
+   "domInteractive": 2771,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16404,
+   "fcp": 2776,
+   "launchpad": 67018,
+   "fullPlatformClick": 67354,
+   "roleGate": 68451,
+   "fullPlatformToRoleGate": 1097,
+   "fullPlatformLongTaskMs": 721,
+   "workspaceReady": 69699,
+   "loadItemReady": 69699,
+   "loadAttempt1": 70636,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 113596,
+   "selHubReady": 85995,
+   "loadMissingWindowMs": 43977,
+   "packLoaded": 135529,
+   "packParseMs": 2816,
+   "miscFetchMs": 1012,
+   "directionsLink": 184612,
+   "linkClick": null,
+   "hubOpen": null,
+   "gotItShown": false,
+   "stationStarted": null,
+   "toastUnavailable": null,
+   "linkDeadMs": null,
+   "toolLinkOpened": null,
+   "linkDeadClicks": null,
+   "toolRequestedBeforeFallback": null,
+   "toolClick": null,
+   "toolLoadMs": null,
+   "toolContent": null,
+   "clicks": 5,
+   "filePicks": 3,
+   "extraClicks": 2,
+   "extraFilePicks": 2,
+   "queueDrained": null,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 74464,
+   "packSavingEst": 61065,
+   "linkSavingEst": null,
+   "totalBytes": 9266315,
+   "bytesBy": {
+    "127.0.0.1:3000": 4569164,
+    "alloflow-cdn.pages.dev": 3760326,
+    "cdnjs.cloudflare.com": 3549,
+    "": -1,
+    "cdn.jsdelivr.net": 933277
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1928,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1621,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5221,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122349,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 6820,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 108709,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690178,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/release.json 1 KB",
+    "/audio_bank/phonemes.json 403 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": null
+  },
+  {
+   "tag": "local-fast3g-teacher-r1",
+   "target": "local",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 127474 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 17165,
+   "cpuLoad": 93,
+   "calibMs": 165,
+   "harnessOverheadMs": 3784,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 158861,
+   "rootChild": 7258,
+   "domInteractive": 2809,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15551,
+   "fcp": 2812,
+   "launchpad": 68706,
+   "fullPlatformClick": 69414,
+   "roleGate": 71344,
+   "fullPlatformToRoleGate": 1930,
+   "fullPlatformLongTaskMs": 1533,
+   "workspaceReady": 74296,
+   "loadItemReady": 75016,
+   "loadAttempt1": 75357,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 127328,
+   "selHubReady": 92610,
+   "loadMissingWindowMs": 52392,
+   "packLoaded": 137365,
+   "packParseMs": 1418,
+   "miscFetchMs": 1030,
+   "directionsLink": 138866,
+   "linkClick": 139299,
+   "hubOpen": 139633,
+   "gotItShown": true,
+   "stationStarted": 160679,
+   "toastUnavailable": 160678,
+   "linkDeadMs": 21380,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 160841,
+   "toolLoadMs": 1804,
+   "toolContent": 162645,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 169238,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 77805,
+   "packSavingEst": 59560,
+   "linkSavingEst": 20153,
+   "totalBytes": 13423635,
+   "bytesBy": {
+    "127.0.0.1:3000": 5098189,
+    "alloflow-cdn.pages.dev": 7311333,
+    "cdnjs.cloudflare.com": 3546,
+    "cdn.jsdelivr.net": 1004838,
+    "": -1,
+    "huggingface.co": 5730
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3468,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1983,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1563,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71460,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5137,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122535,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 6819,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 108710,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690177,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 938,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1019,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1909,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1016,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 0 KB",
+    "/audio_bank_kokoro.json 71 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/release.json 1 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/word_audio_kokoro_bank.json 3468 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 161621,
+    "end": 162457,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-fast3g-teacher-r2",
+   "target": "local",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 89924 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 22574,
+   "cpuLoad": 100,
+   "calibMs": 104,
+   "harnessOverheadMs": 3164,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 122726,
+   "rootChild": 6325,
+   "domInteractive": 2662,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16337,
+   "fcp": 2668,
+   "launchpad": 31961,
+   "fullPlatformClick": 32466,
+   "roleGate": 35022,
+   "fullPlatformToRoleGate": 2556,
+   "fullPlatformLongTaskMs": 791,
+   "workspaceReady": 37559,
+   "loadItemReady": 38762,
+   "loadAttempt1": 39292,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 89680,
+   "selHubReady": 54082,
+   "loadMissingWindowMs": 51025,
+   "packLoaded": 96591,
+   "packParseMs": 269,
+   "miscFetchMs": 984,
+   "directionsLink": 98281,
+   "linkClick": 98620,
+   "hubOpen": 99030,
+   "gotItShown": true,
+   "stationStarted": 124668,
+   "toastUnavailable": 124668,
+   "linkDeadMs": 26048,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 124866,
+   "toolLoadMs": 1024,
+   "toolContent": 125890,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 131539,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 40545,
+   "packSavingEst": 56046,
+   "linkSavingEst": 19911,
+   "totalBytes": 13425250,
+   "bytesBy": {
+    "127.0.0.1:3000": 5098189,
+    "alloflow-cdn.pages.dev": 7310750,
+    "cdnjs.cloudflare.com": 3545,
+    "cdn.jsdelivr.net": 1007005,
+    "": -1,
+    "huggingface.co": 5762
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3467,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1927,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1618,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71804,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5506,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122882,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 7144,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 109048,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690621,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1031,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1919,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 946,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1018,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/release.json 1 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/word_audio_kokoro_bank.json 3467 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 124956,
+    "end": 125718,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-fast3g-teacher-r3",
+   "target": "local",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "3",
+   "failure": "TimeoutError: locator.waitFor: Timeout 180000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'More resource pack actions' }).first() to be visible\u001b[22m\n\u001b[2m    - found getByText('Choose your AI').first(), intercepting action to run the handler\u001b[22m\n\u001b[2m    - locator handler has finished, waiting for getByText('Choose your AI').first() to be hidden\u001b[22m\n\u001b[2m    185 × locator ",
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 199996 ms (not counted)"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 43566,
+   "cpuLoad": 100,
+   "calibMs": 225,
+   "harnessOverheadMs": 2274,
+   "belowFold": [],
+   "toolContentMinusOverhead": null,
+   "rootChild": 20619,
+   "domInteractive": 2660,
+   "clearAllInjected": true,
+   "clearAllShown": false,
+   "clearAllMarginMs": 2041,
+   "fcp": 2664,
+   "launchpad": 61092,
+   "fullPlatformClick": 61758,
+   "roleGate": 63793,
+   "fullPlatformToRoleGate": 2035,
+   "fullPlatformLongTaskMs": 1050,
+   "workspaceReady": 67089,
+   "loadItemReady": 68553,
+   "loadAttempt1": 69057,
+   "loadAttempts": null,
+   "sameFileRetryWorked": null,
+   "miscReady": 194985,
+   "selHubReady": 83875,
+   "loadMissingWindowMs": 126525,
+   "packLoaded": null,
+   "packParseMs": null,
+   "miscFetchMs": 2810,
+   "directionsLink": null,
+   "linkClick": null,
+   "hubOpen": null,
+   "gotItShown": false,
+   "stationStarted": null,
+   "toastUnavailable": null,
+   "linkDeadMs": null,
+   "toolLinkOpened": null,
+   "linkDeadClicks": null,
+   "toolRequestedBeforeFallback": null,
+   "toolClick": null,
+   "toolLoadMs": null,
+   "toolContent": null,
+   "clicks": 6,
+   "filePicks": 1,
+   "extraClicks": 0,
+   "extraFilePicks": 0,
+   "queueDrained": 267611,
+   "queuePeak": 168,
+   "packLoadedFixedEst": null,
+   "packSavingEst": null,
+   "linkSavingEst": null,
+   "totalBytes": 12406466,
+   "bytesBy": {
+    "127.0.0.1:3000": 5018369,
+    "alloflow-cdn.pages.dev": 7312748,
+    "cdnjs.cloudflare.com": 3547,
+    "cdn.jsdelivr.net": 71802
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1570,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1977,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71802,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 0 KB",
+    "/audio_bank_kokoro.json 71 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/release.json 1 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/word_audio_kokoro_bank.json 3469 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": null
+  },
+  {
+   "tag": "local-wifi-student-r1",
+   "target": "local",
+   "net": "wifi",
+   "flow": "student",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 45042 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 6412,
+   "cpuLoad": 83,
+   "calibMs": 189,
+   "harnessOverheadMs": 2726,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 78792,
+   "rootChild": 2491,
+   "domInteractive": 492,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18001,
+   "fcp": 476,
+   "launchpad": 17108,
+   "fullPlatformClick": 17163,
+   "roleGate": 19205,
+   "fullPlatformToRoleGate": 2042,
+   "fullPlatformLongTaskMs": 831,
+   "workspaceReady": 20900,
+   "loadItemReady": 20900,
+   "loadAttempt1": 22079,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 44907,
+   "selHubReady": 29096,
+   "loadMissingWindowMs": 24242,
+   "packLoaded": 52275,
+   "packParseMs": 433,
+   "miscFetchMs": 111,
+   "directionsLink": 57050,
+   "linkClick": 58261,
+   "hubOpen": 59096,
+   "gotItShown": true,
+   "stationStarted": 80401,
+   "toastUnavailable": 80389,
+   "linkDeadMs": 22140,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 80646,
+   "toolLoadMs": 872,
+   "toolContent": 81518,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 76052,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 22623,
+   "packSavingEst": 29652,
+   "linkSavingEst": 20072,
+   "totalBytes": 9771455,
+   "bytesBy": {
+    "127.0.0.1:3000": 5068355,
+    "cdnjs.cloudflare.com": 3539,
+    "alloflow-cdn.pages.dev": 3760443,
+    "": -1,
+    "cdn.jsdelivr.net": 933357,
+    "huggingface.co": 5762
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1924,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1615,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5220,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122343,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 6819,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 108706,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690269,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1029,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 947,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1918,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1020,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/release.json 1 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 80928,
+    "end": 81006,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-wifi-student-r2",
+   "target": "local",
+   "net": "wifi",
+   "flow": "student",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 85442 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 15703,
+   "cpuLoad": 100,
+   "calibMs": 914,
+   "harnessOverheadMs": 20559,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 127520,
+   "rootChild": 9128,
+   "domInteractive": 627,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 11499,
+   "fcp": 1020,
+   "launchpad": 31632,
+   "fullPlatformClick": 34650,
+   "roleGate": 41469,
+   "fullPlatformToRoleGate": 6819,
+   "fullPlatformLongTaskMs": 5954,
+   "workspaceReady": 44677,
+   "loadItemReady": 44677,
+   "loadAttempt1": 48380,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 84405,
+   "selHubReady": 59146,
+   "loadMissingWindowMs": 39732,
+   "packLoaded": 103163,
+   "packParseMs": 5205,
+   "miscFetchMs": 164,
+   "directionsLink": 124257,
+   "linkClick": 124736,
+   "hubOpen": 125184,
+   "gotItShown": true,
+   "stationStarted": 147255,
+   "toastUnavailable": 147254,
+   "linkDeadMs": 22519,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 147615,
+   "toolLoadMs": 464,
+   "toolContent": 148079,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 136949,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 53749,
+   "packSavingEst": 49414,
+   "linkSavingEst": 18230,
+   "totalBytes": 9771393,
+   "bytesBy": {
+    "127.0.0.1:3000": 5068355,
+    "cdnjs.cloudflare.com": 3545,
+    "alloflow-cdn.pages.dev": 3760193,
+    "": -1,
+    "cdn.jsdelivr.net": 933569,
+    "huggingface.co": 5732
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1621,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1924,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5221,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122535,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690283,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 6819,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 108711,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 937,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1908,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1021,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1018,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/release.json 1 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 147883,
+    "end": 147966,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-wifi-student-r3",
+   "target": "local",
+   "net": "wifi",
+   "flow": "student",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 127875 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 4941,
+   "cpuLoad": null,
+   "calibMs": 148,
+   "harnessOverheadMs": 25762,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 179961,
+   "rootChild": 1761,
+   "domInteractive": 467,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18706,
+   "fcp": 468,
+   "launchpad": 16596,
+   "fullPlatformClick": 17760,
+   "roleGate": 19378,
+   "fullPlatformToRoleGate": 1618,
+   "fullPlatformLongTaskMs": 684,
+   "workspaceReady": 36908,
+   "loadItemReady": 36908,
+   "loadAttempt1": 49911,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 125763,
+   "selHubReady": 58121,
+   "loadMissingWindowMs": 89502,
+   "packLoaded": 144797,
+   "packParseMs": 2969,
+   "miscFetchMs": 271,
+   "directionsLink": 166848,
+   "linkClick": 167861,
+   "hubOpen": 171463,
+   "gotItShown": true,
+   "stationStarted": 195980,
+   "toastUnavailable": 195979,
+   "linkDeadMs": 28119,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 199748,
+   "toolLoadMs": 5975,
+   "toolContent": 205723,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 186774,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 53151,
+   "packSavingEst": 91646,
+   "linkSavingEst": 20406,
+   "totalBytes": 9773239,
+   "bytesBy": {
+    "127.0.0.1:3000": 5068355,
+    "cdnjs.cloudflare.com": 3547,
+    "alloflow-cdn.pages.dev": 3760418,
+    "": -1,
+    "cdn.jsdelivr.net": 935318,
+    "huggingface.co": 5602
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 675,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1926,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1621,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5521,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122658,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690906,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 109081,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 7152,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1030,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 946,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1760,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1018,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/release.json 1 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 201283,
+    "end": 201778,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-wifi-teacher-r1",
+   "target": "local",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 64883 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 8586,
+   "cpuLoad": 99,
+   "calibMs": 109,
+   "harnessOverheadMs": 3146,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 97512,
+   "rootChild": 4580,
+   "domInteractive": 2062,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 17482,
+   "fcp": 2064,
+   "launchpad": 21761,
+   "fullPlatformClick": 22387,
+   "roleGate": 25061,
+   "fullPlatformToRoleGate": 2674,
+   "fullPlatformLongTaskMs": 2168,
+   "workspaceReady": 27100,
+   "loadItemReady": 27739,
+   "loadAttempt1": 27960,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 64409,
+   "selHubReady": 35839,
+   "loadMissingWindowMs": 36757,
+   "packLoaded": 73530,
+   "packParseMs": 639,
+   "miscFetchMs": 116,
+   "directionsLink": 75908,
+   "linkClick": 76929,
+   "hubOpen": 78012,
+   "gotItShown": true,
+   "stationStarted": 99581,
+   "toastUnavailable": 99580,
+   "linkDeadMs": 22652,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 99919,
+   "toolLoadMs": 739,
+   "toolContent": 100658,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 95688,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 28715,
+   "packSavingEst": 44815,
+   "linkSavingEst": 20209,
+   "totalBytes": 13424690,
+   "bytesBy": {
+    "127.0.0.1:3000": 5098189,
+    "cdnjs.cloudflare.com": 3553,
+    "alloflow-cdn.pages.dev": 7312344,
+    "cdn.jsdelivr.net": 1004849,
+    "": -1,
+    "huggingface.co": 5756
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1929,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1624,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71459,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5138,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122535,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 6819,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 108721,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690177,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1916,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 945,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1029,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1018,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/word_audio_kokoro_bank.json 3469 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/release.json 1 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 100070,
+    "end": 100144,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-wifi-teacher-r2",
+   "target": "local",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 53620 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 7529,
+   "cpuLoad": 100,
+   "calibMs": 208,
+   "harnessOverheadMs": 3561,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 84567,
+   "rootChild": 3352,
+   "domInteractive": 940,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 17588,
+   "fcp": 1112,
+   "launchpad": 18969,
+   "fullPlatformClick": 19776,
+   "roleGate": 20949,
+   "fullPlatformToRoleGate": 1173,
+   "fullPlatformLongTaskMs": 916,
+   "workspaceReady": 24340,
+   "loadItemReady": 25153,
+   "loadAttempt1": 25541,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 53439,
+   "selHubReady": 35622,
+   "loadMissingWindowMs": 28308,
+   "packLoaded": 61029,
+   "packParseMs": 967,
+   "miscFetchMs": 142,
+   "directionsLink": 62551,
+   "linkClick": 63690,
+   "hubOpen": 66397,
+   "gotItShown": true,
+   "stationStarted": 87667,
+   "toastUnavailable": 87667,
+   "linkDeadMs": 23977,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 87714,
+   "toolLoadMs": 414,
+   "toolContent": 88128,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 84843,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 26650,
+   "packSavingEst": 34379,
+   "linkSavingEst": 20098,
+   "totalBytes": 13423206,
+   "bytesBy": {
+    "127.0.0.1:3000": 5098189,
+    "cdnjs.cloudflare.com": 3545,
+    "alloflow-cdn.pages.dev": 7310863,
+    "cdn.jsdelivr.net": 1004851,
+    "": -1,
+    "huggingface.co": 5759
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3467,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1623,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1922,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71468,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5138,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122535,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690172,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 6819,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 108719,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 274,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 280,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+     "status": 307,
+     "type": "fetch",
+     "bytes": 294,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1029,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 947,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 1917,
+     "ok": true
+    },
+    {
+     "host": "huggingface.co",
+     "path": "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx",
+     "status": 302,
+     "type": "fetch",
+     "bytes": 1018,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/release.json 1 KB",
+    "/word_audio_kokoro_bank.json 3467 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 87927,
+    "end": 88002,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "local-wifi-teacher-r3",
+   "target": "local",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "local-only: desktop AI Backend dialog dismissed at 41755 ms (not counted)",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": null,
+   "launchpadDom": 4739,
+   "cpuLoad": 100,
+   "calibMs": 153,
+   "harnessOverheadMs": 10013,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 79872,
+   "rootChild": 1993,
+   "domInteractive": 606,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18613,
+   "fcp": 584,
+   "launchpad": 13767,
+   "fullPlatformClick": 15021,
+   "roleGate": 16416,
+   "fullPlatformToRoleGate": 1395,
+   "fullPlatformLongTaskMs": 846,
+   "workspaceReady": 19381,
+   "loadItemReady": 20123,
+   "loadAttempt1": 20244,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 41622,
+   "selHubReady": 28593,
+   "loadMissingWindowMs": 21555,
+   "packLoaded": 51864,
+   "packParseMs": 215,
+   "miscFetchMs": 112,
+   "directionsLink": 52941,
+   "linkClick": 53977,
+   "hubOpen": 54587,
+   "gotItShown": true,
+   "stationStarted": 83282,
+   "toastUnavailable": 83281,
+   "linkDeadMs": 29305,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 84903,
+   "toolLoadMs": 4982,
+   "toolContent": 89885,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 96276,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 20571,
+   "packSavingEst": 31293,
+   "linkSavingEst": 15588,
+   "totalBytes": 13421329,
+   "bytesBy": {
+    "127.0.0.1:3000": 5098189,
+    "cdnjs.cloudflare.com": 3541,
+    "alloflow-cdn.pages.dev": 7312662,
+    "cdn.jsdelivr.net": 1006938,
+    "": -1
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 53897 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]",
+    "/allo-shell-config.json [fetch, 53897 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "127.0.0.1:3000",
+     "kb": 528,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3030,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/stem_lab/stem_lab_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 166,
+     "type": "script"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/app/generate_dispatcher_module.js",
+     "host": "127.0.0.1:3000",
+     "kb": 154,
+     "type": "script"
+    },
+    {
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "host": "cdn.jsdelivr.net",
+     "kb": 674,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1922,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1619,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71801,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/kokoro-js@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 5502,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/@huggingface/transformers@3.5.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 122875,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-common/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 7145,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 109048,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/phonemizer@1.2.1/+esm",
+     "status": 200,
+     "type": "script",
+     "bytes": 690567,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [
+    "/audio_bank/index.json 1 KB",
+    "/audio_bank_kokoro.json 70 KB",
+    "/ui_strings.js 3030 KB",
+    "/help_strings.js 167 KB",
+    "/word_audio_kokoro_bank.json 3469 KB",
+    "/audio_bank/phonemes.json 403 KB",
+    "/release.json 1 KB"
+   ],
+   "pageErrors": [
+    "SyntaxError: Unexpected token '<'",
+    "SyntaxError: Unexpected token '<'",
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/app/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 89038,
+    "end": 89153,
+    "transfer": 15642,
+    "decoded": 56446
+   }
+  }
+ ],
+ "thirdParty": {
+  "live cdnjs.cloudflare.com": {
+   "requests": 24,
+   "kb": 42,
+   "statuses": [
+    200
+   ],
+   "runs": 12,
+   "paths": [
+    "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+    "/ajax/libs/idb-keyval/6.2.0/umd.min.js"
+   ]
+  },
+  "live cdn.jsdelivr.net": {
+   "requests": 8,
+   "kb": 423,
+   "statuses": [
+    200
+   ],
+   "runs": 7,
+   "paths": [
+    "/npm/idb-keyval@6.2.0/dist/umd.js",
+    "/npm/lz-string@1.4.4/libs/lz-string.min.js",
+    "/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+   ]
+  },
+  "live raw.githubusercontent.com": {
+   "requests": 18,
+   "kb": 165,
+   "statuses": [
+    200
+   ],
+   "runs": 6,
+   "paths": [
+    "/Apomera/AlloFlow/main/psychometric_probes.json",
+    "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+    "/Apomera/AlloFlow/main/psychometric_literacy_probes.json"
+   ]
+  },
+  "local cdnjs.cloudflare.com": {
+   "requests": 24,
+   "kb": 42,
+   "statuses": [
+    200
+   ],
+   "runs": 12,
+   "paths": [
+    "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+    "/ajax/libs/idb-keyval/6.2.0/umd.min.js"
+   ]
+  },
+  "local cdn.jsdelivr.net": {
+   "requests": 61,
+   "kb": 10454,
+   "statuses": [
+    200
+   ],
+   "runs": 12,
+   "paths": [
+    "/npm/kokoro-js@1.2.1/+esm",
+    "/npm/@huggingface/transformers@3.5.1/+esm",
+    "/npm/onnxruntime-common/+esm",
+    "/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+    "/npm/phonemizer@1.2.1/+esm",
+    "/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+   ]
+  },
+  "local huggingface.co": {
+   "requests": 63,
+   "kb": 50,
+   "statuses": [
+    307,
+    200,
+    302
+   ],
+   "runs": 9,
+   "paths": [
+    "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer.json",
+    "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/config.json",
+    "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/tokenizer_config.json",
+    "/api/resolve-cache/models/onnx-community/Kokoro-82M-v1.0-ONNX/1939ad2a8e416c0acfeecc08a694",
+    "/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx"
+   ]
+  }
+ },
+ "htmlAsAsset": {
+  "/fonts/Inter-latin.woff2 [font, 54192 B]": 2,
+  "/allo-shell-config.json [fetch, 54375 B]": 2,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54411 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54386 B]": 1,
+  "/app/rainbow-book.jpg [image, 3801 B]": 5,
+  "/app/lang/manifest.json [fetch, 54369 B]": 4,
+  "/app/lang/manifest.json [fetch, 54218 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54218 B]": 1,
+  "/allo-shell-config.json [fetch, 54368 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54389 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54381 B]": 2,
+  "/app/lang/manifest.json [fetch, 54367 B]": 1,
+  "/app/lang/manifest.json [fetch, 54217 B]": 2,
+  "/fonts/Inter-latin.woff2 [font, 54196 B]": 3,
+  "/allo-shell-config.json [fetch, 54373 B]": 2,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54378 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54381 B]": 1,
+  "/app/rainbow-book.jpg [image, 26120 B]": 1,
+  "/app/lang/manifest.json [fetch, 54372 B]": 2,
+  "/fonts/Inter-latin.woff2 [font, 54308 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54378 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54382 B]": 1,
+  "/allo-shell-config.json [fetch, 54376 B]": 1,
+  "/app/rainbow-book.jpg [image, 263883 B]": 1,
+  "/app/lang/manifest.json [fetch, 54339 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54497 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54369 B]": 2,
+  "/app/psychometric_literacy_probes.json [fetch, 54367 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54195 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54444 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54494 B]": 1,
+  "/allo-shell-config.json [fetch, 54366 B]": 1,
+  "/app/lang/manifest.json [fetch, 54491 B]": 1,
+  "/app/lang/manifest.json [fetch, 54214 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54366 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54366 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54372 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54193 B]": 2,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54375 B]": 1,
+  "/allo-shell-config.json [fetch, 54384 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54373 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54374 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54377 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54533 B]": 1,
+  "/allo-shell-config.json [fetch, 54390 B]": 1,
+  "/app/lang/manifest.json [fetch, 54383 B]": 1,
+  "/app/rainbow-book.jpg [image, 14585 B]": 1,
+  "/app/lang/manifest.json [fetch, 54377 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54408 B]": 1,
+  "/allo-shell-config.json [fetch, 54377 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54384 B]": 1,
+  "/app/rainbow-book.jpg [image, 382749 B]": 3,
+  "/app/lang/manifest.json [fetch, 54484 B]": 1,
+  "/app/lang/manifest.json [fetch, 54487 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54199 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54398 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54387 B]": 1,
+  "/app/lang/manifest.json [fetch, 54371 B]": 1,
+  "/app/lang/manifest.json [fetch, 54375 B]": 2,
+  "/fonts/Inter-latin.woff2 [font, 54204 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54416 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54403 B]": 1,
+  "/allo-shell-config.json [fetch, 54388 B]": 1,
+  "/app/lang/manifest.json [fetch, 54373 B]": 3,
+  "/app/psychometric_probes.json [fetch, 54369 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54376 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54369 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54428 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54385 B]": 1,
+  "/app/rainbow-book.jpg [image, 153760 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54640 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54372 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54380 B]": 1,
+  "/allo-shell-config.json [fetch, 54487 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54539 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54495 B]": 1,
+  "/app/lang/manifest.json [fetch, 54368 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54367 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54620 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54386 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 53897 B]": 12,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 53897 B]": 12,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 53897 B]": 12,
+  "/allo-shell-config.json [fetch, 53897 B]": 12
+ },
+ "leaksToLive": {
+  "/audio_bank/index.json": "/audio_bank/index.json 1 KB",
+  "/audio_bank_kokoro.json": "/audio_bank_kokoro.json 70 KB",
+  "/ui_strings.js": "/ui_strings.js 3030 KB",
+  "/help_strings.js": "/help_strings.js 167 KB",
+  "/release.json": "/release.json 1 KB",
+  "/audio_bank/phonemes.json": "/audio_bank/phonemes.json 403 KB",
+  "/word_audio_kokoro_bank.json": "/word_audio_kokoro_bank.json 3469 KB"
+ },
+ "heavy": [
+  {
+   "path": "/word_audio_kokoro_bank.json",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 3469,
+   "type": "fetch",
+   "runs": 12
+  },
+  {
+   "path": "/ui_strings.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 3029,
+   "type": "fetch",
+   "runs": 24
+  },
+  {
+   "path": "/npm/phonemizer@1.2.1/+esm",
+   "host": "cdn.jsdelivr.net",
+   "kb": 674,
+   "type": "script",
+   "runs": 11
+  },
+  {
+   "path": "/app/static/js/main.2e5e6cb6.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 535,
+   "type": "script",
+   "runs": 12
+  },
+  {
+   "path": "/app/static/js/main.2e5e6cb6.js",
+   "host": "127.0.0.1:3000",
+   "kb": 528,
+   "type": "script",
+   "runs": 12
+  },
+  {
+   "path": "/audio_bank/phonemes.json",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 403,
+   "type": "fetch",
+   "runs": 24
+  },
+  {
+   "path": "/app/rainbow-book.jpg",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 258,
+   "type": "image",
+   "runs": 5
+  },
+  {
+   "path": "/help_strings.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 167,
+   "type": "fetch",
+   "runs": 24
+  },
+  {
+   "path": "/stem_lab/stem_lab_module.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 167,
+   "type": "script",
+   "runs": 12
+  },
+  {
+   "path": "/app/stem_lab/stem_lab_module.js",
+   "host": "127.0.0.1:3000",
+   "kb": 166,
+   "type": "script",
+   "runs": 12
+  },
+  {
+   "path": "/generate_dispatcher_module.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 155,
+   "type": "script",
+   "runs": 12
+  },
+  {
+   "path": "/app/generate_dispatcher_module.js",
+   "host": "127.0.0.1:3000",
+   "kb": 154,
+   "type": "script",
+   "runs": 12
+  }
+ ],
+ "failedRequests": {}
+}

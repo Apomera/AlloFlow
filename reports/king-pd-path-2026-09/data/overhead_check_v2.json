@@ -1,0 +1,32 @@
+[
+ {
+  "round": 1,
+  "variant": "full",
+  "lp": 25951
+ },
+ {
+  "round": 1,
+  "variant": "min",
+  "lp": 18544
+ },
+ {
+  "round": 2,
+  "variant": "min",
+  "lp": 16625
+ },
+ {
+  "round": 2,
+  "variant": "full",
+  "lp": 12912
+ },
+ {
+  "round": 3,
+  "variant": "full",
+  "lp": 16473
+ },
+ {
+  "round": 3,
+  "variant": "min",
+  "lp": 18600
+ }
+]

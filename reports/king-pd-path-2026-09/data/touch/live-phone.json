@@ -1,0 +1,159 @@
+{
+ "tag": "live-phone",
+ "target": "live",
+ "device": "phone",
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "steps": [],
+ "drag": {
+  "moved": true,
+  "events": [
+   [
+    81812,
+    "touchstart",
+    "card",
+    false
+   ],
+   [
+    82176,
+    "dragstart",
+    "card",
+    false
+   ],
+   [
+    82829,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    82834,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    82999,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    83082,
+    "dragenter",
+    "SPAN",
+    false
+   ],
+   [
+    83164,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    83433,
+    "dragenter",
+    "H4",
+    false
+   ],
+   [
+    83522,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    83723,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    83822,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    83907,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    83958,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    84213,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    84330,
+    "touchend",
+    "card",
+    false
+   ],
+   [
+    84373,
+    "drop",
+    "bucket",
+    false
+   ],
+   [
+    84374,
+    "dragend",
+    "card",
+    false
+   ]
+  ],
+  "scrolls": 0,
+  "touchmoves": [
+   16,
+   16
+  ]
+ },
+ "tap": {
+  "moveHereShown": true,
+  "moved": true,
+  "taps": 2
+ },
+ "polyfill": [
+  {
+   "url": "https://alloflow-cdn.pages.dev/vendor/drag-drop-touch-2.0.3.esm.min.js?autoload",
+   "status": 200,
+   "ct": "application/javascript"
+  }
+ ],
+ "polyfillScriptTag": true,
+ "geometry": {
+  "card": {
+   "x": 100,
+   "y": 695.265625,
+   "top": 635.265625,
+   "bottom": 797.609375,
+   "w": 160,
+   "h": 162.34375
+  },
+  "cardText": "Anyone can say \"pass\" and we move on without comments.",
+  "bucket": {
+   "x": 195,
+   "y": 243.96875,
+   "top": 183.96875,
+   "bottom": 387.5625,
+   "w": 326,
+   "h": 203.59375
+  },
+  "vh": 844,
+  "vw": 390,
+  "touchAction": "none",
+  "deckCards": 10
+ },
+ "bothInView": true
+}

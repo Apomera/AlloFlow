@@ -1,0 +1,153 @@
+{
+ "tag": "live-chromebook",
+ "target": "live",
+ "device": "chromebook",
+ "viewport": {
+  "width": 1366,
+  "height": 768
+ },
+ "steps": [],
+ "drag": {
+  "moved": true,
+  "events": [
+   [
+    63115,
+    "touchstart",
+    "card",
+    false
+   ],
+   [
+    63272,
+    "dragstart",
+    "card",
+    false
+   ],
+   [
+    63489,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    63490,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    63663,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    63730,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    63812,
+    "dragenter",
+    "H4",
+    false
+   ],
+   [
+    63927,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    63986,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    64060,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    64151,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    64725,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    65252,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    65329,
+    "touchend",
+    "card",
+    false
+   ],
+   [
+    65330,
+    "drop",
+    "bucket",
+    false
+   ],
+   [
+    65332,
+    "dragend",
+    "card",
+    false
+   ]
+  ],
+  "scrolls": 0,
+  "touchmoves": [
+   16,
+   16
+  ]
+ },
+ "tap": {
+  "moveHereShown": true,
+  "moved": true,
+  "taps": 2
+ },
+ "polyfill": [
+  {
+   "url": "https://alloflow-cdn.pages.dev/vendor/drag-drop-touch-2.0.3.esm.min.js?autoload",
+   "status": 200,
+   "ct": "application/javascript"
+  }
+ ],
+ "polyfillScriptTag": true,
+ "geometry": {
+  "card": {
+   "x": 191,
+   "y": 603.265625,
+   "top": 543.265625,
+   "bottom": 705.609375,
+   "w": 160,
+   "h": 162.34375
+  },
+  "cardText": "We wait until the speaker finishes before we respond.",
+  "bucket": {
+   "x": 275,
+   "y": 187.984375,
+   "top": 127.984375,
+   "bottom": 427.984375,
+   "w": 384,
+   "h": 300
+  },
+  "vh": 768,
+  "vw": 1366,
+  "touchAction": "none",
+  "deckCards": 10
+ },
+ "bothInView": true
+}

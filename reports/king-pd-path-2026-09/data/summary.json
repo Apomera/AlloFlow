@@ -1,0 +1,4952 @@
+{
+ "generatedAt": "2026-09-23T03:43:19.602Z",
+ "runs": 17,
+ "agg": {
+  "live|fast3g|student": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": 36691,
+    "range": [
+     36661,
+     38232
+    ]
+   },
+   "launchpadDom": {
+    "median": 13055,
+    "range": [
+     13035,
+     14678
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 4762,
+    "range": [
+     4081,
+     9354
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 110913,
+    "range": [
+     99513,
+     124874
+    ]
+   },
+   "launchpad": {
+    "median": 13087,
+    "range": [
+     13038,
+     14686
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1702,
+    "range": [
+     984,
+     1852
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 984,
+    "range": [
+     855,
+     1033
+    ]
+   },
+   "workspaceReady": {
+    "median": 39472,
+    "range": [
+     39134,
+     39566
+    ]
+   },
+   "loadAttempt1": {
+    "median": 42195,
+    "range": [
+     40160,
+     46668
+    ]
+   },
+   "miscReady": {
+    "median": 72628,
+    "range": [
+     72617,
+     94400
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 33617,
+    "range": [
+     33237,
+     55078
+    ]
+   },
+   "packLoaded": {
+    "median": 79812,
+    "range": [
+     79700,
+     100330
+    ]
+   },
+   "hubOpen": {
+    "median": 90078,
+    "range": [
+     86164,
+     106519
+    ]
+   },
+   "stationStarted": {
+    "median": 112481,
+    "range": [
+     107212,
+     127292
+    ]
+   },
+   "linkDeadMs": {
+    "median": 21495,
+    "range": [
+     21441,
+     22805
+    ]
+   },
+   "toolLoadMs": {
+    "median": 1337,
+    "range": [
+     1286,
+     2125
+    ]
+   },
+   "toolContent": {
+    "median": 114994,
+    "range": [
+     108867,
+     129636
+    ]
+   },
+   "clicks": {
+    "median": 9,
+    "range": [
+     9,
+     9
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "queueDrained": {
+    "median": 121626,
+    "range": [
+     112437,
+     134549
+    ]
+   },
+   "selHubReady": {
+    "median": 34761,
+    "range": [
+     31400,
+     35271
+    ]
+   },
+   "rootChild": {
+    "median": 7068,
+    "range": [
+     6421,
+     7279
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 15883,
+    "range": [
+     15649,
+     16383
+    ]
+   },
+   "totalBytes": {
+    "median": 8982905,
+    "range": [
+     8960310,
+     8983643
+    ]
+   },
+   "calibMs": {
+    "median": 161,
+    "range": [
+     116,
+     214
+    ]
+   },
+   "packSavingEst": {
+    "median": 37210,
+    "range": [
+     31627,
+     57088
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20584,
+    "range": [
+     20453,
+     21515
+    ]
+   },
+   "fcp": {
+    "median": 2916,
+    "range": [
+     2812,
+     2928
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    100,
+    100,
+    68
+   ]
+  },
+  "live|fast3g|student|whatif": {
+   "n": 1,
+   "failures": [],
+   "stringsAt": {
+    "median": 41984,
+    "range": [
+     41984,
+     41984
+    ]
+   },
+   "launchpadDom": {
+    "median": 12258,
+    "range": [
+     12258,
+     12258
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 5708,
+    "range": [
+     5708,
+     5708
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 51225,
+    "range": [
+     51225,
+     51225
+    ]
+   },
+   "launchpad": {
+    "median": 12325,
+    "range": [
+     12325,
+     12325
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1715,
+    "range": [
+     1715,
+     1715
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 766,
+    "range": [
+     766,
+     766
+    ]
+   },
+   "workspaceReady": {
+    "median": 43356,
+    "range": [
+     43356,
+     43356
+    ]
+   },
+   "loadAttempt1": {
+    "median": 47466,
+    "range": [
+     47466,
+     47466
+    ]
+   },
+   "miscReady": {
+    "median": 19120,
+    "range": [
+     19120,
+     19120
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": -24010,
+    "range": [
+     -24010,
+     -24010
+    ]
+   },
+   "packLoaded": {
+    "median": 48994,
+    "range": [
+     48994,
+     48994
+    ]
+   },
+   "hubOpen": {
+    "median": 55055,
+    "range": [
+     55055,
+     55055
+    ]
+   },
+   "stationStarted": {
+    "median": 56933,
+    "range": [
+     56933,
+     56933
+    ]
+   },
+   "linkDeadMs": {
+    "median": 2432,
+    "range": [
+     2432,
+     2432
+    ]
+   },
+   "toolLoadMs": {
+    "median": null,
+    "range": null
+   },
+   "toolContent": {
+    "median": 56933,
+    "range": [
+     56933,
+     56933
+    ]
+   },
+   "clicks": {
+    "median": 6,
+    "range": [
+     6,
+     6
+    ]
+   },
+   "filePicks": {
+    "median": 1,
+    "range": [
+     1,
+     1
+    ]
+   },
+   "extraClicks": {
+    "median": 0,
+    "range": [
+     0,
+     0
+    ]
+   },
+   "queueDrained": {
+    "median": null,
+    "range": null
+   },
+   "selHubReady": {
+    "median": 34991,
+    "range": [
+     34991,
+     34991
+    ]
+   },
+   "rootChild": {
+    "median": 7219,
+    "range": [
+     7219,
+     7219
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 15395,
+    "range": [
+     15395,
+     15395
+    ]
+   },
+   "totalBytes": {
+    "median": 8693604,
+    "range": [
+     8693604,
+     8693604
+    ]
+   },
+   "calibMs": {
+    "median": 183,
+    "range": [
+     183,
+     183
+    ]
+   },
+   "packSavingEst": {
+    "median": -1269,
+    "range": [
+     -1269,
+     -1269
+    ]
+   },
+   "linkSavingEst": {
+    "median": null,
+    "range": null
+   },
+   "fcp": {
+    "median": 2616,
+    "range": [
+     2616,
+     2616
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    null
+   ],
+   "toolLinkOpened": [
+    true
+   ],
+   "toolRequestedBeforeFallback": [
+    true
+   ],
+   "loadAttempts": [
+    1
+   ],
+   "cpuLoad": [
+    77
+   ]
+  },
+  "live|fast3g|teacher": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": 38555,
+    "range": [
+     34036,
+     42594
+    ]
+   },
+   "launchpadDom": {
+    "median": 15599,
+    "range": [
+     13041,
+     19081
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 3051,
+    "range": [
+     2972,
+     7487
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 100101,
+    "range": [
+     98669,
+     136018
+    ]
+   },
+   "launchpad": {
+    "median": 15610,
+    "range": [
+     12928,
+     18937
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 3061,
+    "range": [
+     1197,
+     15672
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 1958,
+    "range": [
+     589,
+     14089
+    ]
+   },
+   "workspaceReady": {
+    "median": 24320,
+    "range": [
+     20432,
+     59350
+    ]
+   },
+   "loadAttempt1": {
+    "median": 40762,
+    "range": [
+     36141,
+     59955
+    ]
+   },
+   "miscReady": {
+    "median": 71710,
+    "range": [
+     70171,
+     106078
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 36022,
+    "range": [
+     29808,
+     46231
+    ]
+   },
+   "packLoaded": {
+    "median": 78353,
+    "range": [
+     76580,
+     115091
+    ]
+   },
+   "hubOpen": {
+    "median": 80826,
+    "range": [
+     78861,
+     120583
+    ]
+   },
+   "stationStarted": {
+    "median": 101833,
+    "range": [
+     100004,
+     142041
+    ]
+   },
+   "linkDeadMs": {
+    "median": 21449,
+    "range": [
+     21223,
+     21960
+    ]
+   },
+   "toolLoadMs": {
+    "median": 1047,
+    "range": [
+     1018,
+     1262
+    ]
+   },
+   "toolContent": {
+    "median": 103073,
+    "range": [
+     101720,
+     143505
+    ]
+   },
+   "clicks": {
+    "median": 14,
+    "range": [
+     14,
+     14
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 5,
+    "range": [
+     5,
+     5
+    ]
+   },
+   "queueDrained": {
+    "median": 109511,
+    "range": [
+     108187,
+     153538
+    ]
+   },
+   "selHubReady": {
+    "median": 44328,
+    "range": [
+     39410,
+     73960
+    ]
+   },
+   "rootChild": {
+    "median": 8164,
+    "range": [
+     7352,
+     8428
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 15012,
+    "range": [
+     14760,
+     15636
+    ]
+   },
+   "totalBytes": {
+    "median": 12786842,
+    "range": [
+     12775843,
+     13110631
+    ]
+   },
+   "calibMs": {
+    "median": 130,
+    "range": [
+     128,
+     219
+    ]
+   },
+   "packSavingEst": {
+    "median": 40588,
+    "range": [
+     34455,
+     53873
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20340,
+    "range": [
+     20295,
+     20505
+    ]
+   },
+   "fcp": {
+    "median": 3280,
+    "range": [
+     2368,
+     4156
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    88,
+    100,
+    96
+   ]
+  },
+  "live|fast3g|teacher|whatif": {
+   "n": 2,
+   "failures": [],
+   "stringsAt": {
+    "median": 34853.5,
+    "range": [
+     34571,
+     35136
+    ]
+   },
+   "launchpadDom": {
+    "median": 16104,
+    "range": [
+     12766,
+     19442
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 2946,
+    "range": [
+     1821,
+     4071
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 52191.5,
+    "range": [
+     39472,
+     64911
+    ]
+   },
+   "launchpad": {
+    "median": 16109.5,
+    "range": [
+     12771,
+     19448
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1556.5,
+    "range": [
+     1438,
+     1675
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 1173,
+    "range": [
+     1009,
+     1337
+    ]
+   },
+   "workspaceReady": {
+    "median": 22068,
+    "range": [
+     17383,
+     26753
+    ]
+   },
+   "loadAttempt1": {
+    "median": 38090,
+    "range": [
+     37150,
+     39030
+    ]
+   },
+   "miscReady": {
+    "median": 23377,
+    "range": [
+     18649,
+     28105
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": -14445,
+    "range": [
+     -18136,
+     -10754
+    ]
+   },
+   "packLoaded": {
+    "median": 38603.5,
+    "range": [
+     37401,
+     39806
+    ]
+   },
+   "hubOpen": {
+    "median": 52885.5,
+    "range": [
+     39722,
+     66049
+    ]
+   },
+   "stationStarted": {
+    "median": 55136.5,
+    "range": [
+     41292,
+     68981
+    ]
+   },
+   "linkDeadMs": {
+    "median": 14044,
+    "range": [
+     1926,
+     26162
+    ]
+   },
+   "toolLoadMs": {
+    "median": null,
+    "range": null
+   },
+   "toolContent": {
+    "median": 55137.5,
+    "range": [
+     41293,
+     68982
+    ]
+   },
+   "clicks": {
+    "median": 9.5,
+    "range": [
+     9,
+     10
+    ]
+   },
+   "filePicks": {
+    "median": 1,
+    "range": [
+     1,
+     1
+    ]
+   },
+   "extraClicks": {
+    "median": 0.5,
+    "range": [
+     0,
+     1
+    ]
+   },
+   "queueDrained": {
+    "median": 85642,
+    "range": [
+     85642,
+     85642
+    ]
+   },
+   "selHubReady": {
+    "median": 46490,
+    "range": [
+     34876,
+     58104
+    ]
+   },
+   "rootChild": {
+    "median": 8136,
+    "range": [
+     6359,
+     9913
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 15034,
+    "range": [
+     13817,
+     16251
+    ]
+   },
+   "totalBytes": {
+    "median": 8469875.5,
+    "range": [
+     8072959,
+     8866792
+    ]
+   },
+   "calibMs": {
+    "median": 414.5,
+    "range": [
+     136,
+     693
+    ]
+   },
+   "packSavingEst": {
+    "median": -912.5,
+    "range": [
+     -957,
+     -868
+    ]
+   },
+   "linkSavingEst": {
+    "median": null,
+    "range": null
+   },
+   "fcp": {
+    "median": 3174,
+    "range": [
+     2616,
+     3732
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    null,
+    null
+   ],
+   "toolLinkOpened": [
+    true,
+    true
+   ],
+   "toolRequestedBeforeFallback": [
+    true,
+    true
+   ],
+   "loadAttempts": [
+    1,
+    1
+   ],
+   "cpuLoad": [
+    99,
+    57
+   ]
+  },
+  "live|wifi|student": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": 13109,
+    "range": [
+     12147,
+     14291
+    ]
+   },
+   "launchpadDom": {
+    "median": 5243,
+    "range": [
+     5230,
+     8684
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 3132,
+    "range": [
+     2341,
+     6689
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 67233,
+    "range": [
+     63150,
+     84583
+    ]
+   },
+   "launchpad": {
+    "median": 5307,
+    "range": [
+     5239,
+     8696
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1361,
+    "range": [
+     1232,
+     1626
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 820,
+    "range": [
+     585,
+     942
+    ]
+   },
+   "workspaceReady": {
+    "median": 14441,
+    "range": [
+     13228,
+     16149
+    ]
+   },
+   "loadAttempt1": {
+    "median": 16382,
+    "range": [
+     14316,
+     17099
+    ]
+   },
+   "miscReady": {
+    "median": 39240,
+    "range": [
+     32292,
+     49731
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 24992,
+    "range": [
+     19137,
+     33608
+    ]
+   },
+   "packLoaded": {
+    "median": 44899,
+    "range": [
+     38871,
+     57008
+    ]
+   },
+   "hubOpen": {
+    "median": 49232,
+    "range": [
+     43794,
+     63488
+    ]
+   },
+   "stationStarted": {
+    "median": 69676,
+    "range": [
+     64811,
+     86553
+    ]
+   },
+   "linkDeadMs": {
+    "median": 21620,
+    "range": [
+     20612,
+     23677
+    ]
+   },
+   "toolLoadMs": {
+    "median": 467,
+    "range": [
+     383,
+     1643
+    ]
+   },
+   "toolContent": {
+    "median": 70365,
+    "range": [
+     65491,
+     91272
+    ]
+   },
+   "clicks": {
+    "median": 9,
+    "range": [
+     9,
+     9
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "queueDrained": {
+    "median": 66905,
+    "range": [
+     59088,
+     93453
+    ]
+   },
+   "selHubReady": {
+    "median": 23095,
+    "range": [
+     20676,
+     24828
+    ]
+   },
+   "rootChild": {
+    "median": 2349,
+    "range": [
+     1606,
+     3445
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 18468,
+    "range": [
+     17477,
+     19079
+    ]
+   },
+   "totalBytes": {
+    "median": 9339707,
+    "range": [
+     9339527,
+     9341444
+    ]
+   },
+   "calibMs": {
+    "median": 175,
+    "range": [
+     129,
+     356
+    ]
+   },
+   "packSavingEst": {
+    "median": 28189,
+    "range": [
+     23983,
+     39231
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20247,
+    "range": [
+     20241,
+     24120
+    ]
+   },
+   "fcp": {
+    "median": 896,
+    "range": [
+     672,
+     1024
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    83,
+    54,
+    79
+   ]
+  },
+  "live|wifi|student|whatif": {
+   "n": 1,
+   "failures": [],
+   "stringsAt": {
+    "median": 15116,
+    "range": [
+     15116,
+     15116
+    ]
+   },
+   "launchpadDom": {
+    "median": 5825,
+    "range": [
+     5825,
+     5825
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 4685,
+    "range": [
+     4685,
+     4685
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 38422,
+    "range": [
+     38422,
+     38422
+    ]
+   },
+   "launchpad": {
+    "median": 5649,
+    "range": [
+     5649,
+     5649
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 2684,
+    "range": [
+     2684,
+     2684
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 1639,
+    "range": [
+     1639,
+     1639
+    ]
+   },
+   "workspaceReady": {
+    "median": 17346,
+    "range": [
+     17346,
+     17346
+    ]
+   },
+   "loadAttempt1": {
+    "median": 19964,
+    "range": [
+     19964,
+     19964
+    ]
+   },
+   "miscReady": {
+    "median": 11433,
+    "range": [
+     11433,
+     11433
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": -5631,
+    "range": [
+     -5631,
+     -5631
+    ]
+   },
+   "packLoaded": {
+    "median": 20620,
+    "range": [
+     20620,
+     20620
+    ]
+   },
+   "hubOpen": {
+    "median": 41471,
+    "range": [
+     41471,
+     41471
+    ]
+   },
+   "stationStarted": {
+    "median": 43107,
+    "range": [
+     43107,
+     43107
+    ]
+   },
+   "linkDeadMs": {
+    "median": 15120,
+    "range": [
+     15120,
+     15120
+    ]
+   },
+   "toolLoadMs": {
+    "median": null,
+    "range": null
+   },
+   "toolContent": {
+    "median": 43107,
+    "range": [
+     43107,
+     43107
+    ]
+   },
+   "clicks": {
+    "median": 7,
+    "range": [
+     7,
+     7
+    ]
+   },
+   "filePicks": {
+    "median": 1,
+    "range": [
+     1,
+     1
+    ]
+   },
+   "extraClicks": {
+    "median": 1,
+    "range": [
+     1,
+     1
+    ]
+   },
+   "queueDrained": {
+    "median": 90095,
+    "range": [
+     90095,
+     90095
+    ]
+   },
+   "selHubReady": {
+    "median": 40245,
+    "range": [
+     40245,
+     40245
+    ]
+   },
+   "rootChild": {
+    "median": 2831,
+    "range": [
+     2831,
+     2831
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 17822,
+    "range": [
+     17822,
+     17822
+    ]
+   },
+   "totalBytes": {
+    "median": 8867053,
+    "range": [
+     8867053,
+     8867053
+    ]
+   },
+   "calibMs": {
+    "median": 223,
+    "range": [
+     223,
+     223
+    ]
+   },
+   "packSavingEst": {
+    "median": 139,
+    "range": [
+     139,
+     139
+    ]
+   },
+   "linkSavingEst": {
+    "median": null,
+    "range": null
+   },
+   "fcp": {
+    "median": 640,
+    "range": [
+     640,
+     640
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    null
+   ],
+   "toolLinkOpened": [
+    true
+   ],
+   "toolRequestedBeforeFallback": [
+    true
+   ],
+   "loadAttempts": [
+    1
+   ],
+   "cpuLoad": [
+    77
+   ]
+  },
+  "live|wifi|teacher": {
+   "n": 3,
+   "failures": [],
+   "stringsAt": {
+    "median": 11723,
+    "range": [
+     11433,
+     14100
+    ]
+   },
+   "launchpadDom": {
+    "median": 5418,
+    "range": [
+     5275,
+     5952
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 2965,
+    "range": [
+     2701,
+     4170
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 68605,
+    "range": [
+     64397,
+     72553
+    ]
+   },
+   "launchpad": {
+    "median": 5302,
+    "range": [
+     5252,
+     5956
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1606,
+    "range": [
+     1396,
+     2715
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 996,
+    "range": [
+     664,
+     1795
+    ]
+   },
+   "workspaceReady": {
+    "median": 11021,
+    "range": [
+     9682,
+     14950
+    ]
+   },
+   "loadAttempt1": {
+    "median": 15836,
+    "range": [
+     14244,
+     16711
+    ]
+   },
+   "miscReady": {
+    "median": 39130,
+    "range": [
+     36718,
+     40415
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": 24871,
+    "range": [
+     20433,
+     25178
+    ]
+   },
+   "packLoaded": {
+    "median": 46496,
+    "range": [
+     43976,
+     48720
+    ]
+   },
+   "hubOpen": {
+    "median": 48623,
+    "range": [
+     46829,
+     53269
+    ]
+   },
+   "stationStarted": {
+    "median": 70505,
+    "range": [
+     67877,
+     74612
+    ]
+   },
+   "linkDeadMs": {
+    "median": 22102,
+    "range": [
+     21533,
+     22314
+    ]
+   },
+   "toolLoadMs": {
+    "median": 538,
+    "range": [
+     400,
+     576
+    ]
+   },
+   "toolContent": {
+    "median": 71306,
+    "range": [
+     68567,
+     75518
+    ]
+   },
+   "clicks": {
+    "median": 14,
+    "range": [
+     14,
+     14
+    ]
+   },
+   "filePicks": {
+    "median": 3,
+    "range": [
+     3,
+     3
+    ]
+   },
+   "extraClicks": {
+    "median": 5,
+    "range": [
+     5,
+     5
+    ]
+   },
+   "queueDrained": {
+    "median": 65157,
+    "range": [
+     61828,
+     69011
+    ]
+   },
+   "selHubReady": {
+    "median": 25741,
+    "range": [
+     21848,
+     26575
+    ]
+   },
+   "rootChild": {
+    "median": 2338,
+    "range": [
+     2191,
+     2650
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 18295,
+    "range": [
+     18170,
+     18424
+    ]
+   },
+   "totalBytes": {
+    "median": 13154109,
+    "range": [
+     13153740,
+     13155113
+    ]
+   },
+   "calibMs": {
+    "median": 154,
+    "range": [
+     141,
+     207
+    ]
+   },
+   "packSavingEst": {
+    "median": 31099,
+    "range": [
+     26703,
+     31862
+    ]
+   },
+   "linkSavingEst": {
+    "median": 20285,
+    "range": [
+     19989,
+     20299
+    ]
+   },
+   "fcp": {
+    "median": 756,
+    "range": [
+     616,
+     816
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    false,
+    false,
+    false
+   ],
+   "toolLinkOpened": [
+    false,
+    false,
+    false
+   ],
+   "toolRequestedBeforeFallback": [
+    false,
+    false,
+    false
+   ],
+   "loadAttempts": [
+    3,
+    3,
+    3
+   ],
+   "cpuLoad": [
+    62,
+    79,
+    87
+   ]
+  },
+  "live|wifi|teacher|whatif": {
+   "n": 1,
+   "failures": [],
+   "stringsAt": {
+    "median": 14562,
+    "range": [
+     14562,
+     14562
+    ]
+   },
+   "launchpadDom": {
+    "median": 7224,
+    "range": [
+     7224,
+     7224
+    ]
+   },
+   "harnessOverheadMs": {
+    "median": 3437,
+    "range": [
+     3437,
+     3437
+    ]
+   },
+   "toolContentMinusOverhead": {
+    "median": 27511,
+    "range": [
+     27511,
+     27511
+    ]
+   },
+   "launchpad": {
+    "median": 7284,
+    "range": [
+     7284,
+     7284
+    ]
+   },
+   "fullPlatformToRoleGate": {
+    "median": 1743,
+    "range": [
+     1743,
+     1743
+    ]
+   },
+   "fullPlatformLongTaskMs": {
+    "median": 951,
+    "range": [
+     951,
+     951
+    ]
+   },
+   "workspaceReady": {
+    "median": 13293,
+    "range": [
+     13293,
+     13293
+    ]
+   },
+   "loadAttempt1": {
+    "median": 17725,
+    "range": [
+     17725,
+     17725
+    ]
+   },
+   "miscReady": {
+    "median": 15841,
+    "range": [
+     15841,
+     15841
+    ]
+   },
+   "loadMissingWindowMs": {
+    "median": -1451,
+    "range": [
+     -1451,
+     -1451
+    ]
+   },
+   "packLoaded": {
+    "median": 18124,
+    "range": [
+     18124,
+     18124
+    ]
+   },
+   "hubOpen": {
+    "median": 29990,
+    "range": [
+     29990,
+     29990
+    ]
+   },
+   "stationStarted": {
+    "median": 30947,
+    "range": [
+     30947,
+     30947
+    ]
+   },
+   "linkDeadMs": {
+    "median": 10960,
+    "range": [
+     10960,
+     10960
+    ]
+   },
+   "toolLoadMs": {
+    "median": null,
+    "range": null
+   },
+   "toolContent": {
+    "median": 30948,
+    "range": [
+     30948,
+     30948
+    ]
+   },
+   "clicks": {
+    "median": 10,
+    "range": [
+     10,
+     10
+    ]
+   },
+   "filePicks": {
+    "median": 1,
+    "range": [
+     1,
+     1
+    ]
+   },
+   "extraClicks": {
+    "median": 1,
+    "range": [
+     1,
+     1
+    ]
+   },
+   "queueDrained": {
+    "median": 63984,
+    "range": [
+     63984,
+     63984
+    ]
+   },
+   "selHubReady": {
+    "median": 28872,
+    "range": [
+     28872,
+     28872
+    ]
+   },
+   "rootChild": {
+    "median": 3827,
+    "range": [
+     3827,
+     3827
+    ]
+   },
+   "clearAllMarginMs": {
+    "median": 17187,
+    "range": [
+     17187,
+     17187
+    ]
+   },
+   "totalBytes": {
+    "median": 8866525,
+    "range": [
+     8866525,
+     8866525
+    ]
+   },
+   "calibMs": {
+    "median": 236,
+    "range": [
+     236,
+     236
+    ]
+   },
+   "packSavingEst": {
+    "median": -895,
+    "range": [
+     -895,
+     -895
+    ]
+   },
+   "linkSavingEst": {
+    "median": null,
+    "range": null
+   },
+   "fcp": {
+    "median": 1320,
+    "range": [
+     1320,
+     1320
+    ]
+   },
+   "clearAllShown": 0,
+   "clearAllInjected": 0,
+   "sameFileRetryWorked": [
+    null
+   ],
+   "toolLinkOpened": [
+    true
+   ],
+   "toolRequestedBeforeFallback": [
+    true
+   ],
+   "loadAttempts": [
+    1
+   ],
+   "cpuLoad": [
+    97
+   ]
+  }
+ },
+ "rows": [
+  {
+   "tag": "live-fast3g-student-r1",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 36691,
+   "launchpadDom": 13055,
+   "cpuLoad": 100,
+   "calibMs": 214,
+   "harnessOverheadMs": 9354,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 99513,
+   "rootChild": 7068,
+   "domInteractive": 2951,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15883,
+   "fcp": 2928,
+   "launchpad": 13087,
+   "fullPlatformClick": 13785,
+   "roleGate": 15637,
+   "fullPlatformToRoleGate": 1852,
+   "fullPlatformLongTaskMs": 1033,
+   "workspaceReady": 39472,
+   "loadItemReady": 39472,
+   "loadAttempt1": 46668,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 72617,
+   "selHubReady": 35271,
+   "loadMissingWindowMs": 33237,
+   "packLoaded": 79700,
+   "packParseMs": 537,
+   "miscFetchMs": 868,
+   "directionsLink": 85463,
+   "linkClick": 85771,
+   "hubOpen": 86164,
+   "gotItShown": true,
+   "stationStarted": 107212,
+   "toastUnavailable": 107212,
+   "linkDeadMs": 21441,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 107530,
+   "toolLoadMs": 1337,
+   "toolContent": 108867,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 112437,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 48073,
+   "packSavingEst": 31627,
+   "linkSavingEst": 20453,
+   "totalBytes": 8960310,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8956770,
+    "cdnjs.cloudflare.com": 3540
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54194 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54381 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54383 B]",
+    "/allo-shell-config.json [fetch, 54386 B]",
+    "/app/rainbow-book.jpg [image, 3801 B]",
+    "/app/lang/manifest.json [fetch, 54372 B]",
+    "/app/lang/manifest.json [fetch, 54371 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1616,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1924,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 108031,
+    "end": 108752,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-student-r1-whatif-bytes+link+load+vendor",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "1",
+   "failure": null,
+   "notes": [],
+   "whatif": "load+link+bytes+vendor",
+   "stringsAt": 41984,
+   "launchpadDom": 12258,
+   "cpuLoad": 77,
+   "calibMs": 183,
+   "harnessOverheadMs": 5708,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 51225,
+   "rootChild": 7219,
+   "domInteractive": 2614,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15395,
+   "fcp": 2616,
+   "launchpad": 12325,
+   "fullPlatformClick": 13472,
+   "roleGate": 15187,
+   "fullPlatformToRoleGate": 1715,
+   "fullPlatformLongTaskMs": 766,
+   "workspaceReady": 43356,
+   "loadItemReady": 43356,
+   "loadAttempt1": 47466,
+   "loadAttempts": 1,
+   "sameFileRetryWorked": null,
+   "miscReady": 19120,
+   "selHubReady": 34991,
+   "loadMissingWindowMs": -24010,
+   "packLoaded": 48994,
+   "packParseMs": 410,
+   "miscFetchMs": 2387,
+   "directionsLink": 54164,
+   "linkClick": 54501,
+   "hubOpen": 55055,
+   "gotItShown": true,
+   "stationStarted": 56933,
+   "toastUnavailable": null,
+   "linkDeadMs": 2432,
+   "toolLinkOpened": true,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": true,
+   "toolClick": null,
+   "toolLoadMs": null,
+   "toolContent": 56933,
+   "clicks": 6,
+   "filePicks": 1,
+   "extraClicks": 0,
+   "extraFilePicks": 0,
+   "queueDrained": null,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 50263,
+   "packSavingEst": -1269,
+   "linkSavingEst": null,
+   "totalBytes": 8693604,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8693604
+   },
+   "htmlAsAsset": [
+    "/allo-shell-config.json [fetch, 54381 B]",
+    "/app/lang/manifest.json [fetch, 54381 B]",
+    "/app/lang/manifest.json [fetch, 54372 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [],
+   "leaksToLive": [],
+   "pageErrors": [],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 55670,
+    "end": 56657,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-student-r2",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 38232,
+   "launchpadDom": 13035,
+   "cpuLoad": 100,
+   "calibMs": 116,
+   "harnessOverheadMs": 4081,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 110913,
+   "rootChild": 6421,
+   "domInteractive": 2804,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16383,
+   "fcp": 2812,
+   "launchpad": 13038,
+   "fullPlatformClick": 13284,
+   "roleGate": 14268,
+   "fullPlatformToRoleGate": 984,
+   "fullPlatformLongTaskMs": 855,
+   "workspaceReady": 39134,
+   "loadItemReady": 39134,
+   "loadAttempt1": 40160,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 72628,
+   "selHubReady": 31400,
+   "loadMissingWindowMs": 33617,
+   "packLoaded": 79812,
+   "packParseMs": 720,
+   "miscFetchMs": 1722,
+   "directionsLink": 87389,
+   "linkClick": 89676,
+   "hubOpen": 90078,
+   "gotItShown": true,
+   "stationStarted": 112481,
+   "toastUnavailable": 112481,
+   "linkDeadMs": 22805,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 112869,
+   "toolLoadMs": 2125,
+   "toolContent": 114994,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 121626,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 42602,
+   "packSavingEst": 37210,
+   "linkSavingEst": 20584,
+   "totalBytes": 8983643,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8980089,
+    "cdnjs.cloudflare.com": 3554
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54196 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54392 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54383 B]",
+    "/allo-shell-config.json [fetch, 54381 B]",
+    "/app/rainbow-book.jpg [image, 26120 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]",
+    "/app/lang/manifest.json [fetch, 54372 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1980,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1574,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 112924,
+    "end": 114191,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-student-r3",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "student",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 36661,
+   "launchpadDom": 14678,
+   "cpuLoad": 68,
+   "calibMs": 161,
+   "harnessOverheadMs": 4762,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 124874,
+   "rootChild": 7279,
+   "domInteractive": 2928,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15649,
+   "fcp": 2916,
+   "launchpad": 14686,
+   "fullPlatformClick": 15416,
+   "roleGate": 17118,
+   "fullPlatformToRoleGate": 1702,
+   "fullPlatformLongTaskMs": 984,
+   "workspaceReady": 39566,
+   "loadItemReady": 39566,
+   "loadAttempt1": 42195,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 94400,
+   "selHubReady": 34761,
+   "loadMissingWindowMs": 55078,
+   "packLoaded": 100330,
+   "packParseMs": 178,
+   "miscFetchMs": 869,
+   "directionsLink": 105460,
+   "linkClick": 105797,
+   "hubOpen": 106519,
+   "gotItShown": true,
+   "stationStarted": 127292,
+   "toastUnavailable": 127291,
+   "linkDeadMs": 21495,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 128350,
+   "toolLoadMs": 1286,
+   "toolContent": 129636,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 134549,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 43242,
+   "packSavingEst": 57088,
+   "linkSavingEst": 21515,
+   "totalBytes": 8982905,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8979363,
+    "cdnjs.cloudflare.com": 3542
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54196 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54408 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54381 B]",
+    "/allo-shell-config.json [fetch, 54386 B]",
+    "/app/rainbow-book.jpg [image, 26120 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]",
+    "/app/lang/manifest.json [fetch, 54365 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1922,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1620,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 128669,
+    "end": 129355,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-teacher-r1",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 38555,
+   "launchpadDom": 13041,
+   "cpuLoad": 88,
+   "calibMs": 128,
+   "harnessOverheadMs": 3051,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 98669,
+   "rootChild": 7352,
+   "domInteractive": 2364,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15012,
+   "fcp": 2368,
+   "launchpad": 12928,
+   "fullPlatformClick": 13350,
+   "roleGate": 16411,
+   "fullPlatformToRoleGate": 3061,
+   "fullPlatformLongTaskMs": 1958,
+   "workspaceReady": 20432,
+   "loadItemReady": 40473,
+   "loadAttempt1": 40762,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 70171,
+   "selHubReady": 39410,
+   "loadMissingWindowMs": 29808,
+   "packLoaded": 76580,
+   "packParseMs": 335,
+   "miscFetchMs": 1028,
+   "directionsLink": 78251,
+   "linkClick": 78555,
+   "hubOpen": 78861,
+   "gotItShown": true,
+   "stationStarted": 100004,
+   "toastUnavailable": 100004,
+   "linkDeadMs": 21449,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 100458,
+   "toolLoadMs": 1262,
+   "toolContent": 101720,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 109511,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 42125,
+   "packSavingEst": 34455,
+   "linkSavingEst": 20505,
+   "totalBytes": 12775843,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 12672674,
+    "cdnjs.cloudflare.com": 3568,
+    "cdn.jsdelivr.net": 71460,
+    "raw.githubusercontent.com": 28141
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54191 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54387 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54392 B]",
+    "/allo-shell-config.json [fetch, 54380 B]",
+    "/app/rainbow-book.jpg [image, 3801 B]",
+    "/app/lang/manifest.json [fetch, 54370 B]",
+    "/app/lang/manifest.json [fetch, 54367 B]",
+    "/app/psychometric_probes.json [fetch, 54371 B]",
+    "/app/psychometric_math_probes.json [fetch, 54366 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54365 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 536,
+     "type": "script"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1924,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1644,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71460,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19691,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6188,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2262,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 100803,
+    "end": 101642,
+    "transfer": 15691,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-teacher-r1-whatif-bytes+link+load+vendor",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "pack link click 1 did not open the hub (SelHub link handler installed: false)"
+   ],
+   "whatif": "load+link+bytes+vendor",
+   "stringsAt": 34571,
+   "launchpadDom": 19442,
+   "cpuLoad": 99,
+   "calibMs": 693,
+   "harnessOverheadMs": 4071,
+   "belowFold": [
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 64911,
+   "rootChild": 9913,
+   "domInteractive": 3730,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 13817,
+   "fcp": 3732,
+   "launchpad": 19448,
+   "fullPlatformClick": 19987,
+   "roleGate": 21662,
+   "fullPlatformToRoleGate": 1675,
+   "fullPlatformLongTaskMs": 1337,
+   "workspaceReady": 26753,
+   "loadItemReady": 38899,
+   "loadAttempt1": 39030,
+   "loadAttempts": 1,
+   "sameFileRetryWorked": null,
+   "miscReady": 28105,
+   "selHubReady": 58104,
+   "loadMissingWindowMs": -10754,
+   "packLoaded": 39806,
+   "packParseMs": 600,
+   "miscFetchMs": 1044,
+   "directionsLink": 42582,
+   "linkClick": 42819,
+   "hubOpen": 66049,
+   "gotItShown": true,
+   "stationStarted": 68981,
+   "toastUnavailable": null,
+   "linkDeadMs": 26162,
+   "toolLinkOpened": true,
+   "linkDeadClicks": 1,
+   "toolRequestedBeforeFallback": true,
+   "toolClick": null,
+   "toolLoadMs": null,
+   "toolContent": 68982,
+   "clicks": 10,
+   "filePicks": 1,
+   "extraClicks": 1,
+   "extraFilePicks": 0,
+   "queueDrained": null,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 40674,
+   "packSavingEst": -868,
+   "linkSavingEst": null,
+   "totalBytes": 8072959,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8072959,
+    "cdn.jsdelivr.net": 0,
+    "raw.githubusercontent.com": 0
+   },
+   "htmlAsAsset": [
+    "/allo-shell-config.json [fetch, 54374 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]",
+    "/app/lang/manifest.json [fetch, 54374 B]"
+   ],
+   "failedReq": [
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/word_audio_kokoro_bank.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/word_audio_kokoro_bank.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_literacy_probes.json"
+   ],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 0,
+     "type": "script",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/word_audio_kokoro_bank.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 0,
+     "type": "script",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 43079,
+    "end": 43769,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-teacher-r2",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 34036,
+   "launchpadDom": 19081,
+   "cpuLoad": 100,
+   "calibMs": 130,
+   "harnessOverheadMs": 2972,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 100101,
+   "rootChild": 8164,
+   "domInteractive": 3800,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 15636,
+   "fcp": 4156,
+   "launchpad": 18937,
+   "fullPlatformClick": 19833,
+   "roleGate": 21030,
+   "fullPlatformToRoleGate": 1197,
+   "fullPlatformLongTaskMs": 589,
+   "workspaceReady": 24320,
+   "loadItemReady": 35766,
+   "loadAttempt1": 36141,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 71710,
+   "selHubReady": 44328,
+   "loadMissingWindowMs": 36022,
+   "packLoaded": 78353,
+   "packParseMs": 410,
+   "miscFetchMs": 1214,
+   "directionsLink": 80304,
+   "linkClick": 80610,
+   "hubOpen": 80826,
+   "gotItShown": true,
+   "stationStarted": 101833,
+   "toastUnavailable": 101831,
+   "linkDeadMs": 21223,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 102055,
+   "toolLoadMs": 1018,
+   "toolContent": 103073,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 108187,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 37765,
+   "packSavingEst": 40588,
+   "linkSavingEst": 20340,
+   "totalBytes": 12786842,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 12683691,
+    "cdnjs.cloudflare.com": 3549,
+    "cdn.jsdelivr.net": 71460,
+    "raw.githubusercontent.com": 28142
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54195 B]",
+    "/allo-shell-config.json [fetch, 54380 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54382 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54409 B]",
+    "/app/rainbow-book.jpg [image, 14585 B]",
+    "/app/lang/manifest.json [fetch, 54368 B]",
+    "/app/lang/manifest.json [fetch, 54372 B]",
+    "/app/psychometric_probes.json [fetch, 54369 B]",
+    "/app/psychometric_math_probes.json [fetch, 54368 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54374 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1981,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1568,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71460,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19693,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6193,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2256,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 102141,
+    "end": 102878,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-teacher-r2-whatif-bytes+link+load+vendor",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "2",
+   "failure": null,
+   "notes": [],
+   "whatif": "load+link+bytes+vendor",
+   "stringsAt": 35136,
+   "launchpadDom": 12766,
+   "cpuLoad": 57,
+   "calibMs": 136,
+   "harnessOverheadMs": 1821,
+   "belowFold": [
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 39472,
+   "rootChild": 6359,
+   "domInteractive": 2610,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 16251,
+   "fcp": 2616,
+   "launchpad": 12771,
+   "fullPlatformClick": 13279,
+   "roleGate": 14717,
+   "fullPlatformToRoleGate": 1438,
+   "fullPlatformLongTaskMs": 1009,
+   "workspaceReady": 17383,
+   "loadItemReady": 36932,
+   "loadAttempt1": 37150,
+   "loadAttempts": 1,
+   "sameFileRetryWorked": null,
+   "miscReady": 18649,
+   "selHubReady": 34876,
+   "loadMissingWindowMs": -18136,
+   "packLoaded": 37401,
+   "packParseMs": 227,
+   "miscFetchMs": 981,
+   "directionsLink": 38881,
+   "linkClick": 39366,
+   "hubOpen": 39722,
+   "gotItShown": true,
+   "stationStarted": 41292,
+   "toastUnavailable": null,
+   "linkDeadMs": 1926,
+   "toolLinkOpened": true,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": true,
+   "toolClick": null,
+   "toolLoadMs": null,
+   "toolContent": 41293,
+   "clicks": 9,
+   "filePicks": 1,
+   "extraClicks": 0,
+   "extraFilePicks": 0,
+   "queueDrained": 85642,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 38358,
+   "packSavingEst": -957,
+   "linkSavingEst": null,
+   "totalBytes": 8866792,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8866792,
+    "cdn.jsdelivr.net": 0,
+    "raw.githubusercontent.com": 0
+   },
+   "htmlAsAsset": [
+    "/allo-shell-config.json [fetch, 54387 B]",
+    "/app/lang/manifest.json [fetch, 54378 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]"
+   ],
+   "failedReq": [
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/word_audio_kokoro_bank.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/word_audio_kokoro_bank.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_literacy_probes.json"
+   ],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 0,
+     "type": "script",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/word_audio_kokoro_bank.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 0,
+     "type": "script",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 40290,
+    "end": 41088,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-fast3g-teacher-r3",
+   "target": "live",
+   "net": "fast3g",
+   "flow": "teacher",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 42594,
+   "launchpadDom": 15599,
+   "cpuLoad": 96,
+   "calibMs": 219,
+   "harnessOverheadMs": 7487,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 136018,
+   "rootChild": 8428,
+   "domInteractive": 3188,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 14760,
+   "fcp": 3280,
+   "launchpad": 15610,
+   "fullPlatformClick": 17986,
+   "roleGate": 33658,
+   "fullPlatformToRoleGate": 15672,
+   "fullPlatformLongTaskMs": 14089,
+   "workspaceReady": 59350,
+   "loadItemReady": 59882,
+   "loadAttempt1": 59955,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 106078,
+   "selHubReady": 73960,
+   "loadMissingWindowMs": 46231,
+   "packLoaded": 115091,
+   "packParseMs": 484,
+   "miscFetchMs": 779,
+   "directionsLink": 119083,
+   "linkClick": 120081,
+   "hubOpen": 120583,
+   "gotItShown": true,
+   "stationStarted": 142041,
+   "toastUnavailable": 142041,
+   "linkDeadMs": 21960,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 142458,
+   "toolLoadMs": 1047,
+   "toolContent": 143505,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 153538,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 61218,
+   "packSavingEst": 53873,
+   "linkSavingEst": 20295,
+   "totalBytes": 13110631,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 13007482,
+    "cdnjs.cloudflare.com": 3551,
+    "cdn.jsdelivr.net": 71459,
+    "raw.githubusercontent.com": 28139
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54215 B]",
+    "/allo-shell-config.json [fetch, 54384 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54392 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54383 B]",
+    "/app/rainbow-book.jpg [image, 336596 B]",
+    "/app/lang/manifest.json [fetch, 54374 B]",
+    "/app/lang/manifest.json [fetch, 54366 B]",
+    "/app/psychometric_probes.json [fetch, 54371 B]",
+    "/app/psychometric_math_probes.json [fetch, 54371 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54367 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 536,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 329,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1927,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1624,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71459,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19693,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6191,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2255,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 142673,
+    "end": 143373,
+    "transfer": 15638,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-student-r1",
+   "target": "live",
+   "net": "wifi",
+   "flow": "student",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 14291,
+   "launchpadDom": 8684,
+   "cpuLoad": 83,
+   "calibMs": 356,
+   "harnessOverheadMs": 6689,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 84583,
+   "rootChild": 3445,
+   "domInteractive": 922,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 17477,
+   "fcp": 1024,
+   "launchpad": 8696,
+   "fullPlatformClick": 10575,
+   "roleGate": 11807,
+   "fullPlatformToRoleGate": 1232,
+   "fullPlatformLongTaskMs": 820,
+   "workspaceReady": 16149,
+   "loadItemReady": 16149,
+   "loadAttempt1": 17099,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 49731,
+   "selHubReady": 23095,
+   "loadMissingWindowMs": 33608,
+   "packLoaded": 57008,
+   "packParseMs": 551,
+   "miscFetchMs": 127,
+   "directionsLink": 62657,
+   "linkClick": 62876,
+   "hubOpen": 63488,
+   "gotItShown": true,
+   "stationStarted": 86553,
+   "toastUnavailable": 86553,
+   "linkDeadMs": 23677,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 89629,
+   "toolLoadMs": 1643,
+   "toolContent": 91272,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 93453,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 17777,
+   "packSavingEst": 39231,
+   "linkSavingEst": 24120,
+   "totalBytes": 9339527,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 9335987,
+    "cdnjs.cloudflare.com": 3540
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54194 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54377 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54379 B]",
+    "/allo-shell-config.json [fetch, 54383 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54368 B]",
+    "/app/lang/manifest.json [fetch, 54381 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 536,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1969,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1571,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 90097,
+    "end": 90377,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-student-r1-whatif-bytes+link+load+vendor",
+   "target": "live",
+   "net": "wifi",
+   "flow": "student",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "pack link click 1 did not open the hub (SelHub link handler installed: false)"
+   ],
+   "whatif": "load+link+bytes+vendor",
+   "stringsAt": 15116,
+   "launchpadDom": 5825,
+   "cpuLoad": 77,
+   "calibMs": 223,
+   "harnessOverheadMs": 4685,
+   "belowFold": [
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 38422,
+   "rootChild": 2831,
+   "domInteractive": 653,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 17822,
+   "fcp": 640,
+   "launchpad": 5649,
+   "fullPlatformClick": 6237,
+   "roleGate": 8921,
+   "fullPlatformToRoleGate": 2684,
+   "fullPlatformLongTaskMs": 1639,
+   "workspaceReady": 17346,
+   "loadItemReady": 17346,
+   "loadAttempt1": 19964,
+   "loadAttempts": 1,
+   "sameFileRetryWorked": null,
+   "miscReady": 11433,
+   "selHubReady": 40245,
+   "loadMissingWindowMs": -5631,
+   "packLoaded": 20620,
+   "packParseMs": 402,
+   "miscFetchMs": 115,
+   "directionsLink": 27075,
+   "linkClick": 27987,
+   "hubOpen": 41471,
+   "gotItShown": true,
+   "stationStarted": 43107,
+   "toastUnavailable": null,
+   "linkDeadMs": 15120,
+   "toolLinkOpened": true,
+   "linkDeadClicks": 1,
+   "toolRequestedBeforeFallback": true,
+   "toolClick": null,
+   "toolLoadMs": null,
+   "toolContent": 43107,
+   "clicks": 7,
+   "filePicks": 1,
+   "extraClicks": 1,
+   "extraFilePicks": 0,
+   "queueDrained": 90095,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 20481,
+   "packSavingEst": 139,
+   "linkSavingEst": null,
+   "totalBytes": 8867053,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8867053
+   },
+   "htmlAsAsset": [
+    "/allo-shell-config.json [fetch, 54384 B]",
+    "/app/lang/manifest.json [fetch, 54374 B]",
+    "/app/lang/manifest.json [fetch, 54380 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [],
+   "leaksToLive": [],
+   "pageErrors": [],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 28665,
+    "end": 28765,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-student-r2",
+   "target": "live",
+   "net": "wifi",
+   "flow": "student",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 13109,
+   "launchpadDom": 5243,
+   "cpuLoad": 54,
+   "calibMs": 175,
+   "harnessOverheadMs": 3132,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 67233,
+   "rootChild": 2349,
+   "domInteractive": 817,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18468,
+   "fcp": 896,
+   "launchpad": 5307,
+   "fullPlatformClick": 5910,
+   "roleGate": 7271,
+   "fullPlatformToRoleGate": 1361,
+   "fullPlatformLongTaskMs": 585,
+   "workspaceReady": 14441,
+   "loadItemReady": 14441,
+   "loadAttempt1": 16382,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 39240,
+   "selHubReady": 24828,
+   "loadMissingWindowMs": 24992,
+   "packLoaded": 44899,
+   "packParseMs": 194,
+   "miscFetchMs": 134,
+   "directionsLink": 48912,
+   "linkClick": 49064,
+   "hubOpen": 49232,
+   "gotItShown": true,
+   "stationStarted": 69676,
+   "toastUnavailable": 69675,
+   "linkDeadMs": 20612,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 69898,
+   "toolLoadMs": 467,
+   "toolContent": 70365,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 66905,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 16710,
+   "packSavingEst": 28189,
+   "linkSavingEst": 20247,
+   "totalBytes": 9341444,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 9337902,
+    "cdnjs.cloudflare.com": 3542
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54308 B]",
+    "/allo-shell-config.json [fetch, 54494 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54386 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54582 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54376 B]",
+    "/app/lang/manifest.json [fetch, 54369 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1927,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1615,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 70077,
+    "end": 70263,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-student-r3",
+   "target": "live",
+   "net": "wifi",
+   "flow": "student",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 12147,
+   "launchpadDom": 5230,
+   "cpuLoad": 79,
+   "calibMs": 129,
+   "harnessOverheadMs": 2341,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 63150,
+   "rootChild": 1606,
+   "domInteractive": 685,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 19079,
+   "fcp": 672,
+   "launchpad": 5239,
+   "fullPlatformClick": 5520,
+   "roleGate": 7146,
+   "fullPlatformToRoleGate": 1626,
+   "fullPlatformLongTaskMs": 942,
+   "workspaceReady": 13228,
+   "loadItemReady": 13228,
+   "loadAttempt1": 14316,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 32292,
+   "selHubReady": 20676,
+   "loadMissingWindowMs": 19137,
+   "packLoaded": 38871,
+   "packParseMs": 452,
+   "miscFetchMs": 120,
+   "directionsLink": 42931,
+   "linkClick": 43191,
+   "hubOpen": 43794,
+   "gotItShown": true,
+   "stationStarted": 64811,
+   "toastUnavailable": 64810,
+   "linkDeadMs": 21620,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 65108,
+   "toolLoadMs": 383,
+   "toolContent": 65491,
+   "clicks": 9,
+   "filePicks": 3,
+   "extraClicks": 3,
+   "extraFilePicks": 2,
+   "queueDrained": 59088,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 14888,
+   "packSavingEst": 23983,
+   "linkSavingEst": 20241,
+   "totalBytes": 9339707,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 9336169,
+    "cdnjs.cloudflare.com": 3538
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54306 B]",
+    "/allo-shell-config.json [fetch, 54400 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54383 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54376 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54375 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1970,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1568,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 65183,
+    "end": 65329,
+    "transfer": 15638,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-teacher-r1",
+   "target": "live",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 11723,
+   "launchpadDom": 5275,
+   "cpuLoad": 62,
+   "calibMs": 141,
+   "harnessOverheadMs": 2701,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 68605,
+   "rootChild": 2191,
+   "domInteractive": 486,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18295,
+   "fcp": 616,
+   "launchpad": 5302,
+   "fullPlatformClick": 5708,
+   "roleGate": 7104,
+   "fullPlatformToRoleGate": 1396,
+   "fullPlatformLongTaskMs": 664,
+   "workspaceReady": 9682,
+   "loadItemReady": 14074,
+   "loadAttempt1": 14244,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 39130,
+   "selHubReady": 21848,
+   "loadMissingWindowMs": 25178,
+   "packLoaded": 46496,
+   "packParseMs": 363,
+   "miscFetchMs": 790,
+   "directionsLink": 47703,
+   "linkClick": 48403,
+   "hubOpen": 48623,
+   "gotItShown": true,
+   "stationStarted": 70505,
+   "toastUnavailable": 70504,
+   "linkDeadMs": 22102,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 70768,
+   "toolLoadMs": 538,
+   "toolContent": 71306,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 65157,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 15397,
+   "packSavingEst": 31099,
+   "linkSavingEst": 20299,
+   "totalBytes": 13155113,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 13052024,
+    "cdnjs.cloudflare.com": 3543,
+    "cdn.jsdelivr.net": 71460,
+    "raw.githubusercontent.com": 28086
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54197 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54392 B]",
+    "/allo-shell-config.json [fetch, 54389 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54381 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]",
+    "/app/lang/manifest.json [fetch, 54373 B]",
+    "/app/psychometric_probes.json [fetch, 54367 B]",
+    "/app/psychometric_math_probes.json [fetch, 54374 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54373 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1924,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1619,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71460,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19690,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6145,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2251,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 70921,
+    "end": 71052,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-teacher-r1-whatif-bytes+link+load+vendor",
+   "target": "live",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "1",
+   "failure": null,
+   "notes": [
+    "pack link click 1 did not open the hub (SelHub link handler installed: false)"
+   ],
+   "whatif": "load+link+bytes+vendor",
+   "stringsAt": 14562,
+   "launchpadDom": 7224,
+   "cpuLoad": 97,
+   "calibMs": 236,
+   "harnessOverheadMs": 3437,
+   "belowFold": [
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 27511,
+   "rootChild": 3827,
+   "domInteractive": 1014,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 17187,
+   "fcp": 1320,
+   "launchpad": 7284,
+   "fullPlatformClick": 8454,
+   "roleGate": 10197,
+   "fullPlatformToRoleGate": 1743,
+   "fullPlatformLongTaskMs": 951,
+   "workspaceReady": 13293,
+   "loadItemReady": 17485,
+   "loadAttempt1": 17725,
+   "loadAttempts": 1,
+   "sameFileRetryWorked": null,
+   "miscReady": 15841,
+   "selHubReady": 28872,
+   "loadMissingWindowMs": -1451,
+   "packLoaded": 18124,
+   "packParseMs": 362,
+   "miscFetchMs": 932,
+   "directionsLink": 19572,
+   "linkClick": 19987,
+   "hubOpen": 29990,
+   "gotItShown": true,
+   "stationStarted": 30947,
+   "toastUnavailable": null,
+   "linkDeadMs": 10960,
+   "toolLinkOpened": true,
+   "linkDeadClicks": 1,
+   "toolRequestedBeforeFallback": true,
+   "toolClick": null,
+   "toolLoadMs": null,
+   "toolContent": 30948,
+   "clicks": 10,
+   "filePicks": 1,
+   "extraClicks": 1,
+   "extraFilePicks": 0,
+   "queueDrained": 63984,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 19019,
+   "packSavingEst": -895,
+   "linkSavingEst": null,
+   "totalBytes": 8866525,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 8866525,
+    "cdn.jsdelivr.net": 0,
+    "raw.githubusercontent.com": 0
+   },
+   "htmlAsAsset": [
+    "/allo-shell-config.json [fetch, 54391 B]",
+    "/app/lang/manifest.json [fetch, 54376 B]",
+    "/app/lang/manifest.json [fetch, 54375 B]"
+   ],
+   "failedReq": [
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/word_audio_kokoro_bank.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/word_audio_kokoro_bank.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_math_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://alloflow-cdn.pages.dev/app/psychometric_literacy_probes.json",
+    "net::ERR_BLOCKED_BY_CLIENT.Inspector https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_literacy_probes.json"
+   ],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 0,
+     "type": "script",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/word_audio_kokoro_bank.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 0,
+     "type": "script",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 0,
+     "type": "fetch",
+     "ok": false
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 20304,
+    "end": 20410,
+    "transfer": 15691,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-teacher-r2",
+   "target": "live",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "2",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 14100,
+   "launchpadDom": 5418,
+   "cpuLoad": 79,
+   "calibMs": 154,
+   "harnessOverheadMs": 4170,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 64397,
+   "rootChild": 2338,
+   "domInteractive": 762,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18424,
+   "fcp": 756,
+   "launchpad": 5252,
+   "fullPlatformClick": 6519,
+   "roleGate": 8125,
+   "fullPlatformToRoleGate": 1606,
+   "fullPlatformLongTaskMs": 996,
+   "workspaceReady": 11021,
+   "loadItemReady": 16456,
+   "loadAttempt1": 16711,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 36718,
+   "selHubReady": 25741,
+   "loadMissingWindowMs": 20433,
+   "packLoaded": 43976,
+   "packParseMs": 431,
+   "miscFetchMs": 131,
+   "directionsLink": 45597,
+   "linkClick": 46344,
+   "hubOpen": 46829,
+   "gotItShown": true,
+   "stationStarted": 67877,
+   "toastUnavailable": 67875,
+   "linkDeadMs": 21533,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 68167,
+   "toolLoadMs": 400,
+   "toolContent": 68567,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 61828,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 17273,
+   "packSavingEst": 26703,
+   "linkSavingEst": 19989,
+   "totalBytes": 13153740,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 13050693,
+    "cdnjs.cloudflare.com": 3548,
+    "cdn.jsdelivr.net": 71459,
+    "raw.githubusercontent.com": 28040
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54195 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54412 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54402 B]",
+    "/allo-shell-config.json [fetch, 54387 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54371 B]",
+    "/app/lang/manifest.json [fetch, 54375 B]",
+    "/app/psychometric_probes.json [fetch, 54373 B]",
+    "/app/psychometric_math_probes.json [fetch, 54381 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54376 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3469,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1922,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1626,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71459,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19693,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6142,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2205,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 68288,
+    "end": 68371,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  },
+  {
+   "tag": "live-wifi-teacher-r3",
+   "target": "live",
+   "net": "wifi",
+   "flow": "teacher",
+   "run": "3",
+   "failure": null,
+   "notes": [
+    "load attempt 1 threw \"MiscHandlers module not loaded\"",
+    "same-file retry: change events fired=0; pack not loaded",
+    "pack link did not open Crew Protocols within 8000 ms; tool script requested: no"
+   ],
+   "whatif": "",
+   "stringsAt": 11433,
+   "launchpadDom": 5952,
+   "cpuLoad": 87,
+   "calibMs": 207,
+   "harnessOverheadMs": 2965,
+   "belowFold": [
+    "open-directions",
+    "pack-link"
+   ],
+   "toolContentMinusOverhead": 72553,
+   "rootChild": 2650,
+   "domInteractive": 820,
+   "clearAllInjected": false,
+   "clearAllShown": false,
+   "clearAllMarginMs": 18170,
+   "fcp": 816,
+   "launchpad": 5956,
+   "fullPlatformClick": 6441,
+   "roleGate": 9156,
+   "fullPlatformToRoleGate": 2715,
+   "fullPlatformLongTaskMs": 1795,
+   "workspaceReady": 14950,
+   "loadItemReady": 15618,
+   "loadAttempt1": 15836,
+   "loadAttempts": 3,
+   "sameFileRetryWorked": false,
+   "miscReady": 40415,
+   "selHubReady": 26575,
+   "loadMissingWindowMs": 24871,
+   "packLoaded": 48720,
+   "packParseMs": 873,
+   "miscFetchMs": 149,
+   "directionsLink": 51296,
+   "linkClick": 52298,
+   "hubOpen": 53269,
+   "gotItShown": true,
+   "stationStarted": 74612,
+   "toastUnavailable": 74608,
+   "linkDeadMs": 22314,
+   "toolLinkOpened": false,
+   "linkDeadClicks": 0,
+   "toolRequestedBeforeFallback": false,
+   "toolClick": 74942,
+   "toolLoadMs": 576,
+   "toolContent": 75518,
+   "clicks": 14,
+   "filePicks": 3,
+   "extraClicks": 5,
+   "extraFilePicks": 2,
+   "queueDrained": 69011,
+   "queuePeak": 168,
+   "packLoadedFixedEst": 16858,
+   "packSavingEst": 31862,
+   "linkSavingEst": 20285,
+   "totalBytes": 13154109,
+   "bytesBy": {
+    "alloflow-cdn.pages.dev": 13050680,
+    "cdnjs.cloudflare.com": 3549,
+    "cdn.jsdelivr.net": 71795,
+    "raw.githubusercontent.com": 28085
+   },
+   "htmlAsAsset": [
+    "/fonts/Inter-latin.woff2 [font, 54202 B]",
+    "/app/vendor/lz-string-1.4.4.min.js [script, 54533 B]",
+    "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54387 B]",
+    "/allo-shell-config.json [fetch, 54381 B]",
+    "/app/rainbow-book.jpg [image, 382749 B]",
+    "/app/lang/manifest.json [fetch, 54575 B]",
+    "/app/lang/manifest.json [fetch, 54374 B]",
+    "/app/psychometric_probes.json [fetch, 54375 B]",
+    "/app/psychometric_math_probes.json [fetch, 54378 B]",
+    "/app/psychometric_literacy_probes.json [fetch, 54385 B]"
+   ],
+   "failedReq": [],
+   "heavy": [
+    {
+     "path": "/app/static/js/main.2e5e6cb6.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 535,
+     "type": "script"
+    },
+    {
+     "path": "/app/rainbow-book.jpg",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 374,
+     "type": "image"
+    },
+    {
+     "path": "/ui_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3029,
+     "type": "fetch"
+    },
+    {
+     "path": "/help_strings.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "fetch"
+    },
+    {
+     "path": "/stem_lab/stem_lab_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 167,
+     "type": "script"
+    },
+    {
+     "path": "/word_audio_kokoro_bank.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 3467,
+     "type": "fetch"
+    },
+    {
+     "path": "/audio_bank/phonemes.json",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 403,
+     "type": "fetch"
+    },
+    {
+     "path": "/generate_dispatcher_module.js",
+     "host": "alloflow-cdn.pages.dev",
+     "kb": 155,
+     "type": "script"
+    }
+   ],
+   "thirdParty": [
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1980,
+     "ok": true
+    },
+    {
+     "host": "cdnjs.cloudflare.com",
+     "path": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 1569,
+     "ok": true
+    },
+    {
+     "host": "cdn.jsdelivr.net",
+     "path": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+     "status": 200,
+     "type": "script",
+     "bytes": 71795,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 19692,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 6143,
+     "ok": true
+    },
+    {
+     "host": "raw.githubusercontent.com",
+     "path": "/Apomera/AlloFlow/main/psychometric_literacy_probes.json",
+     "status": 200,
+     "type": "fetch",
+     "bytes": 2250,
+     "ok": true
+    }
+   ],
+   "leaksToLive": [],
+   "pageErrors": [
+    "Error: [handleLoadProject] MiscHandlers module not loaded - reload the page"
+   ],
+   "toolRes": {
+    "name": "/sel_hub/sel_tool_crewprotocols.js?v=2b508469f",
+    "start": 75067,
+    "end": 75145,
+    "transfer": 15644,
+    "decoded": 56446
+   }
+  }
+ ],
+ "thirdParty": {
+  "live cdnjs.cloudflare.com": {
+   "requests": 24,
+   "kb": 42,
+   "statuses": [
+    200
+   ],
+   "runs": 12,
+   "paths": [
+    "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+    "/ajax/libs/lz-string/1.4.4/lz-string.min.js"
+   ]
+  },
+  "live cdn.jsdelivr.net": {
+   "requests": 6,
+   "kb": 419,
+   "statuses": [
+    200
+   ],
+   "runs": 6,
+   "paths": [
+    "/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+   ]
+  },
+  "live raw.githubusercontent.com": {
+   "requests": 18,
+   "kb": 165,
+   "statuses": [
+    200
+   ],
+   "runs": 6,
+   "paths": [
+    "/Apomera/AlloFlow/main/psychometric_probes.json",
+    "/Apomera/AlloFlow/main/psychometric_math_probes.json",
+    "/Apomera/AlloFlow/main/psychometric_literacy_probes.json"
+   ]
+  }
+ },
+ "htmlAsAsset": {
+  "/fonts/Inter-latin.woff2 [font, 54194 B]": 2,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54381 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54383 B]": 2,
+  "/allo-shell-config.json [fetch, 54386 B]": 2,
+  "/app/rainbow-book.jpg [image, 3801 B]": 2,
+  "/app/lang/manifest.json [fetch, 54372 B]": 3,
+  "/app/lang/manifest.json [fetch, 54371 B]": 2,
+  "/fonts/Inter-latin.woff2 [font, 54196 B]": 2,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54392 B]": 2,
+  "/allo-shell-config.json [fetch, 54381 B]": 2,
+  "/app/rainbow-book.jpg [image, 26120 B]": 2,
+  "/app/lang/manifest.json [fetch, 54373 B]": 5,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54408 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54381 B]": 2,
+  "/app/lang/manifest.json [fetch, 54365 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54191 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54387 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54392 B]": 2,
+  "/allo-shell-config.json [fetch, 54380 B]": 2,
+  "/app/lang/manifest.json [fetch, 54370 B]": 1,
+  "/app/lang/manifest.json [fetch, 54367 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54371 B]": 2,
+  "/app/psychometric_math_probes.json [fetch, 54366 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54365 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54195 B]": 2,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54382 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54409 B]": 1,
+  "/app/rainbow-book.jpg [image, 14585 B]": 1,
+  "/app/lang/manifest.json [fetch, 54368 B]": 2,
+  "/app/psychometric_probes.json [fetch, 54369 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54368 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54374 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54215 B]": 1,
+  "/allo-shell-config.json [fetch, 54384 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54383 B]": 2,
+  "/app/rainbow-book.jpg [image, 336596 B]": 1,
+  "/app/lang/manifest.json [fetch, 54374 B]": 2,
+  "/app/lang/manifest.json [fetch, 54366 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54371 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54367 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54377 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54379 B]": 1,
+  "/allo-shell-config.json [fetch, 54383 B]": 1,
+  "/app/rainbow-book.jpg [image, 382749 B]": 6,
+  "/app/lang/manifest.json [fetch, 54381 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54308 B]": 1,
+  "/allo-shell-config.json [fetch, 54494 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54386 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54582 B]": 1,
+  "/app/lang/manifest.json [fetch, 54376 B]": 1,
+  "/app/lang/manifest.json [fetch, 54369 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54306 B]": 1,
+  "/allo-shell-config.json [fetch, 54400 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54376 B]": 1,
+  "/app/lang/manifest.json [fetch, 54375 B]": 2,
+  "/fonts/Inter-latin.woff2 [font, 54197 B]": 1,
+  "/allo-shell-config.json [fetch, 54389 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54367 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54374 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54373 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54412 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54402 B]": 1,
+  "/allo-shell-config.json [fetch, 54387 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54373 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54381 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54376 B]": 1,
+  "/fonts/Inter-latin.woff2 [font, 54202 B]": 1,
+  "/app/vendor/lz-string-1.4.4.min.js [script, 54533 B]": 1,
+  "/app/vendor/idb-keyval-6.2.0.umd.min.js [script, 54387 B]": 1,
+  "/app/lang/manifest.json [fetch, 54575 B]": 1,
+  "/app/psychometric_probes.json [fetch, 54375 B]": 1,
+  "/app/psychometric_math_probes.json [fetch, 54378 B]": 1,
+  "/app/psychometric_literacy_probes.json [fetch, 54385 B]": 1
+ },
+ "leaksToLive": {},
+ "heavy": [
+  {
+   "path": "/word_audio_kokoro_bank.json",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 3469,
+   "type": "fetch",
+   "runs": 6
+  },
+  {
+   "path": "/ui_strings.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 3029,
+   "type": "fetch",
+   "runs": 12
+  },
+  {
+   "path": "/app/static/js/main.2e5e6cb6.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 535,
+   "type": "script",
+   "runs": 12
+  },
+  {
+   "path": "/audio_bank/phonemes.json",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 403,
+   "type": "fetch",
+   "runs": 12
+  },
+  {
+   "path": "/app/rainbow-book.jpg",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 329,
+   "type": "image",
+   "runs": 7
+  },
+  {
+   "path": "/stem_lab/stem_lab_module.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 167,
+   "type": "script",
+   "runs": 12
+  },
+  {
+   "path": "/help_strings.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 167,
+   "type": "fetch",
+   "runs": 12
+  },
+  {
+   "path": "/generate_dispatcher_module.js",
+   "host": "alloflow-cdn.pages.dev",
+   "kb": 155,
+   "type": "script",
+   "runs": 12
+  }
+ ],
+ "failedRequests": {}
+}

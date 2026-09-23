@@ -1,0 +1,186 @@
+[
+ {
+  "t": 0,
+  "url": "/fonts/Inter-latin.woff2",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "parser",
+  "initUrl": "/app/",
+  "line": 0,
+  "frames": []
+ },
+ {
+  "t": 2,
+  "url": "/vendor/drag-drop-touch-2.0.3.esm.min.js?autoload",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "parser",
+  "initUrl": "/app/",
+  "line": 0,
+  "frames": []
+ },
+ {
+  "t": 1012,
+  "url": "/app/vendor/lz-string-1.4.4.min.js",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "hk @ /app/static/js/main.2e5e6cb6.js:2",
+   "n @ /app/static/js/main.2e5e6cb6.js:2",
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "r @ /app/static/js/main.2e5e6cb6.js:2",
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 1014,
+  "url": "/app/vendor/idb-keyval-6.2.0.umd.min.js",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "hk @ /app/static/js/main.2e5e6cb6.js:2",
+   "n @ /app/static/js/main.2e5e6cb6.js:2",
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "r @ /app/static/js/main.2e5e6cb6.js:2",
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 1044,
+  "url": "/allo-shell-config.json",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "gb @ /app/static/js/main.2e5e6cb6.js:2",
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "nl @ /app/static/js/main.2e5e6cb6.js:2",
+   "_u @ /app/static/js/main.2e5e6cb6.js:2",
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "_ @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 1243,
+  "url": "/audio_bank/index.json",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "CS @ /app/static/js/main.2e5e6cb6.js:2",
+   "e @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 1244,
+  "url": "/audio_bank_kokoro.json",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "e @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 1250,
+  "url": "/ui_strings.js?v=2b508469f",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "WA @ /app/static/js/main.2e5e6cb6.js:2",
+   "KA @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 1359,
+  "url": "/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+  "host": "cdnjs.cloudflare.com",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "hk @ /app/static/js/main.2e5e6cb6.js:2",
+   "n @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 1395,
+  "url": "/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+  "host": "cdnjs.cloudflare.com",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "hk @ /app/static/js/main.2e5e6cb6.js:2",
+   "n @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 2901,
+  "url": "/help_strings.js?v=2b508469f",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "WA @ /app/static/js/main.2e5e6cb6.js:2",
+   "KA @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 13221,
+  "url": "/word_audio_kokoro_bank.json",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "MS @ /app/static/js/main.2e5e6cb6.js:2",
+   "BA @ /app/static/js/main.2e5e6cb6.js:2",
+   "(anon) @ /student_analytics_module.js:1612",
+   "nl @ /app/static/js/main.2e5e6cb6.js:2",
+   "_u @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 13225,
+  "url": "/npm/chart.js@4.4.7/dist/chart.umd.min.js",
+  "host": "cdn.jsdelivr.net",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /student_analytics_module.js:1880",
+   "nl @ /app/static/js/main.2e5e6cb6.js:2",
+   "_u @ /app/static/js/main.2e5e6cb6.js:2",
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2",
+   "_ @ /app/static/js/main.2e5e6cb6.js:2",
+   "M @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 17653,
+  "url": "/audio_banks_module.js?v=2b508469f",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "f @ /app/static/js/main.2e5e6cb6.js:2",
+   "u @ /app/static/js/main.2e5e6cb6.js:2",
+   "e @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ },
+ {
+  "t": 17840,
+  "url": "/audio_bank/phonemes.json",
+  "host": "alloflow-cdn.pages.dev",
+  "type": "script",
+  "initUrl": "",
+  "frames": [
+   "(anon) @ /app/static/js/main.2e5e6cb6.js:2"
+  ]
+ }
+]

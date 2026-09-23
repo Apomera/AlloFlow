@@ -1,0 +1,155 @@
+{
+ "tag": "live-chromebook-lastbucket",
+ "target": "live",
+ "device": "chromebook",
+ "viewport": {
+  "width": 1366,
+  "height": 768
+ },
+ "steps": [],
+ "drag": {
+  "moved": true,
+  "events": [
+   [
+    75242,
+    "touchstart",
+    "card",
+    false
+   ],
+   [
+    75474,
+    "dragstart",
+    "card",
+    false
+   ],
+   [
+    75901,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    75903,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    76016,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    76120,
+    "dragenter",
+    "BUTTON",
+    false
+   ],
+   [
+    76201,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    76288,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    76443,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    77013,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    77123,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    77355,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    77481,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    77585,
+    "touchend",
+    "card",
+    false
+   ],
+   [
+    77592,
+    "drop",
+    "bucket",
+    false
+   ],
+   [
+    77610,
+    "dragend",
+    "card",
+    false
+   ]
+  ],
+  "scrolls": 0,
+  "touchmoves": [
+   16,
+   16
+  ]
+ },
+ "tap": {
+  "moveHereShown": true,
+  "moved": true,
+  "taps": 2
+ },
+ "polyfill": [
+  {
+   "url": "https://alloflow-cdn.pages.dev/vendor/drag-drop-touch-2.0.3.esm.min.js?autoload",
+   "status": 200,
+   "ct": "application/javascript"
+  }
+ ],
+ "polyfillScriptTag": true,
+ "geometry": {
+  "card": {
+   "x": 191,
+   "y": 579.65625,
+   "top": 543.265625,
+   "bottom": 616.046875,
+   "w": 160,
+   "h": 72.78125
+  },
+  "cardText": "Respect everyone.",
+  "bucket": {
+   "x": 1091,
+   "y": 187.984375,
+   "top": 127.984375,
+   "bottom": 427.984375,
+   "w": 384,
+   "h": 300
+  },
+  "vh": 768,
+  "vw": 1366,
+  "touchAction": "none",
+  "deckCards": 10,
+  "buckets": 3
+ },
+ "bothInView": true,
+ "dropPointOwnerBeforeScroll": "bucket"
+}

@@ -1,7 +1,7 @@
 {
  "note": "Raw source.slice(source.indexOf(...)) uses per test file. Ratchet: counts may only go DOWN. Use tests/helpers/anchored_slice.js in new tests.",
- "updated": "2026-09-22",
- "totalUses": 3261,
+ "updated": "2026-09-23",
+ "totalUses": 3273,
  "files": {
   "tests/active_content_scan_bookmarks_forms.test.js": 2,
   "tests/active_content_scan_completeness.test.js": 4,
@@ -1225,6 +1225,12 @@
   "tests/stem_quest_state_key.test.js": 4,
   "tests/stem_station_orphan_quests.test.js": 4,
   "tests/stem_xp_panel_values.test.js": 4,
-  "tests/zoomgallery_fullscreen_state.test.js": 2
+  "tests/zoomgallery_fullscreen_state.test.js": 2,
+  "tests/crew_launch_guide.test.js": 1,
+  "tests/rocks_formation_breakage_links.test.js": 3,
+  "tests/rocks_journey_squeeze.test.js": 3,
+  "tests/rocks_lens_nonclastic.test.js": 3,
+  "tests/solar_system_canvas_loop.test.js": 1,
+  "tests/solar_system_drone_immersive_layout.test.js": 1
  }
 }

@@ -1,0 +1,181 @@
+{
+ "tag": "live-phone-lastbucket",
+ "target": "live",
+ "device": "phone",
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "steps": [],
+ "drag": {
+  "moved": true,
+  "events": [
+   [
+    56841,
+    "touchstart",
+    "card",
+    false
+   ],
+   [
+    57062,
+    "dragstart",
+    "card",
+    false
+   ],
+   [
+    57279,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    57279,
+    "dragenter",
+    "card",
+    false
+   ],
+   [
+    57386,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    57477,
+    "dragenter",
+    "SPAN",
+    false
+   ],
+   [
+    57587,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    57814,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    57884,
+    "dragenter",
+    "DIV",
+    false
+   ],
+   [
+    58142,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    58232,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    58310,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    58516,
+    "dragenter",
+    "bucket",
+    false
+   ],
+   [
+    58665,
+    "touchend",
+    "card",
+    false
+   ],
+   [
+    58669,
+    "drop",
+    "bucket",
+    false
+   ],
+   [
+    58670,
+    "dragend",
+    "card",
+    false
+   ]
+  ],
+  "scrolls": 0,
+  "touchmoves": [
+   16,
+   16
+  ]
+ },
+ "tap": {
+  "moveHereShown": true,
+  "moved": true,
+  "taps": 2
+ },
+ "polyfill": [
+  {
+   "url": "https://alloflow-cdn.pages.dev/vendor/drag-drop-touch-2.0.3.esm.min.js?autoload",
+   "status": 200,
+   "ct": "application/javascript"
+  }
+ ],
+ "polyfillScriptTag": true,
+ "geometry": {
+  "card": {
+   "x": 100,
+   "y": 682.8515625,
+   "top": 635.265625,
+   "bottom": 730.4375,
+   "w": 160,
+   "h": 95.171875
+  },
+  "cardText": "Have a good attitude.",
+  "bucket": {
+   "x": 195,
+   "y": 724.75,
+   "top": 664.75,
+   "bottom": 868.34375,
+   "w": 326,
+   "h": 203.59375
+  },
+  "vh": 844,
+  "vw": 390,
+  "touchAction": "none",
+  "deckCards": 10,
+  "buckets": 3
+ },
+ "bothInView": true,
+ "dropPointOwnerBeforeScroll": "card deck",
+ "geometryAfterScroll": {
+  "card": {
+   "x": 100,
+   "y": 682.8515625,
+   "top": 635.265625,
+   "bottom": 730.4375,
+   "w": 160,
+   "h": 95.171875
+  },
+  "cardText": "Have a good attitude.",
+  "bucket": {
+   "x": 195,
+   "y": 241.75,
+   "top": 181.75,
+   "bottom": 385.34375,
+   "w": 326,
+   "h": 203.59375
+  },
+  "vh": 844,
+  "vw": 390,
+  "touchAction": "none",
+  "deckCards": 10,
+  "buckets": 3
+ },
+ "bothInViewAfterScroll": true,
+ "dropPointOwner": "bucket"
+}
