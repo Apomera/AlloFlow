@@ -9,6 +9,7 @@
 // picking the FIRST quiz option was read back as "unanswered" (`|| -1` on index 0).
 import { describe, it, expect, beforeEach } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const FILE = 'stem_lab/stem_tool_moonmission.js';
 const ID = 'moonMission';
@@ -87,7 +88,7 @@ describe('Moon Mission saved state', () => {
 
   it('answering with the FIRST option is recorded, not read as unanswered', () => {
     const html = render({ missionPhase: 2, showQuiz: true, quizIdx: 0, quizAnswered: true, quizSelectedAnswer: 0 });
-    const quiz = html.slice(html.indexOf('mm-quiz-prompt'));
+    const quiz = sliceBetween(html, 'mm-quiz-prompt', null, { label: 'quiz prompt' });
     const options = quiz.match(/<[^>]*role="radio"[^>]*>/g) || [];
     expect(options.length).toBeGreaterThanOrEqual(2);
     expect(options[0], 'option 0 was picked but is not aria-checked').toContain('aria-checked="true"');
