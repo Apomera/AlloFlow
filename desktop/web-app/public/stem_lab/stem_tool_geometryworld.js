@@ -1700,13 +1700,28 @@
   function belongsToMeasuredComponent(seedData, candidateData) {
     return !!candidateData && measurementLayerFor(candidateData) === measurementLayerFor(seedData);
   }
+  // Perfect Score is one whole lesson, lesson_load to lesson_complete, with no wrong
+  // answer. It used to fire after any 3 corrects (mid-lesson) and a single wrong lost
+  // it for the session. A resumed lesson cannot qualify: its earlier attempts are not
+  // in this log, so every question must be finished in the same sitting.
+  function geometryPerfectLessonInLog(log) {
+    var wrong = 0, finished = 0;
+    for (var i = 0; i < (log || []).length; i++) {
+      var e = log[i] || {};
+      if (e.type === 'lesson_load') { wrong = 0; finished = 0; }
+      else if (e.type === 'answer_wrong') wrong++;
+      else if (e.type === 'answer_correct' && e.data && e.data.isFinalStep) finished++;
+      else if (e.type === 'lesson_complete' && !wrong && finished > 0 && finished >= Number((e.data && e.data.totalQuestions) || 0)) return true;
+    }
+    return false;
+  }
   var ACHIEVEMENTS = [
     { id: 'first_measure', name: 'First Measurement', icon: '\uD83D\uDCCF', desc: 'Measured your first structure', check: function(log) { return log.some(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }); } },
     { id: 'first_correct', name: 'Right Answer!', icon: '\u2705', desc: 'Answered your first NPC question correctly', check: function(log) { return log.some(function(e) { return e.type === 'answer_correct'; }); } },
     { id: 'lesson_complete', name: 'Lesson Master', icon: '\uD83C\uDFC6', desc: 'Completed an entire lesson', check: function(log) { return log.some(function(e) { return e.type === 'lesson_complete'; }); } },
     { id: 'builder_10', name: 'Builder', icon: '\uD83E\uDDF1', desc: 'Placed 10 blocks', check: function(log) { return log.filter(function(e) { return e.type === 'block_place'; }).length >= 10; } },
     { id: 'builder_100', name: 'Master Builder', icon: '\uD83C\uDFD7\uFE0F', desc: 'Placed 100 blocks', check: function(log) { return log.filter(function(e) { return e.type === 'block_place'; }).length >= 100; } },
-    { id: 'perfect_lesson', name: 'Perfect Score', icon: '\uD83C\uDF1F', desc: 'Answered every question correctly with no mistakes', check: function(log) { var correct = log.filter(function(e) { return e.type === 'answer_correct'; }).length; var wrong = log.filter(function(e) { return e.type === 'answer_wrong'; }).length; return correct >= 3 && wrong === 0; } },
+    { id: 'perfect_lesson', name: 'Perfect Score', icon: '\uD83C\uDF1F', desc: 'Answered every question in a lesson correctly with no mistakes', check: geometryPerfectLessonInLog },
     { id: 'npc_chatter', name: 'Curious Mind', icon: '\uD83D\uDCAC', desc: 'Had a conversation with an NPC', check: function(log) { return log.some(function(e) { return e.type === 'npc_chat'; }); } },
     { id: 'world_creator', name: 'World Creator', icon: '\uD83C\uDFA8', desc: 'Created an NPC in Creator Mode', check: function(log) { return log.some(function(e) { return e.type === 'npc_created'; }); } },
     { id: 'printer_3d', name: '3D Printer', icon: '\uD83E\uDE78', desc: 'Exported a structure for 3D printing', check: function(log) { return log.some(function(e) { return e.type === 'stl_export'; }); } },
@@ -1769,10 +1784,12 @@
               { text: 'Now multiply: 5 \u00d7 3 \u00d7 4 = ?', choices: ['60 cubic units', '12 cubic units', '35 cubic units'], correct: 0 }
             ] } },
         { position: [4, 1, 11], name: 'Builder Bot', color: 0x16a34a,
-          dialogue: 'Fill the pool! The inside measures 3 long, 3 wide, 2 tall.',
-          question: { text: 'What is the area of the pool floor? (3\u00d73)', choices: ['9 square units', '6 square units', '12 square units'], correct: 0,
+          // The walls leave an inside of x 3-5, z 13-14, y 2-3: 3 long, 2 wide, 2 tall.
+          // Distractors: 3 + 2 added, the 5 by 4 outside floor, and 3 layers (the outside height).
+          dialogue: 'Fill the pool! The inside measures 3 long, 2 wide, 2 tall.',
+          question: { text: 'What is the area of the pool floor? (3\u00d72)', choices: ['6 square units', '5 square units', '20 square units'], correct: 0,
             followUp: [
-              { text: 'Now stack 2 layers of 9. How many total blocks?', choices: ['18 blocks', '11 blocks', '27 blocks'], correct: 0 }
+              { text: 'Now stack 2 layers of 6. How many total blocks?', choices: ['12 blocks', '8 blocks', '18 blocks'], correct: 0 }
             ] } },
         { position: [18, 4, 12], name: 'L-Block Sage', color: 0xf59e0b,
           dialogue: 'This L-block has two rectangular parts. Measure each, then add!',
@@ -2155,7 +2172,7 @@
       ],
       npcs: [
         { position: [5, 1, 1], name: 'Architect', color: 0x7c3aed,
-          dialogue: 'Welcome to Build Challenge! Use blocks to build rooms, then measure their volume. The example room in the corner shows a 6\u00d76\u00d74 structure. Start building!', question: null },
+          dialogue: 'Welcome to Build Challenge! Use blocks to build rooms, then measure their volume. The example room in the corner shows a 6\u00d76\u00d75 structure. Start building!', question: null },
         { position: [16, 1, 13], name: 'Room Inspector', color: 0x2563eb,
           dialogue: 'This example room has walls 1 block thick. The outside is 6\u00d76\u00d75. Let\u2019s find the INSIDE.',
           question: { text: 'Walls are 1 block thick. Outside L = 6. What is inside L?', choices: ['4 blocks (6 - 1 - 1)', '5 blocks', '6 blocks'], correct: 0,
@@ -3529,8 +3546,10 @@
         { position: [3, 3, 3], name: 'Fraction Prof', color: 0x7c3aed,
           dialogue: 'In real life, dimensions aren\u2019t always whole numbers! A box might be 4 \u00d7 3 \u00d7 2.5 feet. Volume = 4 \u00d7 3 \u00d7 2.5 = 30 cubic feet. The formula still works!', question: null },
         { position: [12, 5, 3], name: 'Between Quiz', color: 0x2563eb,
-          dialogue: 'The blue prism = 24. The gold = 48. What about a height halfway between (2.5)?',
-          question: { text: 'Blue is 4\u00d73\u00d72 = 24. Gold is 4\u00d73\u00d74 = 48. Halfway height is?', choices: ['2.5 (halfway between 2 and 4-1=3)', '3', '3.5'], correct: 0,
+          // Halfway between the heights 2 and 4 is 3, so the old key (2.5) marked the
+          // true midpoint wrong. The fraction this lesson needs is halfway to the NEXT unit.
+          dialogue: 'The blue prism = 24. The gold = 48. What about a height of 2.5, halfway between 2 and 3?',
+          question: { text: 'Blue is 4\u00d73\u00d72 = 24. Gold is 4\u00d73\u00d74 = 48. What height is halfway between 2 and 3?', choices: ['2.5', '3', '5'], correct: 0,
             followUp: [
               { text: 'Volume of 4 \u00d7 3 \u00d7 2.5?', choices: ['30 cubic units', '24 cubic units', '36 cubic units'], correct: 0 },
               { text: 'Is 30 between 24 and 48?', choices: ['Yes! Fractional height gives in-between volume', 'No', 'Only sometimes'], correct: 0 }
@@ -3744,7 +3763,7 @@
     },
     fluencyMaze: {
       title: 'Volume Fluency Maze \u2014 Measure to Navigate',
-      description: 'Race through a 3D maze where every junction has structures you must MEASURE to find the correct path! Wrong turns lead to dead ends. Use the M key to measure quickly and accurately.',
+      description: 'Race through a 3D maze where every junction has structures you must MEASURE to find the correct path! Wrong turns lead to dead ends. Count length, width and height and multiply quickly and accurately.',
       spawnPoint: [2, 2, 2],
       objectives: [
         'Measure each structure at a junction to find its volume',
@@ -3770,12 +3789,14 @@
         { type: 'fill', x1: 4, y1: 1, z1: 8, x2: 8, y2: 3, z2: 8, block: 'brick' },
         // Correct path continues north
         { type: 'fill', x1: 0, y1: 1, z1: 14, x2: 8, y2: 3, z2: 14, block: 'brick' },
-        // ── Junction 2: Measure 4\u00d73\u00d72 = 24 ──
+        // ── Junction 2: 3\u00d72\u00d73 = 18 (fits the 3-wide corridor; the key once said 24) ──
         { type: 'fill', x1: 1, y1: 1, z1: 11, x2: 3, y2: 2, z2: 13, block: 'gold' },
         // Corridor continues east
         { type: 'fill', x1: 0, y1: 1, z1: 14, x2: 0, y2: 3, z2: 20, block: 'brick' },
         { type: 'fill', x1: 4, y1: 1, z1: 14, x2: 4, y2: 3, z2: 20, block: 'brick' },
-        // ── Junction 3: Measure 5\u00d72\u00d73 = 30 ──
+        // ── Junction 3: 3 across, 2 along, 3 tall = 18 (the key once said 5\u00d72\u00d73 = 30) ──
+        // Each junction structure touches the maze walls, so Measure (M) reports the
+        // whole maze as one structure; the guides ask students to count edges instead.
         { type: 'fill', x1: 1, y1: 1, z1: 17, x2: 3, y2: 3, z2: 18, block: 'diamond' },
         // Fork north vs east
         { type: 'fill', x1: 0, y1: 1, z1: 20, x2: 0, y2: 3, z2: 26, block: 'brick' },
@@ -3793,21 +3814,21 @@
       ],
       npcs: [
         { position: [2, 1, 1], name: 'Maze Guide', color: 0x7c3aed,
-          dialogue: 'Welcome to the Volume Fluency Maze! At each junction, MEASURE the structure (M key) to find its volume. The correct volume tells you which path to take! Speed and accuracy both matter. Go!', question: null },
+          dialogue: 'Welcome to the Volume Fluency Maze! At each junction, count the colored structure\u2019s length, width and height, then multiply to find its volume. The structures touch the maze walls, so Measure (M) reports the whole maze, not one structure. The correct volume tells you which path to take! Speed and accuracy both matter. Go!', question: null },
         { position: [2, 3, 6], name: 'Junction 1', color: 0x2563eb,
-          dialogue: 'Measure the blue structure below (M key). It\u2019s 3 long, 2 wide, 2 tall. Take the path matching the correct volume!',
+          dialogue: 'Look at the blue structure below. It\u2019s 3 long, 2 wide, 2 tall. Take the path matching the correct volume!',
           question: { text: 'Volume of this 3\u00d72\u00d72 structure?', choices: ['12 \u2014 go LEFT (north)', '8 \u2014 go RIGHT (east)', '6 \u2014 go RIGHT (east)'], correct: 0,
             followUp: [
               { text: 'Double check: 3 \u00d7 2 = 6, then 6 \u00d7 2 = ?', choices: ['12 \u2713 (go left!)', '8', '10'], correct: 0 }
             ] } },
         { position: [2, 3, 12], name: 'Junction 2', color: 0xf59e0b,
-          dialogue: 'Nice! Now measure the gold structure. Be quick \u2014 fluency means speed + accuracy!',
-          question: { text: 'Volume of this gold prism?', choices: ['24 cubic units', '18 cubic units', '36 cubic units'], correct: 0 } },
+          dialogue: 'Nice! Now count the gold structure\u2019s length, width and height. Be quick: fluency means speed + accuracy!',
+          question: { text: 'Volume of this gold prism?', choices: ['18 cubic units', '8 cubic units', '24 cubic units'], correct: 0 } },
         { position: [2, 4, 18], name: 'Junction 3', color: 0x16a34a,
-          dialogue: 'Last junction! This one is taller. Measure carefully \u2014 the finish is close!',
-          question: { text: 'Volume of 5\u00d72\u00d73?', choices: ['30 \u2014 go NORTH to finish!', '25 \u2014 go EAST', '20 \u2014 go EAST'], correct: 0,
+          dialogue: 'Last junction! This one is 3 tall. Count carefully: the finish is close!',
+          question: { text: 'Volume of this 3\u00d72\u00d73 structure?', choices: ['18: go NORTH to finish!', '8: go EAST', '12: go EAST'], correct: 0,
             followUp: [
-              { text: '5 \u00d7 2 = 10, then 10 \u00d7 3 = ?', choices: ['30 \u2713 (north to gold platform!)', '15', '60'], correct: 0 }
+              { text: '3 \u00d7 2 = 6, then 6 \u00d7 3 = ?', choices: ['18 \u2713 (north to gold platform!)', '9', '36'], correct: 0 }
             ] } },
         { position: [2, 2, 24], name: 'Finish!', color: 0xdc2626,
           dialogue: '\uD83C\uDFC6 You made it! You navigated the maze using volume measurement fluency. Every junction tested your speed and accuracy with L\u00d7W\u00d7H. That\u2019s fluency \u2014 doing math automatically so you can focus on the problem!',
@@ -5516,7 +5537,69 @@
   })();
 
 
-  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze', 'geometryHarbor'];
+  // The Next-lesson chain and the set "all lessons complete" counts. Geometry Garden
+  // is not in it: it has no questions, so it can never complete, and routing a
+  // student into it from a completion dialog implied a finish it cannot give. It
+  // stays on Home as optional exploration.
+  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze', 'geometryHarbor'];
+
+  // Lesson progress in localStorage. gw_progress_<title> holds a lesson's answers (a
+  // finished lesson's score equals its question count). When a finished lesson's
+  // answers are cleared for a fresh start, gw_completed_lessons keeps the record, so
+  // Replay does not un-complete it.
+  var GW_COMPLETED_LESSONS_KEY = 'gw_completed_lessons';
+  function geometryProgressKey(lesson) {
+    return 'gw_progress_' + ((lesson && lesson.title) || 'untitled').replace(/\W+/g, '_').toLowerCase();
+  }
+  function geometryQuestionCount(lesson) {
+    return ((lesson && lesson.npcs) || []).filter(function(n) { return n && n.question; }).length;
+  }
+  function geometryStorage() {
+    try { return window.localStorage || null; } catch (e) { return null; }
+  }
+  function geometryReadStored(storage, key) {
+    try { return storage ? JSON.parse(storage.getItem(key)) : null; } catch (e) { return null; }
+  }
+  function geometryMarkLessonCompleted(storage, progressKey) {
+    if (!storage || !progressKey) return;
+    var done = geometryReadStored(storage, GW_COMPLETED_LESSONS_KEY) || {};
+    done[progressKey] = true;
+    try { storage.setItem(GW_COMPLETED_LESSONS_KEY, JSON.stringify(done)); } catch (e) {}
+  }
+  function geometryClearLessonProgress(storage, lesson) {
+    try { if (storage) storage.removeItem(geometryProgressKey(lesson)); } catch (e) {}
+  }
+  function geometryLessonCompleted(storage, lesson) {
+    var total = geometryQuestionCount(lesson);
+    if (!total) return false;
+    var key = geometryProgressKey(lesson), saved = geometryReadStored(storage, key);
+    return !!(geometryReadStored(storage, GW_COMPLETED_LESSONS_KEY) || {})[key] || !!(saved && saved.score >= total);
+  }
+  // The saved answers loadLesson restores. Only an unfinished lesson resumes: a
+  // finished one used to restore straight into its "Lesson complete" dialog, so
+  // Replay and reopening it from Home did nothing. It is recorded and starts fresh.
+  function geometryResumableProgress(storage, lesson) {
+    var total = geometryQuestionCount(lesson), saved = geometryReadStored(storage, geometryProgressKey(lesson));
+    if (!saved || !(saved.score > 0)) return null;
+    if (total > 0 && saved.score >= total) {
+      geometryMarkLessonCompleted(storage, geometryProgressKey(lesson));
+      geometryClearLessonProgress(storage, lesson);
+      return null;
+    }
+    return saved;
+  }
+  // What the completion dialog offers once currentKey is finished: the first
+  // unfinished lesson after it in `order` (from the start for an AI or custom lesson),
+  // and "all complete" only when every lesson in `order` really is.
+  function geometryLessonJourney(storage, order, lessons, currentKey) {
+    var start = order.indexOf(currentKey), nextKey = null, completed = 0;
+    for (var i = 0; i < order.length; i++) {
+      var key = order[(start + 1 + i) % order.length];
+      if (key === currentKey || geometryLessonCompleted(storage, lessons[key])) completed++;
+      else if (!nextKey) nextKey = key;
+    }
+    return { nextKey: nextKey, completed: completed, total: order.length, allComplete: order.length > 0 && completed === order.length };
+  }
   var MAX_BLOCKS = 1500; // Performance safety limit
   // Radians/second for arrow-key look. ~100°/s: fast enough to sweep a structure
   // without hunting, slow enough to land the crosshair on an NPC.
@@ -6312,6 +6395,14 @@
 
   window.StemLab.geometryWorldLessonChecks = {normalizeBuildGoal:normalizeGeometryBuildGoal};
   window.StemLab.geometryWorldWorksheets = {model:geometryWorksheetModel, html:generateWorksheetHTML, questions:geometryQuestionSequence, normalizeQuestion:normalizeGeometryQuestion, presets:function(){return JSON.parse(JSON.stringify(SAMPLE_LESSONS));}};
+  // For the Home chooser (builder module): has this built-in lesson been completed?
+  // Uses geometryLessonCompleted, so it survives Replay (which clears gw_progress_* but
+  // keeps gw_completed_lessons). False for an unknown key; never throws.
+  window.StemLab.geometryWorldLessonProgress = {
+    completed: function(key) {
+      try { return Object.prototype.hasOwnProperty.call(SAMPLE_LESSONS, key) && geometryLessonCompleted(geometryStorage(), SAMPLE_LESSONS[key]); } catch (e) { return false; }
+    }
+  };
 
   window.StemLab.registerTool('geometryWorld', {
     name: 'Geometry World',
@@ -9490,10 +9581,9 @@
           engine._undoStack = [];
           engine._redoStack = [];
           var totalQCount = (lesson.npcs || []).filter(function(n) { return n.question; }).length;
-          // Restore saved progress for this lesson (if any)
-          var progressKey = 'gw_progress_' + (lesson.title || 'untitled').replace(/\W+/g, '_').toLowerCase();
-          var savedProgress = null;
-          try { savedProgress = JSON.parse(localStorage.getItem(progressKey)); } catch(e) {}
+          // Restore saved progress for this lesson if it is unfinished; a finished one starts fresh.
+          var progressKey = geometryProgressKey(lesson);
+          var savedProgress = geometryResumableProgress(geometryStorage(), lesson);
           // Restore chat history from localStorage
           var savedChat = null;
           try { savedChat = JSON.parse(sessionStorage.getItem('gw_chat_' + gwChatKey(lesson))); } catch(e) {}
@@ -15366,8 +15456,10 @@
           ),
           // Next Lesson button
           (function() {
-            var curIdx = LESSON_ORDER.indexOf(activeLesson);
-            var nextKey = curIdx >= 0 && curIdx < LESSON_ORDER.length - 1 ? LESSON_ORDER[curIdx + 1] : null;
+            // "All complete" was shown whenever the lesson was last in (or absent from)
+            // LESSON_ORDER, so every AI or custom lesson claimed the whole course was done.
+            var journey = geometryLessonJourney(geometryStorage(), LESSON_ORDER, SAMPLE_LESSONS, activeLesson);
+            var nextKey = journey.nextKey;
             var nextLesson = nextKey ? SAMPLE_LESSONS[nextKey] : null;
             return el('div', { className: 'gw-completion-actions' },
               nextLesson && el('button', { type: 'button', className: 'gw-completion-next gw-focusable', 'aria-label': 'Continue to next lesson: ' + (nextLesson.title || 'Next lesson'),
@@ -15378,15 +15470,21 @@
               }, '\u27A1\uFE0F Next: ' + (nextLesson.title || '').split(' \u2014')[0]),
               el('button', { type: 'button', className: 'gw-completion-replay gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_replay_current_lesson', 'Replay current lesson'),
                 onClick: function() {
+                  // Clear the saved answers first or loadLesson restores them and this
+                  // dialog returns at once. The lesson stays recorded as completed.
+                  var store = geometryStorage();
+                  geometryMarkLessonCompleted(store, geometryProgressKey(currentLesson));
+                  geometryClearLessonProgress(store, currentLesson);
                   var eng = window[engineKey]; if (eng) eng.loadLesson(currentLesson);
                   upd({ measureHistory: [], reflectionText: '' });
+                  upd({ npcWrongCount: {}, npcLastWrong: {}, consecutiveWrong: 0 });
                 },
               }, '\uD83D\uDD04 Replay'),
-              !nextLesson && el('section', { className: 'gw-completion-journey', 'aria-labelledby': 'gw-journey-title' },
+              journey.allComplete && el('section', { className: 'gw-completion-journey', 'aria-labelledby': 'gw-journey-title' },
                 el('div', { className: 'gw-journey-icon', 'aria-hidden': 'true' }, '\uD83C\uDFC6\u2B50\uD83C\uDF1F'),
                 el('h3', { id: 'gw-journey-title', className: 'gw-journey-title' }, 'All lessons complete!'),
                 el('p', { className: 'gw-journey-description' },
-                  'You\u2019ve completed all ' + LESSON_ORDER.length + ' geometry lessons. Here\u2019s your journey:'),
+                  'You\u2019ve completed all ' + journey.total + ' geometry lessons. Here\u2019s your journey:'),
                 el('div', { className: 'gw-journey-stats', role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_course_achievement_summary', 'Course achievement summary') },
                   el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'badges' },
                     el('span', { className: 'gw-journey-value' }, String(Object.keys(earnedBadges).length)),

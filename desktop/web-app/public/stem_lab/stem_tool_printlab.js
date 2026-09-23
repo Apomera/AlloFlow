@@ -658,7 +658,10 @@
   // in-memory slot.  Model bytes never enter persisted toolData, localStorage, or a
   // network request.  Validate the slot at the receiving boundary before a preview
   // or advisory inspection is allowed to touch it.
-  var GEOMETRY_WORLD_BLOCK_TYPES = ['stone', 'wood', 'diamond', 'gold', 'sand', 'glass', 'water', 'brick', 'ice', 'lava', 'torch'];
+  // Every Geometry World material, grass included (a student's own grass blocks
+  // print too). An unknown name falls back to stone, so a stale list silently
+  // relabels a student's blocks; tests/geometry_world_material_parity.test.js pins it.
+  var GEOMETRY_WORLD_BLOCK_TYPES = ['stone', 'grass', 'wood', 'diamond', 'gold', 'sand', 'glass', 'water', 'brick', 'ice', 'lava', 'torch', 'obsidian', 'marble', 'copper', 'emerald', 'amethyst', 'leaves', 'snow', 'wool'];
   var GEOMETRY_WORLD_BLOCK_SHAPES = ['cube', 'halfA', 'halfB', 'quarter'];
   function sanitizeGeometryWorldSource(source) {
     if (!source || source.schema !== 'alloflow-geometry-world-build/1' || !Array.isArray(source.blocks)) return null;
@@ -900,7 +903,7 @@
       title: safeText(pending.title, 100) || 'Geometry World build',
       description: safeText(pending.description, 500),
       unitMm: clamp(pending.unitMm, 0.01, 1000, 5),
-      sourceModel: source, projectId:safeText(pending.projectId,80),
+      sourceModel: source, projectId:safeText(pending.projectId,80), draftId:safeText(pending.draftId,80),
       aiUse:['ASSISTED','MOSTLY_AI'].indexOf(pending.aiUse)>=0 ? pending.aiUse : 'NONE',
       aiDisclosure:safeText(pending.aiDisclosure,500),
       summary: geometryWorldSourceSummary(source, triangleCount, meshDimensions)
@@ -931,6 +934,7 @@
     persistedPreflightBinding: persistedPreflightBinding,
     manufacturingEvidenceBinding: manufacturingEvidenceBinding,
     schoolRewardsAssetCompatibility: schoolRewardsAssetCompatibility,
+    GEOMETRY_WORLD_BLOCK_TYPES: GEOMETRY_WORLD_BLOCK_TYPES.slice(),
     sanitizeGeometryWorldSource: sanitizeGeometryWorldSource,
     inspectGeometryWorldBinaryStl: inspectGeometryWorldBinaryStl,
     scaledGeometryWorldDimensions: scaledGeometryWorldDimensions,
@@ -955,12 +959,24 @@
       var stored = (ctx.toolData && ctx.toolData.printLab) || {};
       var pendingSlotRef = React.useRef(undefined);
       if (pendingSlotRef.current === undefined) pendingSlotRef.current = window.__alloPrintLabPendingHandoff || null;
+      // A Geometry World build stays open for the rest of this page session (still
+      // memory only), so leaving Print Lab and coming back no longer empties it.
+      var resumedSlotRef = React.useRef(undefined);
+      if (resumedSlotRef.current === undefined) {
+        var geometrySession = window.__alloPrintLabGeometrySession;
+        resumedSlotRef.current = !pendingSlotRef.current && geometrySession && stored.gwProjectId && geometrySession.projectId === stored.gwProjectId ? geometrySession : null;
+      }
       var pendingHandoffRef = React.useRef(undefined);
-      if (pendingHandoffRef.current === undefined) pendingHandoffRef.current = readPendingLocalHandoff(pendingSlotRef.current);
+      if (pendingHandoffRef.current === undefined) pendingHandoffRef.current = readPendingLocalHandoff(pendingSlotRef.current || resumedSlotRef.current);
       var pendingHandoff = pendingHandoffRef.current;
+      var resumedGeometry = !!(pendingHandoff && resumedSlotRef.current);
+      // Re-sent from the same My Worlds project: keep the title and note typed here.
+      var keepTypedDetails = resumedGeometry || !!(pendingHandoff && pendingHandoff.draftId && stored.gwDraftId === pendingHandoff.draftId);
+      // The last session held a Geometry World build that did not survive a reload.
+      var geometryGone = !pendingHandoff && !!stored.gwProjectId;
       var initialRecipe = pendingHandoff ? (pendingHandoff.recipe || null) : normalizePersistedRecipe(stored.recipe);
       var initialFormat = pendingHandoff ? pendingHandoff.format : 'RECIPE';
-      var initialUnitMm = pendingHandoff ? pendingHandoff.unitMm : clamp(stored.unitMm, 0.01, 1000, 20);
+      var initialUnitMm = resumedGeometry ? clamp(stored.unitMm, 0.01, 1000, pendingHandoff.unitMm) : pendingHandoff ? pendingHandoff.unitMm : geometryGone && !initialRecipe ? 20 : clamp(stored.unitMm, 0.01, 1000, 20);
       var initialProfile = normalizePrinterProfile(stored.profile);
       var persistedReport = pendingHandoff ? null : normalizePersistedPreflight(stored.preflight);
       var initialReport = initialRecipe && persistedReport && stored.preflightBinding === persistedPreflightBinding(initialRecipe, initialUnitMm, initialProfile) ? persistedReport : null;
@@ -969,7 +985,7 @@
       // in-memory STL bytes; a Geometry World build arrived as an empty Design tab (measured on the live shell, 2026-09-14).
       // A legacy stored activeTab is left as it is: rewriting it would change the key once more.
       var storedStage = TABS.indexOf(stored.printStage) >= 0 ? stored.printStage : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab : 'Design');
-      var _tab = React.useState(pendingHandoff ? 'Design' : storedStage), activeTab = _tab[0], setActiveTab = _tab[1];
+      var _tab = React.useState(pendingHandoff && !resumedGeometry || geometryGone ? 'Design' : storedStage), activeTab = _tab[0], setActiveTab = _tab[1];
       var _ready = React.useState(!!(window.AlloModules && window.AlloModules.PrintableModel && window.AlloModules.Prim3D)), runtimeReady = _ready[0], setRuntimeReady = _ready[1];
       var _profilePoints = React.useState({}), profilePoints = _profilePoints[0], setProfilePoints = _profilePoints[1];
       var _runtimeError = React.useState(''), runtimeError = _runtimeError[0], setRuntimeError = _runtimeError[1];
@@ -981,17 +997,20 @@
       var _hash = React.useState(''), contentHash = _hash[0], setContentHash = _hash[1];
       var _unit = React.useState(initialUnitMm), unitMm = _unit[0], setUnitMm = _unit[1];
       var _report = React.useState(initialReport), report = _report[0], setReport = _report[1];
-      var _status = React.useState(pendingHandoff ? (pendingHandoff.sourceTool === 'artStudio' ? 'Loaded an Art Studio sculpture locally as an editable primitive recipe. Set its physical scale, preview, and run the advisory preflight.' : pendingHandoff.sourceTool === 'archStudio' ? 'Loaded an Architecture Studio build locally. Confirm its scale, preview, and advisory preflight.' : 'Loaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.') : 'Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
+      var _status = React.useState(resumedGeometry ? 'The Geometry World build you sent is still open here until this page is closed or reloaded. If you changed it since, send it again from Geometry World.' : pendingHandoff ? (pendingHandoff.sourceTool === 'artStudio' ? 'Loaded an Art Studio sculpture locally as an editable primitive recipe. Set its physical scale, preview, and run the advisory preflight.' : pendingHandoff.sourceTool === 'archStudio' ? 'Loaded an Architecture Studio build locally. Confirm its scale, preview, and advisory preflight.' : 'Loaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.') : geometryGone ? 'The Geometry World build you were checking closed with the page, because models stay only in memory. Send it again from Geometry World to keep going.' : 'Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
       var _revision = React.useState(0), revision = _revision[0], setRevision = _revision[1];
       var _subject = React.useState(''), aiSubject = _subject[0], setAiSubject = _subject[1];
       var _refine = React.useState(''), aiRefinement = _refine[0], setAiRefinement = _refine[1];
       var _busy = React.useState(false), aiBusy = _busy[0], setAiBusy = _busy[1];
-      var _title = React.useState(pendingHandoff ? pendingHandoff.title : (stored.title || '')), title = _title[0], setTitle = _title[1];
-      var _description = React.useState(pendingHandoff ? pendingHandoff.description : (stored.description || '')), description = _description[0], setDescription = _description[1];
-      var _sourceContext = React.useState(pendingHandoff ? { sourceTool: pendingHandoff.sourceTool, projectId:pendingHandoff.projectId, sourceModel: pendingHandoff.sourceModel, summary: pendingHandoff.summary } : null), sourceContext = _sourceContext[0], setSourceContext = _sourceContext[1];
-      var _note = React.useState(stored.studentNote || ''), studentNote = _note[0], setStudentNote = _note[1];
-      var _aiUse = React.useState(pendingHandoff ? (pendingHandoff.aiUse || 'NONE') : (stored.aiUse || 'NONE')), aiUse = _aiUse[0], setAiUse = _aiUse[1];
-      var _aiDisclosure = React.useState(pendingHandoff ? (pendingHandoff.aiDisclosure || '') : (stored.aiDisclosure || '')), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
+      var freshHandoff = pendingHandoff && !keepTypedDetails;
+      // A note written about a different My Worlds project must not ship with this one.
+      var otherProject = !!(freshHandoff && pendingHandoff.draftId && stored.gwDraftId && stored.gwDraftId !== pendingHandoff.draftId);
+      var _title = React.useState(freshHandoff ? pendingHandoff.title : (stored.title || (pendingHandoff ? pendingHandoff.title : ''))), title = _title[0], setTitle = _title[1];
+      var _description = React.useState(freshHandoff ? pendingHandoff.description : (stored.description || (pendingHandoff ? pendingHandoff.description : ''))), description = _description[0], setDescription = _description[1];
+      var _sourceContext = React.useState(pendingHandoff ? { sourceTool: pendingHandoff.sourceTool, projectId:pendingHandoff.projectId, draftId:pendingHandoff.draftId || '', sourceModel: pendingHandoff.sourceModel, summary: pendingHandoff.summary } : null), sourceContext = _sourceContext[0], setSourceContext = _sourceContext[1];
+      var _note = React.useState(otherProject ? '' : (stored.studentNote || '')), studentNote = _note[0], setStudentNote = _note[1];
+      var _aiUse = React.useState(pendingHandoff && !resumedGeometry ? (pendingHandoff.aiUse || 'NONE') : (stored.aiUse || 'NONE')), aiUse = _aiUse[0], setAiUse = _aiUse[1];
+      var _aiDisclosure = React.useState(pendingHandoff && !resumedGeometry ? (pendingHandoff.aiDisclosure || '') : (stored.aiDisclosure || '')), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
       var _profile = React.useState(initialProfile), profile = _profile[0], setProfile = _profile[1];
       var _material = React.useState(stored.materialId || 'PLA'), materialId = _material[0], setMaterialId = _material[1];
       var _infill = React.useState(clamp(stored.infillPercent, 0, 100, 20)), infillPercent = _infill[0], setInfillPercent = _infill[1];
@@ -1032,12 +1051,31 @@
       }, []);
 
       React.useEffect(function () {
-        if (window.__alloPrintLabPendingHandoff === pendingSlotRef.current) delete window.__alloPrintLabPendingHandoff;
-        if (!pendingHandoff) return;
+        var slot = pendingSlotRef.current;
+        if (window.__alloPrintLabPendingHandoff === slot) delete window.__alloPrintLabPendingHandoff;
+        // A model arrived but failed the checks above. Say so, and let the sender
+        // save it as a file instead (Geometry World polls for this marker).
+        if (slot && !pendingHandoff) {
+          window.__alloPrintLabRejectedHandoff = { id: slot.id };
+          announce('The model sent to Print Lab could not be opened here. A Geometry World build downloads as an STL file instead.');
+          return;
+        }
+        if (geometryGone) persist({ gwProjectId: '', printStage: 'Design', unitMm: initialUnitMm });
+        if (!pendingHandoff || resumedGeometry) return;
         // Persist only small form defaults. The STL bytes and editable source model
-        // intentionally remain in component memory and disappear when Print Lab closes.
-        persist({ printStage: 'Design', recipe: pendingHandoff.recipe || null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: pendingHandoff.title, description: pendingHandoff.description, aiUse: pendingHandoff.aiUse || 'NONE', aiDisclosure: pendingHandoff.aiDisclosure || '' });
+        // stay in memory: in this component, and for a Geometry World build in one
+        // page-session slot so reopening Print Lab finds it until the page closes.
+        var fromGeometry = pendingHandoff.sourceTool === 'geometryWorld';
+        if (fromGeometry) window.__alloPrintLabGeometrySession = slot; else delete window.__alloPrintLabGeometrySession;
+        persist({ printStage: 'Design', recipe: pendingHandoff.recipe || null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: title, description: description, studentNote: studentNote, aiUse: pendingHandoff.aiUse || 'NONE', aiDisclosure: pendingHandoff.aiDisclosure || '',
+          gwProjectId: fromGeometry ? pendingHandoff.projectId : '', gwDraftId: fromGeometry ? (pendingHandoff.draftId || '') : (stored.gwDraftId || '') });
       }, []);
+
+      // Replacing the model ends the Geometry World session kept for this page.
+      React.useEffect(function () {
+        if (sourceContext && sourceContext.sourceTool === 'geometryWorld') return;
+        if (window.__alloPrintLabGeometrySession) { delete window.__alloPrintLabGeometrySession; persist({ gwProjectId: '' }); }
+      }, [sourceContext]);
 
       React.useEffect(function () {
         return function () {
@@ -1192,6 +1230,9 @@
       // tools that can build printable geometry, each with its own way back.
       function startInTool(toolId) {
         if (typeof ctx.setStemLabTool !== 'function') { announce(__alloT('stem.printlab.sr_that_tool_is_not_available_here', 'That tool is not available here.')); return; }
+        // Geometry World opens on its Home chooser; this intent takes the student
+        // straight to Free Build (their current workspace if they have one).
+        if (toolId === 'geometryWorld') window.__alloGeometryWorldPendingBuild = { schema: 'alloflow-geometry-world-intent/1', intent: 'freeBuild' };
         if (toolId === 'geometryWorld' && typeof ctx.updateMulti === 'function') ctx.updateMulti('geometryWorld', { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory' });
         if (toolId === 'artStudio' && typeof ctx.updateMulti === 'function') ctx.updateMulti('artStudio', { tab: 'sculpt3d', studioStarted: true });
         ctx.setStemLabTool(toolId);
@@ -1203,7 +1244,7 @@
         window.__alloGeometryWorldPendingBuild = {
           schema: 'alloflow-geometry-world-build/1',
           id: 'pl-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
-          sourceModel: JSON.parse(JSON.stringify(source)), projectId:sourceContext.projectId,
+          sourceModel: JSON.parse(JSON.stringify(source)), projectId:sourceContext.projectId, draftId:sourceContext.draftId || '',
           printContext:{unitMm:unitMm, aiUse:aiUse, aiDisclosure:safeText(aiDisclosure,500)}
         };
         if (typeof ctx.updateMulti === 'function') ctx.updateMulti('geometryWorld', { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory' });
@@ -1486,11 +1527,11 @@
               model:{file:'model.stl',sha256:hash,units:'mm',coordinateSystem:'z-up',dimensionsMm:inspection.dimensionsMm},
               source:{tool:'geometryWorld',millimetersPerBlock:unitMm,editableFile:editable?'editable-world.json':null,recipeFile:'block-source.json'},
               material:materialId,printerProfile:profile,preflight:inspection,aiUse:aiUse,aiDisclosure:safeText(aiDisclosure,500),
-              reviewStatus:'AWAITING_SLICER_AND_STAFF_REVIEW'};
+              studentNote:safeText(studentNote,300),reviewStatus:'AWAITING_SLICER_AND_STAFF_REVIEW'};
             zip.file('model.stl',new Uint8Array(buffer));zip.file('manifest.json',JSON.stringify(manifest,null,2));
             zip.file('block-source.json',JSON.stringify(sourceContext.sourceModel,null,2));
             if(editable)zip.file('editable-world.json',JSON.stringify(editable,null,2));
-            zip.file('READ-ME.txt','Geometry World print package\n\nOpen model.stl in the school slicer. Units are millimeters: import at 100% scale. The chosen '+unitMm+' mm per block is already applied.\nDimensions (width x depth x height): '+inspection.dimensionsMm.width+' x '+inspection.dimensionsMm.depth+' x '+inspection.dimensionsMm.height+' mm.\n'+(editable?'To edit the selected creation, open editable-world.json with Geometry World > Open editable world.':'The selection exceeds editable sandbox file limits; block-source.json preserves its source recipe for recovery.')+'\nmanifest.json records the STL hash, dimensions, material, printer profile and advisory checks. Review orientation, supports and the sliced layers before staff approval. This package does not start a printer.\n');
+            zip.file('READ-ME.txt','Geometry World print package\n\nOpen model.stl in the school slicer. Units are millimeters: import at 100% scale. The chosen '+unitMm+' mm per block is already applied.\nDimensions (width x depth x height): '+inspection.dimensionsMm.width+' x '+inspection.dimensionsMm.depth+' x '+inspection.dimensionsMm.height+' mm.\n'+(editable?'To edit the selected creation, open editable-world.json with Geometry World > Open editable world.':'The selection exceeds editable sandbox file limits; block-source.json preserves its source recipe for recovery.')+'\nmanifest.json records the STL hash, dimensions, material, printer profile and advisory checks. Review orientation, supports and the sliced layers before staff approval. This package does not start a printer.\n'+(safeText(studentNote,300)?'\nDesign note from the student: '+safeText(studentNote,300)+'\n':''));
             return zip.generateAsync({type:'blob',compression:'DEFLATE'});
           });
         }).then(function(blob){if(blob && operationIsCurrent('export',token,startedRevision)){downloadBlob(blob,Printable.safeFilename(title||'geometry-world')+'-print-package.zip');announce('Downloaded one print package with a millimeter STL, source, and review manifest.');}})

@@ -102,7 +102,9 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
 
     it(`selects student work and preserves its measurement for Print Lab — ${path}`, () => {
       expect(source).toContain('function openSelectedBuildInPrintLab(ctx)');
-      expect(source).toContain("measurementLayerFor(data) !== 'student'");
+      // The ground is refused by its measurement layer. It used to be refused by
+      // being grass, which also refused a student's own grass blocks.
+      expect(source).toContain('if (!engine || !gp || !isStudentBlock(data)) {');
       expect(source).toContain('var measurement = selected.measurement;');
       expect(source).toContain('buildGeometryWorldStl(eng, measurement.blocks');
     });
@@ -178,6 +180,10 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
 function studentEngineAt(key, blockType = 'stone') {
   return { blocks: { [key]: { userData: { blockType, gridPos: { x: 0, y: 1, z: 0 } } } } };
 }
+// Tagged the way the engine tags the lesson floor (placeGroundBlock).
+function groundEngineAt(key) {
+  return { blocks: { [key]: { userData: { blockType: 'grass', gridPos: { x: 0, y: 0, z: 0 }, _lessonBlock: true, _measurementLayer: 'ground' } } } };
+}
 
 describe('Geometry World bridge runtime behavior', () => {
   it('says what the printer will make solid, in cubic units and millimetres', () => {
@@ -220,7 +226,7 @@ describe('Geometry World bridge runtime behavior', () => {
     // 25 x 25 x 1 structure that used to be quoted as a 125 x 125 x 5 mm print
     // that fits, when Send would have refused it as not the student's work.
     const cfg = loadBuilderWithCore();
-    window.__geoWorldEngine = studentEngineAt('0,0,0', 'grass');
+    window.__geoWorldEngine = groundEngineAt('0,0,0');
     const ctx = makeCtx({
       toolData: {
         geometryWorld: {
@@ -241,7 +247,10 @@ describe('Geometry World bridge runtime behavior', () => {
     // The count and bounds still show; they are true, just not printable.
     expect(html).toContain('25×25×1');
     expect(window.StemLab.geometryWorldBuilderPure.measurementIsStudentBuild(
-      studentEngineAt('0,0,0', 'grass'), { blocks: [{ x: 0, y: 0, z: 0 }] })).toBe(false);
+      groundEngineAt('0,0,0'), { blocks: [{ x: 0, y: 0, z: 0 }] })).toBe(false);
+    // A grass block the student placed is their work, like any other material.
+    expect(window.StemLab.geometryWorldBuilderPure.measurementIsStudentBuild(
+      studentEngineAt('0,1,0', 'grass'), { blocks: [{ x: 0, y: 1, z: 0 }] })).toBe(true);
     expect(window.StemLab.geometryWorldBuilderPure.measurementIsStudentBuild(
       studentEngineAt('0,1,0'), { blocks: [{ x: 0, y: 1, z: 0 }] })).toBe(true);
     expect(window.StemLab.geometryWorldBuilderPure.measurementIsStudentBuild(
@@ -279,6 +288,9 @@ describe('Geometry World bridge runtime behavior', () => {
       usingSavedProfile: false,
       over: ['width'],
       fits: false,
+      // Print Lab's default planning margin; "tight" only applies to a build inside the bed.
+      clearanceMm: 5,
+      tight: false,
     });
   });
 
@@ -334,6 +346,8 @@ describe('Geometry World bridge runtime behavior', () => {
       { bedWidthMm: 350, bedDepthMm: 350, bedHeightMm: 400 },
       // Out-of-range values fall back on both sides rather than being trusted.
       { bedWidthMm: 5, bedDepthMm: 'wide', bedHeightMm: null },
+      { bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250, planningClearanceMm: 0 },
+      { bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250, planningClearanceMm: 20 },
     ];
     const builds = [
       { L: 1, W: 1, H: 1 },
@@ -341,13 +355,18 @@ describe('Geometry World bridge runtime behavior', () => {
       { L: 24, W: 24, H: 25 },
       { L: 25, W: 24, H: 24 },
       { L: 30, W: 8, H: 6 },
+      { L: 42, W: 20, H: 10 },
+      // Inside a 220 mm bed at 5 mm per block, but not inside the 5 mm margin.
+      { L: 43, W: 20, H: 10 },
       { L: 44, W: 44, H: 50 },
       { L: 45, W: 10, H: 10 },
+      { L: 20, W: 20, H: 49 },
       { L: 70, W: 70, H: 80 },
     ];
 
     let disagreements = 0;
     let overCases = 0;
+    let tightCases = 0;
     profiles.forEach((profile) => {
       const normalized = print.normalizePrinterProfile(profile || {});
       builds.forEach((build) => {
@@ -360,11 +379,32 @@ describe('Geometry World bridge runtime behavior', () => {
         if (!mine.fits) overCases += 1;
         expect(mine.over).toEqual(theirs.over);
         expect(mine.profileLabel).toBe(theirs.profileLabel);
+        // Print Lab's amber "fits the bed but not the planning clearance" state.
+        // For whole cubes the block envelope is the mesh envelope.
+        const advice = print.geometryWorldScaleRecommendation({ meshDimensions: build }, normalized, 5, normalized.planningClearanceMm);
+        const theirsTight = theirs.fits && advice.needsReduction;
+        expect(mine.tight, JSON.stringify({ build, profile })).toBe(theirsTight);
+        if (mine.tight) tightCases += 1;
       });
     });
     expect(disagreements).toBe(0);
     // The table has to contain real failures, or agreement proves nothing.
     expect(overCases).toBeGreaterThan(5);
+    expect(tightCases).toBeGreaterThan(2);
+  });
+
+  it('shows a tight fit where Print Lab would warn about the planning margin', () => {
+    // 43 blocks at 5 mm = 215 mm: inside the 220 mm bed, outside 220 - 2 x 5.
+    // The dock used to say "Fits profile" here while Print Lab showed amber.
+    const cfg = loadBuilderWithCore();
+    window.__geoWorldEngine = studentEngineAt('0,1,0');
+    const ctx = makeCtx({ toolData: { geometryWorld: { activeLesson: 'builderSandbox', worldActive: true, selectedBlock: 0, selectedShape: 0,
+      measureResult: { isComplete: true, count: 43, L: 43, W: 20, H: 10, blocks: [{ x: 0, y: 1, z: 0 }] } } } });
+    const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() { return cfg.render(ctx); }));
+    expect(html).toContain('data-fit="tight"');
+    expect(html).toContain('Tight fit');
+    expect(html).not.toContain('Fits profile');
+    expect(html).toContain('not inside Print Lab’s 5 mm planning margin');
   });
 
   it('subtracts shared polygon area for both full and partial face contacts', () => {

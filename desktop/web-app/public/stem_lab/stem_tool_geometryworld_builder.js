@@ -40,7 +40,18 @@
     { id: 'brick', name: 'Brick', emoji: '\uD83E\uDDF1' },
     { id: 'ice', name: 'Ice', emoji: '\u2744\uFE0F' },
     { id: 'lava', name: 'Lava', emoji: '\uD83C\uDF0B' },
-    { id: 'torch', name: 'Torch', emoji: '\uD83D\uDD25' }
+    { id: 'torch', name: 'Torch', emoji: '\uD83D\uDD25' },
+    // Same order as Geometry World's hotbar (selectedBlock is an index into it).
+    // tests/geometry_world_material_parity.test.js fails if the lists drift: when
+    // they did, these eight saved, printed and edited as Stone or were refused.
+    { id: 'obsidian', name: 'Obsidian', emoji: '\uD83D\uDD73\uFE0F' },
+    { id: 'marble', name: 'Marble', emoji: '\uD83C\uDFDB\uFE0F' },
+    { id: 'copper', name: 'Copper', emoji: '\uD83D\uDFE0' },
+    { id: 'emerald', name: 'Emerald', emoji: '\uD83D\uDFE9' },
+    { id: 'amethyst', name: 'Amethyst', emoji: '\uD83D\uDFEA' },
+    { id: 'leaves', name: 'Leaves', emoji: '\uD83C\uDF43' },
+    { id: 'snow', name: 'Snow', emoji: '\u2603\uFE0F' },
+    { id: 'wool', name: 'Wool', emoji: '\uD83E\uDDF6' }
   ];
   var BLOCK_SHAPES = [
     { id: 'cube', name: 'Cube', emoji: '\u2B1C', fraction: '1' },
@@ -49,10 +60,11 @@
     { id: 'quarter', name: 'Quarter wedge', emoji: '\u25E3', fraction: '\u00BC' }
   ];
 
-  function validBlockType(value, allowGrass) {
+  // Grass is a student material like any other; the sandbox floor is told apart
+  // by its measurement layer (isStudentBlock), never by what it is made of.
+  function validBlockType(value) {
     var id = typeof value === 'string' ? value : '';
-    var known = BLOCK_TYPES.some(function (item) { return item.id === id; });
-    return known && (allowGrass || id !== 'grass') ? id : 'stone';
+    return BLOCK_TYPES.some(function (item) { return item.id === id; }) ? id : 'stone';
   }
   function validBlockShape(value) {
     var id = typeof value === 'string' ? value : '';
@@ -67,14 +79,14 @@
     })) return null;
     return { x: Math.round(position.x), y: Math.round(position.y), z: Math.round(position.z) };
   }
-  function sanitizeSourceBlock(block, allowGrass) {
+  function sanitizeSourceBlock(block) {
     var position = normalizedGridPosition(block);
     if (!position) return null;
     return {
       x: position.x,
       y: position.y,
       z: position.z,
-      type: validBlockType(block.type, !!allowGrass),
+      type: validBlockType(block.type),
       shape: validBlockShape(block.shape),
       rotation: normalizedRotation(block.rotation)
     };
@@ -95,14 +107,14 @@
     var blocks = [], seen = {};
     for (var i = 0; i < candidate.blocks.length; i++) {
       var raw = candidate.blocks[i];
-      var knownType = raw && BLOCK_TYPES.some(function (item) { return item.id === raw.type && item.id !== 'grass'; });
+      var knownType = raw && BLOCK_TYPES.some(function (item) { return item.id === raw.type; });
       var knownShape = raw && BLOCK_SHAPES.some(function (item) { return item.id === raw.shape; });
       var integerPosition = raw && [raw.x, raw.y, raw.z].every(function (value) { return typeof value === 'number' && isFinite(value) && Math.round(value) === value; });
       var validRotation = raw && typeof raw.rotation === 'number' && isFinite(raw.rotation) && Math.round(raw.rotation) === raw.rotation && raw.rotation >= 0 && raw.rotation <= 3;
       if (!knownType || !knownShape || !integerPosition || !validRotation || Math.abs(raw.x) > EDITABLE_XZ_LIMIT || Math.abs(raw.z) > EDITABLE_XZ_LIMIT || raw.y < 1 || raw.y > EDITABLE_Y_MAX) {
         return { ok: false, error: 'Block ' + (i + 1) + ' is outside the editable sandbox schema or allowed coordinate range.' };
       }
-      var clean = sanitizeSourceBlock(raw, false), key = keyFor(clean);
+      var clean = sanitizeSourceBlock(raw), key = keyFor(clean);
       if (seen[key]) return { ok: false, error: 'The editable world contains two blocks at ' + key + '.' };
       seen[key] = true; blocks.push(clean);
     }
@@ -153,6 +165,11 @@
     var data = ctx && ctx.toolData && ctx.toolData.geometryWorld;
     return data && data.builderPrintContext || {};
   }
+  // The engine's record of finished guided lessons (read-only; false if absent).
+  function lessonCompleted(key) {
+    var progress = window.StemLab && window.StemLab.geometryWorldLessonProgress;
+    try { return !!(progress && typeof progress.completed === 'function' && progress.completed(key)); } catch (_) { return false; }
+  }
   function setBuilderPrintScale(ctx, value) {
     // Form input is deliberately stricter than legacy scale normalization: an
     // unfinished or invalid draft must never silently change a saved scale.
@@ -175,6 +192,7 @@
   // fallback and the verdict to Print Lab's DEFAULT_PRINTER_PROFILE and
   // geometryWorldPrinterFit, so the two tools cannot drift apart.
   var FALLBACK_BED_MM = { width: 220, depth: 220, height: 250 };
+  var PRINT_CLEARANCE_MM = 5;
   function storedPrinterProfile(ctx) {
     var stored = ctx && ctx.toolData && ctx.toolData.printLab && ctx.toolData.printLab.profile;
     return stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : null;
@@ -242,6 +260,14 @@
     if (envelope.depthMm > bed.depth) envelope.over.push('depth');
     if (envelope.heightMm > bed.height) envelope.over.push('height');
     envelope.fits = envelope.over.length === 0;
+    // Print Lab also keeps a planning margin inside the bed (planningClearanceMm
+    // per side, same clamp and default) and calls a model inside the bed but not
+    // the margin a tight fit. Without this the dock said "Fits profile" while
+    // Print Lab warned about the same build.
+    var clearance = Number(profile ? profile.planningClearanceMm : undefined);
+    envelope.clearanceMm = Math.max(0, Math.min(50, isFinite(clearance) ? clearance : PRINT_CLEARANCE_MM));
+    envelope.tight = envelope.fits && (envelope.widthMm > bed.width - envelope.clearanceMm * 2
+      || envelope.depthMm > bed.depth - envelope.clearanceMm * 2 || envelope.heightMm > bed.height - envelope.clearanceMm * 2);
     return envelope;
   }
 
@@ -251,7 +277,7 @@
     return data && data._lessonBlock ? 'lesson' : 'student';
   }
   function isStudentBlock(data) {
-    return !!data && !data._lessonBlock && data.blockType !== 'grass' && measurementLayerFor(data) === 'student';
+    return !!data && !data._lessonBlock && measurementLayerFor(data) === 'student';
   }
   function gridPosition(mesh) {
     var p = mesh && mesh.userData && mesh.userData.gridPos;
@@ -478,7 +504,7 @@
       var mesh = engine.blocks[keyFor(position)];
       if (!mesh || !isStudentBlock(mesh.userData)) return;
       var shape = validBlockShape(mesh.userData.shape);
-      var material = validBlockType(mesh.userData.blockType, false);
+      var material = validBlockType(mesh.userData.blockType);
       var rotation = normalizedRotation(mesh.userData.rotation);
       shapeCounts[shape] = (shapeCounts[shape] || 0) + 1;
       materialCounts[material] = (materialCounts[material] || 0) + 1;
@@ -565,7 +591,7 @@
         type: mesh.userData.blockType || 'stone',
         shape: mesh.userData.shape || 'cube',
         rotation: mesh.userData.rotation || 0
-      }, false);
+      });
       if (clean) blocks.push(clean);
     });
     blocks.sort(compareBlocks);
@@ -616,6 +642,8 @@
     {id:'transform',title:'Move, copy & reshape',group:'Edit',description:'Move, repeat, align, or reshape a selected creation with a preview.',keywords:'repeat pattern array align alignment grid spacing duplicate rotate mirror recolor recolour material offset position',selector:'.gwe-creation-editor',selection:true},
     {id:'stamps',title:'Reusable building stamps',group:'Build',description:'Save a reusable part or place one from your collection.',keywords:'recipe window arch reusable library saved pattern',selector:'.gwe-stamp-library'},
     {id:'showcase',title:'Views & showcase',group:'Share',description:'Frame your selection or create a presentation image.',keywords:'camera photo picture screenshot png beautiful front side top',selector:'[aria-label="Inspect selected creation"]',selection:true},
+    {id:'challenge',title:'Build challenges',group:'Build',description:'Build to a target volume, area, or shape and check it automatically.',keywords:'challenge task goal puzzle volume area surface prism cube staircase math practice',selector:'.gwe-challenge'},
+    {id:'send',title:'Send to Print Lab',group:'Print',description:'Open your creation in Print Lab to check its size, printability, and filament.',keywords:'3d printing printer stl print lab send export make hold',selector:'[data-gwe-send="print"]'},
     {id:'print',title:'Inspect & prepare a print',group:'Print',description:'Check separate pieces, printer fit, and connecting bases.',keywords:'3d printing stl print lab oversized support plate thickness margin',selector:'.gwe-print-guide-options',selection:true},
     {id:'scale',title:'Adjust print size',group:'Print',description:'Set millimeters per block for STL and Print Lab.',keywords:'scale bed dimensions width height depth size mm printer',selector:'.gwe-scale-editor',selection:true},
     {id:'save',title:'Save, open & duplicate projects',group:'Keep',description:'Name your project, save a variation, or open an editable file.',keywords:'json export import backup download autosave worlds copy recover',selector:'[aria-label="Keep your work"]'},
@@ -1000,7 +1028,9 @@
   }
   function installWorldAutosave(engine,onSave,storage) {
     var lastPoll=0;
-    function save(){if(engine._workshopRestoreInProgress)return {ok:true,skipped:true};if(engine._currentLesson && engine._currentLesson.sandbox){var result=saveWorldDraft(engine,null,storage);if(onSave)onSave(result);return result;}return {ok:true};}
+    // __alloGeometryWorldLastDraft names the draft to reopen when the student
+    // comes back to this sandbox (resumeSandboxWorkspace); null for a blank one.
+    function save(){if(engine._workshopRestoreInProgress)return {ok:true,skipped:true};if(engine._currentLesson && engine._currentLesson.sandbox){var result=saveWorldDraft(engine,null,storage);window.__alloGeometryWorldLastDraft={id:engine._workshopProjectId || null};if(onSave)onSave(result);return result;}return {ok:true};}
     function poll(){var now=Date.now();if(now-lastPoll>=2500){lastPoll=now;save();}}
     engine.flushWorkshopDraft=save;engine.pollWorkshopDraft=poll;
     function hidden(){if(document.visibilityState==='hidden')save();}
@@ -1158,7 +1188,7 @@
     for(var i=0;i<selection.blocks.length;i++){
       var p=selection.blocks[i],mesh=p && engine.blocks[keyFor(p)],u=mesh && mesh.userData;
       if(!p || ![p.x,p.y,p.z].every(function(v){return typeof v==='number' && isFinite(v) && Math.floor(v)===v;}) || seen[keyFor(p)] || !isStudentBlock(u) || !u.gridPos || keyFor(u.gridPos)!==keyFor(p))return {ok:false,reason:'The selected creation changed. Select it again before editing.'};
-      if(!BLOCK_TYPES.some(function(t){return t.id===u.blockType && t.id!=='grass';}) || !BLOCK_SHAPES.some(function(s){return s.id===u.shape;}) || !Number.isInteger(u.rotation) || u.rotation<0 || u.rotation>3)return {ok:false,reason:'A selected block has an unsupported shape or material.'};
+      if(!BLOCK_TYPES.some(function(t){return t.id===u.blockType;}) || !BLOCK_SHAPES.some(function(s){return s.id===u.shape;}) || !Number.isInteger(u.rotation) || u.rotation<0 || u.rotation>3)return {ok:false,reason:'A selected block has an unsupported shape or material.'};
       seen[keyFor(p)]=true;records.push({x:p.x,y:p.y,z:p.z,type:u.blockType,shape:u.shape,rotation:u.rotation});
     }
     records.sort(compareBlocks);
@@ -1212,7 +1242,7 @@
       }
       if(!offset.x && !offset.y && !offset.z)return {ok:false,reason:'Choose an offset of at least one block.'};
     }else if(operation==='recolor'){
-      if(!BLOCK_TYPES.some(function(t){return t.id===values.type && t.id!=='grass';}))return {ok:false,reason:'Choose a building material.'};
+      if(!BLOCK_TYPES.some(function(t){return t.id===values.type;}))return {ok:false,reason:'Choose a building material.'};
     }else if(['rotate','mirrorX','mirrorZ'].indexOf(operation)===-1)return {ok:false,reason:'Choose an editing action.'};
     var additions=blocks.map(function(source){
       var b=Object.assign({},source);
@@ -1393,11 +1423,17 @@
       camera:engine.camera && engine.camera.position.toArray(), cameraQuaternion:engine.camera && engine.camera.quaternion.toArray(), yaw:engine.yaw, pitch:engine.pitch, flyMode:!!engine.flyMode };
   }
   function restoreWorkshopDraftIdentity(engine,saved){engine._workshopProjectId=saved && saved.id || null;engine._workshopProjectVersion=saved && saved.version || null;engine._workshopSavedSignature=saved && saved.signature || null;}
-  function restoreProject(ctx, engine, pending) {
+  // options.resume: rebuild behind the Home chooser (Continue your workspace)
+  // without closing it, announcing, or taking focus.
+  function restoreProject(ctx, engine, pending, options) {
     var saved = window.__alloGeometryWorldReturnProject;
     if (!saved || !pending.projectId || saved.id !== pending.projectId) return false;
+    var resuming = !!(options && options.resume);
     engine.loadLesson(saved.lesson);
-    saved.blocks.forEach(function(block) { engine.placeBlock(block.x,block.y,block.z,block.type,block.shape,block.rotation); });
+    // Rebuilding saved blocks is not new placement: no block_place events.
+    var wasSuppressed = engine._batchSuppressEvents; engine._batchSuppressEvents = true;
+    try { saved.blocks.forEach(function(block) { engine.placeBlock(block.x,block.y,block.z,block.type,block.shape,block.rotation); }); }
+    finally { engine._batchSuppressEvents = wasSuppressed; }
     engine._undoStack = copyLocal(saved.undo); engine._redoStack = copyLocal(saved.redo);
     engine.blocksPlaced = saved.blocksPlaced; engine._sessionXP = saved.sessionXP; engine._blockMilestones = saved.milestones;
     engine._entryAnim = null; engine._builderSelection = saved.selection;
@@ -1410,20 +1446,50 @@
     if (engine.velocity) engine.velocity.set(0,0,0);
     var context = pending.printContext || {};
     var selected = selectionMeasurement(engine);
-    patchGeometryState(ctx, Object.assign({}, saved.state, { worldActive:true, showGeometryHome:false, _geometryHomeInitial:false, showLessonIntro:false, actionFeedback:'',
+    var patch = Object.assign({}, saved.state, { worldActive:true, showGeometryHome:false, _geometryHomeInitial:false, showLessonIntro:false, actionFeedback:'',
       showGameSettings:false, builderPanel:'build', measureResult:selected ? selected.measurement : null,
-      builderPrintContext:{unitMm:printUnit(context.unitMm), aiUse:context.aiUse || 'NONE', aiDisclosure:String(context.aiDisclosure || '').slice(0,500)} }));
+      builderPrintContext:{unitMm:printUnit(context.unitMm), aiUse:context.aiUse || 'NONE', aiDisclosure:String(context.aiDisclosure || '').slice(0,500)} });
+    if (resuming) ['showGeometryHome','_geometryHomeInitial','geometryHomePage','geometryHomeLesson'].forEach(function(key){delete patch[key];});
+    patchGeometryState(ctx, patch);
     delete window.__alloGeometryWorldReturnProject;
+    if (resuming) return true;
     announce(ctx, 'Returned to your complete workspace with selection, undo history, and print scale preserved. Check the revised model before printing.', 'success');
     focusWorldSurface(50);
     return true;
+  }
+  // Reopen a My Worlds draft by id. The engine flushes the live draft on the way
+  // out (destroyEngine), so it holds the latest blocks.
+  function restoreDraft(ctx, engine, id) {
+    if (!id || typeof id !== 'string') return false;
+    var shelf = readWorldShelf(), chosen = shelf.ok && shelf.projects.filter(function(p){return p.id===id;})[0];
+    if (!chosen || !chosen.world.blocks.length) return false;
+    var wasSuppressed = engine._batchSuppressEvents, result;
+    engine._batchSuppressEvents = true;
+    try { result = restoreEditableWorld(engine, chosen.world, ctx); } finally { engine._batchSuppressEvents = wasSuppressed; }
+    if (!result.ok) return false;
+    engine._currentLesson = Object.assign({}, engine._currentLesson, { builderGarden:chosen.garden });
+    if (engine.refreshLandscape) engine.refreshLandscape(engine._currentLesson.ground);
+    engine._workshopProjectId = chosen.id; engine._workshopProjectVersion = chosen.version; engine._workshopSavedSignature = JSON.stringify([chosen.world, chosen.garden]);
+    return true;
+  }
+  // Leaving Geometry World destroys its engine, so coming back to a sandbox used
+  // to rebuild an empty one while Home offered "Continue your workspace". Rebuild
+  // what the student had instead: the full project kept for a Print Lab round
+  // trip (selection, undo, camera), else the draft flushed on the way out.
+  function resumeSandboxWorkspace(ctx, engine) {
+    var saved = window.__alloGeometryWorldReturnProject, last = window.__alloGeometryWorldLastDraft;
+    // Only while it is still the work in progress: a send whose Print Lab never
+    // opened can leave it behind after the student moved to another draft.
+    var current = saved && saved.id && (!last || !!(saved.workshopDraft && saved.workshopDraft.id && saved.workshopDraft.id === last.id));
+    if (current && restoreProject(ctx, engine, { projectId:saved.id, printContext:saved.state && saved.state.builderPrintContext }, { resume:true })) return true;
+    return restoreDraft(ctx, engine, last && last.id);
   }
   function aimedStudentMeasurement(ctx, updateDisplay) {
     var engine = window[ENGINE_KEY];
     var hit = engine && engine.blockUnderCrosshair ? engine.blockUnderCrosshair() : null;
     var data = hit && hit.object && hit.object.userData;
     var gp = data && data.gridPos;
-    if (!engine || !gp || measurementLayerFor(data) !== 'student' || data.blockType === 'grass') {
+    if (!engine || !gp || !isStudentBlock(data)) {
       announce(ctx, 'Aim the crosshair at a block you placed. Ground and lesson blocks are not included.', 'info');
       return null;
     }
@@ -2203,13 +2269,17 @@
       if (presentation) project.state.sandboxDockCollapsed=!!presentation.collapsed;
     }
     window.__alloGeometryWorldReturnProject = project;
+    // captureProject flushed the draft, so the shelf has the student's name for it.
+    var draftId = eng._workshopProjectId || null, shelf = draftId ? readWorldShelf() : null;
+    var draft = shelf && shelf.ok ? shelf.projects.filter(function (p) { return p.id === draftId; })[0] : null;
+    var draftTitle = draft && draft.world.title !== 'Untitled build' ? draft.world.title : '';
     var handoffMarker = {
       schema: 'alloflow-print-source/1',
-      id: projectId, projectId: projectId, coordinateSystem: 'z-up',
+      id: projectId, projectId: projectId, draftId: draftId, coordinateSystem: 'z-up',
       sourceTool: 'geometryWorld', format: 'STL',
       bytes: new Uint8Array(bundle.buffer),
       sourceName: 'geometry-world-selected-build.stl',
-      title: 'Geometry World build - ' + bundle.blockCount + ' blocks',
+      title: draftTitle || ('Geometry World build - ' + bundle.blockCount + ' blocks'),
       description: 'Created from the selected Geometry World student blocks. Virtual block materials are appearance labels; choose the physical filament in Print Lab.',
       unitMm: printUnit(context.unitMm), aiUse:context.aiUse || 'NONE', aiDisclosure:context.aiDisclosure || '',
       sourceModel: bundle.sourceModel,
@@ -2241,9 +2311,14 @@
         // about to be consumed. Poll the loader's own state instead and only fall back on
         // a real failure, or once the request has plainly stopped making progress.
         var strandedDeadline = Date.now() + 20000;
-        var strandBuild = function (message, tone) {
-          if (window.__alloPrintLabPendingHandoff !== handoffMarker) return;
-          delete window.__alloPrintLabPendingHandoff;
+        // The shell unmounts this tool (engine destroyed) the moment the switch
+        // lands, even while Print Lab is still downloading. A live engine after
+        // 1.5 s means the host ignored the switch, so do not make the student
+        // wait out the 20 s download deadline for the fallback file.
+        var switchDeadline = Date.now() + 1500;
+        var strandBuild = function (message, tone, rejected) {
+          if (!rejected && window.__alloPrintLabPendingHandoff !== handoffMarker) return;
+          if (window.__alloPrintLabPendingHandoff === handoffMarker) delete window.__alloPrintLabPendingHandoff;
           var stranded = printUnit(context.unitMm);
           try {
             downloadBlob(new Blob([scaleStlForDownload(bundle.buffer, stranded)], { type: 'model/stl' }), 'geometry-world-selected-build-mm.stl');
@@ -2253,9 +2328,17 @@
           }
         };
         var checkPrintLabArrival = function () {
+          // Print Lab mounted but could not read the build: give the student the file.
+          var rejected = window.__alloPrintLabRejectedHandoff;
+          if (rejected && rejected.id === handoffMarker.id) {
+            delete window.__alloPrintLabRejectedHandoff;
+            strandBuild('Print Lab could not read this build.', 'error', true);
+            return;
+          }
           // The handoff is deleted by Print Lab once it mounts and consumes it.
           // Still sitting there means no Print Lab has picked it up yet.
           if (window.__alloPrintLabPendingHandoff !== handoffMarker) return;
+          if (Date.now() >= switchDeadline && window[ENGINE_KEY] === eng && !eng._destroyed) { strandBuild('Print Lab did not open here.', 'info'); return; }
           var pluginState = null;
           try { pluginState = typeof window.__alloGetStemPluginState === 'function' ? window.__alloGetStemPluginState('printLab') : null; } catch (stateError) { pluginState = null; }
           var status = pluginState && pluginState.status ? pluginState.status : '';
@@ -2278,7 +2361,26 @@
   function restorePendingEditableBuild(ctx, engine) {
     var pending = window.__alloGeometryWorldPendingBuild;
     if (!pending) return false;
+    // Print Lab's "Start in Geometry World": Free Build, not the Home chooser.
+    if (pending.intent === 'freeBuild') {
+      delete window.__alloGeometryWorldPendingBuild;
+      if (!resumeSandboxWorkspace(ctx, engine)) engine.loadLesson(FREE_BUILD_LESSON);
+      patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showGeometryHome:false,_geometryHomeInitial:false, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', builderPanel:'build' });
+      announce(ctx, 'Free Build is open. Build something, choose Select build, then Send to Print Lab.', 'success');
+      focusWorldSurface(50);
+      return true;
+    }
     if (restoreProject(ctx, engine, pending)) { delete window.__alloGeometryWorldPendingBuild; return true; }
+    // The full project was already reopened through Continue and may have been
+    // edited since; its latest blocks are in the draft it was sent from.
+    if (restoreDraft(ctx, engine, pending.draftId)) {
+      delete window.__alloGeometryWorldPendingBuild;
+      var draftContext = pending.printContext || {};
+      patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showGeometryHome:false,_geometryHomeInitial:false, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: '', builderPanel:'build', builderPrintContext:{unitMm:printUnit(draftContext.unitMm),aiUse:draftContext.aiUse || 'NONE',aiDisclosure:String(draftContext.aiDisclosure || '').slice(0,500)}, measureResult: null });
+      announce(ctx, 'Returned to your latest saved workspace. Select your creation again before sending it to Print Lab.', 'success');
+      focusWorldSurface(50);
+      return true;
+    }
     var source = pending.sourceModel;
     var blocks = source && source.schema === 'alloflow-geometry-world-build/1' && Array.isArray(source.blocks) ? source.blocks : null;
     delete window.__alloGeometryWorldPendingBuild;
@@ -2286,7 +2388,7 @@
     var clean = [], requestedCount = 0;
     var seen = {};
     blocks.forEach(function (block) {
-      var next = sanitizeSourceBlock(block, false);
+      var next = sanitizeSourceBlock(block);
       var key = next && keyFor(next);
       if (!next || seen[key]) return;
       seen[key] = true;
@@ -2454,6 +2556,7 @@
     createSelectionFrame:createSelectionFrame, selectionNeedsReview:selectionNeedsReview,
     setBuilderPrintScale:setBuilderPrintScale,
     MAX_BLOCKS: MAX_BLOCKS,
+    BLOCK_TYPE_IDS: BLOCK_TYPES.map(function (type) { return type.id; }),
     MAX_EDITABLE_WORLD_BYTES: MAX_EDITABLE_WORLD_BYTES,
     MAX_EDITABLE_BLOCKS: MAX_EDITABLE_BLOCKS,
     EDITABLE_WORLD_SCHEMA: EDITABLE_WORLD_SCHEMA,
@@ -2478,6 +2581,8 @@
     defaultPrintEnvelope: defaultPrintEnvelope,
     sanitizeSourceBlock: sanitizeSourceBlock,
     restorePendingEditableBuild: restorePendingEditableBuild,
+    resumeSandboxWorkspace: resumeSandboxWorkspace, restoreDraft: restoreDraft,
+    get BUILD_CHALLENGES() { return BUILD_CHALLENGES; }, buildChallengeFacts: buildChallengeFacts, evaluateBuildChallenge: evaluateBuildChallenge, checkBuildChallenge: checkBuildChallenge,
     lessonOverviewModel:lessonOverviewModel,
     activityWaypointFor:activityWaypointFor,
     activityGuideModel:activityGuideModel,travelToActivity:travelToActivity,
@@ -2510,14 +2615,14 @@
       ".gwe-current-tools .gwe-selection-card{padding:9px 10px}.gwe-current-tools .gwe-selection-value{white-space:normal;overflow-wrap:anywhere;line-height:1.4}.gwe-tool-rotation{display:block;margin-top:4px;color:#bfd3c3;font-size:11px;font-variant-numeric:tabular-nums}.gwe-match-actions{margin-top:9px}.gwe-match-actions .gwe-match-block{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:9px;min-height:44px}.gwe-match-block svg{flex:0 0 auto}.gwe-match-block kbd{margin-left:auto;display:grid;place-items:center;min-width:22px;height:22px;border:1px solid #bad0bd55;border-radius:5px;font:600 11px system-ui;background:#d4e8ca0a;color:inherit}.gwe-match-block span{flex:1;text-align:left}.gwe-match-note{margin:7px 0 0;color:#bfd2c4;font-size:11px;line-height:1.5}.theme-contrast .gwe-tool-rotation,[data-stem-theme=\"contrast\"] .gwe-tool-rotation,.theme-contrast .gwe-match-note,[data-stem-theme=\"contrast\"] .gwe-match-note{color:#fff}.theme-contrast .gwe-match-block kbd,[data-stem-theme=\"contrast\"] .gwe-match-block kbd{background:#000;border-color:#00ff00}",
       ".gwe-focus-return{position:absolute;top:118px;left:12px;z-index:44;display:flex;align-items:center;gap:12px;max-width:calc(100% - 24px);box-sizing:border-box;padding:6px 6px 6px 13px;border:1px solid #a9c4ad66;border-radius:16px;background:#173b35f5;box-shadow:0 8px 24px #112d2b33;color:#d4e8ca}.gwe-focus-return span{font-size:12px;font-weight:600}.gwe-focus-return button{min-height:44px;padding:8px 12px;border:1px solid #d4e8ca;border-radius:11px;background:#d4e8ca;color:#173b35;font-size:12px;font-weight:700;cursor:pointer}.gwe-focus-return button:hover{background:#f5f0e5}.gwe-focus-return button:focus-visible{outline:3px solid #f1d094;outline-offset:3px}.gwe-builder-actions .gwe-focus-action{grid-column:1/-1;min-height:48px;background:#d4e8ca;color:#173b35;border-color:#d4e8ca}.gwe-builder-actions .gwe-focus-action:hover{background:#e7f0de}@media(max-width:900px){.gwe-focus-return{top:106px;flex-direction:column;align-items:stretch;gap:4px;max-width:calc(50% - 18px);padding:7px 8px}.gwe-focus-return span{font-size:11px;text-align:center}.gwe-focus-return button{min-width:0;padding:8px 9px;font-size:11px}}",
       ".gwe-builder-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gwe-builder-actions button{min-width:0;min-height:44px;padding:9px 10px;border:1px solid #a1bea44f;border-radius:12px;background:#1c4037;color:#f5f0e5;font-size:12px;font-weight:650;line-height:1.3;cursor:pointer}.gwe-builder-actions button:hover{background:#2a5042;border-color:#c1d6b97d}.gwe-builder-actions button:disabled{opacity:.55;cursor:wait}.gwe-builder-actions .gwe-primary{border-color:#d4e8ca;background:#d4e8ca;color:#112d2b}.gwe-builder-actions .gwe-primary:hover{background:#e3efdc;border-color:#e3efdc}.gwe-builder-quick-actions{flex:0 0 auto;padding:11px 15px 14px;border-bottom:1px solid #b9d1bf26;background:#112d2b}.gwe-builder-quick-actions button{min-height:48px;font-size:12px}.gwe-builder-actions .gwe-showcase-action{background:#f5f0e5;color:#173b35;border-color:#f5f0e5}.gwe-builder-actions .gwe-showcase-action:hover{background:#fffaf0}.gwe-builder-actions .gwe-clear-selection{grid-column:1/-1;justify-self:start;min-height:44px;padding:4px 2px;border:0;background:transparent;color:#bacfc0;font-weight:500;text-decoration:underline;text-underline-offset:3px}.gwe-builder-actions .gwe-clear-selection:hover{color:#fff}.gwe-builder-note{margin:0;color:#bfd2c4;font-size:12px;line-height:1.6}.gwe-builder-note[data-gwe-not-student]{padding:10px;border:1px solid #d9b27588;border-radius:10px;background:#4d3d21;color:#fff0cc}",
-      ".gwe-print-ready{padding:13px;border:1px solid #aecda447;border-radius:14px;background:#244c3b66}.gwe-print-ready[data-fit=\"false\"]{border-color:#d7ae6988;background:#4d3d21}.gwe-print-ready-heading{display:flex;gap:8px;justify-content:space-between;align-items:center}.gwe-print-ready-label{color:#c8dec0;font-size:11px;font-weight:600}.gwe-fit-badge{flex:0 0 auto;padding:4px 7px;border-radius:6px;background:#d4e8ca;color:#173b35;font-size:10px;font-weight:750}.gwe-print-ready[data-fit=\"false\"] .gwe-fit-badge{background:#f1d094;color:#3b2e19}.gwe-print-ready strong{display:block;margin-top:8px;color:#f5f0e5;font-size:19px;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.gwe-print-ready p{margin:7px 0 0;color:#d3e1d0;font-size:12px;line-height:1.6}.gwe-print-ready[data-fit=\"false\"] p{color:#fae8c3}.gwe-print-ready .gwe-print-scale{font-size:11px;color:#b9ceb7}.gwe-print-ready[data-fit=\"false\"] .gwe-print-scale{color:#fae8c3}.gwe-details{border-top:1px solid #c2d7bb30}.gwe-print-ready .gwe-details{margin-top:11px}.gwe-details summary{display:flex;min-height:44px;align-items:center;justify-content:space-between;gap:8px;list-style:none;color:#e2ebdc;font-size:12px;font-weight:600;cursor:pointer}.gwe-details summary::-webkit-details-marker{display:none}.gwe-details summary:after{content:\"+\";font-size:19px;font-weight:400}.gwe-details[open]>summary:after{content:\"−\"}.gwe-details .gwe-print-ready-basis{margin:7px 0 0;color:#c4d8be;font-size:12px;line-height:1.6}.gwe-print-ready[data-fit=\"false\"] .gwe-details .gwe-print-ready-basis{color:#fae8c3}.gwe-details .gwe-builder-note{margin-top:8px}.gwe-connection-check{padding:12px 13px;border:1px solid #abc69b40;border-radius:12px;background:#d4e8ca08}.gwe-connection-check[data-connected=\"false\"]{border-color:#d9b27588;background:#4d3d21}.gwe-connection-check strong{color:#e5eddb;font-size:13px;font-weight:650}.gwe-connection-check p{margin:6px 0 0;color:#c6d7c6;font-size:12px;line-height:1.6}.gwe-connection-check[data-connected=\"false\"] p{color:#fae8c3}.gwe-workspace-options{padding-top:2px}.gwe-workspace-options>.gwe-builder-actions{padding:2px 0 8px}",
+      ".gwe-print-ready{padding:13px;border:1px solid #aecda447;border-radius:14px;background:#244c3b66}.gwe-print-ready[data-fit=\"false\"]{border-color:#d7ae6988;background:#4d3d21}.gwe-print-ready-heading{display:flex;gap:8px;justify-content:space-between;align-items:center}.gwe-print-ready-label{color:#c8dec0;font-size:11px;font-weight:600}.gwe-fit-badge{flex:0 0 auto;padding:4px 7px;border-radius:6px;background:#d4e8ca;color:#173b35;font-size:10px;font-weight:750}.gwe-print-ready[data-fit=\"false\"] .gwe-fit-badge{background:#f1d094;color:#3b2e19}.gwe-print-ready strong{display:block;margin-top:8px;color:#f5f0e5;font-size:19px;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.gwe-print-ready p{margin:7px 0 0;color:#d3e1d0;font-size:12px;line-height:1.6}.gwe-print-ready[data-fit=\"false\"] p{color:#fae8c3}.gwe-print-ready .gwe-print-scale{font-size:11px;color:#b9ceb7}.gwe-print-ready[data-fit=\"false\"] .gwe-print-scale{color:#fae8c3}.gwe-details{border-top:1px solid #c2d7bb30}.gwe-print-ready .gwe-details{margin-top:11px}.gwe-details summary{display:flex;min-height:44px;align-items:center;justify-content:space-between;gap:8px;list-style:none;color:#e2ebdc;font-size:12px;font-weight:600;cursor:pointer}.gwe-details summary::-webkit-details-marker{display:none}.gwe-details summary:after{content:\"+\";font-size:19px;font-weight:400}.gwe-details[open]>summary:after{content:\"−\"}.gwe-details .gwe-print-ready-basis{margin:7px 0 0;color:#c4d8be;font-size:12px;line-height:1.6}.gwe-print-ready[data-fit=\"false\"] .gwe-details .gwe-print-ready-basis{color:#fae8c3}.gwe-print-ready[data-fit=\"tight\"]{border-color:#d7ae6988;background:#4d3d21}.gwe-print-ready[data-fit=\"tight\"] .gwe-fit-badge{background:#f1d094;color:#3b2e19}.gwe-print-ready[data-fit=\"tight\"] p,.gwe-print-ready[data-fit=\"tight\"] .gwe-print-scale,.gwe-print-ready[data-fit=\"tight\"] .gwe-details .gwe-print-ready-basis{color:#fae8c3}.gwe-challenge{margin:12px 0;padding:12px 13px;border:1px solid #abc69b40;border-radius:12px;background:#d4e8ca0a}.gwe-challenge[data-solved=\"true\"]{border-color:#d4e8ca88}.gwe-challenge-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;color:#b8cdbf;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}.gwe-challenge h3{margin:6px 0 4px;color:#f5f0e5;font-size:15px;font-weight:700}.gwe-challenge-prompt{margin:0;color:#e5eddb;font-size:12.5px;line-height:1.6}.gwe-challenge-hint{margin:8px 0;color:#c5d6ca;font-size:12px;line-height:1.5}.gwe-challenge-hint summary{cursor:pointer;color:#d4e8ca;font-weight:600}.gwe-challenge-hint p{margin:6px 0 0}.gwe-challenge select{width:100%;min-height:40px;margin-top:4px}.gwe-challenge-result{margin-top:10px;padding:10px;border:1px solid #d9b27588;border-radius:10px;background:#4d3d21;color:#fff0cc;font-size:12px;line-height:1.5}.gwe-challenge-result[data-status=\"met\"]{border-color:#9fd49a;background:#1f4a2c;color:#eaf7e4}.gwe-challenge-result ul{margin:6px 0 0;padding:0;list-style:none}.gwe-challenge-result p{margin:6px 0 0}@media (prefers-reduced-motion:no-preference){.gwe-challenge[data-celebrate=\"true\"]{animation:gwe-challenge-pop 900ms ease-out}}@keyframes gwe-challenge-pop{0%{box-shadow:0 0 0 0 #d4e8ca00}35%{box-shadow:0 0 0 6px #d4e8ca66;transform:scale(1.02)}100%{box-shadow:0 0 0 0 #d4e8ca00;transform:none}}.theme-contrast .gwe-challenge,[data-stem-theme=\"contrast\"] .gwe-challenge,.theme-contrast .gwe-challenge-result,[data-stem-theme=\"contrast\"] .gwe-challenge-result{background:#000;border:2px solid #0ff;color:#fff}.theme-contrast .gwe-challenge :is(h3,p,span,li,summary),[data-stem-theme=\"contrast\"] .gwe-challenge :is(h3,p,span,li,summary){color:#fff}.gwe-details .gwe-builder-note{margin-top:8px}.gwe-connection-check{padding:12px 13px;border:1px solid #abc69b40;border-radius:12px;background:#d4e8ca08}.gwe-connection-check[data-connected=\"false\"]{border-color:#d9b27588;background:#4d3d21}.gwe-connection-check strong{color:#e5eddb;font-size:13px;font-weight:650}.gwe-connection-check p{margin:6px 0 0;color:#c6d7c6;font-size:12px;line-height:1.6}.gwe-connection-check[data-connected=\"false\"] p{color:#fae8c3}.gwe-workspace-options{padding-top:2px}.gwe-workspace-options>.gwe-builder-actions{padding:2px 0 8px}",
       ".gwe-scale-editor{margin:12px 0 14px;padding:12px;border:1px solid #9eb99d55;border-radius:13px;background:#123b31}.gwe-scale-editor-title{display:block;color:#e8f0dd;font-size:12px;font-weight:700;margin-bottom:8px}.gwe-scale-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px}.gwe-scale-editor button{box-sizing:border-box;min-width:0;min-height:44px;padding:8px;border:1px solid #abc3a76b;border-radius:9px;background:#244b3e;color:#f3f4e9;font:inherit;font-size:12px;font-weight:650;cursor:pointer}.gwe-scale-editor button:hover{background:#355f4b}.gwe-scale-presets button[aria-pressed=\"true\"]{background:#d7e7bf;color:#143b2c;border-color:#d7e7bf;box-shadow:inset 0 0 0 1px #a4c17d}.gwe-scale-editor label{display:block;margin-bottom:6px;color:#e8f0dd;font-size:11px;font-weight:650}.gwe-scale-custom{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.gwe-scale-custom input{box-sizing:border-box;min-width:0;width:100%;min-height:44px;padding:8px 10px;border:1px solid #b3c9ab;border-radius:9px;background:#fbfcf4;color:#183d2f;font:inherit;font-size:16px;font-variant-numeric:tabular-nums}.gwe-scale-custom input[aria-invalid=\"true\"]{border:2px solid #f4b49c}.gwe-scale-custom button{background:#d7e7bf;color:#143b2c;border-color:#d7e7bf}.gwe-scale-custom button:hover{background:#e7f0d5;color:#143b2c}.gwe-scale-editor .gwe-scale-help{margin:9px 0 0;font-size:11px;line-height:1.5;color:#c7d9c2}.gwe-scale-editor .gwe-scale-error{margin:8px 0 0;font-size:12px;color:#ffd3c2}.gwe-scale-editor :is(input,button):focus-visible{outline:3px solid #f1d094;outline-offset:2px}.theme-contrast .gwe-scale-editor,[data-stem-theme=\"contrast\"] .gwe-scale-editor{background:#000;border:2px solid #0ff}.theme-contrast .gwe-scale-editor :is(span,label,p),[data-stem-theme=\"contrast\"] .gwe-scale-editor :is(span,label,p){color:#fff}.theme-contrast .gwe-scale-editor :is(input,button),[data-stem-theme=\"contrast\"] .gwe-scale-editor :is(input,button){background:#000;color:#0f0;border:2px solid #0f0}.theme-contrast .gwe-scale-presets button[aria-pressed=\"true\"],[data-stem-theme=\"contrast\"] .gwe-scale-presets button[aria-pressed=\"true\"]{background:#0f0;color:#000}.theme-contrast .gwe-scale-custom input[aria-invalid=\"true\"],[data-stem-theme=\"contrast\"] .gwe-scale-custom input[aria-invalid=\"true\"]{border-color:#ff0}",
       ".gwe-creation-summary[data-selected=\"true\"]{padding:15px;border:1px solid #d8e5c9;border-radius:16px;background:linear-gradient(145deg,#eef3e6,#dce8d1);color:#173b35;box-shadow:0 8px 26px #061c1612}.gwe-selected-heading{display:flex;align-items:center;gap:10px}.gwe-selected-emblem{width:32px;height:32px;flex:0 0 32px;color:#56784b}.gwe-selected-eyebrow{display:block;font-size:9px;font-weight:750;letter-spacing:.12em;text-transform:uppercase;color:#59734f}.gwe-selected-heading h3{margin:3px 0 0;font-size:18px;line-height:1.2;font-weight:750;letter-spacing:-.025em;color:#173b35}.gwe-selected-metrics{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:13px}.gwe-selected-metrics .gwe-metric{min-width:0;padding:11px 7px;border:1px solid #8fa78240;border-radius:11px;background:#fffef570}.gwe-selected-metrics .gwe-metric strong{font-size:22px;line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:#173b35;overflow-wrap:anywhere}.gwe-selected-metrics .gwe-metric span{color:#526b4d}.gwe-creation-summary .gwe-selection-scope{margin:10px 0 0;font-size:11px;line-height:1.5;color:#526b4d}@media(max-width:420px){.gwe-creation-summary[data-selected=\"true\"]{padding:12px}}.theme-contrast .gwe-creation-summary[data-selected=\"true\"],[data-stem-theme=\"contrast\"] .gwe-creation-summary[data-selected=\"true\"]{background:#000;border:2px solid #0ff;color:#fff}.theme-contrast .gwe-selected-metrics .gwe-metric,[data-stem-theme=\"contrast\"] .gwe-selected-metrics .gwe-metric{background:#000;border-color:#0ff}.theme-contrast .gwe-creation-summary :is(h3,span,strong,p),[data-stem-theme=\"contrast\"] .gwe-creation-summary :is(h3,span,strong,p){color:#fff}",
 ".gwe-activity-evidence{margin:18px 0;padding:16px;border:1px solid #a9bea0;border-radius:14px;background:#edf1e1}.gwe-activity-evidence h4{margin:0}.gwe-journal-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.gwe-activity-goal{padding:13px;border:1px solid #a2b993;border-radius:11px;background:#fcfdf3}.gwe-activity-goal>strong{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#526b43}.gwe-activity-goal p{margin:6px 0 12px}.gwe-activity-guide .gwe-activity-check-build{background:#254c3a;color:#fffef3}.gwe-journal-snapshots{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.gwe-journal-snapshot{margin:0;min-width:0;border:1px solid #b6c8aa;border-radius:12px;background:#fffef7;overflow:hidden}.gwe-journal-snapshot figcaption{padding:11px 12px;display:flex;flex-direction:column;gap:4px}.gwe-journal-snapshot figcaption span{font-size:11px;color:#4e684d}.gwe-journal-snapshot img{display:block;width:100%;height:154px;object-fit:contain;background:#edf0df}.gwe-journal-snapshot>button{box-sizing:border-box;margin:10px;width:calc(100% - 20px);font-size:12px;padding:8px}.gwe-journal-snapshot>.gwe-activity-note{margin:9px 12px;font-size:10px}.gwe-journal-empty{height:154px;display:grid;place-items:center;box-sizing:border-box;padding:18px;margin:0;text-align:center;color:#5b7157;font-size:13px;background:linear-gradient(145deg,#e9efdc,#f6f6e8)}.gwe-journal-saved-check,.gwe-journal-notice{padding:12px;border:1px solid #b5caa8;border-radius:10px;background:#f9f9ed;overflow-wrap:anywhere;font-size:13px}.gwe-journal-saved-check{margin-top:12px}.gwe-journal-saved-check p{margin:6px 0}.gwe-journal-saved-check[data-build-check=revise]{border-color:#c5ac6f;background:#f7efd8}.gwe-activity-guide .gwe-journal-clear{background:transparent;font-size:12px;text-decoration:underline}.gwe-activity-guide footer{flex-wrap:wrap}.theme-contrast .gwe-activity-evidence,.theme-contrast .gwe-activity-goal,.theme-contrast .gwe-journal-snapshot,.theme-contrast .gwe-journal-saved-check,.theme-contrast .gwe-journal-notice,[data-stem-theme=contrast] :is(.gwe-activity-evidence,.gwe-activity-goal,.gwe-journal-snapshot,.gwe-journal-saved-check,.gwe-journal-notice){background:#000;color:#fff;border:2px solid #0ff}.theme-contrast .gwe-journal-snapshot span,.theme-contrast .gwe-activity-goal strong,[data-stem-theme=contrast] :is(.gwe-journal-snapshot span,.gwe-activity-goal strong){color:#fff}@media(max-width:520px){.gwe-activity-evidence{padding:12px}.gwe-journal-snapshots{grid-template-columns:1fr}.gwe-journal-actions>button{flex:1;min-width:120px}.gwe-activity-goal>button{width:100%}.gwe-journal-snapshot img,.gwe-journal-empty{height:180px}}",
 ".gwe-activity-backdrop{position:absolute;inset:0;z-index:239;display:flex;align-items:center;justify-content:center;padding:16px;background:#0b241ebd;box-sizing:border-box}.gwe-activity-guide{width:min(620px,100%);max-height:100%;overflow:auto;box-sizing:border-box;padding:24px;border:1px solid #bbccb7;border-radius:22px;background:#f6f5e9;color:#213c33;box-shadow:0 24px 80px #09251d55;font-size:14px;line-height:1.55}.gwe-activity-guide header,.gwe-activity-guide footer{display:flex;gap:16px;align-items:center;justify-content:space-between}.gwe-activity-guide h2{font-size:25px;line-height:1.2;margin:6px 0}.gwe-activity-eyebrow{font-size:10px;letter-spacing:.12em;font-weight:800;color:#496b55;margin:0}.gwe-activity-intro{color:#496052}.gwe-activity-guide button,.gwe-activity-guide select,.gwe-activity-guide summary{min-height:44px;border:1px solid #aabc9e;border-radius:10px;padding:10px 14px;background:#e8eddb;color:#213c33;font:inherit;cursor:pointer}.gwe-activity-guide select{width:100%;margin-top:7px}.gwe-activity-progress{font-size:12px;margin:10px 0;color:#496052}.gwe-activity-card{border:1px solid #ced8c3;border-radius:15px;background:#fffef7;padding:18px;margin:12px 0 18px}.gwe-activity-card h3{font-size:20px;margin:0}.gwe-activity-card h4{margin:0;font-size:14px}.gwe-activity-card details{margin:16px 0}.gwe-activity-check{padding:12px;border-left:3px solid #779a72;background:#f0f3e7;margin:16px 0}.gwe-activity-guide textarea{box-sizing:border-box;width:100%;padding:12px;margin:8px 0;background:#fffef7;color:#213c33;border:1px solid #aabc9e;border-radius:10px;font:inherit;resize:vertical}.gwe-activity-review{display:flex;align-items:center;gap:10px;min-height:44px}.gwe-activity-review input{width:20px;height:20px}.gwe-activity-note{font-size:12px;color:#536757}.gwe-activity-guide :focus-visible{outline:3px solid #8a5a16;outline-offset:3px}.gwe-activity-guide .gwe-activity-travel{background:#254c3a;color:#fffef3}.theme-contrast .gwe-activity-guide,.theme-contrast .gwe-activity-card{background:#000;color:#fff;border:2px solid #0ff}.theme-contrast .gwe-activity-guide :is(p,label,h2,h3,h4){color:#fff}.theme-contrast .gwe-activity-guide :is(button,select,summary,textarea){background:#000;color:#0f0;border-color:#0f0}.theme-contrast .gwe-activity-check{background:#000;border-color:#0ff}@media(max-width:520px){.gwe-activity-backdrop{padding:8px}.gwe-activity-guide{padding:16px;border-radius:16px}.gwe-activity-guide h2{font-size:21px}.gwe-activity-card{padding:13px}.gwe-activity-guide header{align-items:flex-start;gap:8px}.gwe-activity-guide footer{gap:8px;flex-wrap:wrap}.gwe-activity-guide footer button{flex:1}}",
 ".gwe-home-preview.gwe-home-preview--route{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(180px,.85fr);align-items:center;gap:24px;background:linear-gradient(135deg,#edf1df,#e0eadb);padding:24px}.gwe-home-lesson-copy{min-width:0}.gwe-home .gwe-lesson-facts{display:flex;flex-wrap:wrap;gap:6px;padding:0;list-style:none;margin:14px 0}.gwe-home .gwe-lesson-facts li{padding:5px 9px;border:1px solid #92a78777;border-radius:999px;background:#fffdf187;color:#36543e;font-size:11px;font-weight:650;line-height:1.4}.gwe-lesson-map{margin:0;min-width:0}.gwe-lesson-map svg{width:100%;height:auto;display:block;border:1px solid #92a78777;border-radius:16px;box-sizing:border-box}.gwe-lesson-map figcaption{text-align:center;font-size:11px;line-height:1.5;color:#47654f;margin-top:8px}.gwe-home .gwe-home-goals{font-size:12px;padding-left:18px;margin-top:12px}.gwe-activity-route{margin:14px 0}.gwe-activity-route .gwe-lesson-map{max-width:380px;margin:12px auto}.gwe-activity-position{font-size:10px;letter-spacing:.09em;font-weight:800;color:#587357;margin:0 0 8px}.gwe-activity-pager{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:center;margin:0 0 18px}.gwe-activity-pager>span{font-size:12px;font-variant-numeric:tabular-nums;color:#4d654f}.gwe-activity-pager button:disabled{opacity:.45;cursor:default}.gwe-activity-pager button:last-child{background:#254c3a;color:#fffef3}.theme-contrast .gwe-lesson-facts li,[data-stem-theme=contrast] .gwe-lesson-facts li{background:#000!important;color:#fff!important;border-color:#0ff!important}.theme-contrast .gwe-lesson-map figcaption,[data-stem-theme=contrast] .gwe-lesson-map figcaption{color:#fff}.theme-contrast .gwe-lesson-map svg,[data-stem-theme=contrast] .gwe-lesson-map svg{border:2px solid #0ff}.theme-contrast .gwe-activity-pager>span,[data-stem-theme=contrast] .gwe-activity-pager>span{color:#fff}@media(max-width:600px){.gwe-home-preview.gwe-home-preview--route{grid-template-columns:1fr;padding:18px;gap:18px}.gwe-home-preview--route .gwe-lesson-map{width:100%;max-width:340px;justify-self:center}}@media(max-width:360px){.gwe-activity-pager{gap:8px}.gwe-activity-pager button{padding:10px 8px;font-size:12px}}",
 ".gwe-activity-tracking-state{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:14px 0;padding:12px;border:1px solid #bba469;border-radius:12px;background:#f4ead1;color:#3e513b}.gwe-activity-tracking-state strong{display:block;font-size:11px;letter-spacing:.02em}.gwe-activity-tracking-state span{display:block;font-size:13px;line-height:1.5;margin-top:3px}.gwe-activity-tracking-state button{flex-shrink:0}.gwe-activity-guide .gwe-activity-track{background:#efe4c4;border-color:#aa9156;color:#394936;margin:0 7px 8px 0}.gwe-activity-guide .gwe-activity-track[aria-pressed=true]{background:#dbe7c9;color:#294c36;border-color:#92aa78;opacity:1}.gwe-activity-track:disabled{cursor:default;opacity:.6}.gwe-activity-track-help{font-size:12px;color:#536757;line-height:1.55;margin:4px 0 12px}.theme-contrast .gwe-activity-tracking-state,[data-stem-theme=contrast] .gwe-activity-tracking-state{background:#000;color:#fff;border:2px solid #ff0}.theme-contrast .gwe-activity-guide .gwe-activity-track,[data-stem-theme=contrast] .gwe-activity-guide .gwe-activity-track{background:#000;color:#0f0;border-color:#ff0}.theme-contrast .gwe-activity-track-help,[data-stem-theme=contrast] .gwe-activity-track-help{color:#fff}@media(max-width:420px){.gwe-activity-tracking-state{align-items:flex-start;flex-direction:column}.gwe-activity-tracking-state button{width:100%}.gwe-activity-guide .gwe-activity-track,.gwe-activity-guide .gwe-activity-travel{width:100%;margin:0 0 8px}}",
-      ".gwe-home-backdrop{position:absolute;inset:0;z-index:240;display:flex;align-items:center;justify-content:center;padding:22px;box-sizing:border-box;background:radial-gradient(ellipse at 90% 0%,#cedfcb 0,transparent 55%),radial-gradient(ellipse at 5% 100%,#d9dcbf 0,transparent 50%),#eef0e6;color:#173b35}\n.gwe-home{box-sizing:border-box;width:min(980px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#78917a transparent;padding:24px 30px 28px;border:1px solid #fffaf0bd;border-radius:28px;background:#fcfcf2c9;box-shadow:0 24px 80px #234c3620;font-family:ui-sans-serif,system-ui,sans-serif;outline:none}\n.gwe-home *{box-sizing:border-box}.gwe-home-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.gwe-home-brand{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:750;letter-spacing:-.025em}.gwe-home-brand>span{display:block;width:31px;height:34px;color:#527751}.gwe-home button{font:inherit;cursor:pointer;min-height:44px;border:1px solid #8ba38b;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:650;background:#fafbf3;color:#173b35}.gwe-home button:disabled{opacity:.55;cursor:wait}.gwe-home button:focus-visible,.gwe-home select:focus-visible{outline:3px solid #8b5821;outline-offset:3px}.gwe-home button:hover{background:#e5eddc;border-color:#507d5b}.gwe-home .gwe-home-continue{background:#e0eacf;border-color:#a3b895;font-size:12px}.gwe-home-heading{margin:30px 0 24px;max-width:760px}.gwe-home-eyebrow{font-size:10px!important;font-weight:750;letter-spacing:.16em;color:#59765c!important}.gwe-home h1{font-size:clamp(28px,3.4vw,42px);line-height:1.12;letter-spacing:-.045em;margin:10px 0 12px;color:#173b35;font-weight:750}.gwe-home-heading>p:last-child{font-size:14px;line-height:1.65;color:#526b5b;margin:0;max-width:660px}.gwe-home .gwe-home-back{border:0;padding:0 0 6px;min-height:36px;border-radius:3px;background:transparent;font-size:12px;text-decoration:underline;text-underline-offset:4px}.gwe-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}@media(max-width:768px){.gwe-home nav.gwe-home-grid{overflow:visible;scroll-snap-type:none;flex-wrap:wrap}.gwe-home nav.gwe-home-grid>button.gwe-home-card{white-space:normal;min-width:0;flex-shrink:1;scroll-snap-align:none}}.gwe-home .gwe-home-card{display:flex;align-items:center;gap:17px;position:relative;min-width:0;min-height:160px;padding:22px;text-align:left;border-radius:20px;border:1px solid #92a58555;background:#e8edde;transition:background .15s,border-color .15s}.gwe-home .gwe-home-card[data-path=learn]{background:#f2ead1;border-color:#b9a76f55}.gwe-home .gwe-home-card[data-path=explore]{background:#e0eced;border-color:#829fa055}.gwe-home .gwe-home-card[data-path=create]{background:#f1e4d9;border-color:#c29b8255}.gwe-home .gwe-home-card:hover{background:#f9fcf0;border-color:#527751}.gwe-home-art{display:grid;place-items:center;flex:0 0 58px;width:58px;height:72px;color:#5c774f}.gwe-home-card[data-path=learn] .gwe-home-art{color:#927031}.gwe-home-card[data-path=explore] .gwe-home-art{color:#457c76}.gwe-home-card[data-path=create] .gwe-home-art{color:#a27452}.gwe-home-art svg{width:100%;height:100%}.gwe-home-card-copy{display:block;min-width:0;flex:1}.gwe-home-card-kicker{display:block;font-size:10px;letter-spacing:.06em;color:#546c59}.gwe-home-card strong{display:block;margin:5px 0 8px;font-size:25px;font-weight:750;letter-spacing:-.035em;line-height:1.15}.gwe-home-card-description{display:block;font-size:12px;line-height:1.65;font-weight:450;color:#486153}.gwe-home-arrow{align-self:flex-start;font-size:21px;color:#5c775d}.gwe-home-footer{margin-top:18px;padding:18px 4px 0;border-top:1px solid #98ac922f;display:flex;align-items:center;justify-content:space-between;gap:16px}.gwe-home-footer strong{font-size:13px}.gwe-home-footer p{font-size:12px;color:#5a705f;line-height:1.5;margin:5px 0 0}.gwe-home-footer button{flex-shrink:0}.gwe-home-detail{max-width:820px}.gwe-home-detail h2{font-size:20px;line-height:1.3;letter-spacing:-.025em;margin:0 0 8px}.gwe-home-detail p,.gwe-home-detail li{font-size:13px;line-height:1.65;color:#526b5b}.gwe-home-detail ul{padding-left:20px;margin-bottom:0}.gwe-home-lesson-picker{display:flex;flex-direction:column;gap:8px;margin:0 0 20px}.gwe-home-lesson-picker label{font-size:12px;font-weight:700}.gwe-home-lesson-picker select{min-height:46px;border:1px solid #92a589;border-radius:10px;padding:10px;font:inherit;font-size:14px;background:#fffdf6;color:#173b35;max-width:100%}.gwe-home-preview{display:flex;gap:22px;padding:24px;border:1px solid #9cb18e55;border-radius:18px;background:#e7eedf;margin:0 0 20px}.gwe-home-detail-art{width:64px;flex:0 0 64px;color:#65845b}.gwe-home-journey{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}.gwe-home-journey article{padding:20px;border-radius:16px;background:#e7eedf;border:1px solid #9cb18e44}.gwe-home-journey article>span{display:block;font-size:11px;color:#5d7853;margin-bottom:16px}.gwe-home-journey h2{font-size:17px}.gwe-home-journey p{font-size:12px;margin-bottom:0}.gwe-home .gwe-home-primary{background:#244f3e;color:#fafbef;border-color:#244f3e}.gwe-home .gwe-home-primary:hover{background:#35634a}.gwe-home-secondary{margin-left:8px}.gwe-home-save{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 16px;border:1px solid #b4a37755;border-radius:12px;background:#f5eddc;margin:16px 0}.gwe-home-save p{margin:0;font-size:12px;max-width:530px}.gwe-home-save button{flex-shrink:0;font-size:11px;padding:9px}.gwe-home-create-option{padding:20px;border-radius:16px;background:#e7eedf88;border:1px solid #9cb18e44;margin-bottom:14px}.gwe-home-create-option .gwe-home-secondary{margin-left:0}.gwe-home-file{padding:26px;text-align:center;border:1px dashed #8aa081;border-radius:18px;background:#e7eedf66}.gwe-home-file>svg{width:40px;height:40px;margin:0 auto 12px}.gwe-home .gwe-recovery{margin-top:15px}.gw-home-brand-button{all:unset;cursor:pointer;border-radius:4px;display:block}.gw-home-brand-button:focus-visible{outline:3px solid #e8c884;outline-offset:4px}.gwe-home-shortcut{position:absolute;z-index:155;top:8px;left:156px;min-height:40px;border:1px solid #9bb89e66;border-radius:10px;background:#173b35;color:#f5f0e5;padding:7px 12px;cursor:pointer;font-size:12px}@media(max-width:800px){#geoworld-fs-workspace>.gwe-home-shortcut{top:56px;left:auto;right:8px;min-height:44px}#geoworld-fs-workspace[data-toolbar-collapsed=true]:not([data-fullscreen=true])>.gw-toolbar-reveal{min-height:44px}}\n@media(max-width:600px){.gwe-home-backdrop{padding:10px}.gwe-home{padding:20px 18px;border-radius:20px}.gwe-home-top{align-items:flex-start;flex-wrap:wrap}.gwe-home-heading{margin:24px 0 20px}.gwe-home h1{font-size:30px}.gwe-home-grid{grid-template-columns:1fr;gap:10px}.gwe-home .gwe-home-card{min-height:124px;padding:16px;gap:14px}.gwe-home-art{flex-basis:44px;width:44px;height:58px}.gwe-home-card strong{font-size:23px}.gwe-home-card-description{font-size:12px}.gwe-home-footer{align-items:stretch;flex-direction:column;gap:12px}.gwe-home-footer button{width:100%}.gwe-home-journey{grid-template-columns:1fr;gap:10px}.gwe-home-journey article{padding:15px}.gwe-home-journey article>span{margin-bottom:8px}.gwe-home-save{flex-direction:column;align-items:stretch;gap:10px}.gwe-home-detail-art{display:none}.gwe-home-preview{padding:18px}.gwe-home-secondary{margin:8px 0 0}.gwe-home-detail>.gwe-home-primary,.gwe-home-detail>.gwe-home-secondary{width:100%}.gwe-home-file{padding:20px 16px}}\n@media(max-height:520px){.gwe-home-backdrop{padding:8px}.gwe-home{padding:16px 22px}.gwe-home-heading{margin:16px 0}.gwe-home h1{font-size:29px}.gwe-home .gwe-home-card{min-height:125px;padding:16px}.gwe-home-card strong{font-size:22px}}\n.theme-contrast .gwe-home-backdrop,[data-stem-theme=contrast] .gwe-home-backdrop{background:#000}.theme-contrast .gwe-home,[data-stem-theme=contrast] .gwe-home{background:#000;border:2px solid #0ff;color:#fff}.theme-contrast .gwe-home :is(h1,h2,p,span,strong,label,li),[data-stem-theme=contrast] .gwe-home :is(h1,h2,p,span,strong,label,li){color:#fff}.theme-contrast .gwe-home :is(button,select),[data-stem-theme=contrast] .gwe-home :is(button,select){background:#000!important;color:#0f0!important;border:2px solid #0ff!important}.theme-contrast .gwe-home :is(article,section,.gwe-home-save,.gwe-home-file),[data-stem-theme=contrast] .gwe-home :is(article,section,.gwe-home-save,.gwe-home-file){background:#000;border-color:#0ff}@media(prefers-reduced-motion:reduce){.gwe-home-card{transition:none!important}}",
+      ".gwe-home-backdrop{position:absolute;inset:0;z-index:240;display:flex;align-items:center;justify-content:center;padding:22px;box-sizing:border-box;background:radial-gradient(ellipse at 90% 0%,#cedfcb 0,transparent 55%),radial-gradient(ellipse at 5% 100%,#d9dcbf 0,transparent 50%),#eef0e6;color:#173b35}\n.gwe-home{box-sizing:border-box;width:min(980px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#78917a transparent;padding:24px 30px 28px;border:1px solid #fffaf0bd;border-radius:28px;background:#fcfcf2c9;box-shadow:0 24px 80px #234c3620;font-family:ui-sans-serif,system-ui,sans-serif;outline:none}\n.gwe-home *{box-sizing:border-box}.gwe-home-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.gwe-home-brand{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:750;letter-spacing:-.025em}.gwe-home-brand>span{display:block;width:31px;height:34px;color:#527751}.gwe-home button{font:inherit;cursor:pointer;min-height:44px;border:1px solid #8ba38b;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:650;background:#fafbf3;color:#173b35}.gwe-home button:disabled{opacity:.55;cursor:wait}.gwe-home button:focus-visible,.gwe-home select:focus-visible{outline:3px solid #8b5821;outline-offset:3px}.gwe-home button:hover{background:#e5eddc;border-color:#507d5b}.gwe-home .gwe-home-continue{background:#e0eacf;border-color:#a3b895;font-size:12px}.gwe-home-heading{margin:30px 0 24px;max-width:760px}.gwe-home-eyebrow{font-size:10px!important;font-weight:750;letter-spacing:.16em;color:#59765c!important}.gwe-home h1{font-size:clamp(28px,3.4vw,42px);line-height:1.12;letter-spacing:-.045em;margin:10px 0 12px;color:#173b35;font-weight:750}.gwe-home-heading>p:last-child{font-size:14px;line-height:1.65;color:#526b5b;margin:0;max-width:660px}.gwe-home .gwe-home-back{border:0;padding:0 0 6px;min-height:36px;border-radius:3px;background:transparent;font-size:12px;text-decoration:underline;text-underline-offset:4px}.gwe-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}@media(max-width:768px){.gwe-home nav.gwe-home-grid{overflow:visible;scroll-snap-type:none;flex-wrap:wrap}.gwe-home nav.gwe-home-grid>button.gwe-home-card{white-space:normal;min-width:0;flex-shrink:1;scroll-snap-align:none}}.gwe-home .gwe-home-card{display:flex;align-items:center;gap:17px;position:relative;min-width:0;min-height:160px;padding:22px;text-align:left;border-radius:20px;border:1px solid #92a58555;background:#e8edde;transition:background .15s,border-color .15s}.gwe-home .gwe-home-card[data-path=learn]{background:#f2ead1;border-color:#b9a76f55}.gwe-home .gwe-home-card[data-path=explore]{background:#e0eced;border-color:#829fa055}.gwe-home .gwe-home-card[data-path=create]{background:#f1e4d9;border-color:#c29b8255}.gwe-home .gwe-home-card:hover{background:#f9fcf0;border-color:#527751}.gwe-home-art{display:grid;place-items:center;flex:0 0 58px;width:58px;height:72px;color:#5c774f}.gwe-home-card[data-path=learn] .gwe-home-art{color:#927031}.gwe-home-card[data-path=explore] .gwe-home-art{color:#457c76}.gwe-home-card[data-path=create] .gwe-home-art{color:#a27452}.gwe-home-art svg{width:100%;height:100%}.gwe-home-card-copy{display:block;min-width:0;flex:1}.gwe-home-card-kicker{display:block;font-size:10px;letter-spacing:.06em;color:#546c59}.gwe-home-card strong{display:block;margin:5px 0 8px;font-size:25px;font-weight:750;letter-spacing:-.035em;line-height:1.15}.gwe-home-card-description{display:block;font-size:12px;line-height:1.65;font-weight:450;color:#486153}.gwe-home-arrow{align-self:flex-start;font-size:21px;color:#5c775d}.gwe-home-footer{margin-top:18px;padding:18px 4px 0;border-top:1px solid #98ac922f;display:flex;align-items:center;justify-content:space-between;gap:16px}.gwe-home-footer strong{font-size:13px}.gwe-home-footer p{font-size:12px;color:#5a705f;line-height:1.5;margin:5px 0 0}.gwe-home-footer button{flex-shrink:0}.gwe-home-detail{max-width:820px}.gwe-home-detail h2{font-size:20px;line-height:1.3;letter-spacing:-.025em;margin:0 0 8px}.gwe-home-detail p,.gwe-home-detail li{font-size:13px;line-height:1.65;color:#526b5b}.gwe-home-detail ul{padding-left:20px;margin-bottom:0}.gwe-home-lesson-picker{display:flex;flex-direction:column;gap:8px;margin:0 0 20px}.gwe-home-lesson-picker label{font-size:12px;font-weight:700}.gwe-home-lesson-picker select{min-height:46px;border:1px solid #92a589;border-radius:10px;padding:10px;font:inherit;font-size:14px;background:#fffdf6;color:#173b35;max-width:100%}.gwe-home-preview{display:flex;gap:22px;padding:24px;border:1px solid #9cb18e55;border-radius:18px;background:#e7eedf;margin:0 0 20px}.gwe-home-detail-art{width:64px;flex:0 0 64px;color:#65845b}.gwe-home-journey{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}.gwe-home-journey article{padding:20px;border-radius:16px;background:#e7eedf;border:1px solid #9cb18e44}.gwe-home-journey article>span{display:block;font-size:11px;color:#5d7853;margin-bottom:16px}.gwe-home-journey h2{font-size:17px}.gwe-home-journey p{font-size:12px;margin-bottom:0}.gwe-home .gwe-home-primary{background:#244f3e;color:#fafbef;border-color:#244f3e}.gwe-home .gwe-home-primary:hover{background:#35634a}.gwe-home-secondary{margin-left:8px}.gwe-home-save{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 16px;border:1px solid #b4a37755;border-radius:12px;background:#f5eddc;margin:16px 0}.gwe-home-save p{margin:0;font-size:12px;max-width:530px}.gwe-home-save button{flex-shrink:0;font-size:11px;padding:9px}.gwe-home-create-option{padding:20px;border-radius:16px;background:#e7eedf88;border:1px solid #9cb18e44;margin-bottom:14px}.gwe-home-create-option .gwe-home-secondary{margin-left:0}.gwe-home-file{padding:26px;text-align:center;border:1px dashed #8aa081;border-radius:18px;background:#e7eedf66}.gwe-home-file>svg{width:40px;height:40px;margin:0 auto 12px}.gwe-home .gwe-recovery{margin-top:15px}.gw-home-brand-button{all:unset;cursor:pointer;border-radius:4px;display:block}.gw-home-brand-button:focus-visible{outline:3px solid #e8c884;outline-offset:4px}.gwe-home-shortcut{position:absolute;z-index:155;top:8px;left:156px;min-height:40px;border:1px solid #9bb89e66;border-radius:10px;background:#173b35;color:#f5f0e5;padding:7px 12px;cursor:pointer;font-size:12px}@media(max-width:800px){#geoworld-fs-workspace>.gwe-home-shortcut{top:56px;left:auto;right:8px;min-height:44px}#geoworld-fs-workspace[data-toolbar-collapsed=true]:not([data-fullscreen=true])>.gw-toolbar-reveal{min-height:44px}}\n@media(max-width:600px){.gwe-home-backdrop{padding:10px}.gwe-home{padding:20px 18px;border-radius:20px}.gwe-home-top{align-items:flex-start;flex-wrap:wrap}.gwe-home-heading{margin:24px 0 20px}.gwe-home h1{font-size:30px}.gwe-home-grid{grid-template-columns:1fr;gap:10px}.gwe-home .gwe-home-card{min-height:124px;padding:16px;gap:14px}.gwe-home-art{flex-basis:44px;width:44px;height:58px}.gwe-home-card strong{font-size:23px}.gwe-home-card-description{font-size:12px}.gwe-home-footer{align-items:stretch;flex-direction:column;gap:12px}.gwe-home-footer button{width:100%}.gwe-home-journey{grid-template-columns:1fr;gap:10px}.gwe-home-journey article{padding:15px}.gwe-home-journey article>span{margin-bottom:8px}.gwe-home-save{flex-direction:column;align-items:stretch;gap:10px}.gwe-home-detail-art{display:none}.gwe-home-preview{padding:18px}.gwe-home-secondary{margin:8px 0 0}.gwe-home-detail>.gwe-home-primary,.gwe-home-detail>.gwe-home-secondary{width:100%}.gwe-home-file{padding:20px 16px}}\n@media(max-height:520px){.gwe-home-backdrop{padding:8px}.gwe-home{padding:16px 22px}.gwe-home-heading{margin:16px 0}.gwe-home h1{font-size:29px}.gwe-home .gwe-home-card{min-height:125px;padding:16px}.gwe-home-card strong{font-size:22px}}\n.theme-contrast .gwe-home-backdrop,[data-stem-theme=contrast] .gwe-home-backdrop{background:#000}.theme-contrast .gwe-home,[data-stem-theme=contrast] .gwe-home{background:#000;border:2px solid #0ff;color:#fff}.gwe-home-progress{margin:0;color:#1f5a3f;font-size:13px;font-weight:650}.theme-contrast .gwe-home-progress,[data-stem-theme=contrast] .gwe-home-progress{color:#fff}.theme-contrast .gwe-home :is(h1,h2,p,span,strong,label,li),[data-stem-theme=contrast] .gwe-home :is(h1,h2,p,span,strong,label,li){color:#fff}.theme-contrast .gwe-home :is(button,select),[data-stem-theme=contrast] .gwe-home :is(button,select){background:#000!important;color:#0f0!important;border:2px solid #0ff!important}.theme-contrast .gwe-home :is(article,section,.gwe-home-save,.gwe-home-file),[data-stem-theme=contrast] .gwe-home :is(article,section,.gwe-home-save,.gwe-home-file){background:#000;border-color:#0ff}@media(prefers-reduced-motion:reduce){.gwe-home-card{transition:none!important}}",
       ".gwe-recovery{padding:12px;border:1px solid #a9c7b069;border-radius:12px;background:#234b3c}.gwe-recovery[data-state=\"error\"]{border-color:#eab1a0;background:#552d29}.gwe-recovery strong{display:block;color:#fff5e6;font-size:13px}.gwe-recovery p{margin:6px 0 0;color:#deead7;font-size:12px;line-height:1.6}.gwe-recovery[data-state=\"error\"] p{color:#ffe4da}.gwe-recovery-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.gwe-recovery-actions button{min-height:44px;padding:8px;border:1px solid #c6d7b965;border-radius:10px;background:#173b35;color:#f5f0e5;font-size:12px;font-weight:650;cursor:pointer}.gwe-recovery[data-state=\"backup\"] .gwe-recovery-actions{grid-template-columns:1fr}.gwe-recovery-actions .gwe-recovery-download{width:100%;box-sizing:border-box;min-height:44px;white-space:normal;background:#d4e8ca;border-color:#d4e8ca;color:#173b35;font-size:13px;line-height:1.35}.gwe-recovery-actions .gwe-replace{background:#f1d094;border-color:#f1d094;color:#3b2e19}",
       ".gwe-backdrop{position:absolute;inset:0;z-index:210;display:flex;box-sizing:border-box;align-items:center;justify-content:center;padding:20px;background:#0b231ec4;backdrop-filter:blur(8px)}.gwe-launcher{box-sizing:border-box;width:min(760px,100%);max-height:calc(100% - 8px);overflow:auto;border:1px solid #fff9ebad;border-radius:26px;background:#f5f0e5;box-shadow:0 28px 90px #0b211f70;color:#173b35}.gwe-launcher-hero{position:relative;overflow:hidden;padding:30px 28px 24px;border-bottom:1px solid #173b351c;background:linear-gradient(115deg,#f5f0e5 60%,#e4e9d7)}.gwe-launcher-kicker{position:relative;margin:0;color:#526a52;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}.gwe-launcher h2{position:relative;max-width:540px;margin:10px 0 0;color:#173b35;font-size:30px;font-weight:750;letter-spacing:-.04em;line-height:1.15}.gwe-launcher-subtitle{position:relative;max-width:575px;margin:13px 0 0;color:#526458;font-size:14px;line-height:1.65}.gwe-launcher-art{position:absolute;top:-10px;right:-20px;width:200px;height:200px;color:#73876d;opacity:.15;transform:rotate(-8deg);pointer-events:none}.gwe-feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:22px 28px}.gwe-feature{padding:16px 14px;border:1px solid #58724b26;border-radius:15px;background:#fffaf044}.gwe-feature-icon{display:grid;width:30px;height:30px;place-items:center;border:1px solid #5b785144;border-radius:50%;color:#526a43;font-size:12px;font-weight:700}.gwe-feature strong{display:block;margin-top:13px;color:#173b35;font-size:14px;font-weight:750;letter-spacing:-.015em}.gwe-feature p{margin:8px 0 0;color:#576458;font-size:12px;line-height:1.65}.gwe-reset-note{margin:0 28px;padding:13px 14px;border:1px solid #a886503b;border-radius:12px;background:#eae0c666;color:#66552f;font-size:12px;line-height:1.6}.gwe-launcher-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px;padding:22px 28px 26px}.gwe-launcher-actions button{min-height:46px;padding:10px 15px;border:1px solid #173b3544;border-radius:12px;background:#fffaf066;color:#173b35;font-size:12px;font-weight:650;cursor:pointer}.gwe-launcher-actions button:hover{background:#e5e9d7}.gwe-launcher-actions .gwe-open{border-color:#173b35;background:#173b35;color:#f5f0e5}.gwe-launcher-actions .gwe-open:hover{background:#2a5042}.gwe-builder-dock :is(button,summary):focus-visible,.gwe-launcher button:focus-visible,.gwe-free-build-launch:focus-visible{outline:3px solid #e8c884;outline-offset:2px}.gwe-launcher button:focus-visible{outline-color:#406647}",
       "#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-inventory-panel{display:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"build\"] .gw-measure-card{display:none!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"] .gw-measure-card{right:calc(12px + min(346px,calc(100% - 24px)) + 10px)!important;width:min(430px,calc(100% - 24px - min(346px,calc(100% - 24px)) - 22px))!important}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"measure\"] .gwe-builder-dock{top:auto;bottom:184px;max-height:64px;z-index:152}#geoworld-fs-workspace[data-geometry-mode=\"sandbox\"][data-builder-panel=\"measure\"] .gwe-builder-icon{display:none}",
@@ -2582,7 +2687,7 @@
 
   function renderLessonMap(h,overview,trackedIndex) {
     if(!overview||!overview.map)return null;
-    var map=overview.map,colors={diamond:'#65c7d2',gold:'#e2ba65',wood:'#a68562',sand:'#e7d3a3',stone:'#a8b5ac',glass:'#bfd9cf',brick:'#b88773',grass:'#91aa75',water:'#73baca',ice:'#b6e0e3',torch:'#e3b65c'};
+    var map=overview.map,colors={diamond:'#65c7d2',gold:'#e2ba65',wood:'#a68562',sand:'#e7d3a3',stone:'#a8b5ac',glass:'#bfd9cf',brick:'#b88773',grass:'#91aa75',water:'#73baca',ice:'#b6e0e3',torch:'#e3b65c',lava:'#d58c61',obsidian:'#4a4060',marble:'#e6e2d6',copper:'#c4855a',emerald:'#3fa877',amethyst:'#9b7bd8',leaves:'#6e9a5c',snow:'#eef3f6',wool:'#e0d5c1'};
     return h('figure',{className:'gwe-lesson-map','data-coastal':overview.coastal?'true':'false'},
       h('svg',{viewBox:'0 0 320 200',role:'img','aria-label':map.activities?'Lesson route with numbered activity stops and structure footprints':'Lesson overview with guide locations and structure footprints',preserveAspectRatio:'xMidYMid meet'},
         h('title',null,map.activities?'Explore the lesson route':'Preview the world'),
@@ -2640,6 +2745,67 @@
     var units={blockCount:'blocks',occupiedVolume:'cubic units',footprintArea:'square units',width:'units wide',depth:'units deep',height:'units high'};
     return {status:matched?'met':'revise',actual:actual,goal:goal,facts:facts,message:'Selected build: '+actual+' '+units[goal.metric]+'. Goal: '+activityGoalDescription(goal)+'. '+(goal.unitCubesOnly&&!facts.unitCubesOnly?'This task asks for full cubes; the selection includes fractional pieces.':matched?'This numeric target is met.':'Keep revising this measurement.')+' Review the other design criteria yourself.'};
   }
+  // Free Build challenge deck: build-to-spec tasks checked against the student's
+  // selected build. Every goal is something the student can also measure (M), so
+  // the feedback shows what they built beside what was asked.
+  var BUILD_CHALLENGES = [
+    {id:'prism12',tier:'Warm up',title:'Twelve-cube prism',prompt:'Build a rectangular prism with a volume of 12 cubic units.',hint:'Try 3 long, 2 wide and 2 high. Can you find a different prism with the same volume?',goals:{box:true,occupiedVolume:12}},
+    {id:'tower6',tier:'Warm up',title:'Six-high tower',prompt:'Build a tower of full cubes exactly 6 units high and one cube wide.',hint:'Stack cubes straight up. Height counts the layers.',goals:{unitCubesOnly:true,height:6,width:1,depth:1}},
+    {id:'floor16',tier:'Warm up',title:'Square floor',prompt:'Lay a one-layer square floor with an area of 16 square units.',hint:'A square has equal sides. Which number times itself makes 16?',goals:{box:true,height:1,square:true,footprintArea:16}},
+    {id:'flat24',tier:'Think',title:'Low and wide',prompt:'Build a rectangular prism with a volume of 24 cubic units that is only 2 units high.',hint:'Volume = base area × height. What base area makes 24 when it is 2 layers high?',goals:{box:true,occupiedVolume:24,height:2}},
+    {id:'cube27',tier:'Think',title:'Perfect cube',prompt:'Build a cube with a volume of 27 cubic units.',hint:'All three edges are equal. What number times itself three times makes 27?',goals:{box:true,occupiedVolume:27,equalEdges:true}},
+    {id:'layers36',tier:'Think',title:'Stacked layers',prompt:'Build a prism whose base covers 12 square units and whose volume is 36 cubic units.',hint:'How many layers of 12 make 36?',goals:{box:true,footprintArea:12,occupiedVolume:36}},
+    {id:'half45',tier:'Think',title:'Halves count too',prompt:'Build a shape with a volume of exactly 4½ cubic units. Use at least one half piece.',hint:'Four cubes and one half slab is one way. A diagonal half is also ½.',goals:{partial:true,occupiedVolume:4.5}},
+    {id:'twobox20',tier:'Stretch',title:'Two boxes joined',prompt:'Build a building made of two boxes joined together, like an L, with a volume of 20 cubic units. It must not be a single box.',hint:'Find the volume of each box, then add them.',goals:{unitCubesOnly:true,box:false,occupiedVolume:20}},
+    {id:'stairs10',tier:'Stretch',title:'Staircase',prompt:'Build a staircase with 4 steps, 4 units high, using exactly 10 cubes.',hint:'The steps hold 1, 2, 3 and 4 cubes. Add them up.',goals:{unitCubesOnly:true,box:false,blockCount:10,height:4}},
+    {id:'wrap24',tier:'Stretch',title:'Least wrapping',prompt:'Build a prism with a volume of 24 cubic units and a surface area of 52 square units or less.',hint:'Compare 1 × 1 × 24, 2 × 2 × 6 and 2 × 3 × 4. Which needs the least wrapping paper?',goals:{box:true,occupiedVolume:24,maxSurfaceArea:52}},
+    {id:'double123',tier:'Stretch',title:'Double every edge',prompt:'Double every edge of a 1 × 2 × 3 prism and build the result. How many times bigger is the volume?',hint:'Each edge doubles: 2 × 4 × 6. Count the cubes and compare with 6.',goals:{box:true,edges:[2,4,6]}},
+    {id:'wrap22',tier:'Stretch',title:'Wrapping paper',prompt:'Build a rectangular prism with a surface area of exactly 22 square units.',hint:'Surface area = 2 × (lw + lh + wh). Try small whole numbers. There is more than one answer.',goals:{box:true,surfaceArea:22}}
+  ];
+  function formatAmount(value) {
+    var whole=Math.floor(value),part=Math.round((value-whole)*4);
+    return part===0?String(whole):(whole?String(whole):'')+['','¼','½','¾'][part];
+  }
+  // A box is a completely filled rectangular prism of full cubes. Surface area
+  // counts exposed unit faces, so it is only defined for full cubes.
+  function buildChallengeFacts(blocks) {
+    var facts=activityBuildFacts(blocks);if(!facts)return null;
+    var cells=Object.create(null),shared=0;
+    blocks.forEach(function(b){cells[keyFor(b)]=true;});
+    if(facts.unitCubesOnly)blocks.forEach(function(b){[[1,0,0],[0,1,0],[0,0,1]].forEach(function(d){if(cells[(b.x+d[0])+','+(b.y+d[1])+','+(b.z+d[2])])shared++;});});
+    return Object.assign({},facts,{box:facts.unitCubesOnly && facts.blockCount===facts.width*facts.depth*facts.height,
+      surfaceArea:facts.unitCubesOnly?facts.blockCount*6-shared*2:null});
+  }
+  function evaluateBuildChallenge(challenge,blocks) {
+    var facts=buildChallengeFacts(blocks);
+    if(!challenge || !challenge.goals)return {status:'unavailable',checks:[],message:'Choose a challenge first.'};
+    if(!facts)return {status:'unavailable',checks:[],message:'Select your build first: aim at a block you placed and choose Select build.'};
+    var g=challenge.goals,checks=[],size=facts.width+' × '+facts.depth+' × '+facts.height;
+    function add(label,ok,detail){checks.push({label:label,ok:!!ok,detail:detail});}
+    if(g.unitCubesOnly)add('Full cubes only',facts.unitCubesOnly,facts.unitCubesOnly?'all full cubes':'includes half or wedge pieces');
+    if(g.partial)add('Uses a half piece',!facts.unitCubesOnly,facts.unitCubesOnly?'only full cubes so far':'includes a smaller piece');
+    if(g.box===true)add('One rectangular prism',facts.box,facts.box?size:facts.unitCubesOnly?'it has gaps or bumps, so it is not one box':'it includes half or wedge pieces');
+    if(g.box===false)add('Not a single box',!facts.box,facts.box?'this is one '+size+' box':'made of more than one box');
+    [['occupiedVolume','Volume','cubic units'],['blockCount','Cubes','cubes'],['footprintArea','Base area','square units'],['width','Width','units'],['depth','Depth','units'],['height','Height','units'],['surfaceArea','Surface area','square units']].forEach(function(m){
+      if(g[m[0]]==null)return;var actual=facts[m[0]];
+      add(m[1]+' '+formatAmount(g[m[0]])+' '+m[2],actual!=null && Math.abs(actual-g[m[0]])<1e-8,actual==null?'counts only full cubes':'you built '+formatAmount(actual));
+    });
+    if(g.maxSurfaceArea!=null)add('Surface area '+g.maxSurfaceArea+' square units or less',facts.surfaceArea!=null && facts.surfaceArea<=g.maxSurfaceArea,facts.surfaceArea==null?'counts only full cubes':'you built '+facts.surfaceArea);
+    if(g.square)add('A square base',facts.width===facts.depth,facts.width+' by '+facts.depth);
+    if(g.equalEdges)add('All edges equal',facts.width===facts.depth && facts.depth===facts.height,size);
+    if(g.edges){var mine=[facts.width,facts.depth,facts.height].sort(function(a,b){return a-b;}),want=g.edges.slice().sort(function(a,b){return a-b;});
+      add('Edges '+want.join(' × '),facts.box && mine.join()===want.join(),size);}
+    var met=checks.every(function(c){return c.ok;});
+    return {status:met?'met':'revise',checks:checks,facts:facts,message:(met?'Challenge solved. ':'Not yet. ')+checks.map(function(c){return c.label+': '+(c.ok?'yes':'not yet')+', '+c.detail;}).join('. ')+'.'};
+  }
+  function checkBuildChallenge(ctx,challenge) {
+    var engine=window[ENGINE_KEY];
+    if(!engine || !engine._currentLesson || !engine._currentLesson.sandbox)return {status:'unavailable',checks:[],message:'Open Free Build to try a challenge.'};
+    if(!engine._builderSelection)measureSelectedBuild(ctx);
+    if(!engine._builderSelection)return {status:'unavailable',checks:[],message:'Select your build first: aim at a block you placed and choose Select build.'};
+    var captured=captureActivityBuild(engine);
+    return captured.ok?evaluateBuildChallenge(challenge,captured.snapshot.blocks):{status:'unavailable',checks:[],message:captured.error};
+  }
   function captureActivityBuild(engine,now) {
     var selected=engine && engine._builderSelection;
     if(!selected || !Array.isArray(selected.blocks) || !selected.blocks.length)return {ok:false,error:'Select your activity build first. Aim at your own blocks and choose Select aimed build.'};
@@ -2653,7 +2819,7 @@
       if(!u || !isStudentBlock(u) || u._lessonBlock)return {ok:false,error:'The selection changed or contains protected lesson blocks. Select your student build again.'};
       if(seen[keyFor(p)])continue;seen[keyFor(p)]=true;
       if(BLOCK_SHAPES.every(function(shape){return shape.id!==(u.shape || 'cube');}))return {ok:false,error:'The selection contains an unsupported shape and cannot be checked exactly.'};
-      blocks.push({x:p.x,y:p.y,z:p.z,type:validBlockType(u.blockType,false),shape:u.shape || 'cube',rotation:normalizedRotation(u.rotation)});
+      blocks.push({x:p.x,y:p.y,z:p.z,type:validBlockType(u.blockType),shape:u.shape || 'cube',rotation:normalizedRotation(u.rotation)});
     }
     blocks.sort(compareBlocks);var facts=activityBuildFacts(blocks);
     if(!facts)return {ok:false,error:'The complete selection could not be checked. Select your activity build again.'};
@@ -2671,7 +2837,8 @@
   function activityEscape(value) { return String(value==null?'':value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function activitySnapshotSvg(snapshot) {
     var blocks=snapshot && snapshot.blocks;if(!activityBuildFacts(blocks))return '';
-    var palette={stone:'#9aa99d',wood:'#ad8860',diamond:'#6bbcc6',gold:'#d8b45e',sand:'#dfcba0',glass:'#b6d4cb',water:'#7bb5c7',brick:'#bb8570',ice:'#c4dedb',lava:'#d58c61',torch:'#deb670'};
+    var palette={stone:'#9aa99d',grass:'#91aa75',wood:'#ad8860',diamond:'#6bbcc6',gold:'#d8b45e',sand:'#dfcba0',glass:'#b6d4cb',water:'#7bb5c7',brick:'#bb8570',ice:'#c4dedb',lava:'#d58c61',torch:'#deb670',
+      obsidian:'#4a4060',marble:'#e6e2d6',copper:'#c4855a',emerald:'#3fa877',amethyst:'#9b7bd8',leaves:'#6e9a5c',snow:'#eef3f6',wool:'#e0d5c1'};
     var projected=[],minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     function point(x,y,z){var p=[(x-z)*.866,(x+z)*.5-y];minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);return p;}
     blocks.slice().sort(function(a,b){return (a.x+a.z)-(b.x+b.z)||a.y-b.y;}).forEach(function(b){
@@ -2698,7 +2865,7 @@
   }
   function cleanActivitySnapshot(snapshot) {
     if(!snapshot || !activityBuildFacts(snapshot.blocks))return null;
-    var blocks=snapshot.blocks.map(function(b){return {x:b.x,y:b.y,z:b.z,type:validBlockType(b.type,false),shape:b.shape,rotation:normalizedRotation(b.rotation)};});
+    var blocks=snapshot.blocks.map(function(b){return {x:b.x,y:b.y,z:b.z,type:validBlockType(b.type),shape:b.shape,rotation:normalizedRotation(b.rotation)};});
     return {capturedAt:String(snapshot.capturedAt || '').slice(0,80),blocks:blocks,facts:activityBuildFacts(blocks)};
   }
   function cleanActivityCheck(check) {
@@ -2894,8 +3061,11 @@
       }
       function renderHome(){
         var live=window[ENGINE_KEY],lessons=live && live.geometryHomeLessons || [],canContinue=!!data.worldActive && !data._geometryHomeInitial;
-        var chosen=homePage==='explore'?'geometryGarden':data.geometryHomeLesson || 'volumeExplorer';
         var availableLessons=lessons.filter(function(l){return homePage==='explore' ? l.id==='geometryGarden' : l.id!=='geometryGarden';});
+        // Completed lessons get a check, and Learn opens on the next unfinished one.
+        var doneCount=availableLessons.filter(function(l){return lessonCompleted(l.id);}).length;
+        var nextUnfinished=availableLessons.filter(function(l){return !lessonCompleted(l.id);})[0];
+        var chosen=homePage==='explore'?'geometryGarden':data.geometryHomeLesson || (nextUnfinished && nextUnfinished.id) || 'volumeExplorer';
         var lesson=availableLessons.filter(function(l){return l.id===chosen;})[0] || availableLessons[0];
         var titles={start:'What would you like to do?',learn:'Find your next discovery.',build:'Make something your own.',explore:'A little room to wonder.',create:'Create a lesson worth exploring.',open:'Pick up where you left off.'};
         return h('div',{key:'gwe-home',className:'gwe-home-backdrop'},h('section',{className:'gwe-home',ref:homeRef,tabIndex:-1,role:'dialog','aria-modal':'true','aria-labelledby':'gwe-home-title','aria-describedby':'gwe-home-description',onKeyDown:function(event){trapDialogKeys(event,closeHome);event.stopPropagation();}},
@@ -2909,7 +3079,7 @@
           ].map(function(card){return h('button',{key:card[0],type:'button',className:'gwe-home-card','data-path':card[0],onClick:function(){homeNavigate(card[0]);}},h('span',{className:'gwe-home-art'},homeArt(card[0])),h('span',{className:'gwe-home-card-copy'},h('span',{className:'gwe-home-card-kicker'},card[2]),h('strong',null,card[1]),h('span',{className:'gwe-home-card-description'},card[3])),h('span',{className:'gwe-home-arrow','aria-hidden':'true'},'↗'));})),
           (homePage==='start'||homePage==='open') && renderWorldShelf(),
           homePage==='start' && h('footer',{className:'gwe-home-footer'},h('div',null,h('strong',null,'Already have a creation?'),h('p',null,'Bring an editable build back into Geometry World.')),h('button',{type:'button',onClick:function(){homeNavigate('open');}},'Open a saved build',h('span',{'aria-hidden':'true'},' →'))),
-          (homePage==='learn'||homePage==='explore') && h('div',{className:'gwe-home-detail'},homePage==='learn' && h('div',{className:'gwe-home-lesson-picker'},h('label',{htmlFor:'gwe-home-lesson'},'Choose a lesson'),h('select',{id:'gwe-home-lesson',value:lesson?lesson.id:chosen,onChange:function(event){patchGeometryState(ctx,{geometryHomeLesson:event.target.value});}},availableLessons.map(function(l){return h('option',{key:l.id,value:l.id},l.title); }))),lesson && renderLessonPreview(lesson),homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live || !live.startHomeLesson || !lesson,onClick:function(){homeLesson(lesson.id);}},homePage==='explore'?'Enter Geometry Garden':'Start this lesson')),
+          (homePage==='learn'||homePage==='explore') && h('div',{className:'gwe-home-detail'},homePage==='learn' && h('div',{className:'gwe-home-lesson-picker'},h('label',{htmlFor:'gwe-home-lesson'},'Choose a lesson'),h('select',{id:'gwe-home-lesson',value:lesson?lesson.id:chosen,onChange:function(event){patchGeometryState(ctx,{geometryHomeLesson:event.target.value});}},availableLessons.map(function(l){return h('option',{key:l.id,value:l.id},(lessonCompleted(l.id)?'✓ ':'')+l.title); })),homePage==='learn' && doneCount>0 && h('p',{className:'gwe-home-progress','data-gwe-lessons-done':doneCount},doneCount+' of '+availableLessons.length+' guided lessons complete')),lesson && lessonCompleted(lesson.id) && h('p',{className:'gwe-home-progress','data-gwe-lesson-done':'true'},'✓ Completed. Starting it again replays it from the beginning.'),lesson && renderLessonPreview(lesson),homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live || !live.startHomeLesson || !lesson,onClick:function(){homeLesson(lesson.id);}},homePage==='explore'?'Enter Geometry Garden':'Start this lesson')),
           homePage==='build' && h('div',{className:'gwe-home-detail'},h('div',{className:'gwe-home-journey'},[['01','Build freely','Cubes, slabs, wedges, materials, and room to experiment.'],['02','Showcase & save','Frame your creation beautifully. Save a picture or an editable build.'],['03','Prepare a 3D print','Set the scale, download STL, or continue in Print Lab.']].map(function(step){return h('article',{key:step[0]},h('span',null,step[0]),h('h2',null,step[1]),h('p',null,step[2]));})),homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live,onClick:homeStartSandbox},'Open blank sandbox'),h('button',{type:'button',className:'gwe-home-secondary',onClick:function(){homeNavigate('open');}},'Open a saved build')),
           homePage==='create' && h('div',{className:'gwe-home-detail'},canContinue && h('section',{className:'gwe-home-create-option'},h('h2',null,'Build on this workspace'),h('p',null,'Keep your current structures and add characters, dialogue, and questions.'),h('button',{type:'button',className:'gwe-home-primary',onClick:function(){homeCreator(false);}},'Create in this workspace')),h('section',{className:'gwe-home-create-option'},h('h2',null,'Start with a blank canvas'),h('p',null,'Build a new lesson from the ground up.'),homeSaveNotice(),h('button',{type:'button',className:canContinue?'gwe-home-secondary':'gwe-home-primary',disabled:!live,onClick:function(){homeCreator(true);}},'Start a blank lesson')),ctx.callGemini && h('section',{className:'gwe-home-create-option'},h('h2',null,'Develop an idea with AI'),h('p',null,'Choose your topic and grade level in the AI lesson builder.'),h('button',{type:'button',className:'gwe-home-secondary',onClick:homeAi},'Open AI lesson builder'))),
           homePage==='open' && h('div',{className:'gwe-home-detail'},h('div',{className:'gwe-home-file'},fileIcon('open'),h('h2',null,'Your blocks. Your next idea.'),h('p',null,'Editable JSON keeps block shapes, materials, and rotations. STL print files belong in Print Lab.'),h('button',{type:'button',ref:editableOpenRef,className:'gwe-home-primary',disabled:editableBusy || !live,onClick:chooseShowcaseFile},editableBusy?'Checking file…':'Choose editable JSON')),homeSaveNotice(),renderEditableRecovery(true))
@@ -3026,6 +3196,47 @@
       var _selectionEditPreview=React.useState(null), selectionEditPreview=_selectionEditPreview[0], setSelectionEditPreview=_selectionEditPreview[1];
       var _selectionEditNotice=React.useState(''), selectionEditNotice=_selectionEditNotice[0], setSelectionEditNotice=_selectionEditNotice[1];
       var selectionPreviewOwner=React.useRef({kind:'selection-editor'});
+      var _challengeResult=React.useState(null),challengeResult=_challengeResult[0],setChallengeResult=_challengeResult[1];
+      var _challengeCelebrate=React.useState(false),challengeCelebrate=_challengeCelebrate[0],setChallengeCelebrate=_challengeCelebrate[1];
+      React.useEffect(function(){if(!challengeCelebrate)return undefined;var timer=setTimeout(function(){setChallengeCelebrate(false);},1600);return function(){clearTimeout(timer);};},[challengeCelebrate]);
+      var challengesDone=data.builderChallengesDone && typeof data.builderChallengesDone==='object'?data.builderChallengesDone:{};
+      var activeChallenge=BUILD_CHALLENGES.filter(function(c){return c.id===data.builderChallengeId;})[0] || BUILD_CHALLENGES.filter(function(c){return !challengesDone[c.id];})[0] || BUILD_CHALLENGES[0];
+      function chooseChallenge(id){setChallengeResult(null);patchGeometryState(ctx,{builderChallengeId:id});}
+      function nextChallenge(){
+        var start=BUILD_CHALLENGES.indexOf(activeChallenge),next=null;
+        for(var step=1;step<=BUILD_CHALLENGES.length && !next;step++){var candidate=BUILD_CHALLENGES[(start+step)%BUILD_CHALLENGES.length];if(!challengesDone[candidate.id])next=candidate;}
+        chooseChallenge((next || BUILD_CHALLENGES[(start+1)%BUILD_CHALLENGES.length]).id);
+      }
+      function checkChallenge(){
+        var challenge=activeChallenge,result=checkBuildChallenge(ctx,challenge);
+        setChallengeResult(Object.assign({id:challenge.id},result));
+        if(result.status!=='met'){announce(ctx,result.message,'info');return;}
+        var first=!challengesDone[challenge.id],done=Object.assign({},challengesDone),live=window[ENGINE_KEY];
+        // Pin the solved challenge so its result stays up until the student moves on.
+        done[challenge.id]=true;patchGeometryState(ctx,{builderChallengesDone:done,builderChallengeId:challenge.id});setChallengeCelebrate(true);
+        if(first && typeof ctx.awardXP==='function'){try{ctx.awardXP('geometryWorld',10,'Build challenge: '+challenge.title);if(live)live._sessionXP=(live._sessionXP || 0)+10;}catch(_){}}
+        if(first && live && live.logEvent)live.logEvent('build_challenge_met',{id:challenge.id});
+        var remaining=BUILD_CHALLENGES.filter(function(c){return !done[c.id];}).length;
+        announce(ctx,'Challenge solved: '+challenge.title+'.'+(first && typeof ctx.awardXP==='function'?' +10 XP.':'')+(remaining?' '+remaining+' challenge'+(remaining===1?'':'s')+' left.':' Every challenge is solved.'),'success');
+      }
+      function renderBuildChallenge(){
+        var solved=BUILD_CHALLENGES.filter(function(c){return challengesDone[c.id];}).length,isDone=!!challengesDone[activeChallenge.id];
+        var result=challengeResult && challengeResult.id===activeChallenge.id ? challengeResult : null;
+        return h('section',{key:'gwe-challenge',className:'gwe-challenge','data-solved':isDone?'true':'false','data-celebrate':challengeCelebrate?'true':'false','aria-labelledby':'gwe-challenge-title'},
+          h('div',{className:'gwe-challenge-head'},h('span',null,'Build challenge · '+activeChallenge.tier),h('span',null,solved+' of '+BUILD_CHALLENGES.length+' solved')),
+          h('h3',{id:'gwe-challenge-title'},(isDone?'✓ ':'')+activeChallenge.title),
+          h('p',{className:'gwe-challenge-prompt'},activeChallenge.prompt),
+          h('details',{className:'gwe-challenge-hint'},h('summary',null,'Hint'),h('p',null,activeChallenge.hint)),
+          h('div',{className:'gwe-builder-actions'},
+            h('button',{type:'button',className:'gwe-primary','data-gwe-challenge-check':'true',onClick:checkChallenge},'Check my build'),
+            h('button',{type:'button',onClick:nextChallenge},'Next challenge')),
+          h('label',{className:'gwe-edit-label',htmlFor:'gwe-challenge-pick'},'Choose a challenge'),
+          h('select',{id:'gwe-challenge-pick',value:activeChallenge.id,onChange:function(event){chooseChallenge(event.target.value);}},
+            BUILD_CHALLENGES.map(function(c){return h('option',{key:c.id,value:c.id},(challengesDone[c.id]?'✓ ':'')+c.tier+': '+c.title);})),
+          result && h('div',{className:'gwe-challenge-result','data-status':result.status,role:'status'},
+            h('strong',null,result.status==='met'?'Challenge solved!':result.status==='revise'?'Not yet. Keep building.':'Select your build'),
+            result.checks.length ? h('ul',null,result.checks.map(function(c,i){return h('li',{key:i,'data-ok':c.ok?'true':'false'},h('span',{'aria-hidden':'true'},c.ok?'✓ ':'• '),c.label+': '+c.detail);})) : h('p',null,result.message)));
+      }
       var _toolFinderOpen=React.useState(false),toolFinderOpen=_toolFinderOpen[0],setToolFinderOpen=_toolFinderOpen[1];
       var _toolQuery=React.useState(''),toolQuery=_toolQuery[0],setToolQuery=_toolQuery[1];
       var toolFinderButton=React.useRef(null),toolFinderInput=React.useRef(null);
@@ -3224,7 +3435,11 @@
           var engine = window[ENGINE_KEY];
           if (engine && typeof engine.loadLesson === 'function') {
             if (restorePendingEditableBuild(ctx, engine)) return;
-            if (!engine._currentLesson || engine._currentLesson.sandbox !== true) engine.loadLesson(FREE_BUILD_LESSON);
+            // A fresh engine (re-entering the tool) is not in the sandbox yet; a
+            // sandbox the student just opened or picked from My Worlds already is.
+            if (!engine._currentLesson || engine._currentLesson.sandbox !== true) {
+              if (!resumeSandboxWorkspace(ctx, engine)) engine.loadLesson(FREE_BUILD_LESSON);
+            }
             return;
           }
           attempts += 1;
@@ -3342,7 +3557,7 @@
               h('p',{className:'gwe-builder-note'},'For example, a cube in X = 3 starts at line 3 and ends at line 4. Aligning Y start to line 1 rests the lowest grid layer on the ground.'),
               h('button',{type:'button',onClick:function(){setAlignOptions({axis:'y',edge:'start',coordinate:'1'});cancelSelectionPreview();}},'Use ground level')),
             selectionEditMode==='rotate' && h('p',{className:'gwe-builder-note'},'Turns around the vertical axis. The footprint starts at the same grid corner.'),
-            selectionEditMode==='recolor' && h(React.Fragment,null,h('label',{className:'gwe-edit-label',htmlFor:'gwe-creation-material'},'New material'),h('select',{id:'gwe-creation-material',value:selectionEditMaterial,onChange:function(event){setSelectionEditMaterial(event.target.value);cancelSelectionPreview();}},BLOCK_TYPES.filter(function(type){return type.id!=='grass';}).map(function(type){return h('option',{key:type.id,value:type.id},type.name);}))),
+            selectionEditMode==='recolor' && h(React.Fragment,null,h('label',{className:'gwe-edit-label',htmlFor:'gwe-creation-material'},'New material'),h('select',{id:'gwe-creation-material',value:selectionEditMaterial,onChange:function(event){setSelectionEditMaterial(event.target.value);cancelSelectionPreview();}},BLOCK_TYPES.map(function(type){return h('option',{key:type.id,value:type.id},type.name);}))),
             h('div',{className:'gwe-builder-actions'},h('button',{type:'button',onClick:previewCreationChange},'Preview change'))
           ),
           h('details',{className:'gwe-details gwe-stamp-library',onToggle:function(event){setStampGalleryOpen(event.currentTarget.open);}},
@@ -3788,7 +4003,7 @@
           hasStudentBuild === false
             ? h('button',{type:'button',className:'gwe-primary','aria-label':__alloT('stem.geometryworld_builder.start_building','Start building'),onClick:function(){resumeBuilding();}},'Start building')
             : h('button',{type:'button',className:measuredIsStudentBuild ? '' : 'gwe-primary','aria-label':__alloT('stem.geometryworld_builder.select_and_measure_aimed_build','Select and measure aimed build'),onClick:function(){measureSelectedBuild(ctx);}},hasRetainedSelection ? 'Select another build' : 'Select build'),
-          h('button',{type:'button',className:measuredIsStudentBuild ? 'gwe-primary' : '',disabled:hasStudentBuild === false,'aria-label':__alloT('stem.geometryworld_builder.send_selected_build_to_print_lab','Send selected build to Print Lab'),'aria-describedby':hasStudentBuild === false ? 'gwe-build-guidance' : undefined,title:hasStudentBuild === false ? 'Place blocks before selecting a creation for Print Lab' : undefined,onClick:function(){openSelectedBuildInPrintLab(ctx);}},'Send to Print Lab')
+          h('button',{type:'button',className:measuredIsStudentBuild ? 'gwe-primary' : '','data-gwe-send':'print',disabled:hasStudentBuild === false,'aria-label':__alloT('stem.geometryworld_builder.send_selected_build_to_print_lab','Send selected build to Print Lab'),'aria-describedby':hasStudentBuild === false ? 'gwe-build-guidance' : undefined,title:hasStudentBuild === false ? 'Place blocks before selecting a creation for Print Lab' : undefined,onClick:function(){openSelectedBuildInPrintLab(ctx);}},'Send to Print Lab')
         ),
         !collapsed && toolFinderOpen && renderToolFinder(),
         !collapsed && h('div', { className: 'gwe-builder-body',hidden:toolFinderOpen },
@@ -3799,6 +4014,7 @@
               : 'Aim at a block you placed, then choose Select build to inspect your creation.'),
           !hasRetainedSelection && renderCurrentTools(),
           renderDrawingTools(),
+          renderBuildChallenge(),
           hasRetainedSelection ? h('section',{key:'gwe-creation-summary',className:'gwe-creation-summary','data-selected':'true','aria-label':__alloT('stem.geometryworld_builder.selected_creation','Selected creation')},
             h('div',{className:'gwe-selected-heading'},
               h('span',{className:'gwe-selected-emblem','aria-hidden':'true'},studioCubeMark(h)),
@@ -3827,10 +4043,10 @@
             engine && engine._builderSelection && h('button', {type:'button',className:'gwe-clear-selection', onClick:function(){engine._builderSelection=null;patchGeometryState(ctx,{measureResult:null,builderPanel:'build'});}}, 'Clear selection')
           ),
           renderCreationEditing(),
-          printEnvelope && h('section', { key:'gwe-print-ready',className: 'gwe-print-ready', 'data-fit': printEnvelope.fits ? 'true' : 'false', 'aria-label':__alloT('stem.geometryworld_builder.print_lab_block_envelope','Print Lab block envelope') },
+          printEnvelope && h('section', { key:'gwe-print-ready',className: 'gwe-print-ready', 'data-fit': printEnvelope.tight ? 'tight' : printEnvelope.fits ? 'true' : 'false', 'aria-label':__alloT('stem.geometryworld_builder.print_lab_block_envelope','Print Lab block envelope') },
             h('div', {className:'gwe-print-ready-heading'},
               h('span', { className: 'gwe-print-ready-label' }, 'Print Lab block envelope'),
-              h('span', {className:'gwe-fit-badge'}, printEnvelope.fits ? 'Fits profile' : 'Review size')
+              h('span', {className:'gwe-fit-badge'}, printEnvelope.tight ? 'Tight fit' : printEnvelope.fits ? 'Fits profile' : 'Review size')
             ),
             h('div', {className:'gwe-print-dimensions',role:'status'},
               h('span',{className:'gwe-assistive-copy'},'Width, depth, height: '+printEnvelope.label+'.'+(printEnvelope.over.length?' '+listDimensions(printEnvelope.over)+(printEnvelope.over.length===1?' exceeds':' exceed')+' the printer bed.':'')),
@@ -3863,7 +4079,7 @@
                 data.builderPrintGuideSummary.parts.length>1 && h('p',null,data.builderPrintGuideSummary.parts.length+' separate pieces are outlined. '+(data.builderPrintGuideSummary.raisedParts?data.builderPrintGuideSummary.raisedParts+' pieces sit above the lowest surface; review supports or join them with a base.':'Each piece reaches the lowest surface.')),
                 (data.builderPrintGuideSummary.openEdges>0 || data.builderPrintGuideSummary.nonManifoldEdges>0) && h('p',null,'Surface connections need review in Print Lab.'),
                 h('p',{className:'gwe-print-ready-basis'},'Centered on the printer bed at the current scale. Check exported mesh surfaces and supports in Print Lab.'))),
-            h('details', {className:'gwe-details', open:printScaleExpanded===null ? !printEnvelope.fits : printScaleExpanded,onToggle:function(event){setPrintScaleExpanded(event.currentTarget.open);}},
+            h('details', {className:'gwe-details', open:printScaleExpanded===null ? !printEnvelope.fits || printEnvelope.tight : printScaleExpanded,onToggle:function(event){setPrintScaleExpanded(event.currentTarget.open);}},
               h('summary', null, 'Adjust print size'),
               h('form',{className:'gwe-scale-editor',noValidate:true,'aria-label':__alloT('stem.geometryworld_builder.print_scale','Print scale'),onSubmit:function(event){event.preventDefault();applyPrintScale(scaleDraft);}},
                 h('span',{className:'gwe-scale-editor-title'},'Choose a block size'),
@@ -3878,7 +4094,9 @@
                 h('p',{id:'gwe-print-scale-help',className:'gwe-scale-help'},'Sets the physical size of STL exports and the model sent to Print Lab.'),
                 scaleError && h('p',{id:'gwe-print-scale-error',className:'gwe-scale-error',role:'alert'},scaleError)
               ),
-              h('p', null, printEnvelope.fits
+              h('p', null, printEnvelope.tight
+                ? 'Fits the ' + printEnvelope.profileLabel + ' bed at ' + currentPrintUnit + ' mm per block, but not inside Print Lab’s ' + printEnvelope.clearanceMm + ' mm planning margin on each side. Choose a smaller block size above for room to spare.'
+                : printEnvelope.fits
                 ? 'Fits the ' + printEnvelope.profileLabel + ' printer profile at ' + currentPrintUnit + ' mm per block. Advisory preflight is still required.'
                 : 'The ' + listDimensions(printEnvelope.over) + (printEnvelope.over.length === 1 ? ' dimension is' : ' dimensions are') + ' larger than the ' + printEnvelope.profileLabel + ' printer profile at ' + currentPrintUnit + ' mm per block. Choose a smaller block size above, or reduce the build.'),
               h('p', { className: 'gwe-print-ready-basis' }, printEnvelope.usingSavedProfile
