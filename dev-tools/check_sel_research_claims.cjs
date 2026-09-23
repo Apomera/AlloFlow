@@ -76,8 +76,8 @@ const SCENARIO_FIELD = /^\s*(?:background|scenario|prompt|vignette|story|premise
  */
 const DISCREDITED = [
   { name: 'power posing / expansive posture (Carney 2010)',
-    finding: /\b(?:power pos\w+|expansive posture)\b/i,
-    hedge: /did not hold up|mixed replication|failed to replicate|withdrew support|no hormonal|only the felt|disavow/i },
+    finding: /\b(?:power pos\w+|expansive posture|Carney)\b/i,
+    hedge: /did not hold up|did not replicate|mixed replication|failed to replicate|withdrew support|no hormonal|only the felt|disavow/i },
   { name: 'enclothed cognition (Adam & Galinsky 2012)',
     finding: /\benclothed cognition\b/i,
     hedge: /failed a high-powered replication|did not replicate|not settled science|personal experiment|personal observation/i },
@@ -86,6 +86,18 @@ const DISCREDITED = [
   { name: 'left-brain / right-brain', finding: /\b(?:left[- ]brained?|right[- ]brained?)\b/i,
     hedge: /myth|oversimplif|not how|debunked/i },
 ];
+
+/**
+ * A discredited finding needs a hedge wherever the line presents it as
+ * SUPPORT, not only after "research shows". Added 2026-09-22: five power-posing
+ * citations passed because they sat in `research:` / `evidence:` fields
+ * ("Carney postural feedback", "embodied cognition (Carney on power posing)")
+ * or split the frame with a citation ("research (Carney, Riskind) shows ...
+ * cortisol"), which the adjacent-word FRAMES never match.
+ */
+const CITATION_FIELD = /^\s*(?:research|evidence)\s*:/;
+const LOOSE_FRAME = /\b(?:research|studies|evidence)\b[^.'"]{0,60}?\b(?:shows?|finds?|found|suggests?|indicates?)\b/i;
+const presentsAsSupport = (line) => FRAMES.some((rx) => rx.test(line)) || CITATION_FIELD.test(line) || LOOSE_FRAME.test(line);
 
 function scan() {
   const bare = [];
@@ -99,7 +111,7 @@ function scan() {
         bare.push(`${name}:${i + 1}`);
       }
       for (const d of DISCREDITED) {
-        if (d.finding.test(line) && FRAMES.some((rx) => rx.test(line)) && !d.hedge.test(line)) {
+        if (d.finding.test(line) && presentsAsSupport(line) && !d.hedge.test(line)) {
           violations.push({ where: `${name}:${i + 1}`, what: d.name, text: line.trim().slice(0, 150) });
         }
       }
@@ -112,10 +124,15 @@ if (SELFTEST) {
   // The gate must fire on a discredited finding asserted as settled.
   const probe = "  research: 'Power posing studies show expansive postures raise testosterone.',";
   const d = DISCREDITED[0];
-  const fires = d.finding.test(probe) && FRAMES.some((rx) => rx.test(probe)) && !d.hedge.test(probe);
+  const violates = (line) => d.finding.test(line) && presentsAsSupport(line) && !d.hedge.test(line);
+  // A citation field names the finding as support with no "shows" verb, and a
+  // citation can split the frame. Both shipped until 2026-09-22.
+  const fieldProbe = "      evidence: 'Yoga research on postural alignment; embodied cognition (Carney on power posing).',";
+  const splitProbe = "        high: 'Embodied cognition research (Carney, Riskind) shows postural feedback affects affect and cortisol.',";
+  const fires = violates(probe) && violates(fieldProbe) && violates(splitProbe);
   // ...and must NOT fire once the hedge is present.
   const hedged = "  research: 'Power posing did not hold up; only the felt-confidence part replicated.',";
-  const quiet = !(d.finding.test(hedged) && FRAMES.some((rx) => rx.test(hedged)) && !d.hedge.test(hedged));
+  const quiet = !violates(hedged);
   console.log(`SELFTEST: unhedged ${fires ? 'CAUGHT ✓' : 'MISSED ✗'} · hedged ${quiet ? 'allowed ✓' : 'false-positive ✗'}`);
   process.exit(fires && quiet ? 0 : 1);
 }

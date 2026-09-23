@@ -5212,7 +5212,7 @@ window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'When you are sad or discouraged, your upper back can curve forward like you are folding in. Standing tall on purpose can help your mood.',
         middle: 'The upper back is where the body collapses when defeated. Postural changes feed back to emotion — slumping makes sadness feel deeper, and rolling the shoulders back can lift mood within seconds.',
-        high: 'Embodied cognition research (Carney, Riskind) shows postural feedback affects affect and cortisol. Upright posture during recall biases positive memory retrieval (Wilkes 2017). Chronic thoracic kyphosis is associated with depression.'
+        high: 'Postural feedback research (Riskind) suggests posture can nudge mood. The claim that power poses change cortisol did not replicate (Ranehill et al., 2015), and Dana Carney, first author of the original study, disavowed it in 2016. Upright posture during recall biases positive memory retrieval (Wilkes 2017). Chronic thoracic kyphosis is associated with depression.'
       },
       interventions: [
         'Roll the shoulders back and lift the chest',
@@ -5321,7 +5321,7 @@ window.SelHub = window.SelHub || {
         'Notice the shiver of awe rather than dismissing it',
         'Power pose for two minutes'
       ],
-      research: 'Carney power posing (note: replication mixed but postural-affect link holds); Sachs frisson.'
+      research: 'Power posing (Carney et al., 2010): the hormone and behaviour effects did not replicate; a small effect on felt confidence is still debated. Sachs frisson.'
     },
     {
       id: 'arms',
@@ -6452,7 +6452,7 @@ window.SelHub = window.SelHub || {
         'small voice tremor'
       ],
       somaticGroundingTip: 'Power pose for two minutes. Shake out your hands. Tell yourself "I am ready."',
-      research: 'Yerkes-Dodson; Brooks reframing; Carney postural feedback.'
+      research: 'Yerkes-Dodson; Brooks reframing. Posture may help you feel steadier, but the power-pose hormone claims (Carney) did not replicate.'
     },
     {
       id: 'confidence',
@@ -14453,7 +14453,7 @@ window.SelHub = window.SelHub || {
       ],
       closingInsight: 'Pre-event arousal is information, not danger. Reframing as excitement performs better than calming down.',
       followUp: 'Power posture, slow exhale, focus on one friendly face. Trust your prep.',
-      research: 'Siegel (2010); excitement reappraisal (Brooks, 2014); power posing meta-analysis (Cuddy).'
+      research: 'Siegel (2010); excitement reappraisal (Brooks, 2014). Power posing: Cuddy et al. (2018) argue open posture raises felt power, but the hormone claims did not replicate.'
     },
     {
       _k: 'sel.emotions.ni_after_big_event',

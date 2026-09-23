@@ -6391,7 +6391,7 @@ var VISUAL_ANCHORS = [
         { id: 'standing', name: 'Standing', change: 'Adapt while standing in line or waiting.' }
       ],
       whyItWorks: 'Upright, open posture may help you feel more alert and confident; slumped posture has been associated with lower mood and recall in some studies.',
-      research: 'Wilkes et al. 2017 posture and depression; Amy Cuddy power posture critiques and replications.'
+      research: 'Wilkes et al. 2017 posture and depression. Power posture: the hormone claims did not hold up; only a small felt-confidence effect is still argued (Cuddy et al., 2018).'
     },
     {
       id: 'body_hands_feet',

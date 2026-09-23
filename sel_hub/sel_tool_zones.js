@@ -12457,7 +12457,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['blue'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Expansive posture briefly raises felt confidence and arousal.',
+      whatItDoes: 'Expansive posture may briefly raise how confident you feel.',
       steps: {
         elementary: ['Stand tall like a superhero', 'Hands on hips, chest open', 'Hold 2 minutes', 'Notice energy'],
         middle: ['Take a wide, open posture', 'Hold for 2 minutes', 'Breathe steady and full', 'Notice feeling more ready'],
@@ -12471,7 +12471,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Blue to Green',
       pairsWith: ['blue_stand_stretch', 'blue_posture_adjust'],
-      research: 'Postural feedback can shift felt state (Carney et al., 2010; replication debated).'
+      research: 'Expansive posture may raise how powerful you feel. A large replication found that part, but the hormone and risk-taking effects did not replicate (Ranehill et al., 2015).'
     },
     {
       id: 'blue_strong_scent',

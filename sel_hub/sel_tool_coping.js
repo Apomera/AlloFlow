@@ -5073,7 +5073,7 @@ window.SelHub = window.SelHub || {
           'Foundation pose for all standing yoga'
         ]
       },
-      evidence: 'Yoga research on postural alignment; embodied cognition (Carney on power posing).',
+      evidence: 'Yoga research on postural alignment. Standing tall may help you feel steadier; the power-pose hormone findings (Carney et al., 2010) did not replicate.',
       whenToUse: 'Transitions, before a hard task, or when feeling small or anxious.',
       timeNeeded: '1 min',
       practiceable: true
@@ -10636,7 +10636,7 @@ window.SelHub = window.SelHub || {
           'Notice when your body shifts toward fight/flight/freeze and reset before continuing.'
         ]
       },
-      evidence: 'Embodied cognition (Cuddy, Carney); Polyvagal Theory — Stephen Porges, social engagement system.',
+      evidence: 'Posture and breath can steady how you feel, though the power-pose hormone findings (Cuddy, Carney) did not replicate. Polyvagal theory (Stephen Porges) is a popular clinical model of the social engagement system, not settled physiology.',
       whenToUse: 'Before any hard conversation or boundary delivery.',
       timeNeeded: '30 seconds to reset, ongoing during talk',
       practiceable: true
