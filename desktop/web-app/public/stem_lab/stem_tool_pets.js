@@ -1785,7 +1785,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           { id: 'free_roam', label: 'Open the door; "they know where home is"',
             effects: { phys: -8, ment: +3, soc: 0, env: 0, en: 0, money: 0 },
             aftermath: { en: -4 },
-            note: 'Owned outdoor cat lifespan ~5 years on average. They\'ll also kill an estimated dozens of birds/mammals per year. See Welfare & Ethics for the data.' }
+            // This note used to state "Owned outdoor cat lifespan ~5 years on
+            // average" and "dozens of birds/mammals per year" — then send the
+            // student to Welfare & Ethics, which teaches that the short-lifespan
+            // figure comes from feral colonies, not owned cats, and gives no
+            // per-cat predation number at all. It now says what that tab says.
+            note: 'Cats with outdoor access die younger: traffic, predators, disease, and poisoning are the documented causes. (Be careful with the popular "2–5 years" figure: it comes largely from feral-colony data, not owned cats.) Free-roaming cats also kill an estimated 1.3–4 billion birds a year in the US alone. See Welfare & Ethics for the data.' }
         ]
       },
       { day: 4, label: 'Day 4 — scratching the couch',
@@ -3587,7 +3592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       birds: ['Prediction check completed'],
       reptiles: ['Prediction check completed'],
       training: ['Finished the 10-round reinforcement trainer'],
-      nutrition: ['Finished all 10 Household Hazard Sleuth vignettes', 'Finished all 10 Toxic Foods Sleuth vignettes'],
+      nutrition: ['Finished all 13 Household Hazard Sleuth vignettes', 'Finished all 10 Household Hazard Sleuth vignettes', 'Finished all 10 Toxic Foods Sleuth vignettes'],
       zoonoses: ['Finished all 4 Exposure Pathway decisions'],
       decoderMastery: ['Logged all 27 body-language signals at least once'],
       lifespan: ['Finished all 10 lifespan matches'],
@@ -4218,7 +4223,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           delete details.criterionMet;
         }
       } else if (moduleId === 'nutrition' || moduleId === 'lifespan') {
-        var miniComplete = reconcileScore(10);
+        // Household Hazard Sleuth grew from 10 to 13 vignettes; a record
+        // finished at 10 stays valid. Lifespan Match is still exactly 10.
+        var miniComplete = reconcileScore(moduleId === 'nutrition' && details.total !== 10 ? 13 : 10);
         if (miniComplete) {
           details.needsPractice = details.total - details.score;
           details.criterionMet = details.scorePct >= 80;
@@ -4784,10 +4791,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return { ids: ids, queue: queue, pick: pick, done: done };
     }
     function normalizeToxicFoodIndices(value) {
-      return normalizePetsReviewIndices(value, 10);
+      return normalizePetsReviewIndices(value, 13);
     }
     function normalizeToxicFoodReviewState(raw, missed) {
-      return normalizePetsFocusedReviewState(raw, missed, 10,
+      return normalizePetsFocusedReviewState(raw, missed, 13,
         ['safe', 'toxicDogs', 'toxicCats', 'toxicBirds', 'toxicMulti']);
     }
     function normalizeLifespanIndices(value) {
@@ -5195,7 +5202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       snapshot.trSim = normalizeTrainerState(snapshot.trSim);
       snapshot.careSim = normalizeCareSimState(snapshot.careSim);
-      writePetsMiniGameState(snapshot, 'tfs', normalizePetsMiniGameState(snapshot, 'tfs', 10,
+      writePetsMiniGameState(snapshot, 'tfs', normalizePetsMiniGameState(snapshot, 'tfs', 13,
         ['safe', 'toxicDogs', 'toxicCats', 'toxicBirds', 'toxicMulti']));
       snapshot.tfsOpen = snapshot.tfsOpen === true;
       snapshot.tfsMissed = normalizeToxicFoodIndices(snapshot.tfsMissed);
@@ -8422,8 +8429,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             { id: 9, food: 'Plain cooked chicken (boneless, unseasoned)', icon: '🍗', correct: 'safe',
               why: 'As written, this scenario contains no listed toxin: the chicken is boneless, cooked, and unseasoned. That does not make it a treatment or complete diet; allergies, portions, and individual conditions still matter.' },
             { id: 10, food: 'Raw carrot sticks', icon: '🥕', correct: 'safe',
-              why: 'As written, this scenario contains no listed toxin. Piece size and portions can still matter, and this classification is not an individualized diet recommendation.' }
+              why: 'As written, this scenario contains no listed toxin. Piece size and portions can still matter, and this classification is not an individualized diet recommendation.' },
+            // Medicine-cabinet cases. Human medicines are the largest category on
+            // ASPCA Animal Poison Control's annual top-toxins list, and the ten
+            // food/plant/fume cases above never touched them. Appended, not
+            // inserted, so a saved in-progress index still names the same case.
+            { id: 11, food: 'A dropped acetaminophen (Tylenol) tablet', icon: '💊', correct: 'toxicCats',
+              why: 'This is cat-focused: cats are far more sensitive to acetaminophen than dogs, and it damages red blood cells and then the liver. Dogs can be harmed too, depending on the dose, so never give any pet a human pain reliever. Keep the package and call immediately.' },
+            { id: 12, food: 'Ibuprofen or naproxen tablets from an open bag', icon: '💊', correct: 'toxicMulti',
+              why: 'Human anti-inflammatory pain relievers can cause stomach ulcers and kidney failure in both dogs and cats, and cats react at roughly half the dose that harms a dog. Over-the-counter medicines are the largest category on ASPCA Animal Poison Control\'s annual top-toxins list, so this is the everyday case, not a rare one. Note the product and how many tablets could be missing, and call immediately.' },
+            { id: 13, food: 'A dog\'s fresh permethrin flea treatment, and a cat who grooms that dog', icon: '🧴', correct: 'toxicCats',
+              why: 'This is a cat-focused emergency caused by a dog product. Many dog flea and tick treatments contain permethrin, which cats cannot break down efficiently; licking or grooming a freshly treated dog can cause tremors or seizures. Never use a dog flea product on a cat, follow the label about keeping a cat away from a treated dog, and call immediately.' }
           ];
+          // The score that meets the activity target, computed with the SAME
+          // rounding completeModule uses for criterionMet (finalPct >= 80), so
+          // the on-screen verdict and the saved record can never disagree.
+          var tfsTarget = (function() {
+            for (var s = 0; s <= TFS_VIGNETTES.length; s++) {
+              if (Math.round((s / TFS_VIGNETTES.length) * 100) >= 80) return s;
+            }
+            return TFS_VIGNETTES.length;
+          })();
 
           var tfsState = normalizePetsMiniGameState(d, 'tfs', TFS_VIGNETTES.length,
             TFS_OPTIONS.map(function(option) { return option.id; }));
@@ -8505,7 +8531,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             if (newRounds === TFS_VIGNETTES.length &&
                 tfsShown.length === TFS_VIGNETTES.length) {
               var finalPct = Math.round((newScore / TFS_VIGNETTES.length) * 100);
-              completeModule('nutrition', 'Finished all 10 Household Hazard Sleuth vignettes', {
+              completeModule('nutrition', 'Finished all ' + TFS_VIGNETTES.length + ' Household Hazard Sleuth vignettes', {
                 score: newScore,
                 total: TFS_VIGNETTES.length,
                 scorePct: finalPct,
@@ -8557,7 +8583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '🕵️'),
                 h('div', null,
                   h('div', { style: { color: T.accentHi, fontSize: 14, fontWeight: 900 } }, 'Household Hazard Sleuth'),
-                  h('div', { style: { color: T.dim, fontSize: 11, fontStyle: 'italic' } }, '10 vignettes · target 8/10 — identify the clearest hazard pattern, then revisit every miss.')
+                  h('div', { style: { color: T.dim, fontSize: 11, fontStyle: 'italic' } }, TFS_VIGNETTES.length + ' vignettes · target ' + tfsTarget + '/' + TFS_VIGNETTES.length + ' — identify the clearest hazard pattern, then revisit every miss.')
                 )
               ),
               h('button', {
@@ -8574,12 +8600,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               tfsIdx < 0
                 ? h('div', { style: { textAlign: 'center', padding: '12px 8px' } },
                     h('p', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
-                      '10 food + species vignettes. Reach 8/10 to meet the activity target. After each choice, coaching names what makes that species the canonical poisoning case; at the end, every missed case stays available for review and focused retry.'),
+                      TFS_VIGNETTES.length + ' vignettes across foods, plants, medicines, and fumes. Reach ' + tfsTarget + '/' + TFS_VIGNETTES.length + ' to meet the activity target. After each choice, coaching names what makes that species the canonical poisoning case; at the end, every missed case stays available for review and focused retry.'),
                     h('button', {
                       ref: _toxinQuestionRef,
                       onClick: beginTfsAttempt,
                       style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#1f1612', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
-                    }, '🕵️ Start — vignette 1 of 10')
+                    }, '🕵️ Start — vignette 1 of ' + TFS_VIGNETTES.length)
                   )
                 : (function() {
                     var v = TFS_VIGNETTES[tfsIdx];
@@ -8587,7 +8613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     var pct = tfsRounds > 0 ? Math.round((tfsScore / tfsRounds) * 100) : 0;
                     var allDone = tfsShown.length === TFS_VIGNETTES.length &&
                       tfsRounds === TFS_VIGNETTES.length && tfsAns;
-                    var targetMet = tfsScore >= 8;
+                    var targetMet = tfsScore >= tfsTarget;
                     var missedDetailsAvailable = !allDone || tfsMissed.length === TFS_VIGNETTES.length - tfsScore;
                     var missedCases = missedDetailsAvailable ? tfsMissed.map(function(index) {
                       return { index: index, vignette: TFS_VIGNETTES[index] };
@@ -8675,7 +8701,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                               'data-pets-toxic-result': 'complete',
                               style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent }
                             },
-                              h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 vignettes complete'),
+                              h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All ' + TFS_VIGNETTES.length + ' vignettes complete'),
                               h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5 } },
                                 'Final: ', h('strong', null, tfsScore + ' / ' + TFS_VIGNETTES.length + ' (' + Math.round((tfsScore / TFS_VIGNETTES.length) * 100) + '%)'),
                                 tfsScore === TFS_VIGNETTES.length ? ' — every hazard pattern identified. Classification is not case-specific triage; use the response protocol above for any suspected exposure.' :
@@ -8692,8 +8718,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                                   border: '1px solid ' + (targetMet ? 'rgba(34,197,94,0.5)' : 'rgba(245,158,11,0.5)')
                                 }
                               }, targetMet
-                                ? '✅ Activity target met: 8/10 or higher.'
-                                : '↻ Activity target needs practice: reach 8/10 or higher.'),
+                                ? '✅ Activity target met: ' + tfsTarget + '/' + TFS_VIGNETTES.length + ' or higher.'
+                                : '↻ Activity target needs practice: reach ' + tfsTarget + '/' + TFS_VIGNETTES.length + ' or higher.'),
                               !missedDetailsAvailable
                                 ? h('div', {
                                     'data-pets-toxic-review': 'unavailable',
@@ -8904,8 +8930,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         // of B/b. Two black Labs with hidden b or e can absolutely have a
         // chocolate or yellow puppy — students see WHY in the 16 squares.
         (function() {
-          var pa1 = d.geneP1 || 'BbEe';
-          var pa2 = d.geneP2 || 'BbEe';
+          // A saved genotype is indexed as four letters (val[0]..val[3]) and each
+          // is .toUpperCase()d, so `|| 'BbEe'` let a saved 'B', 42 or {} through
+          // and the Punnett view threw — swallowed by the render catch, so the
+          // student got a fallback screen instead of Genetics. The pattern is
+          // exactly the 9 GENOTYPE_OPTIONS ids (B-locus x E-locus, uppercase
+          // first); that array is a `var` declared further down, so it is still
+          // undefined here and cannot be the guard.
+          var PETS_GENOTYPE_RE = /^(BB|Bb|bb)(EE|Ee|ee)$/;
+          var pa1 = typeof d.geneP1 === 'string' && PETS_GENOTYPE_RE.test(d.geneP1) ? d.geneP1 : 'BbEe';
+          var pa2 = typeof d.geneP2 === 'string' && PETS_GENOTYPE_RE.test(d.geneP2) ? d.geneP2 : 'BbEe';
           // Generate gametes from a 2-locus genotype like 'BbEe'
           function gametes(geno) {
             // geno is 4 chars: B/b at index 0-1, E/e at index 2-3 (e.g. 'BbEe', 'BBEe', 'bbee')
@@ -13332,7 +13366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             'Why does rewarding a half-sit with a full treat still count as progress, and when does it stop being useful?',
             'Which round would you have corrected, and what would the puppy have learned from it?'
           ] },
-        { module: 'Household Hazard Sleuth', target: 'I can recognize common food, plant, and fume hazard patterns and use a call-first response protocol.', success: 'Finish all 10 vignettes; 8/10 meets the activity target. Classification never replaces case-specific veterinary or poison-control advice.' },
+        { module: 'Household Hazard Sleuth', target: 'I can recognize common food, plant, medicine, and fume hazard patterns and use a call-first response protocol.', success: 'Finish all 13 vignettes; 11/13 meets the activity target. Classification never replaces case-specific veterinary or poison-control advice.' },
         { module: 'Zoonoses & One Health', target: 'I can trace an exposure through its route, identify who may face greater risk, and choose a step that interrupts the pathway or brings in the right expert.', success: 'Finish all four Exposure Pathway cases; 3/4 meets the activity target. The result is prevention evidence—not a medical diagnosis or real-exposure clearance.' },
         { module: 'Body Language', target: 'I can recognize observable whole-body cues and use context to choose a cautious next step.', success: 'Score 8/10 on a random recognition set for the activity target. The four-case Context Challenge adds separate formative transfer evidence; neither result certifies real-animal handling.' },
         { module: 'Decoder Signal Log', target: 'I can broaden the range of body-language signals I have practiced.', success: 'A signal is logged after one correct identification. 27/27 is coverage—not durable mastery or a context assessment.' },

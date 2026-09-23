@@ -50,13 +50,27 @@ describe('Pets Decoder mastery stays canonical outside the tool', () => {
   });
 
   it('ships the same safe counter in every Atlas host copy', () => {
+    // The tile total is derived from the Decoder's own catalog, not written a
+    // second time here. 234666d7e clamped the count to the tile total so it
+    // cannot overflow; this pin still named the unclamped line and had been red
+    // since. Deriving the total means a signal added to the catalog without
+    // raising the Atlas total fails here instead of silently capping progress.
+    const fnStart = PETS.indexOf('function bodyLanguageSignalSets(');
+    const fnSrc = between(PETS.slice(fnStart), 'function bodyLanguageSignalSets(', '\n    function ');
+    const signalSets = vm.runInNewContext('(' + fnSrc.replace(/^function bodyLanguageSignalSets/, 'function') + ')()');
+    const signalTotal = signalSets.reduce((n, set) => n + set.items.length, 0);
+    expect(signalTotal).toBeGreaterThan(0);
+
     const canonicalHelper = between(HOSTS[0].source, 'var _countPetsDecoderMastery = function', 'var _atlasEntries = [');
     for (const host of HOSTS) {
       expect(host.source, host.file).not.toContain('Object.keys(s.decoderMastery).length');
       expect(between(host.source, 'var _countPetsDecoderMastery = function', 'var _atlasEntries = ['), host.file)
         .toBe(canonicalHelper);
-      expect(host.source, host.file)
-        .toContain("count: function () { return _countPetsDecoderMastery(_readSlot('__alloflowPetsLab', 'petsLab.state.v1')); }");
+      expect(host.source, host.file).toContain(
+        "slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: " + signalTotal + ',');
+      expect(host.source, host.file).toContain(
+        "count: function () { return _atlasClamp(_countPetsDecoderMastery(_readSlot('__alloflowPetsLab', 'petsLab.state.v1')), "
+        + signalTotal + '); }');
     }
   });
 });
@@ -385,7 +399,10 @@ describe('Pets restored-state guards', () => {
       best: 10,
       shown: [],
     });
-    expect(api.normalizeToxicFoodIndices([0, '1', 1, 9, 10, -1, 2.5, 'private-answer'])).toEqual([0, 1, 9]);
+    // Household Hazard Sleuth has 13 vignettes (indices 0-12) since the three
+    // medicine-cabinet cases were appended: 10 and 12 are real misses now and
+    // must survive a reload; 13 is the first out-of-range index.
+    expect(api.normalizeToxicFoodIndices([0, '1', 1, 9, 10, 12, 13, -1, 2.5, 'private-answer'])).toEqual([0, 1, 9, 10, 12]);
     expect(api.normalizeToxicFoodReviewState({
       ids: [9, 8, 7],
       queue: [3, 3, 0, 9, 99],

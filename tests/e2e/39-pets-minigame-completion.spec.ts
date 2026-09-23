@@ -20,6 +20,11 @@ const TOXIC_CORRECT = [
   'Dog-focused hazard',
   'No listed toxin',
   'No listed toxin',
+  // Medicine-cabinet cases appended 2026-09-22: acetaminophen, ibuprofen or
+  // naproxen, a permethrin-treated dog groomed by a cat.
+  'Cat-focused hazard',
+  'Multi-species hazard',
+  'Cat-focused hazard',
 ];
 
 const LIFESPAN_CORRECT = [
@@ -148,7 +153,7 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
       .toEqual(['noopener', 'noopener', 'noopener']);
   });
 
-  test('Household Hazard Sleuth preserves cumulative score through Next and records a sanitized ten-item result', async ({ page }) => {
+  test('Household Hazard Sleuth preserves cumulative score through Next and records a sanitized thirteen-item result', async ({ page }) => {
     await harness.mount(page, {
       petsLab: {
         view: 'nutrition',
@@ -165,7 +170,7 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
       },
     }, undefined, { expectCanvas: false });
 
-    for (let step = 0; step < 10; step += 1) {
+    for (let step = 0; step < 13; step += 1) {
       await answerToxic(page, step !== 0);
       await expect.poll(() => page.evaluate(() => {
         const pets = (window as any).__toolData.petsLab;
@@ -175,7 +180,7 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
       if (step === 1) {
         await expect(page.getByText('1 / 2', { exact: true })).toBeVisible();
       }
-      if (step < 9) {
+      if (step < 12) {
         await page.getByRole('button', { name: /Next vignette/ }).click();
         await expect.poll(() => page.evaluate(() => (
           (window as any).__toolData.petsLab.tfsAns
@@ -183,8 +188,8 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
       }
     }
 
-    await expect(page.getByText(/All 10 vignettes complete/)).toBeVisible();
-    await expect(page.locator('[data-pets-target-status="met"]')).toContainText('Activity target met: 8/10 or higher');
+    await expect(page.getByText(/All 13 vignettes complete/)).toBeVisible();
+    await expect(page.locator('[data-pets-target-status="met"]')).toContainText('Activity target met: 11/13 or higher');
     const missedReview = page.locator('[data-pets-toxic-review="available"]');
     await expect(missedReview).toContainText('Review your 1 missed hazard case');
     const missedCase = page.locator('[data-pets-toxic-review-item="0"]');
@@ -205,9 +210,9 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
       };
     })).toEqual({
       details: {
-        score: 9,
-        total: 10,
-        scorePct: 90,
+        score: 12,
+        total: 13,
+        scorePct: 92,
         needsPractice: 1,
         criterionMet: true,
       },
@@ -256,21 +261,23 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
       petsLab: {
         view: 'nutrition',
         tfsOpen: true,
-        tfsIdx: 9,
+        // A finished 13-round game at 10/13: the score the old `>= 8` rule
+        // labelled "met" while the saved record said criterionMet: false.
+        tfsIdx: 12,
         tfsSeed: 11,
         tfsAns: true,
         tfsPick: 'safe',
-        tfsScore: 7,
-        tfsRounds: 10,
+        tfsScore: 10,
+        tfsRounds: 13,
         tfsStreak: 1,
         tfsBest: 3,
-        tfsShown: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        tfsShown: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         tfsMissed: [0, 1, 1, 2, 99, 'private-answer'],
       },
     }, undefined, { expectCanvas: false });
 
     await expect(page.locator('[data-pets-target-status="needs-practice"]')).toContainText(
-      'Activity target needs practice: reach 8/10 or higher'
+      'Activity target needs practice: reach 11/13 or higher'
     );
     const review = page.locator('[data-pets-toxic-review="available"]');
     await expect(review).toContainText('Review your 3 missed hazard cases');
@@ -406,6 +413,7 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
 
   test('corrupt shown/round combinations cannot render either ten-item completion', async ({ page }) => {
     const shown = Array.from({ length: 10 }, (_, index) => index);
+    const toxicShown = Array.from({ length: 13 }, (_, index) => index);
     await harness.mount(page, {
       petsLab: {
         view: 'nutrition',
@@ -418,11 +426,11 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
         tfsRounds: 1,
         tfsStreak: 1,
         tfsBest: 1,
-        tfsShown: shown,
+        tfsShown: toxicShown,
       },
     }, undefined, { expectCanvas: false });
 
-    await expect(page.getByText(/All 10 vignettes complete/)).toHaveCount(0);
+    await expect(page.getByText(/All \d+ vignettes complete/)).toHaveCount(0);
     expect(await page.evaluate(() => {
       const pets = (window as any).__toolData.petsLab;
       return {
@@ -458,9 +466,14 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
   });
 
   test('manual completion is unavailable for activity modules but remains for a static species module', async ({ page }) => {
+    // Dogs was this test's "static species module" until c1089bcff (09-14)
+    // gave every species page a predict-then-check activity; since then Dogs has
+    // no manual button and this test failed. It now sits with the other activity
+    // modules, and the static exemplar is the Glossary — one of the three
+    // modules (diagrams, famous, glossary) still completed by self-review.
     const activityViews = [
       'training', 'nutrition', 'zoonoses', 'bodyLang', 'careSim',
-      'quiz', 'aiPractice', 'lifespan', 'sensory',
+      'quiz', 'aiPractice', 'lifespan', 'sensory', 'dogs',
     ];
 
     for (const view of activityViews) {
@@ -473,17 +486,17 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
     }
 
     await page.evaluate(() => localStorage.clear());
-    await harness.mount(page, { petsLab: { view: 'dogs' } }, undefined, { expectCanvas: false });
+    await harness.mount(page, { petsLab: { view: 'glossary' } }, undefined, { expectCanvas: false });
     const manual = page.locator('.petslab-complete-button');
     await expect(manual).toHaveCount(1);
     await manual.click();
     await expect.poll(() => page.evaluate(() => {
       const pets = (window as any).__toolData.petsLab;
       const record = (pets.evidenceRecords || []).filter(
-        (row: any) => row.moduleId === 'dogs'
+        (row: any) => row.moduleId === 'glossary'
       ).at(-1);
       return {
-        completed: !!pets.modulesCompleted?.dogs,
+        completed: !!pets.modulesCompleted?.glossary,
         kind: record?.kind,
         details: record?.details,
       };

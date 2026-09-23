@@ -87,7 +87,7 @@ test.describe('Pets Lab resume integrity and idle rendering', () => {
     }, undefined, { expectCanvas: false });
 
     const game = page.getByRole('region', { name: 'Household Hazard Sleuth quiz game' });
-    await expect(game.getByRole('button', { name: /Start — vignette 1 of 10/ })).toBeVisible();
+    await expect(game.getByRole('button', { name: /Start — vignette 1 of 13/ })).toBeVisible();
     await expect(page.locator('#wrap')).not.toContainText('Pets Lab failed to render');
     await expect.poll(() => page.evaluate(() => {
       const raw = JSON.parse(localStorage.getItem('petsLab.state.v2') || 'null');
@@ -104,11 +104,11 @@ test.describe('Pets Lab resume integrity and idle rendering', () => {
       idx: -1, answered: false, pick: null,
       score: 0, rounds: 0, streak: 0, shown: [],
     });
-    await game.getByRole('button', { name: /Start — vignette 1 of 10/ }).click();
+    await game.getByRole('button', { name: /Start — vignette 1 of 13/ }).click();
     await expect.poll(() => page.evaluate(() => {
       const pets = (window as any).__toolData.petsLab;
       return {
-        active: pets.tfsIdx >= 0 && pets.tfsIdx < 10,
+        active: pets.tfsIdx >= 0 && pets.tfsIdx < 13,
         score: pets.tfsScore,
         rounds: pets.tfsRounds,
         shown: pets.tfsShown?.length,
@@ -129,6 +129,7 @@ test.describe('Pets Lab resume integrity and idle rendering', () => {
       },
     }, undefined, { expectCanvas: false });
 
+    // Lifespan Match still has 10 species; only the Household Hazard Sleuth grew to 13.
     const start = page.getByRole('button', { name: /Start — vignette 1 of 10/ });
     await expect(start).toBeVisible();
     await expect(page.locator('#wrap')).not.toContainText('Pets Lab failed to render');
