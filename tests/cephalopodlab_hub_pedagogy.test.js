@@ -264,7 +264,8 @@ describe('Cephalopod Lab Quiz', () => {
     for (let i = 1; i < pcts.length; i++) expect(pcts[i]).toBeGreaterThanOrEqual(pcts[i - 1]);
     expect(c.textContent).toMatch(/Retake the \d+ missed/);
     expect(c.querySelector('svg[role="img"][aria-label^="Score "]')).not.toBeNull();
-  });
+    // Renders all 40 questions: 1.8s alone, 7.7s in a loaded full-file run.
+  }, 20000);
 });
 
 // ── Evasion Sim strike lane ──
@@ -327,7 +328,7 @@ describe('Cephalopod Lab Jet Lab schematic and Day sky band', () => {
     const c = renderJet({ jetContractionKPa: 80, jetSiphonDiameter: 22, jetMantleVolume: 400 });
     const svg = c.querySelector('svg[aria-label^="Humboldt Squid: jet velocity"]');
     expect(svg).not.toBeNull();
-    expect(svg.getAttribute('aria-label')).toMatch(/documented top speed 25 m\/s, siphon 22 mm, mantle 400 mL/);
+    expect(svg.getAttribute('aria-label')).toMatch(/documented top speed [\d.]+ m\/s, siphon 22 mm, mantle 400 mL/);
     const plume = svg.querySelector('polygon.cl-jet-plume');
     expect(plume).not.toBeNull();
     // higher pressure -> faster jet -> longer plume
@@ -881,4 +882,212 @@ describe('Cephalopod Lab ocean sound spectrum', () => {
     expect(c.textContent).toMatch(/cephalopods cannot hear as pressure waves/);
     expect(c.textContent).not.toMatch(/cephalopod hearing range/i);
   });
+});
+
+// ── Quiz answer positions ──
+// 28 of the 40 correct answers are AUTHORED as the second option. A load-time
+// rotation spreads them before anything renders; this reads the rendered
+// buttons, so it fails if that rotation is removed or stops applying.
+describe('Cephalopod Lab quiz does not reward always picking one position', () => {
+  const bank = () => {
+    const src = readFileSync(SOURCE, 'utf8');
+    const start = src.indexOf('var QUIZ_QUESTIONS = [');
+    const seg = src.slice(start, src.indexOf('\n      ];', start));
+    // eslint-disable-next-line no-new-func
+    const Q = new Function('__alloT', 'return ' + seg.replace('var QUIZ_QUESTIONS = ', '') + '\n]')((k, fb) => fb);
+    expect(Q).toHaveLength(40);
+    return Q;
+  };
+
+  it('spreads the displayed correct answer across all four positions', () => {
+    const Q = bank();
+    const hist = [0, 0, 0, 0];
+    Q.forEach((q, i) => {
+      const c = renderQuiz({ quizIdx: i });
+      const opts = Array.from(c.querySelectorAll('button[aria-pressed]'));
+      expect(opts).toHaveLength(q.options.length);
+      const right = q.options.find((o) => o.correct).text.trim();
+      const shown = opts.findIndex((b) => b.textContent.trim() === right);
+      expect(shown).toBeGreaterThanOrEqual(0);
+      hist[shown] += 1;
+    });
+    // Rotation gives 12/9/11/8 today. Authored order alone would put 28 in one
+    // slot, so a third is loose enough to survive edits and still catch that.
+    expect(Math.max(...hist)).toBeLessThanOrEqual(Math.ceil(Q.length / 3));
+    hist.forEach((n) => expect(n).toBeGreaterThan(0));
+  }, 60000);
+
+  it('names options by what they say, not by a letter the quiz never shows', () => {
+    const Q = bank();
+    Q.forEach((q) => q.options.forEach((o) => {
+      expect(o.explanation).not.toMatch(/\b(option|answer|choice)\s+[ABCD]\b/);
+    }));
+  });
+});
+
+// ── Evasion Sim reaction verdict vs the drawn scale ──
+// The readout draws a shaded cephalopod band and a human marker, but its
+// verdict called anything under 200 ms "cephalopod-grade", so a 180 ms human
+// saw their marker outside the band beside text saying they matched it. The
+// band edges are read from the tool's own scale label, not restated here.
+describe('Cephalopod Lab reaction verdict agrees with the scale it draws', () => {
+  const verdictAt = (ms) => {
+    const c = renderEvasion({ evasionReactionMs: ms });
+    const big = Array.from(c.querySelectorAll('div')).find((el) => el.textContent.trim() === ms + ' ms' && el.nextElementSibling);
+    expect(big).toBeTruthy();
+    const scale = c.querySelector('[role="img"][aria-label^="Reaction scale"]').getAttribute('aria-label');
+    return { text: big.nextElementSibling.textContent.trim(), scale };
+  };
+
+  it('only credits cephalopod speed inside the band it shades', () => {
+    const probe = verdictAt(100);
+    const m = /(\d+) to (\d+) milliseconds, typical human about (\d+)/.exec(probe.scale);
+    expect(m).not.toBeNull();
+    const hi = Number(m[2]);
+    const human = Number(m[3]);
+    const inside = verdictAt(hi - 20).text;
+    const outside = verdictAt(hi + 20).text;   // faster than human, slower than a cephalopod
+    expect(hi + 20).toBeLessThan(human);
+    expect(outside).not.toMatch(/cephalopod-grade|inside the cephalopod/i);
+    expect(inside).not.toBe(outside);
+  });
+
+  it('keeps discriminating past the human marker instead of collapsing to one message', () => {
+    const texts = [180, 320, 550, 900].map((ms) => verdictAt(ms).text);
+    expect(new Set(texts).size).toBe(texts.length);
+  });
+
+  it('grades the judge note on the same references, not a single 200 ms split', () => {
+    const src = readFileSync(SOURCE, 'utf8');
+    expect(src).not.toMatch(/reactionMs < 200 \? 'cephalopod/);
+    expect(src).not.toMatch(/cephalopod-grade reflexes/);
+    expect(src).toMatch(/reactionMs < 150 \?[\s\S]{0,200}reactionMs < 250 \?[\s\S]{0,200}reactionMs < 400 \?/);
+  });
+});
+
+// ── Jet Lab: species speeds + what exit speed can and cannot tell you ──
+// Every top speed was 3.6-12x too fast (Humboldt 25 m/s = 90 km/h, while this
+// tool's own graded quiz answer is ~25 km/h), and the verdict read exit speed
+// above 1.4x top speed as "exceeding" it, flagging 4 of 5 presets. Exit speed
+// is a CEILING on body speed; efficiency 2U/(U+v) is what it actually decides.
+describe('Cephalopod Lab Jet Lab speeds and verdict follow the physics', () => {
+  // each test renders the whole tool 4-10 times; one took 10.5s under load
+  const JET_TIMEOUT_MS = 30000;
+  const PRESETS = ['humboldt', 'giantPac', 'commonOcto', 'cuttle', 'nautilus'];
+  const jet = (data = {}) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'jet', jetSpeciesId: 'humboldt', ...data } });
+    return c;
+  };
+  const card = (c, label) => {
+    const el = Array.from(c.querySelectorAll('div')).find((d) => d.textContent.trim() === label && d.nextElementSibling);
+    expect(el, label).toBeTruthy();
+    return Number(el.nextElementSibling.textContent);
+  };
+  const topSpeed = (c) => {
+    const m = c.querySelectorAll('[role="meter"]')[1];
+    return Number(/([0-9.]+) m\/s$/.exec(m.getAttribute('aria-label'))[1]);
+  };
+  const verdict = (c) => {
+    const t = Array.from(c.querySelectorAll('div')).map((d) => d.textContent).find((x) => /^Reality check: /.test(x));
+    return /^Reality check: (.*)/.exec(t)[1];
+  };
+  // A species block of JET_SPECIES, so presets are read from the tool, not restated.
+  const speciesBlock = (id) => {
+    const src = readFileSync(SOURCE, 'utf8');
+    const i = src.indexOf(id + ': { name: __alloT(');
+    expect(i, id).toBeGreaterThan(0);
+    return src.slice(i, src.indexOf('notes:', i));
+  };
+  const presetOf = (id) => {
+    const seg = speciesBlock(id);
+    const num = (k) => Number(new RegExp(k + ': ([0-9.]+)').exec(seg)[1]);
+    return { jetSpeciesId: id, jetMantleVolume: num('mantleVolume'), jetContractionKPa: num('contractionKPa'), jetSiphonDiameter: num('siphonDiameter') };
+  };
+
+  it("gives the Humboldt squid the top speed this tool's own quiz grades", () => {
+    const src = readFileSync(SOURCE, 'utf8');
+    const start = src.indexOf('var QUIZ_QUESTIONS = [');
+    const seg = src.slice(start, src.indexOf('\n      ];', start));
+    // eslint-disable-next-line no-new-func
+    const Q = new Function('__alloT', 'return ' + seg.replace('var QUIZ_QUESTIONS = ', '') + '\n]')((k, fb) => fb);
+    const q = Q.find((x) => x.id === 'q36_squid_speed');
+    const kmh = Number(/([0-9.]+) km\/h/.exec(q.options.find((o) => o.correct).text)[1]);
+    const ms = topSpeed(jet(presetOf('humboldt')));
+    expect(Math.abs(ms * 3.6 - kmh) / kmh).toBeLessThan(0.15);
+  }, JET_TIMEOUT_MS);
+
+  it('agrees with its own octopus FAQ, and keeps the nautilus slow', () => {
+    const src = readFileSync(SOURCE, 'utf8');
+    const faq = Number(/about ([0-9.]+) m\/s at most for a common octopus/.exec(src)[1]);
+    expect(topSpeed(jet(presetOf('commonOcto')))).toBe(faq);
+    expect(topSpeed(jet(presetOf('nautilus')))).toBeLessThan(0.5);
+    expect(src).not.toMatch(/up to 25 m\/s|~3-5 m\/s for a medium octopus/);
+  }, JET_TIMEOUT_MS);
+
+  it("never calls a species' own preset unrealistic, and derives efficiency from what it shows", () => {
+    PRESETS.forEach((id) => {
+      const c = jet(presetOf(id));
+      const v = card(c, 'Jet velocity');
+      const U = topSpeed(c);
+      expect(v, id).toBeGreaterThan(U);
+      expect(verdict(c), id).not.toMatch(/Above realistic|Too weak/);
+      const eff = card(c, 'Efficiency at top speed');
+      // v is shown to 0.1 m/s, so allow the rounding that introduces
+      expect(Math.abs(eff - 100 * 2 * U / (U + v)), id).toBeLessThan(2.5);
+    });
+  }, JET_TIMEOUT_MS);
+
+  it('calls a jet slower than the animal too weak instead of efficient', () => {
+    let found = false;
+    [30, 20, 15, 10, 5].forEach((kpa) => {
+      const c = jet({ ...presetOf('humboldt'), jetContractionKPa: kpa });
+      if (card(c, 'Jet velocity') < topSpeed(c)) {
+        found = true;
+        expect(verdict(c)).toMatch(/Too weak/);
+        expect(card(c, 'Efficiency at top speed')).toBe(0);
+      } else {
+        expect(verdict(c)).not.toMatch(/Too weak/);
+      }
+    });
+    expect(found).toBe(true);
+  }, JET_TIMEOUT_MS);
+
+  it('lets the pressure slider reach a nautilus and says the value, not the position', () => {
+    const pos = (kpa) => {
+      const el = jet({ ...presetOf('nautilus'), jetContractionKPa: kpa }).querySelector('input[aria-label="Contraction pressure (kPa)"]');
+      return { v: Number(el.getAttribute('value')), min: Number(el.getAttribute('min')), max: Number(el.getAttribute('max')), text: el.getAttribute('aria-valuetext') };
+    };
+    const n = presetOf('nautilus').jetContractionKPa;
+    const lo = pos(n);
+    // jsdom keeps a value below min as-is; a browser would clamp it, so the
+    // nautilus would silently be drawn at the slider's floor
+    expect(lo.v).toBeGreaterThan(lo.min);
+    expect(lo.text).toBe(n + ' kPa');
+    const seq = [n, 5, 80, 150].map((k) => pos(k).v);
+    expect(seq).toEqual([...seq].sort((a, b) => a - b));
+    expect(new Set(seq).size).toBe(seq.length);
+    expect(pos(150).v).toBe(lo.max);
+  }, JET_TIMEOUT_MS);
+
+  it('does what the siphon and volume hints now say', () => {
+    const base = presetOf('humboldt');
+    const narrow = jet({ ...base, jetSiphonDiameter: 10 });
+    const wide = jet({ ...base, jetSiphonDiameter: 40 });
+    expect(card(wide, 'Jet velocity')).toBe(card(narrow, 'Jet velocity'));
+    expect(card(wide, 'Thrust force')).toBeGreaterThan(card(narrow, 'Thrust force'));
+    expect(card(wide, 'Push time per pulse')).toBeLessThan(card(narrow, 'Push time per pulse'));
+    const small = jet({ ...base, jetMantleVolume: 100 });
+    const big = jet({ ...base, jetMantleVolume: 1000 });
+    expect(card(big, 'Thrust force')).toBe(card(small, 'Thrust force'));
+    expect(card(big, 'Speed gained per pulse')).toBeGreaterThan(card(small, 'Speed gained per pulse'));
+  }, JET_TIMEOUT_MS);
+
+  it('labels a speed with no measurement behind it as an estimate', () => {
+    PRESETS.forEach((id) => {
+      const estimated = /speedEstimate: true/.test(speciesBlock(id));
+      const label = jet(presetOf(id)).querySelectorAll('[role="meter"]')[1].getAttribute('aria-label');
+      expect(label, id).toMatch(estimated ? /^Estimated top speed/ : /^Documented top speed/);
+    });
+  }, JET_TIMEOUT_MS);
 });

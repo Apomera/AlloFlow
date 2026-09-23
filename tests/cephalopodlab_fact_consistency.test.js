@@ -750,3 +750,104 @@ describe('Cephalopod Lab sim payouts agree with the Field Guide prey table', () 
     expect(src).toContain('small but reliable meal');
   });
 });
+
+// ── Deep time ──
+// The first cephalopod was "~530 MYA" in ten places, once as "~530 MYA (Late
+// Cambrian)" although the Late Cambrian starts ~497 Ma (Plectronoceras is
+// upper Jiangshanian, ~494-490 Ma). Pohlsepia was the "earliest octopus" at
+// 150, ~300 and ~296 MYA in different sections; Clements et al. 2026 moved it
+// to the nautiloids. The octopus/squid split was ~200, ~330 and ~400 MYA.
+// Period bounds below are the ICS chart (Ma), not a claim of this tool.
+describe('Cephalopod Lab deep-time dates agree with each other and with the named period', () => {
+  const ICS = {
+    Cambrian: [538.8, 485.4], 'Early Cambrian': [538.8, 506.5], 'Middle Cambrian': [506.5, 497], 'Late Cambrian': [497, 485.4],
+    Ordovician: [485.4, 443.8], 'Early Ordovician': [485.4, 470], 'Middle Ordovician': [470, 458.4], 'Late Ordovician': [458.4, 443.8],
+    Silurian: [443.8, 419.2],
+    Devonian: [419.2, 358.9], 'Early Devonian': [419.2, 393.3], 'Middle Devonian': [393.3, 382.7], 'Late Devonian': [382.7, 358.9],
+    Carboniferous: [358.9, 298.9], Permian: [298.9, 251.9],
+    Triassic: [251.9, 201.4], 'Early Triassic': [251.9, 247.2], 'Middle Triassic': [247.2, 237], 'Late Triassic': [237, 201.4],
+    Jurassic: [201.4, 145], 'Early Jurassic': [201.4, 174.7], 'Middle Jurassic': [174.7, 161.5], 'Late Jurassic': [161.5, 145],
+    Cretaceous: [145, 66], 'Early Cretaceous': [145, 100.5], 'Late Cretaceous': [100.5, 66],
+    Eocene: [56, 33.9], today: [0, 0],
+  };
+  // "Ordovician-Devonian", "Devonian to today", "End-Permian ...", "K-Pg boundary"
+  const span = (name) => {
+    const end = /^End-(\w+)/.exec(name);
+    if (end && ICS[end[1]]) return [ICS[end[1]][1], ICS[end[1]][1]];
+    if (/^K-Pg/.test(name)) return [66, 66];
+    const clean = name.replace(/\s+extinction$/, '');
+    const parts = clean.split(/\s*-\s*|\s+to\s+/);
+    const a = ICS[parts[0]], b = ICS[parts[parts.length - 1]];
+    return a && b ? [a[0], b[1]] : null;
+  };
+  const dated = () => {
+    const out = [];
+    for (const m of src.matchAll(/id: '([a-z0-9_-]+)'[^\n]*?era: '([^']+)', age: '([^']+)'/g)) out.push({ what: m[1], period: m[2], date: m[3] });
+    for (const m of src.matchAll(/date: '([^']+)',\s*\n\s*period: '([^']+)',\s*\n\s*event: '([^']+)'/g)) out.push({ what: m[3], period: m[2], date: m[1] });
+    return out;
+  };
+
+  it('puts every dated fossil and timeline event inside the period it names', () => {
+    const items = dated();
+    expect(items.length).toBeGreaterThan(20);
+    let checked = 0;
+    for (const it of items) {
+      const years = /^~?\s*(\d{4})/.test(it.date);            // CE years: "2017", "~1880-1990"
+      if (years || /^(Present|Modern)/.test(it.period)) continue;
+      const sp = span(it.period);
+      expect(sp, it.what + ': unknown period ' + it.period).not.toBeNull();
+      const m = /~?\s*([\d.]+)(?:\s*-\s*([\d.]+))?\s*MYA/.exec(it.date);
+      expect(m, it.what + ': no MYA date in ' + it.date).not.toBeNull();
+      const [old, young] = [Number(m[1]), Number(m[2] || m[1])];
+      // "~" allows a few million years either side of the chart boundary
+      expect(old, it.what + ' ' + it.date + ' vs ' + it.period).toBeLessThanOrEqual(sp[0] + 3);
+      expect(young, it.what + ' ' + it.date + ' vs ' + it.period).toBeGreaterThanOrEqual(sp[1] - 3);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(14);
+  });
+
+  it('dates the first cephalopods the same way everywhere', () => {
+    const strings = Array.from(src.matchAll(/'((?:[^'\\\n]|\\.)*)'/g)).map((m) => m[1]);
+    const about = strings.filter((t) => /Plectronoceras|first cephalopod|earliest cephalopod|oldest cephalopod|cephalopod fossil record|branching history of cephalopods|Cambrian ancestor/i.test(t));
+    const dates = new Set();
+    // the FIRST date in each string: one sentence also dates the (later) octopuses
+    about.forEach((t) => { const m = /(\d{3})[- ](?:MYA|million)/.exec(t); if (m) dates.add(Number(m[1])); });
+    expect(about.filter((t) => /(\d{3})[- ](?:MYA|million)/.test(t)).length).toBeGreaterThanOrEqual(6);
+    // record + node + fossil card carry the date in a separate field: include them
+    for (const m of src.matchAll(/(?:holder: 'Plectronoceras', value|node: 'Cephalopoda',\s*\n\s*age|id: 'plectronoceras'[^\n]*?age): '~(\d{3}) MYA/g)) dates.add(Number(m[1]));
+    for (const m of src.matchAll(/date: '~(\d{3}) MYA',\s*\n\s*period: '[^']+',\s*\n\s*event: 'First cephalopods appear'/g)) dates.add(Number(m[1]));
+    expect(dates.size, [...dates].join(', ')).toBe(1);
+    const [d] = [...dates];
+    expect(d).toBeLessThanOrEqual(ICS['Late Cambrian'][0] + 3);
+    expect(d).toBeGreaterThanOrEqual(ICS['Late Cambrian'][1]);
+  });
+
+  it('gives one date range for the octopus/squid split', () => {
+    const node = (name) => Number(new RegExp("node: '" + name + " \\(split ~(\\d+) MYA\\)'").exec(src)[1]);
+    expect(node('Octopodiformes')).toBe(node('Decapodiformes'));
+    const ranges = [/split occurred in the Permian or Triassic, roughly (\d+)-(\d+) MYA/, /~(\d+)-(\d+) MYA \(octopus and squid lineages split/]
+      .map((re) => { const m = re.exec(src); expect(m, String(re)).not.toBeNull(); return [Number(m[1]), Number(m[2])]; });
+    expect(ranges[0]).toEqual(ranges[1]);
+    const [old, young] = ranges[0];
+    expect(node('Octopodiformes')).toBeLessThanOrEqual(old);
+    expect(node('Octopodiformes')).toBeGreaterThanOrEqual(young);
+    expect(src).not.toMatch(/split occurred ~330 MYA|Coleoidea diverged into octopus \+ decapods/);
+  });
+
+  it('never calls Pohlsepia the earliest octopus without saying it was reclassified', () => {
+    const strings = Array.from(src.matchAll(/'((?:[^'\\\n]|\\.)*)'/g)).map((m) => m[1]);
+    // A claim can sit on a neighbouring line of the same entry (Through Time
+    // puts the name in `highlight` and the claim in `after`), so read each
+    // mention with two lines either side.
+    const L = src.split('\n');
+    const at = L.map((l, i) => (/Pohlsepia/.test(l) ? i : -1)).filter((i) => i >= 0);
+    expect(at.length).toBeGreaterThan(4);
+    const claim = /(earliest|first|oldest)\s+(known\s+)?octopus|Pohlsepia is the (earliest|first|oldest)/i;
+    at.forEach((i) => {
+      const win = L.slice(Math.max(0, i - 2), i + 3).join('\n');
+      if (claim.test(win)) expect(win, L[i].trim().slice(0, 140)).toMatch(/reclassif|nautiloid/i);
+    });
+    expect(strings.some((t) => /Clements et al\., 2026/.test(t))).toBe(true);
+  });
+});

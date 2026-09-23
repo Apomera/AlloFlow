@@ -756,7 +756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     { id: 'fn-colorblind', text: 'Most cephalopods are color-blind. They produce the most varied skin displays in the animal kingdom while seeing only black + white. Theory: they detect color via skin opsins (light-sensitive proteins distributed across the body).' },
     { id: 'fn-shortlife', text: 'Most octopuses live 1-2 years. They mate once, lay eggs, brood them obsessively without eating, and die — semelparous reproduction. The optic gland triggers programmed death after egg-brooding.' },
     { id: 'fn-evolution', text: 'Cephalopods diverged from their molluscan cousins (clams + snails) about 500 million years ago. They share a common ancestor with everything from oysters to garden snails — but evolved radically different.' },
-    { id: 'fn-jetpower', text: 'Jet propulsion: water is pulled into the mantle cavity, then expelled through the siphon at up to 25 m/s in Humboldt squid. It\'s inefficient at slow speeds — that\'s why most octopuses crawl instead of jet.' },
+    { id: 'fn-jetpower', text: 'Jet propulsion: water is pulled into the mantle cavity, then squeezed out through the siphon, driving a Humboldt squid at up to about 25 km/h. It\'s inefficient at slow speeds — that\'s why most octopuses crawl instead of jet.' },
     { id: 'fn-ink', text: 'Ink is melanin (same pigment as human hair) + mucus + amino acids. The mucus makes it stick together as a "pseudomorph" — a fake decoy octopus-shaped blob. The amino acids also temporarily disable predator smell.' },
     { id: 'fn-toolmaker', text: 'The coconut octopus carries shell halves across the seafloor on stilt-walking arms + assembles them as a portable shelter. This was the first documented case of tool use in an invertebrate (Finn et al. 2009).' },
     { id: 'fn-tetrodotoxin', text: 'Blue-ringed octopus venom (tetrodotoxin) is the same toxin found in pufferfish. It blocks sodium channels in nerves. There is no antivenom. Symptomatic treatment + ventilator support is the only protocol.' },
@@ -2222,7 +2222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.in_argonaut_octopuses_the_male_is_1_10', 'In Argonaut octopuses, the male is 1/10th the size of the female. His specialized arm (hectocotylus) detaches and swims to the female to deliver sperm.'), cite: 'Naef, 1923 — Cephalopoda.' },
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.hawaiian_bobtail_squid_lay_50_100_eggs', 'Hawaiian bobtail squid lay 50-100 eggs per clutch in seagrass beds. Unlike most cephalopods, they spawn multiple times.'), cite: 'Singley, 1983.' },
         // ─── Evolution + paleontology ───
-        { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_earliest_cephalopod_plectronoceras', 'The earliest cephalopod (Plectronoceras, ~530 MYA) was the size of a thumb and had a chambered shell — a precursor to nautilus.'), cite: 'Kröger et al., 2011 — BioEssays.' },
+        { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_earliest_cephalopod_plectronoceras', 'The earliest cephalopod (Plectronoceras, ~500 MYA, Late Cambrian) was the size of a thumb and had a chambered shell — a precursor to nautilus.'), cite: 'Kröger et al., 2011 — BioEssays.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.cephalopods_survived_all_five_major_ma', 'Cephalopods survived all FIVE major mass extinctions in Earth\'s history — though each event reset their diversity dramatically.'), cite: 'Klug et al., 2010 — Earth-Sci. Rev.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.octopus_vertebrate_eyes_evolved_indepe', 'Octopus + vertebrate eyes evolved independently from different precursors — a classic example of convergent evolution.'), cite: 'Tomarev & Piatigorsky, 1996 — Eur. J. Biochem.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.cephalopods_can_edit_their_rna_in_thei', 'Cephalopods can EDIT their RNA in their nervous systems — a unique adaptation thought to allow rapid neural protein optimization across temperature shifts.'), cite: 'Liscovitch-Brauer et al., 2017 — Cell.' },
@@ -2280,7 +2280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.hawaiian_bobtail_squid_lay_50_100_smal', 'Hawaiian bobtail squid lay 50-100 small eggs per clutch and have MULTIPLE clutches over their 3-10 month lifespan — unusually polyparous for cephalopods.'), cite: 'Singley, 1983.' },
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.octopus_paralarvae_have_huge_statocyst', 'Octopus paralarvae have HUGE statocysts relative to body size, helping them maintain orientation in turbulent surface waters.'), cite: 'Boyle & Rodhouse, 2005.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.cephalopod_fossils_show_clear_evidence', 'Cephalopod fossils show clear evidence of predator-prey co-evolution with fish — when fish jaws strengthened in the Devonian, ammonoid shells thickened.'), cite: 'Klug et al., 2010.' },
-        { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_earliest_octopus_fossil_pohlsepia_', 'The earliest octopus fossil (Pohlsepia mazonensis, ~150 MYA) was preserved in unique conditions — anoxic sediment in the Mazon Creek formation, Illinois.'), cite: 'Kluessendorf & Doyle, 2000.' },
+        { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_earliest_octopus_fossil_pohlsepia_', 'The fossil long called the earliest octopus, Pohlsepia mazonensis from the ~310-million-year-old Mazon Creek beds of Illinois, was reclassified in 2026 as a nautiloid: its preserved radula (toothed tongue) has a nautiloid shape. Octopuses probably evolved in the Jurassic, over 100 million years later.'), cite: 'Clements et al., 2026 (Proc. R. Soc. B); first described by Kluessendorf & Doyle, 2000.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.cephalopod_genome_sequencing_shows_22_', 'Cephalopod genome sequencing shows ~22% of cephalopod-specific genes have no clear vertebrate orthologs — they evolved entirely independently.'), cite: 'Albertin et al., 2015.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.cephalopods_are_particularly_responsiv', 'Cephalopods are particularly responsive to temperature — a 2°C ocean warming can double their metabolic rate.'), cite: 'Levin & Le Bris, 2015.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.cephalopods_consume_an_estimated_100_m', 'Cephalopods consume an estimated 100+ million tonnes of prey biomass globally per year — they\'re major players in marine food webs.'), cite: 'Doubleday et al., 2016.' },
@@ -2374,7 +2374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Defense', fact: __alloT('stem.cephalopodlab.in_addition_to_camouflage_ink_octopuse', 'In addition to camouflage + ink, octopuses use BEHAVIORAL DEFENSE — adopting a "flat + still" posture that triggers visual masking from many predators.'), cite: 'Hanlon, 2007.' },
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.spermatophores_in_some_cephalopods_are', 'Spermatophores in some cephalopods are coated with anti-bacterial peptides — protecting the sperm during female storage.'), cite: 'Hanlon & Messenger, 2018.' },
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.female_cephalopods_often_store_sperm_f', 'Female cephalopods often store sperm from multiple matings + selectively use it later — a phenomenon called CRYPTIC FEMALE CHOICE. Documented in Octopus mimus + others.'), cite: 'Naud et al., 2016.' },
-        { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_cephalopod_fossil_record_extends_b', 'The cephalopod fossil record extends back over 530 million years — among the longest of any animal lineage. They\'ve survived all 5 mass extinctions.'), cite: 'Klug et al., 2010.' },
+        { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_cephalopod_fossil_record_extends_b', 'The cephalopod fossil record extends back about 500 million years — among the longest of any animal lineage. They\'ve survived all 5 mass extinctions.'), cite: 'Klug et al., 2010.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_earliest_documented_ink_is_preserv', 'The earliest documented INK is preserved in Jurassic-age fossil squid (~150 MYA). Some specimens still contain residual melanin pigment.'), cite: 'Glass et al., 2012.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.cephalopods_occupy_nearly_every_marine', 'Cephalopods occupy nearly every marine habitat — from tide pools to abyssal plains. The few exceptions are extreme: pure freshwater, the hottest vent water, and the most extreme oxygen-minimum zones.'), cite: 'Hanlon & Messenger, 2018.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.a_2024_paper_estimated_cephalopod_glob', 'A 2024 paper estimated cephalopod global biomass at ~600 million tonnes — competitive with all marine mammals combined.'), cite: 'Doubleday et al., 2024 update.' },
@@ -2384,7 +2384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.squid_axons_remain_the_foundation_of_n', 'Squid axons remain the foundation of neuroscience education. Many medical schools still use squid axon preparations to teach the action potential.'), cite: 'Hodgkin & Huxley, 1952.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.octopuses_can_solve_novel_puzzles_with', 'Octopuses can SOLVE NOVEL puzzles within 1-2 trials — and remember the solution months later. This is comparable to vertebrate problem-solving.'), cite: 'Hochner et al., 2006.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.female_cuttlefish_have_been_observed_s', 'Female cuttlefish have been observed selecting LARGER spermatophores over smaller ones — likely a form of cryptic mate choice.'), cite: 'Wodinsky, 1969.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_oldest_cephalopod_fossil_is_530_mi', 'The oldest cephalopod fossil is 530 million years old. The OLDEST OCTOPUS fossil is only ~150 million years old. Octopuses are a relatively young branch on the cephalopod tree.'), cite: 'Kröger et al., 2011.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_oldest_cephalopod_fossil_is_530_mi', 'The oldest cephalopod fossils are about 500 million years old. Octopuses probably appeared only in the Jurassic, roughly 200-145 million years ago, so they are a young branch on the cephalopod tree.'), cite: 'Kröger et al., 2011; Clements et al., 2026.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_eye_vertebrate_eye_independ', 'Cephalopod eye + vertebrate eye independently evolved similar structures (cornea, lens, iris, retina) — one of the strongest examples of convergent evolution.'), cite: 'Tomarev & Piatigorsky, 1996.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.octopus_chromatophores_can_be_seen_mov', 'Octopus chromatophores can be SEEN moving under microscopes during anesthetic recovery — providing a visual marker of neural recovery.'), cite: 'Crook, 2021.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2017_expedition_documented_a_transpa', 'A 2017 expedition documented a transparent deep-sea octopus species (Vitreledonella richardi) with internal organs visible through the body wall.'), cite: 'Sigwart et al., 2017.' },
@@ -2419,7 +2419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.a_cephalopod_s_mantle_muscle_is_among_', 'A cephalopod\'s mantle muscle is among the fastest contractile tissues in the animal kingdom — capable of full mantle compression in <100 ms during jet propulsion.'), cite: 'O\'Dor, 1988.' },
         { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.octopuses_cuttlefish_display_highly_as', 'Octopuses + cuttlefish display HIGHLY ASYMMETRIC body patterns when context demands it — e.g., one side aggressive + the other side cryptic — using LATERALIZATION to handle multiple audiences.'), cite: 'Brown et al., 2012.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopus_problem_solving_extends_to_mec', 'Octopus problem-solving extends to MECHANICAL puzzles — pushing, pulling, twisting. They\'ll explore new objects extensively before committing to a strategy. Tests show ~70% solve rate on novel mechanical tasks.'), cite: 'Fiorito et al., 1994.' },
-        { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.cuttlefish_squid_feeding_tentacles_fir', 'Cuttlefish + squid feeding tentacles fire forward at speeds reaching 10 m/s — among the fastest accelerations in the animal kingdom. The tentacles strike + retract in <40 ms.'), cite: 'Messenger, 1968.' },
+        { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.cuttlefish_squid_feeding_tentacles_fir', 'Squid feeding tentacles shoot out in 20-40 ms, reaching over 2 m/s at a peak acceleration near 250 m/s² (about 25 g). Cuttlefish strike the same way.'), cite: 'Kier & van Leeuwen, 1997; Messenger, 1968.' },
         { cat: 'Defense', fact: __alloT('stem.cephalopodlab.octopuses_have_specialized_ink_sacs_th', 'Octopuses have specialized "ink sacs" that store dark melanin pigment. Each squirt of ink can use ~1-5 ml of fluid — typically 3-5 squirts per refill cycle (~30 days).'), cite: 'Derby, 2014.' },
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.octopus_eggs_are_typically_1_3_mm_in_s', 'Octopus eggs are typically 1-3 mm in size. Females may lay 50,000-500,000 eggs in a single mass — but only ~1% reach reproductive age. The bottleneck is at the planktonic paralarval stage.'), cite: 'Boyle & Rodhouse, 2005.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.cephalopod_genomes_are_spectacularly_l', 'Cephalopod genomes are SPECTACULARLY large + complex compared to other invertebrates. Octopus bimaculoides genome is ~2.7 Gb, with expanded gene families for nervous system development.'), cite: 'Albertin et al., 2015.' },
@@ -4461,14 +4461,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { record: 'Largest eye in any animal', holder: 'Colossal squid', value: '27 cm diameter', citation: 'Roper & Voss, 1983' },
         { record: 'Longest egg brooding', holder: 'Pacific deep-sea octopus (Graneledone boreopacifica)', value: '53 months (4.5 years)', citation: 'Robison et al., 2014' },
         { record: 'Largest spermatophore', holder: 'Giant Pacific octopus', value: '~1 m long', citation: 'Cigliano, 1995' },
-        { record: 'Fastest cephalopod', holder: 'Humboldt squid + flying squid', value: '~25-36 km/h in water', citation: 'Rosa & Seibel, 2008' },
+        { record: 'Fastest cephalopod', holder: 'Humboldt squid + flying squid', value: '~25 km/h in water (flying squid ~36 km/h in air)', citation: 'Rosa & Seibel, 2008' },
         { record: 'Highest neuron density per body mass', holder: 'Octopus (in arms)', value: '~330 million neurons in arms alone', citation: 'Hochner et al., 2006' },
         { record: 'Most chromatophores per area', holder: 'Cuttlefish (Sepia officinalis)', value: '~250 per mm²', citation: 'Hanlon & Messenger, 2018' },
         { record: 'Most extreme sexual dimorphism', holder: 'Argonaut octopus + blanket octopus', value: 'Female ~10-100x male body mass', citation: 'Naef, 1923' },
         { record: 'Most extreme pressure adaptation', holder: 'Hadal cephalopods (some Graneledone)', value: 'Up to ~700 atm', citation: 'Yancey et al., 2014' },
         { record: 'First documented invertebrate tool use', holder: 'Coconut octopus (Amphioctopus marginatus)', value: 'Coconut shell shelter assembly', citation: 'Finn et al., 2009' },
         { record: 'Largest cephalopod fishery', holder: 'Humboldt squid (Eastern Pacific)', value: '~1 million tonnes/year at peak', citation: 'Stewart et al., 2014' },
-        { record: 'Oldest cephalopod fossil', holder: 'Plectronoceras', value: '~530 MYA (Late Cambrian)', citation: 'Kröger et al., 2011' },
+        { record: 'Oldest cephalopod fossil', holder: 'Plectronoceras', value: '~500 MYA (Late Cambrian)', citation: 'Kröger et al., 2011' },
         { record: 'Most ancient living cephalopod lineage', holder: 'Nautilus', value: '~500 MYA divergence', citation: 'Klug et al., 2010' },
         { record: 'Largest cephalopod mating aggregation', holder: 'Giant Australian cuttlefish (Sepia apama, Whyalla)', value: 'Tens of thousands annually', citation: 'Hall & Hanlon, 2002' },
         { record: 'Most poisonous cephalopod', holder: 'Blue-ringed octopus (Hapalochlaena spp.)', value: 'TTX LD50 ~8 μg/kg', citation: 'Williamson et al., 1996' },
@@ -4623,7 +4623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         {
           q: 'How fast can an octopus move?',
-          a: 'Burst speed via jet propulsion: ~3-5 m/s for a medium octopus (~5 m/s for a large GPO). Sustained crawl: ~0.1-0.5 m/s. Jet propulsion is metabolically expensive — 5x more costly than crawling — so it\'s reserved for emergencies.',
+          a: 'Burst speed via jet propulsion: about 1 m/s at most for a common octopus (Wells et al. 1987, 1990), 0.7 m/s for the smaller Abdopus (Huffard 2006). Crawling averages under 0.1 m/s (9 cm/s in the common octopus). Jet propulsion is metabolically expensive — 5x more costly than crawling — so it\'s reserved for emergencies.',
           category: 'Locomotion',
         },
         {
@@ -5199,7 +5199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         {
           node: 'Cephalopoda',
-          age: '~530 MYA',
+          age: '~500 MYA',
           characteristics: 'Chambered shell + image-forming eyes + arms modified from foot.',
           modernRepresentatives: 'All octopuses, squids, cuttlefish, nautiluses.',
           significance: 'The first major cephalopod radiation. Chambered shell enables active swimming via buoyancy regulation.',
@@ -5233,15 +5233,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           significance: 'Transitional form between external-shelled and modern soft-bodied cephalopods.',
         },
         {
-          node: 'Octopodiformes (split ~200 MYA)',
-          age: '~200 MYA to present',
-          characteristics: 'No shell. Eight arms (no specialized feeding tentacles).',
+          node: 'Octopodiformes (split ~250 MYA)',
+          age: '~250 MYA to present',
+          characteristics: 'Shell reduced to a gladius (vampire squid) or tiny stylets (octopuses). Eight arms (no specialized feeding tentacles).',
           modernRepresentatives: 'All octopuses + vampire squid (Vampyroteuthis).',
-          significance: 'Modern octopus body plan. Lost the shell entirely.',
+          significance: 'Modern octopus body plan: the shell shrinks to almost nothing.',
         },
         {
-          node: 'Decapodiformes (split ~200 MYA)',
-          age: '~200 MYA to present',
+          node: 'Decapodiformes (split ~250 MYA)',
+          age: '~250 MYA to present',
           characteristics: 'No external shell; usually retain internal gladius (pen) or cuttlebone. 8 arms + 2 specialized feeding tentacles.',
           modernRepresentatives: 'All squids, cuttlefish, bobtail squids, spirulids.',
           significance: 'Active predator body plan. Cuttlebone in cuttlefish + gladius in squid + spirulid (Spirula) are unique adaptations.',
@@ -6319,7 +6319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // educator Field Day protocol + classroom observation activities.
       var BEHAVIOR_ETHOGRAM = [
         { code: 'REST', name: __alloT('stem.cephalopodlab.resting', 'Resting'), description: __alloT('stem.cephalopodlab.motionless_inside_a_den_or_under_camou', 'Motionless inside a den or under camouflage; eyes may be open or closed.'), context: 'Most common; ~60-80% of waking time' },
-        { code: 'CRAWL', name: __alloT('stem.cephalopodlab.slow_crawl', 'Slow crawl'), description: __alloT('stem.cephalopodlab.walking_on_the_sea_floor_using_suction', 'Walking on the sea floor using suction grip; arms extended in front + sides.'), context: 'Foraging or den-to-den travel; ~0.1-0.5 m/s' },
+        { code: 'CRAWL', name: __alloT('stem.cephalopodlab.slow_crawl', 'Slow crawl'), description: __alloT('stem.cephalopodlab.walking_on_the_sea_floor_using_suction', 'Walking on the sea floor using suction grip; arms extended in front + sides.'), context: 'Foraging or den-to-den travel; usually under 0.1 m/s (common octopus averages 9 cm/s)' },
         { code: 'JET', name: __alloT('stem.cephalopodlab.jet_propulsion_2', 'Jet propulsion'), description: __alloT('stem.cephalopodlab.rapid_mantle_contraction_expelling_wat', 'Rapid mantle contraction expelling water through siphon. Burst speed.'), context: 'Escape or rapid relocation; metabolically expensive, brief' },
         { code: 'SWIM', name: __alloT('stem.cephalopodlab.slow_swim', 'Slow swim'), description: __alloT('stem.cephalopodlab.mantle_pulsing_more_gently_arms_traili', 'Mantle pulsing more gently; arms trailing; aimed locomotion through water column.'), context: 'Migration or vertical movement' },
         { code: 'POUNCE', name: __alloT('stem.cephalopodlab.pounce_attack', 'Pounce attack'), description: __alloT('stem.cephalopodlab.sudden_expansion_of_arm_web_to_envelop', 'Sudden expansion of arm web to envelope prey from above or side.'), context: 'Hunting; lasts < 1 second' },
@@ -7533,7 +7533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // the Through Time tab to render a clickable timeline.
       var TIMELINE_EVENTS = [
         {
-          date: '~530 MYA',
+          date: '~500 MYA',
           period: 'Late Cambrian',
           event: 'First cephalopods appear',
           detail: __alloT('stem.cephalopodlab.plectronoceras_a_small_straight_shelle', 'Plectronoceras, a small, straight-shelled mollusk only a few cm long, is the earliest known cephalopod. Found in fossil deposits from China. Possessed a chambered shell — already showing the key innovation that would define the lineage.'),
@@ -7591,18 +7591,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         {
           date: '~200 MYA',
           period: 'Early Jurassic',
-          event: 'First true coleoids',
+          event: 'Modern coleoid lineages appear',
           detail: __alloT('stem.cephalopodlab.earliest_fossils_of_modern_coleoid_lin', 'Earliest fossils of modern coleoid lineages: proto-squid + proto-octopus. The "Mesozoic Marine Revolution" begins — increased predation pressure drives evolution of speed, camouflage, and ink.'),
           significance: 'Modern cephalopod body plans emerge here. Ink fossils preserved in Jurassic sediments still hold usable melanin.',
           source: 'Tanner et al., 2017 — Proc. R. Soc. B.',
         },
         {
-          date: '~150 MYA',
-          period: 'Late Jurassic',
-          event: 'Earliest octopus fossils',
-          detail: __alloT('stem.cephalopodlab.pohlsepia_mazonensis_mazon_creek_illin', 'Pohlsepia mazonensis (Mazon Creek, Illinois) — the earliest known octopus fossil. 8 arms, no shell, soft-tissue preservation in a unique anoxic shale formation.'),
-          significance: 'Confirms octopus-like body plans existed by the Late Jurassic. Soft-tissue cephalopod fossils are extraordinarily rare.',
-          source: 'Kluessendorf & Doyle, 2000 — Palaeontology.',
+          date: '~200-145 MYA',
+          period: 'Jurassic',
+          event: 'Octopuses probably appear',
+          detail: __alloT('stem.cephalopodlab.pohlsepia_mazonensis_mazon_creek_illin', 'Octopuses probably evolved during the Jurassic. The fossil long cited as the first octopus, Pohlsepia (Mazon Creek, Illinois, ~310 MYA), was reclassified as a nautiloid in 2026.'),
+          significance: 'Soft-tissue cephalopod fossils are extraordinarily rare, so one squashed specimen set the date of octopus origins for 26 years. Re-examining it moved that date by more than 100 million years.',
+          source: 'Clements et al., 2026 — Proc. R. Soc. B; Kluessendorf & Doyle, 2000 — Palaeontology.',
         },
         {
           date: '~66 MYA',
@@ -8531,7 +8531,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           question: __alloT('stem.cephalopodlab.cephalopod_intelligence_evolved_indepe', 'Cephalopod intelligence evolved independently from vertebrate intelligence. What might have driven its evolution?'),
           options: [
             { text: __alloT('stem.cephalopodlab.living_near_vertebrates', 'Living near vertebrates'), correct: false, explanation: __alloT('stem.cephalopodlab.coexistence_alone_doesn_t_drive_intell', 'Coexistence alone doesn\'t drive intelligence evolution.') },
-            { text: __alloT('stem.cephalopodlab.soft_body_vulnerability_need_for_behav', 'Soft-body vulnerability + need for behavioral defenses'), correct: true, explanation: __alloT('stem.cephalopodlab.best_hypothesis_losing_the_protective_', 'Best hypothesis. Losing the protective shell (in coleoid cephalopods, ~400 MYA) put extreme selection pressure on behavioral solutions — better defenses, more complex hunting, better problem-solving.') },
+            { text: __alloT('stem.cephalopodlab.soft_body_vulnerability_need_for_behav', 'Soft-body vulnerability + need for behavioral defenses'), correct: true, explanation: __alloT('stem.cephalopodlab.best_hypothesis_losing_the_protective_', 'Best hypothesis. Losing the protective shell (in coleoid cephalopods, from about 330 MYA) put extreme selection pressure on behavioral solutions — better defenses, more complex hunting, better problem-solving.') },
             { text: __alloT('stem.cephalopodlab.genetic_horizontal_transfer_from_fish', 'Genetic horizontal transfer from fish'), correct: false, explanation: __alloT('stem.cephalopodlab.no_there_s_no_evidence_of_meaningful_h', 'No — there\'s no evidence of meaningful horizontal gene transfer here.') },
             { text: __alloT('stem.cephalopodlab.random_genetic_drift', 'Random genetic drift'), correct: false, explanation: __alloT('stem.cephalopodlab.drift_alone_doesn_t_explain_the_consis', 'Drift alone doesn\'t explain the consistent intelligence increase across multiple cephalopod lineages.') },
           ],
@@ -8558,7 +8558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           options: [
             { text: __alloT('stem.cephalopodlab.speeds_up_dramatically', 'Speeds up dramatically'), correct: false, explanation: __alloT('stem.cephalopodlab.no_counterintuitively_the_opposite_hap', 'No — counterintuitively, the opposite happens.') },
             { text: __alloT('stem.cephalopodlab.stops_beating_temporarily', 'Stops beating temporarily'), correct: true, explanation: __alloT('stem.cephalopodlab.correct_wells_smith_1992_documented_th', 'Correct. Wells & Smith 1992 documented that systemic heart contraction is interrupted during high-pressure mantle contractions — limiting how long an octopus can sustain jet propulsion.') },
-            { text: __alloT('stem.cephalopodlab.slows_down_by_half', 'Slows down by half'), correct: false, explanation: __alloT('stem.cephalopodlab.closer_than_option_a_but_still_incorre', 'Closer than option A but still incorrect.') },
+            { text: __alloT('stem.cephalopodlab.slows_down_by_half', 'Slows down by half'), correct: false, explanation: __alloT('stem.cephalopodlab.closer_than_option_a_but_still_incorre', 'Closer than speeding up, but still incorrect: the systemic heart does not just slow down, it stops.') },
             { text: __alloT('stem.cephalopodlab.stays_at_resting_rate', 'Stays at resting rate'), correct: false, explanation: __alloT('stem.cephalopodlab.no_there_s_significant_disruption', 'No — there\'s significant disruption.') },
           ],
         },
@@ -9495,7 +9495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         coleoidea_clades: {
           term: 'Octopoda + Decapodiformes',
-          def: 'The two living subdivisions of Coleoidea. Octopoda = octopuses + cirrate octopuses. Decapodiformes = squid + cuttlefish + bobtail squid + spirulids. The split occurred ~330 MYA in the Carboniferous.',
+          def: 'The two living subdivisions of Coleoidea. Octopoda = octopuses + cirrate octopuses. Decapodiformes = squid + cuttlefish + bobtail squid + spirulids. The split occurred in the Permian or Triassic, roughly 270-200 MYA; fossils and molecular clocks agree (Klug et al. 2023).',
           related: ['coleoidea', 'cephalopod', 'phylogeny'],
           sources: [
             { title: __alloT('stem.cephalopodlab.tanner_et_al_2017_proc_r_soc_b', 'Tanner et al., 2017 — Proc. R. Soc. B'), year: 2017 },
@@ -10244,7 +10244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             { code: 'AP Bio EU 1.B.1', text: __alloT('stem.cephalopodlab.organisms_share_many_conserved_core_pr', 'Organisms share many conserved core processes and features.') },
           ],
           driver_question: 'Cephalopods have three radically different body plans (octopus, squid, nautilus) descended from a common ancestor. How does natural selection explain divergence within a class?',
-          warmup: '5 min: Display a cladogram of Cephalopoda with branches: Nautiloidea (nautilus), Octopoda (octopus), Decapodiformes (squid + cuttlefish). Date the splits: ~500 MYA (Nautilus split), ~400 MYA (Coleoidea diverged into octopus + decapods).',
+          warmup: '5 min: Display a cladogram of Cephalopoda with branches: Nautiloidea (nautilus), Octopoda (octopus), Decapodiformes (squid + cuttlefish). Date the splits: ~500 MYA (Nautilus split), ~270-200 MYA (octopus and squid lineages split, Permian-Triassic).',
           exploration: '25 min: Students sim each branch — Nautilus, Common Octopus, Cuttlefish (representing decapods). For each, they take notes on: locomotion, feeding, defense, vision (from the Field Guide entries).',
           sensemaking: '15 min: Build a comparative table — 5 traits × 3 lineages. Mark each cell with "+ derived" or "= conserved" relative to shared ancestor. Class discussion: what features tell us about each lineage\'s ecological role?',
           formative_check: '5 min: AP-style FRQ — "Explain how the loss of the external shell in coleoid cephalopods would create selection pressure for compensating traits. Identify two such traits."',
@@ -11255,6 +11255,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         if (!canvasEl._clLossBound) {
           canvasEl._clLossBound = true;
           canvasEl.addEventListener('webglcontextlost', function (ev) {
+            // releaseGl force-loses a canvas after teardown removes it; that is a
+            // normal exit, not a failure. A real loss happens on a canvas still on the page.
+            if (!canvasEl.isConnected) return;
             ev.preventDefault();
             console.warn('[CephalopodLab] WebGL context lost — offering Retry');
             if (canvasEl._clCleanup) { try { canvasEl._clCleanup(); } catch (e) {} canvasEl._clCleanup = null; }
@@ -15791,9 +15794,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // human visual reaction is on the order of a quarter second.
         var CEPH_LO = 25, CEPH_HI = 150, HUMAN_TYP = 250, SCALE_MAX = 800;
         var pct = function(v) { return Math.max(0, Math.min(100, v / SCALE_MAX * 100)); };
-        var verdictText = rt < 200 ? __alloT('stem.cephalopodlab.ev_rt_lightning', 'Lightning fast — cephalopod-grade reflexes.') :
-                          rt < 400 ? __alloT('stem.cephalopodlab.ev_rt_quick', 'Quick. Above-average human reaction.') :
-                          rt < 700 ? __alloT('stem.cephalopodlab.ev_rt_average', 'Average reaction time.') :
+        // Keyed off the SAME constants the scale bar draws below. This used to
+        // call anything under 200 ms cephalopod-grade, putting the verdict at
+        // odds with the shaded 25-150 ms band right beside it.
+        var verdictText = rt < CEPH_HI ? __alloT('stem.cephalopodlab.ev_rt_lightning', 'Inside the cephalopod band — almost no human reacts this fast.') :
+                          rt < HUMAN_TYP ? __alloT('stem.cephalopodlab.ev_rt_quick', 'Faster than a typical human, still slower than a cephalopod.') :
+                          rt < 400 ? __alloT('stem.cephalopodlab.ev_rt_average', 'About a typical human reaction.') :
+                          rt < 700 ? __alloT('stem.cephalopodlab.ev_rt_slowish', 'Slower than typical. The lunge would have landed.') :
                                      __alloT('stem.cephalopodlab.ev_rt_slow', 'Slow. Predator probably already had you.');
         var stateLabel = hasReacted ? __alloT('stem.cephalopodlab.ev_state_escaped', 'Escaped') :
                          go ? __alloT('stem.cephalopodlab.ev_state_strike', 'STRIKE! Escape now') :
@@ -15895,7 +15902,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // Reaction-time analysis
         notes.push({ neg: reactionScore < 10,
           label: reactionScore >= 20 ? '✓ Fast reaction' : reactionScore >= 10 ? '~ Adequate reaction' : '⚠️ Slow reaction',
-          detail: 'Reaction ' + reactionMs + 'ms — ' + (reactionMs < 200 ? 'cephalopod-grade reflexes (real octopus is ~70-150ms).' : 'a real cephalopod would have moved faster.') });
+          // Graded against the same 150 / 250 ms references the readout draws.
+          // This was a two-way split at 200 ms, so 210 ms and 900 ms produced
+          // the identical sentence and the minigame stopped saying anything
+          // useful exactly where most human attempts land.
+          detail: __alloT('stem.cephalopodlab.ev_judge_reaction', 'Reaction ') + reactionMs + 'ms — '
+            + (reactionMs < 150 ? __alloT('stem.cephalopodlab.ev_judge_ceph', 'inside the 25-150ms cephalopod escape range — almost no human reacts this fast.')
+              : reactionMs < 250 ? __alloT('stem.cephalopodlab.ev_judge_fast', 'faster than a typical human (~250ms), but a cephalopod would still have moved first.')
+              : reactionMs < 400 ? __alloT('stem.cephalopodlab.ev_judge_typical', 'about a typical human reaction (~250ms). A cephalopod escape is over before this.')
+              : __alloT('stem.cephalopodlab.ev_judge_slow', 'well past the strike window. The predator had several tries in this time.')) });
         // Species-tactic appropriateness
         if (tac.species.indexOf(sp.id) === -1) {
           notes.push({ neg: true, label: __alloT('stem.cephalopodlab.tactic_not_available_for_this_species', '⚠️ Tactic not available for this species'), detail: 'Real ' + sp.name + ' doesn\'t use ' + tac.name + '. Picked anyway?' });
@@ -17244,7 +17259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'siphon', name: __alloT('stem.cephalopodlab.siphon_funnel', 'Siphon (Funnel)'), emoji: '💨', cx: 215, cy: 80, r: 8,
             color: '#38bdf8',
             short: 'Steerable jet nozzle. Direction = direction the octopus goes.',
-            detail: __alloT('stem.cephalopodlab.the_siphon_is_the_muscular_tube_that_w', 'The siphon is the muscular tube that water exits during jet propulsion. It\'s STEERABLE — the octopus can point it forward, backward, up, down. Jet through siphon = thrust in opposite direction. Squid use this for explosive escape (up to 25 m/s in Humboldt squid). Octopuses use it gently for steering + as a secondary swim mode (primary mode is arm-crawling).') },
+            detail: __alloT('stem.cephalopodlab.the_siphon_is_the_muscular_tube_that_w', 'The siphon is the muscular tube that water exits during jet propulsion. It\'s STEERABLE — the octopus can point it forward, backward, up, down. Jet through siphon = thrust in opposite direction. Squid use this for explosive escape (up to about 25 km/h in Humboldt squid). Octopuses use it gently for steering + as a secondary swim mode (primary mode is arm-crawling).') },
           { id: 'beak', name: __alloT('stem.cephalopodlab.beak', 'Beak'), emoji: '⚙️', cx: 200, cy: 130, r: 8,
             color: '#fca5a5',
             short: 'Chitin beak — the only hard part in the body. Octopuses can squeeze through any hole bigger than their beak.',
@@ -17489,7 +17504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var ERAS = [
           { id: 'cambrian', name: __alloT('stem.cephalopodlab.cambrian', 'Cambrian'), startMya: 538, endMya: 485, color: '#c2620e',
             headline: 'First cephalopods appear',
-            event: 'Around 530 MYA, the first cephalopod emerges: ',
+            event: 'Around 500 MYA, the first cephalopod emerges: ',
             highlight: 'Plectronoceras',
             after: ', a small cone-shelled animal in shallow Chinese seas. Cephalopods diverge from snail/clam ancestors.',
             keyFossils: ['plectronoceras'],
@@ -17509,10 +17524,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             keyFossils: ['orthoceras'],
             ecosystem: 'Devonian = "Age of Fishes." Cephalopods lose ground to fish but ammonoids carve out a new niche. Late Devonian extinction (~372 MYA) is gradual + lasts ~25 million years.' },
           { id: 'carb-permian', name: 'Carboniferous-Permian', startMya: 359, endMya: 252, color: '#a87a1e',
-            headline: 'Goniatites + first octopus',
-            event: 'Goniatites — ammonoids with characteristically zigzag sutures — dominate. Around 300 MYA, ',
+            headline: 'Goniatites + a famous mix-up',
+            event: 'Goniatites — ammonoids with characteristically zigzag sutures — dominate. Around 310 MYA, ',
             highlight: 'Pohlsepia',
-            after: ' (the earliest known octopus) appears in what is now Illinois — a soft-bodied cephalopod fossilized in a remarkable concretion. Most ancestors of modern coleoids are tracing back here.',
+            after: ' is fossilized in a concretion in what is now Illinois. For 26 years it was called the earliest octopus; in 2026 its radula showed it is a nautiloid relative. The first coleoids, the internal-shelled group that later gave rise to squid and octopuses, do appear in this era.',
             keyFossils: ['goniatite', 'pohlsepia'],
             ecosystem: 'Pangaea forms. Coal swamps everywhere. End-Permian extinction (~252 MYA) is THE big one — 95% of marine species gone. Cephalopods barely scrape through.' },
           { id: 'triassic', name: __alloT('stem.cephalopodlab.triassic', 'Triassic'), startMya: 252, endMya: 201, color: '#7c2d12',
@@ -17547,7 +17562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
         // Fossil specimen data
         var FOSSILS = [
-          { id: 'plectronoceras', name: __alloT('stem.cephalopodlab.plectronoceras', 'Plectronoceras'), era: 'Cambrian', age: '~530 MYA', emoji: '🐚',
+          { id: 'plectronoceras', name: __alloT('stem.cephalopodlab.plectronoceras', 'Plectronoceras'), era: 'Cambrian', age: '~500 MYA', emoji: '🐚',
             size: '~2 cm shell', diet: 'Small invertebrates',
             description: __alloT('stem.cephalopodlab.the_first_known_cephalopod_a_small_con', 'The first known cephalopod. A small cone-shaped shell from Cambrian China. The animal had tentacles + a primitive siphuncle (the tube that runs through nautilus chambers regulating buoyancy). Cephalopod blueprint already established at 2 cm.'),
             why: 'This 2cm animal is the great-great-grandparent of everything from giant squid to mimic octopus. The siphuncle + chambered shell + tentacles all appear together.' },
@@ -17563,10 +17578,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             size: '3-15 cm shell', diet: 'Plankton + small prey',
             description: __alloT('stem.cephalopodlab.early_ammonoids_with_simple_zigzag_sut', 'Early ammonoids with simple, ZIGZAG suture patterns where the shell chambers meet the outer wall. Sutures are the key to identifying + dating ammonoids — they evolve in predictable ways across millions of years.'),
             why: 'Sutures are like geological barcodes. Goniatites have simple sutures; later ammonites have wildly elaborate ones. Paleontologists use suture complexity to identify which era a shell came from.' },
-          { id: 'pohlsepia', name: __alloT('stem.cephalopodlab.pohlsepia', 'Pohlsepia'), era: 'Carboniferous', age: '~296 MYA', emoji: '🐙',
+          { id: 'pohlsepia', name: __alloT('stem.cephalopodlab.pohlsepia', 'Pohlsepia'), era: 'Carboniferous', age: '~310 MYA', emoji: '🐚',
             size: '~6 cm body', diet: 'Small invertebrates',
-            description: __alloT('stem.cephalopodlab.the_earliest_known_octopus_a_soft_bodi', 'The earliest known octopus — a soft-bodied coleoid preserved in a remarkable concretion from Illinois\'s Mazon Creek fossil bed. The body, arms, and even possible chromatophores are visible. Soft-bodied animals almost never fossilize.'),
-            why: 'Octopuses are essentially un-fossilizable — no shell, no bones, no hard parts except a tiny beak. Pohlsepia exists only because Mazon Creek concretions preserve soft tissue. There may be no other octopus fossil for another 100 million years.' },
+            description: __alloT('stem.cephalopodlab.the_earliest_known_octopus_a_soft_bodi', 'For 26 years the "earliest known octopus": a soft-bodied fossil in a concretion from Illinois\'s Mazon Creek bed. In 2026, imaging found a radula (toothed tongue) shaped like a nautiloid\'s, and it was reclassified as a distant relative of the nautilus.'),
+            why: 'Soft bodies rarely fossilize, so one decayed, squashed specimen set the date for the origin of octopuses for a quarter century. Reclassified, it moves the first octopuses into the Jurassic, more than 100 million years later, and becomes the oldest soft-tissue nautiloid ever found.' },
           { id: 'belemnite', name: __alloT('stem.cephalopodlab.belemnites', 'Belemnites'), era: 'Triassic-Cretaceous', age: '~252-66 MYA', emoji: '🚀',
             size: '5-50 cm guard', diet: 'Fish + small cephalopods',
             description: __alloT('stem.cephalopodlab.squid_like_cephalopods_with_an_interna', 'Squid-like cephalopods with an internal "guard" — a rocket-shaped piece of calcite that fossilizes well. They had 10 arms (vs squid\'s 10 = 8 + 2 tentacles) and hooklets instead of suckers. Extremely abundant in Jurassic/Cretaceous oceans.'),
@@ -17870,10 +17885,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     why: 'Active buoyancy without sacrificing body flexibility. Cuttlefish can hover, swim with fin undulation, AND jet — combining advantages of multiple prior forms.',
                     examples: 'Modern cuttlefish (Sepia)' },
                   { stage: '5', name: __alloT('stem.cephalopodlab.no_shell_at_all', 'No shell at all'),
-                    era: 'Carboniferous (Pohlsepia) onward', icon: '🐙', color: '#9a3412',
+                    era: 'Jurassic onward', icon: '🐙', color: '#9a3412',
                     description: __alloT('stem.cephalopodlab.shell_completely_lost_body_is_pure_mus', 'Shell completely lost. Body is pure muscle + skin. The only hard part remaining is the chitin beak.'),
                     why: 'Removing the shell lets the body squeeze through any hole bigger than the beak. Trade-off: no built-in protection, must rely on camouflage + cognition + venom.',
-                    examples: 'Octopuses (Pohlsepia is the earliest known)' },
+                    examples: 'Octopuses (probably Jurassic; Pohlsepia, long called the first, was reclassified in 2026)' },
                   { stage: '6', name: __alloT('stem.cephalopodlab.external_shell_preserved_unchanged', 'External shell preserved unchanged'),
                     era: 'Devonian to today', icon: '🐚', color: '#fb923c',
                     description: __alloT('stem.cephalopodlab.nautilus_pathway_keeps_the_ancestral_c', 'Nautilus pathway — keeps the ancestral coiled shell + most of the ancestral body plan + the ancestral pace of life. 90 tentacles with sticky pads instead of suckers.'),
@@ -17900,7 +17915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.the_big_picture', '🌳 The big picture')),
               h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
-                  __alloT('stem.cephalopodlab.six_body_plans_one_phylogeny_all_moder', 'Six body plans, one phylogeny. All modern cephalopods trace back to the same ~530-million-year-old Cambrian ancestor. The differences between a 6-meter Ordovician sea-monster and a 12-centimeter blue-ringed octopus are differences in evolutionary pressure, not in fundamental architecture.')),
+                  __alloT('stem.cephalopodlab.six_body_plans_one_phylogeny_all_moder', 'Six body plans, one phylogeny. All modern cephalopods trace back to the same ~500-million-year-old Cambrian ancestor. The differences between a 6-meter Ordovician sea-monster and a 12-centimeter blue-ringed octopus are differences in evolutionary pressure, not in fundamental architecture.')),
                 h('p', { style: { margin: 0, padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6, fontStyle: 'italic' } },
                   __alloT('stem.cephalopodlab.the_cephalopod_story_is_the_longest_co', 'The cephalopod story is the longest continuous run of intelligence-grade nervous systems on Earth. Half a billion years of evolution iterating on the same problem: how to be a smart, sensing, predatory mollusk. Modern octopuses are the latest output of that process. Each new species is the current draft, not the final.'))))
           ) : null
@@ -17915,23 +17930,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var JET_SPECIES = {
           humboldt: { name: __alloT('stem.cephalopodlab.humboldt_squid_2', 'Humboldt Squid'), emoji: '🦑', emojiTail: '🦑',
             mantleVolume: 400, contractionKPa: 80, siphonDiameter: 22,
-            massKg: 6, topSpeed: 25,
+            massKg: 6, topSpeed: 6.9,
+            speedNote: __alloT('stem.cephalopodlab.jet_speed_src_humboldt', 'Reported burst speed about 25 km/h (7 m/s).'),
             notes: 'Top sprint speed of any cephalopod. Pack-hunts at speed. Mantle is essentially all muscle.' },
           giantPac: { name: __alloT('stem.cephalopodlab.giant_pacific_octopus_2', 'Giant Pacific Octopus'), emoji: '🐙',
             mantleVolume: 800, contractionKPa: 45, siphonDiameter: 28,
-            massKg: 25, topSpeed: 4,
+            massKg: 25, topSpeed: 1.5, speedEstimate: true,
+            speedNote: __alloT('stem.cephalopodlab.jet_speed_src_giantpac', 'Estimate: no published jet-speed measurement found for this species. Scaled up from the common octopus (1.0 m/s measured).'),
             notes: 'Big mantle BUT massive body to push around. Uses jet mostly to steer while crawling, not for travel.' },
           commonOcto: { name: __alloT('stem.cephalopodlab.common_octopus_3', 'Common Octopus'), emoji: '🐙',
             mantleVolume: 200, contractionKPa: 50, siphonDiameter: 15,
-            massKg: 3, topSpeed: 6,
+            massKg: 3, topSpeed: 1.0,
+            speedNote: __alloT('stem.cephalopodlab.jet_speed_src_commonocto', 'Measured jetting maximum 1.0 m/s (Wells et al. 1987, 1990).'),
             notes: 'Default octopus jet — strong enough for emergency escape, but inefficient for sustained swimming.' },
           cuttle: { name: __alloT('stem.cephalopodlab.common_cuttlefish_2', 'Common Cuttlefish'), emoji: '🦑',
             mantleVolume: 300, contractionKPa: 35, siphonDiameter: 18,
-            massKg: 2, topSpeed: 5,
+            massKg: 2, topSpeed: 2, speedEstimate: true,
+            speedNote: __alloT('stem.cephalopodlab.jet_speed_src_cuttle', 'Estimate: no adult escape-speed measurement found. Squid peak near 10 mantle lengths per second; applied to a 20 cm cuttlefish mantle.'),
             notes: 'Uses fin undulation for normal swimming; jet reserved for escape. Cuttlebone gives neutral buoyancy so jet doesn\'t fight gravity.' },
           nautilus: { name: __alloT('stem.cephalopodlab.chambered_nautilus_2', 'Chambered Nautilus'), emoji: '🐚',
-            mantleVolume: 250, contractionKPa: 30, siphonDiameter: 14,
-            massKg: 1.5, topSpeed: 3,
+            mantleVolume: 250, contractionKPa: 0.4, siphonDiameter: 14,
+            massKg: 1.5, topSpeed: 0.25,
+            speedNote: __alloT('stem.cephalopodlab.jet_speed_src_nautilus', 'Measured maximum 25 cm/s for a 1.6 kg adult (Chamberlain 1987). Its preset squeeze, 0.4 kPa, is the jet pressure measured at that speed (O\'Dor, Wells & Wells 1990).'),
             notes: 'Slowest jet. Uses buoyancy chambers in shell more than active swimming. The "slow-motion" cephalopod.' }
         };
         var speciesId = d.jetSpeciesId || 'humboldt';
@@ -17956,12 +17976,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var pulseMass = rho * (vol / 1000) / 1000; // kg, fix m³ conversion: vol mL = vol/1e6 m³ → kg = rho * vol/1e6
         pulseMass = rho * (vol / 1e6);
         var pulseEnergy = 0.5 * pulseMass * Math.pow(vJet, 2); // Joules (kinetic energy imparted to water)
-        // Verdict — how this compares to species' real-world performance
-        var ratio = vJet / Math.max(1, sp.topSpeed);
-        var verdict = ratio > 1.4 ? { color: '#fca5a5', label: __alloT('stem.cephalopodlab.above_realistic_top_speed', 'Above realistic top speed'), note: 'These settings would exceed ' + sp.name + '\'s documented top speed. Cephalopod muscle limits + body drag cap real performance well below the theoretical Bernoulli velocity.' } :
-                      ratio > 0.8 ? { color: '#86efac', label: __alloT('stem.cephalopodlab.realistic_peak_performance', 'Realistic peak performance'), note: 'These settings approach ' + sp.name + '\'s documented top sprint speed (' + sp.topSpeed + ' m/s).' } :
-                      ratio > 0.4 ? { color: '#fbbf24', label: __alloT('stem.cephalopodlab.sustained_swim_range', 'Sustained-swim range'), note: __alloT('stem.cephalopodlab.typical_of_relaxed_cruising_speeds_mos', 'Typical of relaxed cruising speeds. Most cephalopod swimming happens here.') } :
-                                    { color: 'var(--allo-stem-text, #cbd5e1)', label: __alloT('stem.cephalopodlab.hovering_fine_maneuver', 'Hovering / fine maneuver'), note: __alloT('stem.cephalopodlab.gentle_steering_jet_octopuses_spend_mo', 'Gentle steering jet. Octopuses spend most of their time at speeds in this range.') };
+        // Per pulse: the mantle empties in V / (A·v) seconds, and the water's
+        // momentum ρ·V·v is the push the body gets back. Volume sets how long the
+        // push lasts and how much speed it adds; it does not change the thrust.
+        var pulseTime = (vol / 1e6) / (area * vJet); // s
+        var pulseDv = pulseMass * vJet / sp.massKg; // m/s gained per pulse, before drag
+        // A jet pushes only while its water leaves faster than the animal moves,
+        // so exit speed is a CEILING on body speed, not a prediction of it. At top
+        // speed U, Froude efficiency 2U/(U+v) is the share of the jet's work that
+        // moves the animal; the rest stays behind as moving water. This used to
+        // read exit speed above 1.4x top speed as "exceeding" it, which flagged
+        // four of the five species' own presets as unrealistic.
+        var topU = sp.topSpeed;
+        var effTop = vJet > topU ? 2 * topU / (topU + vJet) : 0;
+        var effPct = Math.round(effTop * 100);
+        var effLead = __alloT('stem.cephalopodlab.jet_v_eff_a', 'At top speed about ') + effPct;
+        var verdict = vJet <= topU ? { color: '#fca5a5', label: __alloT('stem.cephalopodlab.jet_v_too_weak', 'Too weak for its top speed'),
+            note: __alloT('stem.cephalopodlab.jet_v_too_weak_a', 'The water would leave at ') + vJet.toFixed(1) + __alloT('stem.cephalopodlab.jet_v_too_weak_b', ' m/s, no faster than this animal swims at its top speed, so at that speed the jet would push nothing. Squeeze harder.') } :
+          effTop >= 0.6 ? { color: '#86efac', label: __alloT('stem.cephalopodlab.jet_v_efficient', 'Efficient at top speed'),
+            note: effLead + __alloT('stem.cephalopodlab.jet_v_efficient_b', '% of the jet\'s work moves the animal. The water leaves only a little faster than the body travels.') } :
+          effTop >= 0.35 ? { color: '#fbbf24', label: __alloT('stem.cephalopodlab.jet_v_wasteful', 'Works, but wastes energy'),
+            note: effLead + __alloT('stem.cephalopodlab.jet_v_wasteful_b', '% of the jet\'s work moves the animal. The rest is left behind as moving water.') } :
+          { color: '#fb923c', label: __alloT('stem.cephalopodlab.jet_v_mostly_wasted', 'Fast jet, mostly wasted'),
+            note: effLead + __alloT('stem.cephalopodlab.jet_v_mostly_wasted_b', '% of the jet\'s work moves the animal, because the water leaves ') + Math.round(vJet / topU) +
+              __alloT('stem.cephalopodlab.jet_v_mostly_wasted_c', ' times faster than the body goes. Jetting this wastefully is why octopuses crawl whenever they can.') };
+        var topLabel = sp.speedEstimate ? __alloT('stem.cephalopodlab.jet_bar_estimated', 'Estimated top speed') : __alloT('stem.cephalopodlab.jet_bar_documented', 'Documented top speed');
         return h('div', null,
           panelHeader('🚀 Jet Propulsion Lab',
             'Cephalopod jet propulsion uses Newton\'s 3rd law directly: water gets pushed out, cephalopod gets pushed forward. Mantle = reservoir, siphon = nozzle. The physics is computable — set the variables and see what comes out.'),
@@ -17976,7 +18015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               __alloT('stem.cephalopodlab.where_p_is_mantle_pressure_and_is_seaw', ' where P is mantle pressure and ρ is seawater density (1025 kg/m³). Thrust scales with siphon area and jet velocity squared: '),
               h('code', { style: { background: 'rgba(167,139,250,0.15)', color: '#e9d5ff', padding: '2px 6px', borderRadius: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
                 __alloT('stem.cephalopodlab.f_a_v', 'F = ρ·A·v²')),
-              __alloT('stem.cephalopodlab.bigger_siphon_more_area_more_thrust_bu', '. Bigger siphon = more area = more thrust, but at the cost of slower jet velocity (Bernoulli is independent of A; thrust IS).'))),
+              __alloT('stem.cephalopodlab.bigger_siphon_more_area_more_thrust_bu', '. A wider siphon means more area, so more thrust at the same jet speed: exit speed depends only on pressure, but thrust depends on area too.'))),
 
           // Species selector
           h('div', { style: cardStyle() },
@@ -18005,20 +18044,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.tune_the_variables', '🔧 Tune the variables')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
               [
-                { label: __alloT('stem.cephalopodlab.mantle_volume_ml', 'Mantle volume (mL)'), key: 'jetMantleVolume', val: vol, min: 50, max: 1500, step: 25, color: '#fb923c',
-                  hint: __alloT('stem.cephalopodlab.how_much_water_the_mantle_holds_bigger', 'How much water the mantle holds. Bigger = more thrust per pulse, but slower refill.') },
-                { label: __alloT('stem.cephalopodlab.contraction_pressure_kpa', 'Contraction pressure (kPa)'), key: 'jetContractionKPa', val: kpa, min: 10, max: 150, step: 5, color: '#dc2626',
-                  hint: __alloT('stem.cephalopodlab.how_hard_the_mantle_muscles_squeeze_re', 'How hard the mantle muscles squeeze. Real cephalopods produce 20-100 kPa (humans cough ~10 kPa).') },
-                { label: __alloT('stem.cephalopodlab.siphon_diameter_mm', 'Siphon diameter (mm)'), key: 'jetSiphonDiameter', val: dia, min: 5, max: 50, step: 1, color: '#38bdf8',
-                  hint: __alloT('stem.cephalopodlab.nozzle_size_bigger_more_thrust_but_slo', 'Nozzle size. Bigger = more thrust but slower jet velocity. Tradeoff is real.') }
+                { label: __alloT('stem.cephalopodlab.mantle_volume_ml', 'Mantle volume (mL)'), key: 'jetMantleVolume', val: vol, min: 50, max: 1500, step: 25, unit: 'mL', color: '#fb923c',
+                  hint: __alloT('stem.cephalopodlab.how_much_water_the_mantle_holds_bigger', 'How much water one squeeze pushes out. More water = a longer push and more speed gained per pulse. The thrust (push per second) does not change.') },
+                // Log scale: a cruising nautilus squeezes ~0.4 kPa, a squid tens of
+                // kPa. A linear 10-150 slider could not show the nautilus at all.
+                { label: __alloT('stem.cephalopodlab.contraction_pressure_kpa', 'Contraction pressure (kPa)'), key: 'jetContractionKPa', val: kpa, min: 0.2, max: 150, log: true, unit: 'kPa', color: '#dc2626',
+                  hint: __alloT('stem.cephalopodlab.how_hard_the_mantle_muscles_squeeze_re', 'How hard the mantle squeezes. The scale is logarithmic so both ends fit: squid squeeze in the tens of kPa, a cruising nautilus under 1 kPa (O\'Dor, Wells & Wells 1990).') },
+                { label: __alloT('stem.cephalopodlab.siphon_diameter_mm', 'Siphon diameter (mm)'), key: 'jetSiphonDiameter', val: dia, min: 5, max: 50, step: 1, unit: 'mm', color: '#38bdf8',
+                  hint: __alloT('stem.cephalopodlab.nozzle_size_bigger_more_thrust_but_slo', 'Nozzle size. At the same squeeze the water leaves just as fast through any nozzle, but a wider one moves more water per second: more thrust, and the mantle empties sooner.') }
               ].map(function(slider, i) {
+                var LOG_STEPS = 200;
+                var span = Math.log(slider.max / slider.min);
+                var pos = slider.log ? Math.round(LOG_STEPS * Math.log(Math.max(slider.min, Math.min(slider.max, slider.val)) / slider.min) / span) : slider.val;
+                var fromPos = function(v) {
+                  if (!slider.log) return v;
+                  var k = slider.min * Math.exp(span * v / LOG_STEPS);
+                  return k < 2 ? Math.round(k * 10) / 10 : k < 20 ? Math.round(k * 2) / 2 : Math.round(k);
+                };
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8, borderLeft: '3px solid ' + slider.color } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, fontWeight: 700 } },
                     h('span', null, slider.label),
                     h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: slider.color } }, slider.val)),
-                  h('input', { type: 'range', min: slider.min, max: slider.max, step: slider.step, value: slider.val,
-                    onChange: function(e) { var p = {}; p[slider.key] = parseFloat(e.target.value); setCL(p); },
+                  h('input', { type: 'range', min: slider.log ? 0 : slider.min, max: slider.log ? LOG_STEPS : slider.max, step: slider.log ? 1 : slider.step, value: pos,
+                    onChange: function(e) { var p = {}; p[slider.key] = fromPos(parseFloat(e.target.value)); setCL(p); },
                     'aria-label': slider.label,
+                    // a log slider's position is not the value; say the value
+                    'aria-valuetext': slider.val + ' ' + slider.unit,
                     style: { width: '100%', accentColor: slider.color } }),
                   h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } }, slider.hint));
               }))),
@@ -18034,8 +18085,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             var plumeLen = Math.min(230, 24 + vJet * 11);
             var plumeW = Math.max(3, Math.min(30, dia * 0.55));
             var pulseAmp = 0.06 + 0.16 * Math.min(1, vol / 1500);
-            var speedPct = Math.min(100, vJet / 30 * 100);
-            var topPct = Math.min(100, sp.topSpeed / 30 * 100);
+            var BAR_MAX = 20; // m/s; the strongest squeeze the slider allows gives ~17 m/s
+            var speedPct = Math.min(100, vJet / BAR_MAX * 100);
+            var topPct = Math.min(100, sp.topSpeed / BAR_MAX * 100);
             var mantleRx = isSquid ? 78 : isCuttle ? 66 : isNautilus ? 34 : 52;
             var mantleRy = isSquid ? 22 : isCuttle ? 30 : isNautilus ? 24 : 36;
             var jetStyle = h('style', null,
@@ -18047,7 +18099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               '.cl-jet-body { animation: clJetBody 1.6s ease-in-out infinite; }' +
               '@media (prefers-reduced-motion: reduce) { .cl-jet-mantle, .cl-jet-plume, .cl-jet-body { animation: none !important; } .cl-jet-plume { opacity: 0.8; } }');
             var summary = sp.name + ': ' + __alloT('stem.cephalopodlab.jet_schematic_summary_a', 'jet velocity ') + vJet.toFixed(1) + ' m/s, ' +
-              __alloT('stem.cephalopodlab.jet_schematic_summary_b', 'documented top speed ') + sp.topSpeed + ' m/s, ' +
+              (sp.speedEstimate ? __alloT('stem.cephalopodlab.jet_schematic_summary_b_est', 'estimated top speed ') : __alloT('stem.cephalopodlab.jet_schematic_summary_b', 'documented top speed ')) + sp.topSpeed + ' m/s, ' +
               __alloT('stem.cephalopodlab.jet_schematic_summary_c', 'siphon ') + dia + ' mm, ' + __alloT('stem.cephalopodlab.jet_schematic_summary_d', 'mantle ') + vol + ' mL.';
             return h('div', { style: cardStyle() },
               jetStyle,
@@ -18092,18 +18144,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               // Sprint vs documented top speed
               h('div', { style: { marginTop: 12 } },
                 h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
-                  __alloT('stem.cephalopodlab.jet_vs_documented', 'Your jet vs the documented top speed (0–30 m/s scale)')),
+                  __alloT('stem.cephalopodlab.jet_vs_documented', 'Your jet vs the animal\'s top speed (0–20 m/s scale)')),
                 [
-                  { label: __alloT('stem.cephalopodlab.jet_bar_yours', 'Jet exit velocity (your settings)'), pct: speedPct, val: vJet.toFixed(1) + ' m/s', color: '#fb923c' },
-                  { label: __alloT('stem.cephalopodlab.jet_bar_documented', 'Documented top speed') + ' · ' + sp.name, pct: topPct, val: sp.topSpeed + ' m/s', color: '#38bdf8' }
+                  { label: __alloT('stem.cephalopodlab.jet_bar_yours', 'Jet exit velocity (your settings)'), pct: speedPct, num: vJet, val: vJet.toFixed(1) + ' m/s', color: '#fb923c' },
+                  { label: topLabel + ' · ' + sp.name, pct: topPct, num: sp.topSpeed, val: sp.topSpeed + ' m/s', color: '#38bdf8' }
                 ].map(function(b, i) {
-                  return h('div', { key: i, role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 30, 'aria-valuenow': Math.round(b.pct * 0.3 * 10) / 10, 'aria-label': b.label + ' ' + b.val, style: { marginBottom: 6 } },
+                  return h('div', { key: i, role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': BAR_MAX, 'aria-valuenow': Math.round(Math.min(BAR_MAX, b.num) * 100) / 100, 'aria-label': b.label + ' ' + b.val, style: { marginBottom: 6 } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#e2e8f0', marginBottom: 3 } }, h('span', null, b.label), h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: b.color } }, b.val)),
                     h('div', { style: { height: 8, borderRadius: 4, background: 'rgba(148,163,184,0.2)', overflow: 'hidden' } },
                       h('div', { style: { width: b.pct + '%', height: '100%', background: b.color, transition: 'width 0.25s' } })));
                 }),
                 h('div', { style: { fontSize: 10.5, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
-                  __alloT('stem.cephalopodlab.jet_bar_note', 'Exit velocity of the water is not the same as the animal\'s speed: the body is heavier than one pulse of water, drag rises with speed, and refilling the mantle costs time between pulses.'))));
+                  __alloT('stem.cephalopodlab.jet_bar_note', 'Exit velocity of the water is not the same as the animal\'s speed: the body is heavier than one pulse of water, drag rises with speed, and refilling the mantle costs time between pulses. It is a ceiling, though: once the body moves as fast as its own jet, the jet stops pushing.'))));
           })(),
 
           // Results panel — physics outputs
@@ -18114,7 +18166,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 { label: __alloT('stem.cephalopodlab.jet_velocity', 'Jet velocity'), val: vJet.toFixed(1), unit: 'm/s', color: '#fb923c', formula: 'v = √(2P/ρ)' },
                 { label: __alloT('stem.cephalopodlab.thrust_force', 'Thrust force'), val: thrustN.toFixed(1), unit: 'N', color: '#dc2626', formula: 'F = ρAv²' },
                 { label: __alloT('stem.cephalopodlab.body_acceleration', 'Body acceleration'), val: accel.toFixed(2), unit: 'm/s²', color: '#a78bfa', formula: 'a = F / m_body' },
-                { label: __alloT('stem.cephalopodlab.energy_per_pulse', 'Energy per pulse'), val: pulseEnergy.toFixed(2), unit: 'J', color: '#fbbf24', formula: '½ρV·v²' }
+                { label: __alloT('stem.cephalopodlab.energy_per_pulse', 'Energy per pulse'), val: pulseEnergy.toFixed(2), unit: 'J', color: '#fbbf24', formula: '½ρV·v²' },
+                { label: __alloT('stem.cephalopodlab.jet_out_pulse_time', 'Push time per pulse'), val: pulseTime.toFixed(2), unit: 's', color: '#38bdf8', formula: 't = V / (A·v)' },
+                { label: __alloT('stem.cephalopodlab.jet_out_pulse_dv', 'Speed gained per pulse'), val: pulseDv.toFixed(2), unit: 'm/s', color: '#34d399', formula: 'Δv = ρVv / m, before drag' },
+                { label: __alloT('stem.cephalopodlab.jet_out_efficiency', 'Efficiency at top speed'), val: String(effPct), unit: '%', color: '#f472b6', formula: 'η = 2U / (U + v)' }
               ].map(function(stat, i) {
                 return h('div', { key: i,
                   style: { background: 'rgba(15,23,42,0.6)', border: '1px solid ' + stat.color + '40',
@@ -18128,10 +18183,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: { background: verdict.color + '15', border: '1px solid ' + verdict.color + '55',
               borderLeft: '4px solid ' + verdict.color, padding: '10px 14px', borderRadius: 8 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: verdict.color, marginBottom: 4 } },
-                'Reality check: ' + verdict.label),
+                __alloT('stem.cephalopodlab.jet_reality_check', 'Reality check: ') + verdict.label),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, verdict.note),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                'Documented top speed for ' + sp.name + ': ' + sp.topSpeed + ' m/s'))),
+                topLabel + ' · ' + sp.name + ': ' + sp.topSpeed + ' m/s. ' + sp.speedNote))),
 
           // The systemic-heart-stops biology callout
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #dc2626' }) },
@@ -21892,7 +21947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       function renderEvolution() {
         return h('div', null,
           panelHeader('🌳 Cephalopod Evolution: The Phylogenetic Tree',
-            'The branching history of cephalopods over 530 million years. From the first chambered-shell mollusk to today\'s octopuses + squids + cuttlefish + nautilus.'),
+            'The branching history of cephalopods over about 500 million years. From the first chambered-shell mollusk to today\'s octopuses + squids + cuttlefish + nautilus.'),
           EVOLUTION_TREE.map(function(n, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 6 } },
