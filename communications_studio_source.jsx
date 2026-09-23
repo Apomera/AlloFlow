@@ -446,96 +446,142 @@ function CommunicationsStudioPanel(props) {
     </label>
   );
 
+  const dialogRef = React.useRef(null);
+  // The host passes a fresh onClose arrow every render; keeping it out of the
+  // effect deps stops a host re-render from re-running the trap and pulling
+  // focus out of the textarea the teacher is typing in.
+  const onCloseRef = React.useRef(props.onClose);
+  onCloseRef.current = props.onClose;
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+    (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || typeof onCloseRef.current !== 'function') return;
+        event.preventDefault(); event.stopPropagation(); onCloseRef.current(); return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      const wasTop = isTopTrap();
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [props.isOpen]);
+
   if (props.isOpen === false) return null;
   return (
-    <div className="flex flex-col gap-3 p-4 text-slate-800" data-communications-studio="true">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-lg font-black text-indigo-900">{tr('comms.title', 'Communications Studio')}</h2>
-        <span className="text-xs text-slate-600">{tr('comms.subtitle', 'Drafts from your notes. Codenames only. Nothing is sent from here.')}</span>
-        {typeof props.onClose === 'function' && <button type="button" onClick={props.onClose} className="ml-auto rounded-full border border-slate-300 px-3 py-1 text-xs font-bold hover:bg-slate-100">{tr('common.close', 'Close')}</button>}
-      </div>
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label={tr('comms.templates', 'Templates')}>
-        {CS_TEMPLATES.map(x => (
-          <button key={x.id} type="button" role="tab" aria-selected={x.id === templateId} onClick={() => { setTemplateId(x.id); setDraft(''); setBatch([]); setTranslation(''); setDriveLink(''); }} className={`rounded-full border px-3 py-1 text-xs font-bold ${x.id === templateId ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}>{x.label}</button>
-        ))}
-      </div>
-      <p className="text-xs text-slate-600">{template.hint}</p>
-      {likelyNames.length > 0 && (
-        <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" data-comms-name-warning="true">
-          <strong>{tr('comms.names_warning', 'Possible names found; use codenames instead:')}</strong> {likelyNames.join(', ')}. {tr('comms.names_why', 'Names typed here would reach the AI provider; codenames keep the draft free of student identity until you merge it outside AlloFlow.')}
+    <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation">
+      <div ref={dialogRef} tabIndex={-1} className="allo-docsuite bg-slate-50 text-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="comms-studio-title" data-communications-studio="true">
+        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 bg-slate-50/95 border-b border-slate-200 px-4 py-3 rounded-t-2xl">
+          <h2 id="comms-studio-title" className="text-lg font-black text-indigo-900">{tr('comms.title', 'Communications Studio')}</h2>
+          <span className="text-xs text-slate-600">{tr('comms.subtitle', 'Drafts from your notes. Codenames only. Nothing is sent from here.')}</span>
+          {typeof props.onClose === 'function' && <button type="button" onClick={props.onClose} className="ml-auto rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold hover:bg-slate-100">{tr('common.close', 'Close')}</button>}
         </div>
-      )}
-      {evidence.unmatched.length > 0 && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" data-comms-unmatched="true">
-          <strong>{tr('comms.unmatched', 'Dashboard uploads not matching a roster codename (not inserted; they may be typed names):')}</strong> {evidence.unmatched.join(', ')}
-        </div>
-      )}
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          {(templateId === 'family-update' || templateId === 'family-reply') && !evidence.empty && codenamePicker}
-          {templateId === 'family-update' && rollupLine && <button type="button" onClick={() => appendField('learned', rollupLine)} className="self-start rounded border border-indigo-300 bg-white px-2 py-0.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50" data-comms-insert-rollup="true">{tr('comms.insert_rollup', 'Insert this week\'s success criteria (class level)')}</button>}
-          {templateId === 'report-card' && !evidence.empty && (
-            <div className="flex flex-wrap items-center gap-2 text-xs" data-comms-roster-fill="true">
-              <button type="button" onClick={fillGridFromRoster} className="rounded border border-indigo-300 bg-white px-2 py-0.5 font-bold text-indigo-700 hover:bg-indigo-50">{tr('comms.fill_from_roster', 'Fill from roster')}</button>
-              {evidence.groups.length > 0 && <select value={groupFilter} onChange={(e) => setGroupFilter(e.target.value)} aria-label={tr('comms.group_filter', 'Group')} className="rounded border border-slate-300 px-1 py-0.5"><option value="">{tr('comms.all_groups', 'All groups')}</option>{evidence.groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select>}
-              <span className="text-slate-600">{evidence.rows.length} {tr('comms.codenames', 'codenames')}{evidence.className ? ` · ${evidence.className}` : ''}{evidence.rows.some(r => r.hasDashboard) ? ` · ${evidence.rows.filter(r => r.hasDashboard).length} ${tr('comms.with_dashboard', 'with dashboard data')}` : ''}</span>
-            </div>
-          )}
-          {templateId === 'family-update' && <>
-            {area('learned', tr('comms.f_learned', 'What we learned'), 'Two or three things the class actually did or figured out.')}
-            {area('next', tr('comms.f_next', 'What is next'), 'What the next week or unit brings.')}
-            {area('help', tr('comms.f_help', 'How families can help'), 'One question to ask at home, one thing to notice.', 2)}
-          </>}
-          {templateId === 'report-card' && area('grid', tr('comms.f_grid', 'One student per line: codename | strengths | growth | habits'), 'S1 | reads aloud with expression; explains reasoning | rushing multi-step problems | Perseverance 3, Responsibility 4\nS2 | ...', 8)}
-          {templateId === 'recommendation' && <>
-            {area('context', tr('comms.f_context', 'My role and context'), 'e.g. school psychologist, 8th-grade advisory', 2)}
-            {area('duration', tr('comms.f_duration', 'How long I have known the student'), 'e.g. two school years', 1)}
-            {area('program', tr('comms.f_program', 'Program or purpose'), 'e.g. summer STEM academy application', 1)}
-            {area('examples', tr('comms.f_examples', 'Specific examples (three is plenty)'), 'What they did, when, what it showed.', 5)}
-            {area('qualities', tr('comms.f_qualities', 'Qualities I can vouch for'), 'Only ones the examples support.', 2)}
-          </>}
-          {templateId === 'family-reply' && <>
-            {area('message', tr('comms.f_message', 'Their message (paste)'), 'Paste the family message. Emails and phone numbers are scrubbed before drafting.', 5)}
-            {area('notes', tr('comms.f_notes', 'What I want to say'), 'The answer, what happens next, by when.', 4)}
-          </>}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <label className="font-bold">{tr('comms.tone', 'Tone')}
-              <select value={tone} onChange={(e) => { setTone(e.target.value); savePrefs({ tone: e.target.value }); }} className="ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal">{CS_TONES.map(x => <option key={x} value={x}>{x}</option>)}</select>
-            </label>
-            <label className="font-bold">{tr('comms.language', 'Also in')}
-              <select value={language} onChange={(e) => { setLanguage(e.target.value); savePrefs({ language: e.target.value }); }} className="ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal"><option value="">{tr('comms.no_translation', 'English only')}</option>{CS_LANGUAGES.map(x => <option key={x} value={x}>{x}</option>)}</select>
-            </label>
-            <label className="flex items-center gap-1 font-bold"><input type="checkbox" checked={disclosure} onChange={(e) => { setDisclosure(e.target.checked); savePrefs({ disclosure: e.target.checked }); }} /> {tr('comms.disclosure', 'Add AI-assistance disclosure')}</label>
+        <div className="flex flex-col gap-3 p-4">
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label={tr('comms.templates', 'Templates')}>
+            {CS_TEMPLATES.map(x => (
+              <button key={x.id} type="button" role="tab" aria-selected={x.id === templateId} onClick={() => { setTemplateId(x.id); setDraft(''); setBatch([]); setTranslation(''); setDriveLink(''); }} className={`rounded-full border px-3 py-1 text-xs font-bold ${x.id === templateId ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}>{x.label}</button>
+            ))}
           </div>
-          <button type="button" onClick={runDraft} disabled={!!busy} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50" data-comms-draft="true">{busy === 'draft' ? tr('comms.drafting', 'Drafting…') : tr('comms.draft', 'Draft from my notes')}</button>
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="block text-xs font-bold text-slate-700">{tr('comms.draft_label', 'Draft (edit freely)')}
-            <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={templateId === 'report-card' ? 14 : 10} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" data-comms-output="true" />
-          </label>
-          {readability && (
-            <div className={`rounded-lg border px-3 py-1.5 text-xs ${readability.grade <= CS_FAMILY_TARGET_GRADE ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`} data-comms-readability={readability.grade}>
-              {tr('comms.readability', 'Reading level (Flesch-Kincaid estimate)')}: {readability.grade}{readability.reliable ? '' : ' (short text; rough)'}. {readability.grade <= CS_FAMILY_TARGET_GRADE ? tr('comms.readability_ok', 'Within the plain-language target for families.') : tr('comms.readability_high', 'Above the family target; shorten sentences and swap long words.')}
+          <p className="text-xs text-slate-600">{template.hint}</p>
+          {likelyNames.length > 0 && (
+            <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" data-comms-name-warning="true">
+              <strong>{tr('comms.names_warning', 'Possible names found; use codenames instead:')}</strong> {likelyNames.join(', ')}. {tr('comms.names_why', 'Names typed here would reach the AI provider; codenames keep the draft free of student identity until you merge it outside AlloFlow.')}
             </div>
           )}
-          {language && draft && (
-            <button type="button" onClick={runTranslate} disabled={!!busy} className="self-start rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">{busy === 'translate' ? tr('comms.translating', 'Translating…') : `${tr('comms.translate', 'Draft in')} ${language}`}</button>
-          )}
-          {translation && (
-            <label className="block text-xs font-bold text-slate-700">{language} <span className="font-normal text-amber-800">({tr('comms.machine_draft', 'machine draft; have a bilingual colleague check before sending')})</span>
-              <textarea value={translation} onChange={(e) => setTranslation(e.target.value)} rows={8} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800" data-comms-translation="true" />
-            </label>
-          )}
-          {draft && (
-            <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={copyAll} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50">{tr('comms.copy', 'Copy all')}</button>
-              <button type="button" onClick={sendToDrive} disabled={!!busy} className="rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50" data-comms-drive="true">{busy === 'drive' ? tr('comms.sending', 'Sending…') : tr('comms.send_drive', 'Send to my Drive as a Google Doc')}</button>
-              {driveLink && <a href={driveLink} target="_blank" rel="noopener noreferrer" className="self-center text-xs font-semibold text-emerald-800 underline">{tr('comms.open_doc', 'Open the Google Doc ↗')}</a>}
+          {evidence.unmatched.length > 0 && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" data-comms-unmatched="true">
+              <strong>{tr('comms.unmatched', 'Dashboard uploads not matching a roster codename (not inserted; they may be typed names):')}</strong> {evidence.unmatched.join(', ')}
             </div>
           )}
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              {(templateId === 'family-update' || templateId === 'family-reply') && !evidence.empty && codenamePicker}
+              {templateId === 'family-update' && rollupLine && <button type="button" onClick={() => appendField('learned', rollupLine)} className="self-start rounded border border-indigo-300 bg-white px-2 py-0.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50" data-comms-insert-rollup="true">{tr('comms.insert_rollup', 'Insert this week\'s success criteria (class level)')}</button>}
+              {templateId === 'report-card' && !evidence.empty && (
+                <div className="flex flex-wrap items-center gap-2 text-xs" data-comms-roster-fill="true">
+                  <button type="button" onClick={fillGridFromRoster} className="rounded border border-indigo-300 bg-white px-2 py-0.5 font-bold text-indigo-700 hover:bg-indigo-50">{tr('comms.fill_from_roster', 'Fill from roster')}</button>
+                  {evidence.groups.length > 0 && <select value={groupFilter} onChange={(e) => setGroupFilter(e.target.value)} aria-label={tr('comms.group_filter', 'Group')} className="rounded border border-slate-300 px-1 py-0.5"><option value="">{tr('comms.all_groups', 'All groups')}</option>{evidence.groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select>}
+                  <span className="text-slate-600">{evidence.rows.length} {tr('comms.codenames', 'codenames')}{evidence.className ? ` · ${evidence.className}` : ''}{evidence.rows.some(r => r.hasDashboard) ? ` · ${evidence.rows.filter(r => r.hasDashboard).length} ${tr('comms.with_dashboard', 'with dashboard data')}` : ''}</span>
+                </div>
+              )}
+              {templateId === 'family-update' && <>
+                {area('learned', tr('comms.f_learned', 'What we learned'), 'Two or three things the class actually did or figured out.')}
+                {area('next', tr('comms.f_next', 'What is next'), 'What the next week or unit brings.')}
+                {area('help', tr('comms.f_help', 'How families can help'), 'One question to ask at home, one thing to notice.', 2)}
+              </>}
+              {templateId === 'report-card' && area('grid', tr('comms.f_grid', 'One student per line: codename | strengths | growth | habits'), 'S1 | reads aloud with expression; explains reasoning | rushing multi-step problems | Perseverance 3, Responsibility 4\nS2 | ...', 8)}
+              {templateId === 'recommendation' && <>
+                {area('context', tr('comms.f_context', 'My role and context'), 'e.g. school psychologist, 8th-grade advisory', 2)}
+                {area('duration', tr('comms.f_duration', 'How long I have known the student'), 'e.g. two school years', 1)}
+                {area('program', tr('comms.f_program', 'Program or purpose'), 'e.g. summer STEM academy application', 1)}
+                {area('examples', tr('comms.f_examples', 'Specific examples (three is plenty)'), 'What they did, when, what it showed.', 5)}
+                {area('qualities', tr('comms.f_qualities', 'Qualities I can vouch for'), 'Only ones the examples support.', 2)}
+              </>}
+              {templateId === 'family-reply' && <>
+                {area('message', tr('comms.f_message', 'Their message (paste)'), 'Paste the family message. Emails and phone numbers are scrubbed before drafting.', 5)}
+                {area('notes', tr('comms.f_notes', 'What I want to say'), 'The answer, what happens next, by when.', 4)}
+              </>}
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <label className="font-bold">{tr('comms.tone', 'Tone')}
+                  <select value={tone} onChange={(e) => { setTone(e.target.value); savePrefs({ tone: e.target.value }); }} className="ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal">{CS_TONES.map(x => <option key={x} value={x}>{x}</option>)}</select>
+                </label>
+                <label className="font-bold">{tr('comms.language', 'Also in')}
+                  <select value={language} onChange={(e) => { setLanguage(e.target.value); savePrefs({ language: e.target.value }); }} className="ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal"><option value="">{tr('comms.no_translation', 'English only')}</option>{CS_LANGUAGES.map(x => <option key={x} value={x}>{x}</option>)}</select>
+                </label>
+                <label className="flex items-center gap-1 font-bold"><input type="checkbox" checked={disclosure} onChange={(e) => { setDisclosure(e.target.checked); savePrefs({ disclosure: e.target.checked }); }} /> {tr('comms.disclosure', 'Add AI-assistance disclosure')}</label>
+              </div>
+              <button type="button" onClick={runDraft} disabled={!!busy} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50" data-comms-draft="true">{busy === 'draft' ? tr('comms.drafting', 'Drafting…') : tr('comms.draft', 'Draft from my notes')}</button>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="block text-xs font-bold text-slate-700">{tr('comms.draft_label', 'Draft (edit freely)')}
+                <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={templateId === 'report-card' ? 14 : 10} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" data-comms-output="true" />
+              </label>
+              {readability && (
+                <div className={`rounded-lg border px-3 py-1.5 text-xs ${readability.grade <= CS_FAMILY_TARGET_GRADE ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`} data-comms-readability={readability.grade}>
+                  {tr('comms.readability', 'Reading level (Flesch-Kincaid estimate)')}: {readability.grade}{readability.reliable ? '' : ' (short text; rough)'}. {readability.grade <= CS_FAMILY_TARGET_GRADE ? tr('comms.readability_ok', 'Within the plain-language target for families.') : tr('comms.readability_high', 'Above the family target; shorten sentences and swap long words.')}
+                </div>
+              )}
+              {language && draft && (
+                <button type="button" onClick={runTranslate} disabled={!!busy} className="self-start rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">{busy === 'translate' ? tr('comms.translating', 'Translating…') : `${tr('comms.translate', 'Draft in')} ${language}`}</button>
+              )}
+              {translation && (
+                <label className="block text-xs font-bold text-slate-700">{language} <span className="font-normal text-amber-800">({tr('comms.machine_draft', 'machine draft; have a bilingual colleague check before sending')})</span>
+                  <textarea value={translation} onChange={(e) => setTranslation(e.target.value)} rows={8} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800" data-comms-translation="true" />
+                </label>
+              )}
+              {draft && (
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={copyAll} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50">{tr('comms.copy', 'Copy all')}</button>
+                  <button type="button" onClick={sendToDrive} disabled={!!busy} className="rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50" data-comms-drive="true">{busy === 'drive' ? tr('comms.sending', 'Sending…') : tr('comms.send_drive', 'Send to my Drive as a Google Doc')}</button>
+                  {driveLink && <a href={driveLink} target="_blank" rel="noopener noreferrer" className="self-center text-xs font-semibold text-emerald-800 underline">{tr('comms.open_doc', 'Open the Google Doc ↗')}</a>}
+                </div>
+              )}
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500">{tr('comms.footer', 'Drafts use only the notes you enter and are not saved. Nothing is emailed from AlloFlow: copy it into your district mail, print it, or send it to your own Drive. Merge real names outside AlloFlow.')}</p>
         </div>
       </div>
-      <p className="text-[11px] text-slate-500">{tr('comms.footer', 'Drafts use only the notes you enter and are not saved. Nothing is emailed from AlloFlow: copy it into your district mail, print it, or send it to your own Drive. Merge real names outside AlloFlow.')}</p>
     </div>
   );
 }

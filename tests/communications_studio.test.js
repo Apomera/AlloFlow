@@ -128,7 +128,7 @@ describe('wiring pins', () => {
         expect(hubModal).toContain('openCommunicationsStudio = (() => {}),');
         const card = hubModal.slice(hubModal.indexOf('data-hub-id="communications-studio"') - 80, hubModal.indexOf('data-hub-id="communications-studio"'));
         expect(card).toContain('{!hideSchoolProfessional && (');
-        expect(anti).toContain("window.__alloLazyCommunicationsStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CommunicationsStudio', 'https://alloflow-cdn.pages.dev/communications_studio_module.js?v=cs091301'); }; })();");
+        expect(anti).toContain("window.__alloLazyCommunicationsStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CommunicationsStudio', 'https://alloflow-cdn.pages.dev/communications_studio_module.js?v=cs092201'); }; })();");
         expect(anti).toContain('const [isCommunicationsStudioOpen, setIsCommunicationsStudioOpen] = useState(false);');
         expect(anti).toContain("else if (toolId === 'communicationsStudio') {");
         expect(anti).toContain('<CDNModuleGate moduleKey="CommunicationsStudio.CommunicationsStudioPanel" isOpen={isCommunicationsStudioOpen}');
