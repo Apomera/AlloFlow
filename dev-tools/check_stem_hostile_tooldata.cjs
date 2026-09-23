@@ -165,6 +165,24 @@ function discover(id) {
   const nav = /\bset(?:View|Mode|Tab|Phase|Stage|Screen|Section)\(\s*'([a-zA-Z][\w]*)'/g;
   while ((m = nav.exec(src)) !== null) views.add(m[1]);
 
+  // ★switch-dispatched views (2026-09-22). Pet Lab routes all 29 modules with
+  // `switch (view) { case 'dogs': ... }`, which none of the harvesters above
+  // read, so it was swept on 8. 9 tools / 289 case labels use this shape
+  // (learningLab alone 125). Only labels inside a switch on a VIEW-ish key are
+  // taken — every `case` in the file would add species names and other junk.
+  const sw = /switch\s*\(\s*(?:d\.)?(?:view|mode|tab|phase|stage|screen|section|activeTab)\s*\)\s*\{/g;
+  while ((m = sw.exec(src)) !== null) {
+    let depth = 0, end = -1;
+    for (let i = sw.lastIndex - 1; i < src.length; i += 1) {
+      if (src[i] === '{') depth += 1;
+      else if (src[i] === '}') { depth -= 1; if (depth === 0) { end = i; break; } }
+    }
+    const body = src.slice(sw.lastIndex, end === -1 ? sw.lastIndex + 20000 : end);
+    const cre = /\bcase\s+'([a-zA-Z][\w]*)'\s*:/g;
+    let c;
+    while ((c = cre.exec(body)) !== null) views.add(c[1]);
+  }
+
   views.delete('menu'); // the default screen is already covered by the null view
   // Deep tools have 20+ screens; the cap was hiding most of them.
   const allKeys = [...keys];
@@ -250,9 +268,29 @@ function ctxFor(id, bag) {
   return new Proxy(base, { get: (o, p) => (p in o ? o[p] : noop) });
 }
 
+// ★A SWALLOWED render error is a crash (2026-09-22). 17 STEM tools wrap their
+// render in try/catch and console.error a "render error", then show a fallback
+// screen. Nothing throws, so this gate used to count 0: Pet Lab hid 12 real
+// TypeErrors in Genetics, roadReady 17. Capture console.error for the duration
+// of the render and rethrow if one is logged. The clean control below still
+// applies — a view that logs one on CLEAN data is skipped, not blamed on
+// hostile input — so only hostile-specific failures count.
+const SWALLOWED_RE = /render (?:error|failed)/i;
 function render(id, bag) {
   const Probe = () => dom.window.StemLab.renderTool(id, ctxFor(id, bag));
-  RDS.renderToStaticMarkup(React.createElement(Probe));
+  const origError = console.error;
+  let swallowed = null;
+  console.error = function (...args) {
+    const text = args.map((a) => (a && a.message) ? a.message : String(a)).join(' ');
+    if (!swallowed && SWALLOWED_RE.test(text)) {
+      const err = args.find((a) => a instanceof Error);
+      swallowed = 'swallowed: ' + (err ? err.message : text).slice(0, 110);
+    }
+    return origError.apply(console, args);
+  };
+  try { RDS.renderToStaticMarkup(React.createElement(Probe)); }
+  finally { console.error = origError; }
+  if (swallowed) throw new Error(swallowed);
 }
 
 const crashes = [];

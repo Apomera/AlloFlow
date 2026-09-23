@@ -23,6 +23,7 @@
 //
 // USAGE
 //   node dev-tools/sync_feature_inventory_tools.cjs            report what would change
+//   node dev-tools/sync_feature_inventory_tools.cjs --out=F    write the result to F for review
 //   node dev-tools/sync_feature_inventory_tools.cjs --apply    write it
 //   node dev-tools/sync_feature_inventory_tools.cjs --check    exit 1 if stale (for CI)
 
@@ -111,35 +112,53 @@ function main() {
   const counts = [];
   const seen = new Set();
 
-  // 1. Correct ids that differ only by case, and ids that were renamed. The prose on the
-  //    row is left exactly as its author wrote it.
+  // 1. Resolve every row to AT MOST ONE registry tool, and mark it seen at that moment.
+  //    The first version resolved in one pass and counted "missing" in another, so a row
+  //    it could not resolve left its tool unseen, the tool was appended as well, and the
+  //    report read "152 of 150 registered tools" - two tools documented twice.
+  //
+  //    Evidence, strongest first. The prose on the row is never changed; only its id is.
+  //      a. the id itself, ignoring case and separators (llm_literacy / llmLiteracy)
+  //      b. the row's DISPLAY NAME as an id ("Geo Quiz" is geoQuiz): the author wrote
+  //         the tool's name beside the stale id, and that name disambiguates what a
+  //         prefix cannot - five registry ids start with "geo"
+  //      c. the display name against registry LABELS, ignoring plurals ("Fractions
+  //         Lab" is the tool now labelled "Fraction Lab")
+  //      d. the id as a prefix, only when exactly one tool starts with it
+  //    Anything else stays UNRESOLVED and is reported, never guessed.
+  const bare = function (s) { return String(s).toLowerCase().replace(new RegExp('[^a-z0-9]', 'g'), ''); };
+  const words = function (s) {
+    return String(s).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
+      .map(function (w) { return w.length > 3 ? w.replace(/s$/, '') : w; }).sort().join(' ');
+  };
+  const byLabelWords = new Map();
+  for (const t of st.reg) {
+    const k = words(t.label);
+    byLabelWords.set(k, byLabelWords.has(k) ? null : t);   // null = ambiguous, never used
+  }
+  const unresolved = [];
+  const duplicates = [];
   for (const sec of secs) {
     for (const r of rowIds(lines, sec)) {
-      // The document writes some ids in snake_case where the registry uses camelCase
-      // (llm_literacy / llmLiteracy). Compare on letters and digits alone so those resolve
-      // rather than reading as a tool that no longer exists.
-      const bare = function (s) { return String(s).toLowerCase().replace(new RegExp('[^a-z0-9]', 'g'), ''); };
-      const exact = byLower.get(r.id.toLowerCase()) || byBare.get(bare(r.id));
-      if (exact) {
-        seen.add(exact.id.toLowerCase());
-        if (exact.id !== r.id) {
-          lines[r.line] = lines[r.line].replace(TICK + r.id + TICK, TICK + exact.id + TICK);
-          renamed.push(r.id + ' -> ' + exact.id);
-        }
+      const display = (lines[r.line].split('|')[2] || '').trim();
+      let hit = byLower.get(r.id.toLowerCase()) || byBare.get(bare(r.id)) || null;
+      let how = 'id';
+      if (!hit && display) { hit = byBare.get(bare(display)) || null; how = 'display name'; }
+      if (!hit && display) { hit = byLabelWords.get(words(display)) || null; how = 'label'; }
+      if (!hit) {
+        const succ = st.reg.filter(function (t) { return bare(t.id).indexOf(bare(r.id)) === 0; });
+        if (succ.length === 1) { hit = succ[0]; how = 'unique prefix'; }
+      }
+      if (!hit) {
+        unresolved.push(r.id + ' ("' + display + '")');
         continue;
       }
-      // Absent under any casing: accept a successor only when exactly one id starts with
-      // the old one. Two candidates means a guess, and a guess in an inventory is worse
-      // than a gap someone can see.
-      const succ = st.reg.filter(function (t) {
-        return t.id.toLowerCase().indexOf(r.id.toLowerCase()) === 0;
-      });
-      if (succ.length === 1) {
-        seen.add(succ[0].id.toLowerCase());
-        lines[r.line] = lines[r.line].replace(TICK + r.id + TICK, TICK + succ[0].id + TICK);
-        renamed.push(r.id + ' -> ' + succ[0].id);
-      } else {
-        renamed.push(r.id + ' -> UNRESOLVED (' + succ.length + ' candidates; left as written)');
+      const key = hit.id.toLowerCase();
+      if (seen.has(key)) duplicates.push(r.id + ' -> ' + hit.id + ' (already documented by another row)');
+      seen.add(key);
+      if (hit.id !== r.id) {
+        lines[r.line] = lines[r.line].replace(TICK + r.id + TICK, TICK + hit.id + TICK);
+        renamed.push(r.id + ' -> ' + hit.id + (how === 'id' ? '' : '   [by ' + how + ']'));
       }
     }
   }
@@ -176,11 +195,24 @@ function main() {
     const next = before.replace(COUNT_RE, '(' + n + ' tools)');
     if (next !== before) { lines[sec.head] = next; counts.push(sec.num + ': ' + n); }
   }
+  // The count the reader sees must come from the tables as WRITTEN, not from the
+  // bookkeeping that wrote them: re-read every row and count the distinct registered tools
+  // it names. That is what turned "152 of 150" from a quiet wrong number into a failure.
+  const regIds = new Set(st.reg.map(function (t) { return t.id; }));
+  const documented = new Set();
+  let rowsTotal = 0;
+  for (const sec of after) {
+    for (const r of rowIds(lines, sec)) {
+      rowsTotal++;
+      if (regIds.has(r.id)) documented.add(r.id);
+    }
+  }
+  const absent = st.reg.filter(function (t) { return !documented.has(t.id); }).map(function (t) { return t.id; });
   for (let i = 0; i < lines.length; i++) {
     const m = lines[i].match(PRE_RE);
-    if (m && Number(m[1]) !== total) {
-      lines[i] = lines[i].replace(m[1], String(total));
-      counts.push('preamble: ' + total);
+    if (m && Number(m[1]) !== documented.size) {
+      lines[i] = lines[i].replace(m[1], String(documented.size));
+      counts.push('preamble: ' + documented.size);
     }
   }
 
@@ -190,16 +222,42 @@ function main() {
   renamed.forEach(function (r) { console.log('    ' + r); });
   console.log('appended rows : ' + (appended.length ? appended.join(', ') : 'none'));
   console.log('counts fixed  : ' + (counts.length ? counts.join(', ') : 'none'));
-  console.log('documented    : ' + total + ' of ' + st.reg.length + ' registered tools');
+  console.log('unresolved    : ' + (unresolved.length ? unresolved.join('; ') : 'none'));
+  console.log('duplicates    : ' + (duplicates.length ? duplicates.join('; ') : 'none'));
+  console.log('documented    : ' + documented.size + ' of ' + st.reg.length + ' registered tools, in ' + rowsTotal + ' rows');
+
+  // Invariants. Each is a way this tool could quietly report a wrong number.
+  const problems = [];
+  if (documented.size > st.reg.length) problems.push('more tools documented than exist');
+  if (absent.length) problems.push(absent.length + ' registered tool(s) still absent: ' + absent.join(', '));
+  if (rowsTotal !== documented.size + unresolved.length + duplicates.length) {
+    problems.push('row count ' + rowsTotal + ' is not documented + unresolved + duplicates (' +
+      documented.size + ' + ' + unresolved.length + ' + ' + duplicates.length + ')');
+  }
+  if (problems.length) {
+    console.error(NL + 'INVARIANT FAILED - nothing written:');
+    problems.forEach(function (p) { console.error('  - ' + p); });
+    process.exit(2);
+  }
+
   if (CHECK) {
-    if (stale) {
-      console.error(NL + 'FEATURE_INVENTORY.md tool tables are stale. Run this with --apply.');
+    // Unresolved or duplicate rows are drift a person must settle, so --check fails on
+    // them as well as on a plain stale table.
+    if (stale || unresolved.length || duplicates.length) {
+      console.error(NL + 'FEATURE_INVENTORY.md tool tables are stale. Run this with --apply, then settle any unresolved or duplicate rows by hand.');
       process.exit(1);
     }
     console.log(NL + 'OK - the tool tables match the registry.');
     return;
   }
-  if (APPLY) {
+  // --out=<file> writes the result somewhere else so a person can review the diff before
+  // the shared document changes; it never touches FEATURE_INVENTORY.md.
+  const outArg = process.argv.filter(function (a) { return a.indexOf('--out=') === 0; })[0];
+  if (outArg) {
+    const target = outArg.slice('--out='.length);
+    fs.writeFileSync(target, out);
+    console.log(NL + 'wrote preview to ' + target + ' (FEATURE_INVENTORY.md unchanged)');
+  } else if (APPLY) {
     fs.writeFileSync(DOC, out);
     console.log(NL + 'wrote FEATURE_INVENTORY.md');
   } else {
