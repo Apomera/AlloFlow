@@ -85,12 +85,33 @@ function csReadability(text) {
   const grade = 0.39 * asl + 11.8 * asw - 15.59;
   return { grade: Math.round(grade * 10) / 10, words: words.length, sentences: sentences.length, asl: Math.round(asl * 10) / 10, asw: Math.round(asw * 100) / 100, reliable: words.length >= 60 };
 }
+const CS_BATCH_SIZE = 40;
+const CS_GRID_MAX = 250;
 function csParseGrid(text) {
   return String(text == null ? "" : text).split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line, i) => {
     const parts = line.split("|").map((p) => p.trim());
     const codename = parts[0] || "S" + (i + 1);
     return { codename: codename.slice(0, 40), strengths: (parts[1] || "").slice(0, 600), growth: (parts[2] || "").slice(0, 600), habits: (parts[3] || "").slice(0, 300) };
-  }).slice(0, 40);
+  });
+}
+function csChunk(list, size) {
+  const n = Math.max(1, Math.floor(Number(size)) || 1);
+  const out = [];
+  for (let i = 0; i < list.length; i += n) out.push(list.slice(i, i + n));
+  return out;
+}
+function csReconcileBatch(expected, returned) {
+  const pool = (Array.isArray(returned) ? returned : []).map((row) => ({ key: csNormalizeCodename(row.codename), row, used: false }));
+  const comments = [];
+  const missing = [];
+  (Array.isArray(expected) ? expected : []).forEach((row) => {
+    const hit = pool.find((p) => !p.used && p.key === csNormalizeCodename(row.codename));
+    if (hit) {
+      hit.used = true;
+      comments.push({ codename: row.codename, comment: hit.row.comment });
+    } else missing.push(row);
+  });
+  return { comments, missing, unexpected: pool.filter((p) => !p.used).map((p) => p.row.codename || "(no codename)") };
 }
 function csBuildPrompt(templateId, fields, options) {
   const f = fields || {};
@@ -105,7 +126,7 @@ function csBuildPrompt(templateId, fields, options) {
   ];
   if (typeof f.codename === "string" && f.codename.trim()) common.push("- The student's codename is " + f.codename.trim() + "; use it wherever the student is named.");
   if (templateId === "report-card") {
-    const rows = csParseGrid(f.grid);
+    const rows = Array.isArray(o.rows) ? o.rows : csParseGrid(f.grid);
     return [
       "You are helping a teacher write report-card comments from their own notes.",
       ...common,
@@ -365,10 +386,22 @@ function CommunicationsStudioPanel(props) {
   const [disclosure, setDisclosure] = React.useState(prefs.disclosure !== false);
   const [busy, setBusy] = React.useState("");
   const [draft, setDraft] = React.useState("");
-  const [batch, setBatch] = React.useState([]);
-  const [translation, setTranslation] = React.useState("");
+  const [batchReport, setBatchReport] = React.useState(null);
+  const [translation, setTranslation] = React.useState(null);
   const [driveLink, setDriveLink] = React.useState("");
   const [groupFilter, setGroupFilter] = React.useState("");
+  const [lastGenerated, setLastGenerated] = React.useState("");
+  const [progress, setProgress] = React.useState("");
+  const [pending, setPending] = React.useState(null);
+  const stashRef = React.useRef({});
+  const exportedRef = React.useRef(/* @__PURE__ */ new Set());
+  const lastFillRef = React.useRef("");
+  const pendingReturnRef = React.useRef(null);
+  const keepEditingRef = React.useRef(null);
+  const dialogRef = React.useRef(null);
+  const onCloseRef = React.useRef(props.onClose);
+  onCloseRef.current = props.onClose;
+  const escapeRef = React.useRef(null);
   const evidence = React.useMemo(() => {
     let comments = {};
     try {
@@ -395,60 +428,169 @@ function CommunicationsStudioPanel(props) {
   const evidenceText = Object.values(fields).join("\n");
   const likelyNames = React.useMemo(() => csFindLikelyNames(evidenceText), [evidenceText]);
   const readability = React.useMemo(() => draft && template.audience === "family" ? csReadability(draft) : null, [draft, template.audience]);
-  const callModel = async (prompt) => {
-    if (typeof window.callGemini !== "function") throw new Error(tr("comms.no_model", "The AI is not available here. Open AlloFlow inside Gemini or connect a backend in AI settings."));
-    return window.callGemini(prompt, true);
-  };
-  const runDraft = async () => {
-    if (!evidenceText.trim()) {
-      toast(tr("comms.need_evidence", "Enter your notes first; the draft only uses what you give it."), "info");
+  const translationStale = !!(translation && translation.source !== draft);
+  const translationEdited = !!(translation && translation.text !== translation.generated);
+  const translationUsable = !!(translation && translation.text && translation.language === language && !translationStale);
+  const confirmThen = (needed, message, confirmLabel, run) => {
+    if (!needed) {
+      run();
       return;
     }
-    setBusy("draft");
-    setDraft("");
-    setBatch([]);
-    setTranslation("");
-    setDriveLink("");
-    try {
-      const raw = await callModel(csBuildPrompt(templateId, fields, { tone }));
-      if (templateId === "report-card") {
-        const rows = csParseBatch(raw);
-        if (!rows.length) throw new Error(tr("comms.batch_parse_failed", "The comments came back in an unexpected shape. Try again."));
-        setBatch(rows);
-        setDraft(rows.map((r) => `${r.codename}: ${r.comment}`).join("\n\n"));
-      } else {
-        setDraft(String(raw || "").trim());
+    pendingReturnRef.current = document.activeElement;
+    setPending({ message, confirmLabel, run });
+  };
+  const settlePending = (confirmed) => {
+    const p = pending;
+    const back = pendingReturnRef.current;
+    setPending(null);
+    pendingReturnRef.current = null;
+    if (back && back.isConnected && typeof back.focus === "function") back.focus();
+    if (confirmed && p) p.run();
+  };
+  React.useEffect(() => {
+    if (pending && keepEditingRef.current) keepEditingRef.current.focus();
+  }, [pending]);
+  const workKey = (id, w) => JSON.stringify([id, w.draft || "", w.translation ? w.translation.text : ""]);
+  const markExported = () => {
+    exportedRef.current.add(workKey(templateId, { draft, translation }));
+  };
+  const hasUnsentWork = () => {
+    const works = [[templateId, { draft, translation }], ...Object.entries(stashRef.current)].filter(([, w]) => w.draft);
+    if (works.length) return works.some(([id, w]) => !exportedRef.current.has(workKey(id, w)));
+    return !!evidenceText.trim();
+  };
+  const requestClose = () => confirmThen(hasUnsentWork(), tr("comms.confirm_close", "Close without copying or sending? Nothing in the studio is saved."), tr("comms.discard_close", "Discard and close"), () => {
+    if (typeof onCloseRef.current === "function") onCloseRef.current();
+  });
+  escapeRef.current = () => pending ? settlePending(false) : requestClose();
+  const switchTemplate = (id) => {
+    if (id === templateId) return;
+    stashRef.current[templateId] = { draft, translation, batchReport, driveLink, lastGenerated };
+    const next = stashRef.current[id] || {};
+    delete stashRef.current[id];
+    setDraft(next.draft || "");
+    setTranslation(next.translation || null);
+    setBatchReport(next.batchReport || null);
+    setDriveLink(next.driveLink || "");
+    setLastGenerated(next.lastGenerated || "");
+    setPending(null);
+    setTemplateId(id);
+  };
+  const callModel = async (prompt, jsonMode) => {
+    if (typeof window.callGemini !== "function") throw new Error(tr("comms.no_model", "The AI is not available here. Open AlloFlow inside Gemini or connect a backend in AI settings."));
+    const raw = await window.callGemini(prompt, !!jsonMode);
+    return String(raw == null ? "" : raw).trim();
+  };
+  const draftBatch = async (rows, previous) => {
+    const chunks = csChunk(rows, CS_BATCH_SIZE);
+    const comments = [];
+    const missing = [];
+    const unexpected = [];
+    let failure = null;
+    for (let i = 0; i < chunks.length; i++) {
+      if (chunks.length > 1) setProgress(`${i * CS_BATCH_SIZE + 1}-${i * CS_BATCH_SIZE + chunks[i].length} of ${rows.length}`);
+      try {
+        const got = csReconcileBatch(chunks[i], csParseBatch(await callModel(csBuildPrompt("report-card", fields, { tone, rows: chunks[i] }), true)));
+        comments.push(...got.comments);
+        missing.push(...got.missing);
+        unexpected.push(...got.unexpected);
+      } catch (error) {
+        failure = failure || error;
+        missing.push(...chunks[i]);
       }
+    }
+    const text = [previous ? previous.text : "", ...comments.map((c) => `${c.codename}: ${c.comment}`)].filter(Boolean).join("\n\n");
+    setDraft(text);
+    setLastGenerated(text);
+    setBatchReport({ total: previous ? previous.total : rows.length, drafted: (previous ? previous.drafted : 0) + comments.length, missing, unexpected });
+    if (failure) toast(failure.message || tr("comms.draft_failed", "Drafting failed."), "error");
+    else if (!comments.length) toast(tr("comms.batch_parse_failed", "The comments came back in an unexpected shape. Try again."), "error");
+  };
+  const doDraft = async () => {
+    setBusy("draft");
+    try {
+      if (templateId === "report-card") {
+        setTranslation(null);
+        setDriveLink("");
+        await draftBatch(csParseGrid(fields.grid), null);
+        return;
+      }
+      const text = await callModel(csBuildPrompt(templateId, fields, { tone }));
+      if (!text) throw new Error(tr("comms.empty_reply", "The AI returned an empty draft. Try again."));
+      setDraft(text);
+      setLastGenerated(text);
+      setTranslation(null);
+      setDriveLink("");
+      setBatchReport(null);
     } catch (error) {
       toast(error && error.message ? error.message : tr("comms.draft_failed", "Drafting failed."), "error");
     } finally {
       setBusy("");
+      setProgress("");
     }
   };
-  const runTranslate = async () => {
+  const runDraft = () => {
+    if (!evidenceText.trim()) {
+      toast(tr("comms.need_evidence", "Enter your notes first; the draft only uses what you give it."), "info");
+      return;
+    }
+    if (templateId === "report-card") {
+      const count = csParseGrid(fields.grid).length;
+      if (!count) {
+        toast(tr("comms.need_evidence", "Enter your notes first; the draft only uses what you give it."), "info");
+        return;
+      }
+      if (count > CS_GRID_MAX) {
+        toast(tr("comms.grid_too_long", `This grid has ${count} students. Draft at most ${CS_GRID_MAX} at a time; split it by group.`), "info");
+        return;
+      }
+    }
+    confirmThen(!!draft && draft !== lastGenerated, tr("comms.confirm_replace_draft", "Replace the draft you edited?"), tr("comms.replace", "Replace it"), doDraft);
+  };
+  const retryMissing = async () => {
+    if (!batchReport || !batchReport.missing.length) return;
+    setBusy("draft");
+    try {
+      await draftBatch(batchReport.missing, { text: draft, total: batchReport.total, drafted: batchReport.drafted });
+    } finally {
+      setBusy("");
+      setProgress("");
+    }
+  };
+  const doTranslate = async () => {
     if (!draft || !language) return;
+    const lang = language;
+    const source = draft;
     setBusy("translate");
     try {
-      const raw = await callModel(`Translate the following ${template.audience === "family" ? "message to families" : "letter"} into ${language}. Keep every placeholder like [Student] and every codename exactly as written. Keep the plain, ${tone} tone. Return ONLY the translation.
+      const text = await callModel(`Translate the following ${template.audience === "family" ? "message to families" : "letter"} into ${lang}. Keep every placeholder like [Student] and every codename exactly as written. Keep the plain, ${tone} tone. Return ONLY the translation.
 
-${draft}`);
-      setTranslation(String(raw || "").trim());
+${source}`);
+      if (!text) throw new Error(tr("comms.empty_translation", "The AI returned an empty translation. Try again."));
+      setTranslation({ text, language: lang, source, generated: text });
     } catch (error) {
       toast(error && error.message ? error.message : tr("comms.translate_failed", "Translation failed."), "error");
     } finally {
       setBusy("");
     }
   };
+  const runTranslate = () => confirmThen(translationEdited, tr("comms.confirm_replace_translation", "Replace the translation you edited?"), tr("comms.replace", "Replace it"), doTranslate);
+  const changeLanguage = (value) => confirmThen(translationEdited, tr("comms.confirm_drop_translation", `Discard your edited ${translation ? translation.language : ""} translation?`), tr("comms.discard", "Discard it"), () => {
+    setLanguage(value);
+    savePrefs({ language: value });
+    setTranslation(null);
+  });
   const fullText = () => {
     const parts = [draft];
-    if (translation && language) parts.push(`--- ${language} (machine draft; have a bilingual colleague check) ---
-${translation}`);
+    if (translationUsable) parts.push(`--- ${translation.language} (machine draft; have a bilingual colleague check) ---
+${translation.text}`);
     if (disclosure) parts.push(CS_DISCLOSURE);
     return parts.filter(Boolean).join("\n\n");
   };
   const copyAll = async () => {
     try {
       const ok = typeof window.alloCopyText === "function" ? await window.alloCopyText(fullText()) : false;
+      if (ok) markExported();
       toast(ok ? tr("toasts.copied", "Copied.") : tr("toasts.copy_failed", "Copy failed."), ok ? "success" : "error");
     } catch (_) {
       toast(tr("toasts.copy_failed", "Copy failed."), "error");
@@ -475,8 +617,9 @@ ${translation}`);
     setDriveLink("");
     try {
       const name = `${template.label} ${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.html`;
-      const reply = await dd.deliverCall(config, { a: "deliver", name, mime: "text/html", text: csDraftToHtml(template.label, draft, translation, { language, disclosure }), convert: "doc" });
+      const reply = await dd.deliverCall(config, { a: "deliver", name, mime: "text/html", text: csDraftToHtml(template.label, draft, translationUsable ? translation.text : "", { language: translationUsable ? translation.language : "", disclosure }), convert: "doc" });
       setDriveLink(reply.url || "");
+      markExported();
       toast(tr("comms.sent_to_drive", "Sent to your Drive as a Google Doc."), "success");
     } catch (error) {
       toast(error && error.message ? error.message : tr("comms.drive_failed", "Could not send to Drive."), "error");
@@ -491,15 +634,17 @@ ${translation}`);
   const fillGridFromRoster = () => {
     const rows = evidence.rows.filter((r) => !groupFilter || r.groupId === groupFilter);
     if (!rows.length) return;
-    setField("grid", rows.map((r) => `${r.codename} | ${r.line} | | ${r.group ? "Group: " + r.group : ""}`).join("\n"));
-    toast(tr("comms.grid_filled", `Filled ${rows.length} codename${rows.length === 1 ? "" : "s"} from the roster; edit before drafting.`), "success");
+    const text = rows.map((r) => `${r.codename} | ${r.line} | | ${r.group ? "Group: " + r.group : ""}`).join("\n");
+    const typed = !!(fields.grid || "").trim() && fields.grid !== lastFillRef.current;
+    confirmThen(typed, tr("comms.confirm_replace_grid", "Replace what you typed in the grid with the roster?"), tr("comms.replace", "Replace it"), () => {
+      setField("grid", text);
+      lastFillRef.current = text;
+      toast(tr("comms.grid_filled", `Filled ${rows.length} codename${rows.length === 1 ? "" : "s"} from the roster; edit before drafting.`), "success");
+    });
   };
   const codenameRow = evidence.rows.find((r) => r.codename === fields.codename) || null;
   const codenamePicker = /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 text-xs", "data-comms-codename-picker": "true" }, /* @__PURE__ */ React.createElement("label", { className: "font-bold" }, tr("comms.codename", "Codename"), /* @__PURE__ */ React.createElement("select", { value: fields.codename || "", onChange: (e) => setField("codename", e.target.value), className: "ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("comms.no_codename", "[Student]")), evidence.rows.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.codename, value: r.codename }, r.codename, r.group ? ` (${r.group})` : "")))), codenameRow && codenameRow.line && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => appendField(templateId === "family-reply" ? "notes" : "learned", codenameRow.line), className: "rounded border border-indigo-300 bg-white px-2 py-0.5 font-bold text-indigo-700 hover:bg-indigo-50", "data-comms-insert-evidence": "true" }, tr("comms.insert_evidence", "Insert evidence for this codename")));
   const area = (key, label, placeholder, rows) => /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700" }, label, /* @__PURE__ */ React.createElement("textarea", { value: fields[key] || "", onChange: (e) => setField(key, e.target.value), placeholder, rows: rows || 3, className: "mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" }));
-  const dialogRef = React.useRef(null);
-  const onCloseRef = React.useRef(props.onClose);
-  onCloseRef.current = props.onClose;
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
@@ -515,10 +660,10 @@ ${translation}`);
     const onKeyDown = (event) => {
       if (!isTopTrap()) return;
       if (event.key === "Escape") {
-        if (event.isComposing || typeof onCloseRef.current !== "function") return;
+        if (event.isComposing || typeof escapeRef.current !== "function") return;
         event.preventDefault();
         event.stopPropagation();
-        onCloseRef.current();
+        escapeRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -550,22 +695,16 @@ ${translation}`);
     };
   }, [props.isOpen]);
   if (props.isOpen === false) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation" }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "allo-docsuite bg-slate-50 text-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "comms-studio-title", "data-communications-studio": "true" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 flex flex-wrap items-center gap-2 bg-slate-50/95 border-b border-slate-200 px-4 py-3 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("h2", { id: "comms-studio-title", className: "text-lg font-black text-indigo-900" }, tr("comms.title", "Communications Studio")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, tr("comms.subtitle", "Drafts from your notes. Codenames only. Nothing is sent from here.")), typeof props.onClose === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: props.onClose, className: "ml-auto rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold hover:bg-slate-100" }, tr("common.close", "Close"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2", role: "tablist", "aria-label": tr("comms.templates", "Templates") }, CS_TEMPLATES.map((x) => /* @__PURE__ */ React.createElement("button", { key: x.id, type: "button", role: "tab", "aria-selected": x.id === templateId, onClick: () => {
-    setTemplateId(x.id);
-    setDraft("");
-    setBatch([]);
-    setTranslation("");
-    setDriveLink("");
-  }, className: `rounded-full border px-3 py-1 text-xs font-bold ${x.id === templateId ? "bg-indigo-600 border-indigo-600 text-white" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}` }, x.label))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, template.hint), likelyNames.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900", "data-comms-name-warning": "true" }, /* @__PURE__ */ React.createElement("strong", null, tr("comms.names_warning", "Possible names found; use codenames instead:")), " ", likelyNames.join(", "), ". ", tr("comms.names_why", "Names typed here would reach the AI provider; codenames keep the draft free of student identity until you merge it outside AlloFlow.")), evidence.unmatched.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900", "data-comms-unmatched": "true" }, /* @__PURE__ */ React.createElement("strong", null, tr("comms.unmatched", "Dashboard uploads not matching a roster codename (not inserted; they may be typed names):")), " ", evidence.unmatched.join(", ")), /* @__PURE__ */ React.createElement("div", { className: "grid gap-3 md:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, (templateId === "family-update" || templateId === "family-reply") && !evidence.empty && codenamePicker, templateId === "family-update" && rollupLine && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => appendField("learned", rollupLine), className: "self-start rounded border border-indigo-300 bg-white px-2 py-0.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50", "data-comms-insert-rollup": "true" }, tr("comms.insert_rollup", "Insert this week's success criteria (class level)")), templateId === "report-card" && !evidence.empty && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 text-xs", "data-comms-roster-fill": "true" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: fillGridFromRoster, className: "rounded border border-indigo-300 bg-white px-2 py-0.5 font-bold text-indigo-700 hover:bg-indigo-50" }, tr("comms.fill_from_roster", "Fill from roster")), evidence.groups.length > 0 && /* @__PURE__ */ React.createElement("select", { value: groupFilter, onChange: (e) => setGroupFilter(e.target.value), "aria-label": tr("comms.group_filter", "Group"), className: "rounded border border-slate-300 px-1 py-0.5" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("comms.all_groups", "All groups")), evidence.groups.map((g) => /* @__PURE__ */ React.createElement("option", { key: g.id, value: g.id }, g.name))), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, evidence.rows.length, " ", tr("comms.codenames", "codenames"), evidence.className ? ` · ${evidence.className}` : "", evidence.rows.some((r) => r.hasDashboard) ? ` · ${evidence.rows.filter((r) => r.hasDashboard).length} ${tr("comms.with_dashboard", "with dashboard data")}` : "")), templateId === "family-update" && /* @__PURE__ */ React.createElement(React.Fragment, null, area("learned", tr("comms.f_learned", "What we learned"), "Two or three things the class actually did or figured out."), area("next", tr("comms.f_next", "What is next"), "What the next week or unit brings."), area("help", tr("comms.f_help", "How families can help"), "One question to ask at home, one thing to notice.", 2)), templateId === "report-card" && area("grid", tr("comms.f_grid", "One student per line: codename | strengths | growth | habits"), "S1 | reads aloud with expression; explains reasoning | rushing multi-step problems | Perseverance 3, Responsibility 4\nS2 | ...", 8), templateId === "recommendation" && /* @__PURE__ */ React.createElement(React.Fragment, null, area("context", tr("comms.f_context", "My role and context"), "e.g. school psychologist, 8th-grade advisory", 2), area("duration", tr("comms.f_duration", "How long I have known the student"), "e.g. two school years", 1), area("program", tr("comms.f_program", "Program or purpose"), "e.g. summer STEM academy application", 1), area("examples", tr("comms.f_examples", "Specific examples (three is plenty)"), "What they did, when, what it showed.", 5), area("qualities", tr("comms.f_qualities", "Qualities I can vouch for"), "Only ones the examples support.", 2)), templateId === "family-reply" && /* @__PURE__ */ React.createElement(React.Fragment, null, area("message", tr("comms.f_message", "Their message (paste)"), "Paste the family message. Emails and phone numbers are scrubbed before drafting.", 5), area("notes", tr("comms.f_notes", "What I want to say"), "The answer, what happens next, by when.", 4)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 text-xs" }, /* @__PURE__ */ React.createElement("label", { className: "font-bold" }, tr("comms.tone", "Tone"), /* @__PURE__ */ React.createElement("select", { value: tone, onChange: (e) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation" }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "allo-docsuite bg-slate-50 text-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "comms-studio-title", "data-communications-studio": "true" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 flex flex-wrap items-center gap-2 bg-slate-50/95 border-b border-slate-200 px-4 py-3 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("h2", { id: "comms-studio-title", className: "text-lg font-black text-indigo-900" }, tr("comms.title", "Communications Studio")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, tr("comms.subtitle", "Drafts from your notes. Codenames only. Nothing is sent from here.")), typeof props.onClose === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: requestClose, className: "ml-auto rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold hover:bg-slate-100" }, tr("common.close", "Close")), pending && /* @__PURE__ */ React.createElement("div", { role: "alertdialog", "aria-modal": "false", "aria-labelledby": "comms-confirm-msg", className: "basis-full flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900", "data-comms-confirm": "true" }, /* @__PURE__ */ React.createElement("p", { id: "comms-confirm-msg", className: "font-bold" }, pending.message), /* @__PURE__ */ React.createElement("button", { ref: keepEditingRef, type: "button", onClick: () => settlePending(false), className: "ml-auto rounded-full border border-slate-300 bg-white px-3 py-1 font-bold text-slate-800 hover:bg-slate-100" }, tr("comms.keep_editing", "Keep editing")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => settlePending(true), className: "rounded-full border border-red-700 bg-red-700 px-3 py-1 font-bold text-white hover:bg-red-800" }, pending.confirmLabel))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2", role: "tablist", "aria-label": tr("comms.templates", "Templates") }, CS_TEMPLATES.map((x) => /* @__PURE__ */ React.createElement("button", { key: x.id, type: "button", role: "tab", "aria-selected": x.id === templateId, disabled: !!busy, onClick: () => switchTemplate(x.id), className: `rounded-full border px-3 py-1 text-xs font-bold disabled:opacity-50 ${x.id === templateId ? "bg-indigo-600 border-indigo-600 text-white" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}` }, x.label))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, template.hint), likelyNames.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900", "data-comms-name-warning": "true" }, /* @__PURE__ */ React.createElement("strong", null, tr("comms.names_warning", "Possible names found; use codenames instead:")), " ", likelyNames.join(", "), ". ", tr("comms.names_why", "Names typed here would reach the AI provider; codenames keep the draft free of student identity until you merge it outside AlloFlow.")), evidence.unmatched.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900", "data-comms-unmatched": "true" }, /* @__PURE__ */ React.createElement("strong", null, tr("comms.unmatched", "Dashboard uploads not matching a roster codename (not inserted; they may be typed names):")), " ", evidence.unmatched.join(", ")), /* @__PURE__ */ React.createElement("div", { className: "grid gap-3 md:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, (templateId === "family-update" || templateId === "family-reply") && !evidence.empty && codenamePicker, templateId === "family-update" && rollupLine && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => appendField("learned", rollupLine), className: "self-start rounded border border-indigo-300 bg-white px-2 py-0.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50", "data-comms-insert-rollup": "true" }, tr("comms.insert_rollup", "Insert this week's success criteria (class level)")), templateId === "report-card" && !evidence.empty && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 text-xs", "data-comms-roster-fill": "true" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: fillGridFromRoster, className: "rounded border border-indigo-300 bg-white px-2 py-0.5 font-bold text-indigo-700 hover:bg-indigo-50" }, tr("comms.fill_from_roster", "Fill from roster")), evidence.groups.length > 0 && /* @__PURE__ */ React.createElement("select", { value: groupFilter, onChange: (e) => setGroupFilter(e.target.value), "aria-label": tr("comms.group_filter", "Group"), className: "rounded border border-slate-300 px-1 py-0.5" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("comms.all_groups", "All groups")), evidence.groups.map((g) => /* @__PURE__ */ React.createElement("option", { key: g.id, value: g.id }, g.name))), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, evidence.rows.length, " ", tr("comms.codenames", "codenames"), evidence.className ? ` · ${evidence.className}` : "", evidence.rows.some((r) => r.hasDashboard) ? ` · ${evidence.rows.filter((r) => r.hasDashboard).length} ${tr("comms.with_dashboard", "with dashboard data")}` : "")), templateId === "family-update" && /* @__PURE__ */ React.createElement(React.Fragment, null, area("learned", tr("comms.f_learned", "What we learned"), "Two or three things the class actually did or figured out."), area("next", tr("comms.f_next", "What is next"), "What the next week or unit brings."), area("help", tr("comms.f_help", "How families can help"), "One question to ask at home, one thing to notice.", 2)), templateId === "report-card" && area("grid", tr("comms.f_grid", "One student per line: codename | strengths | growth | habits"), "S1 | reads aloud with expression; explains reasoning | rushing multi-step problems | Perseverance 3, Responsibility 4\nS2 | ...", 8), templateId === "recommendation" && /* @__PURE__ */ React.createElement(React.Fragment, null, area("context", tr("comms.f_context", "My role and context"), "e.g. school psychologist, 8th-grade advisory", 2), area("duration", tr("comms.f_duration", "How long I have known the student"), "e.g. two school years", 1), area("program", tr("comms.f_program", "Program or purpose"), "e.g. summer STEM academy application", 1), area("examples", tr("comms.f_examples", "Specific examples (three is plenty)"), "What they did, when, what it showed.", 5), area("qualities", tr("comms.f_qualities", "Qualities I can vouch for"), "Only ones the examples support.", 2)), templateId === "family-reply" && /* @__PURE__ */ React.createElement(React.Fragment, null, area("message", tr("comms.f_message", "Their message (paste)"), "Paste the family message. Emails and phone numbers are scrubbed before drafting.", 5), area("notes", tr("comms.f_notes", "What I want to say"), "The answer, what happens next, by when.", 4)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 text-xs" }, /* @__PURE__ */ React.createElement("label", { className: "font-bold" }, tr("comms.tone", "Tone"), /* @__PURE__ */ React.createElement("select", { value: tone, onChange: (e) => {
     setTone(e.target.value);
     savePrefs({ tone: e.target.value });
-  }, className: "ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal" }, CS_TONES.map((x) => /* @__PURE__ */ React.createElement("option", { key: x, value: x }, x)))), /* @__PURE__ */ React.createElement("label", { className: "font-bold" }, tr("comms.language", "Also in"), /* @__PURE__ */ React.createElement("select", { value: language, onChange: (e) => {
-    setLanguage(e.target.value);
-    savePrefs({ language: e.target.value });
-  }, className: "ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("comms.no_translation", "English only")), CS_LANGUAGES.map((x) => /* @__PURE__ */ React.createElement("option", { key: x, value: x }, x)))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 font-bold" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: disclosure, onChange: (e) => {
+  }, className: "ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal" }, CS_TONES.map((x) => /* @__PURE__ */ React.createElement("option", { key: x, value: x }, x)))), /* @__PURE__ */ React.createElement("label", { className: "font-bold" }, tr("comms.language", "Also in"), /* @__PURE__ */ React.createElement("select", { value: language, disabled: !!busy, onChange: (e) => changeLanguage(e.target.value), className: "ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("comms.no_translation", "English only")), CS_LANGUAGES.map((x) => /* @__PURE__ */ React.createElement("option", { key: x, value: x }, x)))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 font-bold" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: disclosure, onChange: (e) => {
     setDisclosure(e.target.checked);
     savePrefs({ disclosure: e.target.checked });
-  } }), " ", tr("comms.disclosure", "Add AI-assistance disclosure"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runDraft, disabled: !!busy, className: "rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50", "data-comms-draft": "true" }, busy === "draft" ? tr("comms.drafting", "Drafting…") : tr("comms.draft", "Draft from my notes"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700" }, tr("comms.draft_label", "Draft (edit freely)"), /* @__PURE__ */ React.createElement("textarea", { value: draft, onChange: (e) => setDraft(e.target.value), rows: templateId === "report-card" ? 14 : 10, className: "mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none", "data-comms-output": "true" })), readability && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border px-3 py-1.5 text-xs ${readability.grade <= CS_FAMILY_TARGET_GRADE ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`, "data-comms-readability": readability.grade }, tr("comms.readability", "Reading level (Flesch-Kincaid estimate)"), ": ", readability.grade, readability.reliable ? "" : " (short text; rough)", ". ", readability.grade <= CS_FAMILY_TARGET_GRADE ? tr("comms.readability_ok", "Within the plain-language target for families.") : tr("comms.readability_high", "Above the family target; shorten sentences and swap long words.")), language && draft && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runTranslate, disabled: !!busy, className: "self-start rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50" }, busy === "translate" ? tr("comms.translating", "Translating…") : `${tr("comms.translate", "Draft in")} ${language}`), translation && /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700" }, language, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-amber-800" }, "(", tr("comms.machine_draft", "machine draft; have a bilingual colleague check before sending"), ")"), /* @__PURE__ */ React.createElement("textarea", { value: translation, onChange: (e) => setTranslation(e.target.value), rows: 8, className: "mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800", "data-comms-translation": "true" })), draft && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyAll, className: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50" }, tr("comms.copy", "Copy all")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: sendToDrive, disabled: !!busy, className: "rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50", "data-comms-drive": "true" }, busy === "drive" ? tr("comms.sending", "Sending…") : tr("comms.send_drive", "Send to my Drive as a Google Doc")), driveLink && /* @__PURE__ */ React.createElement("a", { href: driveLink, target: "_blank", rel: "noopener noreferrer", className: "self-center text-xs font-semibold text-emerald-800 underline" }, tr("comms.open_doc", "Open the Google Doc ↗"))))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500" }, tr("comms.footer", "Drafts use only the notes you enter and are not saved. Nothing is emailed from AlloFlow: copy it into your district mail, print it, or send it to your own Drive. Merge real names outside AlloFlow.")))));
+  } }), " ", tr("comms.disclosure", "Add AI-assistance disclosure"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runDraft, disabled: !!busy, className: "rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50", "data-comms-draft": "true" }, busy === "draft" ? `${tr("comms.drafting", "Drafting…")}${progress ? " " + progress : ""}` : tr("comms.draft", "Draft from my notes"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700" }, tr("comms.draft_label", "Draft (edit freely)"), /* @__PURE__ */ React.createElement("textarea", { value: draft, readOnly: busy === "draft", onChange: (e) => setDraft(e.target.value), rows: templateId === "report-card" ? 14 : 10, className: "mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none", "data-comms-output": "true" })), readability && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border px-3 py-1.5 text-xs ${readability.grade <= CS_FAMILY_TARGET_GRADE ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`, "data-comms-readability": readability.grade }, tr("comms.readability", "Reading level (Flesch-Kincaid estimate)"), ": ", readability.grade, readability.reliable ? "" : " (short text; rough)", ". ", readability.grade <= CS_FAMILY_TARGET_GRADE ? tr("comms.readability_ok", "Within the plain-language target for families.") : tr("comms.readability_high", "Above the family target; shorten sentences and swap long words.")), templateId === "report-card" && batchReport && /* @__PURE__ */ React.createElement("div", { role: "status", className: `rounded-lg border px-3 py-1.5 text-xs ${batchReport.missing.length || batchReport.unexpected.length ? "border-amber-300 bg-amber-50 text-amber-900" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`, "data-comms-batch-report": "true" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, batchReport.drafted, " ", tr("comms.of", "of"), " ", batchReport.total), " ", tr("comms.have_comment", "students have a comment.")), batchReport.missing.length > 0 && /* @__PURE__ */ React.createElement("p", null, tr("comms.missing", "No comment came back for:"), " ", batchReport.missing.map((r) => r.codename).join(", ")), batchReport.unexpected.length > 0 && /* @__PURE__ */ React.createElement("p", null, tr("comms.unexpected", "Left out because they are not in your grid:"), " ", batchReport.unexpected.join(", ")), batchReport.missing.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: retryMissing, disabled: !!busy, className: "mt-1 rounded border border-amber-400 bg-white px-2 py-0.5 font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-50", "data-comms-retry-missing": "true" }, tr("comms.retry_missing", "Draft the missing ones again"), " (", batchReport.missing.length, ")")), language && draft && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runTranslate, disabled: !!busy, className: "self-start rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50" }, busy === "translate" ? tr("comms.translating", "Translating…") : `${tr("comms.translate", "Draft in")} ${language}`), translation && /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700" }, translation.language, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-amber-800" }, "(", tr("comms.machine_draft", "machine draft; have a bilingual colleague check before sending"), ")"), /* @__PURE__ */ React.createElement("textarea", { value: translation.text, onChange: (e) => {
+    const text = e.target.value;
+    setTranslation((prev) => ({ ...prev, text }));
+  }, rows: 8, className: "mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800", "data-comms-translation": "true" })), translationStale && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900", "data-comms-translation-stale": "true" }, tr("comms.translation_stale", "The draft changed after this translation, so Copy and Drive leave the translation out. Translate again, or keep it if it still matches."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setTranslation((prev) => ({ ...prev, source: draft })), className: "ml-2 rounded border border-amber-400 bg-white px-2 py-0.5 font-bold text-amber-900 hover:bg-amber-100" }, tr("comms.still_matches", "It still matches"))), draft && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyAll, className: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50" }, tr("comms.copy", "Copy all")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: sendToDrive, disabled: !!busy, className: "rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50", "data-comms-drive": "true" }, busy === "drive" ? tr("comms.sending", "Sending…") : tr("comms.send_drive", "Send to my Drive as a Google Doc")), driveLink && /* @__PURE__ */ React.createElement("a", { href: driveLink, target: "_blank", rel: "noopener noreferrer", className: "self-center text-xs font-semibold text-emerald-800 underline" }, tr("comms.open_doc", "Open the Google Doc ↗"))))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500" }, tr("comms.footer", "Drafts use only the notes you enter and are not saved. Nothing is emailed from AlloFlow: copy it into your district mail, print it, or send it to your own Drive. Merge real names outside AlloFlow.")))));
 }
 
   window.AlloModules = window.AlloModules || {};
@@ -577,6 +716,10 @@ ${translation}`);
       csFindLikelyNames: csFindLikelyNames,
       csReadability: csReadability,
       csParseGrid: csParseGrid,
+      csChunk: csChunk,
+      csReconcileBatch: csReconcileBatch,
+      CS_BATCH_SIZE: CS_BATCH_SIZE,
+      CS_GRID_MAX: CS_GRID_MAX,
       csBuildPrompt: csBuildPrompt,
       csParseBatch: csParseBatch,
       csDraftToHtml: csDraftToHtml,

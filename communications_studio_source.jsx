@@ -87,12 +87,37 @@ function csReadability(text) {
 }
 
 // Report-card grid: one student per line, "codename | strengths | growth | habits".
+// Not capped here: a cap that drops rows silently hides students. Drafting
+// sends CS_BATCH_SIZE rows per call and refuses grids over CS_GRID_MAX.
+const CS_BATCH_SIZE = 40;
+const CS_GRID_MAX = 250;
 function csParseGrid(text) {
   return String(text == null ? '' : text).split(/\r?\n/).map(line => line.trim()).filter(Boolean).map((line, i) => {
     const parts = line.split('|').map(p => p.trim());
     const codename = parts[0] || ('S' + (i + 1));
     return { codename: codename.slice(0, 40), strengths: (parts[1] || '').slice(0, 600), growth: (parts[2] || '').slice(0, 600), habits: (parts[3] || '').slice(0, 300) };
-  }).slice(0, 40);
+  });
+}
+
+function csChunk(list, size) {
+  const n = Math.max(1, Math.floor(Number(size)) || 1);
+  const out = [];
+  for (let i = 0; i < list.length; i += n) out.push(list.slice(i, i + n));
+  return out;
+}
+
+// Matches the batch reply back to the grid by codename (case and spacing
+// ignored). A skipped or renamed student is reported, never guessed by
+// position: a comment on the wrong student is worse than a missing one.
+function csReconcileBatch(expected, returned) {
+  const pool = (Array.isArray(returned) ? returned : []).map(row => ({ key: csNormalizeCodename(row.codename), row, used: false }));
+  const comments = [];
+  const missing = [];
+  (Array.isArray(expected) ? expected : []).forEach(row => {
+    const hit = pool.find(p => !p.used && p.key === csNormalizeCodename(row.codename));
+    if (hit) { hit.used = true; comments.push({ codename: row.codename, comment: hit.row.comment }); } else missing.push(row);
+  });
+  return { comments, missing, unexpected: pool.filter(p => !p.used).map(p => p.row.codename || '(no codename)') };
 }
 
 function csBuildPrompt(templateId, fields, options) {
@@ -108,7 +133,7 @@ function csBuildPrompt(templateId, fields, options) {
   ];
   if (typeof f.codename === 'string' && f.codename.trim()) common.push('- The student\'s codename is ' + f.codename.trim() + '; use it wherever the student is named.');
   if (templateId === 'report-card') {
-    const rows = csParseGrid(f.grid);
+    const rows = Array.isArray(o.rows) ? o.rows : csParseGrid(f.grid);
     return [
       'You are helping a teacher write report-card comments from their own notes.',
       ...common,
@@ -335,10 +360,30 @@ function CommunicationsStudioPanel(props) {
   const [disclosure, setDisclosure] = React.useState(prefs.disclosure !== false);
   const [busy, setBusy] = React.useState('');
   const [draft, setDraft] = React.useState('');
-  const [batch, setBatch] = React.useState([]);
-  const [translation, setTranslation] = React.useState('');
+  const [batchReport, setBatchReport] = React.useState(null);
+  // { text, language, source, generated }: source is the draft it was made
+  // from and generated is the model's text, so staleness and edits both show.
+  const [translation, setTranslation] = React.useState(null);
   const [driveLink, setDriveLink] = React.useState('');
   const [groupFilter, setGroupFilter] = React.useState('');
+  const [lastGenerated, setLastGenerated] = React.useState('');
+  const [progress, setProgress] = React.useState('');
+  const [pending, setPending] = React.useState(null);
+  // Nothing is persisted, so other templates' work is parked here while the
+  // studio is open, and what was copied or sent is remembered so closing only
+  // asks when something would be lost.
+  const stashRef = React.useRef({});
+  const exportedRef = React.useRef(new Set());
+  const lastFillRef = React.useRef('');
+  const pendingReturnRef = React.useRef(null);
+  const keepEditingRef = React.useRef(null);
+  const dialogRef = React.useRef(null);
+  // The host passes a fresh onClose arrow every render; reading it through a
+  // ref keeps the focus-trap effect from re-running and pulling focus out of
+  // the textarea the teacher is typing in.
+  const onCloseRef = React.useRef(props.onClose);
+  onCloseRef.current = props.onClose;
+  const escapeRef = React.useRef(null);
   const evidence = React.useMemo(() => {
     let comments = {};
     try { comments = csReadTeacherComments(localStorage.getItem('allo_teacher_comments')); } catch (_) {}
@@ -352,43 +397,129 @@ function CommunicationsStudioPanel(props) {
   const likelyNames = React.useMemo(() => csFindLikelyNames(evidenceText), [evidenceText]);
   const readability = React.useMemo(() => (draft && template.audience === 'family' ? csReadability(draft) : null), [draft, template.audience]);
 
-  const callModel = async (prompt) => {
-    if (typeof window.callGemini !== 'function') throw new Error(tr('comms.no_model', 'The AI is not available here. Open AlloFlow inside Gemini or connect a backend in AI settings.'));
-    return window.callGemini(prompt, true);
+  const translationStale = !!(translation && translation.source !== draft);
+  const translationEdited = !!(translation && translation.text !== translation.generated);
+  const translationUsable = !!(translation && translation.text && translation.language === language && !translationStale);
+
+  // Inline confirm: window.confirm does not work inside Gemini Canvas.
+  const confirmThen = (needed, message, confirmLabel, run) => {
+    if (!needed) { run(); return; }
+    pendingReturnRef.current = document.activeElement;
+    setPending({ message, confirmLabel, run });
+  };
+  const settlePending = (confirmed) => {
+    const p = pending;
+    const back = pendingReturnRef.current;
+    setPending(null);
+    pendingReturnRef.current = null;
+    if (back && back.isConnected && typeof back.focus === 'function') back.focus();
+    if (confirmed && p) p.run();
+  };
+  React.useEffect(() => { if (pending && keepEditingRef.current) keepEditingRef.current.focus(); }, [pending]);
+
+  const workKey = (id, w) => JSON.stringify([id, w.draft || '', w.translation ? w.translation.text : '']);
+  const markExported = () => { exportedRef.current.add(workKey(templateId, { draft, translation })); };
+  const hasUnsentWork = () => {
+    const works = [[templateId, { draft, translation }], ...Object.entries(stashRef.current)].filter(([, w]) => w.draft);
+    if (works.length) return works.some(([id, w]) => !exportedRef.current.has(workKey(id, w)));
+    return !!evidenceText.trim();
+  };
+  const requestClose = () => confirmThen(hasUnsentWork(), tr('comms.confirm_close', 'Close without copying or sending? Nothing in the studio is saved.'), tr('comms.discard_close', 'Discard and close'), () => { if (typeof onCloseRef.current === 'function') onCloseRef.current(); });
+  escapeRef.current = () => (pending ? settlePending(false) : requestClose());
+
+  const switchTemplate = (id) => {
+    if (id === templateId) return;
+    stashRef.current[templateId] = { draft, translation, batchReport, driveLink, lastGenerated };
+    const next = stashRef.current[id] || {};
+    delete stashRef.current[id];
+    setDraft(next.draft || ''); setTranslation(next.translation || null); setBatchReport(next.batchReport || null); setDriveLink(next.driveLink || ''); setLastGenerated(next.lastGenerated || '');
+    setPending(null);
+    setTemplateId(id);
   };
 
-  const runDraft = async () => {
-    if (!evidenceText.trim()) { toast(tr('comms.need_evidence', 'Enter your notes first; the draft only uses what you give it.'), 'info'); return; }
-    setBusy('draft'); setDraft(''); setBatch([]); setTranslation(''); setDriveLink('');
+  // JSON mode only for the report-card batch: it forces a JSON reply, which
+  // would wrap a letter or a translation in quotes and escapes.
+  const callModel = async (prompt, jsonMode) => {
+    if (typeof window.callGemini !== 'function') throw new Error(tr('comms.no_model', 'The AI is not available here. Open AlloFlow inside Gemini or connect a backend in AI settings.'));
+    const raw = await window.callGemini(prompt, !!jsonMode);
+    return String(raw == null ? '' : raw).trim();
+  };
+
+  // previous: the batch being topped up by "draft the missing again".
+  const draftBatch = async (rows, previous) => {
+    const chunks = csChunk(rows, CS_BATCH_SIZE);
+    const comments = [];
+    const missing = [];
+    const unexpected = [];
+    let failure = null;
+    for (let i = 0; i < chunks.length; i++) {
+      if (chunks.length > 1) setProgress(`${i * CS_BATCH_SIZE + 1}-${i * CS_BATCH_SIZE + chunks[i].length} of ${rows.length}`);
+      try {
+        const got = csReconcileBatch(chunks[i], csParseBatch(await callModel(csBuildPrompt('report-card', fields, { tone, rows: chunks[i] }), true)));
+        comments.push(...got.comments); missing.push(...got.missing); unexpected.push(...got.unexpected);
+      } catch (error) { failure = failure || error; missing.push(...chunks[i]); }
+    }
+    const text = [previous ? previous.text : '', ...comments.map(c => `${c.codename}: ${c.comment}`)].filter(Boolean).join('\n\n');
+    setDraft(text); setLastGenerated(text);
+    setBatchReport({ total: previous ? previous.total : rows.length, drafted: (previous ? previous.drafted : 0) + comments.length, missing, unexpected });
+    if (failure) toast(failure.message || tr('comms.draft_failed', 'Drafting failed.'), 'error');
+    else if (!comments.length) toast(tr('comms.batch_parse_failed', 'The comments came back in an unexpected shape. Try again.'), 'error');
+  };
+
+  const doDraft = async () => {
+    setBusy('draft');
     try {
-      const raw = await callModel(csBuildPrompt(templateId, fields, { tone }));
       if (templateId === 'report-card') {
-        const rows = csParseBatch(raw);
-        if (!rows.length) throw new Error(tr('comms.batch_parse_failed', 'The comments came back in an unexpected shape. Try again.'));
-        setBatch(rows);
-        setDraft(rows.map(r => `${r.codename}: ${r.comment}`).join('\n\n'));
-      } else {
-        setDraft(String(raw || '').trim());
+        setTranslation(null); setDriveLink('');
+        await draftBatch(csParseGrid(fields.grid), null);
+        return;
       }
+      const text = await callModel(csBuildPrompt(templateId, fields, { tone }));
+      if (!text) throw new Error(tr('comms.empty_reply', 'The AI returned an empty draft. Try again.'));
+      setDraft(text); setLastGenerated(text); setTranslation(null); setDriveLink(''); setBatchReport(null);
     } catch (error) {
       toast(error && error.message ? error.message : tr('comms.draft_failed', 'Drafting failed.'), 'error');
-    } finally { setBusy(''); }
+    } finally { setBusy(''); setProgress(''); }
   };
 
-  const runTranslate = async () => {
+  const runDraft = () => {
+    if (!evidenceText.trim()) { toast(tr('comms.need_evidence', 'Enter your notes first; the draft only uses what you give it.'), 'info'); return; }
+    if (templateId === 'report-card') {
+      const count = csParseGrid(fields.grid).length;
+      if (!count) { toast(tr('comms.need_evidence', 'Enter your notes first; the draft only uses what you give it.'), 'info'); return; }
+      if (count > CS_GRID_MAX) { toast(tr('comms.grid_too_long', `This grid has ${count} students. Draft at most ${CS_GRID_MAX} at a time; split it by group.`), 'info'); return; }
+    }
+    confirmThen(!!draft && draft !== lastGenerated, tr('comms.confirm_replace_draft', 'Replace the draft you edited?'), tr('comms.replace', 'Replace it'), doDraft);
+  };
+
+  const retryMissing = async () => {
+    if (!batchReport || !batchReport.missing.length) return;
+    setBusy('draft');
+    try { await draftBatch(batchReport.missing, { text: draft, total: batchReport.total, drafted: batchReport.drafted }); }
+    finally { setBusy(''); setProgress(''); }
+  };
+
+  const doTranslate = async () => {
     if (!draft || !language) return;
+    const lang = language;
+    const source = draft;
     setBusy('translate');
     try {
-      const raw = await callModel(`Translate the following ${template.audience === 'family' ? 'message to families' : 'letter'} into ${language}. Keep every placeholder like [Student] and every codename exactly as written. Keep the plain, ${tone} tone. Return ONLY the translation.\n\n${draft}`);
-      setTranslation(String(raw || '').trim());
+      const text = await callModel(`Translate the following ${template.audience === 'family' ? 'message to families' : 'letter'} into ${lang}. Keep every placeholder like [Student] and every codename exactly as written. Keep the plain, ${tone} tone. Return ONLY the translation.\n\n${source}`);
+      if (!text) throw new Error(tr('comms.empty_translation', 'The AI returned an empty translation. Try again.'));
+      setTranslation({ text, language: lang, source, generated: text });
     } catch (error) {
       toast(error && error.message ? error.message : tr('comms.translate_failed', 'Translation failed.'), 'error');
     } finally { setBusy(''); }
   };
+  const runTranslate = () => confirmThen(translationEdited, tr('comms.confirm_replace_translation', 'Replace the translation you edited?'), tr('comms.replace', 'Replace it'), doTranslate);
+  const changeLanguage = (value) => confirmThen(translationEdited, tr('comms.confirm_drop_translation', `Discard your edited ${translation ? translation.language : ''} translation?`), tr('comms.discard', 'Discard it'), () => {
+    setLanguage(value); savePrefs({ language: value }); setTranslation(null);
+  });
 
   const fullText = () => {
     const parts = [draft];
-    if (translation && language) parts.push(`--- ${language} (machine draft; have a bilingual colleague check) ---\n${translation}`);
+    if (translationUsable) parts.push(`--- ${translation.language} (machine draft; have a bilingual colleague check) ---\n${translation.text}`);
     if (disclosure) parts.push(CS_DISCLOSURE);
     return parts.filter(Boolean).join('\n\n');
   };
@@ -396,6 +527,7 @@ function CommunicationsStudioPanel(props) {
   const copyAll = async () => {
     try {
       const ok = typeof window.alloCopyText === 'function' ? await window.alloCopyText(fullText()) : false;
+      if (ok) markExported();
       toast(ok ? tr('toasts.copied', 'Copied.') : tr('toasts.copy_failed', 'Copy failed.'), ok ? 'success' : 'error');
     } catch (_) { toast(tr('toasts.copy_failed', 'Copy failed.'), 'error'); }
   };
@@ -412,8 +544,9 @@ function CommunicationsStudioPanel(props) {
     setBusy('drive'); setDriveLink('');
     try {
       const name = `${template.label} ${new Date().toISOString().slice(0, 10)}.html`;
-      const reply = await dd.deliverCall(config, { a: 'deliver', name, mime: 'text/html', text: csDraftToHtml(template.label, draft, translation, { language, disclosure }), convert: 'doc' });
+      const reply = await dd.deliverCall(config, { a: 'deliver', name, mime: 'text/html', text: csDraftToHtml(template.label, draft, translationUsable ? translation.text : '', { language: translationUsable ? translation.language : '', disclosure }), convert: 'doc' });
       setDriveLink(reply.url || '');
+      markExported();
       toast(tr('comms.sent_to_drive', 'Sent to your Drive as a Google Doc.'), 'success');
     } catch (error) {
       toast(error && error.message ? error.message : tr('comms.drive_failed', 'Could not send to Drive.'), 'error');
@@ -424,8 +557,13 @@ function CommunicationsStudioPanel(props) {
   const fillGridFromRoster = () => {
     const rows = evidence.rows.filter(r => !groupFilter || r.groupId === groupFilter);
     if (!rows.length) return;
-    setField('grid', rows.map(r => `${r.codename} | ${r.line} | | ${r.group ? 'Group: ' + r.group : ''}`).join('\n'));
-    toast(tr('comms.grid_filled', `Filled ${rows.length} codename${rows.length === 1 ? '' : 's'} from the roster; edit before drafting.`), 'success');
+    const text = rows.map(r => `${r.codename} | ${r.line} | | ${r.group ? 'Group: ' + r.group : ''}`).join('\n');
+    const typed = !!(fields.grid || '').trim() && fields.grid !== lastFillRef.current;
+    confirmThen(typed, tr('comms.confirm_replace_grid', 'Replace what you typed in the grid with the roster?'), tr('comms.replace', 'Replace it'), () => {
+      setField('grid', text);
+      lastFillRef.current = text;
+      toast(tr('comms.grid_filled', `Filled ${rows.length} codename${rows.length === 1 ? '' : 's'} from the roster; edit before drafting.`), 'success');
+    });
   };
   const codenameRow = evidence.rows.find(r => r.codename === fields.codename) || null;
   const codenamePicker = (
@@ -446,12 +584,6 @@ function CommunicationsStudioPanel(props) {
     </label>
   );
 
-  const dialogRef = React.useRef(null);
-  // The host passes a fresh onClose arrow every render; keeping it out of the
-  // effect deps stops a host re-render from re-running the trap and pulling
-  // focus out of the textarea the teacher is typing in.
-  const onCloseRef = React.useRef(props.onClose);
-  onCloseRef.current = props.onClose;
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
@@ -467,8 +599,8 @@ function CommunicationsStudioPanel(props) {
     const onKeyDown = (event) => {
       if (!isTopTrap()) return;
       if (event.key === 'Escape') {
-        if (event.isComposing || typeof onCloseRef.current !== 'function') return;
-        event.preventDefault(); event.stopPropagation(); onCloseRef.current(); return;
+        if (event.isComposing || typeof escapeRef.current !== 'function') return;
+        event.preventDefault(); event.stopPropagation(); escapeRef.current(); return;
       }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
@@ -495,12 +627,19 @@ function CommunicationsStudioPanel(props) {
         <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 bg-slate-50/95 border-b border-slate-200 px-4 py-3 rounded-t-2xl">
           <h2 id="comms-studio-title" className="text-lg font-black text-indigo-900">{tr('comms.title', 'Communications Studio')}</h2>
           <span className="text-xs text-slate-600">{tr('comms.subtitle', 'Drafts from your notes. Codenames only. Nothing is sent from here.')}</span>
-          {typeof props.onClose === 'function' && <button type="button" onClick={props.onClose} className="ml-auto rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold hover:bg-slate-100">{tr('common.close', 'Close')}</button>}
+          {typeof props.onClose === 'function' && <button type="button" onClick={requestClose} className="ml-auto rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold hover:bg-slate-100">{tr('common.close', 'Close')}</button>}
+          {pending && (
+            <div role="alertdialog" aria-modal="false" aria-labelledby="comms-confirm-msg" className="basis-full flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" data-comms-confirm="true">
+              <p id="comms-confirm-msg" className="font-bold">{pending.message}</p>
+              <button ref={keepEditingRef} type="button" onClick={() => settlePending(false)} className="ml-auto rounded-full border border-slate-300 bg-white px-3 py-1 font-bold text-slate-800 hover:bg-slate-100">{tr('comms.keep_editing', 'Keep editing')}</button>
+              <button type="button" onClick={() => settlePending(true)} className="rounded-full border border-red-700 bg-red-700 px-3 py-1 font-bold text-white hover:bg-red-800">{pending.confirmLabel}</button>
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-3 p-4">
           <div className="flex flex-wrap gap-2" role="tablist" aria-label={tr('comms.templates', 'Templates')}>
             {CS_TEMPLATES.map(x => (
-              <button key={x.id} type="button" role="tab" aria-selected={x.id === templateId} onClick={() => { setTemplateId(x.id); setDraft(''); setBatch([]); setTranslation(''); setDriveLink(''); }} className={`rounded-full border px-3 py-1 text-xs font-bold ${x.id === templateId ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}>{x.label}</button>
+              <button key={x.id} type="button" role="tab" aria-selected={x.id === templateId} disabled={!!busy} onClick={() => switchTemplate(x.id)} className={`rounded-full border px-3 py-1 text-xs font-bold disabled:opacity-50 ${x.id === templateId ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}>{x.label}</button>
             ))}
           </div>
           <p className="text-xs text-slate-600">{template.hint}</p>
@@ -547,28 +686,42 @@ function CommunicationsStudioPanel(props) {
                   <select value={tone} onChange={(e) => { setTone(e.target.value); savePrefs({ tone: e.target.value }); }} className="ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal">{CS_TONES.map(x => <option key={x} value={x}>{x}</option>)}</select>
                 </label>
                 <label className="font-bold">{tr('comms.language', 'Also in')}
-                  <select value={language} onChange={(e) => { setLanguage(e.target.value); savePrefs({ language: e.target.value }); }} className="ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal"><option value="">{tr('comms.no_translation', 'English only')}</option>{CS_LANGUAGES.map(x => <option key={x} value={x}>{x}</option>)}</select>
+                  <select value={language} disabled={!!busy} onChange={(e) => changeLanguage(e.target.value)} className="ml-1 rounded border border-slate-300 px-1 py-0.5 font-normal"><option value="">{tr('comms.no_translation', 'English only')}</option>{CS_LANGUAGES.map(x => <option key={x} value={x}>{x}</option>)}</select>
                 </label>
                 <label className="flex items-center gap-1 font-bold"><input type="checkbox" checked={disclosure} onChange={(e) => { setDisclosure(e.target.checked); savePrefs({ disclosure: e.target.checked }); }} /> {tr('comms.disclosure', 'Add AI-assistance disclosure')}</label>
               </div>
-              <button type="button" onClick={runDraft} disabled={!!busy} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50" data-comms-draft="true">{busy === 'draft' ? tr('comms.drafting', 'Drafting…') : tr('comms.draft', 'Draft from my notes')}</button>
+              <button type="button" onClick={runDraft} disabled={!!busy} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50" data-comms-draft="true">{busy === 'draft' ? `${tr('comms.drafting', 'Drafting…')}${progress ? ' ' + progress : ''}` : tr('comms.draft', 'Draft from my notes')}</button>
             </div>
             <div className="flex flex-col gap-2">
               <label className="block text-xs font-bold text-slate-700">{tr('comms.draft_label', 'Draft (edit freely)')}
-                <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={templateId === 'report-card' ? 14 : 10} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" data-comms-output="true" />
+                <textarea value={draft} readOnly={busy === 'draft'} onChange={(e) => setDraft(e.target.value)} rows={templateId === 'report-card' ? 14 : 10} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" data-comms-output="true" />
               </label>
               {readability && (
                 <div className={`rounded-lg border px-3 py-1.5 text-xs ${readability.grade <= CS_FAMILY_TARGET_GRADE ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`} data-comms-readability={readability.grade}>
                   {tr('comms.readability', 'Reading level (Flesch-Kincaid estimate)')}: {readability.grade}{readability.reliable ? '' : ' (short text; rough)'}. {readability.grade <= CS_FAMILY_TARGET_GRADE ? tr('comms.readability_ok', 'Within the plain-language target for families.') : tr('comms.readability_high', 'Above the family target; shorten sentences and swap long words.')}
                 </div>
               )}
+              {templateId === 'report-card' && batchReport && (
+                <div role="status" className={`rounded-lg border px-3 py-1.5 text-xs ${batchReport.missing.length || batchReport.unexpected.length ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-emerald-200 bg-emerald-50 text-emerald-900'}`} data-comms-batch-report="true">
+                  <p><strong>{batchReport.drafted} {tr('comms.of', 'of')} {batchReport.total}</strong> {tr('comms.have_comment', 'students have a comment.')}</p>
+                  {batchReport.missing.length > 0 && <p>{tr('comms.missing', 'No comment came back for:')} {batchReport.missing.map(r => r.codename).join(', ')}</p>}
+                  {batchReport.unexpected.length > 0 && <p>{tr('comms.unexpected', 'Left out because they are not in your grid:')} {batchReport.unexpected.join(', ')}</p>}
+                  {batchReport.missing.length > 0 && <button type="button" onClick={retryMissing} disabled={!!busy} className="mt-1 rounded border border-amber-400 bg-white px-2 py-0.5 font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-50" data-comms-retry-missing="true">{tr('comms.retry_missing', 'Draft the missing ones again')} ({batchReport.missing.length})</button>}
+                </div>
+              )}
               {language && draft && (
                 <button type="button" onClick={runTranslate} disabled={!!busy} className="self-start rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">{busy === 'translate' ? tr('comms.translating', 'Translating…') : `${tr('comms.translate', 'Draft in')} ${language}`}</button>
               )}
               {translation && (
-                <label className="block text-xs font-bold text-slate-700">{language} <span className="font-normal text-amber-800">({tr('comms.machine_draft', 'machine draft; have a bilingual colleague check before sending')})</span>
-                  <textarea value={translation} onChange={(e) => setTranslation(e.target.value)} rows={8} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800" data-comms-translation="true" />
+                <label className="block text-xs font-bold text-slate-700">{translation.language} <span className="font-normal text-amber-800">({tr('comms.machine_draft', 'machine draft; have a bilingual colleague check before sending')})</span>
+                  <textarea value={translation.text} onChange={(e) => { const text = e.target.value; setTranslation(prev => ({ ...prev, text })); }} rows={8} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800" data-comms-translation="true" />
                 </label>
+              )}
+              {translationStale && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900" data-comms-translation-stale="true">
+                  {tr('comms.translation_stale', 'The draft changed after this translation, so Copy and Drive leave the translation out. Translate again, or keep it if it still matches.')}
+                  <button type="button" onClick={() => setTranslation(prev => ({ ...prev, source: draft }))} className="ml-2 rounded border border-amber-400 bg-white px-2 py-0.5 font-bold text-amber-900 hover:bg-amber-100">{tr('comms.still_matches', 'It still matches')}</button>
+                </div>
               )}
               {draft && (
                 <div className="flex flex-wrap gap-2">

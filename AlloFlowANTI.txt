@@ -14307,7 +14307,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
     window.__alloLazyWalkthroughCopilot = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WalkthroughCopilot', 'https://alloflow-cdn.pages.dev/walkthrough_copilot_cdn_module.js?v=wc081301'); }; })();
-    window.__alloLazyCommunicationsStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CommunicationsStudio', 'https://alloflow-cdn.pages.dev/communications_studio_module.js?v=cs092201'); }; })();
+    window.__alloLazyCommunicationsStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CommunicationsStudio', 'https://alloflow-cdn.pages.dev/communications_studio_module.js?v=cs092301'); }; })();
     // Disproportionality Analyzer (Aug 3 2026) — admin equity metrics,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();

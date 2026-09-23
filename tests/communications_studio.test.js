@@ -66,14 +66,38 @@ describe('codename-first', () => {
 });
 
 describe('batch comments and readability', () => {
-    it('parses the grid one student per line and caps it', () => {
+    it('parses every grid line; a cap that drops rows silently hides students', () => {
         const rows = T.csParseGrid('S1 | reads aloud | rushing | Perseverance 3\n\n S2|explains reasoning||\nno pipes here');
         expect(rows).toEqual([
             { codename: 'S1', strengths: 'reads aloud', growth: 'rushing', habits: 'Perseverance 3' },
             { codename: 'S2', strengths: 'explains reasoning', growth: '', habits: '' },
             { codename: 'no pipes here', strengths: '', growth: '', habits: '' },
         ]);
-        expect(T.csParseGrid(Array.from({ length: 50 }, (_, i) => 'S' + i).join('\n')).length).toBe(40);
+        expect(T.csParseGrid(Array.from({ length: 120 }, (_, i) => 'S' + i).join('\n')).length).toBe(120);
+    });
+
+    it('chunks a class into batches and sends each chunk, not the whole grid, to the prompt', () => {
+        const rows = T.csParseGrid(Array.from({ length: 95 }, (_, i) => `S${i + 1} | strong | next | habit`).join('\n'));
+        const chunks = T.csChunk(rows, T.CS_BATCH_SIZE);
+        expect(chunks.map((c) => c.length)).toEqual([40, 40, 15]);
+        const prompt = T.csBuildPrompt('report-card', { grid: 'IGNORED | x | y | z' }, { rows: chunks[2] });
+        expect(prompt).toContain('S81 | strong');
+        expect(prompt).toContain('S95 | strong');
+        expect(prompt).not.toContain('S80 |');
+        expect(prompt).not.toContain('IGNORED');
+    });
+
+    it('reconciles the reply by codename: skipped and renamed students are reported, never guessed by position', () => {
+        const expected = T.csParseGrid('S1 | a\nS2 | b\nS3 | c\nS1 | d');
+        const got = T.csReconcileBatch(expected, [
+            { codename: 's1', comment: 'first S1' },
+            { codename: 'Student S2', comment: 'renamed' },
+            { codename: 'S3', comment: 'three' },
+        ]);
+        expect(got.comments).toEqual([{ codename: 'S1', comment: 'first S1' }, { codename: 'S3', comment: 'three' }]);
+        expect(got.missing.map((r) => r.codename)).toEqual(['S2', 'S1']);
+        expect(got.unexpected).toEqual(['Student S2']);
+        expect(T.csReconcileBatch(expected, []).missing).toHaveLength(4);
     });
 
     it('parses the batch reply, tolerating prose around the JSON, and drops empty comments', () => {
@@ -108,7 +132,7 @@ describe('never sends; outputs are copy or the teacher Drive', () => {
     it('has no mail path anywhere and routes Drive through the Class Mailbox helpers', () => {
         expect(panelSource).not.toMatch(/mailto:|sendEmail|GmailApp|MailApp|send_mail/);
         expect(panelSource).toContain("window.AlloModules && window.AlloModules.DriveDelivery");
-        expect(panelSource).toContain("{ a: 'deliver', name, mime: 'text/html', text: csDraftToHtml(template.label, draft, translation, { language, disclosure }), convert: 'doc' }");
+        expect(panelSource).toContain("{ a: 'deliver', name, mime: 'text/html', text: csDraftToHtml(template.label, draft, translationUsable ? translation.text : '', { language: translationUsable ? translation.language : '', disclosure }), convert: 'doc' }");
         expect(panelSource).toContain('window.__alloOpenMailboxSetup');
         expect(panelSource).not.toMatch(/localStorage\.setItem\('alloflow_comms_studio_(draft|fields|notes)/);
         expect(panelSource).toContain("localStorage.setItem('alloflow_comms_studio_prefs'");
@@ -118,7 +142,7 @@ describe('never sends; outputs are copy or the teacher Drive', () => {
 describe('wiring pins', () => {
     it('ships the panel and the testing seams, identically to the public mirror', () => {
         expect(typeof studio.CommunicationsStudioPanel).toBe('function');
-        expect(Object.keys(T).sort()).toEqual(['CS_DISCLOSURE', 'CS_FAMILY_TARGET_GRADE', 'CS_LANGUAGES', 'CS_TEMPLATES', 'CS_TONES', 'csBuildEvidence', 'csBuildPrompt', 'csDraftToHtml', 'csEvidenceLine', 'csFindLikelyNames', 'csNormalizeCodename', 'csParseBatch', 'csParseGrid', 'csReadTeacherComments', 'csReadability', 'csRollupLine', 'csRosterIndex', 'csScrubPII', 'csSummarizeDashboardStudent']);
+        expect(Object.keys(T).sort()).toEqual(['CS_BATCH_SIZE', 'CS_DISCLOSURE', 'CS_FAMILY_TARGET_GRADE', 'CS_GRID_MAX', 'CS_LANGUAGES', 'CS_TEMPLATES', 'CS_TONES', 'csBuildEvidence', 'csBuildPrompt', 'csChunk', 'csDraftToHtml', 'csEvidenceLine', 'csFindLikelyNames', 'csNormalizeCodename', 'csParseBatch', 'csParseGrid', 'csReadTeacherComments', 'csReadability', 'csReconcileBatch', 'csRollupLine', 'csRosterIndex', 'csScrubPII', 'csSummarizeDashboardStudent']);
         expect(moduleSource).toBe(publicModule);
         expect(T.CS_LANGUAGES).toEqual(expect.arrayContaining(['Somali', 'Maay Maay', 'Arabic', 'French', 'Portuguese', 'Spanish', 'Lingala', 'Kirundi']));
     });
@@ -128,7 +152,7 @@ describe('wiring pins', () => {
         expect(hubModal).toContain('openCommunicationsStudio = (() => {}),');
         const card = hubModal.slice(hubModal.indexOf('data-hub-id="communications-studio"') - 80, hubModal.indexOf('data-hub-id="communications-studio"'));
         expect(card).toContain('{!hideSchoolProfessional && (');
-        expect(anti).toContain("window.__alloLazyCommunicationsStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CommunicationsStudio', 'https://alloflow-cdn.pages.dev/communications_studio_module.js?v=cs092201'); }; })();");
+        expect(anti).toContain("window.__alloLazyCommunicationsStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CommunicationsStudio', 'https://alloflow-cdn.pages.dev/communications_studio_module.js?v=cs092301'); }; })();");
         expect(anti).toContain('const [isCommunicationsStudioOpen, setIsCommunicationsStudioOpen] = useState(false);');
         expect(anti).toContain("else if (toolId === 'communicationsStudio') {");
         expect(anti).toContain('<CDNModuleGate moduleKey="CommunicationsStudio.CommunicationsStudioPanel" isOpen={isCommunicationsStudioOpen}');
