@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { opticsSetupKey } from '../helpers/optics_prediction.js';
 
 /**
  * Optics Lab, the six TOPIC tabs — the solved answer waits for a prediction.
@@ -36,17 +37,14 @@ const harness = new GlHarness({
 const LENS_SETUP = { lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 6, lensScreenCm: 15, lensShow3D: false };
 
 /**
- * The setup key the tool computes: sorted `key=value` pairs for that tab.
- *
- * Only the keys that actually change the OUTCOME take part. `lensShow3D` is a
- * view toggle — it picks how the setup is drawn and reaches no calculator — so
- * the tool deliberately leaves it out of the key, and including it here would
- * build a key that never matches.
+ * The setup key the tool computes for the lens tab. Built by the shared helper,
+ * which reads OPTICS_PREDICTION_KEYS out of the tool source, so this spec cannot
+ * hold its own stale copy of which controls count. (It used to: a hand-copied
+ * field list here still included object height and screen distance after the
+ * tool stopped keying on them.)
  */
-const LENS_KEY_FIELDS = ['lensType', 'lensFocal', 'lensDo', 'lensObjH', 'lensScreenCm'];
 function lensKey(over: Record<string, unknown> = {}) {
-  const s: Record<string, unknown> = { ...LENS_SETUP, ...over };
-  return LENS_KEY_FIELDS.slice().sort().map((k) => `${k}=${s[k]}`).join('|');
+  return opticsSetupKey('lenses', { ...LENS_SETUP, ...over });
 }
 
 async function mountLenses(page: any, extra: Record<string, unknown> = {}) {
@@ -175,8 +173,7 @@ test.describe('Optics topic panels — the solved rows wait for a prediction', (
     // (theta2 / Result / Bending / Transmitted power / Reflected power) read
     // it. This asserts both halves of that claim.
     const REFR = { refrN1: 1.333, refrN2: 1.000, refrTheta1: 30 };
-    const refrKey = ['refrN1', 'refrN2', 'refrTheta1'].slice().sort()
-      .map((k) => `${k}=${(REFR as Record<string, unknown>)[k]}`).join('|');
+    const refrKey = opticsSetupKey('refraction', REFR);
     const answered = {
       opPredictionNotes: { refraction: 'Bends away from the normal; no TIR at 30 degrees.' },
       opPredictionSetups: { refraction: refrKey },

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { withPrediction } from './helpers/optics_prediction.js';
 
 const SOURCE = 'stem_lab/stem_tool_optics.js';
 const source = readFileSync(SOURCE, 'utf8');
@@ -41,16 +42,18 @@ describe('Optics Lab improvement regressions', () => {
   });
 
   it('announces computed outcomes on the main simulation sliders', () => {
-    const refraction = render({ mode: 'refraction', refrN1: 1.333, refrN2: 1, refrTheta1: 60 });
+    // These outcomes are gated behind a saved prediction; the sliders speak
+    // them once the student has committed one for that setup.
+    const refraction = render(withPrediction('refraction', { mode: 'refraction', refrN1: 1.333, refrN2: 1, refrTheta1: 60 }));
     expect(refraction).toContain('Total internal reflection; no refracted ray.');
 
-    const interference = render({ mode: 'interference', intLambda: 600, intSlitSep: 0.1, intScreenL: 1 });
+    const interference = render(withPrediction('interference', { mode: 'interference', intLambda: 600, intSlitSep: 0.1, intScreenL: 1 }));
     expect(interference).toContain('fringe spacing 6.00 millimeters.');
 
-    const diffraction = render({ mode: 'diffraction', diffMode: 'single', diffLambda: 600, diffSlitWidth: 30, diffScreenL: 1.5 });
+    const diffraction = render(withPrediction('diffraction', { mode: 'diffraction', diffMode: 'single', diffLambda: 600, diffSlitWidth: 30, diffScreenL: 1.5 }));
     expect(diffraction).toContain('first minimum at 30.00 millimeters.');
 
-    const polarization = render({ mode: 'polarization', polTheta2: 90 });
+    const polarization = render(withPrediction('polarization', { mode: 'polarization', polTheta2: 90 }));
     expect(polarization).toContain('transmitted intensity after P2 0.0 percent of I0.');
   });
 
@@ -84,12 +87,19 @@ describe('Optics Lab improvement regressions', () => {
     expect(source.match(/function scheduleFrame\(\)/g)).toHaveLength(5);
     expect(source).toContain("if (typeof document !== 'undefined' && document.hidden) return;");
     expect(source).toContain('push: function (data) { pending = data; scheduleFrame(); }');
-    expect(source).toContain('if (S.animate) scheduleFrame();');
+    // Re-pinned after 8fe0936fd: the frame loop now also re-checks
+    // prefers-reduced-motion before rescheduling, because S.animate is only
+    // refreshed when a new config is pushed and the OS toggle can flip mid-run.
+    // The intent pinned here is unchanged: reschedule only while animating.
+    expect(source).toContain('if (S.animate && !opticsPrefersReducedMotion()) scheduleFrame();');
   });
 
   it('makes the polarization 3D outcome explain each intensity projection', () => {
     expect(source).toContain("var polStageLine = 'I\\u2080 100.0% \\u2192 P\\u2081 '");
-    expect(source).toContain('var polProjectionLine = useP3');
+    // Re-pinned: the projection line is now held behind a saved prediction
+    // (it states the transmitted fraction), and the explained per-stage branch
+    // still follows once revealed.
+    expect(source).toMatch(/var polProjectionLine = polHide[\s\S]*?: useP3\s*\?\s*\('P/);
     expect(source).toContain("'data-op-polarization-3d-host': 'true'");
     // Went through the translator on 2026-09-21: a bare literal has no key, so no
     // translator is ever shown it and it ships English in all 63 packs. Assert both
@@ -118,17 +128,22 @@ describe('Optics Lab improvement regressions', () => {
     expect(source).toContain("'data-image-height': hImg == null");
     expect(source).toContain("'data-op-lens-3d-host': 'true'");
     expect(source).toContain("'data-screen-offset-cm': screenDelta == null ? 'none' : screenDelta.toFixed(3)");
-    expect(source).toContain("var screenRelationShort = screenFocused ? 'sharp focus");
+    // Re-pinned: while the answer is held the relation line reports only the
+    // observable blur; once revealed it still says "sharp focus" at focus. Both
+    // the lens and the mirror carry it.
+    expect(source.match(/var screenRelationShort = (lensHide|reflHide) \?[^\n]*\n\s*: screenFocused \? 'sharp focus/g)).toHaveLength(2);
     expect(source).toContain('S.resizeObserver.disconnect()');
     expect(source).toContain("window.__alloOpticsLensGL = OpticsLensGL");
 
-    const collapsed = render({ mode: 'lenses', lensShow3D: false });
+    const collapsed = render(withPrediction('lenses', { mode: 'lenses', lensShow3D: false }));
     expect(collapsed).toContain('3D ray-space bench');
     expect(collapsed).not.toContain('Loading 3D lens bench');
 
-    const expanded = render({
+    // The image result is gated behind a saved prediction; this checks the
+    // text the bench shows once the student has committed one.
+    const expanded = render(withPrediction('lenses', {
       mode: 'lenses', lensShow3D: true, lensType: 'diverging', lensFocal: 12, lensDo: 25
-    });
+    }));
     expect(expanded).toContain('Loading 3D lens bench');
     expect(expanded).toContain('Dashed pink lines are backward extensions');
     expect(expanded).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown + - 0"');
@@ -136,10 +151,10 @@ describe('Optics Lab improvement regressions', () => {
     expect(expanded).toContain('virtual, upright image');
     expect(expanded).toContain('The object tip is 5.0 centimeters above the optical axis; the image tip is 1.6 centimeters above the optical axis.');
 
-    const focalPlane = render({
+    const focalPlane = render(withPrediction('lenses', {
       mode: 'lenses', lensShow3D: true, lensShowMath: true,
       lensType: 'converging', lensFocal: 12, lensDo: 12, lensObjH: 6
-    });
+    }));
     expect(focalPlane).toContain('image at infinity');
     expect(focalPlane).toContain('outgoing cyan rays are parallel');
     expect(focalPlane).toContain('Parallel / collimated after lens');
@@ -149,10 +164,10 @@ describe('Optics Lab improvement regressions', () => {
     expect(focalPlane).toContain('Outgoing bundle angle');
     expect(focalPlane).toContain('The object tip is 6.0 centimeters above the optical axis.');
 
-    const finiteImage = render({
+    const finiteImage = render(withPrediction('lenses', {
       mode: 'lenses', lensShow3D: true,
       lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 7
-    });
+    }));
     expect(finiteImage).toContain('7.0 cm object height. Image tip 6.5 cm below the optical axis.');
     expect(finiteImage).toContain('The object tip is 7.0 centimeters above the optical axis; the image tip is 6.5 centimeters below the optical axis.');
   });
@@ -180,11 +195,11 @@ describe('Optics Lab improvement regressions', () => {
     expect(source).toContain("'data-op-refraction-3d-outcome': refractionOutcomeState");
     expect(source).toContain("'data-critical-offset-deg': criticalOffsetDeg == null ? 'none' : criticalOffsetDeg.toFixed(3)");
 
-    const collapsed = render({ mode: 'refraction', refrShow3D: false });
+    const collapsed = render(withPrediction('refraction', { mode: 'refraction', refrShow3D: false }));
     expect(collapsed).toContain('Ray-space bench (3D');
     expect(collapsed).not.toContain('Loading 3D ray bench');
 
-    const refracted = render({ mode: 'refraction', refrShow3D: true, refrN1: 1, refrN2: 1.52, refrTheta1: 30 });
+    const refracted = render(withPrediction('refraction', { mode: 'refraction', refrShow3D: true, refrN1: 1, refrN2: 1.52, refrTheta1: 30 }));
     expect(refracted).toContain('Loading 3D ray bench');
     expect(refracted).toContain('Gold enters, cyan refracts');
     expect(refracted).toContain('refracts into index 1.520 at 19.2 degrees');
@@ -194,11 +209,11 @@ describe('Optics Lab improvement regressions', () => {
     expect(refracted).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown + - 0"');
     expect(refracted).toContain('data-op-refraction-3d-reset="true"');
 
-    const away = render({ mode: 'refraction', refrShow3D: true, refrN1: 1.5, refrN2: 1, refrTheta1: 40 });
+    const away = render(withPrediction('refraction', { mode: 'refraction', refrShow3D: true, refrN1: 1.5, refrN2: 1, refrTheta1: 40 }));
     expect(away).toContain('The transmitted ray bends away from the normal because the second refractive index is lower.');
     expect(away).toContain('1.8 degrees below the critical angle of 41.8 degrees.');
 
-    const tir = render({ mode: 'refraction', refrShow3D: true, refrN1: 1.5, refrN2: 1, refrTheta1: 60 });
+    const tir = render(withPrediction('refraction', { mode: 'refraction', refrShow3D: true, refrN1: 1.5, refrN2: 1, refrTheta1: 60 }));
     expect(tir).toContain('totally internally reflects into the first medium');
     expect(tir).toContain('No transmitted ray leaves the interface.');
     expect(tir).toContain('18.2 degrees above the critical angle of 41.8 degrees.');

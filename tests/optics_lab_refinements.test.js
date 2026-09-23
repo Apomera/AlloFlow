@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { withPrediction } from './helpers/optics_prediction.js';
 
 function state(overrides = {}) {
   return {
@@ -329,18 +330,20 @@ describe('Optics Lab refinements', () => {
   });
 
   it('turns each wave screen into an accessible measurement instrument', () => {
-    const interference = renderTool('opticsLab', state({
+    // The answer-jump quick measures (Dark +1/2, Bright +1, First minimum, the
+    // grating orders) are held until a prediction; this checks the revealed set.
+    const interference = renderTool('opticsLab', state(withPrediction('interference', {
       mode: 'interference', intLambda: 600, intSlitSep: 0.1, intScreenL: 1,
       intSlitWidth: 50, intScreenProbeMm: 6,
-    }));
-    const diffraction = renderTool('opticsLab', state({
+    })));
+    const diffraction = renderTool('opticsLab', state(withPrediction('diffraction', {
       mode: 'diffraction', diffMode: 'single', diffLambda: 600,
       diffSlitWidth: 30, diffScreenL: 1.5, diffScreenProbeMm: 0,
-    }));
-    const grating = renderTool('opticsLab', state({
+    })));
+    const grating = renderTool('opticsLab', state(withPrediction('diffraction', {
       mode: 'diffraction', diffMode: 'grating', diffLambda: 600,
       diffGrating: 600, diffScreenL: 1, diffScreenProbeMm: 0,
-    }));
+    })));
 
     expect(interference).toContain('data-op-screen-ruler="interference"');
     expect(interference).toContain('data-op-screen-detector="interference"');

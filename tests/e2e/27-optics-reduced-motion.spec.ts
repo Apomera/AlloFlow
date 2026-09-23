@@ -199,6 +199,63 @@ test.describe('Optics — reduced motion mid-session', () => {
       .toBeGreaterThan(150);
   });
 
+  test("Snell's window rays are visible, not 1px lines", async ({ page }) => {
+    // The window scene teaches with two fans of rays converging on an
+    // underwater eye: amber (0xfcd34d) sky light entering through the window
+    // cone, teal (0x5eead4) light reflected from below outside it. Both were
+    // THREE.Line, i.e. one pixel wide whatever WebGL is asked for.
+    //
+    // Colour classes are chosen against the scene's OWN furniture: the water
+    // is blue (0x60a5fa / 0x93c5fd), which a loose "cyan-ish" test would count
+    // as teal. Teal has green ABOVE blue; those blues do not. The pale-amber
+    // window rim (0xfde68a) has blue 138, so it stays out of the amber class.
+    await harness.mount(page, {
+      opticsLab: { mode: 'refraction', refrShowWindow: true, refrN1: 1.333, refrN2: 1.0 },
+    });
+    await page.waitForSelector('canvas[data-optics-window-gl="true"]', { timeout: 30000 });
+    await page.waitForTimeout(1800);
+
+    const shot = await page.locator('canvas[data-optics-window-gl="true"]').first()
+      .screenshot({ timeout: 30000 });
+    const px = await page.evaluate(async (b64: string) => {
+      const img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/png;base64,' + b64; });
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d');
+      if (!g) return null;
+      g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, c.width, c.height).data;
+      let amber = 0, teal = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], gg = d[i + 1], b = d[i + 2];
+        if (r > 180 && gg > 150 && b < 110 && r > gg) amber++;
+        else if (gg > 140 && gg > b && r < 130) teal++;
+      }
+      return { amber, teal };
+    }, shot.toString('base64'));
+
+    expect(px, 'could not decode the window canvas').not.toBeNull();
+    // Guard: both fans must have rendered at all before any size claim.
+    expect(px!.amber, 'no amber sky rays rendered').toBeGreaterThan(0);
+    expect(px!.teal, 'no teal reflected rays rendered').toBeGreaterThan(0);
+    // Floors are MEASURED on this canvas, same camera, same screenshot path:
+    //                      1px lines   all cylinders   teal-only (shipped)
+    //   amber sky fan        1028        463             1011
+    //   teal reflected        404        284              619
+    // The teal floor proves the reflected fan got thicker. The amber floor
+    // guards one specific, measured failure: cylinders too thin for this
+    // canvas (r=0.045 is under a pixel) rasterise with gaps and the sky fan
+    // breaks into dotted rays — it halved to 463 px. It does NOT forbid a
+    // thicker sky fan: at r=0.11 the fan passes this floor. Keeping the sky
+    // fan as lines is a legibility judgement (the rays stay distinct near the
+    // eye instead of merging), not something this test enforces.
+    expect(px!.teal, `teal rays cover ${px!.teal} px — 1px lines measured 404`)
+      .toBeGreaterThan(510);
+    expect(px!.amber, `amber sky fan covers ${px!.amber} px — sub-pixel cylinders measured 463`)
+      .toBeGreaterThan(800);
+  });
+
   test('the polarization scene frees its GL context when the view unmounts', async ({ page }) => {
     // Optics does NOT route through StemLab.releaseGl (unlike most GL tools);
     // each of its five renderers calls forceContextLoss() directly. That is a

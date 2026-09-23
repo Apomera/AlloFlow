@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { createServer, Server } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
+import { predictionKeys, opticsConstant } from '../helpers/optics_prediction.js';
 
 /**
  * Optics Lab, polarization tab — REAL WebGL smoke.
@@ -135,6 +136,43 @@ test.afterAll(async () => {
 
 type Pg = import('@playwright/test').Page;
 
+// Model a student who saves a prediction at EVERY setup they try. The answer
+// text these tests read (image type, I_out, the Fresnel split...) is held until
+// a prediction exists for the current setup, and several tests sweep through
+// setups with __set. So after each change this re-saves a prediction for the
+// new setup, through the spec's own __set, keyed with the TOOL's list of which
+// controls count (read from source by the shared helper). If the key ever
+// disagreed with the tool, the text would stay held and these tests would fail
+// loudly rather than pass on a stale copy.
+async function autoPredict(page: Pg) {
+  await page.evaluate((keys: Record<string, string[]>) => {
+    const w = window as any;
+    const stamp = () => {
+      const b = (w.__toolData && w.__toolData.opticsLab) || {};
+      const tab = b.mode;
+      const cap: Record<string, unknown> = {};
+      (keys[tab] || []).forEach((k) => { if (b[k] != null && typeof b[k] !== 'object') cap[k] = b[k]; });
+      const key = Object.keys(cap).sort().map((k) => k + '=' + cap[k]).join('|');
+      return {
+        opPredictionNotes: Object.assign({}, b.opPredictionNotes, { [tab]: 'My prediction.' }),
+        opPredictionSetups: Object.assign({}, b.opPredictionSetups, { [tab]: key }),
+      };
+    };
+    const original = w.__set;
+    w.__set = function (patch: Record<string, unknown>) { original(patch); original(stamp()); };
+    original(stamp());
+  }, predictionKeys());
+  await page.waitForTimeout(250);
+}
+
+// A UI-driven change to a control that sets the answer (a slider, not __set)
+// correctly makes the gate ask again. Model the student answering it: re-save a
+// prediction for the CURRENT setup (autoPredict's __set wrapper does the stamp).
+async function predictAgain(page: Pg) {
+  await page.evaluate(() => (window as any).__set({}));
+  await page.waitForTimeout(150);
+}
+
 async function mount(page: Pg, bucket: Record<string, unknown> = {}) {
   await page.goto(`${base}/__harness`);
   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
@@ -261,10 +299,13 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     await mountUi(page, {
       mode: 'interference', intLambda: 600, intSlitSep: 0.1, intScreenL: 1, intSlitWidth: 50,
     });
+    await autoPredict(page);
 
     const slit = page.getByRole('slider', { name: 'Drag to change slit separation' });
     await slit.press('ArrowDown');
     await page.waitForFunction(() => (window as any).__bucket().intSlitSep === 0.09);
+    // Slit separation sets the fringe spacing, so the gate asks again.
+    await predictAgain(page);
     await expect(page.locator('[data-op-causal-insight="interference"]')).toHaveAttribute('data-isolated-variable', 'true');
     await expect(page.locator('[data-op-causal-insight="interference"]')).toContainText('Fringe spacing is inversely proportional');
 
@@ -418,6 +459,7 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     await mountUi(page, {
       mode: 'lenses', lensType: 'converging', lensFocal: 10, lensDo: 5, lensObjH: 5,
     });
+    await autoPredict(page);
 
     const diagram = page.locator('#op-panel-lenses svg.opticslab-core-svg');
     const summary = page.locator('[data-op-lens-path-summary]');
@@ -473,6 +515,7 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
       mode: 'diffraction', diffMode: 'grating', diffLambda: 600, diffGrating: 600,
       diffGratingDuty: 50, diffScreenL: 1, diffScreenProbeMm: 385, diffShowWavefield3D: true,
     });
+    await autoPredict(page);
 
     const duty = page.getByRole('slider', { name: 'Grating open fraction' });
     const detector = page.getByRole('slider', { name: 'Diffraction screen detector position' });
@@ -639,6 +682,7 @@ test.describe('Optics Lab polarization — real WebGL', () => {
 
   test('mounts a 3D view of the polarizer chain', async ({ page }) => {
     await mount(page, { polTheta2: 30 });
+    await autoPredict(page);
     const gl = await page.evaluate(() => (window as any).__gl());
     const outcome = page.locator('[data-op-polarization-3d-outcome]');
     const stageTrail = page.locator('[data-op-polarization-stage-trail="true"]');
@@ -689,6 +733,35 @@ test.describe('Optics Lab polarization — real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
+  test('holds the polarizer outcome until a prediction, then reveals it', async ({ page }) => {
+    // The 3-D overlay only exists once a real WebGL scene is ready, so the unit
+    // tests cannot reach it. Held first, then revealed on the SAME scene, so
+    // neither half can pass on a view that simply never rendered.
+    const MASK = opticsConstant('OPTICS_MASKED_VALUE');
+    const SPOKEN = opticsConstant('OPTICS_MASKED_SPOKEN');
+    await mount(page, { polTheta2: 30 });
+    const outcome = page.locator('[data-op-polarization-3d-outcome]');
+    const trail = page.locator('[data-op-polarization-stage-trail="true"]');
+    const rule = page.locator('[data-op-polarization-rule="true"]');
+    const bar = page.locator('[data-op-polarization-throughput="true"]');
+    await expect(outcome).toContainText('Outcome ' + MASK);
+    await expect(outcome).toContainText('I_out = ' + MASK);
+    await expect(outcome).not.toContainText('Beam transmitting');
+    await expect(outcome).not.toContainText('37.5');
+    await expect(trail).toContainText('P₂ ' + MASK);
+    await expect(rule).toContainText('cos²(30°) of what reaches it');
+    await expect(rule).not.toContainText('75.0%');
+    await expect(bar).not.toHaveAttribute('aria-valuenow', /.*/);
+    await expect(bar).toHaveAttribute('aria-valuetext', SPOKEN);
+    // Rose = extinguished, green = transmitting: the held label is neutral.
+    expect(await outcome.locator('div').first().evaluate((el) => getComputedStyle(el).color)).toBe('rgb(203, 213, 225)');
+
+    await autoPredict(page);
+    await expect(outcome).toContainText('Beam transmitting');
+    await expect(outcome).toContainText('I_out = 37.5% I₀');
+    await expect(bar).toHaveAttribute('aria-valuenow', '37.5');
+  });
+
   test('★ linear light is FLAT in the transverse plane', async ({ page }) => {
     // The physical claim of a linear polarizer: after it, the field oscillates
     // in ONE plane. All excursion along its own axis, none across it.
@@ -718,6 +791,7 @@ test.describe('Optics Lab polarization — real WebGL', () => {
     // been able to demonstrate. Crossed polarizers extinguish linear light;
     // circular light comes through at half, whatever the angle.
     await mount(page, { polTheta2: 90 });
+    await autoPredict(page);
     const outcome = page.locator('[data-op-polarization-3d-outcome]');
     const calculator = page.locator('[data-op-polarization-calc-mode]');
     const stageTrail = page.locator('[data-op-polarization-stage-trail="true"]');
@@ -773,6 +847,7 @@ test.describe('Optics Lab polarization — real WebGL', () => {
 
   test('adding P3 extends the chain', async ({ page }) => {
     await mount(page, { polTheta2: 45 });
+    await autoPredict(page);
     const before = await page.evaluate(() => (window as any).__gl().discs);
     await page.evaluate(() => (window as any).__set({ polUseP3: true, polTheta3: 90 }));
     await page.waitForTimeout(400);
@@ -924,6 +999,7 @@ test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
 
   test('builds a spatial Snell ray fan with the calculated angle', async ({ page }) => {
     await mountRefraction(page);
+    await autoPredict(page);
     const outcome = page.locator('[data-op-refraction-3d-outcome]');
     const gl = await page.evaluate(() => (window as any).__refr());
     expect(gl.state).toBe('ready');
@@ -986,8 +1062,24 @@ test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
+  test('holds the refraction outcome until a prediction, then reveals it', async ({ page }) => {
+    const MASK = opticsConstant('OPTICS_MASKED_VALUE');
+    await mountRefraction(page);
+    const outcome = page.locator('[data-op-refraction-3d-outcome]');
+    await expect(outcome).toContainText('Outcome ' + MASK);
+    await expect(outcome).not.toContainText('Bends');
+    await expect(outcome).not.toContainText('19.2');
+    // Pink = TIR, yellow = no bend, cyan = refracts: the held border is neutral.
+    expect(await outcome.evaluate((el) => getComputedStyle(el).borderLeftColor)).toBe('rgb(148, 163, 184)');
+
+    await autoPredict(page);
+    await expect(outcome).toContainText('Bends toward normal');
+    await expect(outcome).toContainText('19.2');
+  });
+
   test('keeps the Fresnel power split synchronized across 2D, calculator, and 3D', async ({ page }) => {
     await mountRefraction(page, { refrN1: 1, refrN2: 1.5, refrTheta1: 0 });
+    await autoPredict(page);
     const split = page.locator('[data-op-fresnel-split="refraction"]');
     const reflectedRay = page.locator('[data-op-refraction-ray="reflected"]');
     const transmittedRay = page.locator('[data-op-refraction-ray="transmitted"]');
@@ -1263,10 +1355,28 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__lensCanvasCount())).toBe(1);
   });
 
+  test('holds the lens image result until a prediction, then reveals it', async ({ page }) => {
+    // Default bench: converging, f = 12, d_o = 25 -> d_i = 23.1 cm, real, inverted.
+    const MASK = opticsConstant('OPTICS_MASKED_VALUE');
+    await mountLens(page);
+    const outcome = page.locator('[data-op-lens-3d-outcome]');
+    await expect(outcome).toContainText('Image ' + MASK);
+    await expect(outcome).toContainText('d_i = ' + MASK);
+    await expect(outcome).not.toContainText('23.1');
+    await expect(outcome).not.toContainText('inverted');
+    // Second line is the outcome label; green = real, pink = virtual.
+    expect(await outcome.locator('div').nth(1).evaluate((el) => getComputedStyle(el).color)).toBe('rgb(203, 213, 225)');
+
+    await autoPredict(page);
+    await expect(outcome).toContainText('real');
+    await expect(outcome).toContainText('d_i = 23.1 cm');
+  });
+
   test('moves a physical screen through focus and keeps 2D and 3D synchronized', async ({ page }) => {
     await mountLens(page, {
       lensFocal: 10, lensDo: 30, lensObjH: 5, lensScreenCm: 25
     });
+    await autoPredict(page);
     const screenTest = page.locator('[data-op-lens-screen-test]');
     const screenRange = page.getByRole('slider', { name: 'Screen position' });
     const screenHandle = page.locator('[data-op-lens-screen-handle="true"]');
@@ -1405,6 +1515,7 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
 
   test('draws virtual-image extensions and handles the focal-plane limit', async ({ page }) => {
     await mountLens(page, { lensType: 'diverging' });
+    await autoPredict(page);
     expect(await page.evaluate(() => (window as any).__lens().rayCount)).toBe(9);
     const virtualFrame = await page.evaluate(() => (window as any).__lens().fitHalf);
     expect(virtualFrame.y).toBeGreaterThan(4.5);
@@ -1495,6 +1606,7 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
 
   test('builds a real concave-mirror bundle that crosses focus and continues', async ({ page }) => {
     await mountMirror(page);
+    await autoPredict(page);
     const host = page.locator('[data-op-mirror-3d-host]');
     const rayKey = page.locator('[data-op-mirror-3d-ray-key]');
     const mirrorOutcome = page.locator('[data-op-mirror-3d-outcome="real"]');
@@ -1535,11 +1647,31 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
+  test('holds the mirror image result until a prediction, then reveals it', async ({ page }) => {
+    // Default bench: concave, f = 10, d_o = 30 -> d_i = 15.0 cm, real, inverted.
+    const MASK = opticsConstant('OPTICS_MASKED_VALUE');
+    await mountMirror(page);
+    const outcome = page.locator('[data-op-mirror-3d-outcome]');
+    await expect(outcome).toContainText('Image ' + MASK);
+    await expect(outcome).toContainText('d_i = ' + MASK);
+    // Not a bare '15.0 cm': the sample-screen INSTRUMENT readout ("sample screen
+    // 15.0 cm · sharp focus") is kept live by design, and this fixture's screen
+    // happens to sit at the image plane.
+    await expect(outcome).not.toContainText('d_i = 15.0');
+    await expect(outcome).not.toContainText('incident side');
+    expect(await outcome.locator('div').nth(1).evaluate((el) => getComputedStyle(el).color)).toBe('rgb(203, 213, 225)');
+
+    await autoPredict(page);
+    await expect(outcome).toContainText('real');
+    await expect(outcome).toContainText('d_i = 15.0 cm');
+  });
+
   test('moves a sampling screen through mirror focus and keeps 2D and 3D synchronized', async ({ page }) => {
     await mountMirror(page, {
       reflMirrorType: 'concave', reflFocal: 10, reflDo: 30,
       reflObjH: 5, reflScreenCm: 25
     });
+    await autoPredict(page);
     const screenTest = page.locator('[data-op-mirror-screen-test]');
     const screenRange = page.getByRole('slider', { name: 'Mirror sampling screen position' });
     const screenHandle = page.locator('[data-op-mirror-screen-handle="true"]');
@@ -1643,6 +1775,7 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
       reflMirrorType: 'concave', reflFocal: 10, reflDo: 30,
       reflObjH: 5, reflScreenCm: 25
     });
+    await autoPredict(page);
     const heightRange = page.getByRole('slider', { name: 'Mirror object height', exact: true });
     const heightHandle = page.locator('[data-op-mirror-height-handle="true"]');
     const screenRange = page.getByRole('slider', { name: 'Mirror sampling screen position' });
@@ -1677,6 +1810,7 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
 
   test('separates virtual construction lines, plane symmetry, and the focal limit', async ({ page }) => {
     await mountMirror(page, { reflMirrorType: 'convex', reflFocal: 10, reflDo: 20 });
+    await autoPredict(page);
     let gl = await page.evaluate(() => (window as any).__mirror());
     expect(gl.mirrorType).toBe('convex');
     expect(gl.rayCount).toBe(9);

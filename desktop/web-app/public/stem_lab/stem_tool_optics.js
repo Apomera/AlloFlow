@@ -1330,6 +1330,54 @@
     var ratio = options.bundleRatio != null && isFinite(options.bundleRatio)
       ? Math.abs(+options.bundleRatio) : 1;
     var ratioPct = (ratio * 100).toFixed(1);
+    if (options.held) {
+      // While the answer is held this is a blur meter and nothing else. The
+      // signed offset, the "image plane" centre line and the real/virtual
+      // wording each answer the question the student has not predicted yet;
+      // the spot size is what a physical screen actually shows. A virtual
+      // image is discovered, not announced: its spot never shrinks.
+      var heldFocused = !!options.focused;
+      var heldPct = Math.min(100, ratio * 100);
+      var heldColor = heldFocused ? 'var(--op-green-text,#86efac)' : 'var(--op-accent-text,#67e8f9)';
+      var heldText = heldFocused
+        ? 'Sharp: the spot has shrunk to a point.'
+        : 'The spot is ' + ratioPct + '% of the aperture width. Slide the screen to find where it is smallest.';
+      return h('div', {
+        role: 'group', 'aria-label': title,
+        'data-op-focus-guide': kind,
+        'data-focus-state': 'held',
+        'data-blur-aperture-ratio': ratio.toFixed(6),
+        style: { maxWidth: 460, margin: '-2px 0 10px', color: 'var(--allo-stem-text,#cbd5e1)' }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 5 } },
+          h('span', { style: { fontSize: 10, fontWeight: 800, letterSpacing: '0.02em', color: 'var(--allo-stem-text,#e2e8f0)' } }, 'Screen blur'),
+          h('span', {
+            'data-op-focus-summary': 'true',
+            style: { fontSize: 10, fontFamily: 'monospace', fontWeight: 700, color: heldColor }
+          }, heldFocused ? 'sharp | blur 0.0%' : 'blur ' + ratioPct + '%')
+        ),
+        h('div', {
+          role: 'meter', 'aria-label': title + ': blur',
+          'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': +heldPct.toFixed(1),
+          'aria-valuetext': heldText,
+          'data-op-focus-track': 'true',
+          style: {
+            position: 'relative', height: 14, overflow: 'hidden', borderRadius: 999,
+            background: 'var(--allo-stem-deeper,#0b1220)',
+            border: '1px solid var(--allo-stem-border,#334155)'
+          }
+        },
+          h('span', {
+            'data-op-focus-blur-fill': 'true',
+            style: {
+              position: 'absolute', top: 2, bottom: 2, left: 0, width: heldPct.toFixed(3) + '%',
+              borderRadius: 999, background: heldColor, opacity: 0.6
+            }
+          })
+        ),
+        h('div', { 'data-op-focus-held-hint': 'true', style: { fontSize: 10, marginTop: 4, lineHeight: 1.4 } }, heldText)
+      );
+    }
     var relative = capturable ? (screenDistance - imageDistance) / imageDistance : null;
     var delta = capturable ? screenDistance - imageDistance : null;
     var markerRelative = relative == null ? 0 : clamp(relative, -1, 1);
@@ -1460,11 +1508,17 @@
     var lens = thinLens(d_o, f === Infinity ? 1e9 : f);
     var d_i = (f === Infinity) ? -d_o : (lens.error ? null : lens.d_i);
     var m = (f === Infinity) ? 1 : (lens.error ? null : lens.m);
+    // The focal point is an answer too ("image at infinity"), so it is held like
+    // a finite image. For a curved mirror the only lens.error is that case.
+    var reflAtFocal = !!lens.error && mt !== 'plane';
+    var reflHide = (d_i != null || reflAtFocal) && !_opticsPredictionRevealed('reflection', state);
     // Spoken image result for the slider aria-valuetext + SVG label.
-    var _mirrorVT = (d_i == null) ? 'image at infinity'
+    var _mirrorVT = reflHide ? ('image result ' + OPTICS_MASKED_SPOKEN)
+      : (d_i == null) ? 'image at infinity'
       : ('image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted'));
     var hImg = (m == null) ? null : m * hObj;
-    var mirrorHeightVT = d_i == null
+    var mirrorHeightVT = reflHide ? hObj.toFixed(1) + ' cm object height. Image height ' + OPTICS_MASKED_SPOKEN + '.'
+      : d_i == null
       ? hObj.toFixed(1) + ' cm object height. Reflected bundle angle '
         + Math.abs(Math.atan(hObj / Math.max(1e-6, Math.abs(f))) * 180 / Math.PI).toFixed(1)
         + ' degrees below the optical axis.'
@@ -1482,7 +1536,15 @@
     var screenState = d_i == null ? 'infinity'
       : (!screenCapturable ? 'virtual' : (!screenFocusOnBench ? 'out-of-range' : (screenFocused ? 'sharp' : 'blurred')));
     var screenStatus;
-    if (d_i == null) {
+    if (reflHide) {
+      // Held: report the observable (spot size, or sharp), not the computed
+      // offset or the image type, which it used to state at its default
+      // position before the student had touched it.
+      screenStatus = screenFocused
+        ? 'Sharp: the spot on the sampling screen has shrunk to a point at ' + screenCm.toFixed(1) + ' cm.'
+        : 'The spot on the sampling screen is ' + screenBundlePct + '% of the mirror aperture width at '
+          + screenCm.toFixed(1) + ' cm. Slide the screen to find where it is smallest.';
+    } else if (d_i == null) {
       screenStatus = 'No finite screen focus: the reflected bundle is parallel and remains '
         + screenBundlePct + '% of the mirror aperture width at this sampling plane.';
     } else if (!screenCapturable) {
@@ -1501,7 +1563,8 @@
         + screenBundlePct + '% of the mirror aperture width.';
     }
     var screenShortStatus = screenFocused ? 'sharp focus' : screenBundlePct + '% aperture';
-    var screenRelationShort = screenFocused ? 'sharp focus \u00b7 blur 0.0%'
+    var screenRelationShort = reflHide ? (screenFocused ? 'sharp \u00b7 blur 0.0%' : 'blur ' + screenBundlePct + '%')
+      : screenFocused ? 'sharp focus \u00b7 blur 0.0%'
       : (d_i == null ? 'no finite focus \u00b7 parallel output'
         : (!screenCapturable ? 'virtual image \u00b7 no screen focus'
           : (Math.abs(screenDelta).toFixed(1) + ' cm ' + (screenDelta < 0 ? 'before' : 'beyond')
@@ -1521,8 +1584,9 @@
     var planeAngleDeg = radToDeg(Math.atan2(Math.abs(hObj), d_o));
     var mirrorPathSummary = mt === 'plane'
       ? 'Law of reflection: incident angle equals reflected angle, both ' + planeAngleDeg.toFixed(1)
-        + ' degrees. The dashed extensions meet ' + d_o.toFixed(1) + ' cm behind the mirror.'
-      : (d_i == null
+        + ' degrees. ' + (reflHide ? OPTICS_MASKED_STORY : 'The dashed extensions meet ' + d_o.toFixed(1) + ' cm behind the mirror.')
+      : (reflHide ? OPTICS_MASKED_STORY
+        : d_i == null
         ? 'The object is at the focal point, so the reflected rays leave parallel and the image is at infinity.'
         : (d_i > 0
           ? 'Physical reflected rays converge ' + d_i.toFixed(1) + ' cm in front of the mirror to make a real image.'
@@ -1549,19 +1613,23 @@
     }
     var mirrorImageType = d_i == null ? 'infinity' : (d_i > 0 ? 'real' : 'virtual');
     var mirrorImageSide = d_i == null ? 'at-infinity' : (d_i > 0 ? 'incident' : 'behind');
-    var mirrorOutcomeShort = d_i == null
+    var mirrorOutcomeShort = reflHide ? 'Image ' + OPTICS_MASKED_VALUE
+      : d_i == null
       ? 'image at infinity · parallel reflected bundle'
       : (d_i > 0
         ? 'real · incident side · ' + (m < 0 ? 'inverted' : 'upright')
         : 'virtual · behind mirror · ' + (m < 0 ? 'inverted' : 'upright'));
     var mirrorLandmarks = mt === 'plane'
-      ? 'Equal spacing: object ' + d_o.toFixed(1) + ' cm in front and image ' + d_o.toFixed(1) + ' cm behind.'
+      ? (reflHide ? 'Object ' + d_o.toFixed(1) + ' cm in front of the mirror.'
+        : 'Equal spacing: object ' + d_o.toFixed(1) + ' cm in front and image ' + d_o.toFixed(1) + ' cm behind.')
       : ('F = ' + mirrorFocalAbs.toFixed(1) + ' cm and C = ' + (2 * mirrorFocalAbs).toFixed(1)
         + ' cm ' + (mt === 'concave' ? 'in front of' : 'behind') + ' the mirror.');
     var mirrorGlAlt = 'Three-dimensional ' + mt + ' mirror ray-space bench. The object point is '
       + d_o.toFixed(1) + ' centimeters in front of the mirror and ' + hObj.toFixed(1)
       + ' centimeters above the optical axis. ';
-    if (d_i == null) {
+    if (reflHide) {
+      mirrorGlAlt += 'Where the reflected rays form an image is ' + OPTICS_MASKED_SPOKEN + '. ';
+    } else if (d_i == null) {
       mirrorGlAlt += 'The object is at the focal plane, so the cyan physical reflected rays leave parallel and the image is at infinity. ';
     } else if (d_i > 0) {
       mirrorGlAlt += 'The cyan physical reflected rays converge ' + d_i.toFixed(1)
@@ -1699,13 +1767,13 @@
               mt.charAt(0).toUpperCase() + mt.slice(1) + ' mirror'),
             h('div', {
               style: {
-                color: mirrorImageType === 'real' ? '#86efac'
+                color: reflHide ? '#cbd5e1' : mirrorImageType === 'real' ? '#86efac'
                   : (mirrorImageType === 'virtual' ? '#f9a8d4' : '#67e8f9'),
                 fontWeight: 700
               }
             }, mirrorOutcomeShort),
-            h('div', { style: { fontVariantNumeric: 'tabular-nums' } }, 'd_i = ' + (d_i == null ? '∞' : d_i.toFixed(1) + ' cm')
-              + (m == null ? '' : ' · m = ' + m.toFixed(2))),
+            h('div', { style: { fontVariantNumeric: 'tabular-nums' } }, 'd_i = ' + (reflHide ? OPTICS_MASKED_VALUE : d_i == null ? '∞' : d_i.toFixed(1) + ' cm')
+              + (m == null || reflHide ? '' : ' · m = ' + m.toFixed(2))),
             h('div', {
               style: {
                 color: screenFocused ? '#86efac' : (screenCapturable ? '#67e8f9' : '#fbbf24'),
@@ -1930,7 +1998,7 @@
             style: { minWidth: 48, textAlign: 'right', color: 'var(--op-accent-text,#7dd3fc)', fontFamily: 'monospace', fontWeight: 700 }
           }, screenCm.toFixed(1) + ' cm')
         ),
-        screenFocusOnBench && h('button', {
+        screenFocusOnBench && !reflHide && h('button', {
           type: 'button', className: 'opticslab-preset-button', 'data-op-focusable': 'true',
           'data-op-place-mirror-screen-at-image': 'true',
           onClick: function() { upd('reflScreenCm', d_i); },
@@ -1939,7 +2007,7 @@
       ),
       _renderOpticsFocusGuide(h, {
         kind: 'mirror', state: screenState, imageDistance: d_i, screenDistance: screenCm,
-        bundleRatio: screenBundleRatio, focused: screenFocused,
+        bundleRatio: screenBundleRatio, focused: screenFocused, held: reflHide,
         capturable: screenCapturable, focusOnBench: screenFocusOnBench
       }),
       mirror3dPanel,
@@ -2242,7 +2310,7 @@
               points: [sx(imgX) - 4, sy(imgY) + arrowOff, sx(imgX) + 4, sy(imgY) + arrowOff, sx(imgX), arrowY].join(' '),
               fill: stroke, opacity: (d_i > 0) ? 1 : 0.7
             }));
-            children.push(h('text', { key: 'imglab', x: sx(imgX), y: imgY > 0 ? sy(imgY) - 8 : sy(imgY) + 14, fill: stroke, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, d_i > 0 ? 'Image (real)' : 'Image (virtual)'));
+            children.push(h('text', { key: 'imglab', x: sx(imgX), y: imgY > 0 ? sy(imgY) - 8 : sy(imgY) + 14, fill: stroke, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, reflHide ? 'Image' : d_i > 0 ? 'Image (real)' : 'Image (virtual)'));
           }
           // Add photon dots along each principal ray, staggered in time
           photonPaths.forEach(function(pp, ppi) {
@@ -2343,7 +2411,16 @@
       ? { d_o: d_o, f: Infinity, d_i: -d_o, m: 1, isReal: false, isUpright: true, isMagnified: false }
       : thinLens(d_o, f);
     var rows = [];
-    if (lens.error) {
+    if (lens.error && mt === 'concave' && Math.abs(d_o - Math.abs(f)) < 1e-9) {
+      // Object AT the focal point. The result ("image at infinity") is the
+      // answer, but it used to arrive as an unlabelled error row the gate could
+      // not hold. Labelled rows, like the lens table's focal case.
+      rows.push(['Mirror type', mt.charAt(0).toUpperCase() + mt.slice(1)]);
+      rows.push(['f', _fmt(f, 2) + ' cm']);
+      rows.push(['d_o', _fmt(d_o, 2) + ' cm']);
+      rows.push(['d_i', '∞ (image at infinity)']);
+      rows.push(['Reflected rays', 'Parallel: no finite image forms']);
+    } else if (lens.error) {
       rows.push(['', lens.error]);
     } else {
       rows.push(['Mirror type', mt.charAt(0).toUpperCase() + mt.slice(1)]);
@@ -2381,6 +2458,35 @@
       }, (state.reflShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.reflShowMath && !lens.error && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         (function() {
+          // "Show me the math" worked the gated answer out to its last line.
+          // While held it keeps the equation and the student's own numbers
+          // substituted into it, states the sign RULES without applying them,
+          // and leaves the arithmetic to the student.
+          if (!_opticsPredictionRevealed('reflection', state)) {
+            if (mt === 'plane') {
+              return [
+                'Plane mirror:  f → ∞, so the mirror equation reduces to  1/d_i = −1/d_o',
+                '',
+                'd_i = ' + OPTICS_MASKED_VALUE,
+                'm   = ' + OPTICS_MASKED_VALUE
+              ].join('\n');
+            }
+            return [
+              'Mirror equation:  1/f = 1/d_o + 1/d_i',
+              '',
+              '  Solve for d_i:  d_i = (f · d_o) / (d_o − f)',
+              '',
+              '  d_i = (' + _fmt(f, 2) + ' · ' + _fmt(d_o, 2) + ') / (' + _fmt(d_o, 2) + ' − ' + _fmt(f, 2) + ')',
+              '       = ' + OPTICS_MASKED_VALUE,
+              '',
+              'Magnification:  m = −d_i / d_o  = ' + OPTICS_MASKED_VALUE,
+              '',
+              'Sign rules:',
+              '  d_i > 0  →  real (in front of mirror);   d_i < 0  →  virtual (behind)',
+              '  m > 0  →  upright;   m < 0  →  inverted',
+              '  |m| > 1  →  enlarged;   |m| < 1  →  reduced'
+            ].join('\n');
+          }
           if (mt === 'plane') {
             return [
               'Plane mirror: image is virtual, same size, reflected behind the mirror.',
@@ -2480,6 +2586,31 @@
       l.frustumCulled = false;
       S.model.add(l);
       return l;
+    }
+    // Only the sparse reflected fan (8 teal pairs) is a cylinder. The dense
+    // sky fan stays THREE.Line ON PURPOSE, measured rather than assumed:
+    // converting it made the scene WORSE. On this canvas a 0.045-radius
+    // cylinder is under a pixel across, and a mesh that thin rasterises with
+    // gaps where a Line always gets its full pixel — amber fell from 1028 px
+    // to 463 and the screenshot showed broken, dotted rays. At r=0.11 it no
+    // longer fragments, but ~70 rays converge on the eye and they merge into
+    // one yellow mass there, where lines keep each ray distinct. That is a
+    // legibility call, not a defect. The teal rays are few and far apart, so
+    // they can be thick without crowding, and they were the faint ones.
+    var OW_RAY_R = 0.11;
+    function addRay(THREE, from, to, color, opacity) {
+      var dir = new THREE.Vector3().subVectors(to, from);
+      var len = dir.length();
+      if (!(len > 1e-6) || !isFinite(len)) return null;
+      var mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(OW_RAY_R, OW_RAY_R, len, 6, 1, true),
+        new THREE.MeshBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity })
+      );
+      mesh.position.copy(from).addScaledVector(dir, 0.5);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+      mesh.frustumCulled = false;
+      S.model.add(mesh);
+      return mesh;
     }
 
     function applyModel(m) {
@@ -2583,8 +2714,8 @@
         var hitT = new THREE.Vector3(Math.cos(tAz) * rOut, 0, Math.sin(tAz) * rOut);
         // Mirror the eye through the surface to get the reflected leg's direction.
         var from = new THREE.Vector3(hitT.x * 1.9, -D * 1.25, hitT.z * 1.9);
-        addLine(THREE, [from, hitT], 0x5eead4, 0.5);
-        addLine(THREE, [hitT, eye], 0x5eead4, 0.8);
+        addRay(THREE, from, hitT, 0x5eead4, 0.5);
+        addRay(THREE, hitT, eye, 0x5eead4, 0.8);
         S.tirRays++;
       }
 
@@ -3062,6 +3193,10 @@
     var theta_c = criticalAngle(n1, n2);  // null if n1 ≤ n2
     var isTIR = !!snellRes.tir;
     var theta2 = isTIR ? null : snellRes.theta2;
+    // Held until a prediction for this setup: refract-or-reflect, the bend and
+    // the power split. theta_c and the incident angle relative to it stay
+    // visible (a property of the chosen media, and the reasoning scaffold).
+    var refrHide = !_opticsPredictionRevealed('refraction', state);
     var powerSplit = fresnelUnpolarized(theta1, n1, n2);
     var reflectance = powerSplit.error ? (isTIR ? 1 : 0) : powerSplit.reflectance;
     var transmittance = powerSplit.error ? (isTIR ? 0 : 1) : powerSplit.transmittance;
@@ -3069,7 +3204,8 @@
     var transmittedPct = (transmittance * 100).toFixed(1);
     var reflectedVisual = Math.sqrt(reflectance);
     var transmittedVisual = Math.sqrt(transmittance);
-    var energySplitText = reflectedPct + '% reflected and ' + transmittedPct + '% transmitted, unpolarized light.';
+    var energySplitText = refrHide ? 'Reflected and transmitted power ' + OPTICS_MASKED_SPOKEN + '.'
+      : reflectedPct + '% reflected and ' + transmittedPct + '% transmitted, unpolarized light.';
     var theta2Deg = isTIR ? null : radToDeg(theta2);
     var criticalDeg = theta_c == null ? null : radToDeg(theta_c);
     var criticalOffsetDeg = criticalDeg == null ? null : theta1Deg - criticalDeg;
@@ -3077,16 +3213,21 @@
     var noDirectionalBend = !isTIR && (matchedIndices || theta1Deg < 0.05 || Math.abs(theta2Deg - theta1Deg) < 0.05);
     var refractionOutcomeState = isTIR ? 'tir'
       : (noDirectionalBend ? 'no-bend' : (theta2Deg < theta1Deg ? 'toward-normal' : 'away-from-normal'));
-    var refractionOutcomeLabel = isTIR ? 'Total internal reflection'
+    var refractionOutcomeLabel = refrHide ? 'Outcome ' + OPTICS_MASKED_VALUE
+      : isTIR ? 'Total internal reflection'
       : (noDirectionalBend ? 'No directional bend' : (refractionOutcomeState === 'toward-normal' ? 'Bends toward normal' : 'Bends away from normal'));
-    var refractionOutcomeText = isTIR
+    var refractionOutcomeText = refrHide
+      ? 'Save a prediction to see whether the ray refracts or reflects, and which way it bends.'
+      : isTIR
       ? 'No transmitted ray leaves the interface.'
       : (noDirectionalBend
         ? (matchedIndices ? 'The ray continues straight because both media have the same refractive index.' : 'The ray continues along the normal at normal incidence.')
         : (refractionOutcomeState === 'toward-normal'
           ? 'The transmitted ray bends toward the normal because the second refractive index is higher.'
           : 'The transmitted ray bends away from the normal because the second refractive index is lower.'));
-    var refractionAngleLine = isTIR
+    var refractionAngleLine = refrHide
+      ? '\u03b8\u2081 ' + theta1Deg.toFixed(1) + '\u00b0 \u2192 ' + OPTICS_MASKED_VALUE
+      : isTIR
       ? '\u03b8\u2081 ' + theta1Deg.toFixed(1) + '\u00b0 \u2192 reflected ' + theta1Deg.toFixed(1) + '\u00b0'
       : '\u03b8\u2081 ' + theta1Deg.toFixed(1) + '\u00b0 \u2192 \u03b8\u2082 ' + theta2Deg.toFixed(1) + '\u00b0';
     var criticalRelationText = criticalDeg == null
@@ -3190,7 +3331,8 @@
     }
     var refraction3DAlt = 'Three-dimensional refraction ray bench. A three-ray parallel fan enters an interface from refractive index '
       + n1.toFixed(3) + ' at ' + theta1Deg.toFixed(1) + ' degrees. '
-      + (isTIR ? 'It totally internally reflects into the first medium. ' : 'It refracts into index ' + n2.toFixed(3) + ' at ' + radToDeg(theta2).toFixed(1) + ' degrees. ')
+      + (refrHide ? 'Where the ray goes at the interface is ' + OPTICS_MASKED_SPOKEN + '. '
+        : isTIR ? 'It totally internally reflects into the first medium. ' : 'It refracts into index ' + n2.toFixed(3) + ' at ' + radToDeg(theta2).toFixed(1) + ' degrees. ')
       + refractionOutcomeText + ' ' + criticalAltText + ' '
       + 'The interface power split is ' + energySplitText;
     var refraction3DPanel = h('div', { style: { marginBottom: 10 } },
@@ -3266,7 +3408,7 @@
             style: {
               position: 'absolute', zIndex: 2, left: 8, top: 7, maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box',
               pointerEvents: 'none', background: 'rgba(7,17,31,.88)', color: '#e2e8f0', padding: '6px 8px',
-              borderRadius: 8, borderLeft: '3px solid ' + (isTIR ? '#fb7185' : (refractionOutcomeState === 'no-bend' ? '#facc15' : '#67e8f9')),
+              borderRadius: 8, borderLeft: '3px solid ' + (refrHide ? '#94a3b8' : isTIR ? '#fb7185' : (refractionOutcomeState === 'no-bend' ? '#facc15' : '#67e8f9')),
               boxShadow: '0 6px 18px rgba(0,0,0,.22)', fontSize: 10, lineHeight: 1.38
             }
           },
@@ -3546,7 +3688,7 @@
             'data-op-variable': 'refrTheta1',
             onChange: function(e) { upd('refrTheta1', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_incident_angle', 'Incident angle'),
-            'aria-valuetext': theta1Deg.toFixed(1) + ' degrees incidence. ' + (isTIR ? 'Total internal reflection; no refracted ray.' : 'Refracted angle ' + radToDeg(theta2).toFixed(1) + ' degrees.'),
+            'aria-valuetext': theta1Deg.toFixed(1) + ' degrees incidence. ' + (refrHide ? 'Refraction result ' + OPTICS_MASKED_SPOKEN + '.' : isTIR ? 'Total internal reflection; no refracted ray.' : 'Refracted angle ' + radToDeg(theta2).toFixed(1) + ' degrees.'),
             style: { width: 200 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36 } }, theta1Deg.toFixed(1) + '°')
@@ -3556,7 +3698,7 @@
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         className: 'opticslab-core-svg',
         role: 'group', 'aria-roledescription': __alloT('stem.optics.interactive_ray_diagram_2','interactive ray diagram'),
-        'aria-label': 'Refraction diagram. n1=' + n1 + ', n2=' + n2 + ', incident angle=' + theta1Deg.toFixed(1) + '°.' + (isTIR ? ' Total internal reflection.' : ' Refraction angle=' + radToDeg(theta2).toFixed(1) + '°.') + ' Interface power: ' + energySplitText,
+        'aria-label': 'Refraction diagram. n1=' + n1 + ', n2=' + n2 + ', incident angle=' + theta1Deg.toFixed(1) + '°.' + (refrHide ? ' Refraction result ' + OPTICS_MASKED_SPOKEN + '.' : isTIR ? ' Total internal reflection.' : ' Refraction angle=' + radToDeg(theta2).toFixed(1) + '°.') + ' Interface power: ' + energySplitText,
         style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
         h('defs', null,
@@ -3675,7 +3817,7 @@
           role: 'slider', tabIndex: 0, 'data-op-focusable': 'true', 'data-op-direct-handle': 'incident-angle',
           'data-op-variable': 'refrTheta1',
           'aria-label': __alloT('stem.optics.a11y_incident_angle_handle', 'Incident angle handle'), 'aria-valuemin': 0, 'aria-valuemax': 89, 'aria-valuenow': theta1Deg,
-          'aria-valuetext': theta1Deg.toFixed(1) + ' degrees. ' + (isTIR ? 'Total internal reflection.' : 'Refracted angle ' + radToDeg(theta2).toFixed(1) + ' degrees.'),
+          'aria-valuetext': theta1Deg.toFixed(1) + ' degrees. ' + (refrHide ? 'Refraction result ' + OPTICS_MASKED_SPOKEN + '.' : isTIR ? 'Total internal reflection.' : 'Refracted angle ' + radToDeg(theta2).toFixed(1) + ' degrees.'),
           onPointerDown: startAngleDrag, onPointerMove: moveAngleDrag,
           onPointerUp: endAngleDrag, onPointerCancel: endAngleDrag, onKeyDown: keyAngleDrag
         },
@@ -3878,7 +4020,7 @@
           role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
           'data-op-fresnel-status': isTIR ? 'tir' : 'partial',
           style: { color: 'var(--allo-stem-text,#cbd5e1)', fontSize: 10, lineHeight: 1.45, marginTop: 4 }
-        }, isTIR ? 'Total internal reflection: ' + energySplitText : energySplitText),
+        }, isTIR && !refrHide ? 'Total internal reflection: ' + energySplitText : energySplitText),
         h('div', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 9, lineHeight: 1.4, marginTop: 2 } },
           'Ray emphasis follows the split; a visibility floor keeps weak branches traceable.'
         )
@@ -3940,7 +4082,13 @@
       }, (state.refrShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.refrShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         (function() {
-          var lines = [
+          var refrMathHide = !_opticsPredictionRevealed('refraction', state);
+          var lines = refrMathHide ? [
+            "Snell's law:  n₁ sin θ₁ = n₂ sin θ₂",
+            '',
+            '  Plug in:   ' + _fmt(n1, 3) + ' · sin(' + _fmt(theta1Deg, 2) + '°) = ' + _fmt(n2, 3) + ' · sin(θ₂)',
+            '             θ₂ = ' + OPTICS_MASKED_VALUE
+          ] : [
             "Snell's law:  n₁ sin θ₁ = n₂ sin θ₂",
             '',
             '  Plug in:   ' + _fmt(n1, 3) + ' · sin(' + _fmt(theta1Deg, 2) + '°) = ' + _fmt(n2, 3) + ' · sin(θ₂)',
@@ -3948,7 +4096,9 @@
             '             ' + _fmt(n1 * Math.sin(theta1), 4) + ' = ' + _fmt(n2, 3) + ' · sin(θ₂)',
             '             sin(θ₂) = ' + _fmt(n1 * Math.sin(theta1) / n2, 4)
           ];
-          if (res.tir) {
+          if (refrMathHide) {
+            // result held: neither the TIR verdict nor θ₂ is stated
+          } else if (res.tir) {
             lines.push('             |sin(θ₂)| > 1  →  no real solution');
             lines.push('             ⚡ TOTAL INTERNAL REFLECTION');
           } else if (!res.error) {
@@ -4411,6 +4561,10 @@
     var atFocal = !!lens.error && lt === 'converging' && Math.abs(d_o - fAbs) < 1e-9;
     var d_i = lens.error ? null : lens.d_i;
     var m = lens.error ? null : lens.m;
+    // Held until a prediction for this setup. The focal point is an ANSWER too
+    // ("image at infinity"), so it is held like any finite image; only a
+    // genuinely invalid setup (lens.error that is not the focal case) is not.
+    var lensHide = (!lens.error || atFocal) && !_opticsPredictionRevealed('lenses', state);
     var hImg = (m == null) ? null : m * hObj;
     var screenMin = 2, screenMax = 42;
     var screenCm = clamp(state.lensScreenCm != null ? +state.lensScreenCm : 20, screenMin, screenMax);
@@ -4428,7 +4582,17 @@
       : (atFocal ? 'infinity' : (lens.error ? 'unavailable'
         : (!screenCapturable ? 'virtual' : (screenFocusOnBench ? 'blurred' : 'out-of-range'))));
     var screenStatus;
-    if (atFocal) {
+    if (lensHide) {
+      // While the answer is held the screen reports what a physical screen
+      // shows: how big the spot is, or that it is sharp. It used to report the
+      // computed offset and type ("3.1 cm before the real image plane", "this
+      // is a virtual image") at its default position, before the student had
+      // touched it, which handed over d_i and the image type.
+      screenStatus = screenFocused
+        ? 'Sharp: the spot on the screen has shrunk to a point at d_s = ' + screenCm.toFixed(1) + ' cm.'
+        : 'The spot on the screen is ' + screenBundlePct + '% of the lens aperture width at d_s = '
+          + screenCm.toFixed(1) + ' cm. Slide the screen to find where it is smallest.';
+    } else if (atFocal) {
       screenStatus = 'No finite screen focus: the outgoing bundle is parallel and remains '
         + screenBundlePct + '% of the lens aperture width at d_s = ' + screenCm.toFixed(1) + ' cm.';
     } else if (lens.error) {
@@ -4447,7 +4611,8 @@
         + (screenDelta < 0 ? 'before' : 'beyond') + ' the real image plane; the point-source bundle is '
         + screenBundlePct + '% of the aperture width.';
     }
-    var screenRelationShort = screenFocused ? 'sharp focus \u00b7 blur 0.0%'
+    var screenRelationShort = lensHide ? (screenFocused ? 'sharp \u00b7 blur 0.0%' : 'blur ' + screenBundlePct + '%')
+      : screenFocused ? 'sharp focus \u00b7 blur 0.0%'
       : (atFocal ? 'no finite focus \u00b7 parallel output'
         : (lens.error ? 'focus unavailable'
           : (!screenCapturable ? 'virtual image \u00b7 no screen focus'
@@ -4480,25 +4645,34 @@
     var lensScaleRatio = m == null ? null : Math.abs(m);
     var lensScaleWord = lensScaleRatio == null ? 'none'
       : (lensScaleRatio > 1.005 ? 'enlarged' : (lensScaleRatio < 0.995 ? 'reduced' : 'same size'));
-    var lensOutcomeShort = atFocal ? 'image at infinity \u00b7 parallel output'
+    var lensOutcomeShort = lensHide ? 'Image ' + OPTICS_MASKED_VALUE
+      : atFocal ? 'image at infinity \u00b7 parallel output'
       : (lens.error ? 'image unavailable'
         : lensImageType + ' \u00b7 ' + lensImageOrientation + ' \u00b7 ' + lensScaleWord);
-    var lensMetricShort = atFocal
+    var lensMetricShort = lensHide ? 'd_i = ' + OPTICS_MASKED_VALUE
+      : atFocal
       ? 'h_o = ' + hObj.toFixed(1) + ' cm \u00b7 d_i = \u221e'
       : (lens.error ? lens.error
         : 'd_i = ' + d_i.toFixed(1) + ' cm \u00b7 m = ' + m.toFixed(2)
           + ' \u00b7 h_i = ' + hImg.toFixed(1) + ' cm');
-    var lensGlAlt = lens.error
+    var lensGlAlt = lensHide && atFocal
+      ? ('Three-dimensional ' + lt + ' lens bench. An object point ' + d_o.toFixed(1)
+        + ' centimeters to the left sends a bundle across the lens aperture. Where the rays form an image is '
+        + OPTICS_MASKED_SPOKEN + '.')
+      : lens.error
       ? ('Three-dimensional ' + lt + ' lens bench. ' + lens.error
         + ' The outgoing cyan rays are parallel, showing why no finite image forms.')
       : ('Three-dimensional ' + lt + ' lens bench. An object point ' + d_o.toFixed(1)
         + ' centimeters to the left sends a bundle across the lens aperture. '
-        + (d_i > 0
+        + (lensHide ? 'Where the rays form an image is ' + OPTICS_MASKED_SPOKEN + '.'
+        : d_i > 0
           ? 'The physical rays reunite ' + d_i.toFixed(1) + ' centimeters to the right at a real, '
             + (m < 0 ? 'inverted' : 'upright') + ' image.'
           : 'The rays leave diverging; their dashed backward extensions meet ' + Math.abs(d_i).toFixed(1)
             + ' centimeters to the left at a virtual, ' + (m < 0 ? 'inverted' : 'upright') + ' image.'));
     if (atFocal) {
+      lensGlAlt += ' The object tip is ' + hObj.toFixed(1) + ' centimeters above the optical axis.';
+    } else if (lensHide) {
       lensGlAlt += ' The object tip is ' + hObj.toFixed(1) + ' centimeters above the optical axis.';
     } else if (!lens.error) {
       lensGlAlt += ' The object tip is ' + hObj.toFixed(1)
@@ -4509,7 +4683,9 @@
     // Spoken image result for the slider aria-valuetext (so screen-reader users hear
     // the computed image as they adjust the controls, not just the raw number).
     var _lensVT;
-    if (atFocal) {
+    if (lensHide) {
+      _lensVT = 'image result ' + OPTICS_MASKED_SPOKEN;
+    } else if (atFocal) {
       _lensVT = 'image at infinity; outgoing rays are parallel and no finite screen image forms';
     } else if (lens.error) {
       _lensVT = lens.error;
@@ -4517,7 +4693,8 @@
       _lensVT = 'image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2)
         + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted');
     }
-    var lensHeightVT = atFocal
+    var lensHeightVT = lensHide ? hObj.toFixed(1) + ' cm object height. Image height ' + OPTICS_MASKED_SPOKEN + '.'
+      : atFocal
       ? hObj.toFixed(1) + ' cm object height. Outgoing bundle angle '
         + Math.abs(Math.atan(hObj / fAbs) * 180 / Math.PI).toFixed(1) + ' degrees below the optical axis.'
       : hObj.toFixed(1) + ' cm object height. Image tip '
@@ -4530,7 +4707,10 @@
     var imgX = (d_i == null) ? null : d_i;   // d_i > 0 → right of lens; d_i < 0 → left
     var imageInFrame = imgX != null && _isNum(imgX) && _isNum(hImg)
       && imgX >= cmMin + 2 && imgX <= cmMax - 2 && Math.abs(hImg) <= 10.5;
-    var lensPathSummary = atFocal
+    var lensPathSummary = lensHide
+      ? OPTICS_MASKED_STORY
+        + (atFocal || imageInFrame ? '' : ' The image is outside the current diagram; the edge label points toward it.')
+      : atFocal
       ? 'Image at infinity. With d_o = f, the cyan rays leave parallel, so no screen at a finite distance can capture a sharp image.'
       : (lens.error
         ? lens.error
@@ -4762,7 +4942,7 @@
               position: 'absolute', left: 8, top: 7, zIndex: 2, pointerEvents: 'none',
               color: '#e2e8f0', background: 'rgba(8,17,31,.88)', padding: '6px 8px',
               borderRadius: 8,
-              borderLeft: '3px solid ' + (screenFocused ? '#86efac'
+              borderLeft: '3px solid ' + (screenFocused ? '#86efac' : lensHide ? '#94a3b8'
                 : (lensImageType === 'real' ? '#67e8f9' : (lensImageType === 'virtual' ? '#f9a8d4' : '#facc15'))),
               boxShadow: '0 6px 18px rgba(0,0,0,.22)', fontSize: 11, lineHeight: 1.38,
               maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box'
@@ -4772,7 +4952,7 @@
               (lt === 'converging' ? 'Converging' : 'Diverging') + ' lens'),
             h('div', {
               style: {
-                color: lensImageType === 'real' ? '#86efac'
+                color: lensHide ? '#cbd5e1' : lensImageType === 'real' ? '#86efac'
                   : (lensImageType === 'virtual' ? '#f9a8d4' : '#67e8f9'),
                 fontWeight: 700
               }
@@ -4903,7 +5083,7 @@
             style: { minWidth: 48, textAlign: 'right', color: 'var(--op-accent-text,#7dd3fc)', fontFamily: 'monospace', fontWeight: 700 }
           }, screenCm.toFixed(1) + ' cm')
         ),
-        screenFocusOnBench && h('button', {
+        screenFocusOnBench && !lensHide && h('button', {
           type: 'button', className: 'opticslab-preset-button', 'data-op-focusable': 'true',
           'data-op-place-screen-at-image': 'true',
           onClick: function() { upd('lensScreenCm', d_i); },
@@ -4912,7 +5092,7 @@
       ),
       _renderOpticsFocusGuide(h, {
         kind: 'lens', state: screenState, imageDistance: d_i, screenDistance: screenCm,
-        bundleRatio: screenBundleRatio, focused: screenFocused,
+        bundleRatio: screenBundleRatio, focused: screenFocused, held: lensHide,
         capturable: screenCapturable, focusOnBench: screenFocusOnBench
       }),
       lens3dPanel,
@@ -4921,7 +5101,8 @@
         className: 'opticslab-core-svg',
         role: 'group', 'aria-roledescription': __alloT('stem.optics.interactive_ray_diagram_3','interactive ray diagram'),
         'aria-label': lt + ' lens, f = ' + f.toFixed(1) + ' cm, object distance ' + d_o.toFixed(1) + ' cm.'
-          + (atFocal
+          + (lensHide ? ' Image result ' + OPTICS_MASKED_SPOKEN + '.'
+            : atFocal
             ? ' Object is at the focal plane; outgoing rays are parallel and the image is at infinity.'
             : (d_i != null ? (' Image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + '.') : ''))
           + ' ' + lensPathSummary + ' Screen test: ' + screenStatus,
@@ -5064,7 +5245,7 @@
             children.push(h('text', {
               key: 'focal-label', x: sx(24), y: sy(9.8),
               fill: '#67e8f9', fontSize: 10, textAnchor: 'middle', fontWeight: 700
-            }, 'parallel bundle → image at ∞'));
+            }, lensHide ? 'parallel bundle' : 'parallel bundle → image at ∞'));
             return children;
           }
           if (d_i == null || lens.error) return children;
@@ -5216,7 +5397,7 @@
             children.push(h('text', {
               key: 'imglab', x: sx(imgX), y: imgY > 0 ? sy(imgY) - 8 : sy(imgY) + 14,
               fill: stroke, fontSize: 10, textAnchor: 'middle', fontWeight: 700
-            }, (isVirtual ? 'Image (virtual, ' : 'Image (real, ') + (m < 0 ? 'inverted)' : 'upright)')));
+            }, lensHide ? 'Image' : (isVirtual ? 'Image (virtual, ' : 'Image (real, ') + (m < 0 ? 'inverted)' : 'upright)')));
           }
           if (imgIsValid && !imageInFrame) {
             var offLeft = imgX < cmMin + 2;
@@ -5225,9 +5406,12 @@
             var edgeY = imgY >= 0 ? pad.t + 16 : H - pad.b - 8;
             var edgeAnchor = offLeft ? 'start' : (offRight ? 'end' : 'middle');
             var edgeDirection = offLeft ? '← ' : (offRight ? ' →' : (imgY >= 0 ? ' ↑' : ' ↓'));
+            // "off-scale" is a diagram caveat and the arrow points at drawn
+            // geometry, so both stay; the type and distance are the answer.
             var edgeLabel = (offLeft ? edgeDirection : '')
-              + (isVirtual ? 'virtual' : 'real') + ' image off-scale · dᵢ = '
-              + (d_i > 0 ? '+' : '') + d_i.toFixed(1) + ' cm'
+              + (lensHide ? 'image off-scale'
+                : (isVirtual ? 'virtual' : 'real') + ' image off-scale · dᵢ = '
+                  + (d_i > 0 ? '+' : '') + d_i.toFixed(1) + ' cm')
               + (offLeft ? '' : edgeDirection);
             children.push(h('text', {
               key: 'image-offscale', 'data-op-lens-image-offscale': isVirtual ? 'virtual' : 'real',
@@ -5371,7 +5555,23 @@
         style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.lensShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.lensShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } },
-        atFocal ? [
+        (atFocal || !lens.error) && !_opticsPredictionRevealed('lenses', state) ? [
+          'Thin lens equation:  1/f = 1/d_o + 1/d_i',
+          '',
+          '  Solve for d_i:   d_i = (f · d_o) / (d_o − f)',
+          '',
+          '  d_i = (' + _fmt(f, 2) + ' · ' + _fmt(d_o, 2) + ') / (' + _fmt(d_o, 2) + ' − ' + _fmt(f, 2) + ')',
+          '       = ' + OPTICS_MASKED_VALUE,
+          '',
+          'Magnification:  m = −d_i / d_o  = ' + OPTICS_MASKED_VALUE,
+          '',
+          'Sign rules:',
+          // The lens type is the student's own choice, so it is applied.
+          '  f   ' + (f > 0 ? '> 0  →  CONVERGING lens' : '< 0  →  DIVERGING lens'),
+          '  d_i > 0  →  real (far side);   d_i < 0  →  virtual (near side)',
+          '  m > 0  →  upright;   m < 0  →  inverted',
+          '  |m| > 1  →  magnified;   |m| < 1  →  reduced'
+        ].join('\n') : atFocal ? [
           'At the focal plane:  d_o = f',
           '',
           '  1/f = 1/f + 1/d_i',
@@ -6535,6 +6735,9 @@
     // Compute fringe spacing (small-angle): y = λL/d
     var fringeSpacing_m = lambda * L / d;
     var fringeSpacing_mm = fringeSpacing_m * 1000;
+    var intHide = !_opticsPredictionRevealed('interference', state);
+    var intFringeSpoken = intHide ? 'fringe spacing ' + OPTICS_MASKED_SPOKEN + '.'
+      : 'fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.';
     // Render: barrier on left half, screen on right half, intensity strip on screen
     // Layout: barrier at x = pad.l + 60, screen at x = W - pad.r - 30
     var barX = pad.l + 70;
@@ -6585,7 +6788,7 @@
     var firstDarkSin = lambda / (2 * d);
     if (firstDarkSin <= 1) {
       var firstDarkMm = L * Math.tan(Math.asin(firstDarkSin)) * 1000;
-      if (firstDarkMm <= detectorHalfMm) interferenceDetectorTargets.push({
+      if (!intHide && firstDarkMm <= detectorHalfMm) interferenceDetectorTargets.push({
         id: 'dark-half', label: 'Dark +½', value: firstDarkMm,
         ariaLabel: 'Measure the first dark fringe at plus ' + firstDarkMm.toFixed(2) + ' millimeters'
       });
@@ -6593,7 +6796,7 @@
     var firstBrightSin = lambda / d;
     if (firstBrightSin <= 1) {
       var firstBrightMm = L * Math.tan(Math.asin(firstBrightSin)) * 1000;
-      if (firstBrightMm <= detectorHalfMm) interferenceDetectorTargets.push({
+      if (!intHide && firstBrightMm <= detectorHalfMm) interferenceDetectorTargets.push({
         id: 'bright-1', label: 'Bright +1', value: firstBrightMm,
         ariaLabel: 'Measure the first-order bright fringe at plus ' + firstBrightMm.toFixed(2) + ' millimeters'
       });
@@ -6650,7 +6853,7 @@
             'data-op-variable': 'intLambda',
             onChange: function(e) { upd('intLambda', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_wavelength', 'Wavelength'),
-            'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
+            'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; ' + intFringeSpoken,
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
@@ -6663,7 +6866,7 @@
             'data-op-variable': 'intSlitSep',
             onChange: function(e) { upd('intSlitSep', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_slit_separation', 'Slit separation'),
-            'aria-valuetext': d_mm.toFixed(2) + ' millimeters; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
+            'aria-valuetext': d_mm.toFixed(2) + ' millimeters; ' + intFringeSpoken,
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_mm.toFixed(2))
@@ -6676,7 +6879,7 @@
             'data-op-variable': 'intScreenL',
             onChange: function(e) { upd('intScreenL', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_screen_distance', 'Screen distance'),
-            'aria-valuetext': L_m.toFixed(1) + ' meters; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
+            'aria-valuetext': L_m.toFixed(1) + ' meters; ' + intFringeSpoken,
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, L_m.toFixed(1))
@@ -6701,7 +6904,8 @@
         className: 'opticslab-core-svg',
         role: 'group', 'aria-roledescription': __alloT('stem.optics.interactive_interference_bench','interactive interference bench'),
         'aria-label': "Young's double-slit interference. " + (_opticsWaveModel('interference', state) === 'fresnel' ? 'Fresnel near-field' : 'Fraunhofer far-field')
-          + ' propagation, wavelength ' + lambdaNm + ' nm, slit separation ' + d_mm + ' mm, screen ' + L_m + ' m. Fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' mm.',
+          + ' propagation, wavelength ' + lambdaNm + ' nm, slit separation ' + d_mm + ' mm, screen ' + L_m + ' m. '
+          + (intHide ? 'Fringe spacing ' + OPTICS_MASKED_SPOKEN + '.' : 'Fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' mm.'),
         style: { background: '#000', borderRadius: 8, maxWidth: 460 }
       },
         // Light source label
@@ -6862,7 +7066,7 @@
             h('line', { x1: bx, y1: y1, x2: bx, y2: y2, stroke: '#fbbf24', strokeWidth: 1.5 }),
             h('line', { x1: bx - 3, y1: y1, x2: bx + 3, y2: y1, stroke: '#fbbf24', strokeWidth: 1.5 }),
             h('line', { x1: bx - 3, y1: y2, x2: bx + 3, y2: y2, stroke: '#fbbf24', strokeWidth: 1.5 }),
-            h('text', { x: bx - 6, y: (y1 + y2) / 2 + 3, fill: '#fbbf24', fontSize: 11, textAnchor: 'end' }, 'y = ' + fringeSpacing_mm.toFixed(2) + ' mm')
+            h('text', { x: bx - 6, y: (y1 + y2) / 2 + 3, fill: '#fbbf24', fontSize: 11, textAnchor: 'end' }, 'y = ' + (intHide ? OPTICS_MASKED_VALUE : fringeSpacing_mm.toFixed(2) + ' mm'))
           );
         })(),
         h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 11, textAnchor: 'middle' }, 'fixed 60 mm screen window  •  drag setup handles or the white detector')
@@ -6939,7 +7143,20 @@
         style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.intShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
       state.intShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
-        [
+        (!_opticsPredictionRevealed('interference', state) ? [
+          'Fringe spacing (small-angle):  y = m λ L / d',
+          '',
+          '  m = 1 (first bright fringe)',
+          '  λ = ' + lambdaNm + ' nm = ' + _fmt(lambda, 3) + ' m',
+          '  L = ' + L_m.toFixed(2) + ' m',
+          '  d = ' + d_mm.toFixed(3) + ' mm = ' + _fmt(d, 3) + ' m',
+          '',
+          '  y = (1)(' + _fmt(lambda, 3) + ')(' + L_m.toFixed(2) + ') / (' + _fmt(d, 3) + ')',
+          '    = ' + OPTICS_MASKED_VALUE,
+          '',
+          'Exact formula:  d sin θ = m λ',
+          '  θ = ' + OPTICS_MASKED_VALUE + ' (for m=1)'
+        ] : [
           'Fringe spacing (small-angle):  y = m λ L / d',
           '',
           '  m = 1 (first bright fringe)',
@@ -6955,7 +7172,7 @@
           'Exact formula:  d sin θ = m λ',
           '  sin θ = mλ/d = ' + _fmt(lambda / d, 5),
           '  θ     = ' + _fmt(radToDeg(theta1Rad), 4) + '° (for m=1)'
-        ].join('\n')
+        ]).join('\n')
       )
     );
   }
@@ -6982,6 +7199,11 @@
     var color = wavelengthToRGB(lambdaNm);
     // First-min position single slit:  y₁ ≈ λL/a
     var firstMin_m = singleSlitFirstMin(lambda, L_m, a);
+    // Held in both modes. Grating mode used to be ungated entirely: its table
+    // showed every order's angle and screen position before any prediction.
+    var diffHide = !_opticsPredictionRevealed('diffraction', state);
+    var diffMinSpoken = diffHide ? 'first minimum ' + OPTICS_MASKED_SPOKEN + '.'
+      : 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.';
     // Fixed physical windows make changes in spread visible instead of
     // silently zooming the pattern back to the same apparent width.
     var screenWindow_m = mode === 'single' ? 0.18 : 1.0;
@@ -7036,7 +7258,9 @@
     var diffractionDetectorTargets = [
       { id: 'center', label: 'Center', value: 0, ariaLabel: 'Measure the central maximum at zero millimeters' }
     ];
-    if (mode === 'single') {
+    if (diffHide) {
+      // held: the student finds the minima / orders with the detector
+    } else if (mode === 'single') {
       var exactFirstMinSin = lambda / a;
       if (exactFirstMinSin <= 1) {
         var exactFirstMinMm = L_m * Math.tan(Math.asin(exactFirstMinSin)) * 1000;
@@ -7137,7 +7361,7 @@
             'data-op-variable': 'diffLambda',
             onChange: function(e) { upd('diffLambda', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_wavelength', 'Wavelength'),
-            'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; ' + (mode === 'single' ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.' : 'grating mode is active.'),
+            'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; ' + (mode === 'single' ? diffMinSpoken : 'grating mode is active.'),
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
@@ -7149,7 +7373,7 @@
             'data-op-variable': 'diffSlitWidth',
             onChange: function(e) { upd('diffSlitWidth', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_slit_width', 'Slit width'),
-            'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers; first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.',
+            'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers; ' + diffMinSpoken,
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, slitWidth_um.toFixed(0))
@@ -7185,7 +7409,7 @@
             'data-op-variable': 'diffScreenL',
             onChange: function(e) { upd('diffScreenL', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_screen_distance', 'Screen distance'),
-            'aria-valuetext': L_m.toFixed(1) + ' meters; ' + (mode === 'single' ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.' : 'grating orders are measured on the screen.'),
+            'aria-valuetext': L_m.toFixed(1) + ' meters; ' + (mode === 'single' ? diffMinSpoken : 'grating orders are measured on the screen.'),
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, L_m.toFixed(1))
@@ -7199,7 +7423,8 @@
         'aria-label': 'Diffraction pattern: ' + mode + ' using '
           + (_opticsWaveModel('diffraction', state) === 'fresnel' ? 'Fresnel near-field' : 'Fraunhofer far-field')
           + ' propagation at λ=' + lambdaNm + ' nm.' + (mode === 'grating'
-          ? ' ' + grooveDensity.toFixed(0) + ' lines per millimeter, ' + gratingDuty.toFixed(0) + ' percent open; ' + visibleGratingOrders.length + ' labeled orders are on screen.'
+          ? ' ' + grooveDensity.toFixed(0) + ' lines per millimeter, ' + gratingDuty.toFixed(0) + ' percent open; '
+            + (diffHide ? 'the orders on the screen are ' + OPTICS_MASKED_SPOKEN + '.' : visibleGratingOrders.length + ' labeled orders are on screen.')
           : ''),
         style: { background: '#000', borderRadius: 8, maxWidth: 460 }
       },
@@ -7368,7 +7593,7 @@
             h('line', { x1: bx, y1: y1, x2: bx, y2: y2, stroke: '#fbbf24', strokeWidth: 1.5 }),
             h('line', { x1: bx - 3, y1: y1, x2: bx + 3, y2: y1, stroke: '#fbbf24', strokeWidth: 1.5 }),
             h('line', { x1: bx - 3, y1: y2, x2: bx + 3, y2: y2, stroke: '#fbbf24', strokeWidth: 1.5 }),
-            h('text', { x: bx - 6, y: (y1 + y2) / 2 + 3, fill: '#fbbf24', fontSize: 11, textAnchor: 'end' }, 'y₁ = ' + (firstMin_m * 1000).toFixed(2) + ' mm')
+            h('text', { x: bx - 6, y: (y1 + y2) / 2 + 3, fill: '#fbbf24', fontSize: 11, textAnchor: 'end' }, 'y₁ = ' + (diffHide ? OPTICS_MASKED_VALUE : (firstMin_m * 1000).toFixed(2) + ' mm'))
           );
         })(),
         h('g', {
@@ -7491,6 +7716,20 @@
             var slitWidth_um = (typeof state.diffSlitWidth === 'number' && isFinite(state.diffSlitWidth)) ? state.diffSlitWidth : 30;
             var a = slitWidth_um * 1e-6;
             var firstMin_m = singleSlitFirstMin(lambda, L_m, a);
+            if (!_opticsPredictionRevealed('diffraction', state)) {
+              return [
+                'Single slit: minima where a sin θ = m λ',
+                '',
+                'First minimum (small-angle, m=1):  y₁ = λ L / a',
+                '',
+                '  λ = ' + lambdaNm + ' nm = ' + _fmt(lambda, 3) + ' m',
+                '  L = ' + L_m.toFixed(2) + ' m',
+                '  a = ' + slitWidth_um.toFixed(0) + ' μm = ' + _fmt(a, 3) + ' m',
+                '',
+                '  y₁ = (' + _fmt(lambda, 3) + ')(' + L_m.toFixed(2) + ') / (' + _fmt(a, 3) + ')',
+                '     = ' + OPTICS_MASKED_VALUE
+              ].join('\n');
+            }
             return [
               'Single slit: minima where a sin θ = m λ',
               '',
@@ -7522,8 +7761,11 @@
               '',
               '  For m = 1:',
               '    sin θ = (1)(' + _fmt(lambda, 3) + ') / ' + _fmt(dGrating, 4),
-              '          = ' + _fmt(lambda / dGrating, 4),
-              '    θ     = ' + _fmt(radToDeg(Math.asin(clamp(lambda / dGrating, -1, 1))), 3) + '°'
+              _opticsPredictionRevealed('diffraction', state)
+                ? '          = ' + _fmt(lambda / dGrating, 4) : '          = ' + OPTICS_MASKED_VALUE,
+              _opticsPredictionRevealed('diffraction', state)
+                ? '    θ     = ' + _fmt(radToDeg(Math.asin(clamp(lambda / dGrating, -1, 1))), 3) + '°'
+                : '    θ     = ' + OPTICS_MASKED_VALUE
             ].join('\n');
           }
         })()
@@ -8059,15 +8301,18 @@
     var polP3Transmission = useP3
       ? (afterP2 > 0 ? afterP3 / afterP2 : 0)
       : null;
+    var polHide = !_opticsPredictionRevealed('polarization', state);
     var polOutcomeState = finalIntensity < 0.0005 ? 'extinguished'
       : (useQwp && !useP3 ? 'angle-independent' : 'transmitting');
-    var polOutcomeLabel = polOutcomeState === 'extinguished' ? 'Beam extinguished'
+    var polOutcomeLabel = polHide ? 'Outcome ' + OPTICS_MASKED_VALUE
+      : polOutcomeState === 'extinguished' ? 'Beam extinguished'
       : (polOutcomeState === 'angle-independent' ? 'Axis-independent transmission' : 'Beam transmitting');
-    var polStatusColor = polOutcomeState === 'extinguished' ? '#fda4af'
+    var polStatusColor = polHide ? '#cbd5e1'
+      : polOutcomeState === 'extinguished' ? '#fda4af'
       : (polOutcomeState === 'angle-independent' ? '#67e8f9' : '#86efac');
     var polModeLine = useQwp
       ? ('circular before P\u2082'
-        + (useP3 ? ' \u00b7 linear again before P\u2083' : ' \u00b7 P\u2082 passes half at every axis'))
+        + (useP3 ? ' \u00b7 linear again before P\u2083' : polHide ? '' : ' \u00b7 P\u2082 passes half at every axis'))
       : ('linear before P\u2082 \u00b7 \u0394\u03b8 = ' + polDelta12.toFixed(0) + '\u00b0');
     var polAxisLine = 'P\u2081 0\u00b0'
       + (useQwp ? ' \u00b7 QWP 45\u00b0' : '')
@@ -8075,9 +8320,14 @@
       + (useP3 ? ' \u00b7 P\u2083 ' + theta3.toFixed(0) + '\u00b0' : '');
     var polStageLine = 'I\u2080 100.0% \u2192 P\u2081 ' + (afterP1 * 100).toFixed(1) + '%'
       + (useQwp ? ' \u2192 QWP ' + (afterP1 * 100).toFixed(1) + '%' : '')
-      + ' \u2192 P\u2082 ' + (afterP2 * 100).toFixed(1) + '%'
-      + (useP3 ? ' \u2192 P\u2083 ' + (afterP3 * 100).toFixed(1) + '%' : '');
-    var polProjectionLine = useP3
+      + ' \u2192 P\u2082 ' + (polHide ? OPTICS_MASKED_VALUE : (afterP2 * 100).toFixed(1) + '%')
+      + (useP3 ? ' \u2192 P\u2083 ' + (polHide ? OPTICS_MASKED_VALUE : (afterP3 * 100).toFixed(1) + '%') : '');
+    var polProjectionLine = polHide
+      ? (useP3
+        ? 'P\u2083 keeps cos\u00b2(' + polDelta23.toFixed(0) + '\u00b0) of what reaches it'
+        : (useQwp ? 'P\u2082 sees circular input'
+          : 'P\u2082 keeps cos\u00b2(' + polDelta12.toFixed(0) + '\u00b0) of what reaches it'))
+      : useP3
       ? ('P\u2083 keeps ' + (polP3Transmission * 100).toFixed(1) + '% of P\u2082 \u00b7 cos\u00b2('
         + polDelta23.toFixed(0) + '\u00b0)')
       : (useQwp
@@ -8233,9 +8483,10 @@
           : 'P2 at ' + theta2.toFixed(0) + ' degrees projects that wave onto its own axis, which is what '
             + 'Malus\'s law squares.')
       + (useP3 ? ' P3 at ' + theta3.toFixed(0) + ' degrees projects once more.' : '')
-      + ' Final transmitted intensity is ' + (finalIntensity * 100).toFixed(1)
-      + ' percent of the original intensity.'
-      + (polOutcomeState === 'extinguished' ? ' The final beam is extinguished.' : '');
+      + (polHide ? ' Final transmitted intensity is ' + OPTICS_MASKED_SPOKEN + '.'
+        : ' Final transmitted intensity is ' + (finalIntensity * 100).toFixed(1)
+          + ' percent of the original intensity.'
+          + (polOutcomeState === 'extinguished' ? ' The final beam is extinguished.' : ''));
 
     var gl3d = h('div', { style: { marginBottom: 10 } },
       _renderOptics3DToolbar({
@@ -8310,7 +8561,7 @@
         },
           h('div', { style: { color: polStatusColor, fontSize: 11, fontWeight: 800 } }, polOutcomeLabel),
           h('div', { style: { color: '#f8fafc', fontWeight: 800 } },
-            'I_out = ' + (finalIntensity * 100).toFixed(1) + '% I\u2080'),
+            'I_out = ' + (polHide ? OPTICS_MASKED_VALUE : (finalIntensity * 100).toFixed(1) + '% I\u2080')),
           h('div', {
             'data-op-polarization-stage-trail': 'true',
             style: { color: '#f8fafc', marginTop: 2, fontWeight: 700 }
@@ -8324,8 +8575,8 @@
           h('div', {
             role: 'progressbar', 'aria-label': __alloT('stem.optics.a11y_final_transmitted_intensity', 'Final transmitted intensity'),
             'aria-valuemin': 0, 'aria-valuemax': 100,
-            'aria-valuenow': Number((finalIntensity * 100).toFixed(1)),
-            'aria-valuetext': (finalIntensity * 100).toFixed(1) + ' percent of original intensity',
+            'aria-valuenow': polHide ? undefined : Number((finalIntensity * 100).toFixed(1)),
+            'aria-valuetext': polHide ? OPTICS_MASKED_SPOKEN : (finalIntensity * 100).toFixed(1) + ' percent of original intensity',
             'data-op-polarization-throughput': 'true',
             style: {
               height: 4, marginTop: 4, overflow: 'hidden', borderRadius: 999,
@@ -8399,7 +8650,7 @@
             'data-op-variable': 'polTheta2',
             onChange: function(e) { upd('polTheta2', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_p2_polarizer_axis', 'P2 polarizer axis'),
-            'aria-valuetext': theta2.toFixed(0) + ' degrees; transmitted intensity after P2 ' + (afterP2 * 100).toFixed(1) + ' percent of I0.',
+            'aria-valuetext': theta2.toFixed(0) + ' degrees; transmitted intensity after P2 ' + (polHide ? OPTICS_MASKED_SPOKEN + '.' : (afterP2 * 100).toFixed(1) + ' percent of I0.'),
             style: { width: 130 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36 } }, theta2.toFixed(0) + '°')
@@ -8422,7 +8673,7 @@
             'data-op-variable': 'polTheta3',
             onChange: function(e) { upd('polTheta3', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': __alloT('stem.optics.a11y_p3_polarizer_axis', 'P3 polarizer axis'),
-            'aria-valuetext': theta3.toFixed(0) + ' degrees; final intensity ' + (afterP3 * 100).toFixed(1) + ' percent of I0.',
+            'aria-valuetext': theta3.toFixed(0) + ' degrees; final intensity ' + (polHide ? OPTICS_MASKED_SPOKEN + '.' : (afterP3 * 100).toFixed(1) + ' percent of I0.'),
             style: { width: 130 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36 } }, theta3.toFixed(0) + '°')
@@ -8432,7 +8683,7 @@
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         className: 'opticslab-core-svg',
         role: 'group',
-        'aria-label': 'Polarizer chain. P1 axis 0°, P2 axis ' + theta2 + '°' + (useP3 ? ', P3 axis ' + theta3 + '°' : '') + '. Final intensity ' + ((useP3 ? afterP3 : afterP2) * 100).toFixed(1) + '% of I₀.',
+        'aria-label': 'Polarizer chain. P1 axis 0°, P2 axis ' + theta2 + '°' + (useP3 ? ', P3 axis ' + theta3 + '°' : '') + '. Final intensity ' + (polHide ? OPTICS_MASKED_SPOKEN + '.' : ((useP3 ? afterP3 : afterP2) * 100).toFixed(1) + '% of I₀.'),
         style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
         // Light source label
@@ -8563,7 +8814,7 @@
         ],
         // Output indicator
         h('text', { x: W - pad.r - 4, y: midY - 14, fill: '#86efac', fontSize: 11, textAnchor: 'end', fontWeight: 700 },
-          'I_out = ' + ((useP3 ? afterP3 : afterP2) * 100).toFixed(1) + '% I₀'
+          'I_out = ' + (polHide ? OPTICS_MASKED_VALUE : ((useP3 ? afterP3 : afterP2) * 100).toFixed(1) + '% I₀')
         ),
         h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, "yellow line in each disk = polarizer's transmission axis")
       ),
@@ -8765,15 +9016,14 @@
     upd(patch);
   }
 
-  // VIEW-ONLY toggles are deliberately absent. reflShow3D / lensShow3D /
-  // refrShow3D / refrShowWindow only pick how the SAME setup is drawn
-  // (showMirror3D, showLens3D, showRefraction3D, showWindow) and reach no
-  // calculator. Including them meant a student who saved a prediction and then
-  // switched to the 3-D view to LOOK at the setup had the answer re-locked and
-  // was asked to predict again for physics that had not changed — which
-  // punishes exactly the behaviour the panel is trying to encourage.
+  // The EXPERIMENT's controls: what a trial records, what a before/after
+  // snapshot compares, and what "change one variable" watches. Screen distance,
+  // object height and the measurement-studio settings belong here, because a
+  // student really does vary them. VIEW-ONLY toggles (reflShow3D, lensShow3D,
+  // refrShow3D, refrShowWindow) are absent: they choose how the SAME setup is
+  // drawn and reach no calculator.
   //
-  // Everything listed here must actually alter the computed outcome.
+  // The prediction gate does NOT key on this list — see OPTICS_PREDICTION_KEYS.
   var OPTICS_TOPIC_CONTROL_KEYS = {
     reflection: ['reflMirrorType', 'reflFocal', 'reflDo', 'reflObjH', 'reflScreenCm'],
     refraction: ['refrN1', 'refrN2', 'refrTheta1'],
@@ -8858,8 +9108,32 @@
   function _opticsQuery(value) {
     return (typeof value === 'string' ? value : '').toLowerCase().trim();
   }
+  // What a saved prediction is keyed to: ONLY the controls that can change a
+  // hidden answer. Keying on the whole experiment re-locked the answer every
+  // time the student used an instrument — moving the focus screen or changing
+  // object height asked for a fresh prediction while d_i, m, image type,
+  // orientation and size stayed identical. Each list below was measured, not
+  // reasoned: every control of every tab was moved two ways from two different
+  // setups, and only the controls that changed a hidden row's value are here.
+  // polTheta3 looks inert from the defaults (P3 off) and is not: with P3 on it
+  // sets the final intensity, which is why the second setup exists. Likewise
+  // diffGrating only matters in grating mode, so that mode is probed too.
+  var OPTICS_PREDICTION_KEYS = {
+    reflection: ['reflMirrorType', 'reflFocal', 'reflDo'],
+    refraction: ['refrN1', 'refrN2', 'refrTheta1'],
+    lenses: ['lensType', 'lensFocal', 'lensDo'],
+    interference: ['intLambda', 'intSlitSep', 'intScreenL'],
+    // diffGrating joined once grating mode was gated: lines/mm sets every
+    // order's angle. Duty cycle only sets brightness, so it stays out.
+    diffraction: ['diffMode', 'diffLambda', 'diffSlitWidth', 'diffScreenL', 'diffGrating'],
+    polarization: ['polTheta2', 'polTheta3', 'polUseP3', 'polQwp']
+  };
   function _opticsSetupKey(tab, state) {
-    var captured = _captureOpticsTopicState(tab, state);
+    var keys = OPTICS_PREDICTION_KEYS[tab] || [];
+    var captured = {};
+    keys.forEach(function (key) {
+      if (state && state[key] != null && typeof state[key] !== 'object') captured[key] = state[key];
+    });
     return Object.keys(captured).sort().map(function (k) { return k + '=' + captured[k]; }).join('|');
   }
   // Which calculator rows are the ANSWER, per topic. Everything not listed
@@ -8871,11 +9145,16 @@
   // (f, d_o, n₁, θ₁, λ, d, L, a) and the caveats stay; only what the student
   // is being asked to predict is withheld.
   var OPTICS_OUTCOME_ROWS = {
-    reflection:   ['d_i', 'm (magnification)', 'Image type', 'Orientation', 'Size'],
+    reflection:   ['d_i', 'm (magnification)', 'Image type', 'Orientation', 'Size', 'Reflected rays'],
     refraction:   ['θ₂ (refraction angle)', 'Result', 'Bending', 'Transmitted power', 'Reflected power (unpolarized)'],
-    lenses:       ['d_i', 'm (magnification)', 'Image type', 'Orientation', 'Size'],
+    lenses:       ['d_i', 'm (magnification)', 'Image type', 'Orientation', 'Size',
+                   // The focal-point case states the same answer three more ways.
+                   '1/d_i', 'Ray behavior', 'Screen image'],
     interference: ['Fringe spacing y', '1st bright fringe (m=1)', '2nd bright fringe (m=2)', 'Angle to m=1 (small-angle)'],
-    diffraction:  ['First minimum y₁', 'Central max width (2y₁)', 'Angle to first min'],
+    diffraction:  ['First minimum y₁', 'Central max width (2y₁)', 'Angle to first min',
+                   // Grating mode: each order's angle and screen position, or
+                   // that it does not exist (m lambda > d).
+                   'θ for m=1', 'θ for m=2', 'θ for m=3'],
     polarization: ['After P₂', 'After P₃ (final)', 'Final transmitted']
   };
   // True once the student has saved a prediction FOR THE CURRENT SETUP.
@@ -8893,6 +9172,14 @@
   // One definition of the masked value, so a test cannot hold its own copy of
   // the string and keep passing after the copy here changes.
   var OPTICS_MASKED_VALUE = '— predict first';
+  // The table was gated on 09-21, but each diagram, caption and screen-reader
+  // string beside it went on stating the same answer ("converge 23.1 cm ... a
+  // real, inverted image" next to a masked d_i). Text that HANDS OVER a gated
+  // outcome now hides with the rows. Instruments the student drives to FIND it
+  // (the focus screen, the draggable detector) and everything drawn stay live:
+  // using them is the experiment.
+  var OPTICS_MASKED_SPOKEN = 'hidden until you save a prediction';
+  var OPTICS_MASKED_STORY = 'Trace the rays in the diagram, then save a prediction to see where the image forms and what kind it is.';
   // Mask the outcome rows in place, keeping the row order and count so the
   // table does not reflow when the answer is revealed.
   function _opticsMaskOutcomeRows(tab, rows, revealed) {
