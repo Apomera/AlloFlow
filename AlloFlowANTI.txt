@@ -1073,8 +1073,14 @@ function _upgradeFirestoreSync() {
     if (typeof window.estimateJsonBytes === 'function') estimateJsonBytes = window.estimateJsonBytes;
     if (typeof window.prepareSessionResourcesForWrite === 'function') prepareSessionResourcesForWrite = window.prepareSessionResourcesForWrite;
     console.log('[FirestoreSync] Monolith shim upgraded from CDN module.');
+    try { window.dispatchEvent(new Event('allo-firestore-sync-upgraded')); } catch (e) {}
 }
 window._upgradeFirestoreSync = _upgradeFirestoreSync;
+function _alloRehydrateShimHistory(items) {
+    const needsHydration = item => item && typeof item === 'object' && typeof item.data === 'string' && item.dataEncoding !== 'text/v1';
+    if (!Array.isArray(items) || !items.some(needsHydration)) return items;
+    return items.map(item => needsHydration(item) ? (hydrateHistory([item])[0] || item) : item);
+}
 
 // Shim for safety_checker_module.js. The CDN module upgrades this via
 // _upgradeSafetyChecker() after load. Pass-through methods that return
@@ -3420,6 +3426,12 @@ const _ALLO_ENGAGEMENT_TIMEOUT_MS = (typeof window !== 'undefined' && window.All
     ? window.AlloQuestContract.ENGAGEMENT_TIMEOUT_MS
     : 180000; // must equal AlloQuestContract.ENGAGEMENT_TIMEOUT_MS
 function _alloNormalizeDirectionsData(data) {
+    if (typeof data === 'string' && data.charAt(0) === '{') {
+        try {
+            const parsed = JSON.parse(data);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && typeof parsed.body === 'string') return _alloNormalizeDirectionsData(parsed);
+        } catch (e) {}
+    }
     if (data && typeof data === 'object' && !Array.isArray(data)) {
         const body = typeof data.body === 'string' ? data.body : '';
         // Resource-backed kinds (2026-07-27) carry a resourceRef and are DROPPED
@@ -14463,7 +14475,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=cf29cea46'); }; })();
     window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=cf29cea46'); }; })();
     window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=cf29cea46'); }; })();
-    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=817d5b74'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=b0452fdc'); }; })();
     window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=dabce57a'); }; })();
     window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=4fbf452c'); }; })();
     window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=5f13b334'); }; })();
@@ -23058,6 +23070,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     initAuth();
     const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
     return () => { unsubscribe(); if (authRetryTimer) clearTimeout(authRetryTimer); };
+  }, []);
+  useEffect(() => {
+    const onFirestoreSyncUpgraded = () => setHistory(prev => _alloRehydrateShimHistory(prev));
+    window.addEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
+    return () => window.removeEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
   }, []);
   useEffect(() => {
     if (!lzLoaded) return;
@@ -42759,7 +42776,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         retryMailboxImagesForStudent, mailboxImageVersion: Number(mbConfig?.v || 0), rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId,
         setIsWordSoundsMode, setLivePollPreset, setLiveSessionQaEnabled, setOpenChecklistGoalId, setPictionaryInitialMode, setPictionaryPreparedInteraction, setRosterKey, setShowHavenRewardAudit,
         setShowLiveDock, setShowLivePollingPanel, setShowPictionaryHost, setShowSessionModal, setWordSoundsAutoReview, showHavenRewardAudit, signalMeta, studyTimeLeft,
-        t, toggleSessionMode, units, updateLivePresenterCue
+        t, toggleSessionMode, units, updateLivePresenterCue, requestEndLiveSession
         }}
       />
               </div>

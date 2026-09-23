@@ -701,6 +701,33 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   useEffect(() => {
       setIsLocallyDismissed(false);
   }, [activeSessionCode, isQuizOpen]);
+  // AlloBot floats above this overlay and docks top-right by default, right
+  // over Minimize, so a student could not leave the quiz view. Leave room for
+  // it wherever it actually sits; it can be dragged, hence the poll.
+  const headerRef = useRef(null);
+  const [botReserve, setBotReserve] = useState(0);
+  useEffect(() => {
+      if (!isQuizOpen || isLocallyDismissed) return undefined;
+      const measure = () => {
+          try {
+              const header = headerRef.current;
+              const bot = document.querySelector('[data-allobot-control-surface="true"]');
+              let next = 0;
+              if (header && bot) {
+                  const h = header.getBoundingClientRect();
+                  const b = bot.getBoundingClientRect();
+                  if (b.width > 0 && b.bottom > h.top && b.top < h.bottom && b.right > h.left + h.width / 2 && b.left < h.right) {
+                      next = Math.ceil(h.right - b.left) + 8;
+                  }
+              }
+              setBotReserve(prev => (Math.abs(prev - next) > 2 ? next : prev));
+          } catch (_) {}
+      };
+      measure();
+      const timer = setInterval(measure, 1000);
+      window.addEventListener('resize', measure);
+      return () => { clearInterval(timer); window.removeEventListener('resize', measure); };
+  }, [isQuizOpen, isLocallyDismissed]);
   useEffect(() => {
       setSubmitError('');
       if (user && responses && responses[user.uid] !== undefined) {
@@ -897,8 +924,9 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                 {submitError}
             </p>
         )}
-        <div className="p-4 flex flex-wrap gap-3 justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/10 shrink-0">
-            <div className="min-w-0 flex-1">
+        <div ref={headerRef} style={botReserve ? { paddingRight: botReserve } : undefined} className="p-4 flex flex-wrap gap-3 justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/10 shrink-0">
+            {/* A floor, so a narrow header wraps instead of crushing the title. */}
+            <div className="min-w-0 flex-1" style={{ minWidth: '9rem' }}>
                 <h2 id="student-quiz-title" className={`font-black text-lg sm:text-xl uppercase tracking-wide ${styles.accent} flex items-center gap-2 drop-shadow-md`} data-help-key="quiz_student_mode_header">
                     <span aria-hidden="true">{styles.icon}</span>
                     <span>{t('quiz.modes.' + mode.replace(/-/g, '_'), { defaultValue: mode.replace(/-/g, ' ') })}</span>
@@ -1193,7 +1221,11 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
             )}
             {deliveryStatus === 'receipt' && phase === 'answering' && <button type="button" onClick={retryQuizResponse} className="mt-4 min-h-11 rounded-xl border border-cyan-200 bg-cyan-900 px-4 py-2 font-bold text-white">Retry sending answer</button>}
             {['idle', 'lobby'].includes(phase) && <p role="status" className="mt-6 rounded-xl bg-white/10 p-4 font-bold text-white">Waiting for your teacher to start this question.</p>}
-            <div className="mt-8 min-h-16 flex items-center justify-center w-full mb-8">
+            {/* A column that never shrinks. As a shrinkable row, min-h-16 let the
+                scroll container squeeze it to 64px, and its tall reveal content
+                overflowed centred on that sliver: the result card slid behind
+                the correct option and the explanation covered option D. */}
+            <div className="mt-8 min-h-16 shrink-0 flex flex-col items-center justify-center gap-4 w-full mb-8">
                 {phase === 'answering' && (
                     hasAnswered ? (
                         <div role="status" aria-live="polite" aria-atomic="true" className="bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-full font-bold text-sm animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none flex items-center gap-3 border border-white/10 shadow-lg">

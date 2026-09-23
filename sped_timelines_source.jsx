@@ -308,7 +308,8 @@ function SpedTimelinesPanel(props) {
   return (
     <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
       <div ref={dialogRef} tabIndex={-1} data-help-key="spedtl_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="spedtl-title" onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
+        {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
+        <div className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <h2 id="spedtl-title" className="text-lg font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">⏰</span> {tt('spedtl.title', 'SpEd Timelines')}</h2>

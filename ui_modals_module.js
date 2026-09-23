@@ -761,6 +761,36 @@ const StudentQuizOverlay = React.memo(({
   useEffect(() => {
     setIsLocallyDismissed(false);
   }, [activeSessionCode, isQuizOpen]);
+  // AlloBot floats above this overlay and docks top-right by default, right
+  // over Minimize, so a student could not leave the quiz view. Leave room for
+  // it wherever it actually sits; it can be dragged, hence the poll.
+  const headerRef = useRef(null);
+  const [botReserve, setBotReserve] = useState(0);
+  useEffect(() => {
+    if (!isQuizOpen || isLocallyDismissed) return undefined;
+    const measure = () => {
+      try {
+        const header = headerRef.current;
+        const bot = document.querySelector('[data-allobot-control-surface="true"]');
+        let next = 0;
+        if (header && bot) {
+          const h = header.getBoundingClientRect();
+          const b = bot.getBoundingClientRect();
+          if (b.width > 0 && b.bottom > h.top && b.top < h.bottom && b.right > h.left + h.width / 2 && b.left < h.right) {
+            next = Math.ceil(h.right - b.left) + 8;
+          }
+        }
+        setBotReserve(prev => Math.abs(prev - next) > 2 ? next : prev);
+      } catch (_) {}
+    };
+    measure();
+    const timer = setInterval(measure, 1000);
+    window.addEventListener('resize', measure);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('resize', measure);
+    };
+  }, [isQuizOpen, isLocallyDismissed]);
   useEffect(() => {
     setSubmitError('');
     if (user && responses && responses[user.uid] !== undefined) {
@@ -985,9 +1015,16 @@ const StudentQuizOverlay = React.memo(({
     role: "alert",
     className: "m-4 rounded-lg border border-red-300 bg-red-950 px-4 py-3 font-semibold text-white"
   }, submitError), /*#__PURE__*/React.createElement("div", {
+    ref: headerRef,
+    style: botReserve ? {
+      paddingRight: botReserve
+    } : undefined,
     className: "p-4 flex flex-wrap gap-3 justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/10 shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "min-w-0 flex-1"
+    className: "min-w-0 flex-1",
+    style: {
+      minWidth: '9rem'
+    }
   }, /*#__PURE__*/React.createElement("h2", {
     id: "student-quiz-title",
     className: `font-black text-lg sm:text-xl uppercase tracking-wide ${styles.accent} flex items-center gap-2 drop-shadow-md`,
@@ -1271,7 +1308,7 @@ const StudentQuizOverlay = React.memo(({
     role: "status",
     className: "mt-6 rounded-xl bg-white/10 p-4 font-bold text-white"
   }, "Waiting for your teacher to start this question."), /*#__PURE__*/React.createElement("div", {
-    className: "mt-8 min-h-16 flex items-center justify-center w-full mb-8"
+    className: "mt-8 min-h-16 shrink-0 flex flex-col items-center justify-center gap-4 w-full mb-8"
   }, phase === 'answering' && (hasAnswered ? /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",

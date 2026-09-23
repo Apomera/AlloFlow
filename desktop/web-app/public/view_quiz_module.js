@@ -9817,7 +9817,11 @@ function QuizViewContent(props) {
     history: props.history,
     callGemini: props.callGemini
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-end px-4"
+    className: "flex justify-end px-4",
+    style: {
+      paddingBottom: '9rem'
+    },
+    "data-live-quiz-end-session-row": "true"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleEndLiveSession,

@@ -425,7 +425,10 @@ var createContentEngine = function(deps) {
       var project = OS && typeof OS.loadProject === 'function' ? await OS.loadProject({}) : null;
       if (!project || !Array.isArray(project.sources) || !project.sources.length) return null;
 
-      var hits = E.retrieve(project, query, { limit: OWN_SOURCE_PASSAGE_LIMIT });
+      // forAI: these passages go into a model prompt, so a source whose
+      // provider does not allow AI use (allowAI:false) must not be retrieved.
+      // Only Lumen Study's UI enforced that before; this path sent them.
+      var hits = E.retrieve(project, query, { limit: OWN_SOURCE_PASSAGE_LIMIT, forAI: true });
       if (!hits || !hits.length) return null;
 
       var byId = {};

@@ -94,6 +94,32 @@ function appsuiteFiles(root) {
     .sort();
 }
 
+// Tools that put the scope class on their OWN root (a dialog that renders
+// outside <main>) opt in to the remap at runtime, so their tokens must be
+// scanned too. Computed, not listed: on 2026-09-23 seven Educator Hub dialogs
+// (communications_studio, dispro_analyzer, family_announcements, meeting_docs,
+// mtss_triage, sped_timelines, udl_walkthrough) carried `allo-docsuite` on
+// their dialog root and sat in no scope list. Their `bg-slate-50/95` header had
+// no dark rule, so it stayed light while the title, subtitle and tab labels
+// were remapped light: 1.1-1.28:1 on every tab. A list would miss the next one.
+// Candidates follow the dark-mode scanner's notion of "the source": every root
+// *_source.jsx, every *_module.js with no source pair, and the SEL hub shell.
+const OPT_IN_RE = /className\s*[=:]\s*\{?\s*["'`][^"'`]*\ballo-docsuite\b/;
+function optInFiles(root) {
+  const r = root || ROOT;
+  const entries = fs.readdirSync(r);
+  const sources = entries.filter(f => f.endsWith('_source.jsx'));
+  const paired = new Set(sources.map(f => f.replace('_source.jsx', '_module.js')));
+  const lone = entries.filter(f => f.endsWith('_module.js') && !paired.has(f));
+  const shell = fs.existsSync(path.join(r, 'sel_hub/sel_hub_module.js')) ? ['sel_hub/sel_hub_module.js'] : [];
+  const scanned = new Set([...DOCSUITE_FILES, ...SELSUITE_FILES, ...appsuiteFiles(r)]);
+  return [...sources, ...lone, ...shell]
+    // app_styles carries the scope class in the CSS this script generates.
+    .filter(f => !/^app_styles_(source\.jsx|module\.js)$/.test(f) && !scanned.has(f))
+    .filter(f => OPT_IN_RE.test(fs.readFileSync(path.join(r, f), 'utf8')))
+    .sort();
+}
+
 // ANTI is scanned ONLY between <main id="main-content"> and </main> — the
 // region the scope class actually covers. Scanning the whole 1.7MB file would
 // drag in STEM/games/splash tokens whose rules could never match.
@@ -121,6 +147,7 @@ const SCOPES = [
   { name: 'docsuite (PDF remediation + Document Hub modals)', files: () => DOCSUITE_FILES },
   { name: 'selsuite (4 Tailwind SEL tools)', files: () => SELSUITE_FILES },
   { name: 'appsuite (main-content artifact views + sidebar)', files: appsuiteFiles },
+  { name: 'opt-in (tools that put the scope class on their own root)', files: optInFiles },
 ];
 
 // Tailwind v3 palette slices used by the mapping (300 for dark-mode text,
@@ -497,7 +524,7 @@ function generateCss(root) {
   return parts.join('\n');
 }
 
-module.exports = { FAM, DARK, CONTRAST, SCOPES, SCOPE_CLASS, VARIANT_SEL, scanTokens, allTokens, antiMainSliceTokens, parseToken, darkFor, contrastFor, generateCss, allVariantTokens, splitVariant, selForVariant, buildVariantRules };
+module.exports = { FAM, DARK, CONTRAST, SCOPES, SCOPE_CLASS, VARIANT_SEL, OPT_IN_RE, optInFiles, scanTokens, allTokens, antiMainSliceTokens, parseToken, darkFor, contrastFor, generateCss, allVariantTokens, splitVariant, selForVariant, buildVariantRules };
 
 if (require.main === module) {
   if (process.argv.includes('--unsupported')) {

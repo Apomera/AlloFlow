@@ -21,8 +21,10 @@
  *   ☐ console.warn()  — user can toggle on inside the panel
  *   ✗ console.log()   — never (debug noise)
  *
- * Persistence: last 50 entries in localStorage, so a page reload doesn't
- * lose context. Toggle state and "include warns" preference also persist.
+ * Persistence: last 50 entries in localStorage for 24 h, so a page reload
+ * doesn't lose context. The badge counts only THIS page load's errors;
+ * earlier ones stay in the log and reports, labelled. Toggle state and
+ * "include warns" preference also persist.
  *
  * No React dep — renders via plain DOM so it still works if React itself
  * fails to load. Usable from any AlloFlow surface (Canvas embed, standalone
@@ -61,6 +63,24 @@
     } catch (e) { return 'web'; }
   })();
 
+  // Per-page-load id. The buffer outlives the page (and, on a shared school
+  // device, the user), and 'web' never changes, so the build check below
+  // never pruned anything on the web: a student joining a live session was
+  // shown "15 errors" from weeks-old loads. The badge counts this load only.
+  var LOAD_ID = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  var MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+  // Live-session and homework links carry a join secret (?allo_mb= /
+  // ?allo_mbp= : base64 JSON holding the mailbox URL and key). Entries kept
+  // it in localStorage and every bug report sent it. Scrub wherever a URL
+  // or message is stored or sent.
+  function redactSecrets(s) {
+    if (!s) return s || '';
+    return String(s)
+      .replace(/([?&#]allo_mbp?=)[^&#\s"']*/g, '$1[redacted]')
+      .replace(/([?&#][\w.-]*(?:key|token|secret|passw(?:or)?d|auth|signature|credential)[\w.-]*=)[^&#\s"']*/gi, '$1[redacted]');
+  }
+
   // ── Initial state (rehydrated from localStorage) ──
   // Rehydration honesty (field-caught 2026-07-06): a report filed from 0.2.4
   // opened with a wall of 0.2.2-era entries — every timestamp PREDATED the
@@ -72,13 +92,22 @@
     try {
       var stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       if (!Array.isArray(stored)) return [];
+      var now = Date.now();
       return stored.filter(function (entry) {
         if (!entry || typeof entry !== 'object') return false;
         if (entry.v && entry.v !== APP_BUILD_TAG) return false;
+        // Age is the only pruning the web gets (see LOAD_ID).
+        var seen = Date.parse(entry.lastTs || entry.ts);
+        if (!(seen > now - MAX_AGE_MS)) return false;
         // shouldIgnore's pattern list initializes later in this module scope;
         // a throw here must skip the CHECK, not wipe the whole buffer.
         try { if (shouldIgnore(entry.message)) return false; } catch (e) {}
         return true;
+      }).map(function (entry) {
+        entry.url = redactSecrets(entry.url);
+        entry.message = redactSecrets(entry.message);
+        entry.stack = redactSecrets(entry.stack);
+        return entry;
       });
     }
     catch (e) { return []; }
@@ -95,6 +124,7 @@
   function persistPrefs() {
     try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(prefs)); } catch (e) {}
   }
+  persistBuffer();
 
   // Patterns the reporter should NOT capture — browser warnings that fire
   // through the same channels as real errors but aren't actionable. Most
@@ -127,13 +157,13 @@
 
   function record(level, message, stack, source, line, column) {
     if (shouldIgnore(message)) return;
-    var msg = String(message || '').slice(0, 2000);
+    var msg = redactSecrets(String(message || '')).slice(0, 2000);
     // Coalesce a repeat of the most recent entry (same level + message) into a count rather than
     // flooding the log, the badge, and the 50-slot buffer — e.g. a recurring 401 auth error that
     // fires every few seconds. The first ts is kept; lastTs + count track the repeats so the
     // report/panel show one line with "×N" instead of N identical rows.
     var last = buffer.length ? buffer[buffer.length - 1] : null;
-    if (last && last.level === level && last.message === msg) {
+    if (last && last.load === LOAD_ID && last.level === level && last.message === msg) {
       last.count = (last.count || 1) + 1;
       last.lastTs = new Date().toISOString();
       persistBuffer();
@@ -145,13 +175,14 @@
       ts: new Date().toISOString(),
       level: level,                                    // 'error' | 'warn'
       message: msg,
-      stack: stack ? String(stack).slice(0, 2000) : '',
+      stack: stack ? redactSecrets(String(stack)).slice(0, 2000) : '',
       source: source ? String(source).slice(0, 200) : '',
       line: line || 0,
       column: column || 0,
-      url: window.location.href.slice(0, 300),
+      url: redactSecrets(window.location.href).slice(0, 300),
       count: 1,
-      v: APP_BUILD_TAG   // which app build captured this — stale-entry pruning key
+      v: APP_BUILD_TAG,  // which app build captured this — stale-entry pruning key
+      load: LOAD_ID      // which page load — only this load's errors reach the badge
     };
     buffer.push(entry);
     while (buffer.length > MAX_BUFFERED) buffer.shift();
@@ -217,12 +248,21 @@
 
   // ── Build a Google-Form prefilled URL from current buffer ──
   // Compact one-line-per-event rendering of a diagnostics ring for reports.
+  function traceDetail(e) {
+    if (!e || e.detail != null) return e ? e.detail : null;
+    var d = null;
+    Object.keys(e).forEach(function (k) {
+      if (k !== 'at' && k !== 'event') { d = d || {}; d[k] = e[k]; }
+    });
+    return d;
+  }
+
   function traceLinesForReport(entries, cap) {
     return (entries || []).slice(-(cap || 25)).map(function (e) {
       var when = '';
       try { when = new Date(e.at).toISOString().slice(11, 19); } catch (_) {}
       var detail = '';
-      try { if (e.detail != null) detail = JSON.stringify(e.detail); } catch (_) { detail = '[unserializable]'; }
+      try { var d = traceDetail(e); if (d != null) detail = JSON.stringify(d); } catch (_) { detail = '[unserializable]'; }
       if (detail.length > 110) detail = detail.slice(0, 110) + '…';
       return when + ' ' + String(e.event || '') + ' ' + detail;
     }).join('\n');
@@ -268,17 +308,21 @@
       ' · viewport ' + (window.innerWidth || '?') + 'x' + (window.innerHeight || '?');
     var errorsOnly = buffer.filter(function (e) { return e.level === 'error'; });
     var entriesToInclude = (errorsOnly.length === 0 ? buffer : errorsOnly).slice(-15);
+    var nowCount = errorsOnly.filter(countsTowardBadge).length;
     var what = entriesToInclude.map(function (e, i) {
-      var head = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + (e.count > 1 ? ('  (repeated ×' + e.count + (e.lastTs ? ', last ' + e.lastTs : '') + ')') : '') + '\n' + e.message;
+      var tags = entryTags(e);
+      var head = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + (e.count > 1 ? ('  (repeated ×' + e.count + (e.lastTs ? ', last ' + e.lastTs : '') + ')') : '') + (tags.length ? '  [' + tags.join('; ') + ']' : '') + '\n' + e.message;
       if (e.source && e.line) head += '\n  at ' + e.source + ':' + e.line + ':' + e.column;
       if (e.stack) head += '\n' + e.stack;
       return head;
     }).join('\n\n---\n\n');
     if (!what) what = '(No errors captured. Sending a manual report.)';
+    else what = 'This page load: ' + nowCount + ' unresolved error' + (nowCount === 1 ? '' : 's') + '. Others below are labelled.\n\n' + what;
     try { what += '\n\n' + buildReportExtras(); } catch (_) {}
+    what = redactSecrets(what);
 
-    var steps = 'URL: ' + window.location.href;
-    if (window.location.hash) steps += '\nHash: ' + window.location.hash;
+    var steps = 'URL: ' + redactSecrets(window.location.href);
+    if (window.location.hash) steps += '\nHash: ' + redactSecrets(window.location.hash);
     if (window.AlloModules) {
       var loaded = Object.keys(window.AlloModules).filter(function (k) { return k !== 'ErrorReporter'; });
       if (loaded.length) steps += '\nModules loaded: ' + loaded.join(', ');
@@ -344,8 +388,34 @@
     document.body.appendChild(badge);
   }
 
+  // A sleeping or backgrounded laptop fires every pending module's 30 s
+  // watchdog at once on wake; the script usually still arrives. Once it has,
+  // that timeout is not something anyone can act on.
+  function recoveredModule(e) {
+    var m = /^\[CDN-TIMEOUT\] (\S+) did not settle/.exec((e && e.message) || '');
+    if (!m) return '';
+    try {
+      if (window.AlloModules && window.AlloModules[m[1]]) return m[1];
+      var reg = window.__alloModuleRegistry;
+      if (reg && reg[m[1]] && reg[m[1]].status === 'loaded') return m[1];
+    } catch (_) {}
+    return '';
+  }
+
+  function countsTowardBadge(e) {
+    return e.level === 'error' && e.load === LOAD_ID && !recoveredModule(e);
+  }
+
+  function entryTags(e) {
+    var tags = [];
+    if (e.load !== LOAD_ID) tags.push('earlier page load');
+    var mod = recoveredModule(e);
+    if (mod) tags.push('recovered: ' + mod + ' loaded later');
+    return tags;
+  }
+
   function updateBadge() {
-    var errCount = buffer.filter(function (e) { return e.level === 'error'; }).length;
+    var errCount = buffer.filter(countsTowardBadge).length;
     if (!document.body) return; // still booting
     if (document.body && document.body.classList.contains('alloflow-launchpad-active')) {
       if (badge) badge.style.display = 'none';
@@ -377,6 +447,7 @@
       '<span style="color:#64748b;font-weight:500;">#' + (idx + 1) + '</span>' +
       '<span style="color:#64748b;font-weight:500;">' + escapeHtml(e.ts) + '</span>' +
       (e.count > 1 ? '<span style="background:' + color + ';color:#fff;font-weight:700;padding:1px 6px;border-radius:999px;">×' + e.count + '</span>' : '') +
+      entryTags(e).map(function (tag) { return '<span style="color:#334155;font-weight:600;">' + escapeHtml(tag) + '</span>'; }).join('') +
       '</header>' +
       '<pre style="margin:0;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#1e293b;white-space:pre-wrap;word-break:break-word;">' +
       escapeHtml(e.message) + escapeHtml(loc) +
@@ -421,7 +492,7 @@
     var when = '';
     try { when = new Date(e.at).toLocaleTimeString(); } catch (_) {}
     var detail = '';
-    try { if (e.detail != null) detail = JSON.stringify(e.detail); } catch (_) { detail = '[unserializable]'; }
+    try { var d = traceDetail(e); if (d != null) detail = JSON.stringify(d); } catch (_) { detail = '[unserializable]'; }
     if (detail.length > 200) detail = detail.slice(0, 200) + '…';
     return '<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #f1f5f9;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">' +
       '<span style="color:#94a3b8;white-space:nowrap;">' + escapeHtml(when) + '</span>' +
@@ -943,7 +1014,7 @@
       };
       // Primary: POST to the worker → private KV. No new tab, no PII to a public surface.
       var p = buildReportPayload();
-      var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: (location.href || '').slice(0, 500) };
+      var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: redactSecrets(location.href || '').slice(0, 500) };
       btn.disabled = true; btn.textContent = 'Sending…';
       var done = function (text, color) { if (!$('aer-send')) return; var b = $('aer-send'); b.textContent = text; if (color) b.style.background = color; setTimeout(closePanel, 1300); };
       var fail = function () { if ($('aer-send')) { $('aer-send').disabled = false; $('aer-send').textContent = '📬 Send to Developers'; } openFormFallback(); };
@@ -993,7 +1064,15 @@
   // Global convenience hook for host surfaces (settings panels, help flows).
   try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' || tab === 'search' ? tab : 'errors'); }; } catch (_) {}
 
-  // Show the badge if there are pre-existing errors from a previous session.
+  // A timed-out module that arrives later drops out of the count.
+  try {
+    window.addEventListener('alloflow:module-registry-changed', function () {
+      updateBadge();
+      if (buffer.some(function (e) { return e.load === LOAD_ID && /^\[CDN-TIMEOUT\]/.test(e.message || ''); })) refreshPanelIfOpen();
+    });
+  } catch (_) {}
+
+  // Errors drained from the pending queue above can show the badge.
   // document.body may not be ready yet during early load; defer.
   if (document.body) {
     updateBadge();

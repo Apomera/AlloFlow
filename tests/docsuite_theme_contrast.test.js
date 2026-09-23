@@ -106,6 +106,41 @@ describe('generated CSS is live and scoped', () => {
     }
   });
 
+  it('tools that put the scope class on their own root are scanned, found by discovery not by a list', () => {
+    // Seven Educator Hub dialogs carried allo-docsuite on their dialog root but
+    // sat in no scope list, so their bg-slate-50/95 header had no dark rule and
+    // stayed light under remapped light text: 1.1-1.28:1 on every tab
+    // (2026-09-23). The fix scans every file whose className opts in.
+    const files = gen.SCOPES.map((s) => s.files(process.cwd())).flat();
+    for (const f of ['communications_studio_source.jsx', 'dispro_analyzer_source.jsx', 'family_announcements_source.jsx',
+      'meeting_docs_source.jsx', 'mtss_triage_source.jsx', 'sped_timelines_source.jsx', 'udl_walkthrough_source.jsx',
+      'admin_hub_source.jsx', 'story_forge_source.jsx', 'test_prep_hub_source.jsx', 'student_analytics_module.js']) {
+      expect(files, `${f} opts in, so it must be scanned`).toContain(f);
+    }
+    // Tokens that appear only in opted-in files now get rules.
+    for (const tok of ['bg-slate-100/95', 'bg-white/25']) {
+      expect(tokens, `${tok} should be in the scanned union`).toContain(tok);
+      expect(gen.darkFor(tok), tok).toBeTruthy();
+    }
+  });
+
+  it('opt-in discovery: a className opts in, a comment does not, and the generated stylesheet is excluded', async () => {
+    const { mkdtempSync, writeFileSync, mkdirSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const dir = mkdtempSync(resolve(tmpdir(), 'docsuite-optin-'));
+    writeFileSync(resolve(dir, 'newtool_source.jsx'), 'export const X = () => <div className="fixed inset-0 allo-docsuite bg-slate-50/95" />;');
+    writeFileSync(resolve(dir, 'template_source.jsx'), 'export const Y = () => <div className={`allo-docsuite ${x}`} />;');
+    writeFileSync(resolve(dir, 'commented_source.jsx'), '// renders inside allo-docsuite, but sets no scope class itself\nexport const Z = 1;');
+    writeFileSync(resolve(dir, 'lone_module.js'), 'React.createElement("div", { className: "allo-docsuite p-2" });');
+    writeFileSync(resolve(dir, 'paired_source.jsx'), 'export const P = 1;');
+    writeFileSync(resolve(dir, 'paired_module.js'), 'React.createElement("div", { className: "allo-docsuite" });');
+    writeFileSync(resolve(dir, 'app_styles_source.jsx'), '<div className="allo-docsuite" />');
+    writeFileSync(resolve(dir, 'view_already_source.jsx'), '<div className="allo-docsuite" />');
+    mkdirSync(resolve(dir, 'sel_hub'));
+    writeFileSync(resolve(dir, 'sel_hub', 'sel_hub_module.js'), "React.createElement('div', { className: 'allo-docsuite', })");
+    expect(gen.optInFiles(dir)).toEqual(['lone_module.js', 'newtool_source.jsx', 'sel_hub/sel_hub_module.js', 'template_source.jsx']);
+  });
+
   for (const f of ['view_pdf_audit_source.jsx', 'view_export_preview_source.jsx']) {
     it(`${f}: every fixed-overlay root carries allo-docsuite + has a theme toggle`, () => {
       const src = readFileSync(resolve(process.cwd(), f), 'utf8');

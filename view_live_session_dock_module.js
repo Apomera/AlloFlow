@@ -112,7 +112,8 @@ function LiveSessionDockView(props) {
     t,
     toggleSessionMode,
     units,
-    updateLivePresenterCue
+    updateLivePresenterCue,
+    requestEndLiveSession
   } = props;
   const [showOrganizerReview, setShowOrganizerReview] = React.useState(false);
   const reviewApi = window.AlloModules?.ViewRenderers;
@@ -161,7 +162,31 @@ function LiveSessionDockView(props) {
       color: '#0f172a',
       fontSize: '0.95rem'
     }
-  }, t('live_dock.title') || 'Live Dashboard'), /*#__PURE__*/React.createElement("button", {
+  }, t('live_dock.title') || 'Live Dashboard'), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8
+    }
+  }, typeof requestEndLiveSession === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-live-dock-end-session": "true",
+    onClick: () => {
+      setShowLiveDock(false);
+      requestEndLiveSession();
+    },
+    style: {
+      minHeight: 44,
+      background: '#fff1f2',
+      color: '#9f1239',
+      border: '1px solid #fecdd3',
+      borderRadius: 8,
+      padding: '0.3rem 0.8rem',
+      cursor: 'pointer',
+      fontWeight: 700,
+      fontSize: '0.8rem'
+    }
+  }, t('session.action_end') || 'End Session'), /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowLiveDock(false),
     "aria-label": t('common.close') || 'Close',
     style: {
@@ -174,7 +199,7 @@ function LiveSessionDockView(props) {
       cursor: 'pointer',
       fontWeight: 700
     }
-  }, "\u2715")), /*#__PURE__*/React.createElement("button", {
+  }, "\u2715"))), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setShowLiveDock(false);
       setShowSessionModal(true);
