@@ -97,7 +97,11 @@ describe('landscape cross-section scene', () => {
   it('keeps the zone hit-areas, keyboard selector and reduced-motion loop contract', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     expect(src).toContain("{ id: 'volcano', label: '🌋 Volcano (Igneous)', x: 0.12, y: 0.15, w: 0.22, h: 0.55, type: 'igneous' }");
-    expect(src).toContain("{ id: 'river', label: '🏖️ River Delta (Sedimentary)', x: 0.5, y: 0.45, w: 0.28, h: 0.35, type: 'sedimentary' }");
+    // Moved deliberately on 2026-09-22: the old rect (x 0.50-0.78) reached into
+    // the folded metamorphic root that starts at 0.63W, so the "Sedimentary"
+    // marker was painted ON metamorphic rock and a click on the fold opened the
+    // sedimentary rocks. It now spans the beds the fold does not cover.
+    expect(src).toContain("{ id: 'river', label: '🏖️ River Delta (Sedimentary)', x: 0.40, y: 0.50, w: 0.23, h: 0.35, type: 'sedimentary' }");
     expect(src).toContain("{ id: 'mountain', label: '⛰️ Mountain Core (Metamorphic)', x: 0.75, y: 0.08, w: 0.22, h: 0.62, type: 'metamorphic' }");
     expect(src).toContain('function onRockKey(e)');
     expect(src).toContain('if (rocksMotionReduced()) drawLandscape();');

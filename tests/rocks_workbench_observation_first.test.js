@@ -228,7 +228,9 @@ describe('3D specimen option', () => {
   });
 
   it('keeps both served copies byte-identical', () => {
-    expect(readFileSync(PATHS[0])).toEqual(readFileSync(PATHS[1]));
+    // Buffer.equals, not toEqual: a deep equality walk over ~1 MB of bytes
+    // took more than the 5 s test timeout once the tool grew past ~950 KB.
+    expect(readFileSync(PATHS[0]).equals(readFileSync(PATHS[1]))).toBe(true);
   });
 });
 

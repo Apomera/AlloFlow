@@ -252,7 +252,9 @@ describe('the badge and vocabulary tables speak through the translator', () => {
     // "already studied" is keyed on the English term, so the guards and the
     // vocabLookedUp state must keep using ROCKS_VOCAB[concept] directly.
     expect(s).toContain('quizQ.concept && ROCKS_VOCAB[quizQ.concept] &&');
-    expect(s).toContain('d.rcQuiz.concept && ROCKS_VOCAB[d.rcQuiz.concept] &&');
+    // The rock-cycle quiz reads a type-guarded copy of d.rcQuiz (a3a2b8473);
+    // the invariant is the same: the guard looks the English term up raw.
+    expect(s).toContain('_rcQuizSafe.concept && ROCKS_VOCAB[_rcQuizSafe.concept] &&');
     // ...while both cards render through the helpers.
     expect((s.match(/rkVocabDef\(__alloT,/g) || []).length).toBe(2);
     expect((s.match(/rkVocabTerm\(__alloT,/g) || []).length).toBe(2);
