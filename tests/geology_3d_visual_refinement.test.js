@@ -184,7 +184,7 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(source).toContain("key === 'z'");
     expect(source).toContain("key === 'h'");
     expect(source).toContain("'data-geology-mining-target': 'true'");
-    expect(source).toContain("'aria-label': fpTool === 'drill' ? 'Hold to drill continuously' : 'Dig targeted block'");
+    expect(source).toContain("'aria-label': fpTool === 'drill' ? 'Hold to drill continuously' : 'Dig at the reticle; hold to keep digging'");
     expect(source).toContain('now - fp.lastMineAt < 140');
     expect(source).toContain('grounded-collision-jump-and-reticle-mining');
     expect(source).toContain('var FIELD_EXPEDITIONS =');

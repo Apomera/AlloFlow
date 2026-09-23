@@ -97,6 +97,97 @@ describe('particle size cap', () => {
   });
 });
 
+describe('rebuild ambient occlusion on a flat grid', () => {
+  it('aoCountGrid agrees with aoCount at every cell, including the edges', () => {
+    const nx = 5, ny = 4, nz = 6;
+    let seed = 7;
+    const rand = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+    for (let trial = 0; trial < 6; trial++) {
+      const grid = new Uint8Array(nx * ny * nz), map = {};
+      for (let z = 0; z < nz; z++) for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+        if (rand() < 0.55) { grid[x + nx * (y + ny * z)] = 1; map[x + ',' + y + ',' + z] = 1; }
+      }
+      for (let z = 0; z < nz; z++) for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+        expect(P.aoCountGrid(grid, nx, ny, nz, x, y, z), `${x},${y},${z}`).toBe(P.aoCount(map, x, y, z));
+      }
+    }
+  });
+});
+
+describe('dig sound', () => {
+  function installFakeAudio() {
+    const nodes = [];
+    const param = () => ({ value: 0, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {}, setTargetAtTime() {}, cancelScheduledValues() {} });
+    const node = (kind, extra) => { const n = Object.assign({ kind, connect() {}, start() { n.started = true; }, stop() { n.stopped = true; } }, extra); nodes.push(n); return n; };
+    class FakeAC {
+      constructor() { this.currentTime = 0; this.sampleRate = 8000; this.destination = {}; this.state = 'running'; }
+      createBuffer(ch, len, rate) { const data = new Float32Array(len); return { sampleRate: rate, getChannelData: () => data }; }
+      createBufferSource() { return node('noise', { buffer: null, loop: false }); }
+      createBiquadFilter() { return node('filter', { type: '', frequency: param(), Q: param() }); }
+      createGain() { return node('gain', { gain: param() }); }
+      createOscillator() { return node('osc', { type: '', frequency: param() }); }
+    }
+    window.AudioContext = FakeAC; window.StemLab.audioContext = undefined;
+    P.sfx.reset();
+    return nodes;
+  }
+  beforeEach(() => { P.sfx.setMuted(false); try { localStorage.removeItem('alloflow-global-muted'); } catch (e) {} });
+
+  it('every mineable material in every scene has its own hardness voice', () => {
+    const labels = new Set();
+    let mineable = 0;
+    P.scenes().forEach((id) => {
+      P.sceneMaterials(id).forEach(({ key, type }) => {
+        const profile = P.fpMiningProfile(key, type);
+        if (profile.mineable) { mineable++; labels.add(profile.label); }
+      });
+    });
+    expect(mineable).toBeGreaterThan(30);                                    // the loop really visited the 7 palettes
+    expect([...labels].sort()).toEqual(['Crystalline', 'Dense', 'Hard', 'Layered', 'Loose']);
+    labels.forEach((label) => { expect(P.digSound(label), label).toBeTruthy(); expect(P.digSound(label).band).toBeGreaterThan(0); });
+    // softer rock sounds lower; crystalline rock rings
+    expect(P.digSound('Loose').band).toBeLessThan(P.digSound('Layered').band);
+    expect(P.digSound('Layered').band).toBeLessThan(P.digSound('Hard').band);
+    expect(P.digSound('Crystalline').ring).toBeGreaterThan(0);
+    expect(P.digSound('Loose').ring).toBe(0);
+  });
+
+  it('a strike builds a noise grain, and a ringing tone only for crystalline rock', () => {
+    const nodes = installFakeAudio();
+    P.sfx.strike('Loose');
+    const loose = nodes.splice(0);
+    expect(loose.some((n) => n.kind === 'noise' && n.started)).toBe(true);
+    expect(loose.filter((n) => n.kind === 'osc')).toHaveLength(1);            // the thud only
+    P.sfx.strike('Crystalline');
+    expect(nodes.filter((n) => n.kind === 'osc').map((n) => n.type)).toEqual(['triangle']);   // the ring, no thud
+  });
+
+  it('the tool mute and the app-wide mute both silence it completely', () => {
+    const nodes = installFakeAudio();
+    P.sfx.setMuted(true);
+    P.sfx.strike('Hard'); P.sfx.crumble('Hard', 1); P.sfx.chip('Hard'); P.sfx.denied('hazard'); P.sfx.drill(true, 'Hard', 0.5);
+    expect(nodes).toHaveLength(0);
+    P.sfx.setMuted(false);
+    localStorage.setItem('alloflow-global-muted', 'true');
+    P.sfx.strike('Hard'); P.sfx.drill(true, 'Hard', 0.5);
+    expect(nodes).toHaveLength(0);
+    expect(P.sfx.drillVoice()).toBeNull();
+  });
+
+  it('the drill hum is one looping voice, reused while held and stopped on release', () => {
+    const nodes = installFakeAudio();
+    P.sfx.drill(true, 'Layered', 0.1);
+    const first = nodes.length;
+    P.sfx.drill(true, 'Layered', 0.6); P.sfx.drill(true, 'Hard', 0.9);
+    expect(nodes.length).toBe(first);                                        // no new nodes per frame
+    const voice = P.sfx.drillVoice();
+    expect(voice && voice.n.loop).toBe(true);
+    P.sfx.drill(false);
+    expect(P.sfx.drillVoice()).toBeNull();
+    expect(voice.o.stopped && voice.n.stopped).toBe(true);
+  });
+});
+
 describe('mirror', () => {
   it('keeps both app mirrors identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
