@@ -1485,6 +1485,377 @@
   // Luster words as they appear in MINERALS ("Pearly/Vitreous"), one key each.
   var RK_LUSTER_TERM = { vitreous: 'Vitreous', pearly: 'Pearly', metallic: 'Metallic', earthy: 'Earthy', silky: 'Silky', dull: 'Dull', adamantine: 'Adamantine', resinous: 'Resinous', waxy: 'Waxy', submetallic: 'Submetallic' };
 
+  // ══ The hand lens: 10x, in reflected light ══
+  // The card jumped from a whole specimen straight to a 30 micrometre thin
+  // section, skipping the one instrument a student actually holds. A 10x
+  // loupe shows about 15 mm of surface: enough to count sand grains, see
+  // feldspar cleavage faces flash, find fossil fragments, and to learn that
+  // some things (silt, clay, chalk's plankton, basalt's crystals) are STILL
+  // too small, which is itself the identification. Scale is honest: sand is
+  // drawn at 0.3 mm in a 15 mm field, so each grain is a few pixels.
+  var RK_LENS_FIELD_MM = 15;
+  var RK_LENS_STYLE = { granite: { s: 'crystals', n: 5 }, diorite: { s: 'crystals', n: 6 }, gabbro: { s: 'crystals', n: 5 }, basalt: { s: 'fine', pheno: ['#65a30d', 5, 'grain'], holes: 3 }, andesite: { s: 'fine', pheno: ['#f5f5f4', 7, 'lath'] }, rhyolite: { s: 'fine', pheno: ['#e5e7eb', 4, 'grain'], flow: true }, obsidian: { s: 'glass' }, pumice: { s: 'froth' }, tuff: { s: 'ash' }, breccia: { s: 'clast', angular: true }, conglom: { s: 'clast' }, sandstone: { s: 'sand' }, siltstone: { s: 'silt' }, shale: { s: 'clay' }, limestone: { s: 'shells' }, chalk: { s: 'powder' }, travertine: { s: 'travertine' }, coal: { s: 'coal' }, marble: { s: 'crystals', n: 10, calcite: true }, quartzite: { s: 'crystals', n: 14, glassy: true }, gneiss: { s: 'crystals', n: 12, bands: true }, slate: { s: 'slate' }, phyllite: { s: 'phyllite' }, schist: { s: 'schist' } };
+  var RK_LENS_NOTE = {
+    granite: 'Look for three kinds of crystal: glassy grey quartz with no flat faces, pink or white feldspar that flashes as you tilt it (its flat cleavage faces catch the light), and small black flakes of mica.',
+    basalt: 'Almost nothing to see: the crystals are too small even at 10x. Look for a few glassy green olivine grains and small round gas holes.',
+    obsidian: 'No grains at all, because it is glass. On a broken edge look for curved ripples like the inside of a shell, and an edge sharp enough to cut.',
+    pumice: 'Look into the holes: stretched gas bubbles, separated by walls of glass thinner than paper.',
+    rhyolite: 'A fine pale matrix, often with faint flow bands, and a few glassy crystals that grew before it erupted.',
+    diorite: 'Black and white crystals in roughly equal amounts. The white feldspar flashes as you tilt it; there is little or no glassy grey quartz.',
+    gabbro: 'Big dark green to black pyroxene crystals and grey-white feldspar with flat, shiny cleavage faces. No quartz.',
+    andesite: 'A grey, fine matrix with scattered white rectangular feldspar crystals that grew slowly underground before the eruption.',
+    tuff: 'Sharp little shards of volcanic glass and lumps of pumice in fine ash. Nothing is rounded: it fell from the sky and was never carried by water.',
+    breccia: 'Fragments with sharp corners and fresh broken faces, with finer grains packed between them.',
+    sandstone: 'Now the sand grains show: see whether they are rounded, how similar in size they are, and the cement holding them together.',
+    limestone: 'Look for fossil fragments: curved bits of shell and round stem discs from sea lilies, in fine calcite, with sparkly calcite crystals filling the gaps.',
+    siltstone: 'Even at 10x the grains are too small to pick out. That is the identification: you can feel silt as grit, but you cannot see it.',
+    shale: 'A smooth, dull surface and very thin layers along a broken edge. The grains are too small to see.',
+    conglom: 'Part of a smooth, worn, rounded pebble, with smaller sand grains packed around it.',
+    chalk: 'Almost featureless white powder. Chalk is made of fossils, but most are too small even for a hand lens: the thin section below shows them at 400x.',
+    travertine: 'Wavy layers, with small holes lined up along them, left by the flowing water that built it.',
+    coal: 'Bands of bright, glassy black and dull black, with fine cracks crossing them at right angles.',
+    marble: 'Sugary, interlocking calcite crystals. Tilt it and flat cleavage faces flash. No fossils survive.',
+    slate: 'A dull, smooth face with no grains to see: the flat surface it split along. Tiny brassy pyrite cubes are common.',
+    quartzite: 'Glassy, sugary quartz grains welded together. A broken face runs straight through the grains.',
+    gneiss: 'Coarse crystals sorted into light and dark bands: the light bands are quartz and feldspar, the dark ones mica or hornblende.',
+    schist: 'Overlapping silvery mica flakes, all lying the same way so they flash together as you tilt it, and often a red garnet crystal.',
+    phyllite: 'A silky, satin sheen with crinkled ridges, but the mica crystals are still too small to see one by one.'
+  };
+  function rkHandLensSvg(h, rock, T) {
+    T = T || function (k, fb) { return fb; };
+    var st = RK_LENS_STYLE[rock.id] || { s: 'fine' };
+    var cols = (rock.grainColors && rock.grainColors.length) ? rock.grainColors : ['#a8a29e', '#78716c'];
+    var rnd = rkSeed('lens-' + rock.id);
+    var C = 108, R = 96, X0 = C - R, Y0 = C - R, D = R * 2;
+    var pxPerMm = D / RK_LENS_FIELD_MM;
+    var uid = 'rk-lens-' + rock.id;
+    var g = [];
+        var pick = function () { return cols[Math.floor(rnd() * cols.length)]; };
+    // Rough modal abundance by palette position, the same weighting the
+    // specimen swatch uses, so granite is not a quarter black mica.
+    var W8 = [0.32, 0.3, 0.14, 0.24];
+    var pickW = function () {
+      var tot = 0, i;
+      for (i = 0; i < cols.length; i++) tot += (W8[i] != null ? W8[i] : 0.2);
+      var r = rnd() * tot, acc = 0;
+      for (i = 0; i < cols.length; i++) { acc += (W8[i] != null ? W8[i] : 0.2); if (r < acc) return cols[i]; }
+      return cols[cols.length - 1];
+    };
+    var lum = function (hex) { return rkSrgbLum(hex); };
+    var sorted = cols.slice().sort(function (a, b) { return lum(a) - lum(b); });
+    var darkest = sorted[0], lightest = sorted[sorted.length - 1];
+    var P = function (x, y) { return x.toFixed(1) + ',' + y.toFixed(1); };
+    var poly = function (key, pts, fill, extra) { return h('polygon', Object.assign({ key: key, points: pts.map(function (p) { return P(p[0], p[1]); }).join(' '), fill: fill }, extra || {})); };
+    function speckle(n, r0, r1, palette, op) {
+      for (var i = 0; i < n; i++) {
+        g.push(h('circle', { key: 'sp' + g.length, cx: (X0 + rnd() * D).toFixed(1), cy: (Y0 + rnd() * D).toFixed(1), r: (r0 + rnd() * (r1 - r0)).toFixed(2), fill: palette[Math.floor(rnd() * palette.length)], opacity: op == null ? 1 : op }));
+      }
+    }
+    function lattice(n) {
+      var step = D / n, jit = 0.3, corner = [];
+      for (var y = 0; y <= n; y++) {
+        corner.push([]);
+        for (var x = 0; x <= n; x++) {
+          var onEdge = x === 0 || y === 0 || x === n || y === n;
+          corner[y].push([X0 + x * step + (onEdge ? 0 : (rnd() - 0.5) * 2 * jit * step), Y0 + y * step + (onEdge ? 0 : (rnd() - 0.5) * 2 * jit * step)]);
+        }
+      }
+      return corner;
+    }
+    var bg = cols[0];
+    if (st.s === 'crystals') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: bg }));
+      var corner = lattice(st.n);
+      for (var cy = 0; cy < st.n; cy++) {
+        for (var cx = 0; cx < st.n; cx++) {
+          var q = [corner[cy][cx], corner[cy][cx + 1], corner[cy + 1][cx + 1], corner[cy + 1][cx]];
+          var mx = (q[0][0] + q[2][0]) / 2, my = (q[0][1] + q[2][1]) / 2;
+                    var col = pickW();
+          if (st.bands) col = (Math.floor((my - Y0 + 6 * Math.sin(mx / 18)) / (D / 6)) % 2) ? (rnd() < 0.9 ? darkest : sorted[1]) : (rnd() < 0.55 ? lightest : sorted[sorted.length - 2] || lightest);
+          g.push(poly('c' + cy + '-' + cx, q, col, { stroke: 'rgba(20,20,25,0.55)', strokeWidth: 0.9, strokeLinejoin: 'round' }));
+          var dark = lum(col) < 0.1;
+          if (dark) {
+            // Dark mica or hornblende: fine parallel sheet edges.
+            var ang = rnd() * Math.PI;
+            for (var k = -2; k <= 2; k++) {
+              var ox = mx + Math.cos(ang + Math.PI / 2) * k * 3, oy = my + Math.sin(ang + Math.PI / 2) * k * 3;
+              g.push(h('line', { key: 'mk' + cy + '-' + cx + k, x1: (ox - Math.cos(ang) * 8).toFixed(1), y1: (oy - Math.sin(ang) * 8).toFixed(1), x2: (ox + Math.cos(ang) * 8).toFixed(1), y2: (oy + Math.sin(ang) * 8).toFixed(1), stroke: 'rgba(255,255,255,0.28)', strokeWidth: 0.8 }));
+            }
+          } else if (st.glassy || (!st.calcite && lum(col) > 0.25 && lum(col) < 0.75 && rnd() < 0.6)) {
+            // Glassy quartz: no flat face, a small curved highlight.
+            g.push(h('path', { key: 'qh' + cy + '-' + cx, d: 'M' + P(mx - 6, my + 2) + ' Q ' + P(mx - 2, my - 6) + ' ' + P(mx + 5, my - 4), fill: 'none', stroke: 'rgba(255,255,255,0.75)', strokeWidth: 1.6, strokeLinecap: 'round' }));
+          } else if (rnd() < 0.55) {
+            // A cleavage face turned to the light: a flat, bright parallelogram.
+            var w2 = (D / st.n) * 0.28, sk = (rnd() - 0.5) * w2;
+            g.push(poly('cf' + cy + '-' + cx, [[mx - w2, my - w2 * 0.5], [mx + w2 + sk, my - w2 * 0.5], [mx + w2, my + w2 * 0.5], [mx - w2 - sk, my + w2 * 0.5]], 'rgba(255,255,255,0.55)', { 'data-lens-glint': '1' }));
+          }
+        }
+      }
+    } else if (st.s === 'fine') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: cols[Math.min(2, cols.length - 1)] }));
+      speckle(1400, 0.5, 1.1, cols, 0.9);
+      if (st.flow) {
+        for (var fl = 0; fl < 7; fl++) {
+          var fy = Y0 + 20 + fl * 25;
+          g.push(h('path', { key: 'flow' + fl, d: 'M' + X0 + ' ' + fy + ' Q ' + (C - 30) + ' ' + (fy - 10) + ' ' + C + ' ' + fy + ' T ' + (X0 + D) + ' ' + fy, fill: 'none', stroke: fl % 2 ? 'rgba(255,255,255,0.35)' : 'rgba(120,80,80,0.25)', strokeWidth: 5 }));
+        }
+      }
+      if (st.holes) for (var ho = 0; ho < st.holes; ho++) g.push(h('ellipse', { key: 'ho' + ho, cx: (X0 + 30 + rnd() * (D - 60)).toFixed(1), cy: (Y0 + 30 + rnd() * (D - 60)).toFixed(1), rx: 6 + rnd() * 4, ry: 5 + rnd() * 3, fill: '#0b0b0f', stroke: 'rgba(255,255,255,0.25)', strokeWidth: 1 }));
+      if (st.pheno) {
+        for (var ph = 0; ph < st.pheno[1]; ph++) {
+          var px = X0 + 25 + rnd() * (D - 50), py = Y0 + 25 + rnd() * (D - 50), pa = rnd() * Math.PI;
+          var L = st.pheno[2] === 'lath' ? 14 + rnd() * 8 : 7 + rnd() * 4, Wd = st.pheno[2] === 'lath' ? 4.5 : L * 0.8;
+          var cs = Math.cos(pa), sn = Math.sin(pa);
+          var pts = [[-L / 2, -Wd / 2], [L / 2, -Wd / 2], [L / 2, Wd / 2], [-L / 2, Wd / 2]].map(function (v) { return [px + v[0] * cs - v[1] * sn, py + v[0] * sn + v[1] * cs]; });
+          g.push(poly('ph' + ph, pts, st.pheno[0], { stroke: '#1f2937', strokeWidth: 0.8, 'data-lens-pheno': '1' }));
+        }
+      }
+    } else if (st.s === 'glass') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: '#0b0b10' }));
+      for (var rip = 0; rip < 7; rip++) {
+        g.push(h('path', { key: 'rip' + rip, d: 'M' + (X0 + 20 + rip * 14) + ' ' + (Y0 + D - 10) + ' Q ' + (C - 10) + ' ' + (Y0 + 30 + rip * 16) + ' ' + (X0 + D - 15) + ' ' + (Y0 + 40 + rip * 18), fill: 'none', stroke: 'rgba(191,219,254,' + (0.35 - rip * 0.035).toFixed(2) + ')', strokeWidth: 2 }));
+      }
+      g.push(h('path', { key: 'spec', d: 'M' + (C - 50) + ' ' + (C - 40) + ' Q ' + (C - 20) + ' ' + (C - 70) + ' ' + (C + 30) + ' ' + (C - 60), fill: 'none', stroke: 'rgba(255,255,255,0.85)', strokeWidth: 4, strokeLinecap: 'round' }));
+    } else if (st.s === 'froth') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: '#e7e5e4' }));
+      for (var bu = 0; bu < 120; bu++) {
+        var bx = X0 + rnd() * D, by = Y0 + rnd() * D, rx = 5 + rnd() * 9;
+        g.push(h('ellipse', { key: 'bu' + bu, cx: bx.toFixed(1), cy: by.toFixed(1), rx: rx.toFixed(1), ry: (rx * (0.3 + rnd() * 0.25)).toFixed(1), fill: '#57534e', stroke: '#f5f5f4', strokeWidth: 1.2, transform: 'rotate(' + (-15 + rnd() * 30).toFixed(0) + ' ' + bx.toFixed(1) + ' ' + by.toFixed(1) + ')' }));
+      }
+    } else if (st.s === 'ash') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: cols[0] }));
+      speckle(900, 0.4, 0.9, cols, 0.8);
+      for (var sh = 0; sh < 26; sh++) {
+        var sx = X0 + rnd() * D, sy = Y0 + rnd() * D, sr = 4 + rnd() * 6;
+        // Glass shards: the curved walls of burst bubbles.
+        g.push(h('path', { key: 'sh' + sh, d: 'M' + P(sx - sr, sy) + ' Q ' + P(sx, sy - sr * 1.2) + ' ' + P(sx + sr, sy) + ' Q ' + P(sx, sy - sr * 0.5) + ' ' + P(sx - sr, sy) + ' Z', fill: '#f8fafc', stroke: '#57534e', strokeWidth: 0.7, 'data-lens-shard': '1' }));
+      }
+      for (var pl = 0; pl < 5; pl++) g.push(h('ellipse', { key: 'pl' + pl, cx: (X0 + 20 + rnd() * (D - 40)).toFixed(1), cy: (Y0 + 20 + rnd() * (D - 40)).toFixed(1), rx: 10 + rnd() * 6, ry: 7 + rnd() * 4, fill: '#d6d3d1', stroke: '#78716c', strokeWidth: 1, strokeDasharray: '2 1.5' }));
+    } else if (st.s === 'clast') {
+      // One big clast fills much of a 15 mm field; sand matrix around it.
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: '#cdb892' }));
+      speckle(900, 1.2, 2.2, ['#f4efe4', '#e9e1cf', '#d99a82', '#8a817a', '#ddd3bd'], 1);
+      var pcx = C - 15, pcy = C + 5, pr = 70, n0 = st.angular ? 6 : 14, pts2 = [];
+      for (var pk = 0; pk < n0; pk++) {
+        var a2 = (pk / n0) * Math.PI * 2 + (st.angular ? (rnd() - 0.5) * 0.6 : 0);
+        var rr = pr * (st.angular ? 0.7 + rnd() * 0.35 : 0.92 + rnd() * 0.08);
+        pts2.push([pcx + Math.cos(a2) * rr, pcy + Math.sin(a2) * rr * 0.8]);
+      }
+      if (!st.angular) pts2 = rkChaikin(pts2, 2);
+      g.push(poly('clast', pts2, cols[0], { stroke: '#3f3a34', strokeWidth: 1.6, strokeLinejoin: st.angular ? 'miter' : 'round', 'data-lens-clast': st.angular ? 'angular' : 'rounded' }));
+      if (st.angular) g.push(poly('face', [pts2[0], pts2[1], [pcx, pcy]], 'rgba(255,255,255,0.28)'));
+      else g.push(h('ellipse', { key: 'polish', cx: pcx - 20, cy: pcy - 22, rx: 26, ry: 10, fill: 'rgba(255,255,255,0.3)' }));
+    } else if (st.s === 'sand') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: '#cdb892' }));
+      // 0.3 mm grains at 15 mm per lens width: a few pixels each, honestly.
+      var gr = 0.3 * pxPerMm / 2;
+      var sandCols = ['#f4efe4', '#e9e1cf', '#faf6ec', '#ddd3bd', '#d99a82', '#8a817a'];
+            // Random packing, not a lattice: a regular grid read as a honeycomb.
+      var nSand = Math.round((D * D) / (Math.PI * gr * gr) * 0.62);
+      for (var si = 0; si < nSand; si++) {
+        var c3 = rnd() < 0.87 ? sandCols[Math.floor(rnd() * 4)] : sandCols[4 + Math.floor(rnd() * 2)];
+        g.push(h('circle', { key: 'sg' + si, cx: (X0 + rnd() * D).toFixed(1), cy: (Y0 + rnd() * D).toFixed(1), r: (gr * (0.75 + rnd() * 0.4)).toFixed(2), fill: c3, stroke: 'rgba(60,50,40,0.45)', strokeWidth: 0.35 }));
+      }
+    } else if (st.s === 'silt' || st.s === 'clay' || st.s === 'slate' || st.s === 'powder') {
+      var base = st.s === 'powder' ? '#fafaf9' : st.s === 'slate' ? '#334155' : cols[0];
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: base }));
+      // Grains below what 10x can resolve: only a faint texture shows.
+      speckle(st.s === 'silt' ? 1600 : 700, 0.25, 0.55, st.s === 'powder' ? ['#e7e5e4', '#f5f5f4'] : cols, st.s === 'powder' ? 0.7 : 0.45);
+      if (st.s !== 'powder') {
+        for (var ln = 0; ln < 14; ln++) g.push(h('line', { key: 'ln' + ln, x1: X0, y1: (Y0 + 8 + ln * 13).toFixed(1), x2: X0 + D, y2: (Y0 + 8 + ln * 13 + (rnd() - 0.5) * 3).toFixed(1), stroke: st.s === 'slate' ? 'rgba(148,163,184,0.35)' : 'rgba(30,30,35,0.18)', strokeWidth: st.s === 'clay' ? 1.1 : 0.6 }));
+      } else {
+        // The odd foraminifera shell is just big enough to see.
+        for (var fo = 0; fo < 3; fo++) g.push(h('circle', { key: 'fo' + fo, cx: (X0 + 40 + rnd() * (D - 80)).toFixed(1), cy: (Y0 + 40 + rnd() * (D - 80)).toFixed(1), r: 2.4, fill: 'none', stroke: '#a8a29e', strokeWidth: 0.9 }));
+      }
+      if (st.s === 'slate') {
+        [[C - 40, C + 25, 9], [C + 35, C - 30, 6]].forEach(function (cb, ci) {
+          g.push(h('rect', { key: 'py' + ci, x: cb[0], y: cb[1], width: cb[2], height: cb[2], fill: '#c9a227', stroke: '#7a5f10', strokeWidth: 0.8, transform: 'rotate(12 ' + cb[0] + ' ' + cb[1] + ')', 'data-lens-pyrite': '1' }));
+        });
+      }
+    } else if (st.s === 'shells') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: '#d6d3d1' }));
+      speckle(500, 0.3, 0.7, ['#a8a29e', '#e7e5e4'], 0.7);
+      for (var sp2 = 0; sp2 < 9; sp2++) {
+        var fx = X0 + 20 + rnd() * (D - 40), fy2 = Y0 + 20 + rnd() * (D - 40), fr = 9 + rnd() * 10, fa = rnd() * 360;
+        g.push(h('path', { key: 'shell' + sp2, d: 'M' + P(fx - fr, fy2) + ' A ' + fr + ' ' + (fr * 0.6).toFixed(1) + ' 0 0 1 ' + P(fx + fr, fy2), fill: 'none', stroke: '#57534e', strokeWidth: 2.4, strokeLinecap: 'round', transform: 'rotate(' + fa.toFixed(0) + ' ' + fx.toFixed(1) + ' ' + fy2.toFixed(1) + ')', 'data-lens-fossil': 'shell' }));
+      }
+      for (var cr = 0; cr < 4; cr++) {
+        var ccx = X0 + 25 + rnd() * (D - 50), ccy = Y0 + 25 + rnd() * (D - 50);
+        g.push(h('circle', { key: 'cri' + cr, cx: ccx.toFixed(1), cy: ccy.toFixed(1), r: 7, fill: '#e7e5e4', stroke: '#57534e', strokeWidth: 1.6, 'data-lens-fossil': 'crinoid' }));
+        g.push(h('circle', { key: 'crc' + cr, cx: ccx.toFixed(1), cy: ccy.toFixed(1), r: 1.6, fill: '#57534e' }));
+      }
+      for (var gl = 0; gl < 10; gl++) g.push(poly('sparry' + gl, [[0, -3], [3, 0], [0, 3], [-3, 0]].map(function (v) { return [X0 + 15 + (gl * 17) % (D - 30) + v[0], Y0 + 20 + (gl * 29) % (D - 40) + v[1]]; }), 'rgba(255,255,255,0.9)'));
+    } else if (st.s === 'travertine') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: cols[0] }));
+      for (var tb = 0; tb < 9; tb++) {
+        var ty = Y0 + tb * 22;
+        g.push(h('path', { key: 'tb' + tb, d: 'M' + X0 + ' ' + ty + ' Q ' + (C - 40) + ' ' + (ty + 8) + ' ' + C + ' ' + ty + ' T ' + (X0 + D) + ' ' + ty + ' L ' + (X0 + D) + ' ' + (ty + 11) + ' Q ' + (C + 40) + ' ' + (ty + 19) + ' ' + C + ' ' + (ty + 11) + ' T ' + X0 + ' ' + (ty + 11) + ' Z', fill: cols[1 + (tb % Math.max(1, cols.length - 1))], opacity: 0.85 }));
+        for (var po = 0; po < 4; po++) g.push(h('ellipse', { key: 'po' + tb + po, cx: (X0 + 15 + rnd() * (D - 30)).toFixed(1), cy: (ty + 15 + rnd() * 5).toFixed(1), rx: 3 + rnd() * 5, ry: 1.4 + rnd() * 1.2, fill: '#78716c', 'data-lens-pore': '1' }));
+      }
+    } else if (st.s === 'coal') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: '#1c1917' }));
+      for (var cb2 = 0; cb2 < 10; cb2++) {
+        var cyb = Y0 + cb2 * 19 + rnd() * 4, thick = 5 + rnd() * 9, bright = cb2 % 3 === 0;
+        g.push(h('rect', { key: 'cb' + cb2, x: X0, y: cyb.toFixed(1), width: D, height: thick.toFixed(1), fill: bright ? '#0c0a09' : '#292524', 'data-lens-band': bright ? 'bright' : 'dull' }));
+        if (bright) g.push(h('rect', { key: 'cbh' + cb2, x: X0, y: (cyb + 1).toFixed(1), width: D, height: 1.4, fill: 'rgba(255,255,255,0.45)' }));
+      }
+            for (var cl = 0; cl < 5; cl++) { var cxl = X0 + 20 + cl * 38 + rnd() * 10; g.push(h('line', { key: 'cleat' + cl, x1: cxl.toFixed(1), y1: Y0, x2: (cxl + (rnd() - 0.5) * 4).toFixed(1), y2: Y0 + D, stroke: 'rgba(214,211,209,0.18)', strokeWidth: 0.8, 'data-lens-cleat': '1' })); }
+    } else if (st.s === 'phyllite') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: cols[0] }));
+      for (var pr2 = 0; pr2 < 20; pr2++) {
+        var py2 = Y0 + pr2 * 10;
+        var dd = 'M' + X0 + ' ' + py2;
+        for (var wv = 1; wv <= 8; wv++) dd += ' Q ' + (X0 + (wv - 0.5) * D / 8).toFixed(1) + ' ' + (py2 + (wv % 2 ? -3 : 3)).toFixed(1) + ' ' + (X0 + wv * D / 8).toFixed(1) + ' ' + py2;
+        g.push(h('path', { key: 'cren' + pr2, d: dd, fill: 'none', stroke: pr2 % 3 === 0 ? 'rgba(241,245,249,0.6)' : 'rgba(15,23,42,0.25)', strokeWidth: pr2 % 3 === 0 ? 2.2 : 1 }));
+      }
+    } else if (st.s === 'schist') {
+      g.push(h('rect', { key: 'bg', x: X0, y: Y0, width: D, height: D, fill: cols[2] || cols[0] }));
+      for (var mf = 0; mf < 90; mf++) {
+        var mfx = X0 + rnd() * D, mfy = Y0 + rnd() * D, mw = 10 + rnd() * 12, mh = 3 + rnd() * 3, tilt = -8 + (rnd() - 0.5) * 10;
+        g.push(h('ellipse', { key: 'mf' + mf, cx: mfx.toFixed(1), cy: mfy.toFixed(1), rx: mw.toFixed(1), ry: mh.toFixed(1), fill: rnd() < 0.3 ? '#e2e8f0' : pick(), stroke: 'rgba(15,23,42,0.4)', strokeWidth: 0.6, transform: 'rotate(' + tilt.toFixed(1) + ' ' + mfx.toFixed(1) + ' ' + mfy.toFixed(1) + ')' }));
+        if (mf % 4 === 0) g.push(h('ellipse', { key: 'mfs' + mf, cx: (mfx - 2).toFixed(1), cy: (mfy - 1).toFixed(1), rx: (mw * 0.5).toFixed(1), ry: 0.9, fill: 'rgba(255,255,255,0.8)', transform: 'rotate(' + tilt.toFixed(1) + ' ' + mfx.toFixed(1) + ' ' + mfy.toFixed(1) + ')' }));
+      }
+      var gcx = C + 25, gcy = C - 20, gpts = [];
+      for (var gk = 0; gk < 6; gk++) gpts.push([gcx + Math.cos(gk * Math.PI / 3) * 14, gcy + Math.sin(gk * Math.PI / 3) * 14]);
+      g.push(poly('garnet', gpts, '#991b1b', { stroke: '#450a0a', strokeWidth: 1.2, 'data-lens-garnet': '1' }));
+      g.push(poly('garnetf', [gpts[4], gpts[5], [gcx, gcy]], 'rgba(255,255,255,0.3)'));
+    }
+    // Scale bar: 1 mm at this magnification, from the field width.
+    var bar = pxPerMm;
+    var kids = [
+      h('defs', { key: 'defs' },
+        h('clipPath', { id: uid + '-clip' }, h('circle', { cx: C, cy: C, r: R })),
+        h('radialGradient', { id: uid + '-vig', cx: '50%', cy: '50%', r: '50%' },
+          h('stop', { offset: '70%', stopColor: '#000000', stopOpacity: 0 }),
+          h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.45 }))),
+      h('g', { key: 'field', clipPath: 'url(#' + uid + '-clip)' }, g,
+        h('circle', { key: 'vig', cx: C, cy: C, r: R, fill: 'url(#' + uid + '-vig)' }),
+        h('path', { key: 'glare', d: 'M' + (C - 70) + ' ' + (C - 30) + ' A 80 80 0 0 1 ' + (C - 20) + ' ' + (C - 78), fill: 'none', stroke: 'rgba(255,255,255,0.35)', strokeWidth: 6, strokeLinecap: 'round' }),
+        h('rect', { key: 'barbg', x: C - bar / 2 - 18, y: C + R - 30, width: bar + 36, height: 18, rx: 4, fill: 'rgba(15,23,42,0.72)' }),
+        h('rect', { key: 'bar', x: C - bar / 2, y: C + R - 26, width: bar, height: 3, fill: '#ffffff' }),
+        h('text', { key: 'bart', x: C, y: C + R - 15, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: '#ffffff' }, T('stem.rocks.lens_scale', '1 mm'))),
+      h('path', { key: 'handle', d: 'M' + (C + R * 0.72) + ' ' + (C + R * 0.72) + ' L ' + (C + R * 1.18) + ' ' + (C + R * 1.18), stroke: '#475569', strokeWidth: 16, strokeLinecap: 'round' }),
+      h('circle', { key: 'rim', cx: C, cy: C, r: R + 4, fill: 'none', stroke: '#334155', strokeWidth: 8 }),
+      h('circle', { key: 'rim2', cx: C, cy: C, r: R, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5 })
+    ];
+    return h('svg', {
+      viewBox: '0 0 240 240', width: '100%', role: 'img', 'data-rk-lens': st.s,
+      'aria-label': T('stem.rocks.lens_aria', 'The rock through a 10x hand lens, about 15 mm across: ') + T('stem.rocks.lens_note_' + rock.id, RK_LENS_NOTE[rock.id] || ''),
+      style: { display: 'block', maxWidth: 260 }
+    }, kids);
+  }
+
+  // ══ Coal: burial turns plants into rock, one rank at a time ══
+  // Coal is the one sedimentary rock whose formation is a slider, not a
+  // place: the deeper and longer the peat is buried, the more water and gas
+  // are driven off and the more of what is left is carbon. Ranges are the
+  // usual textbook ones (carbon on a dry basis, moisture as found, heat of
+  // burning per kilogram) and are shown as ranges because real coals vary.
+  var RK_COAL_RANKS = [
+    { id: 'peat', at: 0, name: 'Peat', carbon: [50, 60], water: [75, 90], energy: [10, 15], look: 'Brown, spongy and full of recognisable plant pieces. Not yet a rock.' },
+    { id: 'lignite', at: 0.3, name: 'Lignite (brown coal)', carbon: [60, 70], water: [30, 60], energy: [10, 20], look: 'Brown to black and crumbly; you can still see the grain of the wood.' },
+    { id: 'bituminous', at: 0.6, name: 'Bituminous coal', carbon: [75, 86], water: [2, 15], energy: [24, 35], look: 'Black and banded, with bright glassy bands between dull ones.' },
+    { id: 'anthracite', at: 0.85, name: 'Anthracite', carbon: [86, 98], water: [1, 5], energy: [30, 35], look: 'Hard, black and shiny, almost metallic. It breaks with curved, glassy faces.' }
+  ];
+  function rkCoalAt(t) {
+    t = Math.max(0, Math.min(1, Number(t) || 0));
+    var r = RK_COAL_RANKS[0];
+    for (var i = 0; i < RK_COAL_RANKS.length; i++) if (t >= RK_COAL_RANKS[i].at) r = RK_COAL_RANKS[i];
+    // Thickness left from 10 m of peat: about a tenth once it is coal.
+    var squeeze = 1 - 0.9 * Math.min(1, t / 0.6);
+    return { t: t, rank: r, graphite: t >= 0.97, thickness: squeeze };
+  }
+  function rkCoalSvg(h, t) {
+    var c = rkCoalAt(t), id = c.rank.id;
+    var W = 320, H = 150, kids = [];
+    var rnd = rkSeed('coal-' + id);
+    // Left: the column. 10 m of peat, squeezed as it is buried.
+    var colH = 120 * c.thickness, colY = 140 - colH;
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }));
+    kids.push(h('rect', { key: 'ghost', x: 18, y: 20, width: 60, height: 120, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.2, strokeDasharray: '4 3' }));
+    var colFill = id === 'peat' ? '#78532e' : id === 'lignite' ? '#4a3524' : id === 'bituminous' ? '#1c1917' : '#0c0a09';
+    kids.push(h('rect', { key: 'col', x: 18, y: colY.toFixed(1), width: 60, height: colH.toFixed(1), fill: colFill, stroke: '#0f172a', strokeWidth: 1.2, 'data-coal-thickness': c.thickness.toFixed(2) }));
+    kids.push(h('path', { key: 'press', d: 'M48 ' + (colY - 16).toFixed(1) + ' L48 ' + (colY - 3).toFixed(1) + ' M42 ' + (colY - 9).toFixed(1) + ' L48 ' + (colY - 2).toFixed(1) + ' L54 ' + (colY - 9).toFixed(1), stroke: '#b91c1c', strokeWidth: 2.4, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }));
+    // Right: a close-up of the rank.
+    var X0 = 110, Y0 = 12, CW = 200, CH = 126;
+    kids.push(h('rect', { key: 'cu', x: X0, y: Y0, width: CW, height: CH, rx: 10, fill: colFill, stroke: '#0f172a', strokeWidth: 1.2 }));
+    if (id === 'peat' || id === 'lignite') {
+      for (var i = 0; i < (id === 'peat' ? 60 : 30); i++) {
+        var x = X0 + 6 + rnd() * (CW - 12), y = Y0 + 6 + rnd() * (CH - 12), L = 10 + rnd() * 26, a = (rnd() - 0.5) * (id === 'peat' ? 3 : 0.5);
+        kids.push(h('line', { key: 'fib' + i, x1: x.toFixed(1), y1: y.toFixed(1), x2: (x + Math.cos(a) * L).toFixed(1), y2: (y + Math.sin(a) * L).toFixed(1), stroke: id === 'peat' ? (i % 3 ? '#a16207' : '#65a30d') : '#7c5a3a', strokeWidth: id === 'peat' ? 1.6 : 2.2, strokeLinecap: 'round', 'data-coal-plant': '1' }));
+      }
+    } else {
+      for (var b = 0; b < 9; b++) {
+        var by = Y0 + 6 + b * 13, bright = id === 'anthracite' ? true : b % 3 === 0;
+        kids.push(h('rect', { key: 'band' + b, x: X0 + 4, y: by, width: CW - 8, height: 9, fill: bright ? '#0c0a09' : '#292524' }));
+        if (bright) kids.push(h('rect', { key: 'shine' + b, x: X0 + 4, y: by + 1, width: CW - 8, height: 1.6, fill: 'rgba(255,255,255,' + (id === 'anthracite' ? 0.7 : 0.4) + ')' }));
+      }
+      if (id === 'anthracite') kids.push(h('path', { key: 'conch', d: 'M' + (X0 + 40) + ' ' + (Y0 + CH - 10) + ' Q ' + (X0 + 90) + ' ' + (Y0 + 20) + ' ' + (X0 + 170) + ' ' + (Y0 + 40), fill: 'none', stroke: 'rgba(255,255,255,0.55)', strokeWidth: 2 }));
+    }
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', 'aria-hidden': true, focusable: 'false', 'data-coal-rank': id, style: { display: 'block', borderRadius: 10 } }, kids);
+  }
+
+  // ══ Limestone, chalk and travertine: who made the calcite ══
+  // All three are calcite and all three fizz, so the fizz cannot tell them
+  // apart. What differs is what MADE the calcite, and each rock keeps that
+  // written in its texture: visible shell pieces, plates too small to see,
+  // or wavy layers with holes. Same reaction every time:
+  //   Ca2+ + 2 HCO3-  ->  CaCO3 + CO2 + H2O
+  // A shell-building animal runs it inside its body; a hot spring runs it
+  // when CO2 escapes from the water as it reaches the air.
+  var RK_CARB_ENVS = [
+    { id: 'reef', rock: 'limestone', name: 'Warm, shallow sea', maker: 'Corals, shellfish and algae build calcite skeletons; waves break them into fragments that pile up.', needs: 'Warm, clear, sunlit water.', keeps: 'Fossil fragments big enough to see: shell pieces, coral, sea-lily stems.' },
+    { id: 'ocean', rock: 'chalk', name: 'Open ocean floor', maker: 'Single-celled plankton make tiny calcite plates. When they die the plates sink like snow and pile up as a white ooze.', needs: 'Clear water far from land, so almost no mud mixes in.', keeps: 'Fossils too small to see even with a hand lens: only a microscope shows the plates.' },
+    { id: 'spring', rock: 'travertine', name: 'Hot spring or cave', maker: 'Water full of dissolved calcium carbonate reaches the air; carbon dioxide escapes and calcite crystallizes straight out of the water.', needs: 'Water that has dissolved limestone underground, then loses its gas.', keeps: 'Wavy layers with small holes, and no fossils at all: no living thing made it.' }
+  ];
+  function rkCarbSvg(h, envId) {
+    var W = 320, H = 150, kids = [];
+    var rnd = rkSeed('carb-' + envId);
+    if (envId === 'reef') {
+      kids.push(h('rect', { key: 'sea', x: 0, y: 0, width: W, height: H, fill: '#7dd3fc' }));
+      kids.push(h('rect', { key: 'sun', x: 0, y: 0, width: W, height: 40, fill: '#bae6fd' }));
+      kids.push(h('path', { key: 'wave', d: 'M0 8 Q 40 2 80 8 T 160 8 T 240 8 T 320 8', fill: 'none', stroke: '#ffffff', strokeWidth: 2.5 }));
+      kids.push(h('rect', { key: 'floor', x: 0, y: 118, width: W, height: 32, fill: '#e7e5e4' }));
+      for (var s = 0; s < 40; s++) {
+        var sx = rnd() * W, sy = 122 + rnd() * 24, sr = 3 + rnd() * 4;
+        kids.push(h('path', { key: 'frag' + s, d: 'M' + (sx - sr).toFixed(1) + ' ' + sy.toFixed(1) + ' A ' + sr.toFixed(1) + ' ' + (sr * 0.6).toFixed(1) + ' 0 0 1 ' + (sx + sr).toFixed(1) + ' ' + sy.toFixed(1), fill: 'none', stroke: '#78716c', strokeWidth: 1.4, 'data-carb-fragment': '1' }));
+      }
+      for (var cbr = 0; cbr < 6; cbr++) {
+        var bx = 30 + cbr * 50 + rnd() * 10;
+        var d = 'M' + bx + ' 120';
+        d += ' L' + bx + ' ' + (80 + rnd() * 10) + ' M' + bx + ' 100 L' + (bx - 12) + ' ' + (82 + rnd() * 6) + ' M' + bx + ' 96 L' + (bx + 12) + ' ' + (78 + rnd() * 6);
+        kids.push(h('path', { key: 'coral' + cbr, d: d, stroke: cbr % 2 ? '#f97316' : '#fb7185', strokeWidth: 5, strokeLinecap: 'round', fill: 'none' }));
+      }
+      for (var fi = 0; fi < 3; fi++) {
+        var fx = 60 + fi * 90, fy = 40 + fi * 10;
+        kids.push(h('path', { key: 'fish' + fi, d: 'M' + fx + ' ' + fy + ' q 10 -7 20 0 q -10 7 -20 0 z M' + (fx + 20) + ' ' + fy + ' l 6 -4 l 0 8 z', fill: '#facc15', stroke: '#a16207', strokeWidth: 0.8 }));
+      }
+    } else if (envId === 'ocean') {
+      kids.push(h('defs', { key: 'defs' }, h('linearGradient', { id: 'rk-carb-deep', x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: '0%', stopColor: '#38bdf8' }), h('stop', { offset: '100%', stopColor: '#1e3a8a' }))));
+      kids.push(h('rect', { key: 'sea', x: 0, y: 0, width: W, height: H, fill: 'url(#rk-carb-deep)' }));
+      for (var sn = 0; sn < 120; sn++) kids.push(h('circle', { key: 'snow' + sn, cx: (rnd() * W).toFixed(1), cy: (rnd() * 118).toFixed(1), r: (0.8 + rnd() * 0.9).toFixed(2), fill: '#f8fafc', opacity: 0.85, 'data-carb-snow': '1' }));
+      kids.push(h('rect', { key: 'ooze', x: 0, y: 120, width: W, height: 30, fill: '#f5f5f4', 'data-carb-ooze': '1' }));
+      kids.push(h('path', { key: 'oozetop', d: 'M0 120 Q 80 116 160 120 T 320 119', fill: 'none', stroke: '#a8a29e', strokeWidth: 1.5 }));
+      // Inset: one plankton cell and its plates, hugely magnified.
+      kids.push(h('circle', { key: 'inset', cx: 262, cy: 50, r: 36, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 2 }));
+      for (var pl = 0; pl < 10; pl++) {
+        var pa = (pl / 10) * Math.PI * 2;
+        kids.push(h('ellipse', { key: 'plate' + pl, cx: (262 + Math.cos(pa) * 16).toFixed(1), cy: (50 + Math.sin(pa) * 16).toFixed(1), rx: 8, ry: 5, fill: '#f1f5f9', stroke: '#94a3b8', strokeWidth: 0.8, transform: 'rotate(' + (pa * 180 / Math.PI + 90).toFixed(0) + ' ' + (262 + Math.cos(pa) * 16).toFixed(1) + ' ' + (50 + Math.sin(pa) * 16).toFixed(1) + ')', 'data-carb-plate': '1' }));
+      }
+      kids.push(h('circle', { key: 'core', cx: 262, cy: 50, r: 9, fill: '#e2e8f0' }));
+      kids.push(h('line', { key: 'lead', x1: 226, y1: 58, x2: 205, y2: 70, stroke: '#e2e8f0', strokeWidth: 1.2 }));
+    } else {
+      kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: H, fill: '#e0f2fe' }));
+      [[0, 60, 110], [70, 84, 90], [140, 106, 80], [210, 126, 110]].forEach(function (tr, ti) {
+        kids.push(h('path', { key: 'terr' + ti, d: 'M' + tr[0] + ' ' + tr[1] + ' h ' + tr[2] + ' q 6 0 6 8 v ' + (H - tr[1]) + ' h ' + (-tr[2] - 6) + ' z', fill: ti % 2 ? '#fde68a' : '#fef3c7', stroke: '#b45309', strokeWidth: 1.2 }));
+        kids.push(h('rect', { key: 'pool' + ti, x: tr[0] + 4, y: tr[1] - 5, width: tr[2] - 8, height: 5, fill: '#38bdf8', opacity: 0.8 }));
+        for (var bb = 0; bb < 4; bb++) kids.push(h('circle', { key: 'bub' + ti + bb, cx: (tr[0] + 12 + rnd() * (tr[2] - 24)).toFixed(1), cy: (tr[1] - 10 - rnd() * 14).toFixed(1), r: 1.8 + rnd() * 1.4, fill: 'none', stroke: '#0369a1', strokeWidth: 1, 'data-carb-co2': '1' }));
+      });
+      for (var st2 = 0; st2 < 3; st2++) kids.push(h('path', { key: 'steam' + st2, d: 'M' + (30 + st2 * 22) + ' 52 q -8 -12 0 -22 q 8 -10 0 -22', fill: 'none', stroke: '#cbd5e1', strokeWidth: 3, strokeLinecap: 'round' }));
+    }
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', 'aria-hidden': true, focusable: 'false', 'data-carb-env': envId, style: { display: 'block', borderRadius: 10 } }, kids);
+  }
+
   // ══ Sedimentary journey: what transport does to a grain ══
   // The igneous cards have a model of how their texture forms; the clastic
   // sedimentary rocks had only a description, although their classification
@@ -6108,6 +6479,45 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)")))
 
                 ),
+                // ── Through a 10x hand lens ──
+                // The step between the specimen and the thin section, with the
+                // whole ladder of scales so a student knows where they are.
+                (function () {
+                  var sec = RK_THIN_SECTION[selRock.id];
+                  var tsField = sec ? rkFormatMm(200 / sec.mag) : '';
+                  var steps = [
+                    ['specimen', '🪨', __alloT('stem.rocks.lens_step_specimen', 'The specimen'), __alloT('stem.rocks.lens_step_specimen_w', 'about 10 cm across')],
+                    ['lens', '🔍', __alloT('stem.rocks.lens_step_lens', 'Hand lens, 10x'), __alloT('stem.rocks.lens_step_lens_w', 'about 15 mm across')],
+                    ['thin', '🔬', __alloT('stem.rocks.lens_step_thin', 'Thin section'), tsField ? __alloT('stem.rocks.lens_about', 'about ') + tsField + __alloT('stem.rocks.lens_across', ' across') : ''],
+                    ['atoms', '⚛️', __alloT('stem.rocks.lens_step_atoms', 'Crystal structure'), __alloT('stem.rocks.lens_step_atoms_w', 'about a millionth of a millimetre')]
+                  ];
+                  return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3", "data-rk-lens-panel": selRock.id },
+                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-1.5 flex items-center gap-1.5" },
+                      React.createElement("span", { "aria-hidden": true }, "🔍"),
+                      React.createElement("span", null, __alloT('stem.rocks.lens_title', "Through a 10x hand lens"))),
+                    React.createElement("ol", { className: "flex flex-wrap gap-1 mb-2", "aria-label": __alloT('stem.rocks.lens_ladder_aria', "From the whole rock down to its atoms") },
+                      steps.map(function (stp, si) {
+                        var here = stp[0] === 'lens';
+                        return React.createElement("li", {
+                          key: stp[0], "data-rk-scale-step": stp[0], "aria-current": here ? "step" : undefined,
+                          className: "flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[0.6875rem] " + (here ? "bg-slate-800 border-slate-900 text-white font-black" : "bg-white border-slate-300 text-slate-700 font-bold")
+                        },
+                          React.createElement("span", { "aria-hidden": true }, stp[1]),
+                          React.createElement("span", null, stp[2] + (stp[3] ? ' · ' + stp[3] : '')),
+                          si < steps.length - 1 ? React.createElement("span", { "aria-hidden": true, className: here ? "text-slate-300" : "text-slate-400" }, " →") : null);
+                      })
+                    ),
+                    React.createElement("div", { className: "flex flex-wrap gap-3 items-center" },
+                      React.createElement("div", { style: { flex: '0 1 240px', minWidth: 180 } }, rkHandLensSvg(React.createElement, selRock, __alloT)),
+                      React.createElement("div", { className: "min-w-0", style: { flex: '1 1 240px' } },
+                        React.createElement("p", { className: "text-xs font-black text-slate-900" }, __alloT('stem.rocks.lens_look_title', "What to look for")),
+                        React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed mt-0.5" }, __alloT('stem.rocks.lens_note_' + selRock.id, RK_LENS_NOTE[selRock.id] || '')),
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-600 leading-snug mt-2" },
+                          React.createElement("span", { className: "font-black text-slate-700" }, __alloT('stem.rocks.lens_tip_title', "Using a real lens: ")),
+                          __alloT('stem.rocks.lens_tip', "hold it close to your eye, then bring the rock up to it until it comes into focus. Look at a fresh broken surface, not a weathered one.")))
+                    )
+                  );
+                })(),
                 // ── Thin section under the polarizing microscope ──
                 // Sits between the hand-specimen art above and the mineral tool's
                 // atomic view: the magnification where a rock stops being a
@@ -6657,6 +7067,127 @@ const d = labToolData.rocks || {};
                       React.createElement("p", { className: "mt-2 text-xs font-bold text-orange-900" },
                         __alloT('stem.rocks.sed_try', "Try the cliff and the stream back to back: the grains are gravel at both. What changed, and which rock does that make?"))
                     )
+                  );
+                })(),
+
+                // ── Coal: from swamp to rock, by burial ──
+                selRock && selRock.id === 'coal' && (function () {
+                  var cl = (d.coalLab && typeof d.coalLab === 'object' && !Array.isArray(d.coalLab)) ? d.coalLab : {};
+                  var tPos = (typeof cl.t === 'number' && isFinite(cl.t)) ? Math.max(0, Math.min(1, cl.t)) : 0.62;
+                  var c = rkCoalAt(tPos), r = c.rank;
+                  var rankName = function (rk) { return __alloT('stem.rocks.coal_name_' + rk.id, rk.name); };
+                  var range = function (a, unit) { return a[0] + '–' + a[1] + unit; };
+                  var rows = [
+                    ['carbon', __alloT('stem.rocks.coal_row_carbon', 'Carbon'), range(r.carbon, '%')],
+                    ['water', __alloT('stem.rocks.coal_row_water', 'Water'), range(r.water, '%')],
+                    ['energy', __alloT('stem.rocks.coal_row_energy', 'Heat when it burns'), range(r.energy, __alloT('stem.rocks.coal_mj', ' MJ per kg'))],
+                    ['thick', __alloT('stem.rocks.coal_row_thick', 'From 10 m of peat'), __alloT('stem.rocks.coal_about', 'about ') + (Math.round(c.thickness * 100) / 10) + ' m']
+                  ];
+                  return React.createElement("div", { className: "border-t border-slate-200 pt-4 mt-4", "data-rk-coal-lab": r.id },
+                    React.createElement("p", { className: "text-sm font-black text-stone-900 mb-1.5 flex items-center gap-1.5" },
+                      React.createElement("span", { "aria-hidden": true }, "🌿"),
+                      React.createElement("span", null, __alloT('stem.rocks.coal_title', "From swamp to coal: burial does the work"))),
+                    React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" },
+                      __alloT('stem.rocks.coal_intro', "Coal is plants, buried. Predict first: which rank gives the most heat per kilogram? Then bury the peat deeper and watch what is driven out and what is left.")),
+                    React.createElement("div", { className: "flex flex-wrap gap-1 mb-1", role: "group", "aria-label": __alloT('stem.rocks.coal_ranks_aria', "Coal ranks") },
+                      RK_COAL_RANKS.map(function (rk) {
+                        var on = r.id === rk.id && !c.graphite;
+                        return React.createElement("button", {
+                          key: rk.id, type: "button", "aria-pressed": on, "data-rk-coal-rank": rk.id,
+                          onClick: function () { upd('coalLab', { t: rk.at + 0.02 }); sfxRockClick(); },
+                          className: "px-2 py-1 min-h-[36px] rounded-lg text-[0.6875rem] font-bold border " + (on ? "bg-stone-800 border-stone-900 text-white" : "bg-white border-slate-300 text-slate-800 hover:border-stone-500")
+                        }, rankName(rk));
+                      })
+                    ),
+                    React.createElement("label", { htmlFor: "rk-coal-t", className: "block text-[0.6875rem] font-bold text-slate-700" }, __alloT('stem.rocks.coal_slider', "Burial: deeper, hotter and longer →")),
+                    React.createElement("input", {
+                      id: "rk-coal-t", type: "range", min: 0, max: 100, step: 1, value: Math.round(tPos * 100),
+                      "aria-valuetext": c.graphite ? __alloT('stem.rocks.coal_graphite_short', 'Graphite') : rankName(r),
+                      onChange: function (e) { upd('coalLab', { t: parseInt(e.target.value, 10) / 100 }); },
+                      className: "w-full"
+                    }),
+                    React.createElement("div", { className: "flex flex-wrap gap-3 mt-2 items-start" },
+                      React.createElement("div", { className: "rounded-xl border-2 border-slate-300 overflow-hidden bg-white", style: { flex: '1 1 300px', maxWidth: 440 }, role: "img",
+                        "aria-label": rankName(r) + ': ' + __alloT('stem.rocks.coal_look_' + r.id, r.look) },
+                        rkCoalSvg(React.createElement, tPos),
+                        React.createElement("p", { className: "text-[0.625rem] text-slate-600 px-2 py-1 border-t border-slate-200 leading-snug" },
+                          __alloT('stem.rocks.coal_key', "Left: the same layer as it is buried (the dashed box is where it started). Right: a close-up of the rock."))),
+                      React.createElement("dl", { className: "grid gap-1.5", style: { flex: '1 1 220px' } },
+                        React.createElement("div", { className: "rounded-lg border border-stone-300 bg-stone-50 px-2.5 py-1.5" },
+                          React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-stone-700" }, __alloT('stem.rocks.coal_row_rank', "Rank")),
+                          React.createElement("dd", { className: "text-xs font-black text-slate-900" }, rankName(r)),
+                          React.createElement("dd", { className: "text-[0.6875rem] text-slate-700 leading-snug mt-0.5" }, __alloT('stem.rocks.coal_look_' + r.id, r.look))),
+                        rows.map(function (row) {
+                          return React.createElement("div", { key: row[0], className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5", "data-rk-coal-row": row[0] },
+                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, row[1]),
+                            React.createElement("dd", { className: "text-xs font-bold text-slate-900" }, row[2]));
+                        })
+                      )
+                    ),
+                    c.graphite && React.createElement("p", { className: "mt-2 rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-xs text-violet-900", "data-rk-coal-graphite": "1" },
+                      __alloT('stem.rocks.coal_graphite', "Bury it deeper still and it stops being coal: the carbon atoms order themselves into graphite, a mineral. See it in the Minerals tab.")),
+                    React.createElement("div", { className: "mt-2 rounded-xl border border-orange-200 bg-orange-50 p-3" },
+                      React.createElement("p", { className: "text-xs font-black text-orange-900" }, __alloT('stem.rocks.coal_why_title', "Why rank matters")),
+                      React.createElement("p", { className: "mt-1 text-xs text-slate-700 leading-relaxed" },
+                        __alloT('stem.rocks.coal_why', "Burial squeezes out water and cooks off gases, so more and more of what is left is carbon. More carbon means more heat per kilogram, and also more carbon dioxide when it burns: each kilogram of carbon burned makes about 3.7 kilograms of CO2. The ranges are wide because real coals vary.")))
+                  );
+                })(),
+
+                // ── Limestone, chalk, travertine: who made the calcite ──
+                selRock && RK_CARB_ENVS.some(function (e) { return e.rock === selRock.id; }) && (function () {
+                  var pre = RK_CARB_ENVS.filter(function (e) { return e.rock === selRock.id; })[0];
+                  var cb = (d.carbLab && typeof d.carbLab === 'object' && !Array.isArray(d.carbLab)) ? d.carbLab : {};
+                  var env = (cb.forRock === selRock.id && RK_CARB_ENVS.filter(function (e) { return e.id === cb.env; })[0]) || pre;
+                  var tx = function (field) { return __alloT('stem.rocks.carb_' + field + '_' + env.id, env[field]); };
+                  var result = ROCKS.find(function (x) { return x.id === env.rock; });
+                  var rows = [
+                    ['maker', __alloT('stem.rocks.carb_row_maker', 'What makes the calcite'), tx('maker')],
+                    ['needs', __alloT('stem.rocks.carb_row_needs', 'What it needs'), tx('needs')],
+                    ['keeps', __alloT('stem.rocks.carb_row_keeps', 'The evidence the rock keeps'), tx('keeps')]
+                  ];
+                  return React.createElement("div", { className: "border-t border-slate-200 pt-4 mt-4", "data-rk-carb-lab": env.id },
+                    React.createElement("p", { className: "text-sm font-black text-sky-900 mb-1.5 flex items-center gap-1.5" },
+                      React.createElement("span", { "aria-hidden": true }, "🐚"),
+                      React.createElement("span", null, __alloT('stem.rocks.carb_title', "Who made the calcite?"))),
+                    React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" },
+                      __alloT('stem.rocks.carb_intro', "Limestone, chalk and travertine are all calcite, so all three fizz: the fizz cannot tell them apart. What differs is what made the calcite, and each rock keeps that written in its texture.")),
+                    React.createElement("div", { className: "flex flex-wrap gap-1 mb-2", role: "group", "aria-label": __alloT('stem.rocks.carb_envs_aria', "Where calcite forms") },
+                      RK_CARB_ENVS.map(function (e) {
+                        var on = env.id === e.id;
+                        return React.createElement("button", {
+                          key: e.id, type: "button", "aria-pressed": on, "data-rk-carb-env": e.id,
+                          onClick: function () { upd('carbLab', { env: e.id, forRock: selRock.id }); sfxRockClick(); },
+                          className: "px-2.5 py-1 min-h-[36px] rounded-lg text-[0.6875rem] font-bold border " + (on ? "bg-sky-800 border-sky-900 text-white" : "bg-white border-slate-300 text-slate-800 hover:border-sky-500")
+                        }, __alloT('stem.rocks.carb_name_' + e.id, e.name));
+                      })
+                    ),
+                    React.createElement("div", { className: "flex flex-wrap gap-3 items-start" },
+                      React.createElement("div", { className: "rounded-xl border-2 border-slate-300 overflow-hidden bg-white", style: { flex: '1 1 300px', maxWidth: 440 }, role: "img",
+                        "aria-label": tx('name') + ': ' + tx('maker') },
+                        rkCarbSvg(React.createElement, env.id)),
+                      React.createElement("dl", { className: "grid gap-1.5", style: { flex: '1 1 220px' } },
+                        rows.map(function (row) {
+                          return React.createElement("div", { key: row[0], className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5", "data-rk-carb-row": row[0] },
+                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, row[1]),
+                            React.createElement("dd", { className: "text-xs text-slate-900 leading-snug" }, row[2]));
+                        }),
+                        result && React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5" },
+                          React.createElement("span", { className: "text-xs font-black text-amber-900" }, __alloT('stem.rocks.carb_becomes', "The rock it makes:")),
+                          React.createElement("button", {
+                            type: "button", "data-rk-link-rock": result.id,
+                            onClick: function () { if (result.id !== selRock.id) { updMulti({ selectedRock: result.id, selectedMineral: null }); sfxRockClick(); } },
+                            className: "inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-1.5 py-1 min-h-[36px] text-xs font-black text-slate-900 hover:border-amber-500"
+                          }, React.createElement("span", { "aria-hidden": true }, rkRockSwatch(React.createElement, result, 24)), result.label),
+                          result.id === selRock.id && React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, __alloT('stem.rocks.sed_is_this', "That is this rock.")))
+                      )
+                    ),
+                    React.createElement("div", { className: "mt-2 rounded-xl border border-orange-200 bg-orange-50 p-3" },
+                      React.createElement("p", { className: "text-xs font-black text-orange-900" }, __alloT('stem.rocks.carb_why_title', "One reaction, three ways to run it")),
+                      React.createElement("p", { className: "mt-1 text-xs text-slate-800 font-mono" }, "Ca²⁺ + 2 HCO₃⁻ → CaCO₃ + CO₂ + H₂O"),
+                      React.createElement("p", { className: "mt-1 text-xs text-slate-700 leading-relaxed" },
+                        __alloT('stem.rocks.carb_why', "Shell-building animals and plankton run this reaction inside their bodies to make their skeletons. A hot spring runs it without any life at all, as carbon dioxide escapes from the water into the air.")),
+                      React.createElement("p", { className: "mt-2 text-xs font-bold text-orange-900" },
+                        __alloT('stem.rocks.carb_try', "Open each rock's hand lens view: which of the three shows fossils you can actually see, and which is made of fossils too small to see?")))
                   );
                 })(),
 
