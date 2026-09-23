@@ -11,7 +11,7 @@ npm run verify:remediation
 
 The nested installation is required: root dependencies alone do not provide the React and ReactDOM UMD files read by the tests. The command runs the maintained source, generated-module, rendered-fidelity, and export-acceptance suites in [the suite manifest](../dev-tools/remediation_validation.json).
 
-The `remediation-preservation` job in [verify.yml](../.github/workflows/verify.yml) runs the same command on pull requests and pushes to main. The job fails on test or setup errors. Making that status mandatory for merging remains a repository branch-protection setting.
+The `remediation-preservation` job in [verify.yml](../.github/workflows/verify.yml) runs the same command on pull requests and on pushes to every branch. The job fails on test or setup errors. Making that status mandatory for merging remains a repository branch-protection setting.
 
 Reports go to `test-results/remediation-validation/` by default. Use a new evidence directory for a retained local run:
 
@@ -21,9 +21,11 @@ npm run verify:remediation -- --report-dir reports/my-remediation-validation
 
 The directory contains unit and browser JSON reports, per-phase console logs (unit.log and browser.log), browser artifacts, and a summary that records running, passed, or failed status. Each phase separately records not-started, running, passed or failed, its process exit, report-read status, collected assertion counts, missing suites, and available suite/global diagnostics. Failed process exits remain failures even when a reporter claims success. Reports and logs are parsed or retained after failures; missing or malformed reports are explicit. Aggregate testsPassed is present only for successful complete runs. The command rejects missing suites, skipped tests, expected failures, and browser retries; Chromium runs with two workers and zero retries. CI uploads this evidence even when a test fails.
 
-Add relevant suites to the manifest when extending these checks. `node dev-tools/remediation_validation.cjs --list` prints the selection without executing it. The validation contract test also detects omitted suites under the rendered and document-export browser naming conventions. The new form-context fixtures live in `tests/fixtures/remediation_form_context.json`, independently of historical review reports.
+Add relevant suites to the manifest when extending these checks. `node dev-tools/remediation_validation.cjs --list` prints the selection without executing it. The validation contract test also detects omitted suites under the rendered, document-export and whole-pipeline golden browser naming conventions. The new form-context fixtures live in `tests/fixtures/remediation_form_context.json`, independently of historical review reports.
 
 These checks exercise synthetic local fixtures and scripted model transport. They do not establish live-model quality or human screen-reader acceptance.
+
+The browser selection includes two whole-pipeline goldens that run `fixAndVerifyPdf` end to end on real PDF bytes. `remediation_fault_injection_golden.spec.ts` schedules model failures and requires honest results; its transient-failure scenario reads the pipeline's own call ledger to confirm that the failed call was retried and succeeded. `remediation_corpus_golden.spec.ts` uses the committed PDFs in `test-assets/` plus generated fixtures and checks the structure of the tagged output. Both load pdf-lib and pako from a CDN, so the browser phase needs network access. Both pass `extraRequestPacing: false`, because the scripted model has no provider quota to protect; under the Canvas default, each run waited out a 180-second pacing window, and one extra model call pushed a run past its timeout.
 
 Each run records SHA-256 hashes of the selected suites and the additional files or fixture directories declared in `identityInputs` in the suite manifest. It records the Node.js and test-tool versions, the Playwright-configured Chromium revisions, and Git HEAD. A readable Git revision is required before the runners start and again when they finish. Inputs, tool versions, and revision are checked again on completion; a change or unavailable revision fails the run. This is a declared input set, not automatic discovery of every transitive dependency. Add new helpers and fixtures to that set when extending the tests.
 

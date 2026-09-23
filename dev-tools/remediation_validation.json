@@ -63,7 +63,9 @@
     "tests/e2e/rendered_namespace_fidelity.spec.ts",
     "tests/e2e/rendered_form_payload.spec.ts",
     "tests/e2e/remediation_form_native_contract.spec.ts",
-    "tests/e2e/rendered_native_dom_regressions.spec.ts"
+    "tests/e2e/rendered_native_dom_regressions.spec.ts",
+    "tests/e2e/remediation_fault_injection_golden.spec.ts",
+    "tests/e2e/remediation_corpus_golden.spec.ts"
   ],
   "identityInputs": [
     "doc_pipeline_source.jsx",
@@ -99,6 +101,11 @@
     "desktop/web-app/node_modules/react/umd/react.development.js",
     "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js",
     "dev-tools/mcp_calibration_validation.cjs",
-    "dev-tools/mcp_calibration_validation.json"
+    "dev-tools/mcp_calibration_validation.json",
+    "verification_policy_module.js",
+    "doc_builder_renderer_module.js",
+    "tests/e2e/_tagged_pdf_invariants.ts",
+    "test-assets/multi-column-sample.pdf",
+    "test-assets/multi-column-scrambled.pdf"
   ]
 }
