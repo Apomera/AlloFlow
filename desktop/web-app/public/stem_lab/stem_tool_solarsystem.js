@@ -4702,6 +4702,9 @@ const d = labToolData.solarSystem || {};
               if (!canvas._ssLossBound) {
                 canvas._ssLossBound = true;
                 canvas.addEventListener('webglcontextlost', function (ev) {
+                  // releaseGl force-loses a canvas after teardown removes it; that is a
+                  // normal exit, not a failure. A real loss happens on a canvas still on the page.
+                  if (!canvas.isConnected) return;
                   ev.preventDefault();
                   console.warn('[SolarSystem] WebGL context lost — offering Retry 3D Mode');
                   setTimeout(function () { upd('webglError', true); }, 0);
@@ -16866,6 +16869,9 @@ const d = labToolData.solarSystem || {};
                         if (!canvasEl._ssDroneLossBound) {
                           canvasEl._ssDroneLossBound = true;
                           canvasEl.addEventListener('webglcontextlost', function (ev) {
+                            // releaseGl force-loses a canvas after teardown removes it; that is a
+                            // normal exit, not a failure. A real loss happens on a canvas still on the page.
+                            if (!canvasEl.isConnected) return;
                             ev.preventDefault();
                             console.warn('[SolarSystem Drone] WebGL context lost — offering Retry 3D Mode');
                             setTimeout(function () { upd('droneWebglError', true); }, 0);
@@ -26117,6 +26123,10 @@ const d = labToolData.solarSystem || {};
 
                   }),
 
+                ),
+
+              ),
+
                   // ═══ Observe-Claim-Explain inquiry prompt ═══
                   sel && POE_PROMPTS[sel.key] && !d['poe_seen_' + sel.name] && React.createElement("div", {
                     "data-solar-poe-inquiry": "claim-explanation-revision",
@@ -26145,12 +26155,12 @@ const d = labToolData.solarSystem || {};
                         disabled: !String(d['poe_prediction_' + sel.name] || '').trim(),
                         "aria-disabled": String(d['poe_prediction_' + sel.name] || '').trim() ? "false" : "true",
                         onClick: function() { var prediction = String(d['poe_prediction_' + sel.name] || '').trim(); if (!prediction) return; upd('poe_prediction_' + sel.name, prediction); upd('poe_seen_' + sel.name, 'predicted'); upd('poe_revealed_' + sel.name, false); upd('poe_revision_' + sel.name, ''); upd('poe_revision_reason_' + sel.name, ''); upd('poe_complete_' + sel.name, false); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
-                        className: "flex-1 px-3 py-2 text-xs font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                        className: "min-h-[44px] flex-1 px-3 py-2 text-xs font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 transition-all disabled:cursor-not-allowed disabled:opacity-40"
                       }, __alloT('stem.solarsystem.lock_claim', "\uD83D\uDD12 Lock claim")),
                       React.createElement("button", {
                         type: "button",
                         onClick: function() { upd('poe_seen_' + sel.name, 'skipped'); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
-                        className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-slate-800 text-amber-200 border-amber-500 hover:bg-slate-700' : 'bg-white text-amber-700 border-amber-600 hover:bg-amber-50')
+                        className: "min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-slate-800 text-amber-200 border-amber-500 hover:bg-slate-700' : 'bg-white text-amber-700 border-amber-600 hover:bg-amber-50')
                       }, __alloT('stem.solarsystem.skip_for_now', "Skip for now")))
                   ),
 
@@ -26166,7 +26176,7 @@ const d = labToolData.solarSystem || {};
                     React.createElement("button", {
                       type: "button",
                       onClick: function() { upd('poe_revealed_' + sel.name, true); },
-                      className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition-all"
+                      className: "min-h-[44px] px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition-all"
                     }, __alloT('stem.solarsystem.reveal_model_explanation', "\u2705 Reveal model explanation"))
                   ),
 
@@ -26209,13 +26219,16 @@ const d = labToolData.solarSystem || {};
                         React.createElement("label", { htmlFor: "solar-poe-revision-reason-" + sel.key, className: "mt-2 block text-[0.625rem] font-black " + (isDark ? 'text-emerald-200' : 'text-emerald-900') }, __alloT('stem.solarsystem.what_observation_explanation_changed_thinking', 'What observation or part of the explanation kept or changed your thinking?')),
                         React.createElement("textarea", { id: "solar-poe-revision-reason-" + sel.key, rows: 2, minLength: 12, maxLength: 500, value: poeReason, onChange: function(event) { upd('poe_revision_reason_' + sel.name, event.target.value); upd('poe_complete_' + sel.name, false); }, placeholder: __alloT('stem.solarsystem.cite_observation_explanation', 'Cite one observation or detail from the explanation...'), className: "mt-1 w-full resize-y rounded-lg border px-2 py-2 text-xs " + (isDark ? 'border-emerald-700/50 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-emerald-300 bg-white text-slate-900 placeholder:text-slate-500') })
                       ),
-                      poeComplete ? React.createElement("p", { role: "status", className: "mt-2 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-black text-white" }, __alloT('stem.solarsystem.inquiry_cycle_complete', 'Inquiry cycle complete — your original claim and revision are both preserved.')) : React.createElement("button", { type: "button", disabled: !poeReady, "aria-disabled": poeReady ? "false" : "true", onClick: function() { if (!poeReady) return; upd('poe_revision_reason_' + sel.name, poeReason.trim()); upd('poe_complete_' + sel.name, true); }, className: "mt-2 w-full rounded-lg bg-emerald-700 px-3 py-2 text-xs font-black text-white transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40" }, __alloT('stem.solarsystem.save_inquiry_cycle', 'Save inquiry cycle'))
+                      poeComplete ? React.createElement("p", { role: "status", className: "mt-2 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-black text-white" }, __alloT('stem.solarsystem.inquiry_cycle_complete', 'Inquiry cycle complete — your original claim and revision are both preserved.')) : React.createElement("button", { type: "button", disabled: !poeReady, "aria-disabled": poeReady ? "false" : "true", onClick: function() { if (!poeReady) return; upd('poe_revision_reason_' + sel.name, poeReason.trim()); upd('poe_complete_' + sel.name, true); }, className: "min-h-[44px] mt-2 w-full rounded-lg bg-emerald-700 px-3 py-2 text-xs font-black text-white transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40" }, __alloT('stem.solarsystem.save_inquiry_cycle', 'Save inquiry cycle'))
                     );
                   })(),
 
                   // ═══ Misconception Checkpoint ═══
                   (function() {
-                    var mcTrigger = sel ? sel.name : 'overview';
+                    // sel.key, not sel.name: the triggers are English ids ('Earth', 'Pluto'), and
+                    // sel.name is the TRANSLATED display name, so in any translated pack
+                    // no planet misconception could ever match.
+                    var mcTrigger = sel ? sel.key : 'overview';
                     var relevantMC = MISCONCEPTIONS.filter(function(mc) { return mc.trigger === mcTrigger && (d.misconceptionsSeen || []).indexOf(mc.statement) === -1; });
                     if (relevantMC.length === 0) return null;
                     var mc = relevantMC[0];
@@ -26226,23 +26239,26 @@ const d = labToolData.solarSystem || {};
                         React.createElement("span", { className: "text-[0.6875rem] font-black tracking-wide " + (isDark ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.solarsystem.true_or_false', "TRUE OR FALSE?"))),
                       React.createElement("p", { className: "text-xs font-bold mb-2 " + (isDark ? 'text-purple-200' : 'text-purple-900') }, '"' + mc.statement + '"'),
                       !d['mc_choice_' + mcTrigger] ? React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50 hover:bg-emerald-800/40' : 'bg-emerald-100 text-emerald-800 border-emerald-600 hover:bg-emerald-200') }, __alloT('stem.solarsystem.true_2', "\u2705 True")),
-                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50 hover:bg-red-800/40' : 'bg-red-100 text-red-800 border-red-600 hover:bg-red-200') }, __alloT('stem.solarsystem.false_2', "\u274C False"))
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "min-h-[44px] flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50 hover:bg-emerald-800/40' : 'bg-emerald-100 text-emerald-800 border-emerald-600 hover:bg-emerald-200') }, __alloT('stem.solarsystem.true_2', "\u2705 True")),
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "min-h-[44px] flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50 hover:bg-red-800/40' : 'bg-red-100 text-red-800 border-red-600 hover:bg-red-200') }, __alloT('stem.solarsystem.false_2', "\u274C False"))
                       ) : React.createElement("div", null,
                         React.createElement("p", { className: "text-xs font-bold " + (d['mc_choice_' + mcTrigger] === mc.answer ? 'text-emerald-600' : 'text-red-600') }, d['mc_choice_' + mcTrigger] === mc.answer ? '\u2705 Correct!' : '\u274C Not quite!'),
                         React.createElement("p", { className: "text-xs text-purple-700 mt-1 leading-relaxed" }, mc.explanation),
-                        React.createElement("button", { onClick: function() { upd('mc_answered_' + mcTrigger, true); upd('misconceptionsSeen', (d.misconceptionsSeen || []).concat([mc.statement])); }, className: "transition-colors mt-2 px-3 py-1 text-[0.6875rem] font-bold rounded bg-purple-200 text-purple-800 hover:bg-purple-300" }, __alloT('stem.solarsystem.got_it', "Got it \u2192")))
+                        React.createElement("button", { onClick: function() { upd('mc_answered_' + mcTrigger, true); upd('misconceptionsSeen', (d.misconceptionsSeen || []).concat([mc.statement])); }, className: "min-h-[44px] transition-colors mt-2 px-3 py-1 text-[0.6875rem] font-bold rounded bg-purple-200 text-purple-800 hover:bg-purple-300" }, __alloT('stem.solarsystem.got_it', "Got it \u2192")))
                     );
                   })(),
 
                   // ═══ Science Concept Cards ═══
                   sel && React.createElement("div", { className: "mt-3" },
-                    Object.keys(CONCEPT_CARDS).filter(function(k) { return CONCEPT_CARDS[k].planets.indexOf(sel.name) !== -1; }).map(function(k) {
+                    Object.keys(CONCEPT_CARDS).filter(function(k) { return CONCEPT_CARDS[k].planets.indexOf(sel.key) !== -1; }).map(function(k) {
                       var card = CONCEPT_CARDS[k];
                       return React.createElement("div", { key: k, className: "mb-2" },
                         React.createElement("button", {
+                          type: "button",
+                          "aria-expanded": !!d['showConcept_' + k],
+                          "data-solar-concept": k,
                           onClick: function() { upd('showConcept_' + k, !d['showConcept_' + k]); },
-                          className: "w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border transition-all hover:shadow-sm",
+                          className: "min-h-[44px] w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border transition-all hover:shadow-sm",
                           style: { borderColor: card.color + '60', color: card.color, backgroundColor: card.color + '10' }
                         }, React.createElement("span", null, card.icon), card.title, React.createElement("span", { className: "ml-auto text-[0.6875rem]" }, d['showConcept_' + k] ? '\u25B2' : '\u25BC')),
                         d['showConcept_' + k] && React.createElement("div", {
@@ -26268,7 +26284,7 @@ const d = labToolData.solarSystem || {};
                           var q = available[Math.floor(Math.random() * available.length)];
                           upd('quiz', Object.assign({}, q, { opts: solarShuffledOpts(q.opts), answered: false, correct: null, chosen: null, score: d.quiz ? d.quiz.score : 0, streak: d.quiz ? d.quiz.streak : 0 }));
                           upd('quizAsked', asked.concat([q.q]));
-                        }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all"
+                        }, className: "min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all"
                       }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
 
                       d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct | \uD83D\uDD25 " + d.quiz.streak + " streak"),
@@ -26310,7 +26326,7 @@ const d = labToolData.solarSystem || {};
                               if (correct) { addToast('\u2705 Correct! ' + d.quiz.tip, 'success'); playQuizCorrect(); if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.solarsystem.sr_correct', 'Correct! {value1}'), { value1: d.quiz.tip })); }
                               else { playQuizWrong(); if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.solarsystem.sr_incorrect_the_answer_is', 'Incorrect. The answer is {value1}'), { value1: d.quiz.a })); }
 
-                            }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                            }, className: "min-h-[44px] px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
 
                           }, opt);
 
@@ -26341,7 +26357,7 @@ const d = labToolData.solarSystem || {};
 
                       React.createElement("div", { className: "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-2 mb-2 items-center" },
 
-                        React.createElement("select", { 'aria-label': __alloT('stem.solarsystem.first_planet_to_compare', 'First planet to compare'), value: d.compare1 || '', onChange: function (e) { upd('compare1', e.target.value); }, className: "min-w-0 px-2 py-1.5 border rounded-lg text-sm " + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-800') },
+                        React.createElement("select", { 'aria-label': __alloT('stem.solarsystem.first_planet_to_compare', 'First planet to compare'), value: d.compare1 || '', onChange: function (e) { upd('compare1', e.target.value); }, className: "min-h-[44px] min-w-0 px-2 py-1.5 border rounded-lg text-sm " + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-800') },
 
                           React.createElement("option", { value: "" }, "Select..."),
 
@@ -26354,10 +26370,10 @@ const d = labToolData.solarSystem || {};
                           disabled: !d.compare1 && !d.compare2,
                           onClick: function() { updMulti({ compare1: d.compare2 || '', compare2: d.compare1 || '' }); },
                           'aria-label': __alloT('stem.solarsystem.a11y_swap_compared_worlds', 'Swap compared worlds'),
-                          className: "rounded-full border px-2 py-1 text-[0.625rem] font-black transition-all " + (isDark ? 'border-indigo-400/40 bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100')
+                          className: "min-h-[44px] min-w-[44px] rounded-full border px-2 py-1 text-[0.625rem] font-black transition-all " + (isDark ? 'border-indigo-400/40 bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100')
                         }, "\u21C4"),
 
-                        React.createElement("select", { 'aria-label': __alloT('stem.solarsystem.second_planet_to_compare', 'Second planet to compare'), value: d.compare2 || '', onChange: function (e) { upd('compare2', e.target.value); }, className: "min-w-0 px-2 py-1.5 border rounded-lg text-sm " + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-800') },
+                        React.createElement("select", { 'aria-label': __alloT('stem.solarsystem.second_planet_to_compare', 'Second planet to compare'), value: d.compare2 || '', onChange: function (e) { upd('compare2', e.target.value); }, className: "min-h-[44px] min-w-0 px-2 py-1.5 border rounded-lg text-sm " + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-800') },
 
                           React.createElement("option", { value: "" }, "Select..."),
 
@@ -26382,10 +26398,6 @@ const d = labToolData.solarSystem || {};
                     )
 
                   ),
-
-                ),
-
-              ),
 
               // === MOON EXPLORER ===
               sel && NOTABLE_MOONS[sel.key] && React.createElement("div", { className: "mt-4 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-200') + " rounded-xl p-3 border" },

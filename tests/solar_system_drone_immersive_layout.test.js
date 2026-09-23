@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import * as acorn from 'acorn';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 /**
@@ -12,10 +13,16 @@ import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helper
  * than pinning the source text: a later refactor that keeps the behaviour stays
  * green, and only a real regression in the layout goes red.
  */
-const SOURCE = 'stem_lab/stem_tool_solarsystem.js';
+// Overridable so a mutation can run against a COPY: other sessions edit the
+// tracked file concurrently, and swapping it in place can erase their work.
+const SOURCE = process.env.SOLAR_SOURCE || 'stem_lab/stem_tool_solarsystem.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_solarsystem.js';
 const EARTH = 'stem.solar_sys.earth';
 const noop = () => {};
+// Rendering the whole tool pays a first-render warm-up that measured 1.9s,
+// 5.3s and 7.5s for the SAME code on a shared machine -- straddling vitest's
+// 5s default. Give the render and parse tests room so load cannot flap them.
+const RENDER_TIMEOUT = 30000;
 
 // The chrome that surrounds the orrery and is not useful while driving.
 const COLLAPSIBLE = [
@@ -51,16 +58,24 @@ describe('Solar System surface-ops immersive layout', () => {
     document.body.appendChild(host);
 
     originalGetContext = window.HTMLCanvasElement.prototype.getContext;
-    window.HTMLCanvasElement.prototype.getContext = () => ({
-      setTransform: noop, clearRect: noop, save: noop, restore: noop, fillRect: noop,
+    // The surface and interior tabs draw 2D canvases, so the stub needs the full
+    // path/clip/image surface; an unstubbed method reads as a tool crash. Any
+    // method still missing falls through to a no-op rather than a TypeError.
+    window.HTMLCanvasElement.prototype.getContext = () => new Proxy({
+      setTransform: noop, resetTransform: noop, transform: noop, clearRect: noop, save: noop, restore: noop, fillRect: noop,
       strokeRect: noop, beginPath: noop, closePath: noop, roundRect: noop, rect: noop,
-      arc: noop, ellipse: noop, moveTo: noop, lineTo: noop, bezierCurveTo: noop,
-      quadraticCurveTo: noop, fill: noop, stroke: noop, setLineDash: noop, translate: noop,
-      rotate: noop, scale: noop, fillText: noop, strokeText: noop,
+      arc: noop, arcTo: noop, ellipse: noop, moveTo: noop, lineTo: noop, bezierCurveTo: noop,
+      quadraticCurveTo: noop, fill: noop, stroke: noop, clip: noop, setLineDash: noop, translate: noop,
+      rotate: noop, scale: noop, fillText: noop, strokeText: noop, drawImage: noop, putImageData: noop,
+      isPointInPath: () => false, getLineDash: () => [],
+      getImageData: (x, y, w, h) => ({ data: new Uint8ClampedArray(Math.max(0, (w | 0) * (h | 0) * 4)), width: w, height: h }),
+      createImageData: (w, h) => ({ data: new Uint8ClampedArray(Math.max(0, (w | 0) * (h | 0) * 4)), width: w, height: h }),
+      createPattern: () => ({}),
       createLinearGradient: () => ({ addColorStop: noop }),
       createRadialGradient: () => ({ addColorStop: noop }),
+      createConicGradient: () => ({ addColorStop: noop }),
       measureText: (text) => ({ width: String(text || '').length * 6 }),
-    });
+    }, { get: (target, prop) => (prop in target ? target[prop] : (typeof prop === 'string' && /^[a-z]/.test(prop) ? noop : undefined)) });
 
     originalRequestAnimationFrame = globalThis.requestAnimationFrame;
     originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
@@ -97,7 +112,7 @@ describe('Solar System surface-ops immersive layout', () => {
     COLLAPSIBLE.forEach((selector) => {
       expect(host.querySelector(selector), `${selector} should render on the overview tab`).not.toBeNull();
     });
-  });
+  }, RENDER_TIMEOUT);
 
   it('collapses the orrery chrome on the surface-ops tab', async () => {
     await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'drone' });
@@ -114,7 +129,7 @@ describe('Solar System surface-ops immersive layout', () => {
     COLLAPSIBLE.forEach((selector) => {
       expect(host.querySelector(selector), `${selector} should be collapsed on the surface-ops tab`).toBeNull();
     });
-  });
+  }, RENDER_TIMEOUT);
 
   it('keeps the view tabs reachable so the scene is not a dead end', async () => {
     await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'drone' });
@@ -129,7 +144,7 @@ describe('Solar System surface-ops immersive layout', () => {
     // The detail card carries the marker that tightens its own padding.
     const detail = host.querySelector('[data-solarsystem-planet-detail]');
     expect(detail.getAttribute('data-solarsystem-immersive')).toBe('true');
-  });
+  }, RENDER_TIMEOUT);
 
   it('lifts the science ticker off the rocky-world traverse panel', () => {
     // Measured in Chromium at 1280/1024/900/760px: the traverse panel (310px
@@ -222,7 +237,7 @@ describe('Solar System surface-ops immersive layout', () => {
     // at all -- the scene then collapsed to its min-height instead of growing.
     expect(frame.style.height, 'the height declaration must survive parsing').not.toBe('');
     expect(frame.style.minHeight, 'the min-height floor must survive parsing').not.toBe('');
-  });
+  }, RENDER_TIMEOUT);
 
   it('gives the scene audio caption a readable substrate', () => {
     // This caption is the TEXT ALTERNATIVE for the scene's audio, so it has to be
@@ -492,4 +507,162 @@ describe('Solar System surface-ops immersive layout', () => {
     expect(source, 'exiting fullscreen must release the bar cap')
       .toMatch(/container\.style\.background = '';[\s\S]{0,600}?if \(roverCameraBar\) \{\s*\n\s*roverCameraBar\.style\.maxHeight = '';/);
   });
+
+  it('keeps the inquiry card, concepts and quiz out of the clipped scene frame', async () => {
+    // The Observe-Claim-Explain card, the misconception check, the four concept
+    // accordions and Quiz Mode / Compare Planets were written as general planet
+    // content, but a misplaced pair of closing parens made them children of the
+    // drone scene frame -- a fixed-height box with overflow:hidden. They rendered
+    // only on the drone tab and, there, below the clip: never visible anywhere,
+    // from their first commit (d0214063a, April) until this fix. Five
+    // achievements that only they can advance ('Make predictions for 5
+    // planets', 'Answer 5 misconception checkpoints', both quiz-score goals and
+    // the Quiz Master badge) were unearnable.
+    await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'drone' });
+    const frame = host.querySelector('[data-drone-scene-frame]');
+    expect(frame, 'the drone scene frame should render').not.toBeNull();
+
+    const claim = host.querySelector('#solar-poe-prediction-Earth');
+    expect(claim, 'the inquiry card should render on the drone tab').not.toBeNull();
+    expect(frame.contains(claim), 'the inquiry card must not sit inside the clipped scene frame').toBe(false);
+
+    const quiz = Array.from(host.querySelectorAll('button')).find((b) => /Quiz Mode/.test(b.textContent));
+    expect(quiz, 'Quiz Mode should render').toBeTruthy();
+    expect(frame.contains(quiz), 'Quiz Mode must not sit inside the clipped scene frame').toBe(false);
+  }, RENDER_TIMEOUT);
+
+  it('shows the inquiry card and quiz on every planet view, not only the rover tab', async () => {
+    for (const viewTab of ['overview', 'surface', 'interior']) {
+      await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab });
+      expect(host.querySelector('#solar-poe-prediction-Earth'), `the inquiry card should render on the ${viewTab} tab`).not.toBeNull();
+      const quiz = Array.from(host.querySelectorAll('button')).find((b) => /Quiz Mode/.test(b.textContent));
+      expect(quiz, `Quiz Mode should render on the ${viewTab} tab`).toBeTruthy();
+      await React.act(async () => root.unmount());
+      root = null;
+      host.innerHTML = '';
+    }
+  }, RENDER_TIMEOUT);
+
+  it('gives the scene frame exactly one child: the scene', () => {
+    // Structural pin with a real parser. Indentation is what hid this for five
+    // months -- the trapped blocks LOOKED like siblings -- so do not read
+    // nesting from whitespace. The frame's only child is the canvas-or-error
+    // ternary; its overlays are appended to it at runtime, not in JSX.
+    const source = readFileSync(SOURCE, 'utf8');
+    const ast = acorn.parse(source, { ecmaVersion: 'latest', sourceType: 'script', allowHashBang: true, allowReturnOutsideFunction: true });
+    let frame = null;
+    (function walk(n) {
+      if (!n || typeof n.type !== 'string' || frame) return;
+      if (n.type === 'CallExpression' && n.callee.type === 'MemberExpression' && n.callee.property && n.callee.property.name === 'createElement') {
+        const props = n.arguments[1];
+        if (props && props.type === 'ObjectExpression' && props.properties.some((p) =>
+          p.type === 'Property' && (p.key.value === 'data-drone-scene-frame' || p.key.name === 'data-drone-scene-frame'))) {
+          frame = n;
+          return;
+        }
+      }
+      for (const k of Object.keys(n)) {
+        const v = n[k];
+        if (Array.isArray(v)) v.forEach(walk);
+        else if (v && typeof v.type === 'string') walk(v);
+      }
+    })(ast);
+    expect(frame, 'could not find the drone scene frame').toBeTruthy();
+    const children = frame.arguments.slice(2);
+    expect(children.length, 'the clipped scene frame must hold only the scene').toBe(1);
+    expect(source.slice(children[0].start, children[0].start + 30)).toMatch(/^d\.droneWebglError \?/);
+  }, RENDER_TIMEOUT);
+
+  it('gives the revealed inquiry, concept and quiz controls the 44px floor', async () => {
+    // These controls were hidden from April until the scene-frame fix, so no
+    // touch-target gate ever saw them: measured in Chromium, 10 of 11 were under
+    // this tool's 44px floor, the compare swap at 27x26. jsdom has no layout, so
+    // assert the class that the browser measurement showed resolves to 44px.
+    await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'overview' });
+    const byText = (re) => Array.from(host.querySelectorAll('button')).find((b) => re.test(b.textContent || ''));
+    const byLabel = (label) => host.querySelector('[aria-label="' + label + '"]');
+    const controls = {
+      'Lock claim': byText(/Lock claim/),
+      'Skip for now': byText(/Skip for now/),
+      'Start quiz': byText(/Quiz Mode/),
+      'first compare select': byLabel('First planet to compare'),
+      'second compare select': byLabel('Second planet to compare'),
+      'swap compared worlds': byLabel('Swap compared worlds'),
+    };
+    // Derive how many concept cards Earth should show from CONCEPT_CARDS itself,
+    // rather than holding a second copy of that list here.
+    const source = readFileSync(SOURCE, 'utf8');
+    const cardsAt = source.indexOf('var CONCEPT_CARDS = {');
+    const cardsBlock = source.slice(cardsAt, source.indexOf('\n          };', cardsAt));
+    const expectedConcepts = [...cardsBlock.matchAll(/planets:\s*\[([^\]]*)\]/g)].filter((m) => m[1].includes("'Earth'")).length;
+    expect(expectedConcepts, 'CONCEPT_CARDS should list Earth').toBeGreaterThan(0);
+    const concepts = Array.from(host.querySelectorAll('[data-solar-concept]'));
+    // The filter compares CONCEPT_CARDS' English ids against the planet; it used
+    // sel.name (the TRANSLATED name), so a translated pack showed none. jsdom's t()
+    // returns the raw key, which reproduces exactly that.
+    expect(concepts.length, 'every concept card that lists Earth should render').toBe(expectedConcepts);
+    concepts.forEach((b, i) => {
+      controls['concept ' + (i + 1)] = b;
+      expect(b.getAttribute('aria-expanded'), 'a disclosure must expose its state').toBe('false');
+    });
+
+    for (const [name, el] of Object.entries(controls)) {
+      expect(el, name + ' should render').toBeTruthy();
+      expect(el.className, name + ' needs the 44px touch floor').toContain('min-h-[44px]');
+    }
+    // The swap button is icon-only and narrow: it needs a width floor too.
+    expect(controls['swap compared worlds'].className, 'the icon-only swap needs a width floor').toContain('min-w-[44px]');
+  }, RENDER_TIMEOUT);
+
+  it('shows a planet misconception check whatever language the planet names are in', async () => {
+    // MISCONCEPTIONS triggers are English ids ('Earth', 'Pluto'); the card matched
+    // them against sel.name, the TRANSLATED display name, so in any translated
+    // pack no planet misconception could ever appear. jsdom's t() returns the raw
+    // key, which reproduces that exactly. Earth has a trigger, so it must show.
+    await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'overview' });
+    const buttons = Array.from(host.querySelectorAll('button'));
+    const yes = buttons.find((b) => /\bTrue\b/.test(b.textContent || ''));
+    const no = buttons.find((b) => /\bFalse\b/.test(b.textContent || ''));
+    expect(yes, "Earth's misconception check should offer True").toBeTruthy();
+    expect(no, "Earth's misconception check should offer False").toBeTruthy();
+    expect(yes.className, 'the True answer needs the 44px floor').toContain('min-h-[44px]');
+    expect(no.className, 'the False answer needs the 44px floor').toContain('min-h-[44px]');
+  }, RENDER_TIMEOUT);
+
+  it('keeps the 44px floor on controls that only appear later in the flow', async () => {
+    // A mutation pass showed the first-screen checks could not see four controls
+    // that only render after interaction. Drive the flow and check each one as
+    // it appears: the claim's reveal and save, the misconception follow-up, and
+    // the quiz answers.
+    await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'overview' });
+    const find = (re) => Array.from(host.querySelectorAll('button')).find((b) => re.test(b.textContent || ''));
+    const click = async (el) => { await React.act(async () => { el.click(); await Promise.resolve(); }); };
+    const floored = (el, name) => {
+      expect(el, name + ' should appear').toBeTruthy();
+      expect(el.className, name + ' needs the 44px touch floor').toContain('min-h-[44px]');
+    };
+
+    // Inquiry card: commit a claim, reveal the model, reach the revision step.
+    const claim = host.querySelector('#solar-poe-prediction-Earth');
+    const setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    await React.act(async () => {
+      setValue.call(claim, 'Liquid water, a protective magnetic field and a breathable atmosphere.');
+      claim.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await click(find(/Lock claim/));
+    const reveal = find(/Reveal model explanation/);
+    floored(reveal, 'Reveal model explanation');
+    await click(reveal);
+    floored(find(/Save inquiry cycle/), 'Save inquiry cycle');
+
+    // Misconception check: answering it shows the follow-up.
+    await click(find(/\bTrue\b/));
+    floored(find(/Got it/), 'misconception "Got it"');
+
+    // Quiz: starting it shows the answer options.
+    await click(find(/Quiz Mode/));
+    const answers = Array.from(host.querySelectorAll('button[aria-label^="Select answer"]'));
+    expect(answers.length, 'the quiz should offer answers').toBeGreaterThan(1);
+    answers.forEach((b, i) => floored(b, 'quiz answer ' + (i + 1)));
+  }, RENDER_TIMEOUT);
 });

@@ -527,8 +527,19 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain("miniMap.setAttribute('data-drone-minimap', 'true');");
       expect(source).toContain("hazardEl.setAttribute('data-drone-hazard', 'true');");
       expect(source).toContain("ticker.setAttribute('data-drone-ticker', 'true');");
-      expect(source).toContain('[data-drone-hazard]{top:168px!important');
-      expect(source).toContain('[data-drone-ticker]{display:none!important}');
+      // Both pins are read from the PHONE rule only. '[data-drone-ticker]' also
+      // sits in the scene-focus :is(...){display:none} list, so an unanchored
+      // match stays green with the ticker dropped from the phone rule, or even
+      // flipped to display:block there. '[data-drone-hazard]{top:' is unique and
+      // opens that rule, so slice from it to the end of the line.
+      const phoneRuleAt = source.indexOf('[data-drone-hazard]{top:');
+      expect(phoneRuleAt, 'the phone overlay rule should reposition the hazard banner').toBeGreaterThan(-1);
+      const phoneRule = source.slice(phoneRuleAt, source.indexOf('\n', phoneRuleAt));
+      // Its exact offset is coupled to the phone HUD cap and is asserted as an
+      // invariant (banner clears the cap) in solar_system_drone_immersive_layout.
+      expect(phoneRule).toMatch(/\[data-drone-hazard\]\{top:\d+px!important/);
+      // Hidden on phones; its playback controls share the rule.
+      expect(phoneRule, 'the phone rule must hide the ticker').toMatch(/\[data-drone-ticker\](?:,[^{]*)?\{display:none!important\}/);
       expect(source).toContain('@media(max-width:640px){.solar-cosmos .rover-hud');
       expect(source).toContain('grid-template-columns:repeat(6,minmax(0,1fr))');
       expect(source).toContain('#rover-traverse-panel[data-collapsed="true"]');
