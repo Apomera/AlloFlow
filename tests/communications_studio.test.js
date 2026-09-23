@@ -94,10 +94,137 @@ describe('batch comments and readability', () => {
             { codename: 'Student S2', comment: 'renamed' },
             { codename: 'S3', comment: 'three' },
         ]);
-        expect(got.comments).toEqual([{ codename: 'S1', comment: 'first S1' }, { codename: 'S3', comment: 'three' }]);
-        expect(got.missing.map((r) => r.codename)).toEqual(['S2', 'S1']);
+        expect(got.matched.map((m) => [m.row, m.comment])).toEqual([[expected[0], 'first S1'], [expected[2], 'three']]);
+        expect(got.missing).toEqual([expected[1], expected[3]]);
         expect(got.unexpected).toEqual(['Student S2']);
         expect(T.csReconcileBatch(expected, []).missing).toHaveLength(4);
+    });
+
+    it('adds the report-card system character limit to the prompt only when one is set', () => {
+        const rows = T.csParseGrid('S1 | a | b | c');
+        expect(T.csBuildPrompt('report-card', {}, { rows, maxChars: 400 })).toContain('at most 400 characters including spaces');
+        expect(T.csBuildPrompt('report-card', {}, { rows })).not.toContain('characters including spaces');
+    });
+
+    it('copies the batch as a two-column table with no stray tabs or line breaks inside a comment', () => {
+        const table = T.csBatchTable([{ codename: 'Brave Falcon', comment: 'Reads\twith care.\nAsks good questions.' }, { codename: 'S2', comment: 'Kind.' }]);
+        expect(table.split('\n')).toEqual(['Codename\tComment', 'Brave Falcon\tReads with care. Asks good questions.', 'S2\tKind.']);
+        expect(T.csJoinBatch([{ codename: 'S1', comment: 'a', generated: 'b' }], 'generated')).toBe('S1: b');
+        expect(T.csTextStats('Two words')).toEqual({ chars: 9, words: 2 });
+    });
+
+    it('builds a per-comment translation prompt and adds a language column only for current translations', () => {
+        const prompt = T.csBuildTranslateBatchPrompt([{ codename: 'S1', comment: 'Reads\nwell.' }, { codename: 'Brave Falcon', comment: 'Kind to [Name].' }], 'Somali', 'formal');
+        expect(prompt).toContain('into Somali');
+        expect(prompt).toContain('S1 | Reads well.');
+        expect(prompt).toContain('Brave Falcon | Kind to [Name].');
+        expect(prompt).toContain('Keep the plain, formal tone');
+        expect(prompt).toContain('Return ONLY JSON: [{ "codename": "...", "comment": "<the Somali translation>" }]');
+        const rows = [
+            { codename: 'S1', comment: 'Reads well.', tr: { text: 'Akhri', language: 'Somali', source: 'Reads well.' } },
+            { codename: 'S2', comment: 'Changed later.', tr: { text: 'Old', language: 'Somali', source: 'Before.' } },
+            { codename: 'S3', comment: 'Kind.', tr: { text: 'Amable', language: 'Spanish', source: 'Kind.' } },
+        ];
+        expect(rows.map((r) => T.csRowTranslation(r, 'Somali'))).toEqual([true, false, false]);
+        expect(T.csBatchTable(rows, 'Somali').split('\n')).toEqual(['Codename\tComment\tComment (Somali)', 'S1\tReads well.\tAkhri', 'S2\tChanged later.\t', 'S3\tKind.\t']);
+    });
+
+    it('shows a reading grade past 12 as "12+" instead of an impossible number like 37.9', () => {
+        const hard = T.csReadability('S2 demonstrates considerable metacognitive sophistication, articulating interdisciplinary connections and consistently evaluating alternative representational strategies.');
+        expect(hard.grade).toBeGreaterThan(30);
+        expect(T.csGradeLabel(hard.grade)).toBe('12+');
+        expect(T.csGradeLabel(6.1)).toBe('6.1');
+        expect(T.csGradeLabel(12)).toBe('12');
+        expect(T.csGradeLabel(-2.3)).toBe('<1');
+        expect(T.csGradeLabel(null)).toBe('');
+    });
+});
+
+describe('names: fewer false alarms, fewer misses', () => {
+    const roster = ['Brave Falcon', 'Calm Otter'];
+
+    it('does not call roster codenames names, and does not pair words across a line break', () => {
+        const grid = 'Brave Falcon | attended 5 of 6 live sessions | | Group: Reds\nCalm Otter | 3 resources opened | |';
+        expect(T.csFindLikelyNames(grid, roster)).toEqual([]);
+        expect(T.csFindLikelyNames('Group: Reds\nCalm Otter')).not.toContain('Reds Calm');
+        expect(T.csFindLikelyNames("Brave Falcon's reading grew.", roster)).toEqual([]);
+    });
+
+    it('catches a lone first name where the wording says a person is meant', () => {
+        const msg = "Hi, this is Jayden's mom. My daughter Maria has been upset about the test.\nThanks,\nRosa";
+        expect(T.csFindLikelyNames(msg)).toEqual(['Jayden', 'Maria', 'Rosa']);
+        expect(T.csFindLikelyNames('Dear Tomas, thank you.')).toEqual(['Tomas']);
+        expect(T.csFindLikelyNames('See you.\nBest Regards,\nRosa Lopez')).toEqual(['Rosa Lopez']);
+    });
+
+    it('leaves ordinary sentences alone', () => {
+        expect(T.csFindLikelyNames("Today's lesson was on fractions. It's going well. Let's keep reading. Dear Families, thank you.\nBest Regards")).toEqual([]);
+        expect(T.csFindLikelyNames("Everyone's work improved; Monday's quiz is next.")).toEqual([]);
+    });
+
+    it('replaces flagged names on request, pairs before first names, and never touches a grid codename', () => {
+        expect(T.csReplaceNames('Maria Lopez said Maria would call.', ['Maria', 'Maria Lopez'])).toBe('[Name] said [Name] would call.');
+        expect(T.csReplaceNames("Jayden's mom", ['Jayden'])).toBe("[Name]'s mom");
+        expect(T.csReplaceNamesInGrid('Maria | Maria reads well | |\nno bar Maria', ['Maria'])).toBe('Maria | [Name] reads well | |\nno bar Maria');
+    });
+
+    it('lists grid codenames that are not on the roster, only when there is a roster', () => {
+        expect(T.csUnknownGridCodenames('Brave Falcon | x\nMaria Lopez | y\nbrave  falcon | z', roster)).toEqual(['Maria Lopez']);
+        expect(T.csUnknownGridCodenames('Maria Lopez | y', [])).toEqual([]);
+    });
+});
+
+describe('evidence only, checked', () => {
+    it('lists numbers the draft states that the notes never mention, ignoring codenames, ordinals and formatting', () => {
+        const notes = 'S12 | quiz average 92% over 3 quizzes; 1000 minutes read | 8th grade';
+        const gaps = T.csEvidenceGaps('S12 scored 92% on 3 quizzes in 2025, read 1,000 minutes, and ranked 4.5 in 8th grade.', notes);
+        expect(gaps.numbers).toEqual(['2025', '4.5']);
+        expect(T.csNumbersIn('S12 and 8th and 3/4 and 7%').map((n) => n.shown)).toEqual(['3', '4', '7%']);
+    });
+
+    it('flags a gendered pronoun only when the notes never gave one', () => {
+        expect(T.csEvidenceGaps('She reads well and her work shows it.', 'reads well').pronouns).toEqual(['she', 'her']);
+        expect(T.csEvidenceGaps('She reads well.', 'My daughter reads at night.').pronouns).toEqual([]);
+        expect(T.csEvidenceGaps('He helps; she listens.', 'he helps the group').pronouns).toEqual(['she']);
+        expect(T.csEvidenceGaps('They help the group.', '').pronouns).toEqual([]);
+        expect(T.csRowEvidence({ source: { codename: 'S1', strengths: 'a', growth: '', habits: 'c' } })).toBe('S1 | a | c');
+    });
+
+    it('scores each comment once per row object, so typing in one of 250 rows does not re-score the rest', () => {
+        const row = { codename: 'S1', comment: 'She scored 92%.', source: { codename: 'S1', strengths: 'reads' } };
+        const first = T.csRowStats(row, ['Brave Falcon'], 'Brave Falcon');
+        expect(first.gaps).toEqual({ numbers: ['92%'], pronouns: ['she'] });
+        expect(T.csRowStats(row, ['Brave Falcon'], 'Brave Falcon')).toBe(first);
+        // An edit makes a new row object; a roster change invalidates the names.
+        const edited = { ...row, comment: 'Reads well.' };
+        expect(T.csRowStats(edited, ['Brave Falcon'], 'Brave Falcon')).not.toBe(first);
+        expect(T.csRowStats(edited, ['Brave Falcon'], 'Brave Falcon').gaps).toEqual({ numbers: [], pronouns: [] });
+        expect(T.csRowStats(row, [], '')).not.toBe(first);
+    });
+
+    it('prints one escaped page per student with a blank name line, the translation and the disclosure', () => {
+        const html = T.csPrintHtml('Report-card comments', [
+            { label: 'S1', text: 'Reads <b>well</b>.', translation: 'Lee bien.', language: 'Spanish' },
+            { label: 'S2', text: 'Kind.', translation: '', language: 'Spanish' },
+        ], { nameLine: true, disclosure: true });
+        expect(html.match(/<section class="page">/g)).toHaveLength(2);
+        expect(html.match(/For the family of:/g)).toHaveLength(2);
+        expect(html).toContain('Reads &lt;b&gt;well&lt;/b&gt;.');
+        expect(html).toContain('<p class="lang">Spanish</p><p>Lee bien.</p>');
+        expect(html.split('<section')[2]).not.toContain('class="lang"');
+        expect(html.match(new RegExp(T.CS_DISCLOSURE.replace(/[.]/g, '[.]'), 'g'))).toHaveLength(2);
+        expect(html).not.toMatch(/<script/i);
+        expect(T.csPrintHtml('Letter', [{ text: 'Hi' }], {})).not.toContain('For the family of');
+    });
+});
+
+describe('family messages that need more than a reply', () => {
+    it('flags safety and legal language for the teacher, and the prompt says to route it', () => {
+        const flags = T.csFlagSensitive('He said he wants to hurt himself. We have talked to our lawyer about due process and FERPA.');
+        expect(flags.safety).toEqual(['hurt himself']);
+        expect(flags.legal).toEqual(['lawyer', 'due process', 'ferpa']);
+        expect(T.csFlagSensitive('Can we move the conference to Friday?')).toEqual({ safety: [], legal: [] });
+        expect(T.csBuildPrompt('family-reply', { message: 'x', notes: 'y' }, {})).toContain('say who at school will follow up; do not give advice');
     });
 
     it('parses the batch reply, tolerating prose around the JSON, and drops empty comments', () => {
@@ -105,6 +232,28 @@ describe('batch comments and readability', () => {
         expect(rows).toEqual([{ codename: 'S1', comment: 'S1 reads aloud with expression.' }]);
         expect(T.csParseBatch('not json')).toEqual([]);
         expect(T.csParseBatch('')).toEqual([]);
+    });
+
+    it('reads the reply shapes models actually drift into, keeping every complete entry', () => {
+        const one = [{ codename: 'S1', comment: 'Reads well.' }];
+        expect(T.csParseBatch('```json\n[{"codename":"S1","comment":"Reads well."}]\n```')).toEqual(one);
+        expect(T.csParseBatch('{"comments":[{"codename":"S1","comment":"Reads well."}]}')).toEqual(one);
+        expect(T.csParseBatch('[{"Codename":"S1","Comment":"Reads well."}]')).toEqual(one);
+        expect(T.csParseBatch('[{"student":"S1","text":"Reads well."}]')).toEqual(one);
+        expect(T.csParseBatch('[{"codename":"S1","translation":"Lee bien."}]')).toEqual([{ codename: 'S1', comment: 'Lee bien.' }]);
+        expect(T.csParseBatch('[{"codename":"S1","comment":"Reads well."},]')).toEqual(one);
+        // Cases the last-resort {...} salvage cannot rescue on its own: a
+        // trailing comma inside an entry, and a wrapper whose entries nest.
+        expect(T.csParseBatch('[{"codename":"S1","comment":"Reads well.",}]')).toEqual(one);
+        expect(T.csParseBatch('{"comments":[{"codename":"S1","comment":"Reads well.","meta":{"score":1}}],"note":"see [1]"}')).toEqual(one);
+        expect(T.csParseBatch('["S1: Reads well.", "S2: Kind."]')).toEqual([...one, { codename: 'S2', comment: 'Kind.' }]);
+        // Cut off at the output limit: the complete entries survive, S3 is left for the retry.
+        expect(T.csParseBatch('[{"codename":"S1","comment":"Reads well."},{"codename":"S2","comment":"Kind."},{"codename":"S3","comm'))
+            .toEqual([...one, { codename: 'S2', comment: 'Kind.' }]);
+        // Nothing that is not an entry becomes one.
+        expect(T.csParseBatch('I cannot help with that {sorry}.')).toEqual([]);
+        expect(T.csParseBatch('{"error":"quota"}')).toEqual([]);
+        expect(T.csParseBatch('[1, null, true, "no colon here"]')).toEqual([]);
     });
 
     it('estimates Flesch-Kincaid grade and marks short texts as rough', () => {
@@ -132,7 +281,7 @@ describe('never sends; outputs are copy or the teacher Drive', () => {
     it('has no mail path anywhere and routes Drive through the Class Mailbox helpers', () => {
         expect(panelSource).not.toMatch(/mailto:|sendEmail|GmailApp|MailApp|send_mail/);
         expect(panelSource).toContain("window.AlloModules && window.AlloModules.DriveDelivery");
-        expect(panelSource).toContain("{ a: 'deliver', name, mime: 'text/html', text: csDraftToHtml(template.label, draft, translationUsable ? translation.text : '', { language: translationUsable ? translation.language : '', disclosure }), convert: 'doc' }");
+        expect(panelSource).toContain("{ a: 'deliver', name, mime: 'text/html', text: csDraftToHtml(template.label, draft, out ? out.text : '', { language: out ? out.language : '', disclosure }), convert: 'doc' }");
         expect(panelSource).toContain('window.__alloOpenMailboxSetup');
         expect(panelSource).not.toMatch(/localStorage\.setItem\('alloflow_comms_studio_(draft|fields|notes)/);
         expect(panelSource).toContain("localStorage.setItem('alloflow_comms_studio_prefs'");
@@ -142,7 +291,7 @@ describe('never sends; outputs are copy or the teacher Drive', () => {
 describe('wiring pins', () => {
     it('ships the panel and the testing seams, identically to the public mirror', () => {
         expect(typeof studio.CommunicationsStudioPanel).toBe('function');
-        expect(Object.keys(T).sort()).toEqual(['CS_BATCH_SIZE', 'CS_DISCLOSURE', 'CS_FAMILY_TARGET_GRADE', 'CS_GRID_MAX', 'CS_LANGUAGES', 'CS_TEMPLATES', 'CS_TONES', 'csBuildEvidence', 'csBuildPrompt', 'csChunk', 'csDraftToHtml', 'csEvidenceLine', 'csFindLikelyNames', 'csNormalizeCodename', 'csParseBatch', 'csParseGrid', 'csReadTeacherComments', 'csReadability', 'csReconcileBatch', 'csRollupLine', 'csRosterIndex', 'csScrubPII', 'csSummarizeDashboardStudent']);
+        expect(Object.keys(T).sort()).toEqual(['CS_BATCH_SIZE', 'CS_DISCLOSURE', 'CS_FAMILY_TARGET_GRADE', 'CS_GRID_MAX', 'CS_LANGUAGES', 'CS_TEMPLATES', 'CS_TONES', 'csBatchTable', 'csBuildEvidence', 'csBuildPrompt', 'csBuildTranslateBatchPrompt', 'csChunk', 'csDraftToHtml', 'csEvidenceGaps', 'csEvidenceLine','csFindLikelyNames', 'csFlagSensitive', 'csGradeLabel', 'csJoinBatch', 'csNormalizeCodename', 'csNumbersIn', 'csParseBatch', 'csParseGrid', 'csPrintHtml','csReadTeacherComments', 'csReadability', 'csReconcileBatch', 'csReplaceNames', 'csReplaceNamesInGrid', 'csRollupLine', 'csRosterIndex', 'csRowEvidence', 'csRowStats', 'csRowTranslation', 'csScrubPII', 'csSummarizeDashboardStudent', 'csTextStats', 'csUnknownGridCodenames']);
         expect(moduleSource).toBe(publicModule);
         expect(T.CS_LANGUAGES).toEqual(expect.arrayContaining(['Somali', 'Maay Maay', 'Arabic', 'French', 'Portuguese', 'Spanish', 'Lingala', 'Kirundi']));
     });
