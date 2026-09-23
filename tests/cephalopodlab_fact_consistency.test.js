@@ -851,3 +851,182 @@ describe('Cephalopod Lab deep-time dates agree with each other and with the name
     expect(strings.some((t) => /Clements et al\., 2026/.test(t))).toBe(true);
   });
 });
+
+// ── Bioluminescence: shares and the "cold light" physics ──
+// The header said "About 90% of deep-sea cephalopods are bioluminescent" and
+// named "glowing octopuses" as typical; the census (Otjacques et al. 2023) is
+// 265 of 834 species, and 3% of octopods. The cold-light card defined quantum
+// yield as a fraction of ENERGY and quoted the 1960 ~90% firefly figure
+// (remeasured at 41%, Ando et al. 2008).
+describe('Cephalopod Lab bioluminescence figures agree with themselves', () => {
+  it('states a share of glowing species that matches the counts it gives', () => {
+    const m = /About a third of known species do \((\d+) of (\d+)\)/.exec(src);
+    expect(m).not.toBeNull();
+    const share = Number(m[1]) / Number(m[2]);
+    expect(share).toBeGreaterThan(0.28);
+    expect(share).toBeLessThan(0.38);
+    const octo = /only (\d+)% of octopods/.exec(src);
+    expect(octo).not.toBeNull();
+    expect(Number(octo[1])).toBeLessThan(10);
+    expect(src).not.toMatch(/90% of deep-sea cephalopods/);
+  });
+
+  it('defines quantum yield by photons, and never quotes ~90% as current', () => {
+    expect(src).not.toMatch(/Quantum yield is the fraction of reaction energy/);
+    expect(src).toMatch(/Quantum yield counts how many reacting molecules give off a photon/);
+    // a ~90% quantum yield may appear only as the superseded figure
+    for (const m of src.matchAll(/[^'.]*~?9\d% [^'.]*quantum[^'.]*|quantum yield[^'.]*~?9\d%[^'.]*/gi)) {
+      expect(m[0], m[0]).toMatch(/older|1960/);
+    }
+    expect(src).not.toMatch(/almost all the energy becomes photons\./);
+  });
+});
+
+// ── Section headers are translatable ──
+// 101 of 103 panelHeader() calls passed raw English, so every screen opened
+// with an English title and intro whatever the language. This walks each call
+// with a literal-aware scanner and fails on a raw literal argument that holds
+// words (an emoji prefix before a data-driven title is fine).
+describe('Cephalopod Lab section headers go through the translation lookup', () => {
+  const rawHeaderArgs = (text) => {
+    const found = [];
+    const lit = (i) => { const q = text[i]; let j = i + 1; while (text[j] !== q) j += text[j] === '\\' ? 2 : 1; return j + 1; };
+    const ws = (i) => { while (/\s/.test(text[i])) i++; return i; };
+    const argEnd = (i) => {
+      let depth = 0;
+      for (;;) {
+        const ch = text[i];
+        if (ch === "'" || ch === '"') { i = lit(i); continue; }
+        if ('([{'.includes(ch)) depth++;
+        else if (')]}'.includes(ch)) { if (!depth) return i; depth--; }
+        else if (ch === ',' && !depth) return i;
+        i++;
+      }
+    };
+    for (const m of text.matchAll(/panelHeader\(/g)) {
+      let i = m.index + m[0].length;
+      for (let arg = 0; arg < 2; arg++) {
+        i = ws(i);
+        if (text[i] === ')') break;
+        if (text[i] === "'") {
+          const end = lit(i);
+          const body = text.slice(i + 1, end - 1);
+          if (/[A-Za-z]{2}/.test(body)) found.push(body.slice(0, 60));
+        }
+        i = argEnd(i);
+        if (text[i] !== ',') break;
+        i++;
+      }
+    }
+    return found;
+  };
+
+  it('has no raw English title or intro left', () => {
+    expect(src.match(/panelHeader\(/g).length).toBeGreaterThan(100);
+    expect(rawHeaderArgs(src)).toEqual([]);
+  });
+
+  it('would notice one (the scanner is not blind)', () => {
+    expect(rawHeaderArgs("panelHeader('🛡️ Evasion Sim',\n  'Read the strike.'), panelHeader('🔍 ' + sp.name, sp.intro)"))
+      .toEqual(['🛡️ Evasion Sim', 'Read the strike.']);
+    expect(rawHeaderArgs("panelHeader(__alloT('k', 'Title'), __alloT('k2', 'Intro, with a comma'))")).toEqual([]);
+  });
+});
+
+// ── Intelligence Lab + the UK sentience law ──
+// Heidi (a day octopus, listed as "Common Octopus") was presented as a "direct
+// view of a non-human dream-state" while the tool's own evidence ladder files
+// her as one filmed animal whose footage has other readings. The optic-gland
+// case credited the 2018 Wang lab with an experiment eight other passages
+// correctly give to Wodinsky 1977. The law was "Sentience Act 2021" in four
+// places and "Animal Welfare Act 2022" (a different, 2006 law) in nine.
+describe('Cephalopod Lab Intelligence Lab and sentience-law facts agree', () => {
+  const caseText = (id) => {
+    const i = src.indexOf('\n          ' + id + ': { name: __alloT(', src.indexOf('function renderIntelLab()'));
+    expect(i, id).toBeGreaterThan(0);
+    // from the case's opening line to the end of its takeaway call (the last
+    // case has no trailing comma, so do not search for "') },")
+    const tk = /takeaway: __alloT\('[^']+', '(?:[^'\\\n]|\\.)*'\)/g;
+    tk.lastIndex = i;
+    const m = tk.exec(src);
+    expect(m, id).not.toBeNull();
+    expect(m.index - i, id).toBeLessThan(4000);
+    return src.slice(i, m.index + m[0].length);
+  };
+
+  it('does not claim more for Heidi than the evidence rung it files her on', () => {
+    const tier = /heidi: '([a-z]+)'/.exec(src.slice(src.indexOf('var CASE_TIER = {')))[1];
+    expect(tier).toBe('observation');
+    const t = caseText('heidi');
+    expect(t).toMatch(/Octopus cyanea/);
+    expect(t).not.toMatch(/Common Octopus/);
+    expect(t).not.toMatch(/Direct view of a non-human dream-state|Many biologists interpret/);
+    // an "observation" rung says other readings exist, so the case must hedge
+    expect(t).toMatch(/skeptic|open question|might be/);
+  });
+
+  it('credits the optic-gland removal experiment to Wodinsky every time', () => {
+    const strings = Array.from(src.matchAll(/'((?:[^'\\\n]|\\.)*)'/g)).map((m) => m[1]);
+    // "et al." would end a [^.] match early and hide "Wang et al. identified"
+    const norm = (t) => t.replace(/et al\./g, 'et al');
+    const removal = strings.filter((t) => /optic gland/i.test(t) && /remov\w*[^.]{0,30}glands?|glands?[^.]{0,30}remov/i.test(t));
+    expect(removal.length).toBeGreaterThanOrEqual(6);
+    removal.forEach((t) => {
+      // a passage may also mention later work, but never hand the discovery to another lab
+      expect(norm(t), t.slice(0, 120)).not.toMatch(/Wang[^.]{0,80}(identif|remov|trigger)/);
+    });
+    // the case's STORY names him, not just its source line
+    const story = /story: __alloT\('[^']+', '((?:[^'\\]|\\.)*)'\)/.exec(caseText('opticgland'));
+    expect(story).not.toBeNull();
+    expect(story[1]).toMatch(/Wodinsky/);
+  });
+
+  it('gives the UK law one name and one year', () => {
+    expect(src).not.toMatch(/Sentience\)? Act 2021|UK 2021 Animal Welfare|Animal Welfare Act 2022|UK Animal Welfare Act formally/);
+    const named = Array.from(src.matchAll(/Animal Welfare \(Sentience\) Act (\d{4})/g)).map((m) => Number(m[1]));
+    expect(named.length).toBeGreaterThan(10);
+    expect(new Set(named)).toEqual(new Set([2022]));
+    // the timeline item and the consciousness case agree with it
+    expect(src).toMatch(/UK recognizes cephalopod sentience/);
+    expect(caseText('consciousness')).toMatch(/became law in April 2022/);
+  });
+});
+
+// ── Field Guide species claims vs their sources ──
+// Checked 2026-09-23: Anderson et al. 2010 tested GPOs with TWO people (the
+// guide said "~30 human faces"); the Seattle Aquarium footage is of dogfish
+// sharks (said "small reef shark", "Bob Anderson 1992"); the 2012 giant squid
+// video was Kubodera, O'Shea and Widder (said "Edmund Kean Ohio State"); Te
+// Papa's colossal squid is the most complete specimen, not "the only intact
+// adult". Each claim now reads the same wherever it appears.
+describe('Cephalopod Lab species claims agree with their sources and each other', () => {
+  it('describes the GPO face-recognition test as the two-person study it was', () => {
+    expect(src).not.toMatch(/~?30 human faces/);
+    expect(src).toMatch(/a person who fed them and one who poked them with a bristly stick/);
+  });
+
+  it('names the same shark and aquarium every time the GPO shark footage comes up', () => {
+    // the GPO's own record never says "Pacific octopus", so read it directly
+    const gpo = /id: 'giantPac'[\s\S]*?notes: /.exec(src)[0];
+    const others = Array.from(src.matchAll(/'((?:[^'\\\n]|\\.)*)'/g)).map((m) => m[1])
+      // footage words only: "threatens" contains "eat", and GPOs being hunted BY
+      // sharks is a different, true claim
+      .filter((t) => /Pacific octopus|GPO/i.test(t) && /shark/i.test(t) && /\b(filmed|footage|video)\b/i.test(t));
+    expect(others.length).toBeGreaterThanOrEqual(1);
+    [/weird: '((?:[^'\\]|\\.)*)'/.exec(gpo)[1], ...others].forEach((t) => {
+      expect(t, t.slice(0, 100)).not.toMatch(/reef shark|Bob Anderson 1992/);
+      expect(t, t.slice(0, 100)).toMatch(/Seattle Aquarium[^.]*dogfish/);
+    });
+  });
+
+  it('credits the 2012 giant squid video to the team that made it', () => {
+    expect(src).not.toMatch(/Edmund Kean|Ohio State/);
+    expect(src).toMatch(/Kubodera[^.]*O\\'Shea[^.]*Widder/);
+  });
+
+  it('calls the Te Papa colossal squid the most complete specimen, and estimates what is estimated', () => {
+    expect(src).not.toMatch(/only intact (adult )?(colossal squid|specimen)/);
+    const colossal = /id: 'colossal'[\s\S]*?notes: /.exec(src)[0];
+    expect(colossal).toMatch(/estimated up to ~10 m and 750 kg; the largest weighed was ~495 kg/);
+  });
+});

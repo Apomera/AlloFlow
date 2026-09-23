@@ -1091,3 +1091,219 @@ describe('Cephalopod Lab Jet Lab speeds and verdict follow the physics', () => {
     });
   }, JET_TIMEOUT_MS);
 });
+
+// ── Day in the Life: what a choice does, and what the log says it did ──
+// A failed hunt paid its full catch (the resolver picked the success calories
+// on both branches) while its message said "-5 calories (effort)"; 14 risky
+// options had no failure outcome at all, so a "failure" showed the success
+// text under a red bar; and the -5 per-encounter burn was never shown.
+describe('Cephalopod Lab Day in the Life outcomes match what they say', () => {
+  const DAY_TIMEOUT_MS = 30000;
+  const lift = () => {
+    const src = readFileSync(SOURCE, 'utf8');
+    const a = src.indexOf('      var ENCOUNTER_TEMPLATES = [');
+    const b = src.indexOf('      function getApplicableEncounters(', a);
+    expect(a).toBeGreaterThan(0);
+    expect(b).toBeGreaterThan(a);
+    // eslint-disable-next-line no-new-func
+    return new Function('__alloT', 'h', src.slice(a, b) +
+      '\nreturn { T: ENCOUNTER_TEMPLATES, dayOutcome: dayOutcome, DAY_BURN: DAY_BURN, dayDeltaText: dayDeltaText };')((k, fb) => fb, () => null);
+  };
+  const allOptions = (T) => T.flatMap((t) => t.options.map((o) => ({ enc: t.title, o })));
+
+  it('never pays a reward for a failed attempt', () => {
+    const { T, dayOutcome } = lift();
+    const risky = allOptions(T).filter(({ o }) => o.failChance > 0);
+    expect(risky.length).toBeGreaterThan(30);
+    risky.forEach(({ enc, o }) => {
+      const lose = dayOutcome(o, true);
+      expect(lose.cal, enc + ' / ' + o.id).toBeLessThanOrEqual(0);
+      expect(lose.health, enc + ' / ' + o.id).toBeLessThanOrEqual(0);
+      expect(dayOutcome(o, false).cal).toBe(o.calorieDelta || 0);
+    });
+  });
+
+  it('gives every risky choice a failure of its own', () => {
+    const { T, dayOutcome } = lift();
+    allOptions(T).filter(({ o }) => o.failChance > 0).forEach(({ enc, o }) => {
+      expect(o.failMsg, enc + ' / ' + o.id).toBeTruthy();
+      expect(dayOutcome(o, true).msg).not.toBe(o.msg);
+    });
+  });
+
+  it('states the same calories, health and arms that it applies', () => {
+    const { T, dayOutcome } = lift();
+    let stated = 0;
+    allOptions(T).forEach(({ enc, o }) => {
+      [false, true].forEach((failed) => {
+        if (failed && !(o.failChance > 0)) return;
+        const out = dayOutcome(o, failed);
+        const where = enc + ' / ' + o.id + (failed ? ' (fail)' : '');
+        const cal = /([+-]\d+)\s*(?:cal|calories)\b/.exec(out.msg);
+        const hp = /([+-]\d+)\s*health\b/.exec(out.msg);
+        if (cal) { stated++; expect(Number(cal[1]), where + ': ' + out.msg).toBe(out.cal); }
+        if (hp) { stated++; expect(Number(hp[1]), where + ': ' + out.msg).toBe(out.health); }
+        if (/lost an arm|-1 arm/.test(out.msg)) { stated++; expect(out.arms, where).toBe(-1); }
+      });
+    });
+    expect(stated).toBeGreaterThan(50);
+  });
+
+  const renderDay = (log) => {
+    const { T } = lift();
+    const enc = T.find((t) => t.species.indexOf('commonOcto') >= 0);
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: {
+      activeSection: 'day', dayActive: true, daySpeciesId: 'commonOcto', dayCalories: 80, dayHealth: 70,
+      dayArmsLost: 0, dayEncountersDone: log.length, dayCurrentEncounter: enc, dayLog: log } });
+    return c;
+  };
+
+  it('says in words, with the applied numbers, whether each choice worked', () => {
+    const { dayDeltaText } = lift();
+    const c = renderDay([
+      { type: 'hunt', title: 'A small crab', emoji: '', choice: 'Ambush', outcome: 'Missed.', failed: true, calNet: -10, healthNet: 0, armDelta: 0 },
+      { type: 'predator', title: 'A moray eel', emoji: '', choice: 'Jet', outcome: 'Bitten.', failed: true, calNet: -13, healthNet: -35, armDelta: 0 },
+      { type: 'hunt', title: 'A clam', emoji: '', choice: 'Drill', outcome: 'Got it.', failed: false, calNet: 40, healthNet: -3, armDelta: 0 },
+      // saved before this change: no numbers recorded, must still render
+      { type: 'hunt', title: 'Old entry', emoji: '', choice: 'Old', outcome: 'Old.', failed: false },
+    ]);
+    const t = c.textContent;
+    expect(t).toContain('✗ Did not work · ' + dayDeltaText(-13, -35, 0));
+    expect(t).toContain('✓ Worked · ' + dayDeltaText(40, -3, 0));
+    expect(dayDeltaText(-13, -35, 0)).toBe('Calories -13 · Health -35');
+    expect(t).toMatch(/Old\.✓ Worked(?! ·)/);
+  }, DAY_TIMEOUT_MS);
+
+  it('shows the per-encounter burn it charges', () => {
+    const { DAY_BURN } = lift();
+    const t = renderDay([]).textContent;
+    expect(t).toContain('Every encounter also costs ' + DAY_BURN + ' calories just to stay alive');
+    // the resolver charges exactly that constant, once per choice
+    const src = readFileSync(SOURCE, 'utf8');
+    expect(src).toMatch(/var newCal = priorCal \+ calDelta - DAY_BURN;/);
+    expect(src).not.toMatch(/newCal -= 5;/);
+  }, DAY_TIMEOUT_MS);
+});
+
+// ── Camo Discovery: the screen does what its text says ──
+// The intro and design note promised "the red predator-eye fades"; there is
+// no eye, only a deliberate hidden/spotted badge. The log then printed the raw
+// 0-100 detection score the design note says is never shown, and the
+// background "pattern" was drawn in the background's own colour.
+describe('Cephalopod Lab Camo Discovery shows one state, not a score', () => {
+  const CH_TIMEOUT_MS = 30000;
+  const base = { substrate: 'sand', brightness: 50, hue: 50, coarseness: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+  const render = (patch) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'camoHunt', camoHunt: { ...base, ...patch } } });
+    return c;
+  };
+  const stateOf = (c) => {
+    // the tool shell has its own status region; find this section's
+    const live = Array.from(c.querySelectorAll('[role="status"]')).filter((el) => /^Predator view: /.test(el.textContent));
+    expect(live).toHaveLength(1);
+    const status = live[0].textContent;
+    const badge = c.querySelector('svg[role="img"] g text').textContent;
+    const aria = c.querySelector('svg[role="img"]').getAttribute('aria-label');
+    return { status, badge, aria };
+  };
+
+  it('describes the badge it draws, and announces the same state everywhere', () => {
+    // sand's own target values: hidden; the opposite corner: spotted
+    const hid = stateOf(render({ brightness: 75, hue: 40, coarseness: 15 }));
+    const seen = stateOf(render({ brightness: 0, hue: 0, coarseness: 100 }));
+    [[hid, 'hidden'], [seen, 'spotted']].forEach(([st, word]) => {
+      expect(st.status).toBe('Predator view: ' + word);
+      expect(st.badge).toMatch(new RegExp(word + '$'));
+      expect(st.aria).toMatch(new RegExp(', ' + word + '\\.$'));
+    });
+    const t = render({}).textContent;
+    expect(t).not.toMatch(/eye fades|predator-eye fades/i);
+    expect(t).toMatch(/flips between spotted and hidden/);
+  }, CH_TIMEOUT_MS);
+
+  it('logs the state the learner saw, never the hidden score, and reads older saves', () => {
+    const c = render({ log: [
+      { substrate: 'coral', b: 60, h: 80, c: 85, hidden: true },
+      { substrate: 'sand', b: 10, h: 10, c: 90, det: 83 },      // saved before this change
+      { substrate: 'openSea', b: 45, h: 65, c: 5, det: 4 },
+    ] });
+    const rows = Array.from(c.querySelectorAll('table tbody tr'));
+    expect(rows).toHaveLength(3);
+    const last = rows.map((r) => r.lastElementChild.textContent);
+    expect(last).toEqual(['🌿 hidden', '👁 spotted', '🌿 hidden']);
+    // the row header names the background, not its internal id
+    expect(rows[0].querySelector('th').textContent).toBe('🪸 Patchy coral');
+    expect(rows[2].querySelector('th').textContent).toBe('🌊 Open water');
+    expect(c.querySelector('table').textContent).not.toMatch(/\b83\b/);
+    // a new observation stores the state, not the number
+    const src = readFileSync(SOURCE, 'utf8');
+    expect(src).toMatch(/var obs = \{[^}]*hidden: chHidden \}/);
+    expect(src).not.toMatch(/var obs = \{[^}]*det:/);
+  }, CH_TIMEOUT_MS);
+
+  it('draws the background pattern in colours you can actually see', () => {
+    const c = render({ substrate: 'coral' });
+    const svg = c.querySelector('svg[role="img"]');
+    const bg = svg.querySelector('rect').getAttribute('fill');
+    const ellipse = svg.querySelector('ellipse');
+    const patches = Array.from(svg.querySelectorAll('circle')).filter((el) => el.compareDocumentPosition(ellipse) & 4);
+    expect(patches.length).toBeGreaterThanOrEqual(8);
+    patches.forEach((p) => expect(p.getAttribute('fill')).not.toBe(bg));
+    expect(new Set(patches.map((p) => p.getAttribute('fill'))).size).toBeGreaterThanOrEqual(2);
+  }, CH_TIMEOUT_MS);
+});
+
+// ── Species text reaches the translation lookup ──
+// SPECIES is built at load, before ctx (and __alloT) exists, so every species
+// name and note was English in every language - and names appear in every
+// section. render() now localises a copy under keys derived from each id. The
+// registration gate only sees literal __alloT keys, so this pins them instead.
+describe('Cephalopod Lab species text is translatable everywhere it appears', () => {
+  const SP_TIMEOUT_MS = 30000;
+  const FIELDS = ['name', 'size', 'lifespan', 'weird', 'conservation', 'notes'];
+  const base = () => {
+    const src = readFileSync(SOURCE, 'utf8');
+    const a = src.indexOf('\n  var SPECIES = [\n');
+    const b = src.indexOf('\n  ];\n', a) + 5;
+    // eslint-disable-next-line no-new-func
+    return new Function(src.slice(a, b) + '\nreturn SPECIES;')();
+  };
+  const registry = (file) => {
+    const t = readFileSync(file, 'utf8');
+    return JSON.parse(t.slice(t.indexOf('{')).trim().replace(/;\s*$/, '')).stem.cephalopodlab;
+  };
+
+  it('registers every species field under its key, with the English it localises', () => {
+    const SP = base();
+    expect(SP).toHaveLength(15);
+    ['ui_strings.js', 'desktop/web-app/public/ui_strings.js'].forEach((file) => {
+      const reg = registry(file);
+      SP.forEach((sp) => FIELDS.forEach((f) => {
+        const key = 'sp_' + sp.id.toLowerCase() + '_' + f;
+        expect(reg[key], file + ' ' + key).toBe(sp[f]);
+      }));
+    });
+    // and render really asks for those keys, not some other spelling
+    const code = readFileSync(SOURCE, 'utf8');
+    expect(code).toMatch(/var SP_KEY_PREFIX = 'stem\.cephalopodlab\.sp_';/);
+    expect(code).toMatch(/__alloT\(SP_KEY_PREFIX \+ sp\.id\.toLowerCase\(\) \+ '_' \+ f, sp\[f\]\)/);
+  });
+
+  it('shows the looked-up text in the Field Guide and the Day lobby', () => {
+    const mark = { t: (k, fb) => (k.indexOf('stem.cephalopodlab.sp_') === 0 ? 'ⓧ ' + fb : fb) };
+    const field = document.createElement('div');
+    field.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'field', fieldGuideSpeciesId: 'mimicOcto' } }, mark);
+    expect(field.textContent).toContain('ⓧ Mimic Octopus');
+    expect(field.textContent).toMatch(/ⓧ Discovered 1998 off Sulawesi/);
+    const day = document.createElement('div');
+    day.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'day' } }, mark);
+    expect(day.textContent).toContain('ⓧ Common Octopus');
+    // with no translation the English is unchanged
+    const plain = document.createElement('div');
+    plain.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'field', fieldGuideSpeciesId: 'mimicOcto' } });
+    expect(plain.textContent).toContain('Mimic Octopus');
+    expect(plain.textContent).not.toContain('ⓧ');
+  }, SP_TIMEOUT_MS);
+});

@@ -503,15 +503,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       tactics: ['mimicry', 'ambush'],
       weird: 'Impersonates at least 15 different species (lionfish, sea snake, flounder) by changing color, shape, AND behavior.',
       conservation: 'Not formally assessed; range-restricted to Indo-Pacific estuaries',
-      notes: 'Discovered 1998 off Sulawesi. The only confirmed animal that actively impersonates other species in real time. Shape-shifts arm posture + color to look like venomous lionfish (poking out of a hole), banded sea krait (waving 6 arms hidden, 2 striped arms out), or a flounder (flattens + swims along bottom).' },
+      notes: 'Discovered 1998 off Sulawesi. The first animal documented switching between impersonations of several different species. Shape-shifts arm posture + color to look like venomous lionfish (poking out of a hole), banded sea krait (waving 6 arms hidden, 2 striped arms out), or a flounder (flattens + swims along bottom).' },
     { id: 'giantPac', name: 'Giant Pacific Octopus', scientific: 'Enteroctopus dofleini', emoji: '🐙', group: 'octopus',
       intelligence: 9, camouflageRank: 8, jetSpeed: 6,
       size: '3-5 m arm-tip span, up to 50 kg', lifespan: '3-5 years',
       habitat: ['rocky', 'cold-deep'], prey: ['crab', 'fish', 'shark', 'small mammal'],
       tactics: ['ambush', 'stalk', 'grapple'],
-      weird: 'Largest octopus species. Documented attacking + eating a small reef shark in aquarium footage.',
+      weird: 'Largest octopus species. Filmed at the Seattle Aquarium killing dogfish sharks that shared its tank.',
       conservation: 'Least Concern; targeted fishery in Pacific Northwest',
-      notes: 'Pacific Northwest cold-water giant. Long-lived for an octopus (3-5 years vs the typical 1-2). Cognitive testing shows they recognize ~30 human faces individually + treat researchers differently based on past interactions.' },
+      notes: 'Pacific Northwest cold-water giant. Long-lived for an octopus (3-5 years vs the typical 1-2). They tell individual people apart: in a 2010 Seattle Aquarium test, octopuses reacted differently to a person who fed them and one who poked them with a bristly stick, even though both wore the same uniform.' },
     { id: 'blueRing', name: 'Blue-Ringed Octopus', scientific: 'Hapalochlaena lunulata', emoji: '🐙', group: 'octopus',
       intelligence: 7, camouflageRank: 6, jetSpeed: 4,
       size: '~12 cm', lifespan: '~1 year',
@@ -575,15 +575,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       tactics: ['ambush', 'jet-strike'],
       weird: 'The original sea-monster myth. Never filmed alive until 2004 (still photographs) + 2012 (video). Tentacle suckers leave perfect circular scars on sperm whale skin.',
       conservation: 'Least Concern; no targeted fishery (rarely caught alive)',
-      notes: 'Lives at 400-1200m depth in the mesopelagic zone. The eye is the largest in the animal kingdom (~25-30 cm diameter) — likely adapted to detect the bioluminescent halos of approaching sperm whales (the giant squid\'s main predator). Most specimens come from beachings or sperm whale stomach contents. Edmund Kean Ohio State + Tsunemi Kubodera (Japan) led the breakthrough live filming.' },
+      notes: 'Lives at 400-1200m depth in the mesopelagic zone. The eye is the largest in the animal kingdom (~25-30 cm diameter) — likely adapted to detect the bioluminescent halos of approaching sperm whales (the giant squid\'s main predator). Most specimens come from beachings or sperm whale stomach contents. The first video in its own habitat came in July 2012 off Japan\'s Ogasawara Islands: Tsunemi Kubodera filmed it from a submersible, with Steve O\'Shea and Edith Widder, whose Medusa camera first spotted it.' },
     { id: 'colossal', name: 'Colossal Squid', scientific: 'Mesonychoteuthis hamiltoni', emoji: '🦑', group: 'squid',
       intelligence: 5, camouflageRank: 4, jetSpeed: 6,
-      size: '~10 m total, up to 750 kg — heaviest invertebrate ever', lifespan: '~2-5 years',
+      size: 'estimated up to ~10 m and 750 kg; the largest weighed was ~495 kg — heaviest known invertebrate', lifespan: '~2-5 years',
       habitat: ['deep'], prey: ['toothfish', 'fish', 'other squid'],
       tactics: ['ambush', 'venom-strike'],
       weird: 'Tentacles have rotating ARMORED HOOKS as well as suckers. Built differently from giant squid — shorter + heavier + more aggressive predator.',
       conservation: 'Least Concern; limited bycatch from Antarctic toothfish fishery',
-      notes: 'Lives in the Antarctic Southern Ocean, 1000-2000m deep. Heavier than the giant squid by mass even though shorter. The hooked tentacles are a key adaptation: they grip prey + struggling competitors. Most known from sperm whale stomach contents + Antarctic toothfish (Patagonian toothfish) bycatch. New Zealand\'s Te Papa museum has the world\'s only intact adult specimen preserved.' },
+      notes: 'Lives in the Antarctic Southern Ocean, 1000-2000m deep. Heavier than the giant squid by mass even though shorter. The hooked tentacles are a key adaptation: they grip prey + struggling competitors. Most known from sperm whale stomach contents + Antarctic toothfish (Patagonian toothfish) bycatch. New Zealand\'s Te Papa museum displays the most complete specimen ever recovered, a ~495 kg female caught in 2007.' },
     { id: 'firefly', name: 'Firefly Squid', scientific: 'Watasenia scintillans', emoji: '✨', group: 'squid',
       intelligence: 5, camouflageRank: 6, jetSpeed: 6,
       size: '~7 cm mantle', lifespan: '~1 year',
@@ -609,6 +609,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       conservation: 'Least Concern; targeted artisanal fishery in Indo-Pacific',
       notes: 'Tropical Indo-Pacific reef specialist. Unlike most octopuses (nocturnal), this species hunts during the day — hence the name. The 2020 paper by Sampaio et al. in Ecology documented cooperative hunting with up to 8 fish species partnering with single octopuses. Reef fish wait for the octopus to enter a crevice + drive prey out; when the prey emerges, the fish catch it. Both species benefit. The octopus also punches partners that don\'t pull their weight — first documented inter-species punishment in fish-octopus cooperation.' }
   ];
+  // English source of record; render() localises a copy of it per render.
+  var SPECIES_BASE = SPECIES;
 
   // ───────────────────────────────────────────────────────────
   // HABITAT + PREY + TACTIC DEFINITIONS for Hunter Sim
@@ -941,6 +943,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Species text in the reader's language. SPECIES_BASE is built at load,
+      // before ctx exists, so it is looked up here under keys derived from each
+      // id; a test pins every one of those keys to ui_strings.js.
+      var SPECIES_TEXT_FIELDS = ['name', 'size', 'lifespan', 'weird', 'conservation', 'notes'];
+      // A named prefix, not a quoted literal: the registration gate reads
+      // __alloT('stem.x.<key>' as a key and would count "sp_" as unregistered.
+      var SP_KEY_PREFIX = 'stem.cephalopodlab.sp_';
+      var SPECIES = SPECIES_BASE.map(function (sp) {
+        var o = Object.assign({}, sp);
+        SPECIES_TEXT_FIELDS.forEach(function (f) {
+          if (typeof sp[f] === 'string') o[f] = __alloT(SP_KEY_PREFIX + sp.id.toLowerCase() + '_' + f, sp[f]);
+        });
+        return o;
+      });
       var React = ctx.React;
       var h = React.createElement;
       var dayAbandonTriggerRef = React.useRef(null);
@@ -1953,7 +1969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           onward);
 
         return h('div', null,
-          panelHeader('📖 Species Field Guide',
+          panelHeader(__alloT('stem.cephalopodlab.hdr_species_field_guide', '📖 Species Field Guide'),
             SPECIES.length + ' cephalopod species. Select one to examine its biology, hunting style, and evidence-based natural-history profile.'),
           picker,
           detail
@@ -2235,7 +2251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.bottlenose_dolphins_have_been_document', 'Bottlenose dolphins have been documented bashing octopuses against the seafloor to subdue them before eating — a learned behavior.'), cite: 'Sprogis et al., 2017 — Mar. Mammal Sci.' },
         // ─── Conservation ───
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.in_2017_all_nautilus_species_were_plac', 'In 2017, all Nautilus species were placed on CITES Appendix II — the first international trade protection for any cephalopod.'), cite: 'CITES CoP17, 2017.' },
-        { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.the_uk_animal_welfare_act_2022_added_c', 'The UK Animal Welfare Act 2022 added cephalopods to its sentience list — recognizing them as conscious + capable of suffering.'), cite: 'Birch et al., 2021 — LSE Report.' },
+        { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.the_uk_animal_welfare_act_2022_added_c', 'The UK Animal Welfare (Sentience) Act 2022 added cephalopods to its sentience list — recognizing them as conscious + capable of suffering.'), cite: 'Birch et al., 2021 — LSE Report.' },
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.in_a_2022_brazilian_survey_75_of_wild_', 'In a 2022 Brazilian survey, 75% of wild Octopus vulgaris used anthropogenic shelters (glass, plastic, cans) instead of natural rock — a marker of pollution.'), cite: 'Freitas et al., 2022 — Mar. Pollut. Bull.' },
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.microplastics_have_been_documented_in_', 'Microplastics have been documented in 100% of sampled wild cephalopod tissues in many recent surveys — a marker of widespread marine pollution.'), cite: 'Oliveira et al., 2020.' },
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.coral_bleaching_events_have_occurred_g', 'Coral bleaching events have occurred globally in 1998, 2002, 2010, 2014-17, 2020, and 2023-24 — each killing 20-50% of affected reefs. Reef-dwelling octopuses lose habitat.'), cite: 'Hughes et al., 2017 — Nature.' },
@@ -2349,7 +2365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.octopus_sperm_packets_spermatophores_c', 'Octopus sperm packets (spermatophores) contain not just sperm but also nutrient + protective compounds — they\'re among the most complex spermatophores in any animal.'), cite: 'Cigliano, 1995.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_earliest_direct_evidence_of_cephal', 'The earliest direct evidence of cephalopod CAMOUFLAGE is in fossil chromatophores from a Jurassic squid (~150 MYA) preserved in unusual sediment.'), cite: 'Glass et al., 2012.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.cephalopod_biomass_density_is_highest_', 'Cephalopod biomass density is highest at boundaries between habitats (reef-sand edges, kelp-rock edges) where prey + shelter both occur.'), cite: 'Hanlon, 1996.' },
-        { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.eu_2010_63_was_the_first_major_jurisdi', 'EU 2010/63 was the FIRST major jurisdiction to require IACUC-equivalent ethical review for cephalopod research. The UK 2022 Sentience Act extended this to ALL contexts.'), cite: 'EU 2010/63; UK Animal Welfare Act 2022.' },
+        { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.eu_2010_63_was_the_first_major_jurisdi', 'EU 2010/63 was the FIRST major jurisdiction to require IACUC-equivalent ethical review for cephalopod research. The UK 2022 Sentience Act extended this to ALL contexts.'), cite: 'EU 2010/63; UK Animal Welfare (Sentience) Act 2022.' },
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.octopus_arms_generate_force_via_muscul', 'Octopus arms generate force via "muscular hydrostat" principle — useful in designing micro-surgical tools that need precision + flexibility.'), cite: 'Kier & Smith, 1985; biomimetic surgery research.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.some_octopus_species_exhibit_fishing_b', 'Some octopus species exhibit "fishing" behavior — using their arms to lure small fish into a den where they can be ambushed.'), cite: 'Mather, 1988 — Bull. Mar. Sci.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_can_sense_electrical_field', 'Cephalopods can sense electrical fields — though much less sensitively than sharks. The mechanism + ecology of this is still being mapped.'), cite: 'Recent research; Mather & Hanlon.' },
@@ -2404,7 +2420,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_cretaceous_paleogene_extinction_66', 'The Cretaceous-Paleogene extinction (~66 MYA) wiped out all AMMONOID cephalopods + all BELEMNITE cephalopods. Modern cephalopods are descendants of survivors from a small subset of lineages.'), cite: 'Schulte et al., 2010.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.cephalopods_are_mid_trophic_consumers__2', 'Cephalopods are MID-TROPHIC consumers in marine food webs — eating crabs + clams + fish while being eaten by sharks + dolphins + sea otters. They TRANSMIT ecosystem change in both directions.'), cite: 'Heithaus et al., 2008.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.a_2020_study_estimated_that_octopuses_', 'A 2020 study estimated that octopuses consume ~7 million metric tonnes of crab biomass annually — making them major predators in coastal ecosystems.'), cite: 'Recent population studies.' },
-        { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.in_2022_the_uk_animal_welfare_act_form', 'In 2022, the UK Animal Welfare Act formally extended sentience recognition to cephalopods, supporting research-ethics review + welfare standards in all UK contexts.'), cite: 'UK Animal Welfare Act 2022.' },
+        { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.in_2022_the_uk_animal_welfare_act_form', 'In 2022, the UK Animal Welfare (Sentience) Act formally extended sentience recognition to cephalopods, supporting research-ethics review + welfare standards in all UK contexts.'), cite: 'UK Animal Welfare (Sentience) Act 2022.' },
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.octopus_aquaculture_proposals_spain_20', 'Octopus aquaculture proposals (Spain 2024, etc.) have generated significant scientific opposition. Most welfare researchers argue commercial farming of sentient invertebrates raises serious ethical concerns.'), cite: 'CIWF + Eurogroup 2024.' },
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.reflectin_protein_the_iridophore_mater', 'Reflectin protein (the iridophore material) is being investigated as a tunable optical material — for adaptive camouflage textiles + responsive medical patches + smart sensors.'), cite: 'Crookes et al., 2007; Phan et al., 2016.' },
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.octopus_arm_motor_coordination_involve_2', 'Octopus arm motor coordination involves a "stiffening wave" propagating down the arm. Engineers are adapting this principle for soft-robotic prosthetics + minimally invasive surgical tools.'), cite: 'Levy et al., 2011.' },
@@ -4181,7 +4197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           domain: 'Ethics + sentience',
           keyConceptsToMaster: [
             'Birch 2021 LSE Report findings',
-            'UK Animal Welfare Act 2022 cephalopod recognition',
+            'UK Animal Welfare (Sentience) Act 2022 cephalopod recognition',
             'Octopus farming welfare debate',
             'US Animal Welfare Act gap (cephalopods NOT covered)',
             'EU 2010/63 research ethics',
@@ -4441,7 +4457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           id: 'sentience_evidence',
           title: __alloT('stem.cephalopodlab.the_evidence_for_cephalopod_sentience', 'The evidence for cephalopod sentience'),
           domain: 'Ethics + welfare',
-          content: __alloT('stem.cephalopodlab.in_2021_a_uk_government_commissioned_r', 'In 2021, a UK government-commissioned report (Birch et al., LSE) reviewed 300+ pieces of evidence on cephalopod sentience. The conclusion: cephalopods possess multiple features consistent with sentience (the capacity for subjective experience). This evidence led directly to the UK Animal Welfare (Sentience) Act 2022, which legally recognized cephalopods + decapod crustaceans as sentient under UK law.\n\nWhat counts as evidence?\n\n1. NOCICEPTION. Cephalopods have nociceptors — pain-sensing nerve endings. Crook (2021, iScience) documented behavioral + neurophysiological evidence of affective pain experience (not just reflex) in octopuses.\n\n2. CONDITIONED AVOIDANCE. Cephalopods learn to avoid noxious stimuli. They don\'t just reflexively withdraw — they CHANGE BEHAVIOR over time based on experience.\n\n3. PROTECTIVE BEHAVIORS. After injury, cephalopods groom + tend to the injured area. Anesthetics reduce these behaviors. This is consistent with subjective experience of pain.\n\n4. COMPLEX COGNITION. Cephalopods solve novel problems, learn observationally, recognize individuals, show planning behavior. While cognition ≠ sentience necessarily, complex cognition is consistent with rich internal experience.\n\n5. NEURAL COMPLEXITY. Cephalopod brains have ~500 million neurons (octopus) organized into specialized lobes. They have distinct sleep states, including REM-like sleep with chromatophore activity (Iglesias 2019). Neural complexity supports the capacity for consciousness.\n\n6. EMOTIONAL-LIKE STATES. Octopuses show behavioral patterns consistent with positive states (play behavior) and negative states (avoidance, stress signaling).\n\nThe evidence isn\'t conclusive — sentience is hard to prove directly in any organism (we infer it from behavior + physiology). But the CUMULATIVE evidence meets the precautionary threshold most welfare scientists endorse.\n\nWhat are the policy implications?\n\nThe EU 2010/63 Directive was the first to require IACUC-equivalent review for cephalopod research. The UK 2022 Sentience Act extends this to ALL contexts — research, agriculture, transport, food. The US Animal Welfare Act does NOT cover cephalopods, creating a regulatory gap. Several other jurisdictions are reviewing similar legislation.\n\nFor commercial aquaculture (the proposed Nueva Pescanova octopus farm in Spain), sentience recognition has direct implications: can you ethically farm a sentient animal at industrial scale? The debate is active.\n\n(Sources: Birch et al., 2021 — LSE Report; Crook, 2021 — iScience; UK Animal Welfare Act 2022.)'),
+          content: __alloT('stem.cephalopodlab.in_2021_a_uk_government_commissioned_r', 'In 2021, a UK government-commissioned report (Birch et al., LSE) reviewed 300+ pieces of evidence on cephalopod sentience. The conclusion: cephalopods possess multiple features consistent with sentience (the capacity for subjective experience). This evidence led directly to the UK Animal Welfare (Sentience) Act 2022, which legally recognized cephalopods + decapod crustaceans as sentient under UK law.\n\nWhat counts as evidence?\n\n1. NOCICEPTION. Cephalopods have nociceptors — pain-sensing nerve endings. Crook (2021, iScience) documented behavioral + neurophysiological evidence of affective pain experience (not just reflex) in octopuses.\n\n2. CONDITIONED AVOIDANCE. Cephalopods learn to avoid noxious stimuli. They don\'t just reflexively withdraw — they CHANGE BEHAVIOR over time based on experience.\n\n3. PROTECTIVE BEHAVIORS. After injury, cephalopods groom + tend to the injured area. Anesthetics reduce these behaviors. This is consistent with subjective experience of pain.\n\n4. COMPLEX COGNITION. Cephalopods solve novel problems, learn observationally, recognize individuals, show planning behavior. While cognition ≠ sentience necessarily, complex cognition is consistent with rich internal experience.\n\n5. NEURAL COMPLEXITY. Cephalopod brains have ~500 million neurons (octopus) organized into specialized lobes. They have distinct sleep states, including REM-like sleep with chromatophore activity (Iglesias 2019). Neural complexity supports the capacity for consciousness.\n\n6. EMOTIONAL-LIKE STATES. Octopuses show behavioral patterns consistent with positive states (play behavior) and negative states (avoidance, stress signaling).\n\nThe evidence isn\'t conclusive — sentience is hard to prove directly in any organism (we infer it from behavior + physiology). But the CUMULATIVE evidence meets the precautionary threshold most welfare scientists endorse.\n\nWhat are the policy implications?\n\nThe EU 2010/63 Directive was the first to require IACUC-equivalent review for cephalopod research. The UK 2022 Sentience Act extends this to ALL contexts — research, agriculture, transport, food. The US Animal Welfare Act does NOT cover cephalopods, creating a regulatory gap. Several other jurisdictions are reviewing similar legislation.\n\nFor commercial aquaculture (the proposed Nueva Pescanova octopus farm in Spain), sentience recognition has direct implications: can you ethically farm a sentient animal at industrial scale? The debate is active.\n\n(Sources: Birch et al., 2021 — LSE Report; Crook, 2021 — iScience; UK Animal Welfare (Sentience) Act 2022.)'),
         },
         {
           id: 'symbiosis_squid_vibrio',
@@ -4583,7 +4599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         {
           q: 'Can cephalopods feel pain?',
-          a: 'The growing scientific consensus is yes — they have nociceptors (pain-sensing receptors), complex behavior consistent with avoidance of harm, and neural complexity associated with conscious experience. The 2021 LSE Report (Birch et al.) reviewed evidence + recommended legal sentience recognition. The UK Animal Welfare Act 2022 formally extended sentience recognition to cephalopods.',
+          a: 'The growing scientific consensus is yes — they have nociceptors (pain-sensing receptors), complex behavior consistent with avoidance of harm, and neural complexity associated with conscious experience. The 2021 LSE Report (Birch et al.) reviewed evidence + recommended legal sentience recognition. The UK Animal Welfare (Sentience) Act 2022 formally extended sentience recognition to cephalopods.',
           category: 'Welfare',
         },
         {
@@ -5855,7 +5871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           analysis: 'Policy comparison table. Identify gaps in US law + propose specific amendments.',
           variables: 'N/A (policy analysis).',
           potentialFinding: 'Likely conclusion: US should extend welfare protections, with specific policy mechanisms identified.',
-          relatedReading: 'Birch et al., 2021; UK Animal Welfare Act 2022.',
+          relatedReading: 'Birch et al., 2021; UK Animal Welfare (Sentience) Act 2022.',
         },
         {
           id: 'biomimicry_proposal',
@@ -6448,7 +6464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Are there research priorities (e.g., cognition, welfare) that ALL stakeholders would support? Can we focus there first?',
           ],
           relevantEvidence: [
-            'EU Directive 2010/63/EU + UK Animal Welfare Act 2022',
+            'EU Directive 2010/63/EU + UK Animal Welfare (Sentience) Act 2022',
             'US Animal Welfare Act — cephalopods NOT covered',
             'Crook, 2021 — affective pain evidence',
             'Wodinsky, 1977 — historical example of major science from cephalopod work',
@@ -10906,8 +10922,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var active = !!d.hunt3DActive;
 
         return h('div', null,
-          panelHeader('🎯 Hunter Sim — 3D Underwater',
-            'Play a common Pacific octopus on a reef. Hunt crabs, evade a moray eel, use ink to escape. WASD to crawl, Space to jet (drains stamina), click to grab nearby prey, I for ink defense.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_hunter_sim_3d_underwater', '🎯 Hunter Sim — 3D Underwater'),
+            __alloT('stem.cephalopodlab.hdr_play_a_common_pacific_octopus_on_a', 'Play a common Pacific octopus on a reef. Hunt crabs, evade a moray eel, use ink to escape. WASD to crawl, Space to jet (drains stamina), click to grab nearby prey, I for ink defense.')),
 
           // Run stats card
           (function() {
@@ -15614,8 +15630,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
       function renderEvasionLobby() {
         return h('div', null,
-          panelHeader('🛡️ Evasion Sim',
-            'The other side of the food web. Even apex cephalopods get hunted — giant Pacific octopuses by sea otters + sharks, giant squid by sperm whales, blue-ringed octopuses by morays. Pick a species, see who threatens it, choose your evasion tactic, and survive (or don\'t).'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_evasion_sim', '🛡️ Evasion Sim'),
+            __alloT('stem.cephalopodlab.hdr_the_other_side_of_the_food_web_eve', 'The other side of the food web. Even apex cephalopods get hunted — giant Pacific octopuses by sea otters + sharks, giant squid by sperm whales, blue-ringed octopuses by morays. Pick a species, see who threatens it, choose your evasion tactic, and survive (or don\'t).')),
 
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.your_survival_record', '📊 Your survival record')),
@@ -15634,7 +15650,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('p', { style: { margin: '0 0 10px 0' } },
                 __alloT('stem.cephalopodlab.there_s_no_apex_cephalopod_even_the_la', 'There\'s no "apex cephalopod" — even the largest face predators. Giant Pacific octopuses are eaten by harbor seals, sea otters, lingcod, and sometimes by other (larger) giant Pacific octopuses. Giant squid + colossal squid are sperm whale prey — and the whale carries the scars to prove it.')),
               h('p', { style: { margin: 0 } },
-                __alloT('stem.cephalopodlab.some_species_turn_the_tables_a_50kg_gi', 'Some species turn the tables. A 50kg giant Pacific octopus is documented eating small reef sharks (search "Octopus eats shark" — Bob Anderson 1992 footage). But the next year, a larger shark might eat THAT octopus. Predator/prey labels are size-relative + life-stage-relative.')))),
+                __alloT('stem.cephalopodlab.some_species_turn_the_tables_a_50kg_gi', 'Some species turn the tables. A giant Pacific octopus at the Seattle Aquarium was filmed killing dogfish sharks that shared its tank (footage made for PBS around 2000). But the next year, a larger shark might eat THAT octopus. Predator/prey labels are size-relative + life-stage-relative.')))),
 
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.pick_a_species_to_play_you_re_the_ceph', '🐙 Pick a species to play (you\'re the cephalopod escaping)')),
@@ -15669,8 +15685,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var availableTactics = EVASION_TACTICS.filter(function(t) { return t.species.indexOf(sp.id) !== -1; });
         var canProceed = !!(d.evasionPredatorId && d.evasionTacticId);
         return h('div', null,
-          panelHeader('🛡️ Plan your escape — ' + sp.emoji + ' ' + sp.name,
-            'Pick which predator you\'re escaping + which tactic you\'ll use. The judge will check whether your tactic\'s sensory profile matches the predator\'s sensory modality.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_plan_your_escape', '🛡️ Plan your escape — ') + sp.emoji + ' ' + sp.name,
+            __alloT('stem.cephalopodlab.hdr_pick_which_predator_you_re_escapin', 'Pick which predator you\'re escaping + which tactic you\'ll use. The judge will check whether your tactic\'s sensory profile matches the predator\'s sensory modality.')),
 
           // Predator picker (filtered to species' actual threats)
           h('div', { style: cardStyle() },
@@ -15861,7 +15877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
         return h('div', null,
           styleBlock,
-          panelHeader('🛡️ Execute — reaction time matters',
+          panelHeader(__alloT('stem.cephalopodlab.hdr_execute_reaction_time_matters', '🛡️ Execute — reaction time matters'),
             __alloT('stem.cephalopodlab.ev_execute_intro', 'Press the lane to start the encounter. The predator closes in, then lunges: press again the instant it does. Faster reaction = better escape. Real cephalopods react in 25-150 milliseconds depending on species.')),
           h('div', { style: cardStyle() },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
@@ -15939,7 +15955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var escaped = r.escaped;
         var costly = r.costlyEscape;
         return h('div', null,
-          panelHeader('🛡️ Encounter result',
+          panelHeader(__alloT('stem.cephalopodlab.hdr_encounter_result', '🛡️ Encounter result'),
             r.speciesName + ' vs ' + r.predatorName + ' — ' + r.tacticName +
             (escaped ? (costly ? ' — escaped at a cost.' : ' — escaped.') : ' — caught.')),
 
@@ -15996,120 +16012,152 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           species: ['commonOcto', 'mimicOcto', 'giantPac', 'coconut', 'cuttlefish', 'dayOcto', 'blueRing'],
           detail: __alloT('stem.cephalopodlab.you_spot_a_juvenile_rock_crab_probing_', 'You spot a juvenile rock crab probing among the stones. Hunger is real — your stomach is already 60% empty.'),
           options: [
-            { id: 'ambush', label: __alloT('stem.cephalopodlab.ambush_slow_stalk_strike', '🎭 Ambush — slow stalk + strike'), calorieDelta: 60, healthDelta: 0, armDelta: 0, msg: 'Caught the crab. Beak through the shell joint. +60 calories.', failChance: 0.15, failMsg: 'Misjudged the strike — crab darted into a deeper crevice. -5 calories (effort).' },
-            { id: 'jet', label: __alloT('stem.cephalopodlab.jet_pounce', '🚀 Jet pounce'), calorieDelta: 50, healthDelta: 0, armDelta: 0, msg: 'Caught it via jet propulsion. +50 calories.', failChance: 0.35, failMsg: 'Crab heard the water surge + escaped. -10 calories from the burst.' },
-            { id: 'ignore', label: __alloT('stem.cephalopodlab.move_on_not_hungry_enough', '😐 Move on — not hungry enough'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Saved the energy. No gain, no loss.', failChance: 0 } ] },
+            { id: 'ambush', label: __alloT('stem.cephalopodlab.ambush_slow_stalk_strike', '🎭 Ambush — slow stalk + strike'), calorieDelta: 60, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_caught_the_crab_beak_through_the_s', 'Caught the crab. Beak through the shell joint. +60 calories.'), failChance: 0.15, failMsg: __alloT('stem.cephalopodlab.day_misjudged_the_strike_crab_darted_i', 'Misjudged the strike — crab darted into a deeper crevice. -5 calories (effort).'), failCalorieDelta: -5 },
+            { id: 'jet', label: __alloT('stem.cephalopodlab.jet_pounce', '🚀 Jet pounce'), calorieDelta: 50, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_caught_it_via_jet_propulsion_50_ca', 'Caught it via jet propulsion. +50 calories.'), failChance: 0.35, failMsg: __alloT('stem.cephalopodlab.day_crab_heard_the_water_surge_escaped', 'Crab heard the water surge + escaped. -10 calories from the burst.'), failCalorieDelta: -10 },
+            { id: 'ignore', label: __alloT('stem.cephalopodlab.move_on_not_hungry_enough', '😐 Move on — not hungry enough'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_saved_the_energy_no_gain_no_loss', 'Saved the energy. No gain, no loss.'), failChance: 0 } ] },
         { type: 'hunt', title: __alloT('stem.cephalopodlab.a_school_of_fish_swims_overhead', 'A school of fish swims overhead'), emoji: '🐟',
           species: ['humboldt', 'cuttlefish', 'giantSquid', 'firefly'],
           detail: __alloT('stem.cephalopodlab.a_school_of_silversides_passes_through', 'A school of silversides passes through your zone. Fast, but tightly packed — a coordinated strike could land you a meal.'),
           options: [
-            { id: 'jet', label: __alloT('stem.cephalopodlab.jet_strike_from_below', '🚀 Jet-strike from below'), calorieDelta: 80, healthDelta: 0, armDelta: 0, msg: 'Caught a fish on the strike. +80 calories.', failChance: 0.4, failMsg: 'School fragmented before you reached them. -15 calories from the chase.' },
-            { id: 'hypnotic', label: __alloT('stem.cephalopodlab.hypnotic_display_cuttlefish_only', '🌈 Hypnotic display (cuttlefish only)'), calorieDelta: 100, healthDelta: 0, armDelta: 0, msg: 'Passing-cloud display mesmerized one fish long enough to grab. +100 calories.', failChance: 0.5, failMsg: 'Display didn\'t hold the fish\'s attention — they\'re wary today. -10 calories.' },
-            { id: 'ignore', label: __alloT('stem.cephalopodlab.let_them_pass', '😐 Let them pass'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Saved the energy for a more reliable opportunity.', failChance: 0 } ] },
+            { id: 'jet', label: __alloT('stem.cephalopodlab.jet_strike_from_below', '🚀 Jet-strike from below'), calorieDelta: 80, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_caught_a_fish_on_the_strike_80_cal', 'Caught a fish on the strike. +80 calories.'), failChance: 0.4, failMsg: __alloT('stem.cephalopodlab.day_school_fragmented_before_you_reach', 'School fragmented before you reached them. -15 calories from the chase.'), failCalorieDelta: -15 },
+            { id: 'hypnotic', label: __alloT('stem.cephalopodlab.hypnotic_display_cuttlefish_only', '🌈 Hypnotic display (cuttlefish only)'), calorieDelta: 100, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_passing_cloud_display_mesmerized_o', 'Passing-cloud display mesmerized one fish long enough to grab. +100 calories.'), failChance: 0.5, failMsg: __alloT('stem.cephalopodlab.day_display_didn_t_hold_the_fish_s_att', 'Display didn\'t hold the fish\'s attention — they\'re wary today. -10 calories.'), failCalorieDelta: -10 },
+            { id: 'ignore', label: __alloT('stem.cephalopodlab.let_them_pass', '😐 Let them pass'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_saved_the_energy_for_a_more_reliab', 'Saved the energy for a more reliable opportunity.'), failChance: 0 } ] },
         { type: 'hunt', title: __alloT('stem.cephalopodlab.a_clam_half_buried_in_the_sand', 'A clam half-buried in the sand'), emoji: '🦪',
           species: ['commonOcto', 'giantPac', 'mimicOcto', 'coconut'],
           detail: __alloT('stem.cephalopodlab.the_clam_is_barely_visible_just_a_slig', 'The clam is barely visible — just a slight ridge in the substrate. Slow + reliable food source if you commit to drilling.'),
           options: [
-            { id: 'drill', label: __alloT('stem.cephalopodlab.drill_the_shell_radula_work_slow', '🦷 Drill the shell (radula work, slow)'), calorieDelta: 45, healthDelta: -3, armDelta: 0, msg: 'Spent 30 minutes drilling but got the clam. +45 cal, but tiring (-3 health).', failChance: 0.05 },
-            { id: 'ignore', label: __alloT('stem.cephalopodlab.not_worth_the_effort_right_now', '😐 Not worth the effort right now'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Moved on. Will reconsider if hungrier later.', failChance: 0 } ] },
+            { id: 'drill', label: __alloT('stem.cephalopodlab.drill_the_shell_radula_work_slow', '🦷 Drill the shell (radula work, slow)'), calorieDelta: 45, healthDelta: -3, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_spent_30_minutes_drilling_but_got', 'Spent 30 minutes drilling but got the clam. +45 cal, but tiring (-3 health).'), failChance: 0.05, failMsg: __alloT('stem.cephalopodlab.day_the_shell_held_you_gave_up_after_3', 'The shell held. You gave up after 30 minutes of drilling. -5 cal, and tired (-3 health).'), failCalorieDelta: -5, failHealthDelta: -3 },
+            { id: 'ignore', label: __alloT('stem.cephalopodlab.not_worth_the_effort_right_now', '😐 Not worth the effort right now'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_moved_on_will_reconsider_if_hungri', 'Moved on. Will reconsider if hungrier later.'), failChance: 0 } ] },
         { type: 'hunt', title: __alloT('stem.cephalopodlab.marine_snow_drifts_past', 'Marine snow drifts past'), emoji: '❄️',
           species: ['vampireSquid', 'dumbo'],
           detail: __alloT('stem.cephalopodlab.a_steady_drift_of_organic_particles_yo', 'A steady drift of organic particles — your normal food source. Filter feeding is what you\'re built for.'),
           options: [
-            { id: 'filter', label: __alloT('stem.cephalopodlab.spread_arms_filter', '🌫️ Spread arms + filter'), calorieDelta: 20, healthDelta: 0, armDelta: 0, msg: 'Caught a handful of marine snow. Low-cal but reliable. +20.', failChance: 0.05 } ] },
+            { id: 'filter', label: __alloT('stem.cephalopodlab.spread_arms_filter', '🌫️ Spread arms + filter'), calorieDelta: 20, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_caught_a_handful_of_marine_snow_lo', 'Caught a handful of marine snow. Low-cal but reliable. +20.'), failChance: 0.05, failMsg: __alloT('stem.cephalopodlab.day_the_drift_thinned_out_before_you_c', 'The drift thinned out before you caught anything worth eating. No gain.'), failCalorieDelta: 0 } ] },
         { type: 'hunt', title: __alloT('stem.cephalopodlab.smaller_octopus_hatchlings_drift_past', 'Smaller octopus hatchlings drift past'), emoji: '🐙',
           species: ['commonOcto', 'giantPac', 'humboldt'],
           detail: __alloT('stem.cephalopodlab.a_clutch_of_paralarvae_from_another_oc', 'A clutch of paralarvae from another octopus — easy protein, but they\'re your own kind. Cephalopod cannibalism is normal in the wild.'),
           options: [
-            { id: 'eat', label: __alloT('stem.cephalopodlab.cannibalize_it_s_normal_here', '🍽️ Cannibalize — it\'s normal here'), calorieDelta: 70, healthDelta: 0, armDelta: 0, msg: 'Caught + ate several paralarvae. Cephalopods don\'t form sentimental bonds. +70 cal.', failChance: 0.1 },
-            { id: 'ignore', label: __alloT('stem.cephalopodlab.let_them_pass_2', '😐 Let them pass'), calorieDelta: 0, healthDelta: -2, armDelta: 0, msg: 'Moved on, getting hungrier (-2 health).', failChance: 0 } ] },
+            { id: 'eat', label: __alloT('stem.cephalopodlab.cannibalize_it_s_normal_here', '🍽️ Cannibalize — it\'s normal here'), calorieDelta: 70, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_caught_ate_several_paralarvae_ceph', 'Caught + ate several paralarvae. Cephalopods don\'t form sentimental bonds. +70 cal.'), failChance: 0.1, failMsg: __alloT('stem.cephalopodlab.day_the_paralarvae_scattered_in_the_cu', 'The paralarvae scattered in the current before you closed in. -5 cal (effort).'), failCalorieDelta: -5 },
+            { id: 'ignore', label: __alloT('stem.cephalopodlab.let_them_pass_2', '😐 Let them pass'), calorieDelta: 0, healthDelta: -2, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_moved_on_getting_hungrier_2_health', 'Moved on, getting hungrier (-2 health).'), failChance: 0 } ] },
         { type: 'hunt', title: __alloT('stem.cephalopodlab.cooperative_hunt_opportunity_a_grouper', 'Cooperative hunt opportunity — a grouper signals interest'), emoji: '🤝',
           species: ['dayOcto'],
           detail: __alloT('stem.cephalopodlab.a_peacock_grouper_hovers_nearby_fixing', 'A peacock grouper hovers nearby, fixing you with a meaningful stare. In your species, this is the recognized invitation to cooperative hunt — you flush prey from crevices, the fish ambushes escapees, both eat.'),
           options: [
-            { id: 'cooperate', label: __alloT('stem.cephalopodlab.accept_the_cooperation', '🤝 Accept the cooperation'), calorieDelta: 70, healthDelta: 0, armDelta: 0, msg: 'Flushed shrimp from coral; grouper caught half + you got half. +70 cal. The fish nuzzles in thanks (or accountability).', failChance: 0.15 },
-            { id: 'solo', label: __alloT('stem.cephalopodlab.hunt_alone_instead', '🐙 Hunt alone instead'), calorieDelta: 35, healthDelta: 0, armDelta: 0, msg: 'Solo run — less efficient but no shared prey. +35 cal.', failChance: 0.3 } ] },
+            { id: 'cooperate', label: __alloT('stem.cephalopodlab.accept_the_cooperation', '🤝 Accept the cooperation'), calorieDelta: 70, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_flushed_shrimp_from_coral_grouper', 'Flushed shrimp from coral; grouper caught half + you got half. +70 cal. The fish nuzzles in thanks (or accountability).'), failChance: 0.15, failMsg: __alloT('stem.cephalopodlab.day_the_shrimp_slipped_past_both_of_yo', 'The shrimp slipped past both of you this time. -5 cal (effort).'), failCalorieDelta: -5 },
+            { id: 'solo', label: __alloT('stem.cephalopodlab.hunt_alone_instead', '🐙 Hunt alone instead'), calorieDelta: 35, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_solo_run_less_efficient_but_no_sha', 'Solo run — less efficient but no shared prey. +35 cal.'), failChance: 0.3, failMsg: __alloT('stem.cephalopodlab.day_every_shrimp_beat_you_back_into_th', 'Every shrimp beat you back into the coral. -8 cal (effort).'), failCalorieDelta: -8 } ] },
 
         // ─── PREDATOR ENCOUNTERS ───
         { type: 'predator', title: __alloT('stem.cephalopodlab.a_reef_shark_patrols_nearby', 'A reef shark patrols nearby'), emoji: '🦈',
           species: ['commonOcto', 'mimicOcto', 'dayOcto', 'cuttlefish', 'humboldt', 'firefly', 'bobtail', 'coconut'],
           detail: __alloT('stem.cephalopodlab.visual_electroreception_sensors_huntin', 'Visual + electroreception sensors hunting. It hasn\'t spotted you yet, but it\'s close — within 5 meters.'),
           options: [
-            { id: 'freeze', label: __alloT('stem.cephalopodlab.camouflage_freeze_2', '🎭 Camouflage + freeze'), calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: 'Held still + matched substrate. Shark passed without noticing. -3 cal (the chromatophore burst).', failChance: 0.2, failMsg: 'Shark spotted you mid-color-change. Bit your mantle (-25 health).', failHealthDelta: -25 },
-            { id: 'ink', label: __alloT('stem.cephalopodlab.ink_flee_2', '🌫️ Ink + flee'), calorieDelta: -10, healthDelta: 0, armDelta: 0, msg: 'Discharged ink + jet-fled. Lost the shark. -10 cal but alive.', failChance: 0.1, failMsg: 'Shark followed your trail anyway. -20 health from a grazing bite.', failHealthDelta: -20 },
-            { id: 'mimic', label: __alloT('stem.cephalopodlab.mimicry_mimic_octopus_only_pose_as_sea', '🎭 Mimicry (mimic octopus only — pose as sea snake)'), calorieDelta: -5, healthDelta: 0, armDelta: 0, msg: 'Shifted into sea-snake pose. Shark veered away (sea snakes are venomous). -5 cal.', failChance: 0.1 } ] },
+            { id: 'freeze', label: __alloT('stem.cephalopodlab.camouflage_freeze_2', '🎭 Camouflage + freeze'), calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_held_still_matched_substrate_shark', 'Held still + matched substrate. Shark passed without noticing. -3 cal (the chromatophore burst).'), failChance: 0.2, failMsg: __alloT('stem.cephalopodlab.day_shark_spotted_you_mid_color_change', 'Shark spotted you mid-color-change. Bit your mantle (-25 health).'), failHealthDelta: -25 },
+            { id: 'ink', label: __alloT('stem.cephalopodlab.ink_flee_2', '🌫️ Ink + flee'), calorieDelta: -10, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_discharged_ink_jet_fled_lost_the_s', 'Discharged ink + jet-fled. Lost the shark. -10 cal but alive.'), failChance: 0.1, failMsg: __alloT('stem.cephalopodlab.day_shark_followed_your_trail_anyway_2', 'Shark followed your trail anyway. -20 health from a grazing bite.'), failHealthDelta: -20 },
+            { id: 'mimic', label: __alloT('stem.cephalopodlab.mimicry_mimic_octopus_only_pose_as_sea', '🎭 Mimicry (mimic octopus only — pose as sea snake)'), calorieDelta: -5, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_shifted_into_sea_snake_pose_shark', 'Shifted into sea-snake pose. Shark veered away (sea snakes are venomous). -5 cal.'), failChance: 0.1, failMsg: __alloT('stem.cephalopodlab.day_the_shark_was_not_fooled_by_the_se', 'The shark was not fooled by the sea-snake pose and struck (-20 health).'), failHealthDelta: -20 } ] },
         { type: 'predator', title: __alloT('stem.cephalopodlab.a_moray_eel_emerges_from_a_crevice', 'A moray eel emerges from a crevice'), emoji: '🐍',
           species: ['commonOcto', 'mimicOcto', 'coconut', 'dayOcto', 'blueRing', 'bobtail'],
           detail: __alloT('stem.cephalopodlab.it_saw_you_you_re_in_arm_reach_of_its_', 'It saw you. You\'re in arm-reach of its strike radius. Chemosense + tactile hunter — camouflage is useless now.'),
           options: [
-            { id: 'autotomy', label: __alloT('stem.cephalopodlab.autotomy_sacrifice_an_arm', '✂️ Autotomy — sacrifice an arm'), calorieDelta: -5, healthDelta: -10, armDelta: -1, msg: 'Detached an arm — it wriggles, distracting the eel. You escaped. Arm will regrow in 2-3 months. -1 arm.', failChance: 0.1, failMsg: 'Eel ignored the arm + struck you (-30 health).', failHealthDelta: -30 },
-            { id: 'jet', label: __alloT('stem.cephalopodlab.jet_escape_2', '🚀 Jet escape'), calorieDelta: -8, healthDelta: 0, armDelta: 0, msg: 'Explosive jet — eel struck where you USED to be. -8 cal.', failChance: 0.3, failMsg: 'Eel anticipated the jet direction. Bit through your mantle (-35 health).', failHealthDelta: -35 },
-            { id: 'venom', label: __alloT('stem.cephalopodlab.venom_counter_strike_blue_ringed_only', '☠️ Venom counter-strike (blue-ringed only)'), calorieDelta: -2, healthDelta: 0, armDelta: 0, msg: 'Flashed warning rings + bit. Eel paralyzed within seconds. You\'re alive. -2 cal.', failChance: 0.05 } ] },
+            { id: 'autotomy', label: __alloT('stem.cephalopodlab.autotomy_sacrifice_an_arm', '✂️ Autotomy — sacrifice an arm'), calorieDelta: -5, healthDelta: -10, armDelta: -1, msg: __alloT('stem.cephalopodlab.day_detached_an_arm_it_wriggles_distra', 'Detached an arm — it wriggles, distracting the eel. You escaped. Arm will regrow in 2-3 months. -1 arm.'), failChance: 0.1, failMsg: __alloT('stem.cephalopodlab.day_eel_ignored_the_arm_struck_you_30', 'Eel ignored the arm + struck you (-30 health).'), failHealthDelta: -30 },
+            { id: 'jet', label: __alloT('stem.cephalopodlab.jet_escape_2', '🚀 Jet escape'), calorieDelta: -8, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_explosive_jet_eel_struck_where_you', 'Explosive jet — eel struck where you USED to be. -8 cal.'), failChance: 0.3, failMsg: __alloT('stem.cephalopodlab.day_eel_anticipated_the_jet_direction', 'Eel anticipated the jet direction. Bit through your mantle (-35 health).'), failHealthDelta: -35 },
+            { id: 'venom', label: __alloT('stem.cephalopodlab.venom_counter_strike_blue_ringed_only', '☠️ Venom counter-strike (blue-ringed only)'), calorieDelta: -2, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_flashed_warning_rings_bit_eel_para', 'Flashed warning rings + bit. Eel paralyzed within seconds. You\'re alive. -2 cal.'), failChance: 0.05, failMsg: __alloT('stem.cephalopodlab.day_the_eel_struck_before_your_venom_t', 'The eel struck before your venom took hold (-25 health).'), failHealthDelta: -25 } ] },
         { type: 'predator', title: __alloT('stem.cephalopodlab.a_sea_otter_dives_down_through_the_kel', 'A sea otter dives down through the kelp'), emoji: '🦦',
           species: ['giantPac', 'commonOcto'],
           detail: __alloT('stem.cephalopodlab.otters_are_persistent_intelligent_it_a', 'Otters are persistent + intelligent. It already knows there\'s octopus in this area. It will dive repeatedly + use its hands to pry open hiding spots.'),
           options: [
-            { id: 'ink-jet', label: __alloT('stem.cephalopodlab.ink_jet_away', '🌫️ Ink + jet away'), calorieDelta: -12, healthDelta: 0, armDelta: 0, msg: 'Inked the water + jetted to a different reef section. Otter lost the trail. -12 cal.', failChance: 0.25, failMsg: 'Otter chased through the ink + caught a tentacle (-15 health, lost an arm).', failHealthDelta: -15, failArmDelta: -1 },
-            { id: 'hideout', label: __alloT('stem.cephalopodlab.crawl_into_a_deep_crevice', '🕳️ Crawl into a deep crevice'), calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: 'Wedged into a narrow crevice — otter can\'t reach. Wait 20 minutes + emerge. -3 cal.', failChance: 0.45, failMsg: 'Otter pried with its hands + extracted you (-40 health).', failHealthDelta: -40 } ] },
+            { id: 'ink-jet', label: __alloT('stem.cephalopodlab.ink_jet_away', '🌫️ Ink + jet away'), calorieDelta: -12, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_inked_the_water_jetted_to_a_differ', 'Inked the water + jetted to a different reef section. Otter lost the trail. -12 cal.'), failChance: 0.25, failMsg: __alloT('stem.cephalopodlab.day_otter_chased_through_the_ink_caugh', 'Otter chased through the ink + caught a tentacle (-15 health, lost an arm).'), failHealthDelta: -15, failArmDelta: -1 },
+            { id: 'hideout', label: __alloT('stem.cephalopodlab.crawl_into_a_deep_crevice', '🕳️ Crawl into a deep crevice'), calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_wedged_into_a_narrow_crevice_otter', 'Wedged into a narrow crevice — otter can\'t reach. Wait 20 minutes + emerge. -3 cal.'), failChance: 0.45, failMsg: __alloT('stem.cephalopodlab.day_otter_pried_with_its_hands_extract', 'Otter pried with its hands + extracted you (-40 health).'), failHealthDelta: -40 } ] },
         { type: 'predator', title: __alloT('stem.cephalopodlab.dolphin_pod_overhead_echolocation_ping', 'Dolphin pod overhead — echolocation pinging closer'), emoji: '🐬',
           species: ['humboldt', 'cuttlefish', 'commonOcto', 'firefly'],
           detail: __alloT('stem.cephalopodlab.active_sonar_means_ink_is_useless_camo', 'Active sonar means ink is useless. Camouflage is useless. They know exactly where you are.'),
           options: [
-            { id: 'depth', label: __alloT('stem.cephalopodlab.dive_deep_break_their_depth_limit', '⬇️ Dive deep — break their depth limit'), calorieDelta: -15, healthDelta: 0, armDelta: 0, msg: 'Sprinted down 200m. Dolphins can\'t follow — they need to surface for air. -15 cal.', failChance: 0.15, failMsg: 'A young dolphin matched the dive. Caught you (-30 health).', failHealthDelta: -30 },
-            { id: 'jet-side', label: __alloT('stem.cephalopodlab.jet_sideways_at_speed', '🚀 Jet sideways at speed'), calorieDelta: -18, healthDelta: 0, armDelta: 0, msg: 'Fast lateral jet broke the pod\'s formation. Got away. -18 cal.', failChance: 0.4, failMsg: 'Pod coordinated; another dolphin intercepted (-25 health).', failHealthDelta: -25 } ] },
+            { id: 'depth', label: __alloT('stem.cephalopodlab.dive_deep_break_their_depth_limit', '⬇️ Dive deep — break their depth limit'), calorieDelta: -15, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_sprinted_down_200m_dolphins_can_t', 'Sprinted down 200m. Dolphins can\'t follow — they need to surface for air. -15 cal.'), failChance: 0.15, failMsg: __alloT('stem.cephalopodlab.day_a_young_dolphin_matched_the_dive_c', 'A young dolphin matched the dive. Caught you (-30 health).'), failHealthDelta: -30 },
+            { id: 'jet-side', label: __alloT('stem.cephalopodlab.jet_sideways_at_speed', '🚀 Jet sideways at speed'), calorieDelta: -18, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_fast_lateral_jet_broke_the_pod_s_f', 'Fast lateral jet broke the pod\'s formation. Got away. -18 cal.'), failChance: 0.4, failMsg: __alloT('stem.cephalopodlab.day_pod_coordinated_another_dolphin_in', 'Pod coordinated; another dolphin intercepted (-25 health).'), failHealthDelta: -25 } ] },
         { type: 'predator', title: __alloT('stem.cephalopodlab.a_sperm_whale_s_sonar_pings_the_deep', 'A sperm whale\'s sonar pings the deep'), emoji: '🐋',
           species: ['giantSquid', 'colossal', 'humboldt'],
           detail: __alloT('stem.cephalopodlab.sperm_whales_dive_to_2000m_to_hunt_gia', 'Sperm whales dive to 2000m to hunt giant + colossal squid. Their sonar penetrates the dark + the depth + the ink. This is the apex threat your species faces.'),
           options: [
-            { id: 'depth-deeper', label: __alloT('stem.cephalopodlab.descend_even_deeper', '⬇️ Descend even deeper'), calorieDelta: -20, healthDelta: 0, armDelta: 0, msg: 'Pushed below 2500m. Whale gave up + surfaced. -20 cal.', failChance: 0.25, failMsg: 'Whale stayed with you. Crushing bite (-50 health).', failHealthDelta: -50 },
-            { id: 'tentacle-fight', label: __alloT('stem.cephalopodlab.fight_back_wrap_the_whale', '🦑 Fight back — wrap the whale'), calorieDelta: -25, healthDelta: -20, armDelta: 0, msg: 'Wrapped the whale\'s head with hooked tentacles. It surfaced + tried to scrape you off. You escaped at the cost of injury (-20 health).', failChance: 0.6, failMsg: 'Whale shook you off + bit you in half (-100 health = lethal).', failHealthDelta: -100 } ] },
+            { id: 'depth-deeper', label: __alloT('stem.cephalopodlab.descend_even_deeper', '⬇️ Descend even deeper'), calorieDelta: -20, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_pushed_below_2500m_whale_gave_up_s', 'Pushed below 2500m. Whale gave up + surfaced. -20 cal.'), failChance: 0.25, failMsg: __alloT('stem.cephalopodlab.day_whale_stayed_with_you_crushing_bit', 'Whale stayed with you. Crushing bite (-50 health).'), failHealthDelta: -50 },
+            { id: 'tentacle-fight', label: __alloT('stem.cephalopodlab.fight_back_wrap_the_whale', '🦑 Fight back — wrap the whale'), calorieDelta: -25, healthDelta: -20, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_wrapped_the_whale_s_head_with_hook', 'Wrapped the whale\'s head with hooked tentacles. It surfaced + tried to scrape you off. You escaped at the cost of injury (-20 health).'), failChance: 0.6, failMsg: __alloT('stem.cephalopodlab.day_whale_shook_you_off_bit_you_in_hal', 'Whale shook you off + bit you in half (-100 health = lethal).'), failHealthDelta: -100 } ] },
         { type: 'predator', title: __alloT('stem.cephalopodlab.a_larger_octopus_claims_this_territory', 'A larger octopus claims this territory'), emoji: '🐙',
           species: ['commonOcto', 'mimicOcto', 'coconut', 'blueRing', 'bobtail', 'dayOcto'],
           detail: __alloT('stem.cephalopodlab.a_larger_member_of_your_species_or_a_l', 'A larger member of your species — or a larger species entirely. Cephalopod cannibalism is normal. The bigger animal usually wins.'),
           options: [
-            { id: 'retreat', label: __alloT('stem.cephalopodlab.back_away_slowly', '🏃 Back away slowly'), calorieDelta: -5, healthDelta: 0, armDelta: 0, msg: 'Avoided confrontation. Found a different territory. -5 cal.', failChance: 0.1 },
-            { id: 'venom', label: __alloT('stem.cephalopodlab.venom_strike_blue_ringed_only', '☠️ Venom strike (blue-ringed only)'), calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: 'Flashed rings + bit. Larger octopus is paralyzed + dying. Territory taken. -3 cal.', failChance: 0.1 },
-            { id: 'fight', label: __alloT('stem.cephalopodlab.fight_for_territory', '⚔️ Fight for territory'), calorieDelta: -15, healthDelta: -25, armDelta: 0, msg: 'Won the fight but bloodied. -25 health.', failChance: 0.55, failMsg: 'Lost the fight + an arm (-40 health, -1 arm).', failHealthDelta: -40, failArmDelta: -1 } ] },
+            { id: 'retreat', label: __alloT('stem.cephalopodlab.back_away_slowly', '🏃 Back away slowly'), calorieDelta: -5, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_avoided_confrontation_found_a_diff', 'Avoided confrontation. Found a different territory. -5 cal.'), failChance: 0.1, failMsg: __alloT('stem.cephalopodlab.day_it_followed_and_landed_a_bite_befo', 'It followed and landed a bite before you got clear (-15 health).'), failHealthDelta: -15 },
+            { id: 'venom', label: __alloT('stem.cephalopodlab.venom_strike_blue_ringed_only', '☠️ Venom strike (blue-ringed only)'), calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_flashed_rings_bit_larger_octopus_i', 'Flashed rings + bit. Larger octopus is paralyzed + dying. Territory taken. -3 cal.'), failChance: 0.1, failMsg: __alloT('stem.cephalopodlab.day_the_larger_octopus_pinned_you_befo', 'The larger octopus pinned you before the venom worked. You tore free (-25 health).'), failHealthDelta: -25 },
+            { id: 'fight', label: __alloT('stem.cephalopodlab.fight_for_territory', '⚔️ Fight for territory'), calorieDelta: -15, healthDelta: -25, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_won_the_fight_but_bloodied_25_heal', 'Won the fight but bloodied. -25 health.'), failChance: 0.55, failMsg: __alloT('stem.cephalopodlab.day_lost_the_fight_an_arm_40_health_1', 'Lost the fight + an arm (-40 health, -1 arm).'), failHealthDelta: -40, failArmDelta: -1 } ] },
 
         // ─── ENVIRONMENTAL ───
         { type: 'environment', title: __alloT('stem.cephalopodlab.low_tide_water_is_receding', 'Low tide — water is receding'), emoji: '🌅',
           species: ['commonOcto', 'mimicOcto', 'coconut', 'blueRing', 'dayOcto'],
           detail: __alloT('stem.cephalopodlab.low_tide_leaves_you_exposed_birds_crab', 'Low tide leaves you exposed. Birds + crabs can reach you. Need to find shelter or move with the water.'),
           options: [
-            { id: 'shelter', label: __alloT('stem.cephalopodlab.wedge_into_a_deep_crevice', '🕳️ Wedge into a deep crevice'), calorieDelta: -4, healthDelta: 0, armDelta: 0, msg: 'Found a safe pocket. Wait it out. -4 cal.', failChance: 0.05 },
-            { id: 'migrate', label: __alloT('stem.cephalopodlab.move_with_the_receding_water', '🌊 Move with the receding water'), calorieDelta: -10, healthDelta: 0, armDelta: 0, msg: 'Followed deeper water. -10 cal (effort).', failChance: 0.1 } ] },
+            { id: 'shelter', label: __alloT('stem.cephalopodlab.wedge_into_a_deep_crevice', '🕳️ Wedge into a deep crevice'), calorieDelta: -4, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_found_a_safe_pocket_wait_it_out_4', 'Found a safe pocket. Wait it out. -4 cal.'), failChance: 0.05, failMsg: __alloT('stem.cephalopodlab.day_a_gull_found_your_pocket_before_th', 'A gull found your pocket before the water came back (-15 health).'), failHealthDelta: -15 },
+            { id: 'migrate', label: __alloT('stem.cephalopodlab.move_with_the_receding_water', '🌊 Move with the receding water'), calorieDelta: -10, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_followed_deeper_water_10_cal_effor', 'Followed deeper water. -10 cal (effort).'), failChance: 0.1, failMsg: __alloT('stem.cephalopodlab.day_you_got_stranded_in_a_shrinking_ti', 'You got stranded in a shrinking tide pool on the way and struggled out (-10 health).'), failHealthDelta: -10 } ] },
         { type: 'environment', title: __alloT('stem.cephalopodlab.a_storm_churns_the_water', 'A storm churns the water'), emoji: '⛈️',
           species: ['commonOcto', 'mimicOcto', 'coconut', 'cuttlefish', 'dayOcto', 'blueRing', 'bobtail', 'firefly'],
           detail: __alloT('stem.cephalopodlab.storm_surge_sediment_fills_the_water_v', 'Storm surge + sediment fills the water. Visibility near zero. Predators can\'t hunt — but neither can you. Rest mode.'),
           options: [
-            { id: 'rest', label: __alloT('stem.cephalopodlab.den_up_rest', '😴 Den up + rest'), calorieDelta: -2, healthDelta: 5, armDelta: 0, msg: 'Sheltered in den. Slight recovery (+5 health). -2 cal.', failChance: 0.05 } ] },
+            { id: 'rest', label: __alloT('stem.cephalopodlab.den_up_rest', '😴 Den up + rest'), calorieDelta: -2, healthDelta: 5, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_sheltered_in_den_slight_recovery_5', 'Sheltered in den. Slight recovery (+5 health). -2 cal.'), failChance: 0.05, failMsg: __alloT('stem.cephalopodlab.day_the_surge_kept_shaking_the_den_no', 'The surge kept shaking the den. No real rest. -2 cal.'), failHealthDelta: 0 } ] },
         { type: 'environment', title: __alloT('stem.cephalopodlab.a_current_pushes_you_off_course', 'A current pushes you off-course'), emoji: '🌊',
           species: ['commonOcto', 'humboldt', 'giantSquid', 'cuttlefish', 'mimicOcto'],
           detail: __alloT('stem.cephalopodlab.strong_current_you_can_either_fight_it', 'Strong current — you can either fight it (expensive) or drift with it (uncertain destination).'),
           options: [
-            { id: 'fight', label: __alloT('stem.cephalopodlab.jet_against_the_current', '🚀 Jet against the current'), calorieDelta: -18, healthDelta: 0, armDelta: 0, msg: 'Held your position. -18 cal but kept your territory.', failChance: 0.1 },
-            { id: 'drift', label: __alloT('stem.cephalopodlab.drift_with_it', '🌊 Drift with it'), calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: 'Landed in a new area — might be opportunity, might be danger. -3 cal.', failChance: 0.2, failMsg: 'Drifted into a more dangerous neighborhood (-10 health).', failHealthDelta: -10 } ] },
+            { id: 'fight', label: __alloT('stem.cephalopodlab.jet_against_the_current', '🚀 Jet against the current'), calorieDelta: -18, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_held_your_position_18_cal_but_kept', 'Held your position. -18 cal but kept your territory.'), failChance: 0.1, failMsg: __alloT('stem.cephalopodlab.day_the_current_won_anyway_you_burned', 'The current won anyway: you burned the energy and still lost your spot. -18 cal.') },
+            { id: 'drift', label: __alloT('stem.cephalopodlab.drift_with_it', '🌊 Drift with it'), calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_landed_in_a_new_area_might_be_oppo', 'Landed in a new area — might be opportunity, might be danger. -3 cal.'), failChance: 0.2, failMsg: __alloT('stem.cephalopodlab.day_drifted_into_a_more_dangerous_neig', 'Drifted into a more dangerous neighborhood (-10 health).'), failHealthDelta: -10 } ] },
         { type: 'environment', title: __alloT('stem.cephalopodlab.you_find_an_empty_den_with_good_cover', 'You find an empty den with good cover'), emoji: '🕳️',
           species: ['commonOcto', 'mimicOcto', 'coconut', 'blueRing', 'dayOcto', 'giantPac'],
           detail: __alloT('stem.cephalopodlab.an_abandoned_crevice_with_the_right_si', 'An abandoned crevice with the right size for your body. Could be a safe rest spot. Smells okay (no predator scent).'),
           options: [
-            { id: 'rest', label: __alloT('stem.cephalopodlab.den_up_rest_2', '😴 Den up + rest'), calorieDelta: -1, healthDelta: 8, armDelta: 0, msg: 'Resting in safety. +8 health, -1 cal.', failChance: 0.03 },
-            { id: 'skip', label: __alloT('stem.cephalopodlab.keep_exploring', '🐙 Keep exploring'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Moved on, looking for opportunity.', failChance: 0 } ] },
+            { id: 'rest', label: __alloT('stem.cephalopodlab.den_up_rest_2', '😴 Den up + rest'), calorieDelta: -1, healthDelta: 8, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_resting_in_safety_8_health_1_cal', 'Resting in safety. +8 health, -1 cal.'), failChance: 0.03, failMsg: __alloT('stem.cephalopodlab.day_a_moray_was_already_using_this_den', 'A moray was already using this den. You left fast (-10 health).'), failHealthDelta: -10 },
+            { id: 'skip', label: __alloT('stem.cephalopodlab.keep_exploring', '🐙 Keep exploring'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_moved_on_looking_for_opportunity', 'Moved on, looking for opportunity.'), failChance: 0 } ] },
 
         // ─── SOCIAL ───
         { type: 'social', title: __alloT('stem.cephalopodlab.a_potential_mate_signals_nearby', 'A potential mate signals nearby'), emoji: '💕',
           species: ['commonOcto', 'mimicOcto', 'cuttlefish', 'dayOcto', 'giantPac'],
           detail: __alloT('stem.cephalopodlab.a_receptive_female_or_male_depending_o', 'A receptive female (or male, depending on your sex) displays mating colors. In your species, mating triggers the optic gland senescence cascade — you\'ll die within weeks. But the genes get passed on.'),
           options: [
-            { id: 'mate', label: __alloT('stem.cephalopodlab.mate_accept_the_death_sentence', '💕 Mate — accept the death sentence'), calorieDelta: -20, healthDelta: -10, armDelta: 0, msg: 'Successfully mated. Optic gland will trigger senescence in 2-4 weeks. -20 cal + injury (-10 health) from coupling.', failChance: 0.15, failMsg: 'Rejected by the partner (or eaten — sexual cannibalism happens). -25 health.', failHealthDelta: -25 },
-            { id: 'pass', label: __alloT('stem.cephalopodlab.pass_not_ready', '🐙 Pass — not ready'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Moved on. Will have more chances if you live long enough.', failChance: 0 } ] },
+            { id: 'mate', label: __alloT('stem.cephalopodlab.mate_accept_the_death_sentence', '💕 Mate — accept the death sentence'), calorieDelta: -20, healthDelta: -10, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_successfully_mated_optic_gland_wil', 'Successfully mated. Optic gland will trigger senescence in 2-4 weeks. -20 cal + injury (-10 health) from coupling.'), failChance: 0.15, failMsg: __alloT('stem.cephalopodlab.day_rejected_by_the_partner_or_eaten_s', 'Rejected by the partner (or eaten — sexual cannibalism happens). -25 health.'), failHealthDelta: -25 },
+            { id: 'pass', label: __alloT('stem.cephalopodlab.pass_not_ready', '🐙 Pass — not ready'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_moved_on_will_have_more_chances_if', 'Moved on. Will have more chances if you live long enough.'), failChance: 0 } ] },
         { type: 'social', title: __alloT('stem.cephalopodlab.a_juvenile_of_your_species_watches_fro', 'A juvenile of your species watches from a distance'), emoji: '🐙',
           species: ['commonOcto', 'mimicOcto', 'dayOcto'],
           detail: __alloT('stem.cephalopodlab.a_smaller_younger_cephalopod_could_be_', 'A smaller, younger cephalopod. Could be food (cannibalism is normal) or could be your own offspring (low probability — most octopuses don\'t know their parents). Hard to tell.'),
           options: [
-            { id: 'eat', label: __alloT('stem.cephalopodlab.eat_instinct_says_yes', '🍽️ Eat — instinct says yes'), calorieDelta: 50, healthDelta: 0, armDelta: 0, msg: 'Caught + consumed it. +50 cal. No sentimental attachment to conspecifics.', failChance: 0.2, failMsg: 'It escaped into a crevice. -8 cal effort.' },
-            { id: 'ignore', label: __alloT('stem.cephalopodlab.leave_it_alone', '😐 Leave it alone'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Moved on. The juvenile continues its own day.', failChance: 0 } ] }
+            { id: 'eat', label: __alloT('stem.cephalopodlab.eat_instinct_says_yes', '🍽️ Eat — instinct says yes'), calorieDelta: 50, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_caught_consumed_it_50_cal_no_senti', 'Caught + consumed it. +50 cal. No sentimental attachment to conspecifics.'), failChance: 0.2, failMsg: __alloT('stem.cephalopodlab.day_it_escaped_into_a_crevice_8_cal_ef', 'It escaped into a crevice. -8 cal effort.'), failCalorieDelta: -8 },
+            { id: 'ignore', label: __alloT('stem.cephalopodlab.leave_it_alone', '😐 Leave it alone'), calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: __alloT('stem.cephalopodlab.day_moved_on_the_juvenile_continues_it', 'Moved on. The juvenile continues its own day.'), failChance: 0 } ] }
       ];
+
+      // What a choice does, win or lose. A failed attempt never pays a reward:
+      // this used to hand a botched hunt its full catch while the log said
+      // "-5 calories (effort)". Costs (negative values) still apply on failure.
+      function dayOutcome(option, failed) {
+        if (!failed) return { cal: option.calorieDelta || 0, health: option.healthDelta || 0, arms: option.armDelta || 0, msg: option.msg };
+        return {
+          cal: option.failCalorieDelta != null ? option.failCalorieDelta : Math.min(0, option.calorieDelta || 0),
+          health: option.failHealthDelta != null ? option.failHealthDelta : Math.min(0, option.healthDelta || 0),
+          arms: option.failArmDelta != null ? option.failArmDelta : (option.armDelta || 0),
+          msg: option.failMsg || option.msg
+        };
+      }
+      // Staying alive costs calories whatever you choose (metabolism).
+      var DAY_BURN = 5;
+
+      // "Calories +55 · Health -25 · Arm lost" - the numbers the HUD will show.
+      function dayDeltaText(cal, health, arms) {
+        var sign = function(n) { return (n > 0 ? '+' : '') + n; };
+        var parts = [__alloT('stem.cephalopodlab.day_delta_calories', 'Calories') + ' ' + sign(cal)];
+        if (health) parts.push(__alloT('stem.cephalopodlab.day_delta_health', 'Health') + ' ' + sign(health));
+        if (arms < 0) parts.push(__alloT('stem.cephalopodlab.day_delta_arm_lost', 'Arm lost'));
+        return parts.join(' · ');
+      }
+
+      // The log's red/green border was the only sign a choice failed; say it,
+      // with the numbers that were actually applied (older saves have none).
+      function dayLogResult(entry) {
+        return h('div', { style: { fontSize: 10.5, fontWeight: 700, marginTop: 3, color: entry.failed ? '#fca5a5' : '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } },
+          (entry.failed ? '✗ ' + __alloT('stem.cephalopodlab.day_log_failed', 'Did not work') : '✓ ' + __alloT('stem.cephalopodlab.day_log_worked', 'Worked')) +
+          (entry.calNet != null ? ' · ' + dayDeltaText(entry.calNet, entry.healthNet || 0, entry.armDelta || 0) : ''));
+      }
 
       function getApplicableEncounters(speciesId) {
         return ENCOUNTER_TEMPLATES.filter(function(t) { return t.species.indexOf(speciesId) !== -1; });
@@ -16147,7 +16195,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           dayLog: [],
           dayEnded: null
         });
-        clAnnounce('Day started as ' + speciesId);
+        var startSp = SPECIES.find(function(x) { return x.id === speciesId; });
+        clAnnounce(__alloT('stem.cephalopodlab.day_sr_started', 'Day started as ') + (startSp ? startSp.name : speciesId));
         awardXP(3);
       }
 
@@ -16158,17 +16207,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         if (!option) return;
         // Resolve: random check vs failChance
         var failed = Math.random() < (option.failChance || 0);
-        var calDelta = failed && option.failMsg ? (option.calorieDelta || 0) : option.calorieDelta;
-        var healthDelta = failed && option.failHealthDelta != null ? option.failHealthDelta : option.healthDelta;
-        var armDelta = failed && option.failArmDelta != null ? option.failArmDelta : option.armDelta;
-        var msg = failed && option.failMsg ? option.failMsg : option.msg;
+        var out = dayOutcome(option, failed);
+        var calDelta = out.cal, healthDelta = out.health, armDelta = out.arms, msg = out.msg;
         setCL(function(prior) {
-          var newCal = (prior.dayCalories || 100) + (calDelta || 0);
-          var newHealth = (prior.dayHealth || 100) + (healthDelta || 0);
-          var newArms = (prior.dayArmsLost || 0) - (armDelta || 0); // armDelta is negative when lost
+          var priorCal = prior.dayCalories != null ? prior.dayCalories : 100;
+          var priorHealth = prior.dayHealth != null ? prior.dayHealth : 100;
+          var newCal = priorCal + calDelta - DAY_BURN;
+          var newHealth = priorHealth + healthDelta;
+          var newArms = (prior.dayArmsLost || 0) - armDelta; // armDelta is negative when lost
           var newDone = (prior.dayEncountersDone || 0) + 1;
-          // Slight passive calorie drain per encounter
-          newCal -= 5;
           // Check end conditions
           var ended = null;
           if (newHealth <= 0) ended = 'killed';
@@ -16178,10 +16225,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // Generate next encounter if not ended
           var nextEnc = ended ? null : generateEncounter(prior.daySpeciesId);
           var newLog = (prior.dayLog || []).slice();
+          // What actually changed, after the burn and the 0-200 / 0-100 caps.
+          var calShown = Math.max(0, Math.min(200, newCal)) - priorCal;
+          var healthShown = Math.max(0, Math.min(100, newHealth)) - priorHealth;
           newLog.push({
             type: current.type, title: current.title, emoji: current.emoji,
             choice: option.label, outcome: msg, failed: failed,
-            calDelta: calDelta, healthDelta: healthDelta, armDelta: armDelta
+            calDelta: calDelta, healthDelta: healthDelta, armDelta: armDelta,
+            calNet: calShown, healthNet: healthShown
           });
           if (newLog.length > 12) newLog = newLog.slice(-12);
           // Update bests if ended successfully
@@ -16205,6 +16256,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             dayTotalDaysPlayed: ended ? (prior.dayTotalDaysPlayed || 0) + 1 : (prior.dayTotalDaysPlayed || 0)
           };
         });
+        // Announced outside the updater (React may run an updater twice), from
+        // the same rule, so a screen reader hears what the HUD is about to show.
+        var c0 = d.dayCalories != null ? d.dayCalories : 100;
+        var h0 = d.dayHealth != null ? d.dayHealth : 100;
+        clAnnounce((failed ? __alloT('stem.cephalopodlab.day_sr_failed', 'Did not work. ') : __alloT('stem.cephalopodlab.day_sr_worked', 'It worked. ')) + msg + ' ' +
+          dayDeltaText(Math.max(0, Math.min(200, c0 + calDelta - DAY_BURN)) - c0, Math.max(0, Math.min(100, h0 + healthDelta)) - h0, armDelta));
         awardXP(failed ? 1 : 2);
       }
 
@@ -16224,8 +16281,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         });
         var bests = d.dayBests || {};
         return h('div', null,
-          panelHeader('🌅 Day in the Life — Hard Mode',
-            'The integrated reality. Pick a species, live one day, face 10 random encounters mixing hunting opportunities, predator threats, environmental events, and social moments. Hunger, injury, and arm loss all carry through. Die if calories OR health hit zero. Survive all 10 = success.'),
+          panelHeader(__alloT('stem.cephalopodlab.day_lobby_title', '🌅 Day in the Life — Hard Mode'),
+            __alloT('stem.cephalopodlab.day_lobby_intro', 'The integrated reality. Pick a species, live one day, face 10 random encounters mixing hunting opportunities, predator threats, environmental events, and social moments. Hunger, injury, and arm loss all carry through. Die if calories OR health hit zero. Survive all 10 = success.')),
 
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fb923c' }) },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.why_this_mode_exists', '🎯 Why this mode exists')),
@@ -16256,7 +16313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, sp.emoji),
                       h('span', { style: { color: '#fde68a', fontWeight: 700 } }, sp.name),
                       h('span', { style: { color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace', marginLeft: 8 } },
-                        b.bestEncountersSurvived + '/10 best'));
+                        b.bestEncountersSurvived + __alloT('stem.cephalopodlab.day_best_suffix', '/10 best')));
                   }))) : null),
 
           h('div', { style: cardStyle() },
@@ -16276,9 +16333,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', null,
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, s.name),
                       h('div', { style: { fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
-                        'Intelligence: ' + s.intelligence + '/10 · Camo: ' + s.camouflageRank + '/10'))),
+                        __alloT('stem.cephalopodlab.day_card_intel', 'Intelligence: ') + s.intelligence + __alloT('stem.cephalopodlab.day_card_camo', '/10 · Camo: ') + s.camouflageRank + '/10'))),
                   b ? h('div', { style: { fontSize: 10, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                    'Best: ' + b.bestEncountersSurvived + '/10 · Days survived: ' + b.daysSurvived) : null);
+                    __alloT('stem.cephalopodlab.day_card_best', 'Best: ') + b.bestEncountersSurvived + __alloT('stem.cephalopodlab.day_card_days', '/10 · Days survived: ') + b.daysSurvived) : null);
               })))
         );
       }
@@ -16332,17 +16389,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: { width: (dayT * 100) + '%', height: '100%', background: '#fde68a' } })));
         return h('div', null,
           skyBand,
-          panelHeader(sp.emoji + ' ' + sp.name + ' — encounter ' + (done + 1) + ' of 10',
-            'You\'re mid-day. Stats below show your current state. Survive all 10 encounters to complete the day.'),
+          panelHeader(sp.emoji + ' ' + sp.name + __alloT('stem.cephalopodlab.day_active_enc', ' — encounter ') + (done + 1) + __alloT('stem.cephalopodlab.day_active_of10', ' of 10'),
+            __alloT('stem.cephalopodlab.day_active_intro', 'You\'re mid-day. Stats below show your current state. Survive all 10 encounters to complete the day.')),
 
           // HUD
           h('div', { style: cardStyle() },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 } },
               [
-                { lbl: '🍽️ Calories', val: cal, max: 200, color: cal > 50 ? '#86efac' : cal > 25 ? '#fbbf24' : '#fca5a5' },
-                { lbl: '❤️ Health', val: hp, max: 100, color: hp > 60 ? '#86efac' : hp > 30 ? '#fbbf24' : '#fca5a5' },
-                { lbl: '🦑 Arms lost', val: arms, max: 4, color: arms === 0 ? '#86efac' : arms < 3 ? '#fbbf24' : '#fca5a5', isLoss: true },
-                { lbl: '⏳ Progress', val: done, max: 10, color: '#a78bfa' }
+                { lbl: __alloT('stem.cephalopodlab.day_hud_calories', '🍽️ Calories'), val: cal, max: 200, color: cal > 50 ? '#86efac' : cal > 25 ? '#fbbf24' : '#fca5a5' },
+                { lbl: __alloT('stem.cephalopodlab.day_hud_health', '❤️ Health'), val: hp, max: 100, color: hp > 60 ? '#86efac' : hp > 30 ? '#fbbf24' : '#fca5a5' },
+                { lbl: __alloT('stem.cephalopodlab.day_hud_arms', '🦑 Arms lost'), val: arms, max: 4, color: arms === 0 ? '#86efac' : arms < 3 ? '#fbbf24' : '#fca5a5', isLoss: true },
+                { lbl: __alloT('stem.cephalopodlab.day_hud_progress', '⏳ Progress'), val: done, max: 10, color: '#a78bfa' }
               ].map(function(stat, i) {
                 var pct = stat.isLoss ? ((stat.max - stat.val) / stat.max * 100) : (stat.val / stat.max * 100);
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.6)', padding: '10px 12px', borderRadius: 8 } },
@@ -16351,7 +16408,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     stat.val + ' / ' + stat.max),
                   h('div', { style: { height: 4, background: 'rgba(100,116,139,0.3)', borderRadius: 2 } },
                     h('div', { style: { height: '100%', width: pct + '%', background: stat.color, borderRadius: 2 } })));
-              }))),
+              })),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 8 } },
+              __alloT('stem.cephalopodlab.day_burn_note_a', 'Every encounter also costs ') + DAY_BURN + __alloT('stem.cephalopodlab.day_burn_note_b', ' calories just to stay alive, whatever you choose.'))),
 
           // Current encounter
           h('div', { style: Object.assign({}, cardStyle(), {
@@ -16362,7 +16421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('span', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, enc.emoji),
               h('div', null,
                 h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em' } },
-                  enc.type === 'hunt' ? 'Hunting Opportunity' : enc.type === 'predator' ? '⚠️ Predator Encounter' : enc.type === 'environment' ? 'Environmental' : 'Social'),
+                  enc.type === 'hunt' ? __alloT('stem.cephalopodlab.day_type_hunt', 'Hunting Opportunity') : enc.type === 'predator' ? __alloT('stem.cephalopodlab.day_type_predator', '⚠️ Predator Encounter') : enc.type === 'environment' ? __alloT('stem.cephalopodlab.day_type_env', 'Environmental') : __alloT('stem.cephalopodlab.day_type_social', 'Social')),
                 h('div', { style: { fontSize: 16, fontWeight: 800, color: '#fde68a', marginTop: 2 } }, enc.title))),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 14 } }, enc.detail),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -16388,7 +16447,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                     h('span', { 'aria-hidden': 'true' }, entry.emoji),
                     h('span', { style: { fontWeight: 700, color: '#fde68a' } }, entry.title)),
-                  h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, entry.outcome));
+                  h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, entry.outcome),
+                  dayLogResult(entry));
               }))) : null,
 
           h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 8 } },
@@ -16406,16 +16466,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var survived = ended === 'survived';
         var heroEmoji = survived ? '🏆' : ended === 'starved' ? '💀' : ended === 'killed' ? '☠️' : '💀';
         var heroColor = survived ? '#86efac' : '#fca5a5';
-        var heroLabel = survived ? 'Survived the day' :
-                        ended === 'starved' ? 'Starved' :
-                        ended === 'killed' ? 'Killed' : 'Died';
+        var heroLabel = survived ? __alloT('stem.cephalopodlab.day_end_survived', 'Survived the day') :
+                        ended === 'starved' ? __alloT('stem.cephalopodlab.day_end_starved', 'Starved') :
+                        ended === 'killed' ? __alloT('stem.cephalopodlab.day_end_killed', 'Killed') : __alloT('stem.cephalopodlab.day_end_died', 'Died');
         var heroDetail = survived ?
-          'You made it through 10 encounters. In the real ocean, this is roughly one day in your life — most cephalopods live ~365-700 days like this before the optic gland triggers their post-reproductive death cascade.' :
-          ended === 'starved' ? 'Calories hit zero. Most cephalopod deaths in the wild are predation, but starvation is the second most common — especially during recovery from injury or environmental stress.' :
-          'Predation event. This is how most cephalopods die. The senescence cycle is what kills survivors; predation is what kills everyone else.';
+          __alloT('stem.cephalopodlab.day_end_survived_detail', 'You made it through 10 encounters. In the real ocean, this is roughly one day in your life — most cephalopods live ~365-700 days like this before the optic gland triggers their post-reproductive death cascade.') :
+          ended === 'starved' ? __alloT('stem.cephalopodlab.day_end_starved_detail', 'Calories hit zero. Hunting costs energy even when it fails, and every hour of staying alive burns more, so a run of missed strikes can starve an animal that was never caught.') :
+          __alloT('stem.cephalopodlab.day_end_killed_detail', 'Predation event. This is how most cephalopods die. The senescence cycle is what kills survivors; predation is what kills everyone else.');
         return h('div', null,
-          panelHeader(sp.emoji + ' ' + sp.name + ' — day ended',
-            'Encounter ' + done + ' of 10 was your last. Below: the final state + the day\'s full log.'),
+          panelHeader(sp.emoji + ' ' + sp.name + __alloT('stem.cephalopodlab.day_end_title', ' — day ended'),
+            __alloT('stem.cephalopodlab.day_end_intro_a', 'Encounter ') + done + __alloT('stem.cephalopodlab.day_end_intro_b', ' of 10 was your last. Below: the final state + the day\'s full log.')),
 
           h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 40,
             background: survived ? 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.6))'
@@ -16430,10 +16490,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.final_state', '📊 Final state')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 } },
               [
-                { lbl: 'Encounters faced', val: done + ' / 10', color: '#a78bfa' },
-                { lbl: 'Final calories', val: d.dayCalories || 0, color: '#fbbf24' },
-                { lbl: 'Final health', val: d.dayHealth || 0, color: '#fca5a5' },
-                { lbl: 'Arms lost', val: d.dayArmsLost || 0, color: '#fb923c' }
+                { lbl: __alloT('stem.cephalopodlab.day_final_faced', 'Encounters faced'), val: done + ' / 10', color: '#a78bfa' },
+                { lbl: __alloT('stem.cephalopodlab.day_final_calories', 'Final calories'), val: d.dayCalories || 0, color: '#fbbf24' },
+                { lbl: __alloT('stem.cephalopodlab.day_final_health', 'Final health'), val: d.dayHealth || 0, color: '#fca5a5' },
+                { lbl: __alloT('stem.cephalopodlab.day_final_arms', 'Arms lost'), val: d.dayArmsLost || 0, color: '#fb923c' }
               ].map(function(stat, i) {
                 return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8, borderLeft: '3px solid ' + stat.color } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, stat.lbl),
@@ -16453,14 +16513,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('span', { style: { fontWeight: 700, color: '#fde68a' } }, '#' + (i + 1) + ' — ' + entry.title)),
                   h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 2 } }, entry.outcome),
                   h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                    'Chose: ' + entry.choice));
+                    __alloT('stem.cephalopodlab.day_log_chose', 'Chose: ') + entry.choice),
+                  dayLogResult(entry));
               }))) : null,
 
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
             h('button', { onClick: function() { startDay(d.daySpeciesId); },
               style: { padding: '12px 26px', background: '#a78bfa', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-              '🔁 Another day as ' + sp.name),
+              __alloT('stem.cephalopodlab.day_again', '🔁 Another day as ') + sp.name),
             h('button', { onClick: function() { setCL({ dayActive: false, dayEnded: null }); },
               style: { padding: '12px 24px', background: 'transparent', color: '#c7d2fe',
                 border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
@@ -16604,8 +16665,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           );
         }
         return h('div', null,
-          panelHeader('🎨 Camouflage Lab',
-            'Cephalopod skin is the most sophisticated color-changing system in the animal kingdom. Three layers stacked: chromatophores (pigment sacs), iridophores (structural color reflectors), leucophores (white reflectors). They\'re mostly color-BLIND. Theory: they may sense color via skin opsins distributed across the body.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_camouflage_lab', '🎨 Camouflage Lab'),
+            __alloT('stem.cephalopodlab.hdr_cephalopod_skin_is_the_most_sophis', 'Cephalopod skin is the most sophisticated color-changing system in the animal kingdom. Three layers stacked: chromatophores (pigment sacs), iridophores (structural color reflectors), leucophores (white reflectors). They\'re mostly color-BLIND. Theory: they may sense color via skin opsins distributed across the body.')),
 
           // Educational primer on the 3 layers
           h('div', { style: cardStyle() },
@@ -16880,8 +16941,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         ];
 
         return h('div', null,
-          panelHeader('✨ Bioluminescence Lab',
-            'Cephalopods produce their own light. About 90% of deep-sea cephalopods are bioluminescent — vampire squid + firefly squid + glowing octopuses + the Hawaiian bobtail with its symbiotic bacterial partner. This module covers the chemistry, the photophore types, the bacterial symbiosis model, and an interactive counter-illumination simulator.'),
+          panelHeader(__alloT('stem.cephalopodlab.biolux_title', '✨ Bioluminescence Lab'),
+            __alloT('stem.cephalopodlab.biolux_intro', 'Cephalopods produce their own light. About a third of known species do (265 of 834): 71% of the open-ocean oegopsid squids, but only 3% of octopods (Otjacques et al. 2023). Vampire squid, firefly squid and the Hawaiian bobtail with its bacterial partner are among them. This module covers the chemistry, the photophore types, the bacterial symbiosis model, and an interactive counter-illumination simulator.')),
 
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.bioluminescence_sub_sections', 'Bioluminescence sub-sections'),
             style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
@@ -16925,9 +16986,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.why_it_s_cold_light', '🔬 Why it\'s "cold light"')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
                 h('p', { style: { margin: '0 0 10px 0' } },
-                  __alloT('stem.cephalopodlab.quantum_yield_is_the_fraction_of_react', 'Quantum yield is the fraction of reaction energy that becomes light. For an incandescent bulb, ~5% of the energy is light and ~95% is heat. For bioluminescence, '),
-                  h('b', { style: { color: '#fbbf24' } }, __alloT('stem.cephalopodlab.quantum_yield_can_reach_90', 'quantum yield can reach ~90%')),
-                  __alloT('stem.cephalopodlab.almost_all_the_energy_becomes_photons_', ' — almost all the energy becomes photons. This is why fireflies + bioluminescent organisms don\'t feel warm to the touch.')),
+                  __alloT('stem.cephalopodlab.quantum_yield_is_the_fraction_of_react', 'Quantum yield counts how many reacting molecules give off a photon. The best measured in nature is the firefly, about 41 in every 100 (Ando et al. 2008; the older ~90% figure came from 1960 methods). For comparison, an incandescent bulb turns only ~5% of its energy into light. In bioluminescence, '),
+                  h('b', { style: { color: '#fbbf24' } }, __alloT('stem.cephalopodlab.quantum_yield_can_reach_90', 'light comes straight from an excited molecule')),
+                  __alloT('stem.cephalopodlab.almost_all_the_energy_becomes_photons_', ', not from heating something until it glows, and each flash releases very little energy. That is why fireflies + bioluminescent organisms don\'t feel warm to the touch.')),
                 h('p', { style: { margin: 0 } },
                   __alloT('stem.cephalopodlab.it_s_also_why_bioluminescence_works_in', 'It\'s also why bioluminescence works in cold deep water (which would freeze a tropical glowworm). The reaction temperature is the surrounding water temperature; no thermoregulation required.')))),
 
@@ -17352,8 +17413,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           }));
 
         return h('div', null,
-          panelHeader('🧠 Body Plan & 9 Brains',
-            'Cephalopod anatomy is built around principles that look like a different evolutionary path entirely — distributed intelligence, multiple hearts, blue copper blood, a beak that\'s the only hard thing in the body, and a "mantle" that\'s both lung and engine. Click any labeled region.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_body_plan_9_brains', '🧠 Body Plan & 9 Brains'),
+            __alloT('stem.cephalopodlab.hdr_cephalopod_anatomy_is_built_around', 'Cephalopod anatomy is built around principles that look like a different evolutionary path entirely — distributed intelligence, multiple hearts, blue copper blood, a beak that\'s the only hard thing in the body, and a "mantle" that\'s both lung and engine. Click any labeled region.')),
 
           h('div', { style: cardStyle() },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 } },
@@ -17641,8 +17702,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         ];
 
         return h('div', null,
-          panelHeader('🕰️ Cephalopod Through Time',
-            'Half a billion years of cephalopod evolution. From the first 2cm Cambrian shell, through giant Ordovician predators, ammonite explosions, mass extinctions, and the surviving lineages that became modern octopus + squid + cuttlefish + nautilus. The oldest continuous animal lineage with intelligence-grade nervous systems on Earth.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_through_time', '🕰️ Cephalopod Through Time'),
+            __alloT('stem.cephalopodlab.hdr_half_a_billion_years_of_cephalopod', 'Half a billion years of cephalopod evolution. From the first 2cm Cambrian shell, through giant Ordovician predators, ammonite explosions, mass extinctions, and the surviving lineages that became modern octopus + squid + cuttlefish + nautilus. The oldest continuous animal lineage with intelligence-grade nervous systems on Earth.')),
 
           // Sub-tab strip
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.through_time_sub_sections', 'Through Time sub-sections'),
@@ -18002,8 +18063,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               __alloT('stem.cephalopodlab.jet_v_mostly_wasted_c', ' times faster than the body goes. Jetting this wastefully is why octopuses crawl whenever they can.') };
         var topLabel = sp.speedEstimate ? __alloT('stem.cephalopodlab.jet_bar_estimated', 'Estimated top speed') : __alloT('stem.cephalopodlab.jet_bar_documented', 'Documented top speed');
         return h('div', null,
-          panelHeader('🚀 Jet Propulsion Lab',
-            'Cephalopod jet propulsion uses Newton\'s 3rd law directly: water gets pushed out, cephalopod gets pushed forward. Mantle = reservoir, siphon = nozzle. The physics is computable — set the variables and see what comes out.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_jet_propulsion_lab', '🚀 Jet Propulsion Lab'),
+            __alloT('stem.cephalopodlab.hdr_cephalopod_jet_propulsion_uses_new', 'Cephalopod jet propulsion uses Newton\'s 3rd law directly: water gets pushed out, cephalopod gets pushed forward. Mantle = reservoir, siphon = nozzle. The physics is computable — set the variables and see what comes out.')),
 
           // Science primer
           h('div', { style: cardStyle() },
@@ -18212,34 +18273,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderIntelLab() {
         var CASES = {
-          otto: { name: __alloT('stem.cephalopodlab.otto_2', 'Otto'), species: 'Common Octopus', where: 'Sea Star Aquarium, Coburg, Germany',
+          otto: { name: __alloT('stem.cephalopodlab.otto_2', 'Otto'), species: __alloT('stem.cephalopodlab.intel_otto_species', 'Common Octopus'), where: __alloT('stem.cephalopodlab.intel_otto_where', 'Sea Star Aquarium, Coburg, Germany'),
             emoji: '💡', color: '#fbbf24',
-            story: 'In 2008, Otto repeatedly short-circuited the aquarium\'s lights by climbing to the rim of his tank, aiming his siphon at the bright overhead lamp, and shooting water at it. He did it deliberately, repeatedly, only when the aquarium was closed at night. Researchers eventually realized he was bothered by the lights AND figured out he could turn them off with water.',
-            takeaway: 'Cause-and-effect reasoning + tool-like use of a body part (the siphon) for a non-locomotor purpose. The lights weren\'t food. He was choosing comfort.' },
-          inky: { name: __alloT('stem.cephalopodlab.inky_2', 'Inky'), species: 'Common Octopus', where: 'National Aquarium of New Zealand',
+            story: __alloT('stem.cephalopodlab.intel_otto_story', 'In 2008, Otto repeatedly short-circuited the aquarium\'s lights by climbing to the rim of his tank, aiming his siphon at the bright overhead lamp, and shooting water at it. He did it deliberately, repeatedly, only when the aquarium was closed at night. Researchers eventually realized he was bothered by the lights AND figured out he could turn them off with water.'),
+            takeaway: __alloT('stem.cephalopodlab.intel_otto_takeaway', 'Cause-and-effect reasoning + tool-like use of a body part (the siphon) for a non-locomotor purpose. The lights weren\'t food. He was choosing comfort.') },
+          inky: { name: __alloT('stem.cephalopodlab.inky_2', 'Inky'), species: __alloT('stem.cephalopodlab.intel_inky_species', 'Common Octopus'), where: __alloT('stem.cephalopodlab.intel_inky_where', 'National Aquarium of New Zealand'),
             emoji: '🌊', color: '#38bdf8',
-            story: 'In April 2016, Inky squeezed out of his tank during the night, crawled 3 meters across the floor, found a 15-cm-diameter drainpipe leading to the ocean, and escaped to sea. Aquarium staff found a slime trail and a small tank-mate (Blotchy) who hadn\'t left.',
-            takeaway: 'Spatial reasoning + sequential planning under time pressure + the body-knows-where-the-beak-goes physical intelligence. Inky knew the geography of the room.' },
-          heidi: { name: __alloT('stem.cephalopodlab.heidi', 'Heidi'), species: 'Common Octopus', where: 'Alaska Pacific University, PBS documentary',
+            story: __alloT('stem.cephalopodlab.intel_inky_story', 'In early 2016, Inky squeezed out through a gap left at the top of his tank one night, crawled about 3 meters across the floor, and slipped down a 15-cm-wide drainpipe that runs to the sea. Staff found a wet trail and his tank-mate Blotchy, who had stayed. The aquarium told the story that April, about three months later.'),
+            takeaway: __alloT('stem.cephalopodlab.intel_inky_takeaway', 'Spatial reasoning + sequential planning under time pressure + the body-knows-where-the-beak-goes physical intelligence. Inky knew the geography of the room.') },
+          heidi: { name: __alloT('stem.cephalopodlab.heidi', 'Heidi'), species: __alloT('stem.cephalopodlab.intel_heidi_species', 'Day octopus (Octopus cyanea)'), where: __alloT('stem.cephalopodlab.intel_heidi_where', 'David Scheel\'s home, Anchorage (PBS Nature, 2019)'),
             emoji: '🌈', color: '#a78bfa',
-            story: 'During a 2019 documentary, biologist David Scheel filmed Heidi sleeping. Her skin cycled through complex color changes — pale, mottled, dark, with patterns associated in waking life with hunting and camouflage. Many biologists interpret this as evidence she was DREAMING.',
-            takeaway: 'Active brain processing during sleep that produces meaningful skin patterns. If chromatophores follow inner state, and skin changes during sleep, then the inner state of dreaming is being expressed externally. Direct view of a non-human dream-state.' },
-          coconut: { name: __alloT('stem.cephalopodlab.coconut_octopus_tool_use_2', 'Coconut Octopus tool use'), species: 'Amphioctopus marginatus', where: 'Indonesia (Finn et al. 2009 paper)',
+            story: __alloT('stem.cephalopodlab.intel_heidi_story', 'In the 2019 PBS film "Octopus: Making Contact", biologist David Scheel filmed Heidi, a day octopus he kept at home, while she slept. Her skin cycled through pale, mottled and dark patterns like the ones she used awake for hunting and camouflage. Scheel suggested she might be dreaming; other scientists were skeptical.'),
+            takeaway: __alloT('stem.cephalopodlab.intel_heidi_takeaway', 'One filmed animal raised a question that lab studies then took up. Octopuses have two sleep stages, and in "active sleep" the skin replays patterns seen while awake, with wake-like brain activity (Medeiros et al. 2021; Pophale et al. 2023). Whether that is dreaming is still an open question.') },
+          coconut: { name: __alloT('stem.cephalopodlab.coconut_octopus_tool_use_2', 'Coconut Octopus tool use'), species: __alloT('stem.cephalopodlab.intel_coconut_species', 'Amphioctopus marginatus'), where: __alloT('stem.cephalopodlab.intel_coconut_where', 'Indonesia (Finn et al. 2009 paper)'),
             emoji: '🥥', color: '#fb923c',
-            story: 'Finn, Tregenza & Norman documented coconut octopuses collecting discarded coconut shell halves, "stilt-walking" them across open seafloor on rigid arms (looking awkward, like the shell was bothering them), then later assembling pairs of shells as a hideout when needed.',
-            takeaway: 'The first confirmed tool use in an invertebrate. The shells are useless during transport — only valuable for future shelter. That\'s the technical definition of tool use: planning for future utility, not immediate.' },
-          mirror: { name: __alloT('stem.cephalopodlab.mirror_self_recognition', 'Mirror self-recognition'), species: 'Various', where: 'Aquariums + labs worldwide',
+            story: __alloT('stem.cephalopodlab.intel_coconut_story', 'Finn, Tregenza & Norman documented coconut octopuses collecting discarded coconut shell halves, "stilt-walking" them across open seafloor on rigid arms (looking awkward, like the shell was bothering them), then later assembling pairs of shells as a hideout when needed.'),
+            takeaway: __alloT('stem.cephalopodlab.intel_coconut_takeaway', 'The first confirmed tool use in an invertebrate. The shells are useless during transport — only valuable for future shelter. That\'s the technical definition of tool use: planning for future utility, not immediate.') },
+          mirror: { name: __alloT('stem.cephalopodlab.mirror_self_recognition', 'Mirror self-recognition'), species: __alloT('stem.cephalopodlab.intel_mirror_species', 'Various'), where: __alloT('stem.cephalopodlab.intel_mirror_where', 'Aquariums + labs worldwide'),
             emoji: '🪞', color: '#86efac',
-            story: 'The mirror test (Gallup, 1970) checks if an animal recognizes its reflection as itself by marking the body somewhere only visible in the mirror — then watching whether the animal touches the mark. Octopuses have mixed results. Some studies show interest in mirrors without classic self-recognition; others find they ignore reflections entirely (suggesting they may not pass the test, OR may be using a different cognitive framework where self-recognition isn\'t their priority).',
-            takeaway: 'Maybe cephalopod consciousness doesn\'t work through the same self/other categories we use. Distributed intelligence in arm ganglia might have a completely different mental architecture — no central "I" to recognize.' },
-          opticgland: { name: __alloT('stem.cephalopodlab.optic_gland_programmed_death', 'Optic Gland + Programmed Death'), species: 'Common Octopus', where: 'Wang Lab, U Chicago (2018, 2022)',
+            story: __alloT('stem.cephalopodlab.intel_mirror_story', 'The mirror test (Gallup, 1970) checks if an animal recognizes its reflection as itself by marking the body somewhere only visible in the mirror — then watching whether the animal touches the mark. Octopuses have mixed results. Some studies show interest in mirrors without classic self-recognition; others find they ignore reflections entirely (suggesting they may not pass the test, OR may be using a different cognitive framework where self-recognition isn\'t their priority).'),
+            takeaway: __alloT('stem.cephalopodlab.intel_mirror_takeaway', 'Maybe cephalopod consciousness doesn\'t work through the same self/other categories we use. Distributed intelligence in arm ganglia might have a completely different mental architecture — no central "I" to recognize.') },
+          opticgland: { name: __alloT('stem.cephalopodlab.optic_gland_programmed_death', 'Optic Gland + Programmed Death'), species: __alloT('stem.cephalopodlab.intel_opticgland_species', 'Octopus hummelincki; California two-spot octopus'), where: __alloT('stem.cephalopodlab.intel_opticgland_where', 'Wodinsky 1977; Wang lab, U Chicago (2018, 2022)'),
             emoji: '⏳', color: '#fca5a5',
-            story: 'In 2018, Wang et al. identified the cholesterol-producing optic gland as the trigger of post-reproductive senescence in octopuses. After mating, the gland releases steroid hormones that cause the octopus to stop eating, self-mutilate, and die within weeks. Removing the gland in lab octopuses extended life dramatically — but the now-zombie octopuses also stopped brooding their eggs.',
-            takeaway: 'Octopus death isn\'t accidental — it\'s programmed. The same gland that triggers reproduction also triggers death. This is one of the cleanest examples of programmed senescence ("planned obsolescence") known in any animal.' },
-          consciousness: { name: __alloT('stem.cephalopodlab.the_consciousness_question', 'The consciousness question'), species: 'All cephalopods', where: 'Philosophy + neuroscience literature',
+            story: __alloT('stem.cephalopodlab.intel_opticgland_story', 'In 1977, Jerome Wodinsky removed the optic glands from female octopuses (Octopus hummelincki) that were brooding eggs. They stopped brooding, started eating again and lived far longer. The glands sit near the eyes and control both sexual maturity and the decline after breeding. In 2018 and 2022 the Wang lab at the University of Chicago traced the chemistry: after mating the gland switches to making steroid hormones from cholesterol, and the octopus stops eating, can injure itself, and dies within weeks.'),
+            takeaway: __alloT('stem.cephalopodlab.intel_opticgland_takeaway', 'Octopus death isn\'t accidental — it\'s programmed. The same gland that triggers reproduction also triggers death. This is one of the cleanest examples of programmed senescence ("planned obsolescence") known in any animal.') },
+          consciousness: { name: __alloT('stem.cephalopodlab.the_consciousness_question', 'The consciousness question'), species: __alloT('stem.cephalopodlab.intel_consciousness_species', 'All cephalopods'), where: __alloT('stem.cephalopodlab.intel_consciousness_where', 'Philosophy + neuroscience literature'),
             emoji: '🤔', color: '#c7d2fe',
-            story: 'The Cambridge Declaration on Consciousness (2012, signed at FCMConference) named cephalopods as one of the non-mammalian animals showing evidence of consciousness-correlated brain substrates. The UK recognized octopuses as sentient beings in 2021 (Animal Welfare (Sentience) Act, expanded after the LSE 2021 review by Birch et al.). In 2024, several countries are debating whether octopus farming should be banned outright on welfare grounds.',
-            takeaway: 'Cephalopods may experience subjective states. Their nervous system architecture is so different from ours that "what it is like" to be an octopus might be fundamentally alien — but the experiential dimension is increasingly hard to deny. This has direct implications for fisheries, aquaculture, and lab research ethics.' }
+            story: __alloT('stem.cephalopodlab.intel_consciousness_story', 'The Cambridge Declaration on Consciousness (2012, signed at FCMConference) named cephalopods as one of the non-mammalian animals showing evidence of consciousness-correlated brain substrates. In November 2021 the UK government accepted an evidence review from the LSE (Birch et al.) and added cephalopods and decapod crustaceans to the Animal Welfare (Sentience) Act, which became law in April 2022. In 2024 Washington and California became the first US states to ban octopus farming.'),
+            takeaway: __alloT('stem.cephalopodlab.intel_consciousness_takeaway', 'Cephalopods may experience subjective states. Their nervous system architecture is so different from ours that "what it is like" to be an octopus might be fundamentally alien — but the experiential dimension is increasingly hard to deny. This has direct implications for fisheries, aquaculture, and lab research ethics.') }
         };
         var caseId = d.intelSelectedCase || 'otto';
         var c = CASES[caseId];
@@ -18297,8 +18358,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     }))));
             })));
         return h('div', null,
-          panelHeader('💡 Intelligence Lab',
-            'Seven case studies that built our current understanding of cephalopod cognition. Each is a documented research finding or famous individual that changed how biologists think about non-human minds.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_intelligence_lab', '💡 Intelligence Lab'),
+            __alloT('stem.cephalopodlab.hdr_seven_case_studies_that_built_our', 'Seven case studies that built our current understanding of cephalopod cognition. Each is a documented research finding or famous individual that changed how biologists think about non-human minds.')),
 
           evidenceLadder,
 
@@ -18400,7 +18461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             setup: 'Multiple paradigms: (1) measure behavioral responses to noxious stimuli, (2) test for sensitization (does prior noxious stimulus increase response to later mild stimulus?), (3) check whether anesthetics block nociceptive responses, (4) look for self-protective behaviors after injury.',
             findings: 'Cephalopods show ALL classic indicators of pain perception: location-specific protective responses, sensitization after injury, anesthetic-blockable nociception, behavioral changes that persist beyond the injury moment. The 2021 LSE review concluded "very strong evidence" of pain perception across cephalopods + decapod crustaceans.',
             limits: 'You can\'t directly measure subjective suffering — we infer from behavioral + neurophysiological proxies. Strict philosophers note this is the same evidence we use for fish + other animals where pain is now widely accepted.',
-            why: 'Direct basis for the UK 2021 Animal Welfare (Sentience) Act amendment recognizing cephalopods + decapods as sentient. Has practical impact: governs research ethics review, aquaculture welfare standards, slaughter methods.' },
+            why: 'Direct basis for adding cephalopods + decapods to the UK Animal Welfare (Sentience) Act 2022, which recognizes them as sentient. Has practical impact: governs research ethics review, aquaculture welfare standards, slaughter methods.' },
           { id: 'personality', name: __alloT('stem.cephalopodlab.personality_studies', 'Personality Studies'), icon: '🎭', color: '#38bdf8',
             era: 'Mather + Anderson 1993 onward',
             setup: 'Repeated behavioral observations of individual cephalopods. Score each on dimensions: bold vs shy, exploratory vs cautious, active vs passive, reactivity to novel objects. Test whether scores are consistent across time + situations.',
@@ -18422,8 +18483,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         ];
         var sel = METHODS.find(function(m) { return m.id === (d.methodsSelected || 'ymaze'); }) || METHODS[0];
         return h('div', null,
-          panelHeader('🔬 Research Methods Lab',
-            'How we actually study cephalopods. Every claim in the Intelligence Lab + Conservation Lab is grounded in one or more of these methodological approaches. Each method has strengths + blind spots — the science is built from triangulating across multiple approaches.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_research_methods_lab', '🔬 Research Methods Lab'),
+            __alloT('stem.cephalopodlab.hdr_how_we_actually_study_cephalopods', 'How we actually study cephalopods. Every claim in the Intelligence Lab + Conservation Lab is grounded in one or more of these methodological approaches. Each method has strengths + blind spots — the science is built from triangulating across multiple approaches.')),
 
           // Method picker
           h('div', { style: cardStyle() },
@@ -18617,8 +18678,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         ];
         var RATING_TINT = ['rgba(148,163,184,0.06)', 'rgba(148,163,184,0.14)', 'rgba(134,239,172,0.16)', 'rgba(251,191,36,0.22)'];
         return h('div', null,
-          panelHeader('🧩 Comparative Cognition Lab',
-            'Cephalopod intelligence in context. Compared across five animals from different evolutionary lineages — bees (invertebrate, 600M years apart), octopus (invertebrate, 600M years), corvids (vertebrate bird, 320M), dolphins (marine mammal, 95M), chimps (primate, 6M). All five evolved sophisticated cognition. The architectures are different. The capabilities overlap.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_comparative_cognition_lab', '🧩 Comparative Cognition Lab'),
+            __alloT('stem.cephalopodlab.hdr_cephalopod_intelligence_in_context', 'Cephalopod intelligence in context. Compared across five animals from different evolutionary lineages — bees (invertebrate, 600M years apart), octopus (invertebrate, 600M years), corvids (vertebrate bird, 320M), dolphins (marine mammal, 95M), chimps (primate, 6M). All five evolved sophisticated cognition. The architectures are different. The capabilities overlap.')),
 
           // Sub-tab strip
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.comparative_sub_sections', 'Comparative sub-sections'),
@@ -18829,8 +18890,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'welfare', label: __alloT('stem.cephalopodlab.sentience_welfare', 'Sentience + Welfare'), icon: '⚖️' }
         ];
         return h('div', null,
-          panelHeader('🌍 Conservation & Welfare',
-            'The fast-changing political + ethical landscape around cephalopods. Populations are RISING globally even as fish populations decline (climate-change winners). UK recognized cephalopods as sentient in 2021. Octopus farming is being debated. This is the section about the future.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_conservation_welfare', '🌍 Conservation & Welfare'),
+            __alloT('stem.cephalopodlab.hdr_the_fast_changing_political_ethica', 'The fast-changing political + ethical landscape around cephalopods. Populations are RISING globally even as fish populations decline (climate-change winners). UK recognized cephalopods as sentient in 2021. Octopus farming is being debated. This is the section about the future.')),
 
           // Sub-tab strip
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.conservation_sub_sections', 'Conservation sub-sections'),
@@ -19089,17 +19150,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             impact: 'Public connects with named individuals more than abstract species. The celebrity-octopus framing was instrumental in shifting cephalopod policy from "interesting invertebrate" to "sentient being deserving protection."' },
           { name: __alloT('stem.cephalopodlab.the_cambridge_declaration_on_conscious', 'The Cambridge Declaration on Consciousness'), creator: 'International scientists at Francis Crick Memorial Conference', year: '2012', emoji: '📜', color: '#dc2626',
             description: __alloT('stem.cephalopodlab.a_formal_scientific_declaration_signed', 'A formal scientific declaration signed at Cambridge, naming cephalopods alongside mammals + birds as showing evidence of consciousness-correlated brain substrates. Foundational moment in invertebrate cognition advocacy.'),
-            impact: 'Cited in every subsequent legal + policy document on cephalopod sentience. Direct line from the Declaration to the UK Animal Welfare (Sentience) Act 2021. Changed the default scientific position from "probably not sentient" to "probably sentient."' },
+            impact: 'Cited in every subsequent legal + policy document on cephalopod sentience. Direct line from the Declaration to the UK Animal Welfare (Sentience) Act 2022. Changed the default scientific position from "probably not sentient" to "probably sentient."' },
           { name: __alloT('stem.cephalopodlab.pop_culture_cephalopod_aliens', 'Pop culture cephalopod-aliens'), creator: 'Hollywood + video games', year: '2010s-2020s', emoji: '🛸', color: '#0ea5e9',
             description: __alloT('stem.cephalopodlab.cephalopod_inspired_aliens_are_now_a_r', 'Cephalopod-inspired aliens are now a recurring science-fiction trope. The Heptapods of "Arrival" (2016) use radial language reminiscent of octopus distributed intelligence. "Soma" video game features deep-sea AI in cephalopod-like bodies. The aliens in "Annihilation" reference cephalopod chromatophore biology.'),
             impact: 'Reflects the cultural recognition that cephalopods are the closest thing to genuine "alien intelligence" we have. Pop culture is doing what cephalopod science only recently named: treating these animals as a foreign mode of mind rather than a primitive mode.' },
           { name: __alloT('stem.cephalopodlab.the_welfare_movement_ongoing_policy', 'The welfare movement + ongoing policy'), creator: 'Activists, scientists, legislators (2010-2025)', year: 'Ongoing', emoji: '⚖️', color: '#86efac',
-            description: __alloT('stem.cephalopodlab.eu_directive_2010_63_first_gave_cephal', 'EU Directive 2010/63 first gave cephalopods invertebrate-equivalent research protections. UK Sentience Act 2021 formalized sentience recognition. Washington State 2024 preemptive octopus aquaculture ban. California + Hawaii proposed similar bans. The Nueva Pescanova farm proposal remains a focal point.'),
+            description: __alloT('stem.cephalopodlab.eu_directive_2010_63_first_gave_cephal', 'EU Directive 2010/63 first gave cephalopods invertebrate-equivalent research protections. UK Animal Welfare (Sentience) Act 2022 formalized sentience recognition. Washington State 2024 preemptive octopus aquaculture ban; California enacted one later in 2024 (AB 3162) and Hawaii has proposed one. The Nueva Pescanova farm proposal remains a focal point.'),
             impact: 'Cephalopods are now central to the broader animal-welfare conversation. As industrial aquaculture + climate change reshape the ocean, decisions about cephalopod treatment will set precedent for marine invertebrate welfare more broadly. The conversation is genuinely open.' }
         ];
         return h('div', null,
-          panelHeader('🎭 Cephalopods in Culture',
-            'For thousands of years, humans have related to cephalopods through myth, art, food, and (recently) ethics. The biological perspective is only one of many. From Norse sailors\' Kraken to Ainu deities to Aristotle\'s observations to "My Octopus Teacher," the cultural history is rich + ongoing.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopods_in_culture', '🎭 Cephalopods in Culture'),
+            __alloT('stem.cephalopodlab.hdr_for_thousands_of_years_humans_have', 'For thousands of years, humans have related to cephalopods through myth, art, food, and (recently) ethics. The biological perspective is only one of many. From Norse sailors\' Kraken to Ainu deities to Aristotle\'s observations to "My Octopus Teacher," the cultural history is rich + ongoing.')),
 
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.culture_sub_sections', 'Culture sub-sections'),
             style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
@@ -19278,13 +19339,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             commonSpecies: 'Colossal squid (Mesonychoteuthis hamiltoni — known from sperm whale stomachs + fishery bycatch), Antarctic neosquid, Pareledone octopus',
             bestHabitats: 'Deep water (200m+) — not directly accessible to most students. Beachings + fishery bycatch are the only realistic encounter routes.',
             bestTimes: 'Antarctic summer (December-February) for research vessel access',
-            specialNote: 'Direct observation requires research vessel access. Most students engage via aquarium specimens (Te Papa, NZ has the only intact adult colossal squid) + sperm whale stomach content studies.',
+            specialNote: 'Direct observation requires research vessel access. Most students engage via aquarium specimens (Te Papa, NZ displays the most complete colossal squid ever recovered) + sperm whale stomach content studies.',
             access: 'Realistic only for research-track students with institutional partnerships. Inclusion here for completeness.' }
         ];
         var sel = REGIONS.find(function(r) { return r.id === (d.fieldDayRegion || 'pnw'); }) || REGIONS[0];
         return h('div', null,
-          panelHeader('🤿 Field Day Guide',
-            'Now go look. Cephalopods are remarkably observable in the wild — once you know where to look, when to look, and what to look for. This guide covers regional habitats, identification signs, ethical observation, and how to contribute your observations to real research.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_field_day_guide', '🤿 Field Day Guide'),
+            __alloT('stem.cephalopodlab.hdr_now_go_look_cephalopods_are_remark', 'Now go look. Cephalopods are remarkably observable in the wild — once you know where to look, when to look, and what to look for. This guide covers regional habitats, identification signs, ethical observation, and how to contribute your observations to real research.')),
 
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.field_guide_sub_sections', 'Field guide sub-sections'),
             style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
@@ -19547,6 +19608,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var coarseWeight = sub.tCoarse > 50 ? 2.2 : 1.0;
         var raw = 100 * (dBright*dBright + dHue*dHue + coarseWeight * dCoarse*dCoarse);
         var detection = Math.max(0, Math.min(100, Math.round(raw)));
+        // The one thing the learner sees: hidden or spotted. The threshold is
+        // deliberately never shown (validated H7b'' design, see the badge below).
+        var CH_HIDDEN_BELOW = 30;
+        var chHidden = detection < CH_HIDDEN_BELOW;
+        var chStateWord = function(isHidden) { return isHidden ? __alloT('stem.cephalopodlab.ch_state_hidden', 'hidden') : __alloT('stem.cephalopodlab.ch_state_spotted', 'spotted'); };
+        // A patch colour a visible step lighter or darker than the substrate.
+        var chShade = function(hex, f) {
+          var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+          var t = f < 0 ? 0 : 255, p = Math.abs(f);
+          var c = function(v) { return Math.round(v + (t - v) * p); };
+          return 'rgb(' + c(r) + ',' + c(g) + ',' + c(b) + ')';
+        };
         // Octopus surface color derived from sliders
         function lerp(a,b,t){ return a + (b-a) * Math.max(0, Math.min(1, t)); }
         function octoColor() {
@@ -19558,16 +19631,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           return 'rgb(' + r + ',' + g + ',' + b + ')';
         }
         function logObs() {
-          var obs = { substrate: st.substrate, b: st.brightness, h: st.hue, c: st.coarseness, det: detection };
+          var obs = { substrate: st.substrate, b: st.brightness, h: st.hue, c: st.coarseness, hidden: chHidden };
           setCH({ log: (st.log || []).concat([obs]).slice(-8) });
         }
         return h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(99,102,241,0.25)' } },
           h('h4', { style: { fontSize: 14, fontWeight: 900, color: '#c7d2fe', margin: '0 0 4px' } }, __alloT('stem.cephalopodlab.camouflage_discovery', '🎨 Camouflage discovery')),
           h('p', { style: { fontSize: 12, color: '#e2e8f0', margin: '0 0 12px', lineHeight: 1.6 } },
-            'You are the octopus. Pick a background. Adjust your skin\'s brightness, hue, and pattern coarseness. The red predator-eye fades as you become harder to detect. There is no score number, no "right answer," and no reveal button. Sweep the sliders. Notice when detection drops fast and when it does not. Type what you discover.'),
+            __alloT('stem.cephalopodlab.ch_intro', 'You are the octopus. Pick a background. Adjust your skin\'s brightness, hue, and pattern coarseness. A predator\'s-eye badge flips between spotted and hidden as your skin changes. There is no score number, no "right answer," and no reveal button. Sweep the sliders. Notice which changes flip it and which do not. Type what you discover.')),
+          // Announce the flip; the badge itself sits inside the diagram.
+          h('div', { className: 'sr-only', role: 'status', 'aria-live': 'polite' },
+            __alloT('stem.cephalopodlab.ch_status_prefix', 'Predator view: ') + chStateWord(chHidden)),
           // Background + octopus visualization
           h('div', { style: { marginBottom: 12, borderRadius: 8, border: '1px solid rgba(148,163,184,0.3)', overflow: 'hidden', background: sub.color } },
-            h('svg', { viewBox: '0 0 320 140', role: 'img', 'aria-label': __alloT('stem.cephalopodlab.camouflage_visualization_accessible_summary', 'Camouflage visualization') + ': substrate ' + sub.label + ', brightness ' + st.brightness + ' percent, hue ' + st.hue + ' percent, coarseness ' + st.coarseness + ' percent, ' + (detection < 30 ? 'hidden' : 'spotted') + '.', style: { width: '100%', height: 144, display: 'block' } },
+            h('svg', { viewBox: '0 0 320 140', role: 'img', 'aria-label': __alloT('stem.cephalopodlab.camouflage_visualization_accessible_summary', 'Camouflage visualization') + __alloT('stem.cephalopodlab.ch_sum_substrate', ': substrate ') + sub.label + __alloT('stem.cephalopodlab.ch_sum_brightness', ', brightness ') + st.brightness + __alloT('stem.cephalopodlab.ch_sum_hue', ' percent, hue ') + st.hue + __alloT('stem.cephalopodlab.ch_sum_coarseness', ' percent, coarseness ') + st.coarseness + __alloT('stem.cephalopodlab.ch_sum_end', ' percent, ') + chStateWord(chHidden) + '.', style: { width: '100%', height: 144, display: 'block' } },
               // Background fill
               h('rect', { x: 0, y: 0, width: 320, height: 140, fill: sub.color }),
               // Pattern dots (more dots = coarser pattern)
@@ -19577,7 +19653,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 for (var i = 0; i < dotCount; i++) {
                   var px = ((i * 47) % 320);
                   var py = ((i * 31) % 140);
-                  dots.push(h('circle', { key: 'bd' + i, cx: px, cy: py, r: 4 + (i % 3), fill: sub.color, opacity: 0.55, stroke: '#000', strokeWidth: 0.4 }));
+                  // patches a visible step lighter/darker, bigger on coarse ground;
+                  // they were filled with the background's own colour
+                  dots.push(h('circle', { key: 'bd' + i, cx: px, cy: py, r: 4 + (sub.tCoarse / 100) * 7 + (i % 3), fill: chShade(sub.color, i % 2 ? -0.35 : 0.3), opacity: 0.8 }));
                 }
                 return dots;
               })(),
@@ -19605,15 +19683,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               // Discrete state marker (per validated H7b'' design): binary feedback, not a continuous gradient.
               // The threshold (30) is intentionally not shown to the learner — they observe the flip, they do not optimize toward a number.
               (function() {
-                var hidden = detection < 30;
+                var hidden = chHidden;
                 return h('g', { transform: 'translate(280, 25)' },
                   h('rect', { x: -32, y: -10, width: 64, height: 20, rx: 4, fill: hidden ? '#dcfce7' : '#fee2e2', stroke: hidden ? '#16a34a' : '#dc2626', strokeWidth: 1.2 }),
-                  h('text', { x: 0, y: 4, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: hidden ? '#15803d' : '#b91c1c' }, hidden ? '🌿 hidden' : '👁 spotted')
+                  h('text', { x: 0, y: 4, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: hidden ? '#15803d' : '#b91c1c' }, (hidden ? '🌿 ' : '👁 ') + chStateWord(hidden))
                 );
               })()
             ),
             h('div', { style: { fontSize: 10, color: '#cbd5e1', padding: '4px 8px', background: 'rgba(2,6,23,0.65)', textAlign: 'center' } },
-              'Substrate: ' + sub.label + '   |   Brightness slider ' + st.brightness + '%, Hue ' + st.hue + '%, Coarseness ' + st.coarseness + '%')
+              __alloT('stem.cephalopodlab.ch_foot_substrate', 'Substrate: ') + sub.label + __alloT('stem.cephalopodlab.ch_foot_brightness', '   |   Brightness slider ') + st.brightness + __alloT('stem.cephalopodlab.ch_foot_hue', '%, Hue ') + st.hue + __alloT('stem.cephalopodlab.ch_foot_coarseness', '%, Coarseness ') + st.coarseness + '%')
           ),
           // Substrate picker (discrete choice — but pure environment, not answer)
           h('div', { style: { marginBottom: 12 } },
@@ -19652,24 +19730,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 12 } },
             h('button', { onClick: logObs, style: { padding: '5px 10px', borderRadius: 7, background: 'rgba(15,23,42,0.7)', fontSize: 11, fontWeight: 700, color: '#e2e8f0', border: '1px solid rgba(148,163,184,0.45)', cursor: 'pointer', fontFamily: 'inherit' } }, __alloT('stem.cephalopodlab.log_observation', '📋 Log observation')),
             h('button', { onClick: function() { setCH({ substrate: 'sand', brightness: 50, hue: 50, coarseness: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '5px 10px', borderRadius: 7, background: 'transparent', fontSize: 11, fontWeight: 700, color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.45)', cursor: 'pointer', fontFamily: 'inherit' } }, __alloT('stem.cephalopodlab.reset', '↺ Reset')),
-            (st.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (st.log || []).length + ' observations logged')
+            (st.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (st.log || []).length + __alloT('stem.cephalopodlab.ch_obs_logged', ' observations logged'))
           ),
           // Observation log table
           (st.log || []).length > 0 && h('div', { style: { marginBottom: 12, overflowX: 'auto' } },
             h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#e2e8f0' } },
               h('caption', { className: 'sr-only' }, __alloT('stem.cephalopodlab.camouflage_observations_caption', 'Camouflage observations')),
               h('thead', null, h('tr', { style: { background: 'rgba(15,23,42,0.75)' } },
-                ['substrate', 'brightness', 'hue', 'coarseness', 'detection'].map(function(c, i) {
+                [__alloT('stem.cephalopodlab.ch_col_substrate', 'substrate'), __alloT('stem.cephalopodlab.ch_col_brightness', 'brightness'), __alloT('stem.cephalopodlab.ch_col_hue', 'hue'), __alloT('stem.cephalopodlab.ch_col_coarseness', 'coarseness'), __alloT('stem.cephalopodlab.ch_col_predator', 'predator view')].map(function(c, i) {
                   return h('th', { key: 'h' + i, scope: 'col', style: { padding: '4px 8px', border: '1px solid rgba(148,163,184,0.3)', textAlign: 'left' } }, c);
                 })
               )),
               h('tbody', null, st.log.map(function(o, idx) {
-                return h('tr', { key: 'lr' + idx, style: { background: o.det < 20 ? 'rgba(52,211,153,0.12)' : (o.det > 60 ? 'rgba(251,113,133,0.12)' : 'transparent') } },
-                  h('th', { scope: 'row', style: { padding: '4px 8px', border: '1px solid rgba(148,163,184,0.3)', textAlign: 'left', fontWeight: 700, color: '#cbd5e1' } }, o.substrate),
+                // older saves kept the raw score; read it as the state it produced
+                var oHidden = typeof o.hidden === 'boolean' ? o.hidden : (typeof o.det === 'number' && o.det < CH_HIDDEN_BELOW);
+                var oSub = SUBSTRATES[o.substrate];
+                return h('tr', { key: 'lr' + idx, style: { background: oHidden ? 'rgba(52,211,153,0.12)' : 'rgba(251,113,133,0.12)' } },
+                  h('th', { scope: 'row', style: { padding: '4px 8px', border: '1px solid rgba(148,163,184,0.3)', textAlign: 'left', fontWeight: 700, color: '#cbd5e1' } }, oSub ? oSub.label : o.substrate),
                   h('td', { style: { padding: '4px 8px', border: '1px solid rgba(148,163,184,0.3)', fontFamily: 'ui-monospace, Menlo, monospace' } }, o.b),
                   h('td', { style: { padding: '4px 8px', border: '1px solid rgba(148,163,184,0.3)', fontFamily: 'ui-monospace, Menlo, monospace' } }, o.h),
                   h('td', { style: { padding: '4px 8px', border: '1px solid rgba(148,163,184,0.3)', fontFamily: 'ui-monospace, Menlo, monospace' } }, o.c),
-                  h('td', { style: { padding: '4px 8px', border: '1px solid rgba(148,163,184,0.3)', fontFamily: 'ui-monospace, Menlo, monospace' } }, o.det)
+                  h('td', { style: { padding: '4px 8px', border: '1px solid rgba(148,163,184,0.3)', fontWeight: 700, color: oHidden ? '#86efac' : '#fca5a5' } }, (oHidden ? '🌿 ' : '👁 ') + chStateWord(oHidden))
                 );
               }))
             )
@@ -19721,7 +19802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               __alloT('stem.cephalopodlab.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
           ),
           h('div', { style: { marginTop: 12, padding: 8, borderRadius: 7, background: 'rgba(2,6,23,0.5)', border: '1px solid rgba(148,163,184,0.28)', fontSize: 10, color: '#cbd5e1', fontStyle: 'italic' } },
-            __alloT('stem.cephalopodlab.design_note_no_score_number_no_right_a', 'Design note: no score number, no right-answer chip, no reveal button. Detection is shown visually (predator eye fades) so the feedback signal does not become a score to maximize. The point is the inquiry, not the number.'))
+            __alloT('stem.cephalopodlab.design_note_no_score_number_no_right_a', 'Design note: no score number, no right-answer chip, no reveal button. Detection is shown only as a hidden or spotted flip, never as a number, so the feedback signal does not become a score to maximize. The point is the inquiry, not the number.'))
         );
       }
 
@@ -19743,8 +19824,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // Award an achievement on first open
         try { unlockAchievement('glossaryReader'); } catch (_) {}
         return h('div', null,
-          panelHeader('📑 Glossary',
-            'Every term used in this simulator, with a teacher-grade definition, etymology, related terms, and a peer-reviewed citation. Search to filter.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_glossary', '📑 Glossary'),
+            __alloT('stem.cephalopodlab.hdr_every_term_used_in_this_simulator', 'Every term used in this simulator, with a teacher-grade definition, etymology, related terms, and a peer-reviewed citation. Search to filter.')),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }) },
             h('label', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, __alloT('stem.cephalopodlab.search', '🔍 Search')),
             h('input', {
@@ -19879,8 +19960,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         var lessonIds = Object.keys(LESSON_PLANS);
         return h('div', null,
-          panelHeader('👩‍🏫 Educator Hub',
-            'Classroom-ready lesson plans aligned to NGSS, AP Biology, and AP Environmental Science. Each lesson is a 45-minute activity built around this simulator as the engagement and sense-making surface. Print, project, or adapt for your students.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_educator_hub', '👩‍🏫 Educator Hub'),
+            __alloT('stem.cephalopodlab.hdr_classroom_ready_lesson_plans_align', 'Classroom-ready lesson plans aligned to NGSS, AP Biology, and AP Environmental Science. Each lesson is a 45-minute activity built around this simulator as the engagement and sense-making surface. Print, project, or adapt for your students.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.what_s_included', '🎓 What\'s included')),
             h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.8, margin: 0, paddingLeft: 22 } },
@@ -19934,8 +20015,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // popular-science framing.
       function renderScientists() {
         return h('div', null,
-          panelHeader('🔬 Cephalopod Scientists',
-            'Every fact in this simulator comes from a real researcher. Meet some of the people whose work shapes our understanding of cephalopods today — including women + researchers of color who are major figures in the field.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_scientists', '🔬 Cephalopod Scientists'),
+            __alloT('stem.cephalopodlab.hdr_every_fact_in_this_simulator_comes', 'Every fact in this simulator comes from a real researcher. Meet some of the people whose work shapes our understanding of cephalopods today — including women + researchers of color who are major figures in the field.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.the_community', '👥 The community')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -19983,8 +20064,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           return (a.authors || '').localeCompare(b.authors || '');
         });
         return h('div', null,
-          panelHeader('📚 Bibliography',
-            'Every peer-reviewed citation referenced in this simulator. Built for you to verify our claims, dig deeper, or extend a class research project. Filter by author, title, journal, or year.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_bibliography', '📚 Bibliography'),
+            __alloT('stem.cephalopodlab.hdr_every_peer_reviewed_citation_refer', 'Every peer-reviewed citation referenced in this simulator. Built for you to verify our claims, dig deeper, or extend a class research project. Filter by author, title, journal, or year.')),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }) },
             h('label', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, __alloT('stem.cephalopodlab.search_2', '🔍 Search')),
             h('input', {
@@ -20118,7 +20199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               style: { background: 'transparent', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, marginBottom: 12, fontFamily: 'inherit' },
               'aria-label': __alloT('stem.cephalopodlab.back_to_question_view', 'Back to question view'),
             }, __alloT('stem.cephalopodlab.back_to_questions', '◀ Back to questions')),
-            panelHeader('📊 Quiz Recap', 'Your answers + the full explanation for each question. Use this for reflection or share with your teacher.'),
+            panelHeader(__alloT('stem.cephalopodlab.hdr_quiz_recap', '📊 Quiz Recap'), __alloT('stem.cephalopodlab.hdr_your_answers_the_full_explanation', 'Your answers + the full explanation for each question. Use this for reflection or share with your teacher.')),
             h('div', { style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
                 h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
@@ -20192,8 +20273,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var curArea = areaOf(q);
         var diffColor = q.difficulty === 'beginner' ? '#86efac' : q.difficulty === 'advanced' ? '#fb7185' : '#fbbf24';
         return h('div', null,
-          panelHeader('✏️ Cephalopod Quiz',
-            'Self-paced NGSS-aligned multiple-choice — each question has an explanation for every answer, not just the right one. ' + QUIZ_QUESTIONS.length + ' questions across anatomy, ecology, evolution, ethics.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_quiz', '✏️ Cephalopod Quiz'),
+            __alloT('stem.cephalopodlab.hdr_self_paced_ngss_aligned_multiple_c', 'Self-paced NGSS-aligned multiple-choice — each question has an explanation for every answer, not just the right one. ') + QUIZ_QUESTIONS.length + ' questions across anatomy, ecology, evolution, ethics.'),
           h('div', { style: cardStyle() },
             dots,
             scoreLine,
@@ -20354,8 +20435,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'Sources: ' + s.citations.join(' | ')) : null);
 
         return h('div', null,
-          panelHeader('🥚 Cephalopod Life Cycle',
-            'From egg to senescence — the full life history of an octopus, with real biology + future sim mechanics for each stage. Most cephalopods are semelparous: one reproductive event, then death.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_life_cycle', '🥚 Cephalopod Life Cycle'),
+            __alloT('stem.cephalopodlab.hdr_from_egg_to_senescence_the_full_li', 'From egg to senescence — the full life history of an octopus, with real biology + future sim mechanics for each stage. Most cephalopods are semelparous: one reproductive event, then death.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.why_this_matters_3', '⏳ Why this matters')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -20391,8 +20472,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderBiomimicry() {
         return h('div', null,
-          panelHeader('🤖 Biomimicry: Engineering from Cephalopods',
-            'Octopuses + cuttlefish + squid have inspired a generation of soft robotics, adaptive camouflage, optical materials, and underwater vehicles. Each entry is a real translation from biology to engineering, with a citation.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_biomimicry_engineering_from_cephal', '🤖 Biomimicry: Engineering from Cephalopods'),
+            __alloT('stem.cephalopodlab.hdr_octopuses_cuttlefish_squid_have_in', 'Octopuses + cuttlefish + squid have inspired a generation of soft robotics, adaptive camouflage, optical materials, and underwater vehicles. Each entry is a real translation from biology to engineering, with a citation.')),
           BIOMIMICRY.map(function(b, idx) {
             return h('div', { key: b.id, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 8 } },
@@ -20422,8 +20503,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderMedical() {
         return h('div', null,
-          panelHeader('💊 Biomedical Applications',
-            'Cephalopod biology has directly produced drugs, materials, and research tools used in modern medicine. From tetrodotoxin pain therapy to the squid-axon neuroscience foundation, here are the real translations.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_biomedical_applications', '💊 Biomedical Applications'),
+            __alloT('stem.cephalopodlab.hdr_cephalopod_biology_has_directly_pr', 'Cephalopod biology has directly produced drugs, materials, and research tools used in modern medicine. From tetrodotoxin pain therapy to the squid-axon neuroscience foundation, here are the real translations.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.nobel_tier_importance', '🏆 Nobel-tier importance')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -20459,8 +20540,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderCultural() {
         return h('div', null,
-          panelHeader('🎨 Cephalopods in Culture',
-            'Cephalopods have appeared in human art, mythology, food, and storytelling for over 5000 years. From Minoan pottery to "My Octopus Teacher" — a chronological tour of how humans have imagined these animals.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopods_in_culture_2', '🎨 Cephalopods in Culture'),
+            __alloT('stem.cephalopodlab.hdr_cephalopods_have_appeared_in_human', 'Cephalopods have appeared in human art, mythology, food, and storytelling for over 5000 years. From Minoan pottery to "My Octopus Teacher" — a chronological tour of how humans have imagined these animals.')),
           CULTURAL_REFS.map(function(c, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, c.era),
@@ -20478,8 +20559,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderTimeline() {
         return h('div', null,
-          panelHeader('⏳ Cephalopod Evolution Timeline',
-            '~500 million years of cephalopod evolution. Every entry has a real citation, a real date range, and a significance note explaining what this milestone means.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_evolution_timeline', '⏳ Cephalopod Evolution Timeline'),
+            __alloT('stem.cephalopodlab.hdr_500_million_years_of_cephalopod_ev', '~500 million years of cephalopod evolution. Every entry has a real citation, a real date range, and a significance note explaining what this milestone means.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.the_big_picture_3', '🌍 The big picture')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -20512,8 +20593,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderDiveLocations() {
         return h('div', null,
-          panelHeader('🤿 Where To See Cephalopods (Real Locations)',
-            'Real-world locations where students could see each species — from snorkel-accessible Florida Keys to muck-diving the Lembeh Strait. Includes citizen-science submission portals for each region.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_where_to_see_cephalopods_real_loca', '🤿 Where To See Cephalopods (Real Locations)'),
+            __alloT('stem.cephalopodlab.hdr_real_world_locations_where_student', 'Real-world locations where students could see each species — from snorkel-accessible Florida Keys to muck-diving the Lembeh Strait. Includes citizen-science submission portals for each region.')),
           DIVE_LOCATIONS.map(function(loc, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, '🌍 ' + loc.location),
@@ -20545,8 +20626,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderProtocols() {
         return h('div', null,
-          panelHeader('📋 Citizen Science Field Protocols',
-            'Step-by-step protocols students can use in real life — tidepool walks, aquarium observations, video reviews. Each protocol is a checklist + data sheet + submission target. Real research data, not just exercises.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_citizen_science_field_protocols', '📋 Citizen Science Field Protocols'),
+            __alloT('stem.cephalopodlab.hdr_step_by_step_protocols_students_ca', 'Step-by-step protocols students can use in real life — tidepool walks, aquarium observations, video reviews. Each protocol is a checklist + data sheet + submission target. Real research data, not just exercises.')),
           FIELD_PROTOCOLS.map(function(p, idx) {
             return h('div', { key: p.id, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, p.name),
@@ -20583,8 +20664,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderFieldNotes() {
         return h('div', null,
-          panelHeader('📔 Naturalist Field Notes',
-            'Real field-journal excerpts from cephalopod biologists. Each entry shows the GENRE of scientific observation: dated, located, methodologically transparent, and self-aware about what the observation does and doesn\'t establish.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_naturalist_field_notes', '📔 Naturalist Field Notes'),
+            __alloT('stem.cephalopodlab.hdr_real_field_journal_excerpts_from_c', 'Real field-journal excerpts from cephalopod biologists. Each entry shows the GENRE of scientific observation: dated, located, methodologically transparent, and self-aware about what the observation does and doesn\'t establish.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.what_good_field_notes_do', '✏ What good field notes do')),
             h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.8, margin: 0, paddingLeft: 22 } },
@@ -20619,8 +20700,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderLaws() {
         return h('div', null,
-          panelHeader('⚖ Laws + Treaties Affecting Cephalopods',
-            'Civics + ethics integration. From CITES to the UK Animal Welfare Act, here are the major legal frameworks shaping cephalopod research, trade, and protection — including notable gaps (US still has no federal cephalopod welfare law).'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_laws_treaties_affecting_cephalopod', '⚖ Laws + Treaties Affecting Cephalopods'),
+            __alloT('stem.cephalopodlab.hdr_civics_ethics_integration_from_cit', 'Civics + ethics integration. From CITES to the UK Animal Welfare Act, here are the major legal frameworks shaping cephalopod research, trade, and protection — including notable gaps (US still has no federal cephalopod welfare law).')),
           LAWS_AND_TREATIES.map(function(l, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 6 } },
@@ -20650,8 +20731,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       function renderSubstrates() {
         var substrateKeys = Object.keys(SUBSTRATE_TYPES);
         return h('div', null,
-          panelHeader('🏖 Substrate Types (Benthic Habitat)',
-            'In marine ecology, "substrate" — what an animal lives on — is a primary axis of habitat partitioning. Cephalopods evolved camouflage strategies tied to each substrate type they encounter.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_substrate_types_benthic_habitat', '🏖 Substrate Types (Benthic Habitat)'),
+            __alloT('stem.cephalopodlab.hdr_in_marine_ecology_substrate_what_a', 'In marine ecology, "substrate" — what an animal lives on — is a primary axis of habitat partitioning. Cephalopods evolved camouflage strategies tied to each substrate type they encounter.')),
           substrateKeys.map(function(skey) {
             var s = SUBSTRATE_TYPES[skey];
             return h('div', { key: skey, style: cardStyle() },
@@ -20678,8 +20759,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       function renderConservationStatus() {
         var keys = Object.keys(CONSERVATION_STATUS);
         return h('div', null,
-          panelHeader('🌿 IUCN Conservation Status',
-            'Per-species conservation assessment. IUCN Red List statuses, population trends, threats, and recommended actions for each playable species. Notice how many are "Not Evaluated" — that\'s a data gap, not a clean bill of health.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_iucn_conservation_status', '🌿 IUCN Conservation Status'),
+            __alloT('stem.cephalopodlab.hdr_per_species_conservation_assessmen', 'Per-species conservation assessment. IUCN Red List statuses, population trends, threats, and recommended actions for each playable species. Notice how many are "Not Evaluated" — that\'s a data gap, not a clean bill of health.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.iucn_categories', '📋 IUCN Categories')),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -20741,7 +20822,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var categories = ['All'].concat(Object.keys(BIOLOGY_FACTS_POOL.reduce(function(acc, f) { acc[f.cat] = true; return acc; }, {})).sort());
         var entries = BIOLOGY_FACTS_POOL.filter(function(f) { return filterCat === 'All' || f.cat === filterCat; });
         return h('div', null,
-          panelHeader('💡 Cephalopod Facts Pool',
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_facts_pool', '💡 Cephalopod Facts Pool'),
             BIOLOGY_FACTS_POOL.length + ' peer-reviewed facts — drawn from primary scientific literature — that the simulator pulls from for in-canvas pop-ups. Browse, share, or use as discussion starters in class.'),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }) },
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, 'Category:'),
@@ -20770,8 +20851,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderDefenseMech() {
         return h('div', null,
-          panelHeader('🛡 Cephalopod Defense Mechanisms',
-            'A full inventory of cephalopod defenses — from camouflage to ink to bioluminescence to autotomy. Each entry shows what it protects against, what it doesn\'t, energy cost, and which species use it.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_defense_mechanisms', '🛡 Cephalopod Defense Mechanisms'),
+            __alloT('stem.cephalopodlab.hdr_a_full_inventory_of_cephalopod_def', 'A full inventory of cephalopod defenses — from camouflage to ink to bioluminescence to autotomy. Each entry shows what it protects against, what it doesn\'t, energy cost, and which species use it.')),
           DEFENSE_MECHANISMS.map(function(d, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, d.name),
@@ -20799,8 +20880,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderDiscoveries() {
         return h('div', null,
-          panelHeader('🆕 Recent Discoveries (2010-2026)',
-            'Science is ongoing. Here are major cephalopod-research breakthroughs from the past 15 years — each with peer-reviewed citation + plain-language description + significance.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_recent_discoveries_2010_2026', '🆕 Recent Discoveries (2010-2026)'),
+            __alloT('stem.cephalopodlab.hdr_science_is_ongoing_here_are_major', 'Science is ongoing. Here are major cephalopod-research breakthroughs from the past 15 years — each with peer-reviewed citation + plain-language description + significance.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.why_this_matters_4', '🧠 Why this matters')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -20829,8 +20910,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderFamousIndividuals() {
         return h('div', null,
-          panelHeader('🌟 Famous Individual Cephalopods',
-            'Named research + aquarium animals whose stories shaped our understanding of cephalopod cognition + welfare. Each has a citation to either scientific literature or major popular media.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_famous_individual_cephalopods', '🌟 Famous Individual Cephalopods'),
+            __alloT('stem.cephalopodlab.hdr_named_research_aquarium_animals_wh', 'Named research + aquarium animals whose stories shaped our understanding of cephalopod cognition + welfare. Each has a citation to either scientific literature or major popular media.')),
           FAMOUS_OCTOPUSES.map(function(o, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe' } }, o.name),
@@ -21049,8 +21130,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             __alloT('stem.cephalopodlab.skin_to_camo', '🎨 Mix all three layers in the Camouflage Lab →')) : null);
 
         return h('div', null,
-          panelHeader('🎨 Cephalopod Skin Anatomy (Cellular Detail)',
-            'How a color-changing skin actually works — at the level of individual cells. Chromatophores, iridophores, leucophores, papillae, photophores: each cell type does a different job, and camouflage is all of them working together.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_skin_anatomy_cellular_d', '🎨 Cephalopod Skin Anatomy (Cellular Detail)'),
+            __alloT('stem.cephalopodlab.hdr_how_a_color_changing_skin_actually', 'How a color-changing skin actually works — at the level of individual cells. Chromatophores, iridophores, leucophores, papillae, photophores: each cell type does a different job, and camouflage is all of them working together.')),
           crossSection,
           canTable,
           sel === 'chromatophore' ? chromaDemo : null,
@@ -21065,8 +21146,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       function renderBiomes() {
         var bs = Object.keys(SPECIAL_BIOMES);
         return h('div', null,
-          panelHeader('🌍 Special Biomes (Beyond the Reef)',
-            'Caves, kelp forests, hydrothermal vents, seamounts, mangroves, oxygen-minimum zones — the extreme habitats where cephalopod evolution has gone in unexpected directions.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_special_biomes_beyond_the_reef', '🌍 Special Biomes (Beyond the Reef)'),
+            __alloT('stem.cephalopodlab.hdr_caves_kelp_forests_hydrothermal_ve', 'Caves, kelp forests, hydrothermal vents, seamounts, mangroves, oxygen-minimum zones — the extreme habitats where cephalopod evolution has gone in unexpected directions.')),
           bs.map(function(bk) {
             var b = SPECIAL_BIOMES[bk];
             return h('div', { key: bk, style: cardStyle() },
@@ -21093,8 +21174,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderDilemmas() {
         return h('div', null,
-          panelHeader('⚖️ Ethical Dilemmas for Discussion',
-            'Real cases where cephalopod biology meets ethics. Use these for AP Bio + bioethics + ELA discussion. Each dilemma includes stakeholders, competing values, framing questions, and real-world evidence.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_ethical_dilemmas_for_discussion', '⚖️ Ethical Dilemmas for Discussion'),
+            __alloT('stem.cephalopodlab.hdr_real_cases_where_cephalopod_biolog', 'Real cases where cephalopod biology meets ethics. Use these for AP Bio + bioethics + ELA discussion. Each dilemma includes stakeholders, competing values, framing questions, and real-world evidence.')),
           ETHICAL_DILEMMAS.map(function(d, idx) {
             return h('div', { key: d.id, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, d.title),
@@ -21131,8 +21212,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderComparisons() {
         return h('div', null,
-          panelHeader('⚖ Comparative Tables',
-            'Side-by-side comparisons of cephalopod biology vs. vertebrate biology + cephalopod-internal comparisons (octopus vs. squid vs. cuttlefish). Use these for AP Bio convergent-evolution discussions.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_comparative_tables', '⚖ Comparative Tables'),
+            __alloT('stem.cephalopodlab.hdr_side_by_side_comparisons_of_cephal', 'Side-by-side comparisons of cephalopod biology vs. vertebrate biology + cephalopod-internal comparisons (octopus vs. squid vs. cuttlefish). Use these for AP Bio convergent-evolution discussions.')),
           COMPARATIVE_TABLES.map(function(t, idx) {
             return h('div', { key: t.id, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 12 } }, t.title),
@@ -21207,8 +21288,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         var ids = Object.keys(SPECIES_DEEP_DIVES);
         return h('div', null,
-          panelHeader('🔍 Species Deep Dives',
-            'Pick any playable species for a full natural-history profile — size, range, habitat, diet, predators, behavior, camouflage, intelligence, reproduction, conservation, and citations.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_species_deep_dives', '🔍 Species Deep Dives'),
+            __alloT('stem.cephalopodlab.hdr_pick_any_playable_species_for_a_fu', 'Pick any playable species for a full natural-history profile — size, range, habitat, diet, predators, behavior, camouflage, intelligence, reproduction, conservation, and citations.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
             ids.map(function(id) {
               var sp = SPECIES_DEEP_DIVES[id];
@@ -21279,8 +21360,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               : __alloT('stem.cephalopodlab.myth_tally_clean', 'You did not lean towards believing any of them so far. Worth asking yourself the harder question: could you say WHY each one is wrong, or did you just distrust the page?'))) : null;
 
         return h('div', null,
-          panelHeader('❌ Myth Busters: Cephalopod Misconceptions',
-            'Common cephalopod claims you\'ll see online — and what the actual evidence-based correction is. A great resource for NGSS Practice 8 (evaluating information).'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_myth_busters_cephalopod_misconcept', '❌ Myth Busters: Cephalopod Misconceptions'),
+            __alloT('stem.cephalopodlab.hdr_common_cephalopod_claims_you_ll_se', 'Common cephalopod claims you\'ll see online — and what the actual evidence-based correction is. A great resource for NGSS Practice 8 (evaluating information).')),
           h('div', { style: cardStyle() },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.how_to_use_this', '🎯 How to use this')),
@@ -21435,8 +21516,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             __alloT('stem.cephalopodlab.etho_short_session_a', 'Only ') + samples + __alloT('stem.cephalopodlab.etho_short_session_b', ' scans so far. A budget from a handful of samples can swing wildly — say how many you took whenever you report one.')) : null) : null;
 
         return h('div', null,
-          panelHeader('📐 Behavior Ethogram',
-            'A structured list of observable cephalopod behaviors with codes and context. Use this for direct classroom observations or to interpret what you see in the sim.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_behavior_ethogram', '📐 Behavior Ethogram'),
+            __alloT('stem.cephalopodlab.hdr_a_structured_list_of_observable_ce', 'A structured list of observable cephalopod behaviors with codes and context. Use this for direct classroom observations or to interpret what you see in the sim.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.how_to_use', '📝 How to use')),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
@@ -21542,8 +21623,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               unplotted.map(function(b) { return b.s.name + ' (' + b.s.frequency + ')'; }).join('; ')) : null);
         })();
         return h('div', null,
-          panelHeader('🔊 Ocean Sound Reference',
-            'Marine soundscape reference — what students might hear if they were submerged in different cephalopod habitats. Each entry includes the frequency range + range + biological context.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_ocean_sound_reference', '🔊 Ocean Sound Reference'),
+            __alloT('stem.cephalopodlab.hdr_marine_soundscape_reference_what_s', 'Marine soundscape reference — what students might hear if they were submerged in different cephalopod habitats. Each entry includes the frequency range + range + biological context.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.why_this_matters_5', '🎧 Why this matters')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
@@ -21566,8 +21647,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderCitSci() {
         return h('div', null,
-          panelHeader('🔬 Citizen Science Programs',
-            'Real programs students can contribute to today. Each entry includes accessibility level, what to do, and measurable impact.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_citizen_science_programs', '🔬 Citizen Science Programs'),
+            __alloT('stem.cephalopodlab.hdr_real_programs_students_can_contrib', 'Real programs students can contribute to today. Each entry includes accessibility level, what to do, and measurable impact.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.why_this_matters_6', '🌟 Why this matters')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -21601,8 +21682,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderInstruments() {
         return h('div', null,
-          panelHeader('⚙ Research Instruments + Sampling Methods',
-            'What tools scientists actually USE to study cephalopods — from ROVs to eDNA filters. Each entry includes use range, examples, cephalopod-specific applications, and limitations.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_research_instruments_sampling_meth', '⚙ Research Instruments + Sampling Methods'),
+            __alloT('stem.cephalopodlab.hdr_what_tools_scientists_actually_use', 'What tools scientists actually USE to study cephalopods — from ROVs to eDNA filters. Each entry includes use range, examples, cephalopod-specific applications, and limitations.')),
           RESEARCH_INSTRUMENTS.map(function(inst, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, inst.name),
@@ -21630,8 +21711,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderCareers() {
         return h('div', null,
-          panelHeader('💼 Career Pathways in Marine Biology',
-            'Real careers for students interested in cephalopod biology or related marine science. Each includes training, settings, daily work, typical pay, and how to enter.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_career_pathways_in_marine_biology', '💼 Career Pathways in Marine Biology'),
+            __alloT('stem.cephalopodlab.hdr_real_careers_for_students_interest', 'Real careers for students interested in cephalopod biology or related marine science. Each includes training, settings, daily work, typical pay, and how to enter.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.you_don_t_need_a_phd_for_all_of_these', '🚀 You don\'t need a PhD for all of these')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -21666,8 +21747,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderProjects() {
         return h('div', null,
-          panelHeader('📐 Student Project Ideas (Science Fair + Capstone)',
-            'Detailed project proposals at varying complexity — for science fair, AP Capstone, IB Extended Essay, or independent study. Each includes the research question, method, data collection, analysis, and relevant reading.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_student_project_ideas_science_fair', '📐 Student Project Ideas (Science Fair + Capstone)'),
+            __alloT('stem.cephalopodlab.hdr_detailed_project_proposals_at_vary', 'Detailed project proposals at varying complexity — for science fair, AP Capstone, IB Extended Essay, or independent study. Each includes the research question, method, data collection, analysis, and relevant reading.')),
           STUDENT_PROJECT_IDEAS.map(function(p, idx) {
             return h('div', { key: p.id, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
@@ -21704,8 +21785,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderOpenQuestions() {
         return h('div', null,
-          panelHeader('❓ Open Research Questions',
-            'The questions cephalopod biologists are currently chasing. Each entry shows the question, the context, current gaps in knowledge, possible paths to answers, and what\'s at stake.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_open_research_questions', '❓ Open Research Questions'),
+            __alloT('stem.cephalopodlab.hdr_the_questions_cephalopod_biologist', 'The questions cephalopod biologists are currently chasing. Each entry shows the question, the context, current gaps in knowledge, possible paths to answers, and what\'s at stake.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.science_is_ongoing', '🌟 Science is ongoing')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -21737,8 +21818,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderDiscussionPrompts() {
         return h('div', null,
-          panelHeader('💬 Discussion Prompts (Teacher Hub)',
-            'NGSS-aligned discussion prompts organized by domain. Use for crew meetings, journal entries, or Socratic seminars.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_discussion_prompts_teacher_hub', '💬 Discussion Prompts (Teacher Hub)'),
+            __alloT('stem.cephalopodlab.hdr_ngss_aligned_discussion_prompts_or', 'NGSS-aligned discussion prompts organized by domain. Use for crew meetings, journal entries, or Socratic seminars.')),
           DISCUSSION_PROMPTS.map(function(d, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 6 } },
@@ -21756,8 +21837,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderReadingList() {
         return h('div', null,
-          panelHeader('📖 Cephalopod Reading List',
-            'Books about cephalopods across all ages — from picture books for K-3 to academic textbooks. Each entry includes a recommendation.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_reading_list', '📖 Cephalopod Reading List'),
+            __alloT('stem.cephalopodlab.hdr_books_about_cephalopods_across_all', 'Books about cephalopods across all ages — from picture books for K-3 to academic textbooks. Each entry includes a recommendation.')),
           READING_LIST.map(function(b, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
@@ -21779,8 +21860,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderExemplars() {
         return h('div', null,
-          panelHeader('✏ Student Writing Exemplars',
-            'Examples of student responses to cephalopod biology prompts — at multiple grade levels, with quality ratings + teacher feedback. Use these as models for what good scientific reasoning looks like.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_student_writing_exemplars', '✏ Student Writing Exemplars'),
+            __alloT('stem.cephalopodlab.hdr_examples_of_student_responses_to_c', 'Examples of student responses to cephalopod biology prompts — at multiple grade levels, with quality ratings + teacher feedback. Use these as models for what good scientific reasoning looks like.')),
           STUDENT_EXEMPLARS.map(function(e, idx) {
             var qualityColor = e.quality.indexOf('Exceeds') === 0 ? '#86efac'
               : e.quality.indexOf('Meets') === 0 ? '#a78bfa'
@@ -21807,8 +21888,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderAtHome() {
         return h('div', null,
-          panelHeader('🏠 At-Home Cephalopod Activities',
-            'Hands-on activities families can do together — from tide-pool walks to aquarium critiques to cooking-with-welfare discussions. Each entry indicates ages, materials, time, and the biology it teaches.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_at_home_cephalopod_activities', '🏠 At-Home Cephalopod Activities'),
+            __alloT('stem.cephalopodlab.hdr_hands_on_activities_families_can_d', 'Hands-on activities families can do together — from tide-pool walks to aquarium critiques to cooking-with-welfare discussions. Each entry indicates ages, materials, time, and the biology it teaches.')),
           AT_HOME_ACTIVITIES.map(function(a, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
@@ -21831,8 +21912,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderNews() {
         return h('div', null,
-          panelHeader('📰 Cephalopod News + Headlines',
-            'Recent news stories about cephalopod biology, policy, and research. Each includes the source, summary, significance, and a student discussion prompt.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_news_headlines', '📰 Cephalopod News + Headlines'),
+            __alloT('stem.cephalopodlab.hdr_recent_news_stories_about_cephalop', 'Recent news stories about cephalopod biology, policy, and research. Each includes the source, summary, significance, and a student discussion prompt.')),
           NEWS_HEADLINES.map(function(n, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
@@ -21863,8 +21944,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           return hay.indexOf(filter) !== -1;
         });
         return h('div', null,
-          panelHeader('🐙 Cephalopod Species Database (50+)',
-            'Brief profiles of additional cephalopod species beyond the 12 playable ones. Includes deep-sea, pelagic, polar, and rare species. Filter by name, family, range, or feature.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_species_database_50', '🐙 Cephalopod Species Database (50+)'),
+            __alloT('stem.cephalopodlab.hdr_brief_profiles_of_additional_cepha', 'Brief profiles of additional cephalopod species beyond the 12 playable ones. Includes deep-sea, pelagic, polar, and rare species. Filter by name, family, range, or feature.')),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }) },
             h('label', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, __alloT('stem.cephalopodlab.search_3', '🔍 Search')),
             h('input', { type: 'text', value: d.speciesDBFilter || '',
@@ -21895,8 +21976,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderAquariums() {
         return h('div', null,
-          panelHeader('🏛 Aquariums + Museums Directory',
-            'Notable institutions with cephalopod programs, research, and public displays. Use this for class field trips or independent study.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_aquariums_museums_directory', '🏛 Aquariums + Museums Directory'),
+            __alloT('stem.cephalopodlab.hdr_notable_institutions_with_cephalop', 'Notable institutions with cephalopod programs, research, and public displays. Use this for class field trips or independent study.')),
           AQUARIUMS_AND_MUSEUMS.map(function(a, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, a.name),
@@ -21923,8 +22004,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderParasites() {
         return h('div', null,
-          panelHeader('🦠 Parasites + Diseases of Cephalopods',
-            'Cephalopods host their own community of parasites + pathogens. Most are not major welfare concerns in the wild, but they become significant under captive or aquaculture conditions.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_parasites_diseases_of_cephalopods', '🦠 Parasites + Diseases of Cephalopods'),
+            __alloT('stem.cephalopodlab.hdr_cephalopods_host_their_own_communi', 'Cephalopods host their own community of parasites + pathogens. Most are not major welfare concerns in the wild, but they become significant under captive or aquaculture conditions.')),
           PARASITES_AND_DISEASES.map(function(p, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, p.name),
@@ -21946,8 +22027,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderEvolution() {
         return h('div', null,
-          panelHeader('🌳 Cephalopod Evolution: The Phylogenetic Tree',
-            'The branching history of cephalopods over about 500 million years. From the first chambered-shell mollusk to today\'s octopuses + squids + cuttlefish + nautilus.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_evolution_the_phylogene', '🌳 Cephalopod Evolution: The Phylogenetic Tree'),
+            __alloT('stem.cephalopodlab.hdr_the_branching_history_of_cephalopo', 'The branching history of cephalopods over about 500 million years. From the first chambered-shell mollusk to today\'s octopuses + squids + cuttlefish + nautilus.')),
           EVOLUTION_TREE.map(function(n, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 6 } },
@@ -21973,8 +22054,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderResearchOrgs() {
         return h('div', null,
-          panelHeader('🏛 Research Organizations + Funders',
-            'Major institutions + funding bodies that drive cephalopod research worldwide. Use this for research-pathway exploration + grant-funding awareness.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_research_organizations_funders', '🏛 Research Organizations + Funders'),
+            __alloT('stem.cephalopodlab.hdr_major_institutions_funding_bodies', 'Major institutions + funding bodies that drive cephalopod research worldwide. Use this for research-pathway exploration + grant-funding awareness.')),
           RESEARCH_ORGS.map(function(o, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
@@ -21995,8 +22076,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderNewsletters() {
         return h('div', null,
-          panelHeader('📨 Newsletters + Blogs for Ongoing Learning',
-            'Resources for staying current with cephalopod research, news, and citizen science. Mix of academic + popular sources.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_newsletters_blogs_for_ongoing_lear', '📨 Newsletters + Blogs for Ongoing Learning'),
+            __alloT('stem.cephalopodlab.hdr_resources_for_staying_current_with', 'Resources for staying current with cephalopod research, news, and citizen science. Mix of academic + popular sources.')),
           NEWSLETTERS.map(function(n, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
@@ -22016,8 +22097,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderSampleData() {
         return h('div', null,
-          panelHeader('📊 Sample Data Sets for Analysis',
-            'Real or realistic datasets students can analyze without leaving the simulator. Each comes with research questions + NGSS alignment.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_sample_data_sets_for_analysis', '📊 Sample Data Sets for Analysis'),
+            __alloT('stem.cephalopodlab.hdr_real_or_realistic_datasets_student', 'Real or realistic datasets students can analyze without leaving the simulator. Each comes with research questions + NGSS alignment.')),
           SAMPLE_DATA_SETS.map(function(ds, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, ds.name),
@@ -22063,8 +22144,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var filterGrade = d.vocabGrade || 'All';
         var entries = filterGrade === 'All' ? VOCABULARY : VOCABULARY.filter(function(v) { return v.grade === filterGrade; });
         return h('div', null,
-          panelHeader('📝 Vocabulary List',
-            'Grade-leveled cephalopod biology vocabulary. Use for ESL support, emerging readers, or as the basis for vocabulary games.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_vocabulary_list', '📝 Vocabulary List'),
+            __alloT('stem.cephalopodlab.hdr_grade_leveled_cephalopod_biology_v', 'Grade-leveled cephalopod biology vocabulary. Use for ESL support, emerging readers, or as the basis for vocabulary games.')),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }) },
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, __alloT('stem.cephalopodlab.grade_level', 'Grade level:')),
             ['All'].concat(grades).map(function(g) {
@@ -22092,8 +22173,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderAssessment() {
         return h('div', null,
-          panelHeader('✓ Assessment Tasks',
-            'A library of formative + summative assessments at multiple time scales — from 3-min exit tickets to 4-week original research projects. Each includes a scoring rubric and grade-level guidance.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_assessment_tasks', '✓ Assessment Tasks'),
+            __alloT('stem.cephalopodlab.hdr_a_library_of_formative_summative_a', 'A library of formative + summative assessments at multiple time scales — from 3-min exit tickets to 4-week original research projects. Each includes a scoring rubric and grade-level guidance.')),
           ASSESSMENT_TASKS.map(function(t, idx) {
             var typeColor = t.type.indexOf('Formative') === 0 ? '#86efac'
               : t.type.indexOf('Summative') === 0 ? '#a78bfa'
@@ -22120,8 +22201,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderTaxonomy() {
         return h('div', null,
-          panelHeader('🧬 Cephalopod Taxonomy',
-            'The full hierarchical taxonomy of cephalopods from Kingdom to Family. Each row shows rank, name, and a brief note on what the group contains.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_taxonomy', '🧬 Cephalopod Taxonomy'),
+            __alloT('stem.cephalopodlab.hdr_the_full_hierarchical_taxonomy_of', 'The full hierarchical taxonomy of cephalopods from Kingdom to Family. Each row shows rank, name, and a brief note on what the group contains.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.how_taxonomy_works', '🌳 How taxonomy works')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -22212,8 +22293,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         });
 
         return h('div', null,
-          panelHeader('🏅 Hunter Sim Challenges',
-            'Gamified achievement targets across four tiers. Use these as in-class competitions or for self-paced learning.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_hunter_sim_challenges', '🏅 Hunter Sim Challenges'),
+            __alloT('stem.cephalopodlab.hdr_gamified_achievement_targets_acros', 'Gamified achievement targets across four tiers. Use these as in-class competitions or for self-paced learning.')),
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.chal_progress_title', '📈 Checked against your dives')),
@@ -22259,8 +22340,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var filter = d.faqCat || 'All';
         var entries = filter === 'All' ? FAQ : FAQ.filter(function(f) { return f.category === filter; });
         return h('div', null,
-          panelHeader('❓ Frequently Asked Questions',
-            'Common questions about cephalopods — from students, teachers, and curious adults. Each answer cites real science.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_frequently_asked_questions', '❓ Frequently Asked Questions'),
+            __alloT('stem.cephalopodlab.hdr_common_questions_about_cephalopods', 'Common questions about cephalopods — from students, teachers, and curious adults. Each answer cites real science.')),
           h('div', { style: Object.assign({}, cardStyle(), { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }) },
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, 'Category:'),
             ['All'].concat(cats).map(function(c) {
@@ -22287,8 +22368,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderCrossDisc() {
         return h('div', null,
-          panelHeader('🎨 Cross-Disciplinary Connections',
-            'Cephalopod biology connects to every other school subject — math, physics, chemistry, ELA, history, art, computer science, engineering, ethics, health, languages, and CTE. Each entry shows the connection + a sample integrated project.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cross_disciplinary_connections', '🎨 Cross-Disciplinary Connections'),
+            __alloT('stem.cephalopodlab.hdr_cephalopod_biology_connects_to_eve', 'Cephalopod biology connects to every other school subject — math, physics, chemistry, ELA, history, art, computer science, engineering, ethics, health, languages, and CTE. Each entry shows the connection + a sample integrated project.')),
           CROSS_DISC.map(function(c, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '📚 ' + c.subject),
@@ -22308,8 +22389,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderRecords() {
         return h('div', null,
-          panelHeader('🏆 Cephalopod World Records',
-            'Extreme stats across the cephalopod world — largest, smallest, deepest, longest-living, etc. Each comes with the species + a peer-reviewed citation.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_world_records', '🏆 Cephalopod World Records'),
+            __alloT('stem.cephalopodlab.hdr_extreme_stats_across_the_cephalopo', 'Extreme stats across the cephalopod world — largest, smallest, deepest, longest-living, etc. Each comes with the species + a peer-reviewed citation.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 } },
             WORLD_RECORDS.map(function(r, idx) {
               return h('div', { key: idx, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(167,139,250,0.18)', borderRadius: 8, padding: 12 } },
@@ -22328,8 +22409,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderExtreme() {
         return h('div', null,
-          panelHeader('🌋 Cephalopods in Extreme Environments',
-            'How cephalopods adapt to extreme conditions — hydrothermal vents, hadal trenches, oxygen minimum zones, polar waters, intertidal heat-stress, and urban pollution.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopods_in_extreme_environment', '🌋 Cephalopods in Extreme Environments'),
+            __alloT('stem.cephalopodlab.hdr_how_cephalopods_adapt_to_extreme_c', 'How cephalopods adapt to extreme conditions — hydrothermal vents, hadal trenches, oxygen minimum zones, polar waters, intertidal heat-stress, and urban pollution.')),
           EXTREME_BIOLOGY.map(function(e, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, '🌍 ' + e.environment),
@@ -22363,8 +22444,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           }
         }
         return h('div', null,
-          panelHeader('📔 Topic Deep Dives',
-            'Long-form expository essays on cephalopod biology — chromatophore mechanics, intelligence, climate, sentience, more. Each is a ~500-word standalone read suitable for AP Bio or independent study.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_topic_deep_dives', '📔 Topic Deep Dives'),
+            __alloT('stem.cephalopodlab.hdr_long_form_expository_essays_on_cep', 'Long-form expository essays on cephalopod biology — chromatophore mechanics, intelligence, climate, sentience, more. Each is a ~500-word standalone read suitable for AP Bio or independent study.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 } },
             DEEP_DIVE_TOPICS.map(function(t) {
               return h('button', { key: t.id,
@@ -22384,8 +22465,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderHistoricResearch() {
         return h('div', null,
-          panelHeader('🔍 Historic Cephalopod Research',
-            'Detailed summaries of major scientific contributions to cephalopod biology — from the 1952 Nobel-Prize squid axon work to 2022 sentience legislation. Each entry includes methods, findings, and impact.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_historic_cephalopod_research', '🔍 Historic Cephalopod Research'),
+            __alloT('stem.cephalopodlab.hdr_detailed_summaries_of_major_scient', 'Detailed summaries of major scientific contributions to cephalopod biology — from the 1952 Nobel-Prize squid axon work to 2022 sentience legislation. Each entry includes methods, findings, and impact.')),
           HISTORICAL_RESEARCH.map(function(h0, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
@@ -22408,8 +22489,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderQAndA() {
         return h('div', null,
-          panelHeader('💭 Cephalopod Q + A',
-            '30 student-friendly questions for classroom discussion + journaling. Each has a follow-up prompt + context indicating where in the curriculum it fits.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_q_a', '💭 Cephalopod Q + A'),
+            __alloT('stem.cephalopodlab.hdr_30_student_friendly_questions_for', '30 student-friendly questions for classroom discussion + journaling. Each has a follow-up prompt + context indicating where in the curriculum it fits.')),
           CEPHALOPOD_Q_AND_A.map(function(qa, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 10, color: '#86efac', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, qa.context),
@@ -22425,8 +22506,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderTwoWeekUnit() {
         return h('div', null,
-          panelHeader('📅 2-Week Cephalopod Unit',
-            'A complete 10-day classroom curriculum: daily plans, essential questions, objectives, activities, homework, assessments, and UDL accommodations. Print + use as-is.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_2_week_cephalopod_unit', '📅 2-Week Cephalopod Unit'),
+            __alloT('stem.cephalopodlab.hdr_a_complete_10_day_classroom_curric', 'A complete 10-day classroom curriculum: daily plans, essential questions, objectives, activities, homework, assessments, and UDL accommodations. Print + use as-is.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.unit_goals', '🎯 Unit Goals')),
             h('ol', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.7, margin: 0, paddingLeft: 22 } },
@@ -22464,8 +22545,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderExamPrep() {
         return h('div', null,
-          panelHeader('🎯 Exam Preparation Guide',
-            'A topic-by-topic study guide. Key concepts to master, common misconceptions to avoid, and study tips for each domain. Use for unit tests, AP Bio prep, or independent review.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_exam_preparation_guide', '🎯 Exam Preparation Guide'),
+            __alloT('stem.cephalopodlab.hdr_a_topic_by_topic_study_guide_key_c', 'A topic-by-topic study guide. Key concepts to master, common misconceptions to avoid, and study tips for each domain. Use for unit tests, AP Bio prep, or independent review.')),
           EXAM_PREP_GUIDE.map(function(d, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '📋 ' + d.domain),
@@ -22497,8 +22578,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderParentLetters() {
         return h('div', null,
-          panelHeader('✉ Parent / Family Letters',
-            'Sample letters teachers can adapt to communicate with families about the cephalopod unit. Editable templates for unit kickoff, mid-unit updates, and final wrap-up.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_parent_family_letters', '✉ Parent / Family Letters'),
+            __alloT('stem.cephalopodlab.hdr_sample_letters_teachers_can_adapt', 'Sample letters teachers can adapt to communicate with families about the cephalopod unit. Editable templates for unit kickoff, mid-unit updates, and final wrap-up.')),
           PARENT_LETTERS.map(function(letter, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, '📋 Purpose: ' + letter.purpose),
@@ -22514,8 +22595,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderResearchRevisions() {
         return h('div', null,
-          panelHeader('🔄 Research Revisions: How Science Updates Itself',
-            'Real cases where cephalopod-biology consensus changed when new evidence emerged. Use these to teach NGSS Practice 8 (evaluating + communicating information) — science is NOT a fixed set of facts.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_research_revisions_how_science_upd', '🔄 Research Revisions: How Science Updates Itself'),
+            __alloT('stem.cephalopodlab.hdr_real_cases_where_cephalopod_biolog_2', 'Real cases where cephalopod-biology consensus changed when new evidence emerged. Use these to teach NGSS Practice 8 (evaluating + communicating information) — science is NOT a fixed set of facts.')),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.why_this_matters_7', '🎓 Why this matters')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
@@ -22539,8 +22620,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderFilms() {
         return h('div', null,
-          panelHeader('🎬 Cephalopod Films + Documentaries',
-            'A curated list of films, documentaries, and clips about cephalopods — with scientific accuracy notes, discussion prompts, and age-appropriateness ratings.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_films_documentaries', '🎬 Cephalopod Films + Documentaries'),
+            __alloT('stem.cephalopodlab.hdr_a_curated_list_of_films_documentar', 'A curated list of films, documentaries, and clips about cephalopods — with scientific accuracy notes, discussion prompts, and age-appropriateness ratings.')),
           FILMS_AND_DOCUMENTARIES.map(function(f, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
@@ -22563,8 +22644,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderHumor() {
         return h('div', null,
-          panelHeader('😀 Cephalopod Humor + Light Content',
-            'Jokes, riddles, and lighter content for hooks, transitions, and morning meetings. Use sparingly to keep energy + curiosity up.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_humor_light_content', '😀 Cephalopod Humor + Light Content'),
+            __alloT('stem.cephalopodlab.hdr_jokes_riddles_and_lighter_content', 'Jokes, riddles, and lighter content for hooks, transitions, and morning meetings. Use sparingly to keep energy + curiosity up.')),
           HUMOR_AND_LIGHT.map(function(h0, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, h0.type),
@@ -22580,8 +22661,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderInterviews() {
         return h('div', null,
-          panelHeader('🎙 Researcher Interview Excerpts',
-            'Sample interviews with cephalopod researchers — Mather, Hanlon, Wang, Crook. Use as model science-communication dialogue. Students can practice composing their own interviews.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_researcher_interview_excerpts', '🎙 Researcher Interview Excerpts'),
+            __alloT('stem.cephalopodlab.hdr_sample_interviews_with_cephalopod', 'Sample interviews with cephalopod researchers — Mather, Hanlon, Wang, Crook. Use as model science-communication dialogue. Students can practice composing their own interviews.')),
           INTERVIEW_TRANSCRIPTS.map(function(t, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, '🎙 ' + t.interviewee),
@@ -22604,8 +22685,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderEssayTemplates() {
         return h('div', null,
-          panelHeader('✏ Essay + Writing Templates',
-            'Structured templates for student writing — position papers, lab reports, field-note paragraphs. Each shows the recommended structure + word counts + tips.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_essay_writing_templates', '✏ Essay + Writing Templates'),
+            __alloT('stem.cephalopodlab.hdr_structured_templates_for_student_w', 'Structured templates for student writing — position papers, lab reports, field-note paragraphs. Each shows the recommended structure + word counts + tips.')),
           ESSAY_TEMPLATES.map(function(e, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, '📝 ' + e.purpose),
@@ -22627,8 +22708,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderPolicyTimeline() {
         return h('div', null,
-          panelHeader('🏛 Cephalopod Policy Timeline',
-            'Major international policies + treaties affecting cephalopod research, trade, and welfare from 1966 to 2024. Use this for civics + ethics integration.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_policy_timeline', '🏛 Cephalopod Policy Timeline'),
+            __alloT('stem.cephalopodlab.hdr_major_international_policies_treat', 'Major international policies + treaties affecting cephalopod research, trade, and welfare from 1966 to 2024. Use this for civics + ethics integration.')),
           POLICY_TIMELINE.map(function(p, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
@@ -22647,8 +22728,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderDebates() {
         return h('div', null,
-          panelHeader('⚖ Active Scientific Debates',
-            'Real ongoing debates among cephalopod biologists. Each shows multiple credible positions + stakes. Use these for AP Bio Socratic seminars + ethics units.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_active_scientific_debates', '⚖ Active Scientific Debates'),
+            __alloT('stem.cephalopodlab.hdr_real_ongoing_debates_among_cephalo', 'Real ongoing debates among cephalopod biologists. Each shows multiple credible positions + stakes. Use these for AP Bio Socratic seminars + ethics units.')),
           SCIENTIFIC_DEBATES.map(function(d, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '❓ ' + d.debate),
@@ -22668,8 +22749,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderDebatePrompts() {
         return h('div', null,
-          panelHeader('🎭 Classroom Debate Prompts',
-            'Structured debate motions + pre-written arguments for + against + rebuttals. Use for academic debate units. Students choose a side, then prepare + present.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_classroom_debate_prompts', '🎭 Classroom Debate Prompts'),
+            __alloT('stem.cephalopodlab.hdr_structured_debate_motions_pre_writ', 'Structured debate motions + pre-written arguments for + against + rebuttals. Use for academic debate units. Students choose a side, then prepare + present.')),
           DEBATE_PROMPTS.map(function(p, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '⚖ ' + p.motion),
@@ -22701,8 +22782,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderEduGlossary() {
         return h('div', null,
-          panelHeader('📚 Educator Glossary',
-            'Common terms in K-12 + AP education contexts. Use for orienting new staff or clarifying conversations with administrators + parents.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_educator_glossary', '📚 Educator Glossary'),
+            __alloT('stem.cephalopodlab.hdr_common_terms_in_k_12_ap_education', 'Common terms in K-12 + AP education contexts. Use for orienting new staff or clarifying conversations with administrators + parents.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
             EDUCATOR_GLOSSARY.map(function(e, idx) {
               return h('div', { key: idx, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8, padding: 12 } },
@@ -22719,8 +22800,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderDifferentiation() {
         return h('div', null,
-          panelHeader('🔀 Differentiation Strategies',
-            'Specific modifications + accommodations for advanced students, IEP/504 students, ELLs, students with attention challenges, gifted-low-resource students, and sensory-sensitive students.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_differentiation_strategies', '🔀 Differentiation Strategies'),
+            __alloT('stem.cephalopodlab.hdr_specific_modifications_accommodati', 'Specific modifications + accommodations for advanced students, IEP/504 students, ELLs, students with attention challenges, gifted-low-resource students, and sensory-sensitive students.')),
           DIFFERENTIATION_MODIFICATIONS.map(function(d, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, '👥 ' + d.studentType),
@@ -22740,8 +22821,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderSustainability() {
         return h('div', null,
-          panelHeader('🌱 Sustainability + Future of Cephalopod Conservation',
-            'The major sustainability questions facing cephalopod biology over the next decade — fisheries, aquaculture, climate, pollution, mining, ethics. Each entry shows current state + challenges + future directions + stakeholders.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_sustainability_future_of_cephalopo', '🌱 Sustainability + Future of Cephalopod Conservation'),
+            __alloT('stem.cephalopodlab.hdr_the_major_sustainability_questions', 'The major sustainability questions facing cephalopod biology over the next decade — fisheries, aquaculture, climate, pollution, mining, ethics. Each entry shows current state + challenges + future directions + stakeholders.')),
           SUSTAINABILITY.map(function(s, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '🌍 ' + s.topic),
@@ -22759,8 +22840,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderTED() {
         return h('div', null,
-          panelHeader('🎤 Cephalopod TED Talks + Featured Lectures',
-            'Free online talks ~10-15 min each — by Mather, Hanlon, Scheel, Birch, and others. Use as classroom hooks, discussion starters, or assigned watch-and-respond homework.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_ted_talks_featured_lect', '🎤 Cephalopod TED Talks + Featured Lectures'),
+            __alloT('stem.cephalopodlab.hdr_free_online_talks_10_15_min_each_b', 'Free online talks ~10-15 min each — by Mather, Hanlon, Scheel, Birch, and others. Use as classroom hooks, discussion starters, or assigned watch-and-respond homework.')),
           TED_TALKS.map(function(t, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
@@ -22780,8 +22861,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderReflections() {
         return h('div', null,
-          panelHeader('🪞 Educator Reflections',
-            'Long-form pedagogical notes — why teach cephalopod biology, how to use this simulator effectively, common challenges + solutions, cross-curriculum connections, and acknowledgments.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_educator_reflections', '🪞 Educator Reflections'),
+            __alloT('stem.cephalopodlab.hdr_long_form_pedagogical_notes_why_te', 'Long-form pedagogical notes — why teach cephalopod biology, how to use this simulator effectively, common challenges + solutions, cross-curriculum connections, and acknowledgments.')),
           EDUCATOR_REFLECTIONS.map(function(r, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '🎓 ' + r.topic),
@@ -22796,8 +22877,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderRunReview() {
         return h('div', null,
-          panelHeader('📺 Anatomy of a Sim Run',
-            'A phase-by-phase walkthrough of a typical Hunter Sim play session. What happens, what to do, biology connections, and observation prompts for each phase.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_anatomy_of_a_sim_run', '📺 Anatomy of a Sim Run'),
+            __alloT('stem.cephalopodlab.hdr_a_phase_by_phase_walkthrough_of_a', 'A phase-by-phase walkthrough of a typical Hunter Sim play session. What happens, what to do, biology connections, and observation prompts for each phase.')),
           TYPICAL_RUN_REVIEW.map(function(p, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 10 } }, '⏱ ' + p.phase),
@@ -22815,8 +22896,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderCerts() {
         return h('div', null,
-          panelHeader('🏅 Unit Completion Certificates',
-            'Specific achievements students can earn. Print + display as motivation + recognition.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_unit_completion_certificates', '🏅 Unit Completion Certificates'),
+            __alloT('stem.cephalopodlab.hdr_specific_achievements_students_can', 'Specific achievements students can earn. Print + display as motivation + recognition.')),
           CERTIFICATES.map(function(c, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, '🏆 ' + c.name),
@@ -22832,8 +22913,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderMemorable() {
         return h('div', null,
-          panelHeader('✨ Memorable Moments in the Sim',
-            'Specific simulator moments that often stand out for players — first camouflage success, first ink defense, first Sage achievement, etc. Each shows what happens, what the lesson is, and the underlying biology.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_memorable_moments_in_the_sim', '✨ Memorable Moments in the Sim'),
+            __alloT('stem.cephalopodlab.hdr_specific_simulator_moments_that_of', 'Specific simulator moments that often stand out for players — first camouflage success, first ink defense, first Sage achievement, etc. Each shows what happens, what the lesson is, and the underlying biology.')),
           MEMORABLE_MOMENTS.map(function(m, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '✨ ' + m.moment),
@@ -22850,8 +22931,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderPedagogy() {
         return h('div', null,
-          panelHeader('🎓 Pedagogy Implementation',
-            'How this simulator implements 10 key pedagogical principles. For administrators, teacher coaches, + reflective practitioners.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_pedagogy_implementation', '🎓 Pedagogy Implementation'),
+            __alloT('stem.cephalopodlab.hdr_how_this_simulator_implements_10_k', 'How this simulator implements 10 key pedagogical principles. For administrators, teacher coaches, + reflective practitioners.')),
           PEDAGOGY_IMPLEMENTATION.map(function(p, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 8 } }, '📚 ' + p.principle),
@@ -22868,8 +22949,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderArt() {
         return h('div', null,
-          panelHeader('🎨 Cephalopod Art + Maker Projects',
-            'Hands-on creative projects that reinforce cephalopod biology — drawing, sewing, sculpting, animating, writing, podcasting, and more. Each project lists materials, time, age range, and the biology concept it reinforces.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_cephalopod_art_maker_projects', '🎨 Cephalopod Art + Maker Projects'),
+            __alloT('stem.cephalopodlab.hdr_hands_on_creative_projects_that_re', 'Hands-on creative projects that reinforce cephalopod biology — drawing, sewing, sculpting, animating, writing, podcasting, and more. Each project lists materials, time, age range, and the biology concept it reinforces.')),
           ART_PROJECTS.map(function(p, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
@@ -22890,7 +22971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderFinal() {
         return h('div', null,
-          panelHeader('🌅 ' + AFTERWORD.title, 'Closing thoughts + 15 final reflection prompts for student journaling at the end of the unit.'),
+          panelHeader('🌅 ' + AFTERWORD.title, __alloT('stem.cephalopodlab.hdr_closing_thoughts_15_final_reflecti', 'Closing thoughts + 15 final reflection prompts for student journaling at the end of the unit.')),
           h('div', { style: Object.assign({}, cardStyle(), { lineHeight: 1.8, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' }) }, AFTERWORD.body),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.final_reflection_prompts', '📝 Final reflection prompts')),
@@ -22906,8 +22987,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderMiniLessons() {
         return h('div', null,
-          panelHeader('⚡ 5-Minute Mini-Lessons',
-            '10 ready-to-deliver micro-lessons on specific cephalopod topics — for crew meetings, transitions, or quick fill-ins. Each includes hook + main point + biology + closure.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_5_minute_mini_lessons', '⚡ 5-Minute Mini-Lessons'),
+            __alloT('stem.cephalopodlab.hdr_10_ready_to_deliver_micro_lessons', '10 ready-to-deliver micro-lessons on specific cephalopod topics — for crew meetings, transitions, or quick fill-ins. Each includes hook + main point + biology + closure.')),
           MINI_LESSONS.map(function(m, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
@@ -22928,8 +23009,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderWisdom() {
         return h('div', null,
-          panelHeader('🦉 Hard-won Teacher Wisdom',
-            '21 specific bits of teaching advice from educators who have used this tool. Pearls collected from classroom + reflection conversations.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_hard_won_teacher_wisdom', '🦉 Hard-won Teacher Wisdom'),
+            __alloT('stem.cephalopodlab.hdr_21_specific_bits_of_teaching_advic', '21 specific bits of teaching advice from educators who have used this tool. Pearls collected from classroom + reflection conversations.')),
           WISDOM.map(function(w, idx) {
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, '🦉 ' + w.wisdom),
@@ -22952,8 +23033,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'fieldnotes', label: __alloT('stem.cephalopodlab.field_notes_2', 'Field Notes'), icon: '📔', count: (d.huntFieldNotesUnlocked || []).length }
         ];
         return h('div', null,
-          panelHeader('📚 Resources',
-            'Glossary, source bibliography, citizen science participation, and your unlocked field notes from the Hunter Sim.'),
+          panelHeader(__alloT('stem.cephalopodlab.hdr_resources', '📚 Resources'),
+            __alloT('stem.cephalopodlab.hdr_glossary_source_bibliography_citiz', 'Glossary, source bibliography, citizen science participation, and your unlocked field notes from the Hunter Sim.')),
 
           // Sub-tab strip
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.resources_sub_sections', 'Resources sub-sections'),
@@ -23027,7 +23108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   { name: __alloT('stem.cephalopodlab.hanlon_2007_current_biology', 'Hanlon (2007) Current Biology'), topic: '"Cephalopod dynamic camouflage" — the 3-pattern model (uniform / mottled / disruptive)', tag: 'paper' },
                   { name: __alloT('stem.cephalopodlab.wang_ragsdale_2018_2022', 'Wang & Ragsdale (2018, 2022)'), topic: 'Optic gland + cholesterol pathway papers on programmed cephalopod senescence', tag: 'paper' },
                   { name: __alloT('stem.cephalopodlab.doubleday_et_al_2016_current_biology', 'Doubleday et al. (2016) Current Biology'), topic: 'Cephalopod populations rising globally — the climate-change-winner paper', tag: 'paper' },
-                  { name: __alloT('stem.cephalopodlab.birch_burn_schnell_et_al_2021_lse_revi', 'Birch, Burn, Schnell et al. (2021) LSE review'), topic: '"Review of the evidence of sentience in cephalopod molluscs and decapod crustaceans" — basis for UK 2021 Sentience Act amendment', tag: 'report' },
+                  { name: __alloT('stem.cephalopodlab.birch_burn_schnell_et_al_2021_lse_revi', 'Birch, Burn, Schnell et al. (2021) LSE review'), topic: '"Review of the evidence of sentience in cephalopod molluscs and decapod crustaceans" — basis for adding cephalopods + decapods to the UK Animal Welfare (Sentience) Act 2022', tag: 'report' },
                   { name: __alloT('stem.cephalopodlab.cambridge_declaration_on_consciousness_2', 'Cambridge Declaration on Consciousness (2012)'), topic: 'Signed at the Francis Crick Memorial Conference. First broad scientific consensus naming cephalopods alongside mammals + birds', tag: 'declaration' },
                   { name: __alloT('stem.cephalopodlab.roger_hanlon_s_marine_biological_labor', 'Roger Hanlon\'s Marine Biological Laboratory website'), topic: 'Open-access cephalopod camouflage research, photos, video', tag: 'web' },
                   { name: 'CephResearch.org', topic: 'Active research community resources, papers, public engagement', tag: 'web' }
