@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
 import {
   React, ReactDOMServer, loadTool, makeCtx, newStore, resetStemLab
 } from './helpers/stem_widgets_smoke_harness.js';
@@ -54,6 +55,8 @@ function observeHour(patch = {}) {
 
 
 const copy = value => JSON.parse(JSON.stringify(value));
+// The same file the harness loads, for the few rules only checkable as source.
+const source = fs.readFileSync('stem_lab/stem_tool_aquarium.js', 'utf8');
 const sample = { tankFish: ['guppy'], fishInstanceIds: ['fish-1'], nextFishInstanceId: 2, hungerLevels: { 'fish-1': 80 }, fishStress: { 'fish-1': 0 }, fishVitality: { 'fish-1': { score: 90, tick: 10 } }, plantSizeEdits: {}, equipment: { filter: 0, heater: 0, light: 0, airPump: 1 }, aquariumTankConfig: { tankId: 'freshwater', volumeGallons: 20, shape: 'standard' }, ecosystemPrediction: { oxygen: 'rise', nitrate: 'fall', vitality: 'stable' } };
 function tank(patch = {}) {
   const view = renderTank({ ...sample, ...patch });
@@ -75,6 +78,160 @@ function act(patch, name) {
 }
 const contributions = [['fish','ammoniaProduced'], ['fish','oxygenConsumed'], ['fish','co2Released'], ['plants','oxygenProduced'], ['plants','co2Consumed'], ['plants','nitrateConsumed'], ['equipment','oxygenAdded'], ['equipment','co2Removed']];
 afterEach(() => vi.restoreAllMocks());
+
+describe('Aquarium breeding at stocking capacity', () => {
+  // A 20 US gal tank carries a load of 10; guppies weigh 1 each. Gestation is
+  // already complete (started 21 hours before the observed hour), the water is
+  // clean and there are no predators, so every fry survives the survival roll.
+  const guppies = count => ({
+    tankFish: Array(count).fill('guppy'),
+    fishInstanceIds: Array.from({ length: count }, (_, i) => 'fish-' + (i + 1)),
+    nextFishInstanceId: count + 1,
+    hungerLevels: Object.fromEntries(Array.from({ length: count }, (_, i) => ['fish-' + (i + 1), 20])),
+    fishStress: {},
+    aquariumTankConfig: { tankId: 'freshwater', volumeGallons: 20, shape: 'standard' },
+    breedingState: { guppy: { stage: 'gestating', startTick: -10, fryCount: 5 } }
+  });
+  const messages = state => state.eventLog.map(entry => entry.msg);
+
+  it('reports fry with no room as a capacity outcome, never as a death', () => {
+    const state = observeHour(guppies(10));
+    // Previously these fell through to "did not survive - too many predators
+    // or poor conditions" in a clean, predator-free tank.
+    expect(messages(state).some(msg => /did not survive/.test(msg))).toBe(false);
+    expect(messages(state).some(msg => /^5 Guppy fry survived but had no room: the tank is at its stocking capacity/.test(msg))).toBe(true);
+    // And it names what a breeder does next.
+    expect(messages(state).some(msg => /larger tank \(Tank & plant size\) or rehomes fry/.test(msg))).toBe(true);
+    // The stocking cap itself still holds.
+    expect(state.tankFish).toHaveLength(10);
+  });
+
+  it('adds the fry that fit and reports only the rest as having no room', () => {
+    const state = observeHour(guppies(8));
+    expect(state.tankFish).toHaveLength(10);
+    expect(messages(state).some(msg => /^3 Guppy fry survived but had no room/.test(msg))).toBe(true);
+    expect(messages(state).some(msg => /did not survive/.test(msg))).toBe(false);
+  });
+
+  // The breeding panel's readiness chips, read from the real rendered tool.
+  const chips = element => {
+    const found = [];
+    findElement(element, item => { if (item.type === 'span' && /^\S (Pop|Calm|Stress|Fed|Hungry|Room|Tank full|Water)$/.test(String(item.props?.children))) found.push(String(item.props.children).slice(2)); return false; });
+    return found;
+  };
+  const fullNote = element => findElement(element, item => item.type === 'div' && item.props?.role === 'note' && /stocking capacity, so no new broods start/.test(String(item.props?.children)));
+
+  it('shows a full tank as the reason breeding has stopped', () => {
+    // The sim refuses to start a brood without room for one more fish, but the
+    // panel only listed Pop / Calm / Fed - three green ticks on a tank that
+    // could never breed again.
+    const full = renderTank({ ...guppies(10), breedingState: {} }).element;
+    expect(chips(full)).toContain('Tank full');
+    expect(chips(full)).not.toContain('Room');
+    expect(fullNote(full)).toBeTruthy();
+
+    const roomy = renderTank({ ...guppies(4), breedingState: {} }).element;
+    expect(chips(roomy)).toContain('Room');
+    expect(fullNote(roomy)).toBe(null);
+  });
+
+  it('counts the load the way the simulation does, leaving quarantined fish out', () => {
+    // Ten guppies fill a 20 US gal tank - but two in the hospital tank do not
+    // count toward the display load in the tick, so there IS room to breed.
+    const quarantined = { 'fish-9': { sinceTick: 1, reason: 'Observation' }, 'fish-10': { sinceTick: 1, reason: 'Observation' } };
+    const element = renderTank({ ...guppies(10), breedingState: {}, quarantinedFish: quarantined }).element;
+    expect(chips(element)).toContain('Room');
+    expect(fullNote(element)).toBe(null);
+    // The rule it mirrors: the tick excludes quarantined fish from its load.
+    expect(source).toContain('if (_quarantinedFish[finalFishInstanceIds[index]]) return s;');
+  });
+
+  it('shows dirty water as a breeding blocker, as the simulation enforces', () => {
+    const dirty = renderTank({ ...guppies(4), breedingState: {}, waterChem: { temp: 76, pH: 7, ammonia: 0.8, nitrite: 0, nitrate: 20, salinity: 0, dissolvedO2: 7, co2: 3 } }).element;
+    const clean = renderTank({ ...guppies(4), breedingState: {} }).element;
+    expect(chips(dirty).filter(c => c === 'Water')).toHaveLength(1);
+    // The same label either way; what differs is the tick or cross before it.
+    const glyph = element => { let g = null; findElement(element, item => { if (item.type === 'span' && / Water$/.test(String(item.props?.children))) { g = String(item.props.children)[0]; return true; } return false; }); return g; };
+    expect(glyph(clean)).toBe(String.fromCharCode(0x2714));
+    expect(glyph(dirty)).toBe(String.fromCharCode(0x2718));
+  });
+
+  it('says nothing about capacity when every fry fits', () => {
+    const state = observeHour(guppies(4));
+    expect(state.tankFish).toHaveLength(9);
+    expect(messages(state).some(msg => /had no room/.test(msg))).toBe(false);
+  });
+});
+
+describe('Aquarium water change dechlorination', () => {
+  // Drives the real controls in the rendered tool: the checkbox, the manual
+  // water button and the recommended one. No chemistry is reimplemented here.
+  const byLabel = (element, label) => findElement(element, item => item.type === 'button' && item.props?.['aria-label'] === label);
+  const recommended = element => findElement(element, item => item.type === 'button' && /^Perform recommended \d+ percent water change$/.test(item.props?.['aria-label'] || ''));
+  const checkbox = element => findElement(element, item => item.type === 'input' && item.props?.id === 'aquarium-water-change-treated');
+  const press = (patch, find) => {
+    const { element, store } = renderTank(patch);
+    const button = find(element);
+    expect(button, 'water change control').toBeTruthy();
+    button.props.onClick();
+    return store.toolData._aquarium;
+  };
+
+  it('treats replacement water by default, leaving the colony untouched', () => {
+    const { element } = renderTank({ waterChangePercent: 50 });
+    // Existing saves have no setting at all; that must read as treated.
+    expect(checkbox(element).props.checked).toBe(true);
+    const after = press({ waterChangePercent: 50 }, el => byLabel(el, 'Perform 50 percent water change'));
+    expect(after.bioColonyLag ?? null).toBe(null);
+    expect(after.maintenanceLog.at(-1).treated).toBe(true);
+    expect(after.eventLog.at(-1).msg).not.toMatch(/chlorine/i);
+  });
+
+  it('kills part of the colony when untreated water goes in, scaled by how much was replaced', () => {
+    const big = press({ waterChangePercent: 50, waterChangeTreated: false }, el => byLabel(el, 'Perform 50 percent water change'));
+    const small = press({ waterChangePercent: 10, waterChangeTreated: false }, el => byLabel(el, 'Perform 10 percent water change'));
+    expect(big.bioColonyLag.maturity).toBeCloseTo(0.4, 6);
+    expect(small.bioColonyLag.maturity).toBeCloseTo(0.88, 6);
+    // A bigger untreated change does more harm than a small one.
+    expect(big.bioColonyLag.maturity).toBeLessThan(small.bioColonyLag.maturity);
+    expect(big.maintenanceLog.at(-1).treated).toBe(false);
+    expect(big.eventLog.at(-1).msg).toMatch(/Untreated tap water: chlorine killed part of the filter colony/);
+    // The dilution itself still happens; only the biology is set back.
+    expect(big.waterChem.nitrate).toBeCloseTo(10, 6);
+
+    // The service history must show WHICH change went wrong, in words rather
+    // than colour alone, so a learner can find the mistake afterwards.
+    const history = renderTank({ ...big, maintenanceHistoryExpanded: true }).element;
+    const rows = [];
+    findElement(history, item => { if (item.type === 'span' && /% change/.test(String(item.props?.children))) rows.push(String(item.props.children)); return false; });
+    expect(rows).toContain('50% change (untreated)');
+    // An entry saved before this field existed is not labelled either way.
+    const legacy = renderTank({ maintenanceLog: [{ tick: 1, day: 0, hour: 9, percent: 25, reason: 'Manual 25% service.' }], maintenanceHistoryExpanded: true }).element;
+    const legacyRows = [];
+    findElement(legacy, item => { if (item.type === 'span' && /% change/.test(String(item.props?.children))) legacyRows.push(String(item.props.children)); return false; });
+    expect(legacyRows).toEqual(['25% change']);
+  });
+
+  it('never lets the recommended action skip the dechlorinator', () => {
+    // The recommendation is best practice, whatever the manual toggle says.
+    const after = press({ waterChangeTreated: false, lastWaterChangeTick: 0, simTick: 400 }, recommended);
+    expect(after.bioColonyLag ?? null).toBe(null);
+    expect(after.maintenanceLog.at(-1).treated).toBe(true);
+  });
+
+  it('warns the learner beside the control when dechlorination is switched off', () => {
+    const { element, store } = renderTank({});
+    checkbox(element).props.onChange({ target: { checked: false } });
+    expect(store.toolData._aquarium.waterChangeTreated).toBe(false);
+    const off = renderTank({ waterChangeTreated: false }).element;
+    expect(checkbox(off).props.checked).toBe(false);
+    const note = findElement(off, item => item.type === 'span' && item.props?.role === 'note' && /chlorine that kills filter bacteria/.test(String(item.props?.children)));
+    expect(note).toBeTruthy();
+    // And no warning while it is on.
+    const on = renderTank({}).element;
+    expect(findElement(on, item => item.type === 'span' && item.props?.role === 'note' && /chlorine/.test(String(item.props?.children)))).toBe(null);
+  });
+});
 
 describe('Aquarium filter colony after a tank change', () => {
   it('records how far the colony is behind when the tank grows, and not when it shrinks or holds', () => {

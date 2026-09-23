@@ -223,7 +223,9 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('"Perform recommended " + recommendedWaterChangePercent + " percent water change"');
 
     const scheduleStart = source.indexOf('var lastWaterChangeTick =');
-    const waterChangeStart = source.indexOf('var doWaterChange = function (requestedPercent)');
+    // treatedOverride lets the recommended action always dechlorinate.
+    const waterChangeStart = source.indexOf('var doWaterChange = function (requestedPercent, treatedOverride)');
+    expect(waterChangeStart).toBeGreaterThan(-1);
     const plannerStart = source.indexOf(`'aria-label': __alloT('stem.aquarium.a11y_aquarium_maintenance_planner', 'Aquarium maintenance planner')`);
     expect(waterChangeStart).toBeGreaterThan(scheduleStart);
     expect(plannerStart).toBeGreaterThan(waterChangeStart);
@@ -272,6 +274,48 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     const tutorialStart = source.indexOf('var advanceTutorial = function ()');
     expect(serviceStart).toBeGreaterThan(-1);
     expect(tutorialStart).toBeGreaterThan(serviceStart);
+  });
+
+  it('suspends the colony derate before it can push a tank past the ammonia harm line', () => {
+    // A fixed floor cannot make this safe: a tank already near 2 ppm crosses it
+    // under ANY derate, while a lightly stocked one is fine at 0.15. So the
+    // derate stands down once ammonia is already elevated - the cue exists to
+    // teach, never to be the thing that harms fish.
+    expect(source).toContain('var colonyDerateSafe = _waterChem.ammonia < 1.7');
+    expect(source).toContain('var colonyMaturity = _colonyLag && colonyDerateSafe ? colonyStored : 1');
+    // Suspending the effect must not discard the lag: the colony keeps
+    // recovering while its effect is held back.
+    expect(source).toContain('var colonyStored = _colonyLag ?');
+    expect(source).toContain('var colonyRecovered = !_colonyLag || colonyStored >= 0.999 ? null');
+    expect(source).toContain('maturity: Math.min(1, colonyStored + 0.03)');
+    // The harm threshold this protects is the one the sim already enforces.
+    expect(source).toContain('if (newAmm > 2) healthDelta -= 1');
+  });
+
+  it('lets medication damage the colony it already says it damages, and spares a hospital tank', () => {
+    // The event log has always said "Beneficial bacteria reduced", but only the
+    // ammonia concentration moved - the spike had no visible cause recovering.
+    expect(source).toContain("var medColonyHit = targetInQuarantine ? 0 : targetId ? 0.08 : 0.2");
+    expect(source).toContain('var medColony = Math.max(0.15, priorMedColony - medColonyHit)');
+    // Treating in the hospital tank protects the display biofilter, which is
+    // exactly what the existing note claims.
+    expect(source).toContain("targetInQuarantine ? 0 :");
+    expect(source).toContain('bioColonyLag: medColonyHit ?');
+    // Whole-tank dosing costs more than treating one fish.
+    expect(source).toContain('targetId ? 0.08 : 0.2');
+  });
+
+  it('sets the filter colony back when the media is rinsed, but not for other equipment', () => {
+    // The curriculum is explicit that rinsing media disturbs the bacteria living
+    // in it. Restoring flow to 100% at no biological cost taught the opposite.
+    expect(source).toContain("var mediaDisturbance = type === 'filter' ? 0.18 : 0");
+    expect(source).toContain('var servicedColony = Math.max(0.15, priorColony - mediaDisturbance)');
+    // Only the filter carries a colony - a heater or light does not.
+    expect(source).toContain('if (mediaDisturbance) servicePatch.bioColonyLag =');
+    // The learner is told why, not just that output was restored.
+    expect(source).toContain('Rinsing the media disturbed some of the filter colony');
+    // The same floor that keeps a tank upgrade survivable applies here.
+    expect(source).toContain('Math.max(0.15, priorColony - mediaDisturbance)');
   });
 
   it('creates preventable equipment faults with persistent outages and repairs', () => {

@@ -17907,6 +17907,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var simSpeed = typeof d.simSpeed === 'number' ? d.simSpeed : 1;
           var waterChangePercent = d.waterChangePercent || 25;
+          var waterChangeTreated = d.waterChangeTreated !== false;
           var lastWaterChangeTick = typeof d.lastWaterChangeTick === 'number' ? d.lastWaterChangeTick : 0;
           var maintenanceLog = Array.isArray(d.maintenanceLog) ? d.maintenanceLog.slice(-12) : [];
           var maintenanceHistoryExpanded = d.maintenanceHistoryExpanded === true;
@@ -19320,12 +19321,22 @@ var d = (labToolData && labToolData._aquarium) || {};
             var nextCondition = Object.assign({}, equipmentCondition);
             nextCondition[type] = 100;
             var serviceVerb = type === 'filter' ? 'Cleaned' : 'Serviced';
-            updMulti({
+            // Rinsing the media knocks the colony back a little. Illustrative
+            // rate cue from the modeled service, not a bacterial count.
+            var priorColony = d.bioColonyLag && typeof d.bioColonyLag.maturity === 'number'
+              ? Math.max(0.15, Math.min(1, d.bioColonyLag.maturity)) : 1;
+            var mediaDisturbance = type === 'filter' ? 0.18 : 0;
+            var servicedColony = Math.max(0.15, priorColony - mediaDisturbance);
+            var servicePatch = {
               equipmentCondition: nextCondition,
               tutorialEquipmentMaintained: true,
-              eventLog: appendTankEvent(serviceVerb + ' ' + catalog.name + '; output restored to 100%')
-            });
-            if (addToast) addToast(catalog.icon + ' ' + serviceVerb + ' ' + catalog.name + '. Full output restored.', 'success');
+              eventLog: appendTankEvent(serviceVerb + ' ' + catalog.name + '; output restored to 100%'
+                + (mediaDisturbance ? '. Rinsing the media disturbed some of the filter colony, so biological filtration dips briefly while it recovers.' : ''))
+            };
+            if (mediaDisturbance) servicePatch.bioColonyLag = { maturity: servicedColony, fromGallons: null, toGallons: null };
+            updMulti(servicePatch);
+            if (addToast) addToast(catalog.icon + ' ' + serviceVerb + ' ' + catalog.name + '. Full output restored.'
+              + (mediaDisturbance ? ' Filter colony briefly set back \u2014 expect a small ammonia rise.' : ''), 'success');
           };
           var repairEquipment = function (type) {
             var catalog = EQUIPMENT_CATALOG[type];
@@ -19791,10 +19802,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          var doWaterChange = function (requestedPercent) {
+          var doWaterChange = function (requestedPercent, treatedOverride) {
 
             var percent = [10, 25, 50].indexOf(Number(requestedPercent)) >= 0 ? Number(requestedPercent) : waterChangePercent;
             var fraction = percent / 100;
+            var treated = typeof treatedOverride === 'boolean' ? treatedOverride : waterChangeTreated;
+            // Illustrative rate cue: chlorine in the replaced fraction sets the
+            // colony back. Not a disinfection model.
+            var priorWaterColony = d.bioColonyLag && typeof d.bioColonyLag.maturity === 'number'
+              ? Math.max(0.15, Math.min(1, d.bioColonyLag.maturity)) : 1;
+            var chlorineHit = treated ? 0 : fraction * 1.2;
+            var waterColony = Math.max(0.15, priorWaterColony - chlorineHit);
             var remaining = 1 - fraction;
             if (!waterChem) return;
 
@@ -19816,14 +19834,19 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var serviceReason = percent === recommendedWaterChangePercent ? maintenanceRecommendation : 'Manual ' + percent + '% service.';
             var serviceRecord = {
-              tick: simTick, day: simDay, hour: simHour, percent: percent, reason: serviceReason,
+              tick: simTick, day: simDay, hour: simHour, percent: percent, reason: serviceReason, treated: treated,
               before: { ammonia: waterChem.ammonia, nitrite: waterChem.nitrite, nitrate: waterChem.nitrate, pH: waterChem.pH },
               after: { ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, pH: newChem.pH }
             };
             var nextMaintenanceLog = maintenanceLog.concat([serviceRecord]).slice(-12);
-            updMulti({ waterChem: newChem, chemHistory: chemHistory.concat([{ tick: simTick, day: simDay, hour: simHour, ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, dissolvedO2: newChem.dissolvedO2, pH: newChem.pH }]).slice(-48), lastWaterChangeTick: simTick, maintenanceLog: nextMaintenanceLog, eventLog: appendTankEvent(percent + '% water change performed ? ' + serviceReason) });
+            updMulti({ waterChem: newChem, chemHistory: chemHistory.concat([{ tick: simTick, day: simDay, hour: simHour, ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, dissolvedO2: newChem.dissolvedO2, pH: newChem.pH }]).slice(-48), lastWaterChangeTick: simTick, maintenanceLog: nextMaintenanceLog,
+              bioColonyLag: chlorineHit ? { maturity: waterColony, fromGallons: null, toGallons: null } : (d.bioColonyLag || null),
+              eventLog: appendTankEvent(percent + '% water change performed \u2014 ' + serviceReason
+                + (chlorineHit ? ' Untreated tap water: chlorine killed part of the filter colony, so biological filtration dips while it recovers.' : '')) });
 
-            if (addToast) addToast(percent + '% water change complete. Dissolved compounds reduced by ' + percent + '%.', 'success');
+            if (addToast) addToast(percent + '% water change complete. Dissolved compounds reduced by ' + percent + '%.'
+              + (chlorineHit ? ' The new water was not dechlorinated, so part of the filter colony died \u2014 expect ammonia to rise while it recovers.' : ''),
+              chlorineHit ? 'warning' : 'success');
 
             sfxSplash(); setTimeout(sfxSplash, 150); setTimeout(sfxBubble, 300);
 
@@ -19831,18 +19854,16 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
+          // Illustrative: fish keep part of the nitrogen they eat for growth, so
+          // food that rots uneaten releases more ammonia than food that is eaten.
+          var UNEATEN_FOOD_AMMONIA_FACTOR = 1.4;
+
           var feedFish = function () {
 
             if (!waterChem) return;
             if (tankFish.length === 0) { if (addToast) addToast('Add fish before feeding. Empty-tank food would only decay into ammonia.', 'warning'); return; }
             var displayFishCount = fishInstanceIds.filter(function (fishId) { return !quarantinedFish[fishId]; }).length;
             if (displayFishCount === 0) { if (addToast) addToast('All fish are in the hospital tank. Feed them individually from their care cards.', 'warning'); return; }
-
-            var newChem = Object.assign({}, waterChem, {
-
-              ammonia: waterChem.ammonia + 0.15 * displayFishCount * aquariumVolumeScale,
-
-            });
 
             // Reduce hunger for all fish and track feeding impact
 
@@ -19853,6 +19874,8 @@ var d = (labToolData && labToolData._aquarium) || {};
             var acceptedIds = [];
 
             var overfedCount = 0;
+            var eatenPortions = 0;
+            var uneatenPortions = 0;
 
             tankFish.forEach(function (fId, idx) {
               var fishKey = fishInstanceIds[idx];
@@ -19860,9 +19883,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var cur = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
 
-              if (cur < 15) { overfedCount++; }
-
               var drop = Math.min(cur, 35);
+              // Each resident is offered one 35-point portion; the rest is left.
+              var eatenShare = drop / 35;
+              eatenPortions += eatenShare;
+              uneatenPortions += 1 - eatenShare;
+              if (eatenShare < 0.5) { overfedCount++; }
 
               totalDrop += drop;
 
@@ -19873,6 +19899,9 @@ var d = (labToolData && labToolData._aquarium) || {};
             });
 
             var avgDrop = Math.round(totalDrop / displayFishCount);
+            var uneatenAmmonia = 0.15 * UNEATEN_FOOD_AMMONIA_FACTOR * uneatenPortions * aquariumVolumeScale;
+            var feedAmmonia = 0.15 * eatenPortions * aquariumVolumeScale + uneatenAmmonia;
+            var newChem = Object.assign({}, waterChem, { ammonia: waterChem.ammonia + feedAmmonia });
 
             var tips = [
               "This model uses a simplified feeding dose. Compare pre- and post-feeding hunger rather than treating the dose as a real feeding schedule.",
@@ -19893,7 +19922,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               fishCareLog: newCareLog,
               aquariumFeedingEvent: { eventId: 'feed-' + simTick + '-' + feedingSequence + '-' + Date.now().toString(36), sequence: feedingSequence, tick: simTick, foodType: 'flake', targetId: null, acceptedIds: acceptedIds, scope: 'display' },
 
-              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: 0.15 * displayFishCount * aquariumVolumeScale, overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
+              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: feedAmmonia, uneatenAmmonia: uneatenAmmonia, overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
 
               eventLog: eventLog.concat([{ tick: simTick, msg: '🍽️ Fish fed — hunger reduced by ' + avgDrop + ' avg' }])
 
@@ -19914,12 +19943,6 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var displayFishCount = fishInstanceIds.filter(function (fishId) { return !quarantinedFish[fishId]; }).length;
             if (displayFishCount === 0) { if (addToast) addToast('All fish are in the hospital tank. Feed them individually from their care cards.', 'warning'); return; }
-            var newChem = Object.assign({}, waterChem, {
-
-              ammonia: waterChem.ammonia + 0.22 * displayFishCount * aquariumVolumeScale
-
-            });
-
             var newHunger = Object.assign({}, hungerLevels);
             var newCareLog = Object.assign({}, fishCareLog);
 
@@ -19929,6 +19952,9 @@ var d = (labToolData && labToolData._aquarium) || {};
             var acceptedIds = [];
 
             var ignoredResidents = 0;
+            var liveEatenPortions = 0;
+            var liveUneatenPortions = 0;
+            var liveOverfedCount = 0;
 
             tankFish.forEach(function (fId, idx) {
 
@@ -19955,12 +19981,22 @@ var d = (labToolData && labToolData._aquarium) || {};
               }
               var actualDrop = Math.max(0, cur - (newHunger[fishKey] !== undefined ? newHunger[fishKey] : cur));
               totalDrop += actualDrop;
+              // One portion per resident, sized to what that diet takes when
+              // hungry; herbivores leave theirs entirely.
+              var livePortion = diet === 'carnivore' ? 45 : diet === 'omnivore' ? 20 : 0;
+              var liveEatenShare = livePortion ? actualDrop / livePortion : 0;
+              liveEatenPortions += liveEatenShare;
+              liveUneatenPortions += 1 - liveEatenShare;
+              if (liveEatenShare < 0.5) liveOverfedCount++;
               if (actualDrop > 0) { acceptedIds.push(fishKey); if (diet === 'carnivore') fedCarnivores++; else if (diet === 'omnivore') fedOmnivores++; }
               if (actualDrop > 0) newCareLog[fishKey] = (newCareLog[fishKey] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: diet === 'carnivore' ? 'Fed live food' : 'Sampled live food' }]).slice(-8);
 
             });
 
             var avgDrop = totalDrop / displayFishCount;
+            var liveUneatenAmmonia = 0.22 * UNEATEN_FOOD_AMMONIA_FACTOR * liveUneatenPortions * aquariumVolumeScale;
+            var liveFeedAmmonia = 0.22 * liveEatenPortions * aquariumVolumeScale + liveUneatenAmmonia;
+            var newChem = Object.assign({}, waterChem, { ammonia: waterChem.ammonia + liveFeedAmmonia });
             var tipText = acceptedIds.length > 0
               ? 'In this model, live food can reduce hunger in carnivores and omnivores. Inspect each diet and compare pre- and post-feeding hunger.'
               : 'No displayed resident had lower hunger from this feeding. Check diet and current hunger; added food still contributes ammonia in the model.';
@@ -19976,7 +20012,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               fishCareLog: newCareLog,
               aquariumFeedingEvent: { eventId: 'feed-' + simTick + '-' + feedingSequence + '-' + Date.now().toString(36), sequence: feedingSequence, tick: simTick, foodType: 'live', targetId: null, acceptedIds: acceptedIds, scope: 'display' },
 
-              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: 0.22 * displayFishCount * aquariumVolumeScale, overfedCount: 0, tip: tipText },
+              feedingLog: { fishCount: displayFishCount, avgHungerDrop: avgDrop, ammoniaAdded: liveFeedAmmonia, uneatenAmmonia: liveUneatenAmmonia, overfedCount: liveOverfedCount, tip: tipText },
 
               eventLog: eventLog.concat([{ tick: simTick, msg: 'Live food added — hunger fell for ' + fedCarnivores + ' carnivores and ' + fedOmnivores + ' omnivores; ' + (Math.round(avgDrop * 10) / 10) + ' average points' + (displayFishCount > acceptedIds.length ? '; ' + (displayFishCount - acceptedIds.length) + ' residents had no hunger reduction' : '') }])
 
@@ -20165,6 +20201,10 @@ var d = (labToolData && labToolData._aquarium) || {};
               ammonia: waterChem.ammonia + (targetInQuarantine ? 0 : targetId ? 0.1 : 0.25)
 
             });
+            var priorMedColony = d.bioColonyLag && typeof d.bioColonyLag.maturity === 'number'
+              ? Math.max(0.15, Math.min(1, d.bioColonyLag.maturity)) : 1;
+            var medColonyHit = targetInQuarantine ? 0 : targetId ? 0.08 : 0.2;
+            var medColony = Math.max(0.15, priorMedColony - medColonyHit);
 
             var treatmentNote = targetInQuarantine ? 'Hospital treatment protected the display tank biofilter.' : 'Beneficial bacteria reduced.';
             updMulti({
@@ -20173,12 +20213,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               fishCareLog: newCareLog,
               waterChem: newChem,
+              bioColonyLag: medColonyHit ? { maturity: medColony, fromGallons: null, toGallons: null } : (d.bioColonyLag || null),
 
               eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83D\uDC8A Medication applied — ' + cured + ' fish cured. Beneficial bacteria reduced.' }])
 
             });
             if (targetInQuarantine) {
-              upd('eventLog', appendTankEvent('Hospital medication applied ? ' + cured + ' fish cured. ' + treatmentNote));
+              upd('eventLog', appendTankEvent('Hospital medication applied \u2014 ' + cured + ' fish cured. ' + treatmentNote));
               if (addToast) addToast('Treated ' + cured + ' fish in the hospital tank. Display tank chemistry was protected.', cured > 0 ? 'success' : 'warning');
               return;
             }
@@ -20318,9 +20359,15 @@ var d = (labToolData && labToolData._aquarium) || {};
               // Only the biological clearance is derated; the filter's mechanical
               // action is unaffected. Illustrative cue, not a population model.
               var _colonyLag = aq.bioColonyLag && typeof aq.bioColonyLag.maturity === 'number' ? aq.bioColonyLag : null;
-              var colonyMaturity = _colonyLag ? Math.max(0.15, Math.min(1, _colonyLag.maturity)) : 1;
-              var colonyRecovered = colonyMaturity >= 0.999 ? null
-                : { maturity: Math.min(1, colonyMaturity + 0.03), fromGallons: _colonyLag.fromGallons, toGallons: _colonyLag.toGallons };
+              // The colony cue must never be the thing that pushes a tank over
+              // the ammonia harm threshold. Once ammonia is already elevated the
+              // derate is suspended and full biological clearance resumes, so a
+              // struggling tank is never made lethal by a teaching cue.
+              var colonyDerateSafe = _waterChem.ammonia < 1.7;
+              var colonyStored = _colonyLag ? Math.max(0.15, Math.min(1, _colonyLag.maturity)) : 1;
+              var colonyMaturity = _colonyLag && colonyDerateSafe ? colonyStored : 1;
+              var colonyRecovered = !_colonyLag || colonyStored >= 0.999 ? null
+                : { maturity: Math.min(1, colonyStored + 0.03), fromGallons: _colonyLag.fromGallons, toGallons: _colonyLag.toGallons };
               var surfaceExchangeScale = _equipmentTank ? _equipmentTank.surfaceExchangeScale : 1;
               var oxygenSaturationTarget = AquariumEcosystemCore.estimateOxygenSaturationMgL(_waterChem.temp, _waterChem.salinity);
 
@@ -21349,6 +21396,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var roomForFry = Math.floor((_maxLoad - _currentLoad) / fryLoad);
 
+                    // Fry that survived but do not fit are a CAPACITY outcome, not a
+                    // survival one. Folding them into the "did not survive" branch
+                    // blamed predators or water for a full tank - and a full tank is
+                    // exactly when a breeder moves to a larger tank or rehomes fry.
+                    var fryWithoutRoom = Math.max(0, survivingFry - Math.max(0, roomForFry));
+
                     survivingFry = Math.min(survivingFry, Math.max(0, roomForFry));
 
 
@@ -21379,9 +21432,15 @@ var d = (labToolData && labToolData._aquarium) || {};
                         if (_at) { aq.coins = (aq.coins || 0) + _at.coins; aq.totalCoinsEarned = (aq.totalCoinsEarned || 0) + _at.coins; }
                       }
 
-                    } else {
+                    } else if (!fryWithoutRoom) {
 
                       newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + sp.name + ' fry did not survive — too many predators or poor conditions.' });
+
+                    }
+
+                    if (fryWithoutRoom > 0) {
+
+                      newLog.push({ tick: newTick, msg: fryWithoutRoom + ' ' + sp.name + ' fry survived but had no room: the tank is at its stocking capacity. This is the point where a breeder moves to a larger tank (Tank & plant size) or rehomes fry.' });
 
                     }
 
@@ -24437,6 +24496,13 @@ React.createElement('section', { id: 'aquarium-panel-decide', className: 'aquari
                         return React.createElement("option", { key: percentOption, value: percentOption }, percentOption + "%");
                       })
                     ),
+                    React.createElement("label", { htmlFor: "aquarium-water-change-treated", className: "inline-flex items-center gap-1 text-[0.6875rem] font-bold text-blue-800" },
+                      React.createElement("input", { id: "aquarium-water-change-treated", type: "checkbox", checked: waterChangeTreated,
+                        onChange: function (event) { upd('waterChangeTreated', !!event.target.checked); },
+                        className: "h-4 w-4 accent-blue-700" }),
+                      "Dechlorinate new water"),
+                    !waterChangeTreated && React.createElement("span", { className: "text-[0.625rem] font-bold text-rose-800", role: "note" },
+                      "Untreated tap water carries chlorine that kills filter bacteria."),
                     React.createElement("span", { className: "text-[0.625rem] text-blue-900", 'aria-live': "polite" }, "Preview - NH3 " + (waterChem.ammonia * (1 - waterChangePercent / 100)).toFixed(2) + ", NO2 " + (waterChem.nitrite * (1 - waterChangePercent / 100)).toFixed(2) + ", NO3 " + (waterChem.nitrate * (1 - waterChangePercent / 100)).toFixed(1) + " ppm")
                   ),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
@@ -24557,7 +24623,7 @@ React.createElement('section', { id: 'aquarium-panel-decide', className: 'aquari
 
                         React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.hunger', "Hunger \u2193")),
 
-                        React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
+                        React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + (Math.round(feedingLog.avgHungerDrop * 10) / 10) + " avg")
 
                       ),
 
@@ -24571,9 +24637,11 @@ React.createElement('section', { id: 'aquarium-panel-decide', className: 'aquari
 
                     ),
 
-                    feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[0.6875rem] text-red-700 font-bold mb-1" },
+                    (feedingLog.uneatenAmmonia || 0) >= 0.005 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[0.6875rem] text-red-700 font-bold mb-1", role: "note" },
 
-                      "\u26A0\uFE0F " + feedingLog.overfedCount + " fish already full! Excess food = extra ammonia waste."
+                      "\u26A0\uFE0F Uneaten food: +" + feedingLog.uneatenAmmonia.toFixed(2) + " of the +" + feedingLog.ammoniaAdded.toFixed(2) + " ppm came from food no fish ate"
+                        + (feedingLog.overfedCount > 0 ? " (" + feedingLog.overfedCount + " fish already full or would not eat it)" : "")
+                        + ". It rots into ammonia and feeds nobody."
 
                     ),
 
@@ -24798,7 +24866,7 @@ React.createElement("details", { id: "aquarium-life-support", className: "rounde
                       React.createElement("div", { className: "flex items-center gap-1" },
                         React.createElement("button", {
                           type: "button",
-                          onClick: function () { doWaterChange(recommendedWaterChangePercent); },
+                          onClick: function () { doWaterChange(recommendedWaterChangePercent, true); },
                           'aria-label': "Perform recommended " + recommendedWaterChangePercent + " percent water change",
                           className: "rounded-lg border border-blue-600 bg-blue-600 px-2 py-1 text-[0.625rem] font-bold text-white hover:bg-blue-700"
                         }, "\uD83D\uDCA7 Do recommended " + recommendedWaterChangePercent + "%"),
@@ -24832,7 +24900,7 @@ React.createElement("details", { id: "aquarium-life-support", className: "rounde
                         return React.createElement("div", { role: "listitem", key: entry.tick + "-service-" + historyIndex, className: "border-b border-slate-100 px-1 py-1 text-[0.625rem] last:border-b-0" },
                           React.createElement("div", { className: "flex justify-between gap-2 font-bold text-slate-700" },
                             React.createElement("span", null, "Day " + entry.day + " " + serviceHour + ":00"),
-                            React.createElement("span", { className: "text-blue-700" }, entry.percent + "% change")
+                            React.createElement("span", { className: entry.treated === false ? "text-rose-800" : "text-blue-700" }, entry.percent + "% change" + (entry.treated === false ? " (untreated)" : ""))
                           ),
                           entry.before && entry.after && React.createElement("div", { className: "text-slate-500" }, "NH3 " + entry.before.ammonia.toFixed(2) + "\u2192" + entry.after.ammonia.toFixed(2) + " | NO3 " + entry.before.nitrate.toFixed(1) + "\u2192" + entry.after.nitrate.toFixed(1) + " ppm"),
                           React.createElement("div", { className: "text-slate-500" }, entry.reason)
@@ -25999,6 +26067,13 @@ React.createElement("section", {
 
                   tankFish.forEach(function (fId) { speciesPopCounts[fId] = (speciesPopCounts[fId] || 0) + 1; });
 
+                  // Mirrors the simulation's own breeding gates: the load counts only
+                  // display-tank fish (quarantined ones are excluded, as in the tick),
+                  // and a brood needs room for at least one more fish.
+                  var breedingMaxLoad = currentTankDefinition ? Math.floor(currentTankDefinition.size / 2) : 10;
+                  var breedingCurrentLoad = tankFish.reduce(function (s, f, index) { if (quarantinedFish[fishInstanceIds[index]]) return s; var loadSp = speciesList.find(function (x) { return x.id === f; }); return s + (loadSp ? loadSp.load : 0); }, 0);
+                  var breedingWaterOk = !waterChem || (waterChem.ammonia <= 0.5 && waterChem.nitrite <= 0.5);
+
                   var stratIcons = { livebearer: '\uD83E\uDD30', egg_layer: '\uD83E\uDD5A', egg_scatter: '\uD83C\uDF3F\uD83E\uDD5A', mouthbrooder: '\uD83D\uDC41\uFE0F', hermaphrodite: '\u2695\uFE0F' };
 
                   var stratLabels = { livebearer: 'Livebearer', egg_layer: 'Egg Layer', egg_scatter: 'Egg Scatter', mouthbrooder: 'Mouthbrooder', hermaphrodite: 'Hermaphrodite' };
@@ -26047,6 +26122,8 @@ React.createElement("section", {
 
                         var hungerOk = averageCurrentFishState(hungerLevels, sId, 50) <= 70;
 
+                        var roomOk = breedingCurrentLoad + (sp.load || 1) <= breedingMaxLoad;
+
                         return React.createElement("div", { key: sId, className: "bg-white/80 rounded-xl p-2.5 border " + (isGestating ? "border-pink-300 shadow-pink-100 shadow-sm" : "border-pink-100") },
 
                           React.createElement("div", { className: "flex items-center gap-2 mb-1" },
@@ -26091,9 +26168,15 @@ React.createElement("section", {
 
                             React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (stressOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
 
-                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry"),
 
-                          )
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (roomOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, roomOk ? "\u2714 Room" : "\u2718 Tank full"),
+
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (breedingWaterOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, breedingWaterOk ? "\u2714 Water" : "\u2718 Water")
+
+                          ),
+
+                          !isGestating && cooldownLeft === 0 && !roomOk && React.createElement("div", { className: "mt-1 text-[0.6875rem] font-bold text-rose-800", role: "note" }, "The tank is at its stocking capacity, so no new broods start. Breeders move to a larger tank (Tank & plant size) or rehome fish.")
 
                         );
 
