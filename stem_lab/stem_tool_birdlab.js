@@ -819,7 +819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '~5 in (small)',
       habitat: 'Forest, woodland edges, backyards',
       mainePresence: 'Year-round — Maine\'s state bird',
-      funFact: 'Stores seeds in dozens of locations and remembers them for weeks. Brain neurons regenerate seasonally to hold the spatial maps.',
+      funFact: 'Stores seeds in thousands of separate spots and remembers them for weeks. Brain neurons regenerate seasonally to hold the spatial maps.',
       callDescription: 'Whistled "fee-bee" (high then low) and the chatty "chick-a-dee-dee-dee" (more "dees" = higher alert)',
       movement: 'perch-bob',
       svg: function(h) {
@@ -858,10 +858,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       id: 'nuthatch',
       name: 'White-breasted Nuthatch',
       sciName: 'Sitta carolinensis',
-      size: '~6 in (small)',
+      size: '~5.5 in (small)',
       habitat: 'Mature deciduous forest, oak and hickory',
       mainePresence: 'Year-round',
-      funFact: 'The only North American bird that walks DOWN tree trunks headfirst. This gives it access to insects in bark crevices that woodpeckers miss.',
+      funFact: 'Nuthatches are the only North American birds that routinely climb DOWN tree trunks headfirst. Looking up under the bark from above, they find insects that birds climbing upward (woodpeckers, creepers) miss.',
       callDescription: 'Nasal "yank-yank-yank" — sounds like a tiny tin horn',
       movement: 'walk-down',
       svg: function(h) {
@@ -897,7 +897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '~17 in (large — crow-sized)',
       habitat: 'Mature forest with large dead trees',
       mainePresence: 'Year-round — common in Maine forests',
-      funFact: 'Carves rectangular cavities in trees — distinctive shape that other species (owls, ducks) reuse later. Their drumming can be heard a half-mile away.',
+      funFact: 'Chisels big rectangular holes hunting carpenter ants; its oval nest holes are later reused by owls, ducks, and other animals. Their drumming can be heard a half-mile away.',
       callDescription: 'Loud, ringing "kuk-kuk-kuk-kuk" laugh; powerful drumming on hollow trees',
       movement: 'perch-bob',
       svg: function(h) {
@@ -934,7 +934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       id: 'vireo',
       name: 'Red-eyed Vireo',
       sciName: 'Vireo olivaceus',
-      size: '~5.5 in (small)',
+      size: '~5 in (small)',
       habitat: 'Deciduous forest canopy',
       mainePresence: 'Summer breeder (May–September)',
       funFact: 'One of the most persistent singers in eastern forests — a single male was once recorded singing 22,197 songs in a single day.',
@@ -972,7 +972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '~10 in (medium)',
       habitat: 'Lawns, gardens, forest edges, almost everywhere',
       mainePresence: 'Year-round (some migrate south); huge spring arrival',
-      funFact: 'Their famous orange breast is the same pigment family as flamingo pink — carotenoids from berries. A robin\'s color depth tells you how good a forager it is.',
+      funFact: 'Their orange breast is colored by melanin, a pigment the robin makes itself, not by carotenoids from food like a flamingo\'s pink. That is why an albino robin is white all over.',
       callDescription: 'Liquid, melodic "cheerily-cheer-up-cheerily" sung at dawn and dusk',
       movement: 'perch-bob',
       svg: function(h) {
@@ -1007,7 +1007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     coopershawk: {
       id: 'coopershawk',
       name: 'Cooper\'s Hawk',
-      sciName: 'Accipiter cooperii',
+      sciName: 'Astur cooperii',
       size: '~16 in (medium raptor)',
       habitat: 'Forest, increasingly suburban',
       mainePresence: 'Year-round; some migrate',
@@ -1092,7 +1092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       sciName: 'Ardea herodias',
       size: '~46 in (very large)',
       habitat: 'Marshes, ponds, slow rivers, shorelines',
-      mainePresence: 'Year-round on coast; spring through fall inland',
+      mainePresence: 'Spring through fall; a few try to winter on the southern Maine coast',
       funFact: 'Stands motionless for many minutes, then strikes with a snake-fast neck. Each strike is a single S-shaped extension; if it misses, the heron resets and waits again.',
       callDescription: 'Loud, harsh "fraaank!" given when alarmed; usually silent while hunting',
       movement: 'hidden',
@@ -1254,7 +1254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '~9 in (medium)',
       habitat: 'Backyards, woodland edges, dense shrubs',
       mainePresence: 'Year-round; one of the most reliable winter feeder birds',
-      funFact: 'Pairs sing duets — male and female take turns. Both sexes sing year-round. Females sing more complex songs than males in many cases.',
+      funFact: 'Unusually for North American songbirds, females sing too, often from the nest, and mates trade song phrases back and forth. A female singing on the nest can tell her mate it is time to bring food.',
       callDescription: 'Clear whistled "what-cheer-cheer-cheer-cheer" or "pretty-pretty-pretty"; sharp "chip!" call',
       movement: 'perch-bob',
       svg: function(h) {
@@ -1330,7 +1330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       id: 'houseFinch',
       name: 'House Finch',
       sciName: 'Haemorhous mexicanus',
-      size: '~6 in (small)',
+      size: '~5.5 in (small)',
       habitat: 'Backyards, urban areas, open woodlands',
       mainePresence: 'Year-round; common at feeders',
       funFact: 'Males\' red color comes from carotenoid pigments in their food — birds with better diets are redder. Females actually prefer redder males because it signals foraging skill.',
@@ -1371,7 +1371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '~10 in (small but stocky)',
       habitat: 'Open ocean (winter); offshore island colonies (summer breeding)',
       mainePresence: 'Summer breeders ON the offshore islands (Eastern Egg Rock, Matinicus Rock, Petit Manan); rarely seen from shore',
-      funFact: 'Maine\'s flagship seabird restoration story. Project Puffin (Audubon, 1973) used decoys and recordings to lure puffins back to nest on Eastern Egg Rock after they\'d been hunted to local extinction. They came back. Today: ~1,300 pairs across Maine islands.',
+      funFact: 'Maine\'s flagship seabird restoration story. Puffins had been hunted off Eastern Egg Rock by the 1880s. Starting in 1973, Audubon\'s Project Puffin moved 954 chicks from Newfoundland to the island, raised them in artificial burrows, and set out wooden decoys to lure the grown birds home. The first pairs nested in 1981. Today: more than 1,300 pairs across Maine islands.',
       callDescription: 'Mostly silent at sea; soft growling "arr-arr-arr" near burrows',
       movement: 'glide',
       svg: function(h) {
@@ -1409,7 +1409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '~25 in (large)',
       habitat: 'Coast, harbors, dumps, parking lots, anywhere food might be',
       mainePresence: 'Year-round; the default "seagull" you see in Portland or Bar Harbor',
-      funFact: 'There is no such thing as a "seagull" — there are 50+ gull species, and the Herring Gull is the most common one in eastern North America. Smart enough to drop clams on rocks from height to crack them open.',
+      funFact: 'There is no such thing as a "seagull" — there are 50+ gull species. The Herring Gull is the classic big gull of the Maine coast (the smaller Ring-billed Gull is more numerous across the East). Smart enough to drop clams on rocks from height to crack them open.',
       callDescription: 'Long laughing call ("kyow-kyow-kyow"); sharp "kak!" alarm; the iconic "seagull" cry',
       movement: 'soar',
       svg: function(h) {
@@ -1490,8 +1490,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       sciName: 'Haliaeetus leucocephalus',
       size: '~32 in (very large raptor); 7 ft wingspan',
       habitat: 'Lakes, rivers, coast — anywhere with fish + tall trees for nesting',
-      mainePresence: 'Year-round; nesting on most large Maine lakes + coast (~700 active nests statewide)',
-      funFact: 'Recovered from the brink — DDT pesticide thinned eggshells in the 1960s; Maine had only ~21 nesting pairs in 1972. Today: hundreds. One of the great American conservation comebacks.',
+      mainePresence: 'Year-round; nesting on most large Maine lakes + coast (733 nesting pairs at the 2018 statewide count)',
+      funFact: 'Recovered from the brink — DDT pesticide thinned eggshells in the 1960s; Maine was down to 21 nesting pairs in 1967. Today: more than 700. One of the great American conservation comebacks.',
       callDescription: 'Surprisingly small "weak-eek-eek-eek" — not the dramatic scream you hear in movies (that\'s a Red-tailed Hawk overdubbed)',
       movement: 'soar',
       svg: function(h) {
@@ -1532,7 +1532,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       sciName: 'Junco hyemalis',
       size: '~6 in (small sparrow)',
       habitat: 'Coniferous and mixed forest in summer; backyards, brushy edges in winter',
-      mainePresence: 'Year-round in mountain areas; winters statewide',
+      mainePresence: 'Year-round; breeds in conifer forests across most of Maine; a familiar winter feeder bird',
       funFact: 'Called "snowbirds" — they appear in backyards as winter starts. The white outer tail feathers flash when they fly, like flicking on a turn signal.',
       callDescription: 'Musical trill on one pitch, like a tiny sewing machine; sharp "tsick" calls',
       movement: 'flit',
@@ -1680,7 +1680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // On a foreground tree trunk (layer 4 — visible against trunk)
       { species: 'pileated',    x: 60,  y: 200, scale: 1.0, layer: 4, appearanceEveryCycles: 2, hint: 'Drumming on the tree to your left' },
       // Walking down a tree trunk (layer 4)
-      { species: 'nuthatch',    x: 760, y: 180, scale: 1.0, layer: 4, hint: 'Walking head-DOWN the trunk — only one species does that' },
+      { species: 'nuthatch',    x: 760, y: 180, scale: 1.0, layer: 4, hint: 'Walking head-DOWN the trunk — a nuthatch trick few other birds use' },
       // Perched on a midground branch (layer 3)
       { species: 'chickadee',   x: 420, y: 200, scale: 1.0, layer: 3, hint: 'Bobbing on a low branch in the middle of the scene' },
       // On the ground (layer 4 — foreground ground)
@@ -1795,13 +1795,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // Heron stalks at water's edge (foreground)
         { species: 'greatBlueHeron', x: 200, y: 360, scale: 1.0, layer: 4, appearanceEveryCycles: 2, hint: 'Tall, statue-still figure at the water\'s edge — neck S-curved, ready to strike' },
         // Kingfisher hovers over open water (mid)
-        { species: 'kingfisher', x: 580, y: 200, scale: 1.0, layer: 3, hint: 'Hovering above the water — listening for a fish below. Rattling call.' },
+        { species: 'kingfisher', x: 580, y: 200, scale: 1.0, layer: 3, hint: 'Hovering above the water — watching for a fish below. Rattling call.' },
         // Mallards cruise on water (mid-back)
-        { species: 'mallard', x: 700, y: 380, scale: 1.0, layer: 3, hint: 'Drifting on open water — green head visible when light hits right' },
+        { species: 'mallard', x: 700, y: 380, scale: 1.0, layer: 3, hint: 'Drifting on open water — in midsummer drakes molt brown for a few weeks' },
         // Red-winged blackbird perched on cattail (foreground)
         { species: 'redwingBlackbird', x: 85, y: 236, scale: 1.0, layer: 4, hint: 'Atop the cattail on the left — flashing the red-and-yellow shoulder' },
         // Common Yellowthroat substitute — use vireo flit in reeds (back layer, hidden)
-        { species: 'vireo', x: 380, y: 320, scale: 0.9, layer: 2, hint: 'Hidden in the reeds — only the song betrays it' }
+        { species: 'vireo', x: 380, y: 320, scale: 0.9, layer: 2, hint: 'Hidden in the leafy trees at the marsh edge — only the song betrays it' }
       ],
       renderLayer: function(h, z) {
         if (z === 0) {
@@ -3351,7 +3351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       id: 'cardinal_call',
       species: 'Northern Cardinal',
       mnemonic: '"What-cheer cheer cheer" or "Pretty pretty pretty"',
-      description: 'Clear whistled phrases, surprisingly loud. Both males AND females sing — unusual among songbirds. Sharp "chip!" call when alarmed.',
+      description: 'Clear whistled phrases, surprisingly loud. Both males AND females sing — unusual among North American songbirds. Sharp "chip!" call when alarmed.',
       habitat: 'Backyards, dense shrubs, forest edges',
       tip: 'If you hear a clear whistle and can\'t see the bird, scan the dense interior of a shrub at eye level.'
     },
@@ -3368,7 +3368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       species: 'White-throated Sparrow',
       mnemonic: '"Old Sam Peabody-Peabody-Peabody" (US) or "Oh sweet Canada-Canada-Canada" (Canada)',
       description: 'High clear whistles in a distinctive pattern: 1 long note, 1 medium, then 3 quick triplets. The melancholy soundtrack of northern forests.',
-      habitat: 'Coniferous forest, brushy edges (year-round in Maine winters)',
+      habitat: 'Coniferous forest, brushy edges (breeds statewide; a few winter in southern Maine)',
       tip: 'One of the most evocative bird sounds in northeastern North America. If you hear it, you\'re likely in good northern woods.'
     },
     {
@@ -3385,7 +3385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       mnemonic: '"Who cooks for you? Who cooks for you-ALL?"',
       description: '8-note hooted question with the final "you-all" trailing down. The signature owl of eastern forests. Often calls in daylight.',
       habitat: 'Mature mixed forest, swampy woods',
-      tip: 'The most likely owl you\'ll hear in Maine forests. Active in daylight more than other owl species.'
+      tip: 'The most likely owl you\'ll hear in Maine forests. More likely than most owls to call in daylight.'
     },
     {
       id: 'mourningdove_call',
@@ -3449,7 +3449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       mnemonic: 'Yodeling tremolo (the "iconic Maine lake sound")',
       description: 'Four distinct call types: wail (long note), tremolo (laughing trill), yodel (males only), and hoot. Together they make Maine summer evenings.',
       habitat: 'Large lakes, also coastal in winter',
-      tip: 'Maine\'s state bird is the chickadee, but the loon is on the state quarter. Hearing a loon at sunset on a north-Maine lake is a core Maine experience.'
+      tip: 'Maine\'s state bird is the chickadee, but for many people the loon\'s call is the sound of a Maine lake. Hearing a loon at sunset on a north-Maine lake is a core Maine experience.'
     }
   ];
 
@@ -3853,6 +3853,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { bird: 'Herring Gull', habitat: 'coast', reason: 'The default coastal "seagull"; opportunistic harbor scavenger' }
   ];
 
+  // BIRDS art is drawn in a nominal 30-unit box, but many birds overhang it
+  // (bills, tails, the heron's neck). Frame each drawing on its own measured
+  // extent, square, with a small margin. Called from a ref on every render,
+  // because the same <svg> can switch species.
+  function fitBirdArt(el) {
+    var g = el && el.firstChild;
+    if (!g || typeof g.getBBox !== 'function') return;
+    try {
+      var b = g.getBBox();
+      if (!b.width || !b.height) return;
+      var m = g.transform && g.transform.baseVal && g.transform.baseVal.consolidate();
+      var dx = m ? m.matrix.e : 0, dy = m ? m.matrix.f : 0;
+      var side = Math.max(b.width, b.height) + 3;
+      var x = b.x + dx + b.width / 2 - side / 2, y = b.y + dy + b.height / 2 - side / 2;
+      el.setAttribute('viewBox', x.toFixed(2) + ' ' + y.toFixed(2) + ' ' + side.toFixed(2) + ' ' + side.toFixed(2));
+    } catch (e) { /* not laid out: keep the nominal box */ }
+  }
+  // A species drawing by display name ("Common Loon (winter)" -> "Common Loon"),
+  // or null when the lab has no drawing of it.
+  function birdArt(h, name, px) {
+    var base = String(name).replace(/\s*\(.*\)\s*$/, '');
+    for (var k in BIRDS) {
+      if (BIRDS[k] && BIRDS[k].name === base && typeof BIRDS[k].svg === 'function') {
+        return h('svg', { viewBox: '0 0 30 30', width: px, height: px, 'aria-hidden': 'true', focusable: 'false',
+          'data-bird-art': k, 'data-bird-art-fit': 'true', ref: function(el) { fitBirdArt(el); },
+          style: { display: 'block', flexShrink: 0 } },
+          h('g', { transform: 'translate(2, 2)' }, BIRDS[k].svg(h)));
+      }
+    }
+    return null;
+  }
+
   // ─────────────────────────────────────────────────────
   // MAINE BIRDS SPOTLIGHT — Phase 4 data
   // 25 species cards with Maine-specific status, habitat, hotspot suggestion,
@@ -3869,7 +3901,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       habitat: 'Forests, woodland edges, backyards, almost anywhere with trees',
       bestSeason: 'Year-round; winter feeders are the easiest reliable views',
       seeWhere: 'Anywhere with trees. Backyard feeders work all winter. King Middle\'s playground edge has them.',
-      funFact: 'Stores seeds in hundreds of locations and remembers them for weeks. Brain neurons regenerate seasonally to hold the spatial maps.',
+      funFact: 'Stores seeds in thousands of separate spots and remembers them for weeks. Brain neurons regenerate seasonally to hold the spatial maps.',
       citizen: 'One of the most-reported species on Maine eBird; reliable Project FeederWatch participant.'
     },
     {
@@ -3878,7 +3910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       habitat: 'Mature deciduous forest with oaks + hickory',
       bestSeason: 'Year-round; winter feeders + spring breeding most active',
       seeWhere: 'Any mature deciduous forest. Fields Pond Audubon Center (Holden) has reliable nuthatches.',
-      funFact: 'The only North American bird that walks DOWN tree trunks headfirst — gives it access to insects woodpeckers miss.',
+      funFact: 'Like all nuthatches, it routinely climbs DOWN tree trunks headfirst — looking up under the bark, it finds insects that upward-climbing woodpeckers miss.',
       citizen: 'Common at FeederWatch sites; eBird coverage strong statewide.'
     },
     {
@@ -3887,24 +3919,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       habitat: 'Mature forest with large dead trees (snags) for cavity excavation',
       bestSeason: 'Year-round; spring drumming + courtship most dramatic April–May',
       seeWhere: 'Baxter State Park, Acadia carriage roads, any mature mixed forest with standing dead trees.',
-      funFact: 'Carves rectangular cavities in trees that other species (owls, ducks) reuse. Drumming can be heard a half-mile away.',
-      citizen: 'Listed as "Common Bird in Steep Decline" by Partners in Flight (still common but trending down). Report sightings to eBird.'
+      funFact: 'Chisels rectangular feeding holes for carpenter ants; owls and ducks later reuse its oval nest holes. Drumming can be heard a half-mile away.',
+      citizen: 'Populations have risen steadily since the 1960s (Breeding Bird Survey), a forest success story. Report sightings to eBird.'
     },
     {
       name: 'Bald Eagle', sciName: 'Haliaeetus leucocephalus', speciesKey: 'baldEagle',
       mainStatus: 'year-round', iconicStatus: 'Recovery success story',
       habitat: 'Lakes, rivers, coast — anywhere with fish + tall trees for nesting',
       bestSeason: 'Year-round; winter eagles concentrate at unfrozen rivers + harbors',
-      seeWhere: 'Sebasticook Lake (renowned eagle hotspot), Kennebec River below dams, Penobscot Bay, Acadia.',
-      funFact: 'Maine had only ~21 nesting pairs in 1972 from DDT poisoning. Today: ~700 active nests statewide. One of the great American conservation comebacks.',
-      citizen: 'Maine Audubon\'s annual Eagle Survey continues; eBird tracks year-round distribution.'
+      seeWhere: 'Sebasticook River (Winslow–Benton) during the May alewife run, Kennebec River below dams, Penobscot Bay, Acadia.',
+      funFact: 'Maine was down to 21 nesting pairs in 1967, largely from DDT. Today: more than 700 nesting pairs statewide. One of the great American conservation comebacks.',
+      citizen: 'Maine IFW counts eagle nests from the air every few years (733 pairs in 2018); eBird tracks year-round distribution.'
     },
     {
-      name: 'Cooper\'s Hawk', sciName: 'Accipiter cooperii', speciesKey: 'coopershawk',
+      name: 'Cooper\'s Hawk', sciName: 'Astur cooperii', speciesKey: 'coopershawk',
       mainStatus: 'year-round',
       habitat: 'Forest, increasingly suburban (follows feeders that follow songbirds)',
       bestSeason: 'Year-round; fall migration concentrates them at hawkwatches',
-      seeWhere: 'Anywhere with forest. Bradbury Mountain hawkwatch (spring) records fall + spring movements.',
+      seeWhere: 'Anywhere with forest. Hawkwatches count them in migration: Bradbury Mountain in spring, Cadillac Mountain in fall.',
       funFact: 'Specializes in catching other birds — that\'s why songbirds vanish from feeders when one shows up. Surveys hunting grounds at high speed through canopy.',
       citizen: 'Bradbury Mountain Hawkwatch (Pownal) tallies thousands each spring season.'
     },
@@ -3932,14 +3964,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       habitat: 'Coast, harbors, dumps, parking lots, anywhere food might be',
       bestSeason: 'Year-round; the default Maine coast bird',
       seeWhere: 'Any Maine harbor. Portland Head Light, Bar Harbor, Stonington.',
-      funFact: 'There is no such thing as a "seagull." Herring Gull is the most common eastern North American gull. Smart enough to drop clams on rocks from height to crack them open.',
+      funFact: 'There is no such thing as a "seagull." Herring Gull is the classic big gull of the Maine coast. Smart enough to drop clams on rocks from height to crack them open.',
       citizen: 'Listed as a "Common Bird in Steep Decline" by Partners in Flight despite ubiquity.'
     },
 
     // ── BREEDERS / SUMMER ──
     {
       name: 'Common Loon', sciName: 'Gavia immer',
-      mainStatus: 'breeder (spring–fall)', iconicStatus: 'Maine state quarter bird',
+      mainStatus: 'breeder (spring–fall)', iconicStatus: 'Iconic voice of Maine lakes',
       habitat: 'Large clear lakes (summer); coastal saltwater (winter)',
       bestSeason: 'May–October on inland lakes; some on coast in winter',
       seeWhere: 'Sebago Lake, Moosehead Lake, Rangeley Lake, any large unpolluted lake. Hearing a loon yodel at sunset = core Maine experience.',
@@ -3970,7 +4002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       habitat: 'Mature deciduous + mixed forest with dense understory',
       bestSeason: 'May–July; flute-like song dawn + dusk',
       seeWhere: 'Wells Reserve, Kennebec Valley forests, Vaughan Woods (S. Berwick).',
-      funFact: 'Considered to have one of the most beautiful songs of any North American bird — twin "fee-bee-oh" with pure-tone whistles. **Population down 50%+ since 1970** (Rosenberg 2019). Forest fragmentation + tropical wintering-ground loss.',
+      funFact: 'Considered to have one of the most beautiful songs of any North American bird — a flute-like "ee-oh-lay," and it can sing two notes at once. **Population down 50%+ since 1970** (Rosenberg 2019). Forest fragmentation + tropical wintering-ground loss.',
       citizen: 'Featured in the "3 billion birds lost" study. eBird + Breeding Bird Survey are the primary tracking tools.'
     },
     {
@@ -4017,21 +4049,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       habitat: 'Open coastal areas — beaches, marshes, airports, fields',
       bestSeason: 'December–March; irruption years bring more (every ~4 years)',
       seeWhere: 'Biddeford Pool, Reid State Park, Popham Beach, Sandy Point, Portland International Jetport perimeter.',
-      funFact: 'Coastal Maine is roughly the southernmost regular wintering range. Irruption years (when lemming populations crash up north) push more south. 2013–14 was a famous mass irruption.',
-      citizen: 'Project SNOWstorm tracks individuals via solar GPS — Maine Audubon participates.'
+      funFact: 'Snowy Owls reach the Maine coast most winters, and regularly as far south as Boston\'s Logan Airport. Big irruptions follow a lemming boom, when many young owls fledge. 2013–14 was a famous mass irruption.',
+      citizen: 'Project SNOWstorm tracks owls via solar GPS; in Maine, Biodiversity Research Institute and USDA Wildlife Services tag them.'
     },
     {
       name: 'White-throated Sparrow', sciName: 'Zonotrichia albicollis',
-      mainStatus: 'winter (statewide); also breeder in northern Maine',
+      mainStatus: 'breeder statewide (April–October); a few winter in southern + coastal Maine',
       habitat: 'Brushy edges, coniferous forest, backyard feeders in winter',
-      bestSeason: 'October–April at feeders; June–August in northern Maine forests',
+      bestSeason: 'May–August singing in woods statewide; at feeders mainly in spring + fall migration',
       seeWhere: 'Any backyard feeder in winter. Northern forests (Baxter, Allagash) for breeding song.',
       funFact: 'The "Old Sam Peabody-Peabody-Peabody" whistled song is the soundtrack of northern Maine summers.',
       citizen: 'Common FeederWatch participant in winter; recorded constantly during Breeding Bird Survey in north Maine.'
     },
     {
       name: 'Dark-eyed Junco', sciName: 'Junco hyemalis', speciesKey: 'junco',
-      mainStatus: 'winter (statewide); breeder in mountain conifer forests',
+      mainStatus: 'year-round; breeds in conifer forests across most of Maine',
       habitat: 'Mountain conifers (summer); backyards + brushy edges (winter)',
       bestSeason: 'October–April at feeders; year-round in mountain forests',
       seeWhere: 'Any backyard feeder once snow flies. Mountain trails (Acadia, Baxter, Mahoosucs) in summer.',
@@ -4051,7 +4083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     // ── PASSAGE MIGRANTS ──
     {
       name: 'Yellow-rumped Warbler', sciName: 'Setophaga coronata',
-      mainStatus: 'spring + fall migrant; some breed in northern Maine',
+      mainStatus: 'spring + fall migrant; also breeds in conifer forests throughout Maine',
       habitat: 'Coniferous forest (breeding); any wooded area (migration)',
       bestSeason: 'April–May (spring); September–October (fall) — huge waves',
       seeWhere: 'Migration peaks: Monhegan Island, Acadia, Wells Reserve.',
@@ -4064,17 +4096,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       habitat: 'Coniferous forest; migrates along coast in October',
       bestSeason: 'October–November migration; rare day views',
       seeWhere: 'Petit Manan banding station (fall) + Project Owlnet sites Down East. Hard to see without a permitted bander.',
-      funFact: 'Smaller than a soda can. North America\'s most common owl in some areas. Migrates secretively at night; banders catch them in mist nets in October.',
+      funFact: 'About the size of a robin (roughly 20 cm long). North America\'s most common owl in some areas. Migrates secretively at night; banders catch them in mist nets in October.',
       citizen: 'Project Owlnet (saw-whet banding) at multiple Maine sites; volunteer assistance available some seasons.'
     },
     {
       name: 'Red-tailed Hawk', sciName: 'Buteo jamaicensis',
       mainStatus: 'year-round; fall migrants concentrate at hawkwatches',
       habitat: 'Open + edge habitats; perches on roadside trees, telephone poles',
-      bestSeason: 'Year-round; September migration spectacular at ridge hawkwatches',
+      bestSeason: 'Year-round; migration peaks late October–November at ridge hawkwatches',
       seeWhere: 'Bradbury Mountain (Pownal), Mount Agamenticus (York), any I-95 / I-295 roadside.',
       funFact: 'The "kee-eer!" you hear in movies as "the eagle scream"? That\'s actually a Red-tailed Hawk dubbed in over Bald Eagle footage.',
-      citizen: 'Bradbury Mountain Hawkwatch records 4,000+ raptors each fall season.'
+      citizen: 'Bradbury Mountain Hawkwatch (Pownal) averages about 4,000 raptors each spring; Cadillac Mountain counts the fall flight.'
     },
 
     // ── COMMONERS WORTH NAMING ──
@@ -4084,7 +4116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       habitat: 'Lawns, gardens, forest edges, almost everywhere',
       bestSeason: 'Year-round; spring arrival highly visible',
       seeWhere: 'Any lawn. Backyards, parks, school playgrounds.',
-      funFact: 'Their orange breast color comes from carotenoid pigments in berries — depth of color signals foraging skill. Females actually prefer redder males.',
+      funFact: 'Their orange breast is colored by melanin the robin makes itself, not by pigments from berries. Robins sing before dawn, often the first voice of the chorus.',
       citizen: 'Among the most-reported species globally on eBird.'
     },
     {
@@ -4104,10 +4136,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { name: 'Eastern Egg Rock', area: 'Boat from New Harbor', highlight: 'Project Puffin restoration site. June–August boat tours. Atlantic Puffin, Common + Roseate + Arctic Terns, Razorbill.' },
     { name: 'Acadia National Park', area: 'Bar Harbor / MDI', highlight: 'Migration corridor + alpine + coast in one park. Carriage roads excellent for songbirds; Cadillac Mountain for raptors.' },
     { name: 'Monhegan Island', area: 'Boat from Port Clyde', highlight: 'Fall migration trap — anything could land here. Famous "fallouts" after weather fronts.' },
-    { name: 'Bradbury Mountain Hawkwatch', area: 'Pownal', highlight: 'Spring + fall hawkwatch. Counts thousands of raptors each season. Open to public, volunteer counters.' },
+    { name: 'Bradbury Mountain Hawkwatch', area: 'Pownal', highlight: 'Maine\'s spring hawkwatch (Mar 15–May 15, since 2007): about 4,000 raptors a season. Open to the public.' },
     { name: 'Petit Manan NWR', area: 'Steuben (Down East)', highlight: 'Coastal seabirds + migrants. Saw-whet Owl banding station in fall.' },
-    { name: 'Sebasticook Lake', area: 'Newport', highlight: 'Bald Eagle hotspot — open water in winter concentrates dozens. Also waterfowl + spring migrants.' },
-    { name: 'Baxter State Park', area: 'Millinocket', highlight: 'Boreal species (Spruce Grouse, Gray Jay, Boreal Chickadee, Black-backed Woodpecker). Maine\'s wild interior.' },
+    { name: 'Sebasticook River', area: 'Winslow / Benton', highlight: 'Bald Eagle hotspot: dozens gather in May–June to feed on the alewife run below Benton Falls.' },
+    { name: 'Baxter State Park', area: 'Millinocket', highlight: 'Boreal species (Spruce Grouse, Canada Jay, Boreal Chickadee, Black-backed Woodpecker). Maine\'s wild interior.' },
     { name: 'Moosehorn NWR', area: 'Baring (near Calais)', highlight: 'American Woodcock displays in spring. Also warblers + waterfowl.' },
     { name: 'Wells Reserve at Laudholm', area: 'Wells', highlight: 'Estuary + forest + field — mosaic of habitats. Excellent for new birders.' },
     { name: 'Project Puffin Visitor Center', area: 'Rockland', highlight: 'Educational center for the Audubon Seabird Restoration Program. Live puffin cams.' },
@@ -4124,29 +4156,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { id: 'atlantic',   label: 'Atlantic Flyway',   desc: 'Canadian Maritimes + Boreal → US Atlantic Coast → Caribbean / South America. THE Maine flyway.', maineRole: 'Maine sits squarely on this flyway. Most Maine migrants follow the coast or interior parallel paths.' }
   ];
 
+  // Flyway map drawn from real longitude/latitude, equirectangular projection
+  // of lon -170..-50, lat 8..72 onto the existing 440x300 frame. Each flyway is a
+  // smooth curve through real waypoints, so the routes sit over the right coast,
+  // plains and river valley instead of four straight dashed lines.
+  var FLYWAY_MAP = (function() {
+    function proj(lon, lat) { return [(lon + 170) * 440 / 120, (72 - lat) * 300 / 64]; }
+    function poly(pts) {
+      return pts.map(function(p, i) { var q = proj(p[0], p[1]); return (i ? 'L ' : 'M ') + q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' ') + ' Z';
+    }
+    // Catmull-Rom through the projected waypoints, as cubic Beziers.
+    function smooth(pts) {
+      var q = pts.map(function(p) { return proj(p[0], p[1]); });
+      var d = 'M ' + q[0][0].toFixed(1) + ' ' + q[0][1].toFixed(1);
+      for (var i = 0; i < q.length - 1; i++) {
+        var p0 = q[i - 1] || q[i], p1 = q[i], p2 = q[i + 1], p3 = q[i + 2] || p2;
+        var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+        var c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+        d += ' C ' + c1[0].toFixed(1) + ' ' + c1[1].toFixed(1) + ' ' + c2[0].toFixed(1) + ' ' + c2[1].toFixed(1) + ' ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+      }
+      return d;
+    }
+    var MAINLAND = [
+      [-168, 65.6], [-162, 67], [-156.8, 71.3], [-141, 69.6], [-128, 70.2], [-115, 68.5], [-104, 68], [-98, 68.5],
+      [-89, 68.8], [-86, 66.5], [-94.5, 61], [-93, 58.8], [-88, 56.8], [-82.5, 55], [-80, 51.5], [-79, 54.5], [-77.5, 58],
+      [-77.5, 62], [-72, 61.8], [-69, 59], [-64.5, 60.3], [-61, 56], [-57, 52], [-55.7, 51.5], [-59, 48.2], [-64.5, 48.8],
+      [-66.5, 50.2], [-70.5, 47], [-64.8, 47.8], [-61, 45.8], [-60, 45.9], [-65.8, 43.6], [-67, 44.8], [-70.5, 43],
+      [-70.6, 41.8], [-74, 40.6], [-75.5, 38], [-75.5, 35.2], [-78, 33.8], [-81, 31.5], [-80.1, 26.5], [-81, 25.1],
+      [-82.8, 27.8], [-84, 30], [-86, 30.3], [-89.4, 29.2], [-90.5, 29.1], [-94.5, 29.5], [-97.3, 27.5], [-97.7, 22],
+      [-96.1, 19.2], [-94.5, 18.2], [-91.5, 18.6], [-90.4, 21], [-87, 21.5], [-88.2, 17], [-86, 15.9], [-83.2, 15],
+      [-83.5, 12.5], [-83, 10], [-81, 8.8], [-79, 9.4], [-77.5, 8.5], [-78.2, 8], [-80, 7.5], [-81.7, 8.1],
+      [-85.7, 10], [-87.5, 12.5], [-91, 14], [-94.5, 16], [-99.9, 16.8], [-105.5, 20.5], [-105.7, 23.2], [-110, 27],
+      [-114.8, 31.8], [-113.3, 29], [-111.5, 25.5], [-109.9, 22.9], [-112, 25], [-114.6, 28], [-116.9, 32.5],
+      [-120.6, 34.5], [-122.5, 37.8], [-124.2, 40.4], [-124, 46.2], [-124.7, 48.4], [-128, 51], [-131, 54.5],
+      [-135, 57.5], [-140, 59.8], [-146, 60.8], [-152, 57.6], [-157, 56.8], [-163.5, 55], [-162, 58.6], [-165, 60.5],
+      [-164.9, 62.8]
+    ];
+    var ISLANDS = [
+      [[-59.4, 47.6], [-55.5, 51.6], [-53.5, 49.5], [-52.6, 47.5], [-55.5, 46.6]],                          // Newfoundland
+      [[-85, 21.8], [-80, 23.2], [-77.5, 21.8], [-74.1, 20.2], [-77.5, 19.8], [-81, 21.6]],                  // Cuba
+      [[-74.4, 19.8], [-71.5, 19.9], [-68.4, 18.6], [-71, 17.6], [-74.4, 18.4]],                            // Hispaniola
+      [[-78.3, 18.4], [-76.2, 18.3], [-76.6, 17.8], [-78, 18]],                                              // Jamaica
+      [[-67.2, 18.5], [-65.6, 18.4], [-65.8, 18], [-67.1, 18]],                                              // Puerto Rico
+      [[-80, 8], [-77, 8.8], [-75.5, 10.8], [-72, 12.4], [-71.2, 11], [-68, 10.6], [-64, 10.6], [-61.5, 10.5], [-59.5, 8]], // South America (north coast)
+      [[-80, 73], [-75, 73], [-70, 70.5], [-67, 68], [-62, 66.5], [-64, 64.5], [-66, 62], [-70, 62.8], [-74, 64.4], [-77, 67], [-78, 70]] // Baffin Island
+    ];
+    var LAKES = [
+      [[-92, 46.7], [-88.5, 46.9], [-84.6, 46.5], [-85, 47.9], [-88.7, 48.5], [-90.5, 47.8]],                // Superior
+      [[-87.8, 41.7], [-86.6, 41.8], [-86.2, 43.5], [-85, 45.8], [-86.7, 45.9], [-87.9, 44.5]],               // Michigan
+      [[-84.7, 45.8], [-82.4, 43], [-81.7, 43.5], [-80.2, 45], [-81.3, 46.1], [-83.6, 46.1]],                 // Huron
+      [[-83.4, 41.7], [-79, 42.9], [-78.9, 42.6], [-82.5, 41.4]],                                            // Erie
+      [[-79.8, 43.3], [-76.2, 43.5], [-76.4, 44.2], [-79.3, 43.8]]                                           // Ontario
+    ];
+    var BORDERS = [
+      [[-123.1, 49], [-95.2, 49], [-94.8, 48.8], [-89.5, 48.1], [-84.4, 46.5], [-82.4, 43], [-79, 43], [-76.4, 44.2], [-74.7, 45], [-71.5, 45], [-69.2, 47.4], [-67.8, 47.1], [-67.8, 45.7], [-67, 44.8]],
+      [[-141, 69.6], [-141, 60.3]],
+      [[-117.1, 32.5], [-111, 31.3], [-108.2, 31.3], [-106.5, 31.8], [-104.5, 29.5], [-103, 29], [-101.4, 29.8], [-99.5, 27.5], [-97.2, 25.9]]
+    ];
+    var ROUTES = [
+      { id: 'pacific', color: '#0284c7', pts: [[-152, 64], [-138, 60.5], [-127, 54], [-122.5, 46], [-121, 38], [-116, 31], [-109, 25], [-104.5, 19.5]] },
+      { id: 'central', color: '#ea580c', pts: [[-114, 58], [-106, 52], [-101, 46], [-99, 40], [-98, 33], [-97.4, 27.5], [-98.5, 21]] },
+      { id: 'mississippi', color: '#9333ea', pts: [[-95, 57], [-93.5, 50], [-92.5, 45], [-90.6, 39.5], [-90.2, 34.5], [-90.2, 29.8], [-89.5, 24], [-88.5, 17.5], [-86.5, 13.5]] },
+      { id: 'atlantic', color: '#dc2626', pts: [[-68, 60], [-64, 52], [-66.5, 46.5], [-70.5, 43.2], [-74.3, 39.5], [-77, 34.8], [-80.5, 29], [-80.2, 24.5], [-75.5, 19], [-68.5, 11]] }
+    ];
+    var MAINE = proj(-69.2, 45.3);
+
+    function draw(h, picked) {
+      var active = ROUTES.filter(function(r) { return r.id === picked; })[0] || ROUTES[3];
+      var ap = active.pts;
+      var birdsAt = [Math.floor(ap.length * 0.22), Math.floor(ap.length * 0.5), Math.floor(ap.length * 0.75)].map(function(i) { return proj(ap[i][0], ap[i][1]); });
+      function label(txt, lon, lat, size, fill, italic) {
+        var q = proj(lon, lat);
+        return h('text', { key: 'lbl-' + txt, x: q[0], y: q[1], fontSize: size, fill: fill, textAnchor: 'middle', fontWeight: italic ? 600 : 800,
+          fontStyle: italic ? 'italic' : 'normal', letterSpacing: italic ? 0 : '0.12em', stroke: italic ? '#dbeafe' : '#f4f7ec', strokeWidth: 2.5, strokeLinejoin: 'round', style: { fontFamily: 'system-ui, sans-serif', paintOrder: 'stroke' } }, txt);
+      }
+      return h('g', { 'data-flyway-map': active.id },
+        h('defs', null,
+          h('linearGradient', { id: 'fwOcean', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#dbeafe' }), h('stop', { offset: '100%', stopColor: '#93c5fd' })),
+          h('linearGradient', { id: 'fwLand', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#eef2e3' }), h('stop', { offset: '55%', stopColor: '#dfe8c8' }), h('stop', { offset: '100%', stopColor: '#e9d9b0' })),
+          h('marker', { id: 'fwArrow', viewBox: '0 0 10 10', refX: '6', refY: '5', markerWidth: '11', markerHeight: '11', markerUnits: 'userSpaceOnUse', orient: 'auto' },
+            h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: active.color }))
+        ),
+        h('rect', { x: 0, y: 0, width: 440, height: 300, fill: 'url(#fwOcean)' }),
+        h('path', { 'data-map': 'land', d: poly(MAINLAND), fill: 'url(#fwLand)', stroke: '#6b7f4e', strokeWidth: 1, strokeLinejoin: 'round' }),
+        ISLANDS.map(function(pts, i) { return h('path', { key: 'is' + i, d: poly(pts), fill: 'url(#fwLand)', stroke: '#6b7f4e', strokeWidth: 0.8, strokeLinejoin: 'round' }); }),
+        LAKES.map(function(pts, i) { return h('path', { key: 'lk' + i, d: poly(pts), fill: '#93c5fd', stroke: '#3b82f6', strokeWidth: 0.5 }); }),
+        BORDERS.map(function(pts, i) {
+          var d = pts.map(function(p, j) { var q = proj(p[0], p[1]); return (j ? 'L ' : 'M ') + q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' ');
+          return h('path', { key: 'bd' + i, d: d, fill: 'none', stroke: '#8a9a72', strokeWidth: 0.8, strokeDasharray: '3 2' });
+        }),
+        label('CANADA', -104, 63.5, 9, '#56663c'), label('UNITED STATES', -110.5, 39.5, 8, '#56663c'), label('MEXICO', -104, 27.3, 7.5, '#56663c'),
+        label('Pacific Ocean', -145, 35, 9, '#1e4f8a', true), label('Atlantic Ocean', -60, 33, 9, '#1e4f8a', true),
+        label('Gulf of', -93.6, 26.4, 6.5, '#1e4f8a', true), label('Mexico', -93.6, 24.8, 6.5, '#1e4f8a', true), label('Caribbean', -72, 14.5, 7.5, '#1e4f8a', true),
+        label('Hudson Bay', -86, 59.5, 7, '#1e4f8a', true),
+        ROUTES.map(function(r) {
+          if (r.id === active.id) return null;
+          return h('path', { key: r.id + '-bg', 'data-flyway': r.id, d: smooth(r.pts), stroke: r.color, strokeWidth: 3, fill: 'none', strokeDasharray: '6 5', strokeLinecap: 'round', opacity: 0.45 });
+        }),
+        h('path', { d: smooth(ap), stroke: active.color, strokeWidth: 14, fill: 'none', strokeLinecap: 'round', opacity: 0.16 }),
+        h('path', { 'data-flyway': active.id, 'data-active': 'true', d: smooth(ap), stroke: active.color, strokeWidth: 4.5, fill: 'none', strokeLinecap: 'round', markerEnd: 'url(#fwArrow)' }),
+        birdsAt.map(function(p, i) {
+          return h('g', { key: 'fl' + i, transform: 'translate(' + p[0].toFixed(1) + ',' + (p[1] - 9).toFixed(1) + ')', 'aria-hidden': 'true' },
+            h('path', { d: 'M -7 0 q 3.5 -4 7 0 q 3.5 -4 7 0', fill: 'none', stroke: '#1e293b', strokeWidth: 1.8, strokeLinecap: 'round' }),
+            h('path', { d: 'M -14 6 q 2.5 -3 5 0 q 2.5 -3 5 0 M 4 6 q 2.5 -3 5 0 q 2.5 -3 5 0', fill: 'none', stroke: '#1e293b', strokeWidth: 1.4, strokeLinecap: 'round' }));
+        }),
+        h('g', { 'data-map': 'maine', transform: 'translate(' + MAINE[0].toFixed(1) + ',' + MAINE[1].toFixed(1) + ')' },
+          h('circle', { r: 9, fill: '#dc2626', opacity: 0.2 }),
+          h('path', { d: 'M 0,-6 L 1.5,-1.9 L 6,-1.9 L 2.3,1 L 3.8,5.2 L 0,2.8 L -3.8,5.2 L -2.3,1 L -6,-1.9 L -1.5,-1.9 Z', fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 0.8 }),
+          h('text', { x: 10, y: 4, fontSize: 10, fill: '#7f1d1d', fontWeight: 800, stroke: '#ffffff', strokeWidth: 3, strokeLinejoin: 'round', style: { fontFamily: 'system-ui, sans-serif', paintOrder: 'stroke' } }, 'Maine'))
+      );
+    }
+    return { draw: draw, proj: proj, routes: ROUTES };
+  })();
+
   // Spring + fall calendar of Maine arrivals/departures (typical, varies by latitude).
   var MAINE_MIGRATION_CALENDAR = [
     { season: 'Spring', month: 'March',     arrivals: 'Red-winged Blackbird (early), American Woodcock displays start, Common Grackle, large robin push',          departures: 'Most snowy owls return north (irruption years).' },
-    { season: 'Spring', month: 'April',     arrivals: 'Eastern Phoebe, Tree Swallow, Yellow-rumped Warbler, Hermit Thrush, Loons return to lakes after ice-out',  departures: 'Last waterfowl that wintered move further north.' },
+    { season: 'Spring', month: 'April',     arrivals: 'Eastern Phoebe, Tree Swallow, Yellow-rumped Warbler, Hermit Thrush, Loons return to lakes after ice-out. Spring hawk flight over Bradbury Mountain, Maine\'s spring hawkwatch',  departures: 'Last waterfowl that wintered move further north.' },
     { season: 'Spring', month: 'May',       arrivals: 'PEAK — most warblers (30+ species), Bobolinks, Baltimore Orioles, Scarlet Tanagers, Ruby-throated Hummingbird, Common Loon arrivals continue', departures: '' },
     { season: 'Summer', month: 'June–July', arrivals: 'Breeding settled. Atlantic Puffin chicks hatch on offshore islands.', departures: '' },
-    { season: 'Fall',   month: 'August',    arrivals: 'Shorebird southbound migration peaks at Scarborough Marsh (sandpipers, plovers).', departures: 'Some adult warblers begin southbound; Common Tern colonies dispersing.' },
-    { season: 'Fall',   month: 'September', arrivals: 'Hawk migration begins (Bradbury Mountain). Late warblers. Sparrow waves.', departures: 'Most Atlantic Puffins leave colonies; warblers depart en masse.' },
-    { season: 'Fall',   month: 'October',   arrivals: 'PEAK raptor migration. Saw-whet owls move along coast at night. Snow Geese pass through.', departures: 'Last warblers (Yellow-rumped lingers); Common Loons start moving to coast.' },
+    { season: 'Fall',   month: 'August',    arrivals: 'Shorebird southbound migration peaks at Scarborough Marsh (sandpipers, plovers).', departures: 'Atlantic Puffins leave the islands; some adult warblers begin southbound; Common Tern colonies dispersing.' },
+    { season: 'Fall',   month: 'September', arrivals: 'PEAK fall hawk migration: Broad-winged Hawk kettles over Cadillac Mountain (Acadia hawkwatch). Late warblers. Sparrow waves.', departures: 'Warblers depart en masse.' },
+    { season: 'Fall',   month: 'October',   arrivals: 'Raptor migration continues: accipiters, falcons, eagles. Saw-whet owls move along the coast at night. Snow Geese pass through.', departures: 'Last warblers (Yellow-rumped lingers); Common Loons start moving to coast.' },
     { season: 'Fall',   month: 'November',  arrivals: 'Snowy Owls arrive in irruption years; sea ducks (Common Eider, scoters) concentrate on coast.', departures: 'Most insectivores gone.' },
     { season: 'Winter', month: 'Dec–Feb',   arrivals: 'Winter visitors only (Snow Bunting, Common Redpoll in irruption years, Snowy Owls in lucky years).', departures: 'Stable population; winter survivors only.' }
   ];
 
   var FEATURED_MIGRATORS = [
     {
-      species: 'Atlantic Puffin', distance: '~200 mi (coastal pelagic)',
-      strategy: 'Short pelagic — leaves Maine offshore islands by August, winters at sea on the continental shelf, returns to same nest burrow in May. Stays in North Atlantic.',
-      maineNote: 'Puffins are SHORT-distance migrants compared to warblers. They never leave the North Atlantic.'
+      species: 'Atlantic Puffin', distance: 'Hundreds of miles (tracked with geolocators)',
+      strategy: 'Offshore loop — leaves the Maine islands in August, heads NORTH to the Gulf of St. Lawrence for about a month, then winters far out at sea off Cape Cod and New York–New Jersey, returning to the same burrow in spring.',
+      maineNote: 'Short-distance compared with warblers, and they never leave the North Atlantic. But nobody knew the route until Project Puffin tagged birds on Seal Island and Matinicus Rock: north first, then south.'
     },
     {
       species: 'Black-throated Green Warbler', distance: '2,000–4,000 mi',
-      strategy: 'Long-distance neotropical — leaves Maine by early September, flies to Central America + Caribbean. Some populations winter in Mexico, others in Costa Rica.',
-      maineNote: 'A 4-gram bird crossing the Gulf of Mexico in a single overnight flight. Hard to fathom physiologically.'
+      strategy: 'Long-distance neotropical — leaves Maine from late August into early October (peak late September), flies to Central America + Caribbean. Some populations winter in Mexico, others in Costa Rica.',
+      maineNote: 'A bird of about 9 grams crossing the Gulf of Mexico in one non-stop flight. Hard to fathom physiologically.'
     },
     {
       species: 'Common Loon', distance: '~150 mi (typical)',
@@ -4166,16 +4313,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     {
       species: 'Bald Eagle', distance: 'Most are SEDENTARY in Maine',
       strategy: 'Maine eagles mostly stay in Maine year-round. Winter eagles concentrate where water stays open (rivers below dams).',
-      maineNote: 'You\'re likely to see the SAME eagle in summer and winter at Sebasticook Lake or the Penobscot River.'
+      maineNote: 'You\'re likely to see the SAME eagle in summer and winter along the Penobscot or Kennebec rivers.'
     },
     {
       species: 'Snowy Owl', distance: '2,000+ mi (irruption years)',
-      strategy: 'Irruptive — Arctic breeder. Most years stays north; in years of lemming-population crashes, large numbers move south. 2013–14 was the famous "mega-irruption."',
-      maineNote: 'Coastal Maine is roughly the southernmost regular wintering range. Irruption-year sightings spike at Biddeford Pool, Reid State Park.'
+      strategy: 'Irruptive — Arctic breeder. Big irruptions usually follow a lemming BOOM: plentiful prey means a very productive nesting season, and many of the young owls head south that winter. 2013–14, the famous "mega-irruption," was mostly healthy first-year birds.',
+      maineNote: 'Snowy Owls reach coastal Maine most winters (and regularly as far south as Boston). Irruption-year sightings spike at Biddeford Pool, Reid State Park.'
     },
     {
       species: 'Most warblers', distance: '2,000–6,000 mi',
-      strategy: 'Long-distance neotropical — most spend more time on wintering grounds than breeding grounds. Some (Blackpoll Warbler) make a single non-stop trans-Atlantic flight from New England to South America.',
+      strategy: 'Long-distance neotropical — most spend more time on wintering grounds than breeding grounds. The Blackpoll Warbler, a 12-gram bird, flies non-stop for up to three days over the western Atlantic: about 2,300–2,800 km from the Northeast to the Caribbean or northern South America.',
       maineNote: 'Acadia + Monhegan in May = peak warbler migration spectacle. Bring binoculars and a sore neck.'
     }
   ];
@@ -4218,10 +4365,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       org: 'Cornell Lab + Birds Canada',
       site: 'feederwatch.org',
       cost: 'Annual fee (~$18); waivers available for students',
-      cadence: 'November–April, count 2 days per week',
-      what: 'Count birds visiting your feeder (or any selected count site). Submit weekly checklists. 30+ years of continuous data tracks winter bird populations across North America.',
-      howToJoin: 'Sign up at feederwatch.org. They mail a kit with poster, instructions, calendar. Pick 2 count days per week and stick with them.',
-      maineRelevance: 'Hundreds of Maine households participate. The data documented the southern expansion of Northern Cardinals + decline of Evening Grosbeaks.',
+      cadence: 'November–April; count on 2 back-to-back days, up to once a week',
+      what: 'Count birds visiting your feeder (or any selected count site). Submit your counts. 30+ years of continuous data tracks winter bird populations across North America.',
+      howToJoin: 'Sign up at feederwatch.org. They mail a kit with poster, instructions, calendar. Pick 2 back-to-back count days, as often as once a week.',
+      maineRelevance: 'Hundreds of Maine households participate. The data documented the northward expansion of Northern Cardinals + decline of Evening Grosbeaks.',
       impact: 'Documented major range shifts (e.g., cardinals moving north). Identified "irruptive" winter visitor patterns. Frequently cited in winter-bird research.'
     },
     {
@@ -4246,7 +4393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       what: 'Count birds anywhere — backyard, park, schoolyard — for as little as 15 minutes during the 4-day window. Global event.',
       howToJoin: 'Sign up at birdcount.org. Use Merlin or eBird app to submit. You can participate from anywhere in the world.',
       maineRelevance: 'Easy entry point for first-time citizen scientists. Many Maine schools run school-wide GBBC events.',
-      impact: 'Snapshot of February bird distribution worldwide. ~300,000 participants annually generate millions of observations.'
+      impact: 'Snapshot of February bird distribution worldwide. Hundreds of thousands of participants (about 840,000 in 2025) generate millions of observations.'
     },
     {
       id: 'nestwatch',
@@ -4275,11 +4422,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     {
       id: 'inaturalist',
       name: 'iNaturalist',
-      org: 'California Academy of Sciences + National Geographic',
+      org: 'iNaturalist (independent nonprofit since 2023; founded with Cal Academy + National Geographic)',
       site: 'inaturalist.org',
       cost: 'Free',
       cadence: 'Year-round',
-      what: 'Broader naturalist platform for any species — birds, plants, fungi, insects, anything. Photo-based, with AI assistance from "Seek" identification model.',
+      what: 'Broader naturalist platform for any species — birds, plants, fungi, insects, anything. Photo-based, with AI suggestions from iNaturalist\'s own computer-vision model (Seek is its separate family app).',
       howToJoin: 'Free app (Seek for ID; iNaturalist for full submission). Snap a photo, get an AI suggestion, confirm.',
       maineRelevance: 'Maine has active iNaturalist projects: Maine BioBlitz, Acadia Bioblitz events.',
       impact: 'Verified observations become research-grade data accessible to scientists worldwide. Documents non-bird taxa that are harder to track elsewhere.'
@@ -4291,7 +4438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       site: 'maineaudubon.org',
       cost: 'Most free; some programs charge nominal fees',
       cadence: 'Year-round events; specific projects seasonal',
-      what: 'Maine\'s flagship bird conservation org runs the Annual Loon Count, hawkwatches, monitoring programs, school visits, and the Maine Birding Trail.',
+      what: 'Maine\'s flagship bird conservation org runs the Annual Loon Count, hawkwatches, monitoring programs, school visits, and nature centers.',
       howToJoin: 'Visit maineaudubon.org/get-involved. Sign up for newsletters, attend chapters\' walks, volunteer for the Loon Count (one Saturday in July statewide).',
       maineRelevance: 'Maine-specific. Coordinates statewide bird data. Best entry point for plugging into the Maine birding community.',
       impact: 'Loon Count documented the recovery of Maine\'s breeding loon population. Hawkwatch records inform federal raptor migration policy.'
@@ -4308,13 +4455,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     {
       species: 'Piping Plover', sciName: 'Charadrius melodus',
       status: 'Federal threatened (Atlantic Coast); Maine endangered',
-      story: 'Beach-nesting shorebird. Maine has ~80-100 pairs along southern + midcoast beaches. Recovery from <50 pairs in the 1980s through symbolic-fenced nesting areas, dog-leash enforcement, and predator management. Climate-driven sea-level rise + storm surge are the next threat.',
+      story: 'Beach-nesting shorebird. Maine counted a record 174 pairs in 2025 and about 185 in 2026, up from just 7 pairs in 1981, thanks to symbolic-fenced nesting areas, dog-leash enforcement, and predator management. Climate-driven sea-level rise + storm surge are the next threat.',
       maineConnection: 'Crescent Beach State Park, Goose Rocks Beach, Popham Beach all host nesting plovers. Maine Audubon coordinates volunteer "plover wardens" who help educate beachgoers.',
       whatYouCanDo: 'Stay on marked trails on plover beaches April–August. Keep dogs leashed. Avoid beach driving in nesting areas. Report disturbances to Maine IFW.'
     },
     {
       species: 'Wood Thrush', sciName: 'Hylocichla mustelina',
-      status: 'Common species in steep decline (Partners in Flight Tier 1)',
+      status: 'Partners in Flight Yellow Watch List; lost over 50% since 1970',
       story: 'Population down 50%+ since 1970 (Rosenberg 2019). Forest fragmentation in breeding range + tropical wintering-ground deforestation in Central America. The threats are HALF in Maine, HALF outside the country.',
       maineConnection: 'Still common in Maine\'s mature forests, but Breeding Bird Survey trends show steady decline. Future generations may not hear that ethereal "ee-oh-lay" song.',
       whatYouCanDo: 'Support shade-grown coffee (preserves wintering habitat). Keep cats indoors. Reduce window strikes (~1 billion bird deaths/year in US, mostly on residential windows).'
@@ -4322,14 +4469,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     {
       species: 'Bald Eagle', sciName: 'Haliaeetus leucocephalus',
       status: 'RECOVERED — delisted from federal endangered species 2007',
-      story: 'Devastated by DDT pesticide thinning eggshells (1950s-1970s). Maine had ~21 nesting pairs in 1972. EPA banned DDT in 1972. Combined with breeding-pair monitoring + nest protection + lake-front habitat protection, populations rebounded across decades.',
-      maineConnection: 'Today: ~700 active nests in Maine. Sebasticook Lake winter eagles concentrate at unfrozen river sections. Real Maine conservation success story.',
-      whatYouCanDo: 'Lead-tackle alternatives for fishing (lead poisoning is a leading cause of eagle mortality post-DDT). Support state lead-tackle ban legislation.'
+      story: 'Devastated by DDT pesticide thinning eggshells (1950s-1970s). Maine was down to 21 nesting pairs in 1967. EPA banned DDT in 1972. Combined with breeding-pair monitoring + nest protection + lake-front habitat protection, populations rebounded across decades.',
+      maineConnection: 'Today: ~700 active nests in Maine. In May and June, dozens of eagles gather on the Sebasticook River to feed on the restored alewife run. Real Maine conservation success story.',
+      whatYouCanDo: 'Use lead-free ammunition: eagles swallow bullet fragments in carcasses and gut piles, a leading cause of eagle poisoning. Lead-free tackle protects loons.'
     },
     {
       species: 'Atlantic Puffin', sciName: 'Fratercula arctica',
       status: 'Federally protected; Maine population RECOVERED via active restoration',
-      story: 'Hunted to local extinction in Maine by ~1900 (eaten + feathers harvested for hats). 1973: Audubon\'s Stephen Kress initiated Project Puffin on Eastern Egg Rock, using decoys + recorded calls + careful restocking to lure puffins back. Today: ~1,300 pairs across 5 Maine islands.',
+      story: 'Hunting left a single pair in Maine, on Matinicus Rock, by 1901 (eaten + feathers harvested for hats). 1973: Audubon\'s Stephen Kress initiated Project Puffin on Eastern Egg Rock, using decoys + recorded calls + careful restocking to lure puffins back. Today: ~1,300 pairs across 5 Maine islands.',
       maineConnection: 'Maine\'s flagship seabird recovery. Eastern Egg Rock + Petit Manan + Matinicus Rock + Seal Island colonies. Boat tours from New Harbor (June–August). Project Puffin Visitor Center in Rockland.',
       whatYouCanDo: 'Visit responsibly (boat tours stay 50+ ft from breeding cliffs). Climate change is the new threat — warmer Gulf of Maine waters are pushing puffin food fish north, reducing chick survival.'
     }
@@ -4356,7 +4503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       pathway: 'BS → field tech → MS → senior field biologist',
       payRange: '$35-55K entry; $60-90K experienced',
       who: 'Maine Inland Fisheries & Wildlife (IFW), USFWS Refuges, state Natural Heritage programs, NGOs',
-      maineProgram: 'UMaine Wildlife, Fisheries, and Conservation Biology (Orono); Unity College Wildlife Biology',
+      maineProgram: 'UMaine Wildlife, Fisheries, and Conservation Biology (Orono); Unity Environmental University (formerly Unity College) Wildlife Biology',
       reality: 'Lots of seasonal/temporary work early. Most jobs require living in remote areas at some point. Passion field; pay is modest until you reach senior levels.'
     },
     {
@@ -4388,7 +4535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     },
     {
       role: 'Wildlife Rehabilitator',
-      degree: 'Maine Wildlife Rehabilitator Permit (Maine IFW); biology BS helpful',
+      degree: 'Maine IFW rehabilitator permit + federal USFWS migratory bird rehab permit; biology BS helpful',
       pathway: 'Volunteer → assistant → permitted rehabilitator → manage facility',
       payRange: 'Volunteer or low pay; nonprofit-driven; $25-45K typical',
       who: 'Avian Haven (Freedom, Maine — biggest Maine bird rehabber), Center for Wildlife (Cape Neddick), private licensed rehabbers',
@@ -4433,6 +4580,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     }
   ];
 
+  // ──────────────────────────────────────────────────────
+  // FIELD MARK ART — the three Field Marks Trainer birds, drawn natively in the
+  // 320x240 diagram (no transform), facing left on a branch. Every shape that
+  // depicts a field mark carries data-part="<hotspot id>", and each hotspot is
+  // placed from `anchors` ([x, y, ring radius]), a point inside that shape, so
+  // a ring cannot float off the feature it names. The old diagrams scaled the
+  // 24-unit icon by 13 into this viewBox: the bird ran off the right and bottom
+  // edges and the hand-placed rings sat in empty space.
+  // ──────────────────────────────────────────────────────
+  var FIELD_MARK_ART = (function() {
+    function branch(h) {
+      return h('g', { 'data-scenery': 'branch' },
+        h('path', { d: 'M -6 212 C 70 204 190 214 326 202 L 326 214 C 190 226 70 218 -6 226 Z', fill: '#6f5136' }),
+        h('path', { d: 'M 10 211 C 90 205 190 213 310 204', stroke: '#9a7753', strokeWidth: 2, fill: 'none', opacity: 0.7 }),
+        h('path', { d: 'M 250 208 C 262 196 276 192 292 190', stroke: '#6f5136', strokeWidth: 4, strokeLinecap: 'round', fill: 'none' }),
+        h('ellipse', { cx: 296, cy: 188, rx: 9, ry: 4.5, fill: '#5f8f4e', transform: 'rotate(-20 296 188)' })
+      );
+    }
+    function legs(h, color) {
+      return h('g', { 'data-scenery': 'legs' },
+        h('path', { d: 'M 150 186 L 146 210 M 170 188 L 168 208', stroke: color, strokeWidth: 3.2, strokeLinecap: 'round', fill: 'none' }),
+        h('path', { d: 'M 146 210 L 136 213 M 146 210 L 152 214 M 168 208 L 158 211 M 168 208 L 175 212', stroke: color, strokeWidth: 2.4, strokeLinecap: 'round', fill: 'none' })
+      );
+    }
+    var BODY = 'M 74 128 C 68 170 112 198 158 198 C 202 198 234 180 240 154 C 244 132 222 112 188 108 C 158 104 126 104 104 110 C 86 115 76 120 74 128 Z';
+    var WING = 'M 126 118 C 156 102 208 108 240 138 L 262 164 C 230 168 188 162 158 152 C 138 146 124 134 126 118 Z';
+
+    // ── Black-capped Chickadee ─────────────────────────────
+    function chickadee(h) {
+      return h('g', { 'data-bird': 'chickadee' },
+        branch(h),
+        h('path', { 'data-part': 'tail', d: 'M 228 140 L 308 146 L 306 170 L 226 164 Z', fill: '#6b7177' }),
+        h('path', { d: 'M 236 146 L 304 151 M 236 154 L 305 158 M 234 161 L 304 165', stroke: '#565b61', strokeWidth: 1, opacity: 0.7 }),
+        legs(h, '#454a50'),
+        h('path', { d: BODY, fill: '#f5f2ea', stroke: '#8a8272', strokeWidth: 1.2 }),
+        h('path', { d: 'M 118 110 C 150 100 204 104 234 126 L 206 132 C 176 122 146 118 120 118 Z', fill: '#8b9197' }),
+        h('path', { 'data-part': 'flank', d: 'M 144 164 C 174 162 212 154 238 150 C 232 176 200 194 160 197 C 152 186 146 176 144 164 Z', fill: '#e2c08d' }),
+        h('path', { 'data-part': 'wing', d: WING, fill: '#7f858c' }),
+        h('path', { d: 'M 148 124 C 180 122 212 132 236 148 M 146 133 C 178 134 206 144 232 158 M 156 143 C 186 148 214 156 246 163',
+          stroke: '#f4f4f2', strokeWidth: 3.2, strokeLinecap: 'round', fill: 'none' }),
+        h('path', { d: 'M 238 146 L 262 164 L 238 162 Z', fill: '#5d636a' }),
+        h('circle', { cx: 100, cy: 90, r: 38, fill: '#fbfbf8' }),
+        h('path', { 'data-part': 'cap', d: 'M 62 92 C 60 64 78 52 100 52 C 124 52 140 68 138 94 C 132 97 124 98 116 96 C 104 89 90 87 78 89 C 72 90 66 91 62 92 Z', fill: '#151515' }),
+        h('path', { 'data-part': 'cheek', d: 'M 74 99 C 88 93 114 95 137 99 C 138 113 128 124 110 126 C 96 126 84 118 74 99 Z', fill: '#ffffff', stroke: '#e3e3de', strokeWidth: 0.8 }),
+        h('path', { 'data-part': 'bib', d: 'M 64 100 C 72 102 84 106 92 112 C 96 122 92 132 85 138 L 81 134 L 77 139 L 73 134 L 69 138 C 62 126 61 112 64 100 Z', fill: '#151515' }),
+        h('circle', { 'data-part': 'eye', cx: 84, cy: 84, r: 6.5, fill: '#0b0b0b' }),
+        h('circle', { cx: 86.2, cy: 81.8, r: 2, fill: '#ffffff' }),
+        h('path', { 'data-part': 'bill', d: 'M 64 86 L 45 93 L 64 100 Z', fill: '#232323' }),
+        h('path', { d: 'M 64 93 L 45 93', stroke: '#4a4a4a', strokeWidth: 0.8 })
+      );
+    }
+
+    // ── Yellow-rumped Warbler (Myrtle, breeding male) ──────
+    function yrwarbler(h) {
+      return h('g', { 'data-bird': 'yrwarbler' },
+        branch(h),
+        h('path', { d: 'M 228 140 L 308 146 L 306 170 L 226 164 Z', fill: '#343a48' }),
+        h('path', { d: 'M 286 160 L 304 162 M 284 166 L 303 167', stroke: '#e9edf2', strokeWidth: 2.4, strokeLinecap: 'round' }),
+        legs(h, '#2f2f33'),
+        h('path', { d: BODY, fill: '#f8f8f6', stroke: '#6f7480', strokeWidth: 1.2 }),
+        h('path', { d: 'M 116 110 C 150 98 204 102 234 124 L 206 132 C 176 122 146 118 118 118 Z', fill: '#5b6a80' }),
+        h('path', { d: 'M 150 108 L 156 116 M 172 106 L 178 115 M 194 108 L 200 118', stroke: '#1b1f27', strokeWidth: 2.2, strokeLinecap: 'round' }),
+        h('path', { 'data-part': 'streaks', d: 'M 104 150 C 128 162 160 172 206 174 C 196 188 172 197 150 197 C 126 194 108 178 104 150 Z', fill: '#f8f8f6' }),
+        h('path', { d: 'M 112 152 L 118 166 M 124 158 L 131 174 M 138 164 L 145 180 M 154 168 L 160 184 M 170 172 L 175 186 M 186 173 L 190 186',
+          stroke: '#141414', strokeWidth: 3, strokeLinecap: 'round' }),
+        h('path', { d: 'M 86 138 L 90 150 M 95 142 L 99 155 M 104 145 L 108 158 M 113 148 L 116 160 M 91 139 L 94 146 M 100 143 L 102 150', stroke: '#141414', strokeWidth: 4.2, strokeLinecap: 'round' }),
+        h('path', { 'data-part': 'rump', d: 'M 214 124 C 222 118 236 120 242 128 C 238 134 224 136 214 132 Z', fill: '#f4c20d' }),
+        h('path', { 'data-part': 'wingbars', d: WING, fill: '#3b4252' }),
+        h('path', { d: 'M 150 124 C 170 120 190 122 206 128 M 156 138 C 178 136 200 140 218 147',
+          stroke: '#ffffff', strokeWidth: 4, strokeLinecap: 'round', fill: 'none' }),
+        h('path', { 'data-part': 'shoulder', d: 'M 112 132 C 120 126 132 128 136 136 C 134 146 122 150 114 146 C 108 142 108 136 112 132 Z', fill: '#f4c20d' }),
+        h('circle', { cx: 100, cy: 90, r: 38, fill: '#5b6a80' }),
+        h('path', { 'data-part': 'throat', d: 'M 64 100 C 74 106 88 110 102 110 C 112 110 124 106 132 100 C 134 114 124 128 104 132 C 86 134 70 124 64 100 Z', fill: '#ffffff' }),
+        h('path', { 'data-part': 'mask', d: 'M 70 86 C 82 78 104 80 124 92 C 124 102 114 108 100 108 C 86 106 74 98 70 86 Z', fill: '#141414' }),
+        h('path', { d: 'M 74 78 C 86 72 100 72 110 76', stroke: '#ffffff', strokeWidth: 2.4, strokeLinecap: 'round', fill: 'none' }),
+        h('path', { 'data-part': 'crown', d: 'M 88 56 C 96 52 110 52 118 58 C 112 62 96 62 88 56 Z', fill: '#f4c20d' }),
+        h('circle', { cx: 84, cy: 86, r: 5.5, fill: '#050505' }),
+        h('circle', { cx: 85.8, cy: 84.2, r: 1.6, fill: '#ffffff' }),
+        h('path', { d: 'M 80 80 A 6 6 0 0 1 90 82 M 80 92 A 6 6 0 0 0 90 90', stroke: '#ffffff', strokeWidth: 1.6, fill: 'none' }),
+        h('path', { 'data-part': 'bill', d: 'M 64 88 L 40 93 L 64 98 Z', fill: '#161616' })
+      );
+    }
+
+    // ── White-throated Sparrow (white-striped morph) ───────
+    function wtsparrow(h) {
+      return h('g', { 'data-bird': 'wtsparrow' },
+        branch(h),
+        h('path', { d: 'M 228 140 L 308 146 L 306 170 L 226 164 Z', fill: '#7b5a3c' }),
+        h('path', { d: 'M 236 147 L 304 152 M 236 156 L 305 160', stroke: '#5d4129', strokeWidth: 1.2, opacity: 0.8 }),
+        legs(h, '#c89e86'),
+        h('path', { d: BODY, fill: '#aeb3b8', stroke: '#6b6f74', strokeWidth: 1.2 }),
+        h('path', { 'data-part': 'breast', d: 'M 84 140 C 100 154 130 164 162 168 C 176 184 160 198 130 196 C 104 190 86 172 84 140 Z', fill: '#b9bec3' }),
+        h('path', { d: 'M 150 176 C 170 184 196 186 224 176 C 214 192 186 198 158 196 Z', fill: '#e7e8e9' }),
+        h('path', { 'data-part': 'back', d: 'M 112 110 C 146 96 204 100 238 126 L 214 136 C 182 124 150 124 118 124 Z', fill: '#8e5a2f' }),
+        h('path', { d: 'M 138 106 L 150 116 M 162 104 L 172 116 M 186 106 L 196 120 M 208 112 L 216 124', stroke: '#2a1a0e', strokeWidth: 2.6, strokeLinecap: 'round' }),
+        h('path', { d: 'M 140 128 C 168 114 212 120 242 144 L 262 166 C 230 170 188 164 160 156 C 146 150 138 140 140 128 Z', fill: '#94603a' }),
+        h('path', { d: 'M 156 134 C 176 128 196 130 212 136 M 160 146 C 182 144 204 148 222 154', stroke: '#f1ece2', strokeWidth: 2.4, strokeLinecap: 'round', fill: 'none' }),
+        h('path', { d: 'M 174 156 C 200 160 228 162 258 166', stroke: '#5a3b20', strokeWidth: 1.4, fill: 'none', opacity: 0.8 }),
+        h('circle', { cx: 100, cy: 90, r: 38, fill: '#a3a9ae' }),
+        h('path', { 'data-part': 'throat', d: 'M 64 104 C 74 110 90 114 104 114 C 112 122 106 138 90 142 C 76 140 66 128 64 104 Z', fill: '#ffffff' }),
+        h('path', { d: 'M 68 106 C 80 114 94 118 106 118', stroke: '#2c2c2c', strokeWidth: 2.2, strokeLinecap: 'round', fill: 'none' }),
+        h('path', { 'data-part': 'blackStripes', d: 'M 62.6 83.4 A 38 38 0 0 1 137.4 83.4 L 139 89 C 126 80 106 74 86 76 C 76 76 68 80 63 86 Z', fill: '#191919' }),
+        h('path', { 'data-part': 'whiteStripe', d: 'M 67.1 71 A 38 38 0 0 1 129.1 65.6 L 123.7 70.1 A 31 31 0 0 0 73.2 74.5 Z', fill: '#ffffff' }),
+        h('path', { 'data-part': 'eyebrow', d: 'M 86 76 C 106 74 126 80 140 90 L 138 96 C 124 88 106 83 88 83 Z', fill: '#ffffff' }),
+        h('path', { 'data-part': 'lores', d: 'M 64 86 C 68 80 76 76 86 76 L 88 83 C 80 83 72 86 68 90 Z', fill: '#f2c21a' }),
+        h('path', { d: 'M 62.6 83.4 A 38 38 0 0 1 137.4 83.4', stroke: '#6b6f74', strokeWidth: 1.2, fill: 'none' }),
+        h('path', { d: 'M 94 92 C 110 92 126 97 138 105', stroke: '#1a1a1a', strokeWidth: 3.4, strokeLinecap: 'round', fill: 'none' }),
+        h('circle', { cx: 87, cy: 91, r: 5.5, fill: '#0a0a0a' }),
+        h('circle', { cx: 88.8, cy: 89.2, r: 1.6, fill: '#ffffff' }),
+        h('path', { 'data-part': 'bill', d: 'M 66 87 L 44 95 L 66 103 Z', fill: '#8a8f97' }),
+        h('path', { d: 'M 66 95 L 44 95', stroke: '#5c6068', strokeWidth: 0.9 })
+      );
+    }
+
+    return {
+      chickadee: { draw: chickadee, anchors: {
+        cap: [106, 62, 14], eye: [84, 84, 10], cheek: [118, 110, 12], bib: [78, 120, 11],
+        bill: [54, 93, 10], wing: [194, 140, 18], flank: [196, 178, 14], tail: [284, 158, 13] } },
+      yrwarbler: { draw: yrwarbler, anchors: {
+        crown: [103, 57, 11], mask: [106, 98, 11], throat: [88, 120, 11], shoulder: [123, 138, 11],
+        streaks: [168, 184, 13], wingbars: [186, 140, 16], rump: [228, 127, 10], bill: [52, 93, 10] } },
+      wtsparrow: { draw: wtsparrow, anchors: {
+        whiteStripe: [100, 55, 10], blackStripes: [134, 74, 10], eyebrow: [110, 80, 9], lores: [75, 84, 9],
+        throat: [86, 126, 11], back: [180, 118, 12], breast: [124, 180, 14], bill: [50, 95, 9] } }
+    };
+  })();
+
   // ─────────────────────────────────────────────────────
   // FIELD MARKS — Black-capped Chickadee deep dive (Phase 1 working bird)
   // SVG with clickable plumage hotspots, mirroring aquarium's anatomy pattern
@@ -4440,56 +4714,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var CHICKADEE_FIELD_MARKS = {
     species: 'chickadee',
     name: 'Black-capped Chickadee',
-    // Big version of the chickadee for detailed teaching (rendered at 320×240)
     bigSvgViewBox: '0 0 320 240',
-    bigSvg: function(h) {
-      // Larger, more detailed version of the chickadee SVG above
-      return h('g', { transform: 'translate(40, 40) scale(13)' },
-        // Body (buffy white)
-        h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 7, fill: '#f8e8c8', stroke: '#5a4a32', strokeWidth: 0.4 }),
-        // Black cap (extends down to eye line)
-        h('path', { d: 'M 4 11 Q 4 5 12 5 Q 20 5 20 11 L 18 11 Q 18 7 12 7 Q 6 7 6 11 Z', fill: '#1a1a1a' }),
-        // Black bib
-        h('ellipse', { cx: 12, cy: 17, rx: 4, ry: 2.5, fill: '#1a1a1a' }),
-        // White cheek
-        h('ellipse', { cx: 12, cy: 13, rx: 6, ry: 2.2, fill: '#ffffff' }),
-        // Wing (gray)
-        h('ellipse', { cx: 16, cy: 14, rx: 4, ry: 5, fill: '#8a8a8a' }),
-        // Wing edges (white)
-        h('path', { d: 'M 14 11 L 19 11 M 14 14 L 19 14', stroke: '#ffffff', strokeWidth: 0.5 }),
-        // Tail
-        h('path', { d: 'M 19 14 L 25 12 L 25 16 L 19 16 Z', fill: '#5a5a5a' }),
-        // Eye (dark, no ring)
-        h('circle', { cx: 9, cy: 11, r: 1, fill: '#000' }),
-        h('circle', { cx: 9.3, cy: 10.7, r: 0.3, fill: '#fff' }),
-        // Bill (short, stout, dark)
-        h('path', { d: 'M 4 12 L 1 12.5 L 4 13 Z', fill: '#222' })
-      );
-    },
-    // Hotspots positioned over the big SVG (320×240 coords, matched to the scaled SVG above)
+    bigSvg: FIELD_MARK_ART.chickadee.draw,
     hotspots: [
-      { id: 'cap',     x: 110, y: 70,  r: 32, label: 'Black cap',
+      { id: 'cap', label: 'Black cap',
         what: 'A solid black "cap" extending from the bill back over the head, ending at the eye line. The "black-capped" in the name comes from this.',
         why: 'Distinguishes chickadees from titmice (which have gray crests, not black caps) and from many other small songbirds.' },
-      { id: 'cheek',   x: 130, y: 120, r: 26, label: 'White cheek',
+      { id: 'cheek', label: 'White cheek',
         what: 'A clean white patch from below the eye to the side of the neck.',
         why: 'A reliable field mark even at a glance. Carolina chickadees (a southern lookalike) have a slightly grayer cheek; black-cappeds have crisp white.' },
-      { id: 'bib',     x: 130, y: 175, r: 24, label: 'Black bib',
+      { id: 'bib', label: 'Black bib',
         what: 'A black throat patch right under the bill. Smaller than the cap.',
         why: 'Black-capped chickadees have a "ragged" bib edge. Carolina chickadees have a crisper bib edge — the difference is subtle but real.' },
-      { id: 'wing',    x: 215, y: 145, r: 32, label: 'Wing with white edges',
-        what: 'Gray wing feathers with white edges visible on the folded wing — the "wing bars" of a chickadee.',
-        why: 'Field mark for distinguishing from gnatcatchers and kinglets (which have differently structured wing bars).' },
-      { id: 'eye',     x: 100, y: 95,  r: 14, label: 'Dark eye (no ring)',
+      { id: 'wing', label: 'Wing with white edges',
+        what: 'A gray wing whose larger feathers have bright white edges, forming a pale panel on the folded wing. Chickadees have no wing bars.',
+        why: 'Black-capped Chickadees show much brighter white wing edging than Carolina Chickadees, one of the best clues where the two species meet.' },
+      { id: 'eye', label: 'Dark eye (no ring)',
         what: 'A small, dark, beady eye — no eye ring, no eyebrow, no contrasting markings around it.',
         why: 'Many small birds (vireos, kinglets) have eye rings or eyebrow stripes. Chickadees have neither — a "clean face."' },
-      { id: 'bill',    x: 50,  y: 110, r: 16, label: 'Short, stout bill',
+      { id: 'bill', label: 'Short, stout bill',
         what: 'Short, conical, dark — built for cracking small seeds and probing for insects.',
         why: 'Bill shape tells you about diet. Chickadee\'s short bill = mixed diet (seeds + insects + suet at feeders).' },
-      { id: 'flank',   x: 165, y: 195, r: 24, label: 'Buffy flanks',
+      { id: 'flank', label: 'Buffy flanks',
         what: 'Soft warm-buff color on the sides of the belly, between the white front and the gray wings.',
         why: 'Distinguishes black-capped chickadees from boreal chickadees (which have warmer brown caps and more reddish flanks).' },
-      { id: 'tail',    x: 280, y: 145, r: 22, label: 'Long tail',
+      { id: 'tail', label: 'Long tail',
         what: 'Tail is relatively long compared to body size — about as long as the body itself.',
         why: 'Long tail helps balance during acrobatic foraging in branches. Short-tailed birds (creepers, nuthatches) live differently in trees.' }
     ]
@@ -4504,64 +4753,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     species: 'yrwarbler',
     name: 'Yellow-rumped Warbler (Myrtle)',
     bigSvgViewBox: '0 0 320 240',
-    bigSvg: function(h) {
-      return h('g', { transform: 'translate(40, 40) scale(13)' },
-        // Body (white belly base layer)
-        h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 6.5, fill: '#f5f5f5', stroke: '#3a3a3a', strokeWidth: 0.4 }),
-        // Slate-blue back (dorsal half)
-        h('path', { d: 'M 4 11 Q 4 7 12 7 Q 20 7 20 11 Q 20 13 12 13 Q 4 13 4 11 Z', fill: '#5a677a' }),
-        // Black streaks on back
-        h('path', { d: 'M 7 9 L 7 12 M 10 9 L 10 12 M 13 9 L 13 12 M 16 9 L 16 12', stroke: '#1a1a1a', strokeWidth: 0.4 }),
-        // Yellow crown patch (top of head)
-        h('ellipse', { cx: 9, cy: 9, rx: 1.7, ry: 1, fill: '#facc15' }),
-        // Black mask through eye
-        h('path', { d: 'M 4 11 L 10 11 L 10 11.8 L 4 11.5 Z', fill: '#1a1a1a' }),
-        // White throat (Myrtle subspecies — diagnostic vs Audubon yellow throat)
-        h('ellipse', { cx: 9, cy: 13.2, rx: 2.5, ry: 1, fill: '#ffffff' }),
-        // Yellow shoulder patch (left, viewer-facing)
-        h('ellipse', { cx: 8, cy: 16, rx: 1.6, ry: 1.2, fill: '#facc15' }),
-        // Black streaks on breast/sides
-        h('path', { d: 'M 6 15 L 6 18 M 8.5 17 L 8.5 19 M 11 17 L 11 19 M 14 16 L 14 18', stroke: '#1a1a1a', strokeWidth: 0.4 }),
-        // Wing (gray)
-        h('ellipse', { cx: 16, cy: 14, rx: 4, ry: 4.5, fill: '#6a7080' }),
-        // Two white wing bars
-        h('path', { d: 'M 13 12 L 19 12 M 13 14 L 19 14', stroke: '#ffffff', strokeWidth: 0.5 }),
-        // Yellow rump (at base of tail — the namesake mark)
-        h('ellipse', { cx: 20, cy: 13, rx: 1.8, ry: 1.3, fill: '#facc15' }),
-        // Tail (dark gray, longer + more pointed than chickadee)
-        h('path', { d: 'M 21 13 L 26 11 L 26 16 L 21 15 Z', fill: '#3a4050' }),
-        // White outer tail spots
-        h('rect', { x: 24, y: 12, width: 2, height: 1.3, fill: '#ffffff' }),
-        // Eye
-        h('circle', { cx: 7, cy: 11, r: 0.8, fill: '#000' }),
-        h('circle', { cx: 7.2, cy: 10.8, r: 0.25, fill: '#fff' }),
-        // Slim pointed warbler bill (vs chickadee's stout)
-        h('path', { d: 'M 4 11.6 L 0.5 12 L 4 12.5 Z', fill: '#222' })
-      );
-    },
+    bigSvg: FIELD_MARK_ART.yrwarbler.draw,
     hotspots: [
-      { id: 'rump',     x: 270, y: 135, r: 26, label: 'Yellow rump',
-        what: 'A bright yellow patch right at the base of the tail, visible from above AND from below as the bird flies away. The nickname "butter butt" comes from this mark.',
-        why: 'Diagnostic in Maine. No other warbler here has a clean yellow rump patch this size. Even at distance or in poor light, the rump flashes yellow when the bird flushes.' },
-      { id: 'crown',    x: 125, y: 78,  r: 22, label: 'Yellow crown patch',
+      { id: 'rump', label: 'Yellow rump',
+        what: 'A bright yellow patch right at the base of the tail, flashing from behind as the bird flies away. The nickname "butter butt" comes from this mark.',
+        why: 'Magnolia and Cape May Warblers have yellow rumps too, but with the white throat and white, streaked underparts it makes this bird unmistakable. It is also the warbler most likely to show it in early spring and late fall.' },
+      { id: 'crown', label: 'Yellow crown patch',
         what: 'A small yellow patch on the top of the head, often partly hidden by surrounding gray-blue feathers. Brighter on males in spring.',
         why: 'One of four yellow patches that make this species easy. A confirm-ID mark when the rump is hard to see.' },
-      { id: 'shoulder', x: 105, y: 195, r: 24, label: 'Yellow shoulder',
+      { id: 'shoulder', label: 'Yellow side patch',
         what: 'Yellow patch on each side of the breast, between the wing and the white throat.',
         why: 'The third yellow patch. A bird showing all four yellow marks is unmistakable, even for a beginner.' },
-      { id: 'throat',   x: 110, y: 145, r: 22, label: 'White throat (Myrtle)',
-        what: 'The Myrtle subspecies (the one breeding in Maine and across the eastern US) has a clean WHITE throat. The Audubon subspecies (West) has a yellow throat.',
+      { id: 'throat', label: 'White throat (Myrtle)',
+        what: 'The Myrtle subspecies (the form that breeds in Maine and across the northern forests, and winters across the eastern US) has a clean WHITE throat. The Audubon subspecies (West) has a yellow throat.',
         why: 'Subspecies-level field mark. A yellow-rumped warbler with a YELLOW throat in Maine is unusual; most likely an Audubon vagrant. eBird tracks these.' },
-      { id: 'streaks',  x: 160, y: 215, r: 24, label: 'Streaked sides',
+      { id: 'streaks', label: 'Streaked sides',
         what: 'Black streaks on the white breast and along the sides of the belly.',
-        why: 'Distinguishes from solid-bellied warblers (Yellow Warbler, Common Yellowthroat). Streak-sided warblers are a smaller, easier-to-narrow subset.' },
-      { id: 'wingbars', x: 215, y: 145, r: 32, label: 'Two white wing bars',
+        why: 'Distinguishes from plain-bellied warblers (Common Yellowthroat, Nashville Warbler). Streak-sided warblers are a smaller, easier-to-narrow subset.' },
+      { id: 'wingbars', label: 'Two white wing bars',
         what: 'Two crisp white bars across the folded wing, formed by white tips on the secondary coverts.',
         why: 'Many warblers have wing bars. Pairing this with the rump and the streaks rules out half of the wood-warbler family in one glance.' },
-      { id: 'mask',     x: 88,  y: 110, r: 20, label: 'Black mask',
+      { id: 'mask', label: 'Black mask',
         what: 'A dark band running through the eye from the bill backward. Stronger in spring males than in females or fall birds.',
         why: 'A clean masked face plus yellow rump plus white throat = adult male Myrtle in breeding plumage. Fall birds are duller and harder to ID.' },
-      { id: 'bill',     x: 50,  y: 130, r: 16, label: 'Slim, pointed bill',
+      { id: 'bill', label: 'Slim, pointed bill',
         what: 'A slim, sharp-pointed bill, much thinner than a chickadee\'s stout seed bill.',
         why: 'Bill shape tells diet. Slim warbler bill = insect tweezer. Yellow-rumped Warblers can also digest waxy berries (like bayberry), which is why they linger in coastal Maine longer than most other warblers.' }
     ]
@@ -4577,68 +4792,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     species: 'wtsparrow',
     name: 'White-throated Sparrow',
     bigSvgViewBox: '0 0 320 240',
-    bigSvg: function(h) {
-      return h('g', { transform: 'translate(40, 40) scale(13)' },
-        // Body (gray-brown breast base layer)
-        h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 7, fill: '#a59683', stroke: '#3a2e22', strokeWidth: 0.4 }),
-        // Brown-streaked back (dorsal half)
-        h('path', { d: 'M 4 11 Q 4 7 12 7 Q 20 7 20 11 Q 20 13 12 13 Q 4 13 4 11 Z', fill: '#7a5c3a' }),
-        // Dark streaks on back
-        h('path', { d: 'M 7 8 L 7 12 M 10 8 L 10 12 M 13 8 L 13 12 M 16 8 L 16 12', stroke: '#3a2814', strokeWidth: 0.45 }),
-        // Black lateral crown stripes (left + right of midline)
-        h('path', { d: 'M 5 10 Q 6 7.2 9 7 Q 9 8.5 7 10 Z', fill: '#1a1a1a' }),
-        h('path', { d: 'M 11 7.2 Q 14 7.5 14 9.5 Q 12 10 11 8.5 Z', fill: '#1a1a1a' }),
-        // White median crown stripe (between the two black ones)
-        h('path', { d: 'M 9 7 Q 10 6.6 11 7 L 11 9 L 9 9 Z', fill: '#ffffff' }),
-        // White supercilium (eyebrow stripe over eye)
-        h('path', { d: 'M 4 11 Q 6 10.5 10 10.6', stroke: '#ffffff', strokeWidth: 0.7, fill: 'none' }),
-        // Yellow lore patch (between bill and eye) — diagnostic
-        h('rect', { x: 4.5, y: 10.4, width: 1.6, height: 0.7, fill: '#facc15' }),
-        // Black eyeline through eye
-        h('path', { d: 'M 4 11.3 L 10 11.3', stroke: '#1a1a1a', strokeWidth: 0.45 }),
-        // White throat sharply bordered
-        h('ellipse', { cx: 9, cy: 13.4, rx: 2.4, ry: 1, fill: '#ffffff' }),
-        // Black malar stripe (border under the throat patch)
-        h('path', { d: 'M 6 14.4 L 11 14.4', stroke: '#1a1a1a', strokeWidth: 0.45 }),
-        // Wing (rusty brown with subtle wing bars)
-        h('ellipse', { cx: 16, cy: 14, rx: 4, ry: 5, fill: '#8a6a48' }),
-        h('path', { d: 'M 13 12 L 19 12 M 13 14 L 19 14', stroke: '#e8d4b0', strokeWidth: 0.45 }),
-        // Tail (long, gray-brown)
-        h('path', { d: 'M 20 14 L 26 12 L 26 17 L 20 16 Z', fill: '#5a4632' }),
-        // Eye (dark)
-        h('circle', { cx: 7, cy: 11, r: 0.8, fill: '#000' }),
-        h('circle', { cx: 7.2, cy: 10.8, r: 0.25, fill: '#fff' }),
-        // Conical seed-cracker bill (between chickadee stout + warbler slim)
-        h('path', { d: 'M 4 11.5 L 1 12 L 4 12.5 Z', fill: '#5a4632' })
-      );
-    },
+    bigSvg: FIELD_MARK_ART.wtsparrow.draw,
     hotspots: [
-      { id: 'whiteStripe', x: 130, y: 70,  r: 22, label: 'White crown stripe',
+      { id: 'whiteStripe', label: 'White crown stripe',
         what: 'A clean white stripe running down the middle of the top of the head, between two black stripes. Some birds have this stripe replaced by tan; both color morphs are normal.',
         why: 'The head striping is the species signature. White-striped vs tan-striped morphs even pair off (white tends to mate with tan), an unusual genetic-behavioral link.' },
-      { id: 'blackStripes', x: 95, y: 80,  r: 20, label: 'Black lateral crown stripes',
+      { id: 'blackStripes', label: 'Black lateral crown stripes',
         what: 'Two thick black stripes running along the sides of the white (or tan) crown stripe.',
         why: 'These are the bookends of the head pattern. A sparrow with bold lateral crown stripes plus a yellow lore = White-throated for the eastern US.' },
-      { id: 'eyebrow',    x: 95,  y: 110, r: 18, label: 'White (or tan) supercilium',
+      { id: 'eyebrow', label: 'White (or tan) supercilium',
         what: 'A pale stripe that runs from the bill back over the eye, ending behind the head.',
         why: 'Many sparrows have eyebrow stripes, but the White-throated\'s is wide and clean. Check this when the throat is hard to see.' },
-      { id: 'lores',      x: 60,  y: 110, r: 14, label: 'Yellow lores',
+      { id: 'lores', label: 'Yellow lores',
         what: 'A small yellow patch between the bill and the eye. Tiny but unmistakable up close.',
         why: 'Diagnostic. White-crowned Sparrow looks similar but has NO yellow lores. If you can see yellow at the base of the bill, it is White-throated.' },
-      { id: 'throat',     x: 110, y: 145, r: 20, label: 'White throat',
-        what: 'A bright white patch sharply bordered below by a black malar (mustache) stripe.',
+      { id: 'throat', label: 'White throat',
+        what: 'A bright white patch, outlined at the sides by thin dark malar (whisker) stripes and sharply set off from the gray breast.',
         why: 'The species\'s namesake mark. The "sharp" border versus a "blurry" one separates White-throated from juvenile White-crowned.' },
-      { id: 'back',       x: 165, y: 100, r: 26, label: 'Streaked brown back',
+      { id: 'back', label: 'Streaked brown back',
         what: 'A warm brown back with dark streaks running along the feathers.',
         why: 'Sparrows are mostly brown-streaked above; the streak pattern is consistent across most species. Use it to confirm "this is a sparrow," then look at the head for the species.' },
-      { id: 'breast',     x: 155, y: 215, r: 22, label: 'Plain gray-brown breast',
+      { id: 'breast', label: 'Plain gray-brown breast',
         what: 'A clean, unstreaked gray-brown chest and belly. Sometimes a faint dark central spot but no heavy streaking.',
         why: 'Distinguishes from Song Sparrow, which has heavy dark breast streaking and a central breast spot. Plain breast = not Song Sparrow.' },
-      { id: 'bill',       x: 50,  y: 130, r: 16, label: 'Conical seed-cracker bill',
+      { id: 'bill', label: 'Conical seed-cracker bill',
         what: 'A short, thick, conical bill: a seed-cracker shape, but smaller than a finch\'s.',
         why: 'Bill shape tells diet. White-throated Sparrows eat seeds (winter) and insects (summer); the bill handles both. Slightly slimmer than a Song Sparrow\'s, slightly stubbier than a thrush\'s.' }
     ]
   };
+
+  // Hotspot rings come from FIELD_MARK_ART anchors, never hand-typed numbers.
+  [[CHICKADEE_FIELD_MARKS, 'chickadee'], [YELLOW_RUMPED_WARBLER_FIELD_MARKS, 'yrwarbler'],
+   [WHITE_THROATED_SPARROW_FIELD_MARKS, 'wtsparrow']].forEach(function(pair) {
+    var anchors = FIELD_MARK_ART[pair[1]].anchors;
+    pair[0].hotspots.forEach(function(hs) {
+      var a = anchors[hs.id];
+      if (a) { hs.x = a[0]; hs.y = a[1]; hs.r = a[2]; }
+    });
+  });
 
   // ═════════════════════════════════════════════════════════════
   // PHASE 2 EXPANSION — visual + interactive content modules
@@ -4649,23 +4840,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var NESTS = [
     { id: 'baldEagle', species: 'Bald Eagle (Haliaeetus leucocephalus)',
       type: 'Stick platform — massive', location: 'Tall pines + cottonwoods near water; reused + added to annually',
-      diameter: '5–9 ft across, up to 12 ft', depth: '2–6 ft deep', weight: 'Can exceed 2,000 lb (~1 ton)',
+      diameter: 'Typically 5–6 ft across (record 9.5 ft)', depth: 'Typically 2–4 ft tall (record 20 ft)', weight: 'The record nest weighed about 2 tons',
       materials: 'Sticks, branches, grass lining, moss, occasionally rope or plastic debris',
       eggs: '1–3 eggs · white · ~70mm',
-      story: 'A bald eagle pair returns to the same nest year after year, adding new sticks each season. The Maine record is a nest in use for over 35 years. Maine has 700+ active eagle nests today, up from <60 in 1970 due to DDT recovery.',
+      story: 'A bald eagle pair returns to the same nest year after year, adding new sticks each season. Maine has more than 700 nesting pairs today, up from 21 in 1967, after DDT was banned.',
       svg: { color: '#92400e', shape: 'platform', size: 200, eggColor: '#fef3c7', eggCount: 2, treeColor: '#166534' } },
     { id: 'osprey', species: 'Osprey (Pandion haliaetus)',
       type: 'Stick platform — large', location: 'Tall isolated trees, channel markers, utility poles, artificial platforms',
       diameter: '3–6 ft', depth: '3–10 ft deep (built up over years)', weight: '100–1000 lb',
       materials: 'Sticks (many over 1 inch thick), bark, sod, plastic debris, fishing line',
-      eggs: '2–4 eggs · white-cream with reddish blotches · ~62mm',
-      story: 'Osprey readily adopt artificial nesting platforms. Maine has dozens of human-made platforms on poles + channel markers — a textbook conservation success. Returns to nest in mid-March.',
+      eggs: '1–4 eggs · cream with reddish blotches · ~62mm',
+      story: 'Osprey readily adopt artificial nesting platforms. Maine has dozens of human-made platforms on poles + channel markers — a textbook conservation success. Returns to Maine in early April.',
       svg: { color: '#92400e', shape: 'platform', size: 150, eggColor: '#fdba74', eggCount: 3, treeColor: '#475569' } },
     { id: 'greatBlueHeron', species: 'Great Blue Heron (Ardea herodias)',
       type: 'Stick platform — colonial', location: 'Tall trees in heronry colonies, often over water',
       diameter: '2–4 ft', depth: '6–12 in', weight: '~10–30 lb',
       materials: 'Sticks, twigs, lined with finer plant material',
-      eggs: '3–5 eggs · pale blue · ~64mm',
+      eggs: '2–6 eggs · pale blue · ~64mm',
       story: 'Herons nest in colonies (heronries) of 5–100+ pairs. Trees become decorated with droppings + dead from over-fertilization. Maine\'s coastal heronries are key bioindicator sites for the Gulf of Maine.',
       svg: { color: '#78350f', shape: 'platform', size: 100, eggColor: '#bae6fd', eggCount: 4, treeColor: '#15803d' } },
     { id: 'rrBlackbird', species: 'Red-winged Blackbird (Agelaius phoeniceus)',
@@ -4715,14 +4906,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       diameter: '~5 in across × 2 in tall', depth: 'Shallow cup', weight: '~6–8 oz',
       materials: 'Mud pellets, grass, lined with feathers',
       eggs: '3–7 eggs · white with brown spots · ~19mm',
-      story: 'The "ophiuro" bird — fish-tail forked wings + buff belly. Loyal to specific buildings — same barn for generations of swallows. Maine\'s old dairy barns + horse stables are key habitat; new metal buildings less suitable.',
+      story: 'Known by its deeply forked tail and rusty-buff underparts. Loyal to specific buildings — same barn for generations of swallows. Maine\'s old dairy barns + horse stables are key habitat; new metal buildings less suitable.',
       svg: { color: '#a16207', shape: 'cup', size: 75, eggColor: '#fef3c7', eggCount: 5, treeColor: '#7c2d12' } },
     { id: 'rtHummingbird', species: 'Ruby-throated Hummingbird (Archilochus colubris)',
       type: 'Tiny lichen-camouflaged cup', location: 'Horizontal twig of deciduous tree, 10–20 ft up',
       diameter: '1.5 in wide × 1 in deep', depth: 'Cup expands as chicks grow', weight: '<0.1 oz',
       materials: 'Spider silk + plant down, decorated with lichen flakes for camouflage',
       eggs: '2 eggs · white · ~13mm (pea-sized)',
-      story: 'The size of half a walnut. Lichen camouflage makes it look like a knot on the branch. Spider silk allows it to stretch as chicks grow — the only nest that can expand. Females build entirely solo, ~8 days.',
+      story: 'The size of half a walnut. Lichen camouflage makes it look like a knot on the branch. Spider silk lets it stretch as the chicks grow. Females build entirely solo, ~8 days.',
       svg: { color: '#9ca3af', shape: 'cup', size: 30, eggColor: '#ffffff', eggCount: 2, treeColor: '#65a30d' } },
     { id: 'pileatedWP', species: 'Pileated Woodpecker (Dryocopus pileatus)',
       type: 'Cavity nest — excavated annually', location: 'Excavates new cavity in dead or dying large trees',
@@ -4743,7 +4934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       diameter: 'Shallow depression ~4 in × 2 in deep', depth: 'Minimal', weight: 'N/A',
       materials: 'Pebbles, shell fragments, bare sand — extremely camouflaged',
       eggs: '4 eggs · pale buff with brown speckling · ~32mm',
-      story: 'The eggs are nearly invisible against sandy substrate. Federally threatened. Maine has ~50 nesting pairs; each nest protected by symbolic fencing + monitor. Beach closures protect them April–August.',
+      story: 'The eggs are nearly invisible against sandy substrate. Federally threatened. Maine counted a record 174 nesting pairs in 2025, and more again in 2026; each nest protected by symbolic fencing + monitor. Beach closures protect them April–August.',
       svg: { color: '#d6d3d1', shape: 'scrape', size: 50, eggColor: '#d6c4a8', eggCount: 4, treeColor: '#fef3c7' } },
     { id: 'commonTern', species: 'Common Tern (Sterna hirundo)',
       type: 'Scrape — minimal', location: 'Coastal islands; scraped sand or grass mat',
@@ -4757,7 +4948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       diameter: 'Burrow 3 ft long', depth: 'Chamber at burrow end', weight: 'N/A',
       materials: 'Bare earth, lined with grass + feathers',
       eggs: '1 egg · white-cream · ~62mm',
-      story: 'Eastern Egg Rock + Matinicus Rock + Petit Manan + Seal Island are Maine\'s puffin colonies, restored from 0 birds 1900–1970s to ~1,500 pairs today via Project Puffin (Steve Kress, Audubon). One of conservation\'s greatest success stories.',
+      story: 'Eastern Egg Rock + Matinicus Rock + Petit Manan + Seal Island are Maine\'s puffin colonies. Hunting left a single pair on Matinicus Rock by 1901; protection and Project Puffin (Steve Kress, Audubon) brought Maine back to more than 1,300 pairs.',
       svg: { color: '#92400e', shape: 'burrow', size: 90, eggColor: '#fef3c7', eggCount: 1, treeColor: '#a3a3a3' } },
     { id: 'rrhawk', species: 'Red-tailed Hawk (Buteo jamaicensis)',
       type: 'Stick platform', location: 'Large trees in mature forest; 35–75 ft up',
@@ -4771,130 +4962,724 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       diameter: '4–5 in depression', depth: '1–2 in', weight: 'N/A',
       materials: 'Dead leaves arranged in shallow scrape',
       eggs: '4 eggs · buff-pink with brown spots · ~38mm',
-      story: 'Woodcock chicks hatch precocial — feathered + walking within hours. The "Sky Dance" mating display happens in young forest openings spring + early summer. Maine\'s woodcock numbers track young-forest availability.',
+      story: 'Woodcock chicks hatch precocial — covered in down + walking within hours. The "Sky Dance" mating display happens in young forest openings spring + early summer. Maine\'s woodcock numbers track young-forest availability.',
       svg: { color: '#92400e', shape: 'scrape', size: 60, eggColor: '#fed7aa', eggCount: 4, treeColor: '#fde68a' } },
     { id: 'woodthrush', species: 'Wood Thrush (Hylocichla mustelina)',
       type: 'Cup nest in tree', location: 'Vertical fork of deciduous sapling, 6–20 ft up',
       diameter: '4–6 in × 3 in deep', depth: 'Compact cup', weight: '~3–4 oz',
       materials: 'Grass, leaves, mud base, lined with rootlets; sometimes incorporates paper or plastic',
       eggs: '3–4 eggs · pale blue (unmarked) · ~25mm',
-      story: 'Iconic Eastern woodland song "ee-oh-lay." Population has declined 60%+ since 1970 — Maine losses connected to forest fragmentation + tropical deforestation in winter range. A target species for conservation.',
+      story: 'Iconic Eastern woodland song "ee-oh-lay." Population has fallen by roughly half since 1966 (Breeding Bird Survey) — Maine losses connected to forest fragmentation + tropical deforestation in winter range. A target species for conservation.',
       svg: { color: '#a16207', shape: 'cup', size: 70, eggColor: '#7dd3fc', eggCount: 4, treeColor: '#65a30d' } }
   ];
 
   // ── EGGS — visual egg specifications for the Egg Gallery
   // Each entry drives an SVG egg drawing with shape + pattern + size
+  // Ground color (color), marking ink (mark), pattern and taper (shape: 0 is
+  // an ellipse, ~0.26 a shorebird's pear shape; default 0.14) feed EGG_ART.
   var EGGS_DATA = [
-    { species: 'Bald Eagle',
-      dimensions: '73 × 55 mm', clutch: '1–3', color: '#fef3c7', pattern: 'plain',
-      notes: 'Large, white, slightly elliptical. Often two eggs hatch days apart — first chick may dominate the second.' },
-    { species: 'Osprey', dimensions: '62 × 46 mm', clutch: '2–4', color: '#fdba74', pattern: 'blotched',
-      notes: 'Cream with reddish-brown blotches concentrated at larger end. Variable per egg.' },
-    { species: 'Common Loon',
-      dimensions: '88 × 56 mm', clutch: '1–2', color: '#8a784e', pattern: 'spotted',
-      notes: 'Olive-brown ground with dark spots. Camouflaged on shoreline. Among the largest eggs of any Maine breeder.' },
-    { species: 'Great Blue Heron', dimensions: '64 × 45 mm', clutch: '3–5', color: '#bae6fd', pattern: 'plain',
-      notes: 'Pale blue, oval. Fragile-looking but tough.' },
-    { species: 'Wood Duck',
-      dimensions: '52 × 39 mm', clutch: '10–15', color: '#fef3c7', pattern: 'plain',
-      notes: 'Cream-white. Wood ducks parasitize each other\'s nests — multiple females may lay in one cavity.' },
-    { species: 'Mallard', dimensions: '57 × 41 mm', clutch: '8–13', color: '#e0e7ff', pattern: 'plain',
-      notes: 'Pale greenish-buff. Female covers with down when leaving nest.' },
-    { species: 'Common Eider',
-      dimensions: '75 × 50 mm', clutch: '3–5', color: '#bef264', pattern: 'plain',
-      notes: 'Olive-green. Famously insulated with eider down — the warmest natural insulation known.' },
-    { species: 'Spruce Grouse', dimensions: '43 × 31 mm', clutch: '5–8', color: '#fcd34d', pattern: 'spotted',
-      notes: 'Pale buff with dark spots. Camouflaged on forest floor.' },
-    { species: 'Ruffed Grouse', dimensions: '40 × 30 mm', clutch: '9–12', color: '#fed7aa', pattern: 'plain',
-      notes: 'Buff-cream, sometimes faintly spotted. Maine\'s state game bird.' },
-    { species: 'American Woodcock', dimensions: '38 × 29 mm', clutch: '4', color: '#fed7aa', pattern: 'spotted',
-      notes: 'Pinkish-buff with brown spots. Tiny vs adult body.' },
-    { species: 'Piping Plover', dimensions: '32 × 24 mm', clutch: '4', color: '#d6c4a8', pattern: 'spotted',
-      notes: 'Sand-colored with fine dark speckles. Federally threatened.' },
-    { species: 'Common Tern', dimensions: '42 × 30 mm', clutch: '2–3', color: '#a3a378', pattern: 'blotched',
-      notes: 'Olive-buff with bold dark blotches. Beach-camouflaged.' },
-    { species: 'Atlantic Puffin', dimensions: '62 × 44 mm', clutch: '1', color: '#fef3c7', pattern: 'plain',
-      notes: 'White-cream, slightly blotched at base. Single egg per season.' },
-    { species: 'Red-tailed Hawk', dimensions: '59 × 47 mm', clutch: '1–3', color: '#fef3c7', pattern: 'spotted',
-      notes: 'White with light brown spots. Larger than red-shouldered hawk.' },
-    { species: 'Cooper\'s Hawk', dimensions: '49 × 38 mm', clutch: '3–5', color: '#e0f2fe', pattern: 'plain',
-      notes: 'Pale blue-green. Cooper\'s + sharp-shinned hawks have very similar eggs — habitat helps tell which.' },
-    { species: 'Belted Kingfisher', dimensions: '34 × 26 mm', clutch: '5–8', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
-      notes: 'Pure white. Cavity nesters don\'t need camouflaged eggs.' },
-    { species: 'Pileated Woodpecker', dimensions: '33 × 25 mm', clutch: '3–5', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
-      notes: 'Pure white. All cavity-nester eggs are typically white or pale.' },
-    { species: 'Black-capped Chickadee',
-      dimensions: '15 × 12 mm', clutch: '6–8', color: '#fef3c7', pattern: 'speckled',
-      notes: 'Cream with reddish spots. Tiny vs nest cavity.' },
-    { species: 'Red-breasted Nuthatch', dimensions: '16 × 12 mm', clutch: '5–7', color: '#fef3c7', pattern: 'speckled',
-      notes: 'Cream with reddish spots. Similar to chickadee.' },
-    { species: 'Tufted Titmouse', dimensions: '18 × 13 mm', clutch: '5–7', color: '#fef3c7', pattern: 'spotted',
-      notes: 'Cream with brown spots. Cavity nester.' },
-    { species: 'Wood Thrush', dimensions: '25 × 19 mm', clutch: '3–4', color: '#7dd3fc', pattern: 'plain',
-      notes: 'Pale blue, unmarked. Distinct from American Robin (deeper blue).' },
-    { species: 'American Robin', dimensions: '28 × 21 mm', clutch: '3–5', color: '#5eead4', pattern: 'plain',
-      notes: 'The iconic "robin\'s-egg blue." Cup nest in tree fork.' },
-    { species: 'Hermit Thrush', dimensions: '23 × 18 mm', clutch: '3–4', color: '#bae6fd', pattern: 'plain',
-      notes: 'Pale blue, sometimes faintly spotted. Maine\'s most common breeding thrush.' },
-    { species: 'Cedar Waxwing',
-      dimensions: '23 × 17 mm', clutch: '3–5', color: '#bae6fd', pattern: 'spotted',
-      notes: 'Pale blue-gray with dark spots. Late-summer breeders.' },
-    { species: 'Yellow Warbler', dimensions: '18 × 13 mm', clutch: '4–5', color: '#fef3c7', pattern: 'spotted',
-      notes: 'Pale greenish-white with brown spots. Cup nest in shrub.' },
-    { species: 'Common Yellowthroat', dimensions: '17 × 13 mm', clutch: '3–5', color: '#fef3c7', pattern: 'speckled',
-      notes: 'Cream with brown spots. Marsh-thicket nester.' },
-    { species: 'Red-winged Blackbird',
-      dimensions: '25 × 18 mm', clutch: '3–4', color: '#7dd3fc', pattern: 'scrawled',
-      notes: 'Pale blue with characteristic dark scribbles. One of nature\'s most distinctive eggs.' },
-    { species: 'Common Grackle', dimensions: '29 × 21 mm', clutch: '4–5', color: '#bae6fd', pattern: 'blotched',
-      notes: 'Pale blue with dark blotches.' },
-    { species: 'Baltimore Oriole',
-      dimensions: '22 × 16 mm', clutch: '4–5', color: 'var(--allo-stem-text, #cbd5e1)', pattern: 'scrawled',
-      notes: 'Pale gray-blue with dark squiggles. Built into the hanging pouch nest.' },
-    { species: 'Ruby-throated Hummingbird',
-      dimensions: '13 × 9 mm', clutch: '2', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
-      notes: 'Pure white, pea-sized. Smallest Maine bird egg.' },
-    { species: 'White-throated Sparrow',
-      dimensions: '20 × 16 mm', clutch: '4–5', color: '#7dd3fc', pattern: 'spotted',
-      notes: 'Pale blue with brown spots. Northern conifer breeder.' },
-    { species: 'Song Sparrow', dimensions: '21 × 16 mm', clutch: '3–5', color: '#bae6fd', pattern: 'spotted',
-      notes: 'Pale greenish-white with brown spots. Heavily streaked vs eggs of similar size.' },
-    { species: 'Northern Cardinal',
-      dimensions: '25 × 18 mm', clutch: '2–5', color: '#bae6fd', pattern: 'spotted',
-      notes: 'Pale gray-blue with brown spots.' },
-    { species: 'Tree Swallow', dimensions: '19 × 13 mm', clutch: '4–7', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
-      notes: 'Pure white. Cavity nester or nest box. Bluebird-nest-box program also benefits tree swallows.' },
-    { species: 'Eastern Bluebird', dimensions: '21 × 17 mm', clutch: '3–6', color: '#bae6fd', pattern: 'plain',
-      notes: 'Pale blue. Cavity nester / nest box. Maine bluebird-trail networks help population recovery.' }
+    { species: 'Bald Eagle', dimensions: '73 × 55 mm', clutch: '1–3', color: '#f2eee2', pattern: 'plain', shape: 0.06,
+      notes: 'Dull white and nearly elliptical, often stained brown by the nest. Incubation starts with the first egg, so the chicks hatch days apart and the oldest may dominate.' },
+    { species: 'Osprey', dimensions: '62 × 46 mm', clutch: '1–4', color: '#efdcc2', mark: '#7a2d14', pattern: 'blotched',
+      notes: 'Cream to pinkish, boldly blotched with reddish-brown, usually heaviest at the blunt end. The markings vary a lot from egg to egg.' },
+    { species: 'Common Loon', dimensions: '88 × 56 mm', clutch: '1–2', color: '#6e6440', mark: '#2b2114', pattern: 'spotted', shape: 0.1,
+      notes: 'Olive-brown with sparse dark spots, camouflaged in a nest at the very edge of the water (loons can barely walk on land). Among the largest eggs of any Maine breeder.' },
+    { species: 'Great Blue Heron', dimensions: '64 × 45 mm', clutch: '2–6', color: '#bcdcd4', pattern: 'plain', shape: 0.08,
+      notes: 'Pale blue-green and unmarked. Laid in a big stick nest high in a colony, often with several nests in one tree.' },
+    { species: 'Wood Duck', dimensions: '52 × 39 mm', clutch: '6–16', color: '#efe5cc', pattern: 'plain', shape: 0.1,
+      notes: 'Glossy cream to tan, laid in a tree cavity or nest box. Females often lay in each other\'s nests, so one box can hold far more eggs than one duck lays.' },
+    { species: 'Mallard', dimensions: '57 × 41 mm', clutch: '8–13', color: '#dfe3c4', pattern: 'plain', shape: 0.12,
+      notes: 'Greenish-buff and unmarked. The hen lines the nest with down plucked from her breast and pulls it over the eggs when she leaves.' },
+    { species: 'Common Eider', dimensions: '76 × 51 mm', clutch: '3–5', color: '#a7aa7c', pattern: 'plain', shape: 0.06,
+      notes: 'Olive-green to olive-gray. The nest is lined with the hen\'s own down, among the best natural insulators known; in Iceland it is still gathered by hand from wild nests.' },
+    { species: 'Spruce Grouse', dimensions: '43 × 31 mm', clutch: '5–7', color: '#dcc38f', mark: '#5b3417', pattern: 'blotched',
+      notes: 'Buff, blotched and spotted with dark brown: camouflage for a nest on the forest floor.' },
+    { species: 'Ruffed Grouse', dimensions: '40 × 30 mm', clutch: '9–12', color: '#e8d6ac', pattern: 'plain',
+      notes: 'Buff, sometimes faintly spotted. The hen waits until the last egg is laid before she starts incubating, so the chicks hatch together and can follow her from the nest soon after.' },
+    { species: 'American Woodcock', dimensions: '38 × 29 mm', clutch: '4', color: '#e6c9a2', mark: '#6b3d24', pattern: 'spotted', shape: 0.18,
+      notes: 'Pinkish-buff to cinnamon, blotched and speckled with brown. Large for the size of the bird, laid in a shallow scrape among dead leaves.' },
+    { species: 'Piping Plover', dimensions: '32 × 24 mm', clutch: '4', color: '#dccfb0', mark: '#2a2018', pattern: 'speckled', shape: 0.26,
+      notes: 'Sand-colored with fine dark speckles, in a bare scrape on the beach. The pointed ends face inward, so four eggs fit tightly under the sitting adult. Federally threatened; endangered under Maine law.' },
+    { species: 'Common Tern', dimensions: '42 × 30 mm', clutch: '1–3', color: '#bdb48a', mark: '#35261a', pattern: 'blotched', shape: 0.16,
+      notes: 'Olive-buff with bold dark blotches, laid in a scrape on sand, gravel or island rock where it is hard to see from above.' },
+    { species: 'Atlantic Puffin', dimensions: '62 × 44 mm', clutch: '1', color: '#f4f1e9', mark: '#9c8c98', pattern: 'faint', shape: 0.1,
+      notes: 'Whitish, sometimes with faint lilac or brown marks, and soon stained by the soil of the burrow. One egg a year, incubated by both parents.' },
+    { species: 'Red-tailed Hawk', dimensions: '59 × 47 mm', clutch: '1–3', color: '#eef0ea', mark: '#8b5a36', pattern: 'spotted', shape: 0.1,
+      notes: 'White or bluish-white, lightly spotted or blotched with brown, sometimes unmarked. Larger than a Red-shouldered Hawk\'s.' },
+    { species: 'Cooper\'s Hawk', dimensions: '49 × 38 mm', clutch: '3–5', color: '#dde9e8', pattern: 'plain', shape: 0.1,
+      notes: 'Pale bluish-white, unmarked or only lightly spotted, and soon nest-stained. Sharp-shinned Hawks look like small Cooper\'s Hawks but lay smaller eggs (about 37 × 30 mm) that are usually blotched with brown.' },
+    { species: 'Belted Kingfisher', dimensions: '34 × 26 mm', clutch: '5–8', color: '#fbfaf5', pattern: 'plain', shape: 0.06,
+      notes: 'Glossy white, laid at the end of a tunnel the parents dig into a sandy bank. Down there camouflage would not help, and many birds that nest in holes lay white eggs.' },
+    { species: 'Pileated Woodpecker', dimensions: '33 × 25 mm', clutch: '3–5', color: '#fbfaf5', pattern: 'plain', shape: 0.1,
+      notes: 'Glossy white, like every woodpecker\'s. White eggs are common in holes but not universal: the chickadee, nuthatch, titmouse and bluebird here all nest in cavities too.' },
+    { species: 'Black-capped Chickadee', dimensions: '15 × 12 mm', clutch: '6–8', color: '#f9f6f0', mark: '#8a3b1c', pattern: 'speckled',
+      notes: 'White with fine reddish-brown dots, laid in a cup of moss lined with animal fur inside a hole in soft, rotting wood.' },
+    { species: 'Red-breasted Nuthatch', dimensions: '16 × 12 mm', clutch: '5–7', color: '#f7eee6', mark: '#8a3b1c', pattern: 'speckled',
+      notes: 'White to creamy pink, speckled reddish-brown. The pair smears sticky conifer resin around the entrance hole, probably to keep out predators and rivals.' },
+    { species: 'Tufted Titmouse', dimensions: '18 × 13 mm', clutch: '5–7', color: '#f8f3ea', mark: '#7c3a1d', pattern: 'spotted',
+      notes: 'White with brown or reddish spots. The nest is lined with hair, sometimes plucked straight from a living raccoon, dog or person.' },
+    { species: 'Wood Thrush', dimensions: '25 × 19 mm', clutch: '3–4', color: '#a8d4cf', pattern: 'plain', shape: 0.12,
+      notes: 'Pale blue-green and unmarked, a little smaller and paler than a robin\'s egg. Both colors come from the same pigment, biliverdin.' },
+    { species: 'American Robin', dimensions: '28 × 21 mm', clutch: '3–5', color: '#8ccfd8', pattern: 'plain', shape: 0.12,
+      notes: 'The famous "robin\'s-egg blue". The color is biliverdin, a pigment the hen deposits as the shell forms. Cup nest of mud and grass.' },
+    { species: 'Hermit Thrush', dimensions: '23 × 18 mm', clutch: '3–4', color: '#b5d8dc', pattern: 'plain', shape: 0.12,
+      notes: 'Pale blue, sometimes lightly flecked. In the East, including Maine, the nest is usually built on the ground.' },
+    { species: 'Cedar Waxwing', dimensions: '23 × 17 mm', clutch: '3–5', color: '#c7d5dc', mark: '#262020', pattern: 'spotted',
+      notes: 'Pale blue-gray with sparse black spots. Waxwings nest late, often into August, when summer fruit is ripe.' },
+    { species: 'Yellow Warbler', dimensions: '18 × 13 mm', clutch: '4–5', color: '#e5ecdb', mark: '#6b4a2a', pattern: 'spotted',
+      notes: 'Greenish-white, spotted with brown mostly around the blunt end. When a cowbird lays in the nest, the warbler may build a new floor over it; some nests have six stacked floors.' },
+    { species: 'Common Yellowthroat', dimensions: '17 × 13 mm', clutch: '3–5', color: '#f4efe3', mark: '#3b2a1e', pattern: 'speckled',
+      notes: 'Creamy white with brown and black specks, mostly at the blunt end. Nests low in marsh and thicket vegetation.' },
+    { species: 'Red-winged Blackbird', dimensions: '25 × 18 mm', clutch: '3–4', color: '#bddcdf', mark: '#1f1a17', pattern: 'scrawled',
+      notes: 'Pale blue-green, scrawled with black and brown lines, a pattern shared across the blackbird family (compare the grackle and oriole).' },
+    { species: 'Common Grackle', dimensions: '29 × 21 mm', clutch: '4–5', color: '#c6d4d4', mark: '#2e241c', pattern: 'blotched', scrawl: true,
+      notes: 'Pale blue to pearl-gray, blotched and scrawled with dark brown.' },
+    { species: 'Baltimore Oriole', dimensions: '22 × 16 mm', clutch: '4–5', color: '#e0e3e2', mark: '#2d2320', pattern: 'scrawled',
+      notes: 'Pale gray-white with dark scrawls and blotches, laid in the bottom of a hanging, woven pouch nest.' },
+    { species: 'Ruby-throated Hummingbird', dimensions: '13 × 9 mm', clutch: '2', color: '#fbfaf5', pattern: 'plain', shape: 0.04,
+      notes: 'White and barely bigger than a pea: the smallest egg of any Maine breeding bird. The nest is bound with spider silk, so it stretches as the chicks grow.' },
+    { species: 'White-throated Sparrow', dimensions: '20 × 16 mm', clutch: '4–5', color: '#dbe7de', mark: '#7a3a1e', pattern: 'spotted', heavy: true,
+      notes: 'Greenish or bluish white, heavily marked with reddish-brown. Nests on or near the ground in young conifers and forest clearings.' },
+    { species: 'Song Sparrow', dimensions: '21 × 16 mm', clutch: '3–5', color: '#dde9d8', mark: '#6f3a1f', pattern: 'spotted', heavy: true,
+      notes: 'Pale greenish-white, heavily spotted and blotched with reddish-brown. Early nests are often on the ground, later ones higher in shrubs.' },
+    { species: 'Northern Cardinal', dimensions: '25 × 18 mm', clutch: '2–5', color: '#e6ebe3', mark: '#6b5a4a', pattern: 'speckled',
+      notes: 'Grayish, buffy or greenish white, speckled with brown and gray.' },
+    { species: 'Tree Swallow', dimensions: '19 × 13 mm', clutch: '4–7', color: '#fbfaf5', pattern: 'plain',
+      notes: 'White. Nests in a tree cavity or nest box, so bluebird-box trails give Tree Swallows homes too.' },
+    { species: 'Eastern Bluebird', dimensions: '21 × 16 mm', clutch: '3–6', color: '#b4d9e6', pattern: 'plain',
+      notes: 'Pale blue; a few females lay pure white eggs. A cavity nester that has recovered with help from nest-box trails.' }
   ];
+
+  // Egg drawings in millimeters. The outline is an ovate curve (blunt end down)
+  // from the egg's length, breadth and taper; markings are seeded from the
+  // species name, so an egg looks the same on every render, and cluster toward
+  // the blunt end as they do on real eggs.
+  var EGG_ART = (function() {
+    function seeded(str) {
+      var a = 2166136261;
+      for (var i = 0; i < str.length; i++) { a ^= str.charCodeAt(i); a = Math.imul(a, 16777619); }
+      a = a >>> 0;
+      return function() {
+        a = (a + 0x6D2B79F5) | 0;
+        var t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    function slug(s) { return String(s).toLowerCase().replace(/[^a-z]+/g, ''); }
+    function size(egg) {
+      var m = (egg.dimensions || '').match(/(\d+)\s*×\s*(\d+)/);
+      return m ? { L: +m[1], W: +m[2] } : { L: 25, W: 18 };
+    }
+    // Half-width profile along the long axis, t = 0 at the pointed top and
+    // t = PI at the blunt bottom; k is the taper (0 = ellipse).
+    function geom(L, W, k) {
+      var peak = 0, i;
+      for (i = 0; i <= 90; i++) { var tt = Math.PI * i / 90; peak = Math.max(peak, Math.sin(tt) * (1 - k * Math.cos(tt))); }
+      var sx = (W / 2) / peak;
+      return {
+        at: function(t) { return [sx * Math.sin(t) * (1 - k * Math.cos(t)), -(L / 2) * Math.cos(t)]; },
+        // half-width at height y (-L/2 top .. L/2 bottom)
+        halfWidth: function(y) { var t = Math.acos(Math.max(-1, Math.min(1, -2 * y / L))); return sx * Math.sin(t) * (1 - k * Math.cos(t)); }
+      };
+    }
+    function outlinePath(g) {
+      var N = 28, pts = [], i;
+      for (i = 0; i < N; i++) pts.push(g.at(Math.PI * i / N));
+      for (i = N; i > 0; i--) { var p = g.at(Math.PI * i / N); pts.push([-p[0], p[1]]); }
+      var n = pts.length, d = 'M ' + pts[0][0].toFixed(2) + ' ' + pts[0][1].toFixed(2);
+      for (i = 0; i < n; i++) {
+        var p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+        d += ' C ' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(2) + ' ' + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(2) +
+          ' ' + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(2) + ' ' + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(2) +
+          ' ' + p2[0].toFixed(2) + ' ' + p2[1].toFixed(2);
+      }
+      return d + ' Z';
+    }
+    // count, min and max radius as a fraction of breadth, blunt-end bias
+    var PATTERNS = {
+      speckled: [64, 0.012, 0.03, 1.5],
+      spotted: [26, 0.022, 0.06, 2.2],
+      blotched: [9, 0.07, 0.15, 2.4],
+      scrawled: [8, 0.014, 0.034, 1.7],
+      faint: [12, 0.02, 0.05, 2]
+    };
+    function place(g, L, W, rnd, bias, r) {
+      // bias > 1 pulls marks toward the blunt (bottom) end
+      var y = (1 - 2 * Math.pow(rnd(), bias)) * (L / 2) * 0.92;
+      var hw = g.halfWidth(y) * 0.94 - r;
+      if (hw <= 0) return null;
+      return [(rnd() * 2 - 1) * hw, y];
+    }
+    function markings(h, egg, g, L, W, rnd) {
+      var spec = PATTERNS[egg.pattern];
+      if (!spec) return [];
+      var ink = egg.mark || '#6b3419', out = [], i, pt, r;
+      var n = Math.round(spec[0] * (egg.heavy ? 1.7 : 1));
+      var pale = egg.pattern === 'faint';
+      // Underlying marks: pigment laid down earlier sits deeper in the shell
+      // and shows as pale gray-lilac under the surface marks.
+      if (egg.pattern === 'spotted' || egg.pattern === 'blotched') {
+        for (i = 0; i < Math.round(n * 0.45); i++) {
+          r = W * (spec[1] + rnd() * (spec[2] - spec[1])) * 0.9;
+          pt = place(g, L, W, rnd, spec[3] * 0.8, r);
+          if (pt) out.push(h('ellipse', { key: 'u' + i, cx: pt[0].toFixed(2), cy: pt[1].toFixed(2), rx: r.toFixed(2), ry: (r * (0.6 + rnd() * 0.35)).toFixed(2),
+            transform: 'rotate(' + Math.round(rnd() * 180) + ' ' + pt[0].toFixed(2) + ' ' + pt[1].toFixed(2) + ')', fill: '#9d8f98', opacity: 0.45 }));
+        }
+      }
+      for (i = 0; i < n; i++) {
+        r = W * (spec[1] + rnd() * (spec[2] - spec[1]));
+        pt = place(g, L, W, rnd, spec[3], r);
+        if (!pt) continue;
+        out.push(h('ellipse', { key: 'm' + i, 'data-egg-mark': 'true', cx: pt[0].toFixed(2), cy: pt[1].toFixed(2), rx: r.toFixed(2), ry: (r * (0.55 + rnd() * 0.4)).toFixed(2),
+          transform: 'rotate(' + Math.round(rnd() * 180) + ' ' + pt[0].toFixed(2) + ' ' + pt[1].toFixed(2) + ')',
+          fill: ink, opacity: pale ? 0.35 : (0.7 + rnd() * 0.3) }));
+      }
+      if (egg.pattern === 'scrawled' || egg.scrawl) {
+        var lines = egg.pattern === 'scrawled' ? 6 : 3;
+        for (i = 0; i < lines; i++) {
+          pt = place(g, L, W, rnd, 1.6, W * 0.12);
+          if (!pt) continue;
+          var len = W * (0.25 + rnd() * 0.3), ang = rnd() * Math.PI, d = 'M ' + pt[0].toFixed(2) + ' ' + pt[1].toFixed(2), x = pt[0], y = pt[1];
+          for (var s = 0; s < 3; s++) {
+            var nx = x + Math.cos(ang) * len / 3, ny = y + Math.sin(ang) * len / 3;
+            d += ' Q ' + (x + (nx - x) / 2 + (rnd() - 0.5) * W * 0.12).toFixed(2) + ' ' + (y + (ny - y) / 2 + (rnd() - 0.5) * W * 0.12).toFixed(2) + ' ' + nx.toFixed(2) + ' ' + ny.toFixed(2);
+            x = nx; y = ny; ang += (rnd() - 0.5) * 1.6;
+          }
+          out.push(h('path', { key: 's' + i, 'data-egg-mark': 'true', d: d, fill: 'none', stroke: ink, strokeWidth: (W * 0.03).toFixed(2), strokeLinecap: 'round', opacity: 0.9 }));
+        }
+      }
+      return out;
+    }
+    // Viewbox in mm around an upright egg centred on 0,0, with room for its shadow.
+    function frame(egg) {
+      var sz = size(egg), pad = Math.max(0.6, sz.W * 0.04), shadow = sz.W * 0.1;
+      return { L: sz.L, W: sz.W, pad: pad, shadow: shadow, x: -sz.W / 2 - pad, y: -sz.L / 2 - pad, w: sz.W + pad * 2, h: sz.L + pad * 2 + shadow };
+    }
+    // The egg's centre in the drawn svg's pixels, for placing it inside another drawing.
+    function anchor(egg, pxPerMm) {
+      var f = frame(egg);
+      return { x: -f.x * pxPerMm, y: -f.y * pxPerMm };
+    }
+    // pxPerMm keeps every egg to one scale; tag keeps defs ids unique when the
+    // same egg is drawn twice on the page. opts.bare drops the cast shadow (an
+    // egg lying in a nest); opts.seed varies the markings between clutch-mates.
+    function draw(h, egg, pxPerMm, tag, label, opts) {
+      opts = opts || {};
+      var f = frame(egg), L = f.L, W = f.W, g = geom(L, W, egg.shape == null ? 0.14 : egg.shape);
+      var id = 'egg-' + slug(egg.species) + '-' + tag;
+      var outline = outlinePath(g);
+      return h('svg', {
+        viewBox: f.x.toFixed(2) + ' ' + f.y.toFixed(2) + ' ' + f.w.toFixed(2) + ' ' + f.h.toFixed(2),
+        width: Math.round(f.w * pxPerMm), height: Math.round(f.h * pxPerMm),
+        role: label ? 'img' : null, 'aria-label': label || null, 'aria-hidden': label ? null : 'true',
+        'data-egg': slug(egg.species), 'data-egg-length': L, 'data-egg-breadth': W,
+        style: { display: 'block', overflow: 'visible' }
+      },
+        h('defs', null,
+          h('clipPath', { id: id + '-clip' }, h('path', { d: outline })),
+          h('radialGradient', { id: id + '-shade', cx: '0.36', cy: '0.32', r: '0.78' },
+            h('stop', { offset: '0', stopColor: '#ffffff', stopOpacity: 0.62 }),
+            h('stop', { offset: '0.38', stopColor: '#ffffff', stopOpacity: 0.1 }),
+            h('stop', { offset: '0.72', stopColor: '#000000', stopOpacity: 0 }),
+            h('stop', { offset: '1', stopColor: '#000000', stopOpacity: 0.26 }))),
+        opts.bare ? null : h('ellipse', { cx: (W * 0.04).toFixed(2), cy: (L / 2 + f.shadow * 0.35).toFixed(2), rx: (W * 0.42).toFixed(2), ry: (f.shadow * 0.5).toFixed(2), fill: '#0f172a', opacity: 0.16 }),
+        h('path', { d: outline, fill: egg.color, 'data-egg-outline': 'true' }),
+        h('g', { clipPath: 'url(#' + id + '-clip)' }, markings(h, egg, g, L, W, seeded(egg.species + (opts.seed || '')))),
+        h('path', { d: outline, fill: 'url(#' + id + '-shade)' }),
+        h('path', { d: outline, fill: 'none', stroke: '#1e293b', strokeOpacity: 0.45, strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }));
+    }
+    // A US quarter, 24.26 mm across, drawn at the same scale for comparison.
+    function quarter(h, pxPerMm) {
+      var D = 24.26, pad = 0.6;
+      return h('svg', { viewBox: (-D / 2 - pad) + ' ' + (-D / 2 - pad) + ' ' + (D + pad * 2) + ' ' + (D + pad * 2),
+        width: Math.round((D + pad * 2) * pxPerMm), height: Math.round((D + pad * 2) * pxPerMm), 'aria-hidden': 'true', 'data-egg-coin': 'quarter', style: { display: 'block' } },
+        h('circle', { cx: 0, cy: 0, r: D / 2, fill: '#cbd5e1', stroke: '#64748b', strokeWidth: 1, vectorEffect: 'non-scaling-stroke', 'data-coin-disc': 'true' }),
+        h('circle', { cx: 0, cy: 0, r: D / 2 - 1.4, fill: 'none', stroke: '#94a3b8', strokeWidth: 0.5 }),
+        h('text', { x: 0, y: 2.6, textAnchor: 'middle', fontSize: 7.5, fontWeight: 700, fill: '#475569' }, '25¢'));
+    }
+    return { draw: draw, quarter: quarter, size: size, slug: slug, seeded: seeded, frame: frame, anchor: anchor };
+  })();
+
+  // Nest scenes for the Nest Gallery, 400 x 280. Each nest is drawn at a scale
+  // taken from its stated size (mm across -> px across), and its eggs come from
+  // EGGS_DATA through EGG_ART at that same scale, so a Bald Eagle's eggs look as
+  // small in its nest as they really do. Burrows and deep cavities are drawn
+  // with a break in the tunnel or trunk rather than shrunk until eggs vanish.
+  var NEST_ART = (function() {
+    var W = 400, H = 280;
+    // Drawn width and the real width it stands for, from each nest's text.
+    var SCENES = {
+      baldEagle:       { kind: 'platform', site: 'pine',   mm: 1680, px: 330, depth: 72, lining: '#b9a877' },
+      osprey:          { kind: 'platform', site: 'pole',   mm: 1370, px: 290, depth: 58, lining: '#a88f66' },
+      greatBlueHeron:  { kind: 'platform', site: 'colony', mm: 910,  px: 200, depth: 26, lining: '#8d7c58' },
+      rrhawk:          { kind: 'platform', site: 'oak',    mm: 840,  px: 210, depth: 36, lining: '#6f8a4a' },
+      rrBlackbird:     { kind: 'cup', site: 'reeds',  mm: 140, px: 170, depth: 64, wall: '#b7a46a', lining: '#8a7a4c' },
+      barnSwallow:     { kind: 'cup', site: 'beam',   mm: 127, px: 170, depth: 44, wall: '#8a6a4a', lining: '#efe7da' },
+      rtHummingbird:   { kind: 'cup', site: 'saddle', mm: 38,  px: 150, depth: 70, wall: '#a9ad97', lining: '#e9e3d0' },
+      woodthrush:      { kind: 'cup', site: 'fork',   mm: 127, px: 170, depth: 60, wall: '#7a6a4a', lining: '#5a4632' },
+      baltimoreOriole: { kind: 'pouch', mm: 102, px: 104, wall: '#b9aa86' },
+      commonLoon:      { kind: 'mound', mm: 560, px: 240, wall: '#6d6a3e' },
+      bcChickadee:     { kind: 'cavity', mm: 76,  px: 88, deepMm: 203, entrance: 'round', lining: '#6f8f4e', tree: '#e8e2d4' },
+      tuftedTitmouse:  { kind: 'cavity', mm: 76,  px: 88, deepMm: 180, entrance: 'round', lining: '#9a7b52', tree: '#6b5a4a' },
+      pileatedWP:      { kind: 'cavity', mm: 190, px: 84, deepMm: 610, entrance: 'oblong', lining: '#e2c796', tree: '#5b4a3a' },
+      cliffSwallow:    { kind: 'gourd', mm: 140, px: 104 },
+      belted:          { kind: 'burrow', site: 'bank', mm: 250, px: 150 },
+      puffin:          { kind: 'burrow', site: 'turf', mm: 250, px: 150 },
+      piping:          { kind: 'scrape', site: 'sand',   mm: 102, px: 190 },
+      commonTern:      { kind: 'scrape', site: 'gravel', mm: 127, px: 190 },
+      amwoodcock:      { kind: 'scrape', site: 'leaves', mm: 114, px: 190 }
+    };
+    var STICKS = ['#5a3d22', '#6b4a2b', '#7c5a36', '#8a6a44', '#4a3222'];
+    function f1(n) { return Math.round(n * 10) / 10; }
+    function line(h, k, x1, y1, x2, y2, stroke, w, extra) {
+      var p = { key: k, x1: f1(x1), y1: f1(y1), x2: f1(x2), y2: f1(y2), stroke: stroke, strokeWidth: w, strokeLinecap: 'round' };
+      if (extra) for (var e in extra) p[e] = extra[e];
+      return h('line', p);
+    }
+    // One egg lying on its side at x,y, turned by deg, squashed for a view from above.
+    function lyingEgg(h, egg, px, x, y, deg, squash, tag, seed) {
+      var a = EGG_ART.anchor(egg, px);
+      return h('g', { key: tag, transform: 'translate(' + f1(x) + ' ' + f1(y) + ') scale(1 ' + squash + ') rotate(' + f1(deg) + ') translate(' + f1(-a.x) + ' ' + f1(-a.y) + ')', 'data-nest-egg': 'true' },
+        EGG_ART.draw(h, egg, px, tag, null, { bare: true, seed: seed }));
+    }
+    // A clutch in a bowl, seen from above at an angle.
+    function clutch(h, egg, n, px, cx, cy, rnd, id, inward) {
+      var L = EGG_ART.size(egg).L * px, out = [], i;
+      if (inward) {
+        // Shorebirds: pointed ends to the middle, so four eggs fit under one bird.
+        for (i = 0; i < n; i++) {
+          var th = (i / n) * Math.PI * 2 + 0.3;
+          out.push(lyingEgg(h, egg, px, cx + Math.cos(th) * L * 0.52, cy + Math.sin(th) * L * 0.52 * 0.7, th * 180 / Math.PI - 90, 0.72, id + 'e' + i, '#' + i));
+        }
+        return out;
+      }
+      var ring = n === 1 ? 0 : L * (n <= 3 ? 0.6 : 0.72);
+      for (i = 0; i < n; i++) {
+        var inner = n >= 6 && i === n - 1;
+        var t = (i / (inner ? 1 : Math.min(n, n >= 6 ? n - 1 : n))) * Math.PI * 2 + rnd() * 0.4;
+        var r = inner ? 0 : ring;
+        out.push(lyingEgg(h, egg, px, cx + Math.cos(t) * r, cy + Math.sin(t) * r * 0.62, rnd() * 180, 0.75, id + 'e' + i, '#' + i));
+      }
+      return out;
+    }
+    // A clutch on a cavity or chamber floor, seen from the side.
+    function floorRow(h, egg, n, px, cx, floorY, maxW, id) {
+      var sz = EGG_ART.size(egg), L = sz.L * px, Wd = sz.W * px, out = [];
+      var step = Math.min(L * 0.78, n > 1 ? (maxW - L) / (n - 1) : 0);
+      var x0 = cx - step * (n - 1) / 2;
+      for (var i = 0; i < n; i++) {
+        var back = i % 2 === 1;
+        out.push(lyingEgg(h, egg, px, x0 + i * step, floorY - Wd / 2 - (back ? Wd * 0.25 : 0), i % 2 ? 88 : 94, 1, id + 'e' + i, '#' + i));
+      }
+      // Front row over the back row.
+      return out.filter(function(e, i) { return i % 2 === 1; }).concat(out.filter(function(e, i) { return i % 2 === 0; }));
+    }
+    function sticksAround(h, cx, cy, rx, ry, d, n, rnd, k) {
+      var out = [];
+      for (var i = 0; i < n; i++) {
+        var t = rnd() * Math.PI, x = cx - Math.cos(t) * rx * (0.9 + rnd() * 0.12), y = cy + Math.sin(t) * ry * 0.6 + rnd() * d;
+        var ang = (rnd() - 0.5) * 1.1, len = rx * (0.18 + rnd() * 0.3);
+        out.push(line(h, k + i, x - Math.cos(ang) * len / 2, y - Math.sin(ang) * len / 2, x + Math.cos(ang) * len / 2, y + Math.sin(ang) * len / 2,
+          STICKS[Math.floor(rnd() * STICKS.length)], f1(1.4 + rnd() * 2.2)));
+      }
+      return out;
+    }
+    function rimSticks(h, cx, cy, rx, ry, n, rnd, k) {
+      var out = [];
+      for (var i = 0; i < n; i++) {
+        var a = rnd() * Math.PI * 2, rr = 0.62 + rnd() * 0.42, x = cx + Math.cos(a) * rx * rr, y = cy + Math.sin(a) * ry * rr;
+        var ang = a + Math.PI / 2 + (rnd() - 0.5) * 1.2, len = rx * (0.12 + rnd() * 0.22);
+        out.push(line(h, k + i, x - Math.cos(ang) * len / 2, y - Math.sin(ang) * len / 2 * 0.5, x + Math.cos(ang) * len / 2, y + Math.sin(ang) * len / 2 * 0.5,
+          STICKS[Math.floor(rnd() * STICKS.length)], f1(1.2 + rnd() * 1.8)));
+      }
+      return out;
+    }
+    function sky(h, top, bottom) {
+      return [h('rect', { key: 'sky', x: 0, y: 0, width: W, height: H, fill: top }),
+        h('rect', { key: 'sky2', x: 0, y: H * 0.55, width: W, height: H * 0.45, fill: bottom, opacity: 0.55 })];
+    }
+
+    function platform(h, sc, egg, n, rnd, id) {
+      var px = sc.px / sc.mm, cx = 200, top = 128, rx = sc.px / 2, ry = rx * 0.3, d = sc.depth, out = [], i;
+      out = out.concat(sky(h, '#dbeafe', '#fef3c7'));
+      if (sc.site === 'pine') {
+        out.push(h('rect', { key: 'tr', x: 186, y: top, width: 28, height: H - top, fill: '#6b4f36' }));
+        for (i = 0; i < 4; i++) out.push(h('path', { key: 'bo' + i, d: 'M ' + (i % 2 ? 214 : 186) + ' ' + (top + 40 + i * 28) + ' l ' + (i % 2 ? 90 : -90) + ' ' + (-18 + i * 3), stroke: '#5b4330', strokeWidth: 6, strokeLinecap: 'round' }));
+        [[40, 70], [352, 92], [30, 190], [372, 214], [300, 250], [96, 250]].forEach(function(p, j) {
+          out.push(h('ellipse', { key: 'nd' + j, cx: p[0], cy: p[1], rx: 46, ry: 18, fill: '#2f5d3a', opacity: 0.9 }));
+        });
+      } else if (sc.site === 'pole') {
+        out.push(h('rect', { key: 'pl', x: 193, y: top, width: 14, height: H - top, fill: '#8b6b4a' }));
+        out.push(h('rect', { key: 'pf', x: 120, y: top + d - 6, width: 160, height: 8, fill: '#7a5a3a' }));
+        out.push(h('rect', { key: 'wt', x: 0, y: H - 30, width: W, height: 30, fill: '#7fb3c9' }));
+      } else if (sc.site === 'colony') {
+        out.push(h('rect', { key: 'wt', x: 0, y: H - 34, width: W, height: 34, fill: '#7fb3c9' }));
+        out.push(h('path', { key: 'tr', d: 'M 196 ' + H + ' L 200 ' + (top + 8) + ' L 206 ' + H + ' Z', fill: '#6b5a48' }));
+        out.push(h('path', { key: 'b1', d: 'M 200 ' + (top + 60) + ' L 330 70', stroke: '#6b5a48', strokeWidth: 5 }));
+        out.push(h('path', { key: 'b2', d: 'M 200 ' + (top + 70) + ' L 70 60', stroke: '#6b5a48', strokeWidth: 5 }));
+        // Neighbouring nests: herons nest in colonies.
+        [[330, 64], [70, 54]].forEach(function(p, j) {
+          out.push(h('ellipse', { key: 'nb' + j, cx: p[0], cy: p[1], rx: 42, ry: 11, fill: '#5e412a' }));
+          out = out.concat(rimSticks(h, p[0], p[1], 42, 11, 14, rnd, 'nbs' + j));
+        });
+      } else {
+        out.push(h('path', { key: 'tr', d: 'M 180 ' + H + ' L 190 ' + (top + 20) + ' L 210 ' + (top + 20) + ' L 222 ' + H + ' Z', fill: '#5b4a3a' }));
+        out.push(h('path', { key: 'f1', d: 'M 196 ' + (top + 30) + ' L 110 ' + (top - 30), stroke: '#5b4a3a', strokeWidth: 10, strokeLinecap: 'round' }));
+        out.push(h('path', { key: 'f2', d: 'M 206 ' + (top + 30) + ' L 300 ' + (top - 40), stroke: '#5b4a3a', strokeWidth: 10, strokeLinecap: 'round' }));
+        [[80, 60], [330, 70], [60, 150], [350, 170]].forEach(function(p, j) {
+          out.push(h('ellipse', { key: 'lf' + j, cx: p[0], cy: p[1], rx: 50, ry: 26, fill: '#4d7c3a', opacity: 0.85 }));
+        });
+      }
+      out.push(h('path', { key: 'side', d: 'M ' + f1(cx - rx) + ' ' + top + ' L ' + f1(cx - rx * 0.84) + ' ' + (top + d) + ' A ' + f1(rx * 0.84) + ' ' + f1(ry * 0.84) + ' 0 0 0 ' + f1(cx + rx * 0.84) + ' ' + (top + d) + ' L ' + f1(cx + rx) + ' ' + top + ' Z', fill: '#4a3222', 'data-nest-body': 'true' }));
+      out = out.concat(sticksAround(h, cx, top, rx * 0.95, ry, d, Math.round(sc.px / 3), rnd, 'sd'));
+      out.push(h('ellipse', { key: 'top', cx: cx, cy: top, rx: f1(rx), ry: f1(ry), fill: '#5e412a' }));
+      out = out.concat(rimSticks(h, cx, top, rx, ry, Math.round(sc.px / 4), rnd, 'rm'));
+      out.push(h('ellipse', { key: 'lin', cx: cx, cy: top + 1, rx: f1(rx * 0.46), ry: f1(ry * 0.46), fill: sc.lining, 'data-nest-bowl': 'true' }));
+      return out.concat(clutch(h, egg, n, px, cx, top + 1, rnd, id));
+    }
+
+    function cup(h, sc, egg, n, rnd, id) {
+      var px = sc.px / sc.mm, cx = 200, rimY = 132, rx = sc.px / 2, ry = rx * 0.34, d = sc.depth, out = [], i;
+      out = out.concat(sky(h, sc.site === 'beam' ? '#e7dccb' : '#dbeafe', sc.site === 'reeds' ? '#bfe3c0' : '#fef3c7'));
+      if (sc.site === 'reeds') {
+        out.push(h('rect', { key: 'wt', x: 0, y: H - 40, width: W, height: 40, fill: '#7fb3c9' }));
+        for (i = 0; i < 5; i++) {
+          var sx = 120 + i * 40;
+          out.push(line(h, 'rd' + i, sx, H, sx + (i - 2) * 4, 30 + (i % 2) * 20, '#6b8e3a', 5));
+          if (i % 2 === 0) out.push(h('rect', { key: 'ch' + i, x: sx + (i - 2) * 4 - 6, y: 30 + (i % 2) * 20, width: 12, height: 44, rx: 6, fill: '#6b4226' }));
+        }
+      } else if (sc.site === 'beam') {
+        for (i = 0; i < 8; i++) out.push(h('rect', { key: 'pk' + i, x: i * 50, y: 0, width: 49, height: H, fill: i % 2 ? '#c9b597' : '#bfa988' }));
+        out.push(h('rect', { key: 'bm', x: 0, y: rimY + d - 4, width: W, height: 30, fill: '#7a5a3a' }));
+      } else if (sc.site === 'saddle') {
+        out.push(h('path', { key: 'br', d: 'M 0 ' + (rimY + d + 6) + ' Q 200 ' + (rimY + d - 6) + ' 400 ' + (rimY + d + 16), stroke: '#6b5a48', strokeWidth: 18, fill: 'none', strokeLinecap: 'round' }));
+        [[60, 70], [340, 60], [320, 220]].forEach(function(p, j) {
+          out.push(h('ellipse', { key: 'lf' + j, cx: p[0], cy: p[1], rx: 40, ry: 18, fill: '#6aa84f', opacity: 0.8 }));
+        });
+      } else {
+        out.push(h('path', { key: 'st', d: 'M 196 ' + H + ' L 200 ' + (rimY + d - 6), stroke: '#6b5a48', strokeWidth: 12 }));
+        out.push(h('path', { key: 'f1', d: 'M 198 ' + (rimY + d) + ' L 120 20', stroke: '#6b5a48', strokeWidth: 8, strokeLinecap: 'round' }));
+        out.push(h('path', { key: 'f2', d: 'M 202 ' + (rimY + d) + ' L 290 16', stroke: '#6b5a48', strokeWidth: 8, strokeLinecap: 'round' }));
+        [[70, 90], [340, 110], [60, 210], [345, 230]].forEach(function(p, j) {
+          out.push(h('ellipse', { key: 'lf' + j, cx: p[0], cy: p[1], rx: 44, ry: 20, fill: '#4d7c3a', opacity: 0.85 }));
+        });
+      }
+      out.push(h('path', { key: 'bowl', d: 'M ' + f1(cx - rx) + ' ' + rimY + ' Q ' + f1(cx - rx * 0.96) + ' ' + (rimY + d) + ' ' + cx + ' ' + (rimY + d) + ' Q ' + f1(cx + rx * 0.96) + ' ' + (rimY + d) + ' ' + f1(cx + rx) + ' ' + rimY + ' Z', fill: sc.wall, 'data-nest-body': 'true' }));
+      // Woven strands following the bowl.
+      for (i = 1; i < 7; i++) {
+        var yy = rimY + (d * i) / 7, k = Math.sqrt(1 - Math.pow(i / 7.2, 2));
+        out.push(h('path', { key: 'wv' + i, d: 'M ' + f1(cx - rx * k) + ' ' + f1(yy - 2) + ' Q ' + cx + ' ' + f1(yy + ry * 0.5 * k) + ' ' + f1(cx + rx * k) + ' ' + f1(yy - 2), stroke: '#00000033', strokeWidth: 1.4, fill: 'none' }));
+      }
+      if (sc.site === 'saddle') {
+        // Lichen flakes: the camouflage the text describes.
+        for (i = 0; i < 26; i++) out.push(h('circle', { key: 'lc' + i, cx: f1(cx - rx * 0.9 + rnd() * rx * 1.8), cy: f1(rimY + 6 + rnd() * (d - 12)), r: f1(2 + rnd() * 3), fill: rnd() > 0.5 ? '#c8cfb4' : '#8f9a7a' }));
+      }
+      out.push(h('ellipse', { key: 'rim', cx: cx, cy: rimY, rx: f1(rx), ry: f1(ry), fill: sc.wall, stroke: '#00000033', strokeWidth: 2 }));
+      out.push(h('ellipse', { key: 'in', cx: cx, cy: rimY + 2, rx: f1(rx * 0.8), ry: f1(ry * 0.74), fill: sc.lining, 'data-nest-bowl': 'true' }));
+      return out.concat(clutch(h, egg, n, px, cx, rimY + 3, rnd, id));
+    }
+
+    function pouch(h, sc, egg, n, rnd, id) {
+      var px = sc.px / sc.mm, cx = 200, top = 40, w = sc.px, len = 150 * px * 1.5 / 1.5, out = sky(h, '#dbeafe', '#fef3c7'), i;
+      len = 152 * px;
+      out.push(h('path', { key: 'br', d: 'M 20 30 Q 200 ' + (top - 8) + ' 390 50', stroke: '#6b5a48', strokeWidth: 9, fill: 'none', strokeLinecap: 'round' }));
+      var body = 'M ' + (cx - w * 0.28) + ' ' + top + ' C ' + (cx - w * 0.7) + ' ' + (top + len * 0.45) + ' ' + (cx - w * 0.62) + ' ' + (top + len) + ' ' + cx + ' ' + (top + len) +
+        ' C ' + (cx + w * 0.62) + ' ' + (top + len) + ' ' + (cx + w * 0.7) + ' ' + (top + len * 0.45) + ' ' + (cx + w * 0.28) + ' ' + top + ' Z';
+      out.push(h('path', { key: 'pouch', d: body, fill: sc.wall, 'data-nest-body': 'true' }));
+      for (i = 0; i < 22; i++) {
+        var x1 = cx - w * 0.5 + rnd() * w, y1 = top + rnd() * len * 0.9;
+        out.push(line(h, 'fb' + i, x1, y1, x1 + (rnd() - 0.5) * 30, y1 + 14 + rnd() * 20, '#8a7a58', 1.2, { opacity: 0.8 }));
+      }
+      // A cut-away window near the bottom shows the clutch inside.
+      var wy = top + len * 0.76;
+      out.push(h('ellipse', { key: 'win', cx: cx, cy: f1(wy), rx: f1(w * 0.42), ry: f1(len * 0.16), fill: '#5a4a34', stroke: '#8a7a58', strokeWidth: 2, strokeDasharray: '3 2', 'data-nest-bowl': 'true' }));
+      return out.concat(floorRow(h, egg, n, px, cx, wy + len * 0.12, w * 0.78, id));
+    }
+
+    function mound(h, sc, egg, n, rnd, id) {
+      var px = sc.px / sc.mm, cx = 180, top = 150, rx = sc.px / 2, out = sky(h, '#dbeafe', '#e0f2fe'), i;
+      out.push(h('path', { key: 'lake', d: 'M 250 ' + (top + 20) + ' L 400 ' + (top + 10) + ' L 400 ' + H + ' L 230 ' + H + ' Z', fill: '#6aa6c4' }));
+      out.push(h('path', { key: 'shore', d: 'M 0 ' + (top + 26) + ' Q 150 ' + (top + 10) + ' 270 ' + (top + 22) + ' L 250 ' + H + ' L 0 ' + H + ' Z', fill: '#8b8a5c' }));
+      out.push(h('ellipse', { key: 'mnd', cx: cx, cy: top + 18, rx: f1(rx), ry: f1(rx * 0.26), fill: sc.wall, 'data-nest-body': 'true' }));
+      for (i = 0; i < 40; i++) {
+        var a = rnd() * Math.PI * 2, rr = 0.5 + rnd() * 0.5;
+        var x = cx + Math.cos(a) * rx * rr, y = top + 18 + Math.sin(a) * rx * 0.26 * rr;
+        out.push(line(h, 'vg' + i, x, y, x + (rnd() - 0.5) * 26, y - 3 + (rnd() - 0.5) * 6, rnd() > 0.5 ? '#4f5a2a' : '#8c7a48', 2));
+      }
+      out.push(h('ellipse', { key: 'dip', cx: cx, cy: top + 14, rx: f1(rx * 0.5), ry: f1(rx * 0.13), fill: '#4f4a2c', 'data-nest-bowl': 'true' }));
+      return out.concat(clutch(h, egg, n, px, cx, top + 14, rnd, id));
+    }
+
+    function cavity(h, sc, egg, n, rnd, id) {
+      var px = sc.px / sc.mm, cx = 200, trunkW = sc.px + 90, out = [], i;
+      var deep = Math.min(sc.deepMm * px, 214), broken = sc.deepMm * px > 214;
+      var floorY = 250, topY = floorY - deep;
+      out.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: '#d9e7d0' }));
+      out.push(h('rect', { key: 'trunk', x: cx - trunkW / 2, y: 0, width: trunkW, height: H, fill: sc.tree }));
+      for (i = 0; i < 9; i++) out.push(line(h, 'bk' + i, cx - trunkW / 2 + 6 + i * (trunkW - 12) / 8, 0, cx - trunkW / 2 + 6 + i * (trunkW - 12) / 8 + (rnd() - 0.5) * 8, H, '#00000022', 2));
+      // Cut-away: the chamber, entrance near the top.
+      out.push(h('rect', { key: 'ch', x: f1(cx - sc.px / 2), y: f1(topY), width: sc.px, height: f1(deep), rx: f1(sc.px / 2.4), fill: '#2a2118', stroke: '#c9b48c', strokeWidth: 4, 'data-nest-body': 'true' }));
+      var ew = sc.entrance === 'oblong' ? 36 : 30, eh = sc.entrance === 'oblong' ? 44 : 30;
+      out.push(h('ellipse', { key: 'ent', cx: f1(cx - sc.px / 2 - 2), cy: f1(topY + eh * 0.9), rx: ew / 2, ry: eh / 2, fill: '#1a140e' }));
+      if (broken) {
+        // Break marks: the chamber is deeper than the picture.
+        var by = topY + deep * 0.45;
+        var zig = 'M ' + (cx - trunkW / 2) + ' ' + by, segs = Math.round(trunkW / 18);
+        for (i = 0; i < segs; i++) zig += ' l ' + f1(trunkW / segs) + ' ' + (i % 2 ? 8 : -8);
+        out.push(h('path', { key: 'brk', d: zig, stroke: '#f8fafc', strokeWidth: 5, fill: 'none', 'data-nest-break': 'true' }));
+      }
+      out.push(h('rect', { key: 'lin', x: f1(cx - sc.px / 2 + 4), y: floorY - 18, width: sc.px - 8, height: 16, rx: 6, fill: sc.lining, 'data-nest-bowl': 'true' }));
+      return out.concat(floorRow(h, egg, n, px, cx, floorY - 14, sc.px - 12, id));
+    }
+
+    function gourd(h, sc, egg, n, rnd, id) {
+      var px = sc.px / sc.mm, out = [], i;
+      out.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: '#dbeafe' }));
+      out.push(h('path', { key: 'cliff', d: 'M 0 0 L 400 0 L 400 70 Q 200 86 0 66 Z', fill: '#9ca3af' }));
+      // The colony: several gourds, one cut open.
+      [[70, 0.8], [330, 0.85], [200, 1]].forEach(function(g, j) {
+        var gx = g[0], s = g[1], gw = sc.px * s, gh = gw * 0.8;
+        out.push(h('path', { key: 'gd' + j, d: 'M ' + f1(gx - gw / 2) + ' 72 Q ' + f1(gx - gw * 0.6) + ' ' + f1(72 + gh) + ' ' + gx + ' ' + f1(72 + gh) + ' Q ' + f1(gx + gw * 0.62) + ' ' + f1(72 + gh * 0.9) + ' ' + f1(gx + gw * 0.5) + ' 72 Z', fill: '#a47a4c', 'data-nest-body': j === 2 ? 'true' : null }));
+        out.push(h('path', { key: 'nk' + j, d: 'M ' + f1(gx + gw * 0.2) + ' ' + f1(72 + gh * 0.7) + ' q ' + f1(gw * 0.26) + ' ' + f1(gh * 0.1) + ' ' + f1(gw * 0.34) + ' ' + f1(gh * 0.36), stroke: '#a47a4c', strokeWidth: f1(gw * 0.26), fill: 'none', strokeLinecap: 'round' }));
+        // The entrance: a short mud tube opening downward.
+        out.push(h('ellipse', { key: 'mo' + j, cx: f1(gx + gw * 0.54), cy: f1(72 + gh * 1.06), rx: f1(gw * 0.09), ry: f1(gw * 0.06), fill: '#2a1d12' }));
+        for (i = 0; i < 16; i++) out.push(h('circle', { key: 'mp' + j + i, cx: f1(gx - gw * 0.4 + rnd() * gw * 0.8), cy: f1(78 + rnd() * gh * 0.8), r: f1(2.5 + rnd() * 2), fill: '#8a6238', opacity: 0.7 }));
+      });
+      var fy = 72 + sc.px * 0.8 - 12;
+      out.push(h('ellipse', { key: 'win', cx: 200, cy: f1(fy - 12), rx: f1(sc.px * 0.36), ry: f1(sc.px * 0.2), fill: '#3d2c1c', 'data-nest-bowl': 'true' }));
+      return out.concat(floorRow(h, egg, n, px, 200, fy - 4, sc.px * 0.6, id));
+    }
+
+    function burrow(h, sc, egg, n, rnd, id) {
+      var px = sc.px / sc.mm, out = [], i, bank = sc.site === 'bank';
+      out.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: H, fill: '#dbeafe' }));
+      out.push(h('path', { key: 'earth', d: bank ? 'M 60 40 L 400 40 L 400 280 L 60 280 Z' : 'M 0 70 Q 200 58 400 72 L 400 280 L 0 280 Z', fill: bank ? '#c8a26a' : '#6b5a44' }));
+      if (bank) out.push(h('rect', { key: 'river', x: 0, y: 220, width: 64, height: 60, fill: '#6aa6c4' }));
+      else for (i = 0; i < 18; i++) out.push(line(h, 'gr' + i, 10 + i * 22, 66, 14 + i * 22 + (rnd() - 0.5) * 8, 44 + rnd() * 10, '#5f8f3a', 3));
+      for (i = 0; i < 30; i++) out.push(h('circle', { key: 'pb' + i, cx: f1(bank ? 70 + rnd() * 330 : rnd() * 400), cy: f1(80 + rnd() * 190), r: f1(1 + rnd() * 2.5), fill: '#00000022' }));
+      // Tunnel from the entrance to the chamber, with a break: it is 1-2 m long.
+      var ty = bank ? 150 : 110;
+      out.push(h('path', { key: 'tun', d: bank ? 'M 60 ' + (ty + 6) + ' L 240 ' + (ty - 8) : 'M 60 70 Q 110 ' + (ty + 10) + ' 240 ' + (ty + 36), stroke: '#2a2118', strokeWidth: 24, fill: 'none', strokeLinecap: 'round' }));
+      out.push(h('path', { key: 'brk', d: 'M 140 ' + (ty - 40) + ' l 8 14 l -8 14 l 8 14 l -8 14 l 8 14', stroke: '#f8fafc', strokeWidth: 5, fill: 'none', 'data-nest-break': 'true' }));
+      var chX = 300, chY = bank ? ty - 10 : ty + 44;
+      out.push(h('ellipse', { key: 'ch', cx: chX, cy: chY, rx: f1(sc.px / 2), ry: f1(sc.px / 3.2), fill: '#2a2118', 'data-nest-body': 'true' }));
+      var floorY = chY + sc.px / 3.2 - 6;
+      if (!bank) out.push(h('ellipse', { key: 'lin', cx: chX, cy: f1(floorY - 4), rx: f1(sc.px * 0.36), ry: 8, fill: '#8a8a5a', 'data-nest-bowl': 'true' }));
+      else out.push(h('ellipse', { key: 'lin', cx: chX, cy: f1(floorY - 4), rx: f1(sc.px * 0.36), ry: 6, fill: '#4a3a28', 'data-nest-bowl': 'true' }));
+      return out.concat(floorRow(h, egg, n, px, chX, floorY - 2, sc.px * 0.7, id));
+    }
+
+    function scrape(h, sc, egg, n, rnd, id) {
+      var px = sc.px / sc.mm, cx = 200, cy = 160, rx = sc.px / 2, ry = rx * 0.5, out = [], i;
+      var ground = sc.site === 'leaves' ? '#8a6a44' : sc.site === 'gravel' ? '#b8ab8c' : '#e3d3ae';
+      out.push(h('rect', { key: 'g', x: 0, y: 0, width: W, height: H, fill: ground }));
+      if (sc.site === 'leaves') {
+        for (i = 0; i < 70; i++) {
+          var lx = rnd() * 400, ly = rnd() * 280;
+          if (Math.pow((lx - cx) / rx, 2) + Math.pow((ly - cy) / ry, 2) < 0.8) continue;
+          out.push(h('ellipse', { key: 'lv' + i, cx: f1(lx), cy: f1(ly), rx: f1(9 + rnd() * 10), ry: f1(4 + rnd() * 4), fill: ['#a0522d', '#8b5a2b', '#c08040', '#6b4a2b'][i % 4], transform: 'rotate(' + Math.round(rnd() * 180) + ' ' + f1(lx) + ' ' + f1(ly) + ')', opacity: 0.9 }));
+        }
+      } else {
+        for (i = 0; i < 90; i++) out.push(h('circle', { key: 'gr' + i, cx: f1(rnd() * 400), cy: f1(rnd() * 280), r: f1(sc.site === 'gravel' ? 2 + rnd() * 4 : 1 + rnd() * 2), fill: ['#a8a29e', '#78716c', '#f5f5f4', '#d6d3d1'][i % 4], opacity: 0.8 }));
+        if (sc.site === 'gravel') for (i = 0; i < 12; i++) out.push(line(h, 'gb' + i, cx - rx * 0.6 + rnd() * rx * 1.2, cy - ry * 0.5 + rnd() * ry, cx - rx * 0.6 + rnd() * rx * 1.2, cy - ry * 0.5 + rnd() * ry, '#9aa56a', 2));
+      }
+      out.push(h('ellipse', { key: 'scr', cx: cx, cy: cy, rx: f1(rx), ry: f1(ry), fill: '#00000026', 'data-nest-bowl': 'true', 'data-nest-body': 'true' }));
+      var inward = sc.site !== 'gravel';
+      return out.concat(clutch(h, egg, n, px, cx, cy, rnd, id, inward));
+    }
+
+    var KINDS = { platform: platform, cup: cup, pouch: pouch, mound: mound, cavity: cavity, gourd: gourd, burrow: burrow, scrape: scrape };
+    function draw(h, nest, egg, label) {
+      var sc = SCENES[nest.id];
+      if (!sc || !egg) return null;
+      var n = (nest.svg && nest.svg.eggCount) || 1;
+      return h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': label, 'data-nest': nest.id, 'data-nest-kind': sc.kind,
+        'data-px-per-mm': (sc.px / sc.mm).toFixed(4), 'data-nest-mm': sc.mm, style: { width: '100%', height: 'auto', display: 'block', borderRadius: 12 } },
+        KINDS[sc.kind](h, sc, egg, n, EGG_ART.seeded(nest.id), 'n' + nest.id));
+    }
+    return { draw: draw, scenes: SCENES };
+  })();
+
+  // Egg specs for the two nest species the Egg Gallery does not show; the
+  // lengths match each nest's own eggs line.
+  var NEST_EGG_EXTRA = {
+    'Cliff Swallow': { species: 'Cliff Swallow', dimensions: '20 × 14 mm', color: '#f6f0e6', mark: '#7a4a2a', pattern: 'spotted' },
+    'Barn Swallow': { species: 'Barn Swallow', dimensions: '19 × 14 mm', color: '#fbf7f2', mark: '#7a3a1e', pattern: 'spotted' }
+  };
+  function nestEgg(nest) {
+    var name = String(nest.species).split(' (')[0];
+    for (var i = 0; i < EGGS_DATA.length; i++) { if (EGGS_DATA[i].species === name) return EGGS_DATA[i]; }
+    return NEST_EGG_EXTRA[name] || null;
+  }
 
   // ── FEATHER ANATOMY — labeled parts of a typical contour feather
   var FEATHER_PARTS = [
-    { id: 'rachis', x: 200, y: 200, label: 'Rachis (central shaft)',
-      what: 'The central rigid spine of the feather, made of keratin (same protein as your fingernails).',
-      function: 'Provides structural rigidity. Strong but flexible — allows the feather to bend without breaking.' },
-    { id: 'calamus', x: 200, y: 360, label: 'Calamus (quill base)',
-      what: 'The hollow base of the rachis that anchors into the bird\'s skin via a follicle.',
+    { id: 'rachis', label: 'Rachis (central shaft)',
+      what: 'The central shaft, made of keratin, a tough protein. Feathers use beta-keratin; your fingernails are made of a softer relative, alpha-keratin.',
+      function: 'Stiff but light: a foam-like core inside a hard outer wall lets the shaft bend without breaking.' },
+    { id: 'calamus', label: 'Calamus (quill base)',
+      what: 'The bare, hollow base of the shaft that sits in a follicle in the bird\'s skin.',
       function: 'Anchors feather to skin + delivers blood during feather growth. Hollow once feather is fully grown.' },
-    { id: 'vane', x: 250, y: 200, label: 'Vane (the flat surface)',
-      what: 'The flat sides of the feather, on either side of the rachis. Composed of thousands of barbs.',
-      function: 'The aerodynamic surface — provides lift in flight, insulation, waterproofing.' },
-    { id: 'barb', x: 280, y: 170, label: 'Barb',
+    { id: 'vane', label: 'Vane (the flat surface)',
+      what: 'The flat blade on each side of the rachis, built from hundreds of barbs. On a flight feather the outer vane is narrow and the inner vane is wide.',
+      function: 'The uneven vanes make each flight feather work like a small wing, giving lift. Vanes also shed wind and water.' },
+    { id: 'barb', label: 'Barb',
       what: 'One of the long thin parallel strands extending from the rachis. Each barb has hundreds of barbules.',
       function: 'Each barb is a unit of the vane. Hundreds of barbs in parallel make up each side of the feather.' },
-    { id: 'barbule', x: 320, y: 150, label: 'Barbule (with hooklets)',
-      what: 'Tiny secondary branches off each barb. Adjacent barbules hook onto each other via microscopic hooklets.',
-      function: 'The hooklet velcro is what holds the vane together. When you preen a feather smooth, you\'re re-hooking the barbules.' },
-    { id: 'downy', x: 200, y: 320, label: 'Downy (afterfeather) region',
-      what: 'The fluffy lower portion of the feather where barbules lack hooklets.',
-      function: 'Insulation — traps warm air close to the body. The afterfeather portion is fluffy, not flat.' },
-    { id: 'tip', x: 200, y: 50, label: 'Tip',
-      what: 'The distal end of the feather, often shaped specifically for the feather\'s job.',
-      function: 'Wing primaries have asymmetric tips for flight. Tail feathers may end in points or squares.' },
-    { id: 'aftershaft', x: 165, y: 290, label: 'Aftershaft',
-      what: 'A small secondary feather attached at the base of the main feather in some bird groups.',
-      function: 'Adds extra insulation. Most prominent in cassowaries + emus; reduced in most other birds.' }
+    { id: 'barbule', label: 'Barbule (with hooklets)',
+      what: 'Tiny branches off each barb. Barbules on one side carry microscopic hooklets that catch the ridged barbules of the next barb (magnified here).',
+      function: 'The hooklet zipper holds the vane together. When a bird preens a feather smooth, it is re-hooking the barbules.' },
+    { id: 'downy', label: 'Downy base (fluffy barbs)',
+      what: 'Near the base the barbs are soft and loose: their barbules have no hooklets, so they cannot zip into a flat vane.',
+      function: 'Insulation: the fluffy barbs trap warm air close to the body.' },
+    { id: 'tip', label: 'Tip',
+      what: 'The far end of the feather, shaped for the feather\'s job.',
+      function: 'Flight feathers taper to a rounded tip; woodpecker tail feathers end in stiff points that brace the bird against a trunk.' },
+    { id: 'aftershaft', label: 'Afterfeather (aftershaft)',
+      what: 'A small second plume growing from the top of the quill in many birds.',
+      function: 'Adds insulation. In emus and cassowaries it is as long as the main feather.' }
   ];
+
+  // A primary flight feather in the Feather Anatomy view's 400 x 420 frame:
+  // bare quill (calamus), a shaft (rachis) that curves slightly, a NARROW outer
+  // vane and a WIDE inner vane (the asymmetry that makes a flight feather an
+  // airfoil), downy barbs at the base, a small afterfeather, and a magnified
+  // inset of barbs zipped together by barbules and their hooklets. Every part a
+  // hotspot names carries data-part, and FEATHER_PARTS take their positions
+  // from ANCHORS, so a ring always sits on the part it names.
+  var FEATHER_ART = (function() {
+    var BASE = 398, TIP = 40, T0 = 0.13;           // calamus runs t 0..T0
+    function cx(t) { return 196 + 16 * t * t; }
+    function cy(t) { return BASE - (BASE - TIP) * t; }
+    function envelope(u) {                          // 0..1 along the vane
+      var rise = u < 0.3 ? 0.42 + 0.58 * Math.sin((u / 0.3) * Math.PI / 2) : 1;
+      var taper = u > 0.55 ? Math.sqrt(Math.max(0, 1 - Math.pow((u - 0.55) / 0.45, 2))) : 1;
+      return rise * taper;
+    }
+    function inner(u) { return 64 * envelope(u); }  // trailing (wide) vane, right
+    function outer(u) { return 22 * envelope(u); }  // leading (narrow) vane, left
+    function tOf(u) { return T0 + (1 - T0) * u; }
+    function f1(n) { return Math.round(n * 10) / 10; }
+    function pt(x, y) { return f1(x) + ' ' + f1(y); }
+    function edge(side, u) { var t = tOf(u); return [cx(t) + side * (side > 0 ? inner(u) : outer(u)), cy(t)]; }
+    function vanePath(side, u0, u1) {
+      var d = 'M ' + pt(cx(tOf(u0)), cy(tOf(u0))), i, n = 30;
+      for (i = 0; i <= n; i++) { var e = edge(side, u0 + (u1 - u0) * i / n); d += ' L ' + pt(e[0], e[1]); }
+      for (i = n; i >= 0; i--) { var t = tOf(u0 + (u1 - u0) * i / n); d += ' L ' + pt(cx(t), cy(t)); }
+      return d + ' Z';
+    }
+    // A filled strip along the shaft, so hit tests can ask "is this point on it".
+    function shaftPath(t0, t1, w0, w1) {
+      var left = [], right = [], n = 24, i;
+      for (i = 0; i <= n; i++) {
+        var t = t0 + (t1 - t0) * i / n, w = w0 + (w1 - w0) * i / n;
+        left.push(pt(cx(t) - w / 2, cy(t))); right.push(pt(cx(t) + w / 2, cy(t)));
+      }
+      return 'M ' + left.join(' L ') + ' L ' + right.reverse().join(' L ') + ' Z';
+    }
+    // Barbs leave the shaft angled toward the tip.
+    function barb(side, u, lift) {
+      var t = tOf(u), e = edge(side, Math.min(1, u + lift));
+      var mx = (cx(t) + e[0]) / 2, my = (cy(t) + e[1]) / 2 + 3;
+      return 'M ' + pt(cx(t), cy(t)) + ' Q ' + pt(mx, my) + ' ' + pt(e[0], e[1]);
+    }
+    var ZOOM = { x: 334, y: 104, r: 56, sx: 240, sy: 136 };
+    var ANCHORS = {
+      rachis: [cx(0.45), cy(0.45)],
+      calamus: [cx(0.06), cy(0.06)],
+      vane: [cx(tOf(0.3)) + 44, cy(tOf(0.3))],
+      barb: null,                                     // set from the highlighted barb below
+      barbule: [ZOOM.x - 10, ZOOM.y + 16],
+      downy: [cx(tOf(0.08)) + 24, cy(tOf(0.08))],
+      tip: [cx(tOf(0.96)) + 4, cy(tOf(0.96)) + 2],
+      aftershaft: [cx(T0) - 26, cy(T0) - 18]
+    };
+    // The highlighted barb: one outer-vane barb, as a thin filled strip.
+    var HB = { u: 0.56, lift: 0.07 };
+    (function() {
+      var t = tOf(HB.u), e = edge(1, Math.min(1, HB.u + HB.lift));
+      ANCHORS.barb = [cx(t) + (e[0] - cx(t)) * 0.84, cy(t) + (e[1] - cy(t)) * 0.84 + 0.5];
+    })();
+    function barbStrip() {
+      var t = tOf(HB.u), e = edge(1, Math.min(1, HB.u + HB.lift)), x0 = cx(t), y0 = cy(t);
+      return 'M ' + pt(x0, y0 - 1.6) + ' L ' + pt(e[0], e[1] - 1.6) + ' L ' + pt(e[0], e[1] + 1.6) + ' L ' + pt(x0, y0 + 1.6) + ' Z';
+    }
+
+    function draw(h) {
+      var out = [], i;
+      var VANE = '#8a6f52', VANE_DARK = '#6b5238', BARB = '#5b4630', DOWN = '#cdbba3';
+      out.push(h('defs', { key: 'defs' },
+        h('linearGradient', { id: 'fa-shaft', x1: '0', y1: '1', x2: '0', y2: '0' },
+          h('stop', { offset: '0', stopColor: '#f3ead7' }), h('stop', { offset: '1', stopColor: '#d9c7a4' })),
+        h('clipPath', { id: 'fa-zoom-clip' }, h('circle', { cx: ZOOM.x, cy: ZOOM.y, r: ZOOM.r })),
+        h('clipPath', { id: 'fa-vane-clip' }, h('path', { d: vanePath(1, 0.18, 1) }), h('path', { d: vanePath(-1, 0.18, 1) }))));
+      // Vanes
+      out.push(h('path', { key: 'vin', d: vanePath(1, 0.18, 1), fill: VANE, 'data-part': 'vane' }));
+      out.push(h('path', { key: 'vout', d: vanePath(-1, 0.18, 1), fill: VANE_DARK, 'data-part': 'vane' }));
+      var marks = [];
+      // Soft bars across the vane: many flight feathers are barred.
+      for (i = 0; i < 7; i++) {
+        var ub = 0.24 + i * 0.105;
+        marks.push(h('path', { key: 'bar' + i, d: barb(1, ub, 0.1), stroke: '#4a3a28', strokeWidth: 7, opacity: 0.18, fill: 'none', strokeLinecap: 'round' }));
+      }
+      // Tip region (hit area only; drawn by the vanes)
+      out.push(h('path', { key: 'tipzone', d: vanePath(1, 0.9, 1) + ' ' + vanePath(-1, 0.9, 1), fill: 'transparent', 'data-part': 'tip' }));
+      // Barbs
+      for (i = 0; i < 46; i++) {
+        var u = 0.19 + i * 0.0176;
+        if (u > 0.99) break;
+        marks.push(h('path', { key: 'bi' + i, d: barb(1, u, 0.07), stroke: BARB, strokeWidth: 0.8, opacity: 0.55, fill: 'none' }));
+        marks.push(h('path', { key: 'bo' + i, d: barb(-1, u, 0.07), stroke: '#3f3020', strokeWidth: 0.8, opacity: 0.5, fill: 'none' }));
+      }
+      // Downy (plumulaceous) barbs at the base: loose, fluffy, no hooklets.
+      out.push(h('g', { key: 'marks', clipPath: 'url(#fa-vane-clip)' }, marks));
+      var downPath = vanePath(1, 0.0, 0.2) + ' ' + vanePath(-1, 0.0, 0.2);
+      out.push(h('path', { key: 'down', d: downPath, fill: DOWN, opacity: 0.85, 'data-part': 'downy' }));
+      for (i = 0; i < 18; i++) {
+        var ud = 0.005 + (i >> 1) * 0.022, side = i % 2 ? 1 : -1, e = edge(side, ud);
+        // A loose wisp curling off the edge: downy barbs have no hooklets to hold them flat.
+        out.push(h('path', { key: 'dw' + i, d: 'M ' + pt(e[0] - side * 6, e[1]) + ' q ' + pt(side * 8, -3) + ' ' + pt(side * 10, -9) + ' q ' + pt(side * 1, -4) + ' ' + pt(side * -3, -6),
+          stroke: '#b9a58a', strokeWidth: 1.1, fill: 'none', opacity: 0.9 }));
+      }
+      // Afterfeather: a small second plume from the top of the quill.
+      var ax = cx(T0), ay = cy(T0);
+      var aft = 'M ' + pt(ax - 1, ay) + ' C ' + pt(ax - 18, ay - 6) + ' ' + pt(ax - 40, ay - 22) + ' ' + pt(ax - 44, ay - 42) +
+        ' C ' + pt(ax - 30, ay - 36) + ' ' + pt(ax - 16, ay - 20) + ' ' + pt(ax + 1, ay - 2) + ' Z';
+      out.push(h('path', { key: 'aft', d: aft, fill: '#d8c8ae', stroke: '#b9a58a', strokeWidth: 1, 'data-part': 'aftershaft' }));
+      for (i = 0; i < 6; i++) out.push(h('path', { key: 'af' + i, d: 'M ' + pt(ax - 8 - i * 6, ay - 6 - i * 6) + ' q -8 -2 -12 4', stroke: '#b9a58a', strokeWidth: 1, fill: 'none' }));
+      // Shaft: rachis over the vanes, then the bare, partly translucent quill.
+      out.push(h('path', { key: 'rachis', d: shaftPath(T0, 1, 6.5, 1.4), fill: 'url(#fa-shaft)', stroke: '#b59c73', strokeWidth: 0.6, 'data-part': 'rachis' }));
+      out.push(h('path', { key: 'calamus', d: shaftPath(0, T0, 9, 8), fill: '#efe6d2', stroke: '#b59c73', strokeWidth: 0.8, opacity: 0.95, 'data-part': 'calamus' }));
+      out.push(h('path', { key: 'pulp', d: shaftPath(0.015, T0 - 0.01, 3, 2.6), fill: '#cdb89a', opacity: 0.7 }));
+      // One highlighted barb.
+      out.push(h('path', { key: 'hb', d: barbStrip(), fill: '#f59e0b', stroke: '#b45309', strokeWidth: 0.5, 'data-part': 'barb' }));
+      // Magnifier: where on the vane, and what it looks like up close.
+      out.push(h('circle', { key: 'zsrc', cx: ZOOM.sx, cy: ZOOM.sy, r: 10, fill: 'none', stroke: '#0f172a', strokeWidth: 1.5 }));
+      out.push(h('line', { key: 'zl1', x1: ZOOM.sx + 7, y1: ZOOM.sy - 7, x2: ZOOM.x - ZOOM.r * 0.7, y2: ZOOM.y + ZOOM.r * 0.7, stroke: '#0f172a', strokeWidth: 1.2, strokeDasharray: '4 3' }));
+      var z = [h('circle', { key: 'zbg', cx: ZOOM.x, cy: ZOOM.y, r: ZOOM.r, fill: '#fdf8ee', 'data-part': 'barbule' })];
+      // Three barbs running diagonally; distal barbules (with hooklets) reach
+      // forward and hook over the ridged proximal barbules of the next barb.
+      for (var b = 0; b < 3; b++) {
+        var off = (b - 1) * 34;
+        var x1 = ZOOM.x - 70 + off, y1 = ZOOM.y + 70, x2 = ZOOM.x + 30 + off, y2 = ZOOM.y - 70;
+        z.push(h('line', { key: 'zb' + b, x1: f1(x1), y1: f1(y1), x2: f1(x2), y2: f1(y2), stroke: BARB, strokeWidth: 4, strokeLinecap: 'round' }));
+        for (var k = 0; k < 9; k++) {
+          var s = 0.08 + k * 0.1, px = x1 + (x2 - x1) * s, py = y1 + (y2 - y1) * s;
+          // distal barbule: toward +x (the next barb), with a hooked end
+          z.push(h('path', { key: 'zd' + b + k, d: 'M ' + pt(px, py) + ' l 22 2 q 4 0 3 4', stroke: '#1d4ed8', strokeWidth: 1.4, fill: 'none', strokeLinecap: 'round' }));
+          // proximal barbule: toward -x, with a ridged flange the hooks catch
+          z.push(h('path', { key: 'zp' + b + k, d: 'M ' + pt(px, py) + ' l -20 -8', stroke: '#c2410c', strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round' }));
+        }
+      }
+      out.push(h('g', { key: 'zoom', clipPath: 'url(#fa-zoom-clip)' }, z));
+      out.push(h('circle', { key: 'zring', cx: ZOOM.x, cy: ZOOM.y, r: ZOOM.r, fill: 'none', stroke: '#0f172a', strokeWidth: 2.5 }));
+      return out;
+    }
+    return { draw: draw, anchors: ANCHORS, zoom: ZOOM };
+  })();
+  // Rings take their positions from the drawing, not hand-typed numbers.
+  FEATHER_PARTS.forEach(function(p) { var a = FEATHER_ART.anchors[p.id]; if (a) { p.x = a[0]; p.y = a[1]; } });
 
   // ── SILHOUETTES — bird silhouette ID quiz items
   var SILHOUETTES = [
@@ -4924,9 +5709,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var PLUMAGE_CYCLES = [
     { species: 'American Goldfinch',
       art: { kind: 'plumage', items: [{ name: 'Breeding', note: 'lemon-yellow, black cap', body: '#f0cf2c', wing: '#22252b', head: '#f0cf2c', tail: '#22252b', patch: '#22252b', bill: '#e8909e' }, { name: 'Non-breeding', note: 'drab olive-buff', body: '#b3ab84', wing: '#4a4a45', head: '#b3ab84', tail: '#4a4a45', bill: '#6b665c' }] },
-      breeding: 'Bright lemon-yellow body with black cap, black wings + tail with white markings. Bill is pink in summer.',
+      breeding: 'Bright lemon-yellow body with black cap, black wings + tail with white markings. Bill turns bright orange in spring + summer.',
       nonbreeding: 'Drab olive-buff overall. Wings + tail still blackish but body fades to muted olive-tan. Bill darker.',
-      molt: 'Two complete molts per year — most North American songbirds molt only once. Breeding plumage emerges in early spring.',
+      molt: 'Molts twice a year: a complete molt in fall and a spring body molt that keeps the wing + tail feathers. Breeding plumage emerges in early spring.',
       maine_timing: 'Breeding plumage visible mid-April; non-breeding by mid-October.' },
     { species: 'Common Loon',
       art: { kind: 'plumage', items: [{ name: 'Breeding', note: 'black head, checkered back', body: '#1b1e24', wing: '#2a2e35', head: '#12271f', tail: '#1b1e24', streaks: '#f8fafc' }, { name: 'Non-breeding', note: 'grey above, white below', body: '#7a8490', wing: '#6b7280', head: '#8a939e', tail: '#6b7280' }] },
@@ -4959,9 +5744,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       molt: 'Adults molt in late summer before fall migration. Juveniles delay full adult plumage to second year.',
       maine_timing: 'In Maine May–August, breeding plumage throughout. Returns from Central America winter.' },
     { species: 'Common Eider',
-      art: { kind: 'plumage', items: [{ name: 'Adult male, all year', note: 'breeding plumage retained', body: '#f8fafc', wing: '#22252b', head: '#f8fafc', tail: '#22252b', patch: '#b8d4c0' }] },
+      art: { kind: 'plumage', items: [{ name: 'Adult male, breeding', note: 'dark eclipse in late summer', body: '#f8fafc', wing: '#22252b', head: '#f8fafc', tail: '#22252b', patch: '#b8d4c0' }] },
       breeding: 'Male strikingly black-and-white with subtle pale green nape. Female warm brown vermiculated.',
-      nonbreeding: 'Adult males retain breeding plumage year-round. Subadult males progress through "eclipse" patchy plumage.',
+      nonbreeding: 'Adult males molt into a dark, patchy "eclipse" plumage in late summer, then return to black-and-white by late fall.',
       molt: 'Like loons, eiders molt wing primaries all-at-once + can be flightless briefly.',
       maine_timing: 'Year-round on Maine coast.' },
     { species: 'Red-winged Blackbird',
@@ -5156,7 +5941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       identify: 'Steady flight without much glide. Crows give 2-3 strong beats then brief glide.' },
 
     { name: 'Bounding / Undulating Flight (Woodpeckers, Goldfinches)', trace: 'bound',
-      pattern: 'Series of strong beats followed by brief folded-wing closure, creating a wave pattern. Saves energy by reducing wing surface during downstroke phase.',
+      pattern: 'Series of strong beats followed by brief folded-wing closure, creating a wave pattern. Saves energy by folding the wings against the body between bursts of flapping, which cuts drag.',
       species: 'Pileated Woodpecker, Northern Flicker, American Goldfinch, House Finch',
       energy: 'Energy-efficient for small + medium birds. Wave amplitude varies by species.',
       timing: 'Day-long.',
@@ -5261,7 +6046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       diet: 'Voles + meadow mice, occasional birds',
       maine_status: 'Uncommon migrant + occasional breeder. Best seen open coastal marshes (Scarborough Marsh).',
       morphs: 'Single plumage. Tiny ear-tufts.',
-      conservation: 'Declining due to grassland loss. State Endangered in Maine.' },
+      conservation: 'Declining due to grassland loss. Maine lists its breeding population as Threatened.' },
     { name: 'Northern Saw-whet Owl (Aegolius acadicus)',
       size: '7–8 in tall, 3 oz', wingspan: '~17 in',
       voice: 'Repeated single "toot" notes like a saw being sharpened — hence the name.',
@@ -5288,7 +6073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       diet: 'Fish (~75%), waterfowl, carrion, occasional mammals',
       hunting: 'Soars, watches from perch, takes fish from surface; steals from osprey ("kleptoparasitism")',
       breeding: 'Stick platform nest reused annually; lays 1–3 eggs Feb–Apr in Maine',
-      maine_status: 'Year-round resident; ~700 active nests today (from <60 in 1970)',
+      maine_status: 'Year-round resident; more than 700 nesting pairs today (from 21 in 1967)',
       conservation: 'Federal recovery story. DDT banned 1972; reintroduction efforts 1980s+. Maine population among densest east of Mississippi.' },
 
     { name: 'Osprey (Pandion haliaetus)',
@@ -5315,10 +6100,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       diet: 'Small mammals, amphibians, reptiles, large insects',
       hunting: 'Perches + drops on prey in forest understory',
       breeding: 'Cup nest in tree; lays 2–3 eggs May–Jun',
-      maine_status: 'Common breeder; migrates in spectacular "kettles" Sept — Hawkwatch Mt at Bradbury sees 1000+ in a day',
-      conservation: 'Stable. The Bradbury Mountain Hawkwatch (Maine) records broadwings as the dominant fall migrant.' },
+      maine_status: 'Common breeder; migrates in spectacular "kettles," peaking mid-September at the Cadillac Mountain Hawk Watch (Acadia)',
+      conservation: 'Stable. Bradbury Mountain (Pownal), Maine\'s spring hawkwatch, averages about 1,500 broadwings each spring.' },
 
-    { name: 'Cooper\'s Hawk (Accipiter cooperii)',
+    { name: 'Cooper\'s Hawk (Astur cooperii)',
       group: 'Accipiter (forest-bird hawk)', size: '14–20 in, 1 lb', wingspan: '~2.5 ft',
       voice: 'Cackling "kek-kek-kek-kek."',
       diet: 'Birds (mostly), small mammals — robin- to grouse-sized prey',
@@ -5336,7 +6121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       maine_status: 'Year-round + migrant; common but secretive',
       conservation: 'Stable. Most-confused-with-Cooper\'s-Hawk Maine raptor — size + tail tip help separate.' },
 
-    { name: 'Northern Goshawk (Accipiter gentilis)',
+    { name: 'American Goshawk (Astur atricapillus)',
       group: 'Large accipiter', size: '21–25 in, 2 lb', wingspan: '~3.5 ft',
       voice: 'Loud "kee-kee-kee" alarm; territorial near nest.',
       diet: 'Birds (grouse, woodpeckers) + medium mammals (squirrels, hares)',
@@ -5379,10 +6164,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       hunting: 'Stoops from height at 240+ mph — fastest animal',
       breeding: 'Cliff ledges; many urban Maine peregrines on buildings + bridges',
       maine_status: 'Recovered breeder — from 0 pairs (1960s) to 30+ pairs today',
-      conservation: 'Listed Endangered to Recovered after DDT recovery + reintroduction. State Endangered listing reduced.' },
+      conservation: 'Federally delisted in 1999 after the DDT ban + reintroduction; Maine still lists its breeding population as Endangered.' },
 
     { name: 'Turkey Vulture (Cathartes aura)',
-      group: 'New-World vulture (related to storks)', size: '25–32 in, 4 lb', wingspan: '~5.5 ft',
+      group: 'New World vulture (closest to hawks + eagles, not storks)', size: '25–32 in, 4 lb', wingspan: '~5.5 ft',
       voice: 'Mostly silent — hisses + grunts near carcasses.',
       diet: 'Carrion only',
       hunting: 'Soars on thermals, sniffs out carrion (one of few birds with developed sense of smell)',
@@ -5533,8 +6318,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       meaning: 'Audubon Society app — alternative to Merlin.',
       use: 'Similar role.',
       pros: 'Different content + organization.',
-      cons: 'Some features paywalled.',
-      price: 'Free basic; paid upgrades.' },
+      cons: 'A field guide, not a checklist tool; use eBird to keep records.',
+      price: 'Free.' },
     { item: 'Notebook + pencil',
       meaning: 'Plain weatherproof notebook.',
       use: 'Field notes, sketches, lists. Old-school birding fundamental.',
@@ -5581,7 +6366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var WEATHER_BIRDING = [
     { weather: 'Stormy front passing',
       birds: 'Hawkwatching peaks on cold fronts (Sept–Oct) — broadwings ride leading-edge thermals south. Songbird migration "fallout" can occur — birds blown down + concentrated in coastal stopover sites.',
-      where_to_go: 'Bradbury Mountain (Pownal) or Hawkwatch Mountain (Sandy Point) on a clear Sept morning after a Sept cold front. Coastal stopover sites for fallout migrants — Acadia, Petit Manan.' },
+      where_to_go: 'Cadillac Mountain Hawk Watch (Acadia) on a clear, north-wind September morning after a cold front. Coastal stopover sites for fallout migrants — Acadia, Petit Manan.' },
     { weather: 'High pressure + calm sunny',
       birds: 'Bird activity high in morning + evening; slows at midday. Singing peaks dawn + dusk.',
       where_to_go: 'Almost any habitat. Dawn chorus is the magic window.' },
@@ -5622,7 +6407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { q: 'I can\'t tell those LBJs apart!',
       a: 'LBJs = "Little Brown Jobs" = sparrows + finches + warblers + thrushes — birding\'s hardest IDs. Strategy: study one family at a time. Master 3 sparrows before tackling all sparrows. Note key field marks (eyebrow, eye ring, breast streaking, throat color, tail pattern). Practice + patience help. Pair Merlin\'s photo ID + sound ID with your own observations.' },
     { q: 'Do birds learn songs or are they born knowing?',
-      a: 'Both — depending on species. Songbirds (Passerines) learn songs from adults, with a "sensitive period" in their first year. Non-passerine birds (hawks, ducks, gulls) have innate vocalizations. This is why songbird dialects vary by region — local song traditions.' },
+      a: 'Both — depending on species. Songbirds (oscine passerines) learn songs from adults, with a "sensitive period" in their first year. Flycatchers, hawks, ducks + gulls are born knowing their calls; parrots + hummingbirds also learn. This is why songbird dialects vary by region — local song traditions.' },
     { q: 'Where can I see a bald eagle in Maine?',
       a: 'Almost any large body of water with old trees. Casco Bay, Penobscot River, Sebago Lake, Moosehead Lake, Acadia coast. Maine has ~700 active eagle nests today. Look in tall white pines along shores. Winter concentrations at unfrozen rivers (Penobscot below Bangor; Sheepscot).' },
     { q: 'Why do birds fly into windows?',
@@ -5636,7 +6421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { q: 'What\'s a "lifer"?',
       a: 'A species you have seen for the first time. Each lifer joins your "life list" — a personal lifelong tally of every species you\'ve identified. Birders track life lists in eBird, paper journals, or apps. For many birders, the lifelong pursuit of new lifers (and milestones — 100, 500, 1,000 species seen) drives the hobby.' },
     { q: 'How do birds find their way during migration?',
-      a: 'Multiple cues working together: star + sun position, Earth\'s magnetic field, landmarks, sense of smell (some species), polarized light. Songbird migration is largely nocturnal — birds navigate by stars. Hawks + waterfowl migrate by day using landmarks + thermals.' },
+      a: 'Multiple cues working together: star + sun position, Earth\'s magnetic field, landmarks, sense of smell (some species), polarized light. Songbird migration is largely nocturnal — birds navigate by stars. Hawks migrate by day on thermals; ducks + geese often migrate at night.' },
     { q: 'Are bird feeders actually good for birds?',
       a: 'Mostly yes — provided you keep them clean. Clean feeders weekly (mild bleach + water solution) to prevent disease spread (salmonellosis, conjunctivitis). Use various feeder types for various species. Squirrel-proof feeders or just accept squirrels as visitors. Hummingbird feeders need fresh nectar every few days in hot weather.' },
     { q: 'What about climate change + birds?',
@@ -5660,8 +6445,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       maine_status: 'Year-round; abundant',
       breeding: 'Ground nest near water; ~10 eggs; ducklings precocial' },
     { name: 'American Black Duck (Anas rubripes)', type: 'Dabbler',
-      male: 'Dark chocolate brown overall, slightly paler head, olive bill, white wing-linings flashing in flight.',
-      female: 'Same as male; sexes look alike.',
+      male: 'Dark chocolate brown overall, slightly paler head, yellow bill, white wing-linings flashing in flight.',
+      female: 'Like the male but with a dull olive bill.',
       voice: 'Female: low harsh "quack"; male: reedy notes.',
       habitat: 'Maine\'s salt marshes + freshwater wetlands; less suburban than mallard',
       diet: 'Aquatic plants, mollusks, insects',
@@ -5681,7 +6466,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       voice: 'Wings whistle loudly in flight ("the whistler").',
       habitat: 'Maine lakes + coast in winter',
       diet: 'Aquatic insects, snails, small fish',
-      maine_status: 'Winter visitor; breeds further north',
+      maine_status: 'Common winter visitor; also breeds on lakes in northern Maine',
       breeding: 'Tree cavity nester' },
     { name: 'Wood Duck (Aix sponsa)', type: 'Dabbler / cavity nester',
       male: 'One of the world\'s most striking birds: iridescent green crest, red eye, white throat, chestnut breast with white spots.',
@@ -5729,7 +6514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       voice: 'Quiet.',
       habitat: 'Maine\'s freshwater wetlands',
       diet: 'Aquatic plants + invertebrates',
-      maine_status: 'Migrant + occasional breeder',
+      maine_status: 'Common migrant + widespread breeder on Maine\'s freshwater wetlands',
       breeding: 'Marsh nest' },
     { name: 'Greater Scaup (Aythya marila)', type: 'Diving duck',
       male: 'Black + white with rounded green-sheen head.',
@@ -5818,7 +6603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { name: 'Piping Plover', sci: 'Charadrius melodus',
       size: '7 in', habitat: 'Sand beaches above high tide line',
       key_mark: 'Pale gray-brown back, white belly, single black breast band (sometimes broken), orange legs.',
-      maine: 'Breeder May–Aug. ~50 pairs. Federal Threatened.',
+      maine: 'Breeder May–Aug. A record 174 pairs in 2025. Federal Threatened, State Endangered.',
       story: 'Beach-closure programs in spring saving nests. Each pair monitored by volunteers + nest-protection fencing.' },
     { name: 'Semipalmated Plover', sci: 'Charadrius semipalmatus',
       size: '7 in', habitat: 'Mudflats + beaches in migration',
@@ -5885,7 +6670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       key_mark: 'Gray + black-white plumage; in flight: black armpits diagnostic.',
       maine: 'Migrant',
       story: 'Large + striking. Calls plaintively "pee-oo-wee."' },
-    { name: 'Common Snipe', sci: 'Gallinago delicata',
+    { name: 'Wilson\'s Snipe', sci: 'Gallinago delicata',
       size: '11 in', habitat: 'Wet meadows + bogs',
       key_mark: 'Streaked brown overall, very long bill, striped head pattern.',
       maine: 'Breeder + migrant',
@@ -5898,17 +6683,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '12 in', habitat: 'Offshore islands (breeding) + open ocean (winter)',
       key_mark: 'Black back, white belly, large multi-colored bill in breeding (gray in winter).',
       maine: 'Breeder Apr–Aug on Eastern Egg Rock, Matinicus Rock, Petit Manan, Seal Island',
-      story: 'Project Puffin (Audubon, Steve Kress) restored from 0 birds 1970s to ~1,500 pairs today. The most successful seabird restoration in history.' },
+      story: 'Project Puffin (Audubon, Steve Kress) brought puffins back to islands where hunting had wiped them out, the first restoration of a seabird to an island where people had killed it off. Maine now has more than 1,300 pairs.' },
     { name: 'Razorbill', sci: 'Alca torda',
       size: '15 in', habitat: 'Offshore islands + ocean',
       key_mark: 'Black + white; large vertical bill with white line.',
       maine: 'Breeder on a few offshore islands',
-      story: 'Maine\'s most abundant alcid. Recovered from over-hunting.' },
+      story: 'About 750 pairs nest in Maine (State Threatened); the Black Guillemot is Maine\'s most abundant alcid.' },
     { name: 'Common Murre', sci: 'Uria aalge',
       size: '17 in', habitat: 'Offshore islands + ocean',
       key_mark: 'Black + white; thin pointed bill.',
       maine: 'Breeder on a few offshore islands',
-      story: 'Closest living relative of the Great Auk (extinct 1844).' },
+      story: 'The Razorbill is the closest living relative of the extinct Great Auk (1844).' },
     { name: 'Black Guillemot', sci: 'Cepphus grylle',
       size: '13 in', habitat: 'Coastal Maine + offshore',
       key_mark: 'Breeding: jet black with white wing patch + bright red feet + interior mouth.',
@@ -5938,7 +6723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '17 in', habitat: 'Cliff colonies + open ocean',
       key_mark: 'White with gray back, yellow bill, black legs, "ink-dipped" black wingtips.',
       maine: 'Winter visitor offshore',
-      story: 'Maine\'s only true offshore-breeding "cliff gull." Most North American breeding on far-north cliffs.' },
+      story: 'A true "cliff gull" that nests from the Gulf of St. Lawrence + Newfoundland northward; it does not breed in Maine.' },
     { name: 'Common Tern', sci: 'Sterna hirundo',
       size: '14 in', habitat: 'Coast + offshore',
       key_mark: 'Black cap, gray back, white belly, red bill with black tip, forked tail.',
@@ -6059,7 +6844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       maine: 'Maine\'s loons + eider ducks have precocial chicks; warblers + woodpeckers altricial.' },
 
     { topic: 'Pair Bonds + Mating Systems',
-      mechanism: '(a) Monogamy: most common; ~90% of bird species. (b) Polygyny: male mates with multiple females; e.g., Red-winged Blackbird. (c) Polyandry: female mates with multiple males; e.g., Spotted Sandpiper, jacanas. (d) Promiscuous: no pair bond; e.g., grouse + tundra-breeding ducks.',
+      mechanism: '(a) Monogamy: most common; ~90% of bird species. (b) Polygyny: male mates with multiple females; e.g., Red-winged Blackbird. (c) Polyandry: female mates with multiple males; e.g., Spotted Sandpiper, jacanas. (d) Promiscuous: no pair bond; e.g., grouse + hummingbirds.',
       examples: 'Bald Eagles: lifelong monogamy (~75% of pairs). Mallards: monogamy for one breeding season, new pair next year. Red-winged Blackbirds: territorial males may mate with 1–5 females. Phalaropes: female brighter, more aggressive, mates with multiple males.',
       function: 'Mating system depends on resource distribution + ecology. Monogamy when both parents are needed for chick survival; polygyny when one parent can raise chicks alone.',
       maine: 'Most Maine breeding birds are monogamous within a breeding season.' },
@@ -6068,11 +6853,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       mechanism: 'Annual long-distance movement between breeding + wintering grounds. Triggered by photoperiod + food availability + temperature.',
       examples: '(a) Long-distance migrants: Arctic Tern (pole-to-pole, ~44,000 miles/yr). Red Knot (Tierra del Fuego to High Arctic). (b) Short-distance migrants: many sparrows shift only 1,000 miles or less. (c) Altitudinal migrants: some mountain species shift up + down by elevation.',
       function: 'Tracks seasonal food + habitat availability. Birds breed where food abundant in summer, winter where food remains in winter.',
-      maine: 'Maine sits on Atlantic Flyway. Songbird migration peaks early May + late September. Hawk migration peaks September at Bradbury Mtn.' },
+      maine: 'Maine sits on Atlantic Flyway. Songbird migration peaks early May + late September. Fall hawk migration peaks mid-September at Cadillac Mountain (Acadia); Bradbury Mtn counts the spring flight.' },
 
     { topic: 'Communication — Songs + Calls',
       mechanism: 'Songs: complex vocalizations, usually by males in breeding season, used for territory + mate attraction. Calls: shorter, used year-round for communication + alarm.',
-      examples: 'Song: White-throated Sparrow "Old-Sam-Peabody, Peabody, Peabody." Call: chickadee "chick-a-dee-dee-dee" with variable "dee" notes signaling threat level (more dees = bigger predator).',
+      examples: 'Song: White-throated Sparrow "Old-Sam-Peabody, Peabody, Peabody." Call: chickadee "chick-a-dee-dee-dee" with variable "dee" notes signaling threat level (more dees = smaller, more dangerous predator).',
       function: 'Songs: territory + mate. Calls: contact + alarm + flock cohesion.',
       maine: 'Maine\'s dawn chorus peaks late May–early June. Each species\' song is its territorial billboard.' },
 
@@ -6084,7 +6869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { topic: 'Foraging — Niche Differentiation',
       mechanism: 'Birds partition food resources to coexist. Different species exploit different parts of the same habitat.',
-      examples: '(a) Five warbler species in same conifer tree: each uses different layer (Cape May at top, Bay-breasted middle, Yellow-rumped on outer branches, etc.) — MacArthur 1958 classic study. (b) Nuthatches walk DOWN trunks; woodpeckers walk UP. (c) Chickadees gather seeds; nuthatches cache them in bark.',
+      examples: '(a) Five warbler species in same conifer tree: each uses different layer (Cape May at the treetop tips, Bay-breasted in the middle interior, Yellow-rumped low in the tree and below, etc.) — MacArthur 1958 classic study. (b) Nuthatches walk DOWN trunks; woodpeckers walk UP. (c) Chickadees and nuthatches both cache seeds in bark crevices, then find them again from memory.',
       function: 'Reduces direct competition. Allows multiple species to coexist in same habitat.',
       maine: 'Maine spruce-fir forests in summer demonstrate niche differentiation among 5+ warbler species.' }
   ];
@@ -6099,11 +6884,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { topic: 'Respiratory System',
       detail: 'Unique to birds: through-flow breathing via air sacs. Air passes through lungs in one direction (not in-and-out like mammals). Enables high oxygen uptake at altitude.',
       function: 'Supports high-altitude flight (some birds fly above 25,000 ft) + sustained flight metabolism.',
-      example: 'Bar-headed Goose flies over Himalayas at 26,000+ ft. Its respiratory system extracts oxygen at altitudes that would kill a human within minutes.' },
+      example: 'Bar-headed Geese cross the Himalayas, tracked as high as 23,900 ft (7,290 m). Their lungs extract oxygen where an unacclimatized human would black out within minutes.' },
 
     { topic: 'Skeleton + Weight Reduction',
       detail: 'Hollow ("pneumatic") bones with internal struts. Strong but light. Fused bones reduce muscle requirements.',
-      function: 'Reduces weight for flight. Skeletal mass is ~5% of bird vs 7–8% in similar-sized mammals.',
+      function: 'Thin, hollow bones save space, but bird bone is denser, so the skeleton weighs about the same share of the body as a similar-sized mammal\'s.',
       example: 'A 9 lb bald eagle has a skeleton weighing < 1 lb. Hollow bones contain air spaces connected to respiratory system.' },
 
     { topic: 'Crop + Gizzard',
@@ -6122,12 +6907,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       example: 'A female Bluebird sees colors in a male\'s blue plumage that humans cannot. Tit species use UV reflectance for mate choice.' },
 
     { topic: 'Hearing',
-      detail: 'Birds hear about the same range as humans (1–4 kHz peak sensitivity). Owls have asymmetric ear openings for vertical sound localization.',
+      detail: 'Birds hear a narrower range than humans (best at 1–4 kHz, rarely above ~10 kHz; young humans reach 20 kHz). Owls have asymmetric ear openings for vertical sound localization.',
       function: 'Songbird communication + predator detection. Owls hunt by sound (Barn Owls can catch mice in total darkness).',
       example: 'Northern Saw-whet Owl can find a mouse under a foot of snow by hearing alone.' },
 
     { topic: 'Magnetic + Stellar Navigation',
-      detail: 'Birds use Earth\'s magnetic field for compass direction + star patterns for night navigation. Detection involves specialized retinal cells (cryptochromes).',
+      detail: 'Birds use Earth\'s magnetic field for compass direction + star patterns for night navigation. The magnetic sense likely involves light-sensitive proteins (cryptochromes) in the eye.',
       function: 'Long-distance migration relies on these senses. Birds that migrate by night use star map.',
       example: 'Indigo Buntings raised indoors orient correctly only when shown a star map in a planetarium.' }
   ];
@@ -6137,7 +6922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { era: '160 million years ago',
       event: 'First feathered dinosaurs',
       what: 'Theropod dinosaurs (predatory) develop simple feathers — initially for insulation + display, not flight.',
-      example: 'Sinosauropteryx fossils from China show simple filamentous "proto-feathers" on a non-flying theropod.' },
+      example: 'Anchiornis fossils from China (~160 million years old) show feathers on a small theropod; Sinosauropteryx (~125 million years old) was the first found with "proto-feathers."' },
 
     { era: '150 million years ago',
       event: 'Archaeopteryx',
@@ -6151,7 +6936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { era: '66 million years ago',
       event: 'K-Pg extinction event',
-      what: 'Mass extinction wipes out non-avian dinosaurs + most bird lineages. Only Ornithurae survive.',
+      what: 'Mass extinction wipes out non-avian dinosaurs + most bird lineages. Only modern birds (Neornithes) survive.',
       example: 'Asteroid impact + ash + temperature shift. Modern birds descended from a small surviving subset of Ornithurae.' },
 
     { era: '65 million years ago',
@@ -6182,11 +6967,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { era: '500 years ago',
       event: 'Historic extinctions begin',
       what: 'European colonization causes hundreds of bird species to go extinct or near-extinct: Dodo, Great Auk, Passenger Pigeon, Carolina Parakeet.',
-      example: 'Great Auk (last seen 1844 off Iceland; once common Gulf of Maine breeder) — close relative of modern murres.' },
+      example: 'Great Auk (last pair killed 1844 off Iceland; nearest colonies were Newfoundland + Gulf of St. Lawrence) — closest living relative is the Razorbill.' },
 
     { era: 'Today',
-      event: '~10,500 living species',
-      what: '~10,500 living bird species recognized worldwide. ~700+ breed in North America. ~280 breed in Maine.',
+      event: '~11,000 living species',
+      what: 'About 11,000 living bird species recognized worldwide. ~700+ breed in North America. The Maine Bird Atlas (2018–2022) confirmed over 200 breeding species.',
       example: 'Ongoing taxonomic revision splits or lumps species annually. eBird, allaboutbirds.org maintain current lists.' }
   ];
 
@@ -6220,7 +7005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { name: 'Margaret Morse Nice (1883–1974)',
       contribution: 'Pioneer behavioral ecologist. Detailed studies of Song Sparrow life history. Major contributor to American ornithology.',
       legacy: 'Modeled rigorous individual-based research methods.' },
-    { name: 'Ned Brinkley + Maine\'s Ornithologists',
+    { name: 'Maine\'s Ornithologists',
       contribution: 'Various Maine ornithologists + Cornell-trained researchers continue conservation + research work. Maine Audubon + UMaine programs train new researchers.',
       legacy: 'Local Maine data feeds into national surveys + conservation prioritization.' },
     { name: 'Bridget Stutchbury',
@@ -6267,7 +7052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       adult_breeding: 'Black head + dark back; striking with red bill.',
       first_winter: 'Dark gray-brown with dark hood.',
       voice: 'Distinctive "laughing" calls "ha-ha-ha-ha."',
-      where: 'Summer visitor coastal Maine; uncommon',
+      where: 'Summer breeder on a few coastal tern-colony islands',
       tip: 'Black-headed breeding plumage diagnostic.' },
 
     { name: 'Bonaparte\'s Gull',
@@ -6288,7 +7073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       first_winter: 'Pale overall.',
       voice: 'Similar to Herring.',
       where: 'Winter visitor coastal Maine; uncommon',
-      tip: 'White wingtips diagnostic. Confused with Glaucous Gull.' },
+      tip: 'Wingtips white to pale gray, never black. Smaller + smaller-billed than Glaucous.' },
 
     { name: 'Glaucous Gull',
       sci: 'Larus hyperboreus',
@@ -6298,7 +7083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       first_winter: 'Pale white-buff.',
       voice: 'Deep.',
       where: 'Winter visitor coastal Maine; uncommon',
-      tip: 'Largest Maine gull. White wingtips.' }
+      tip: 'Near Great Black-backed size (can be as heavy). White wingtips.' }
   ];
 
   // ── IRRUPTIONS — irruptive winter visitors
@@ -6315,7 +7100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       pattern: 'Irregular winter visits.',
       where_to_look: 'Maine\'s mountain-ash + crabapple + native fruit trees.',
       story: 'Massive friendly finch; lets observers approach close.' },
-    { species: 'Bohemian Waxwing', irrupt_when: 'When Cedar Waxwings have eaten the local fruit + Bohemian moves south',
+    { species: 'Bohemian Waxwing', irrupt_when: 'When fruit crops (mountain-ash etc.) fail in the northern boreal forest',
       pattern: 'Spectacular flocks of 100+.',
       where_to_look: 'Maine fruit-bearing trees + shrubs in winter.',
       // Corrected: "gray rump distinguishes them" is a mark both birds roughly
@@ -6330,14 +7115,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       pattern: 'Irregular.',
       where_to_look: 'Maine pine stands.',
       story: 'Has multiple "types" with different bill sizes for different cone species.' },
-    { species: 'Pine Siskin', irrupt_when: 'Less irruptive than other finches; some years better than others',
+    { species: 'Pine Siskin', irrupt_when: 'Strongly irruptive; follows conifer + birch seed crops',
       pattern: 'Variable Maine winter numbers.',
       where_to_look: 'Conifer + birch + feeder.',
       story: 'Small streaky finch with yellow wing flashes.' },
     { species: 'Evening Grosbeak', irrupt_when: 'Years of low boreal cone or fruit crop',
       pattern: 'Large yellow-and-black flocks.',
       where_to_look: 'Maine feeders + maple-seed-bearing trees.',
-      story: 'Once common Maine breeder; now mostly irruptive winter visitor. Population has crashed since 1970s.' }
+      story: 'Still breeds in Maine\'s spruce-fir forests but has declined more than 90% since 1970; also an irruptive winter visitor.' }
   ];
 
   // ── ENDANGERED FOCAL SPECIES — Maine listed
@@ -6346,7 +7131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       sci: 'Charadrius melodus',
       status: 'Federal Threatened; State Endangered',
       threats: 'Beach development, human disturbance, predation by gulls + raccoons, sea-level rise',
-      maine: '~50 pairs annually. Each nest protected with symbolic fencing + volunteer monitors',
+      maine: 'About 150–185 pairs in recent years. Each nest protected with symbolic fencing + volunteer monitors',
       action: 'Maine Audubon Piping Plover + Least Tern Project monitors. Pet leashing on beaches critical.' },
 
     { name: 'Roseate Tern',
@@ -6358,21 +7143,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { name: 'Black-crowned Night Heron',
       sci: 'Nycticorax nycticorax',
-      status: 'State Special Concern',
+      status: 'State Endangered',
       threats: 'Habitat loss, wetland degradation, declining heronry sites',
       maine: 'Limited Maine breeders; population shrinking.',
       action: 'Heronry protection + wetland conservation.' },
 
     { name: 'Great Cormorant',
       sci: 'Phalacrocorax carbo',
-      status: 'State Special Concern',
+      status: 'State Threatened',
       threats: 'Disturbance + climate change',
       maine: 'Small breeding population in coastal Maine; outnumbered by Double-crested.',
       action: 'Maine-specific monitoring + protection.' },
 
     { name: 'Black Tern',
       sci: 'Chlidonias niger',
-      status: 'State Special Concern',
+      status: 'State Endangered',
       threats: 'Wetland loss',
       maine: 'Limited Maine breeders; primarily Aroostook County.',
       action: 'Wetland habitat protection.' },
@@ -6386,30 +7171,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { name: 'Bicknell\'s Thrush',
       sci: 'Catharus bicknelli',
-      status: 'Watch List; State Endangered',
+      status: 'Watch List; State Threatened (2023)',
       threats: 'Mountain habitat change with climate warming. Specialized for high-elevation spruce-fir.',
       maine: 'Limited breeding at high elevations in western Maine + Mount Katahdin area',
       action: 'High-elevation conservation; climate-vulnerable population.' },
 
     { name: 'Saltmarsh Sparrow',
       sci: 'Ammospiza caudacuta',
-      status: 'Federal Petitioned; State Special Concern',
+      status: 'Federal: petitioned, under review; State Endangered (2023)',
       threats: 'Sea-level rise — saltmarshes flooding faster than birds can adapt',
       maine: 'Limited breeders in southern Maine saltmarshes',
       action: 'Saltmarsh restoration + sea-level adaptation planning.' },
 
     { name: 'Sedge Wren',
       sci: 'Cistothorus stellaris',
-      status: 'State Special Concern',
+      status: 'State Endangered',
       threats: 'Specialized for sedge meadows; habitat loss',
       maine: 'Limited Maine breeders.',
       action: 'Sedge meadow protection.' },
 
     { name: 'Bald Eagle',
       sci: 'Haliaeetus leucocephalus',
-      status: 'Federal Delisted (recovered); State Threatened',
+      status: 'Federal Delisted 2007; removed from Maine list 2009',
       threats: 'Lead poisoning (from spent ammunition + fishing tackle); collisions; some disturbance',
-      maine: '~700 active nests today (from <60 in 1970). Recovery success.',
+      maine: 'More than 700 nesting pairs today (from 21 in 1967). Recovery success.',
       action: 'Lead-free ammunition + fishing tackle; continued habitat protection.' }
   ];
 
@@ -6426,7 +7211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       type: 'Offshore island', size: '7 acres',
       key_species: 'Atlantic Puffin, Common Tern, Roseate Tern, Razorbill, Common Eider',
       best_seasons: 'Apr–Aug (breeding)',
-      access: 'Boat trip only — Hardy Boat Cruises + Cap\'n Fish offer tours from New Harbor',
+      access: 'Boat trip only — Hardy Boat Cruises (New Harbor) + Cap\'n Fish (Boothbay Harbor) offer tours',
       tip: 'Bring binoculars + warm layers. Project Puffin\'s flagship restoration site.' },
 
     { name: 'Acadia National Park',
@@ -6438,10 +7223,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { name: 'Bradbury Mountain (Pownal)',
       type: 'Hawkwatch + forest', size: '~800 acres',
-      key_species: 'Sept-Oct: Broad-winged Hawk, Sharp-shinned, Cooper\'s, eagle migrants',
-      best_seasons: 'Sept 5–25 peak; Bradbury Mountain Hawkwatch staffed Sept 1–Oct 31',
+      key_species: 'Apr–May: Broad-winged Hawk, Osprey, Sharp-shinned, American Kestrel, Bald Eagle',
+      best_seasons: 'Spring hawkwatch staffed daily Mar 15–May 15; Broad-winged peak late April',
       access: 'Bradbury Mountain State Park summit hike (1 hr)',
-      tip: 'Best on clear NW-wind day after a cold front passage. Daily totals 100s–1000s.' },
+      tip: 'Best on warm days with south or southwest winds. Big days pass 1,000 raptors (record about 1,800).' },
 
     { name: 'Baxter State Park / Mount Katahdin',
       type: 'Boreal forest + alpine', size: '209,644 acres',
@@ -6592,7 +7377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { topic: 'Hatching',
       process: 'Chick uses "egg tooth" on bill tip to crack shell. Hatches in 1–48 hours depending on species.',
       altricial: 'Helpless, naked, eyes closed. Need parental care. E.g., songbirds, raptors, woodpeckers.',
-      precocial: 'Born feathered, eyes open, mobile, can feed self. E.g., ducks, geese, sandpipers, grouse.' },
+      precocial: 'Hatch covered in down, eyes open, mobile, can feed self. E.g., ducks, geese, sandpipers, grouse.' },
 
     { topic: 'Fledging',
       timing: 'Time from hatching to first flight. Songbirds ~12–18 days; raptors ~6–12 weeks; albatross ~9 months.',
@@ -6607,7 +7392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       examples: 'Florida Scrub-Jay, Acorn Woodpecker, some Maine species. Less common in temperate species.' },
 
     { topic: 'Brood parasitism',
-      mechanism: 'Brown-headed Cowbird (Maine + worldwide) lays eggs in other birds\' nests. Host raises cowbird chick instead of own.',
+      mechanism: 'Brown-headed Cowbird (North America only) lays eggs in other birds\' nests. Hosts often raise the cowbird at the expense of their own chicks.',
       hosts: 'Mostly songbirds smaller than cowbird. Most cannot recognize alien egg.',
       conservation: 'Cowbirds expanded with deforestation + cattle ranching. Major threat to some songbird species.' },
 
@@ -6633,7 +7418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       key_mark: 'White throat sharply outlined; black + white (or tan + brown) head striping; yellow lores.',
       song: '"Old-Sam-Peabody, Peabody, Peabody."',
       tip: 'White-striped + tan-striped morphs both occur — pair off.',
-      maine: 'Breeder northern Maine April–October; migrant + winter southern Maine.' },
+      maine: 'Abundant breeder statewide April–October; a few winter in southern Maine.' },
     { name: 'White-crowned Sparrow', sci: 'Zonotrichia leucophrys',
       size: '7 in', habitat: 'Brushy edges in migration',
       key_mark: 'Bold black + white crown striping (no yellow); plain gray face + breast; pinkish bill.',
@@ -6680,7 +7465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '5 in', habitat: 'Coastal salt marshes',
       key_mark: 'Buff-orange face, gray central head stripe, light buff breast with fine streaks.',
       song: 'Wheezing buzz "tssss."',
-      tip: 'Federally listed; rare Maine breeder.',
+      tip: 'Not federally listed (petition pending); State Endangered; rare Maine breeder.',
       maine: 'Limited breeder in southern Maine salt marshes.' },
     { name: 'Nelson\'s Sparrow', sci: 'Ammospiza nelsoni',
       size: '5 in', habitat: 'Coastal grasslands + marshes',
@@ -6727,7 +7512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       key_mark: 'Brown back, rufous tail (red contrasts with brown back), spotted breast, white eye-ring.',
       song: 'Flute-like ascending notes.',
       maine: 'Most common Maine thrush; breeder + migrant.',
-      story: 'Maine\'s state bird candidate.' },
+      story: 'Vermont\'s state bird (Maine\'s is the chickadee).' },
     { name: 'Wood Thrush', sci: 'Hylocichla mustelina',
       size: '7.75 in', habitat: 'Mature deciduous forest',
       key_mark: 'Reddish-brown back, white breast with bold black spots, white eye-ring.',
@@ -6744,7 +7529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '6.5 in', habitat: 'Mountain spruce-fir above 2,500 ft',
       key_mark: 'Like Gray-cheeked but with warmer rust on flanks + tail; gray cheek.',
       song: 'Descending flute-like.',
-      maine: 'Breeder on Maine mountain summits; State Endangered.',
+      maine: 'Breeder on Maine mountain summits; State Threatened.',
       story: 'Climate-vulnerable — mountain habitat shrinking with warming.' },
     { name: 'Swainson\'s Thrush', sci: 'Catharus ustulatus',
       size: '7 in', habitat: 'Spruce-fir + mixed forest',
@@ -6776,7 +7561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       story: 'Smallest US woodpecker.' },
     { name: 'Hairy Woodpecker', sci: 'Picoides villosus',
       size: '9 in', habitat: 'Forests, especially mature deciduous',
-      key_mark: 'Like Downy but larger, longer bill (longer than head).',
+      key_mark: 'Like Downy but larger; bill about as long as the head.',
       voice: 'Sharp "peek" call + rattle.',
       maine: 'Year-round.',
       story: 'Often confused with Downy — Hairy is larger + has proportionally larger bill.' },
@@ -6860,7 +7645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '8 in', habitat: 'Boreal forest + winter feeders',
       key_mark: 'Male: bold yellow + black + white. Female: muted gray-buff.',
       song: '"Cleer" calls.',
-      maine: 'Winter visitor; once Maine breeder, now mostly winter only.',
+      maine: 'Scarce breeder (north) + irruptive winter visitor.',
       story: 'Population has crashed since 1970s. Once super-abundant.' },
     { name: 'Red Crossbill', sci: 'Loxia curvirostra',
       size: '6 in', habitat: 'Conifer specialist',
@@ -6882,7 +7667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       size: '8.75 in', habitat: 'Marshes + meadows',
       key_mark: 'Male: jet black with bold red-and-yellow shoulder epaulets. Female: brown streaked (looks like sparrow).',
       song: '"Conk-a-ree" — iconic marsh song.',
-      maine: 'Year-round + abundant.',
+      maine: 'Abundant summer breeder; a few linger in winter.',
       story: 'Among the most abundant N. American birds (~150M).' },
     { name: 'Common Grackle', sci: 'Quiscalus quiscula',
       size: '12.5 in', habitat: 'Open country, agriculture, suburbs',
@@ -6913,7 +7698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       key_mark: 'Male: black with white back + buff "shawl" on head. Female: streaked brown.',
       song: 'Babbling jangle of notes.',
       maine: 'Breeder Apr–August; declining due to hay-cutting timing.',
-      story: 'Longest North American songbird migration — to Argentina + back.' },
+      story: 'One of the longest songbird migrations: about 12,500 miles round trip to Argentina.' },
     { name: 'American Crow', sci: 'Corvus brachyrhynchos',
       size: '17.5 in', habitat: 'Everywhere',
       key_mark: 'All black, square tail, family groups in flight.',
@@ -6932,7 +7717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       song: '"Jay-jay-jay" + mimicry (especially of hawks).',
       maine: 'Year-round + migrant.',
       story: 'Mimics Red-shouldered + Red-tailed Hawk calls.' },
-    { name: 'Gray Jay (Canada Jay)', sci: 'Perisoreus canadensis',
+    { name: 'Canada Jay', sci: 'Perisoreus canadensis',
       size: '11.5 in', habitat: 'Boreal forest',
       key_mark: 'Gray with white head + black stripe behind eye.',
       song: '"Whee-ah" plus mimicry.',
@@ -6979,7 +7764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { name: 'Yellow-bellied Flycatcher', sci: 'Empidonax flaviventris',
       size: '5.5 in', habitat: 'Spruce-fir bogs',
       key_mark: 'Yellowish underparts (more than other Empidonax), prominent yellow eye ring + wing bars.',
-      song: 'Soft "che-bek."',
+      song: 'Abrupt, hoarse "che-lek"; a rising "chu-wee" call.',
       maine: 'Breeder May–August in northern + mountain Maine.',
       story: 'Bog specialist.' },
     { name: 'Least Flycatcher', sci: 'Empidonax minimus',
@@ -7011,7 +7796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       key_mark: 'Olive-green back, white belly, white eyebrow + dark eyeline, red eye (adults).',
       song: 'Endless robin-like phrases ("Here am I... where are you... I am here").',
       maine: 'Breeder May–September; very common.',
-      story: 'Sings 20,000+ phrases per day — one of Earth\'s most persistent singers.' },
+      story: 'One male sang over 20,000 songs in a single day, a record for persistence.' },
     { name: 'Blue-headed Vireo', sci: 'Vireo solitarius',
       size: '5.25 in', habitat: 'Conifer + mixed forest',
       key_mark: 'Blue-gray head with white "spectacles" (eye ring + line to bill), olive back, yellowish flanks.',
@@ -7066,7 +7851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { name: 'Spruce-Fir (Boreal) Forest',
       description: 'Black spruce, red spruce, balsam fir, white spruce. Northern + mountain Maine. Cool, moist, dense canopy.',
-      key_birds: 'Spruce Grouse, Boreal Chickadee, Gray Jay, Black-backed Woodpecker, Bay-breasted Warbler, Blackpoll Warbler, Cape May Warbler, Olive-sided Flycatcher, Yellow-bellied Flycatcher, Boreal Owl (rare), Bicknell\'s Thrush (high elevation)',
+      key_birds: 'Spruce Grouse, Boreal Chickadee, Canada Jay, Black-backed Woodpecker, Bay-breasted Warbler, Blackpoll Warbler, Cape May Warbler, Olive-sided Flycatcher, Yellow-bellied Flycatcher, Boreal Owl (rare), Bicknell\'s Thrush (high elevation)',
       conservation: 'Climate-vulnerable — boreal forest shrinking at southern edge as climate warms. Maine boreal bird populations at southern range edge for species.',
       sites: 'Baxter State Park, Aroostook County wildlands, Stratton Brook, Caribou Bog' },
 
@@ -7090,8 +7875,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { name: 'Mature Mixed Forest',
       description: 'Mixed conifer + deciduous. Maine\'s most-common mature forest type. Productive habitat with diverse age + structure.',
-      key_birds: 'Yellow-rumped Warbler, Black-throated Green Warbler, Magnolia Warbler, Black-throated Blue Warbler, Blue-headed Vireo, Veery, Pileated Woodpecker, Northern Goshawk, Barred Owl',
-      conservation: 'Maintained by sustainable forestry. Older forest is critical for Northern Goshawk + Pileated. Maine state lands managed for diverse forest types.',
+      key_birds: 'Yellow-rumped Warbler, Black-throated Green Warbler, Magnolia Warbler, Black-throated Blue Warbler, Blue-headed Vireo, Veery, Pileated Woodpecker, American Goshawk, Barred Owl',
+      conservation: 'Maintained by sustainable forestry. Older forest is critical for American Goshawk + Pileated. Maine state lands managed for diverse forest types.',
       sites: 'Western mountains, Penobscot watershed, much of interior Maine' },
 
     { name: 'Young Second-Growth Forest',
@@ -7103,7 +7888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { name: 'River + Stream Corridor',
       description: 'Riparian zones along Maine\'s major rivers (Penobscot, Kennebec, Androscoggin, Saco). Critical wildlife corridors.',
       key_birds: 'Belted Kingfisher, Spotted Sandpiper, Common Merganser, Common Goldeneye, Hooded Merganser, Wood Duck, Bald Eagle, Osprey',
-      conservation: 'Penobscot River Restoration (dam removals) restored ~1,000 miles of habitat. Fish + bird populations recovering.',
+      conservation: 'Penobscot River Restoration (dam removals) reopened nearly 2,000 miles of river habitat. Fish + bird populations recovering.',
       sites: 'Below Bangor (Penobscot), Sheepscot, Sandy River' },
 
     { name: 'Lake Shoreline + Open Water',
@@ -7158,9 +7943,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       future: 'Marsh restoration + sediment management critical to species survival.' },
 
     { topic: 'Ocean Temperature + Seabirds',
-      what: 'Gulf of Maine warming ~4× global ocean average. Fish prey (alewives, herring, sand lance) distributions shifting.',
+      what: 'Gulf of Maine warming nearly 3× the global ocean average. Fish prey (alewives, herring, sand lance) distributions shifting.',
       example: 'Atlantic Puffin chick mortality has spiked in some warm years when prey fish move beyond foraging range.',
-      magnitude: 'Gulf of Maine SST has risen ~3°C since 1980.',
+      magnitude: 'Gulf of Maine surface temperature has risen about 3.5°F (~2°C) since 1982.',
       future: 'Continued warming may affect seabird breeding success + restoration efforts.' },
 
     { topic: 'Storm Intensity + Migration',
@@ -7239,7 +8024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       height: '4-6 ft; open area + water within 1/4 mile',
       placement: 'Pair with bluebird boxes',
       timing: 'Install by April',
-      tips: 'Pair with bluebird boxes — different breeding cycles allow coexistence' },
+      tips: 'Pair with bluebird boxes: each species drives off its own kind, so one pair of each can share a spot' },
     { species: 'Black-capped Chickadee',
       box_size: 'Floor: 4×4 in; depth: 8 in', entry: '1-1.25 in round',
       height: '5-15 ft; wooded edge or thicket',
@@ -7259,7 +8044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       timing: 'Install by February',
       tips: 'Maine range-expanding species; new colonizers find boxes.' },
     { species: 'Wood Duck',
-      box_size: 'Floor: 10×10 in; depth: 24 in', entry: '4 in round, 18 in above floor',
+      box_size: 'Floor: 10×10 in; depth: 24 in', entry: '3 in high × 4 in wide oval, ~18 in above floor',
       height: '6-10 ft over water or near water',
       placement: 'Open + sheltered from north + west winds',
       timing: 'Install by January',
@@ -7350,10 +8135,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       examples: 'Sea ducks, oystercatchers',
       adaptations: 'Strong specialized bills to crack shells. Diving ability.',
       foods: 'Mussels, clams, urchins, crabs.',
-      maine_examples: 'Common Eider, scoters (3 species), Black Oystercatcher (rare in Maine)' },
+      maine_examples: 'Common Eider, scoters (3 species), American Oystercatcher (uncommon in Maine)' },
 
     { type: 'Aquatic Plants + Filter Feeding',
-      examples: 'Mute swans, mallards, geese, mergansers, scaups',
+      examples: 'Mute swans, mallards, geese, Northern Shovelers, wigeon',
       adaptations: 'Wide flat bills for filtering. Long necks for reaching.',
       foods: 'Aquatic plants, seeds, invertebrates.',
       maine_examples: 'Mallard (mostly plants), Wood Duck (acorns + plants), Brant (eelgrass specialist)' }
@@ -7384,7 +8169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { topic: 'Navigation',
       compass: 'Multiple compass systems: Sun position, star patterns, Earth\'s magnetic field, polarized light, smell.',
-      learning: 'Some birds inherit migration routes (waterfowl, geese — follow parents); others use innate compass + must learn map (first-year songbirds).',
+      learning: 'Many songbirds inherit their route (direction + distance) and migrate alone their first year; geese, cranes + swans learn routes by following parents.',
       research: 'Geolocators + GPS tags now reveal individual songbird routes with precision.' },
 
     { topic: 'Stopover Sites',
@@ -7394,7 +8179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       conservation: 'Stopover protection often more important than breeding habitat — without refueling, migration fails.' },
 
     { topic: 'Hazards of Migration',
-      window_collisions: 'Up to 1 billion US birds die in window strikes during migration alone.',
+      window_collisions: 'About 365–988 million US birds die hitting buildings and windows each year, many during migration.',
       tower_collisions: 'Lit communication towers fatally attract night migrants on cloudy nights — Maine + national lighting reforms ongoing.',
       cat_predation: 'Migrants exhausted from long flights vulnerable to cat predation at stopover sites.',
       weather_loss: 'Storms can blow migrants off course or into ocean.',
@@ -7402,11 +8187,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { topic: 'Maine\'s Migration Calendar',
       spring: 'March: waterfowl + early shorebirds. April: thrushes, kingfishers, sparrows. May: warbler peak (especially mid-late May).',
-      fall: 'August: shorebirds, swallows. September: warblers, hawks (Bradbury Mountain peak). October: thrushes, ducks. November: late waterfowl + buntings.',
+      fall: 'August: shorebirds, swallows. September: warblers, hawks (Cadillac Mountain peak). October: thrushes, ducks. November: late waterfowl + buntings.',
       year_round: 'Some species (chickadees, eagles, owls) don\'t migrate.' },
 
     { topic: 'Endurance Records',
-      bar_tailed_godwit: 'Bar-tailed Godwit holds world record — 7,500 miles nonstop Alaska to New Zealand.',
+      bar_tailed_godwit: 'Bar-tailed Godwit holds world record — about 8,400 miles (13,560 km) nonstop, Alaska to Tasmania (2022).',
       red_knot: 'Red Knot migrates from Tierra del Fuego to High Arctic — annual round-trip ~20,000 miles.',
       arctic_tern: 'Arctic Tern annual ~44,000 miles — pole to pole twice.',
       maine_birds: 'Maine\'s Bobolink migrates to Argentina (~12,000 miles round trip). Wood Thrush to Central America.' }
@@ -7462,12 +8247,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { term: 'Natal down', def: 'First downy feathers on newly-hatched chicks.' },
     { term: 'Nestling', def: 'Helpless chick in nest, between hatching + fledging.' },
     { term: 'Niche', def: 'Ecological role of species — what it eats, where it lives, how it interacts.' },
-    { term: 'Nominate subspecies', def: 'First-described subspecies; carries the species name. Other subspecies have hyphenated suffix.' },
+    { term: 'Nominate subspecies', def: 'First-described subspecies; its third name repeats the species name (Junco hyemalis hyemalis). Other subspecies get a different third name.' },
     { term: 'Olive', def: 'Greenish-brown color common in many warblers + thrushes.' },
     { term: 'Order', def: 'Taxonomic level: birds are class Aves; major orders include Passeriformes (songbirds), Anseriformes (waterfowl), Falconiformes (falcons).' },
     { term: 'Outer rectrix', def: 'Outermost tail feather. Color/pattern often diagnostic (Vesper Sparrow white outer rectrices).' },
     { term: 'Owls', def: 'Strigidae family. 8 species in Maine. Nocturnal + crepuscular predators.' },
-    { term: 'Passerines', def: 'Songbirds. Order Passeriformes. ~5,000 species worldwide; 50%+ of all birds.' },
+    { term: 'Passerines', def: 'Songbirds. Order Passeriformes. ~6,500 species worldwide; about 60% of all birds.' },
     { term: 'Pelagic', def: 'Open-ocean. Pelagic birding requires boat trips. Pelagic species rarely come ashore except to breed.' },
     { term: 'Pellet', def: 'Indigestible material (bones, fur, feathers) regurgitated by raptors + some others. Owl pellets diagnostic.' },
     { term: 'Phenology', def: 'Study of seasonal timing of life events: migration, breeding, etc. Climate change affects phenology.' },
@@ -7475,7 +8260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { term: 'Plumage', def: 'A bird\'s entire feather covering. Breeding vs non-breeding plumage in many species.' },
     { term: 'Polygyny', def: 'Male mates with multiple females. Red-winged Blackbird is a Maine example.' },
     { term: 'Polyandry', def: 'Female mates with multiple males. Spotted Sandpiper is an example.' },
-    { term: 'Precocial', def: 'Born feathered, eyes open, mobile, self-feeding. Ducks, geese, sandpipers, grouse.' },
+    { term: 'Precocial', def: 'Hatch covered in down, eyes open, mobile, self-feeding. Ducks, geese, sandpipers, grouse.' },
     { term: 'Preening', def: 'Daily feather maintenance. Re-hooks barbules + applies oil from uropygial gland.' },
     { term: 'Primaries', def: 'Outermost flight feathers. Power flight surface.' },
     { term: 'Pterylae', def: 'Feather tracts on a bird\'s skin. Feathers grow from defined tracts, not entire surface.' },
@@ -7488,15 +8273,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { term: 'Scapulars', def: 'Shoulder feathers. Distinctive color in some species.' },
     { term: 'Secondaries', def: 'Inner flight feathers (proximal to body).' },
     { term: 'Speculum', def: 'Iridescent patch on the wing of dabbling ducks, often visible in flight + sometimes when sitting.' },
-    { term: 'Spizella', def: 'Genus of small sparrows: Chipping, Field, American Tree, others.' },
+    { term: 'Spizella', def: 'Genus of small sparrows: Chipping, Field, Clay-colored, Brewer\'s (American Tree Sparrow is now Spizelloides).' },
     { term: 'Stoop', def: 'High-speed dive of falcons (especially Peregrine).' },
     { term: 'Subspecies', def: 'Distinct population within a species, often defined by range + plumage variation.' },
     { term: 'Sun-bathing', def: 'Spread-wing posture for vitamin D + parasite control.' },
     { term: 'Supercilium', def: 'Eyebrow — stripe above the eye.' },
     { term: 'Talon', def: 'Sharp curved claw of raptor foot.' },
-    { term: 'Tarsus', def: 'Lower leg bone. Some species have distinctive tarsus color (Snowy Egret yellow vs Great Egret black).' },
+    { term: 'Tarsus', def: 'Lower leg bone. Some species have distinctive tarsus color (Snowy Egret: black legs, yellow feet; Great Egret: legs + feet all black).' },
     { term: 'Throat', def: 'Below the bill. Often most colorful + distinctive.' },
-    { term: 'Tomial tooth', def: 'Tooth-like projection on bill edge of falcons + some falcons. Used to sever spinal cord of prey.' },
+    { term: 'Tomial tooth', def: 'Tooth-like projection on bill edge of falcons + some kites and shrikes. Used to sever spinal cord of prey.' },
     { term: 'Topography', def: 'Body regions used in description. Birders need to know basic topography for ID.' },
     { term: 'Trail', def: 'Bird trail — series of feeders or habitat sites used by birds + birders.' },
     { term: 'Tundra', def: 'Cold, treeless region. Breeding habitat for Snowy Owl, snow buntings, many shorebirds + waterfowl.' },
@@ -7555,7 +8340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // already knows those birds, which is not who opens a dichotomous key.
         { label: 'Tiny (sparrow + smaller, 4-6 in)', next: 'tiny', sizeIn: 5 },
         { label: 'Small (7-10 in, robin-sized)', next: 'small', sizeIn: 9 },
-        { label: 'Medium (10-15 in, crow-sized)', next: 'medium', sizeIn: 13 },
+        { label: 'Medium (10-15 in, jay/dove-sized)', next: 'medium', sizeIn: 13 },
         { label: 'Large (15-25 in, hawk-sized)', next: 'large', sizeIn: 20 },
         { label: 'Very large (25+ in, eagle/goose)', next: 'huge', sizeIn: 30 }] },
     { id: 'tiny', question: 'What color is most of the body?',
@@ -7568,7 +8353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { id: 'tiny-bw', result: 'Likely Black-capped Chickadee or Downy Woodpecker — see Chickadee Field Marks tool.' },
     { id: 'tiny-yellow', result: 'Likely American Goldfinch (yellow + black) or Yellow Warbler or Common Yellowthroat. Check breast streaking + tail color.' },
     { id: 'tiny-brown', result: 'Likely a sparrow (Song, White-throated, House) or wren. Check breast for streaks + spots, check eyebrow/eyering.' },
-    { id: 'tiny-red', result: 'Likely Northern Cardinal (male) or House Finch or Purple Finch.' },
+    { id: 'tiny-red', result: 'Likely House Finch or Purple Finch (male). A cardinal is bigger: try Small.' },
     { id: 'tiny-blue', result: 'Likely Eastern Bluebird or Indigo Bunting (males).' },
     { id: 'small', question: 'What is the bill shape?',
       choices: [
@@ -7579,31 +8364,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { id: 'small-pointed', result: 'Likely a warbler, flycatcher, or vireo. Many species — check key marks (wing bars, eye ring, breast color).' },
     { id: 'small-conical', result: 'Likely a sparrow, finch, or grosbeak.' },
     { id: 'small-hooked', result: 'Likely a kestrel, sharp-shinned hawk, or small accipiter.' },
-    { id: 'small-needle', result: 'Likely a shorebird (sandpiper) or hummingbird.' },
+    { id: 'small-needle', result: 'Likely a sandpiper (e.g., Spotted Sandpiper) or snipe.' },
     { id: 'medium', question: 'Is it most commonly seen in:',
       choices: [
         { label: 'Trees + forest', next: 'med-tree' },
         { label: 'Water (lake/coast)', next: 'med-water' },
         { label: 'Open ground', next: 'med-ground' },
         { label: 'In flight / soaring', next: 'med-flight' }] },
-    { id: 'med-tree', result: 'Likely a Pileated Woodpecker, Northern Flicker, Blue Jay, or American Crow.' },
-    { id: 'med-water', result: 'Likely a Mallard, Wood Duck, Common Merganser, Ring-billed Gull, or Belted Kingfisher.' },
+    { id: 'med-tree', result: 'Likely a Northern Flicker, Blue Jay, or Hairy Woodpecker.' },
+    { id: 'med-water', result: 'Likely a Belted Kingfisher, Bufflehead, Green-winged Teal, or Pied-billed Grebe.' },
     { id: 'med-ground', result: 'Likely a Mourning Dove, Common Grackle, or Killdeer.' },
-    { id: 'med-flight', result: 'Likely a Red-tailed Hawk, Cooper\'s Hawk, or Broad-winged Hawk.' },
+    { id: 'med-flight', result: 'Likely a Broad-winged Hawk, Cooper\'s Hawk, or a falcon (Merlin, Peregrine).' },
     { id: 'large', question: 'Where do you see it?',
       choices: [
         { label: 'Soaring high', next: 'lg-soar' },
         { label: 'In water', next: 'lg-water' },
         { label: 'In forest', next: 'lg-forest' }] },
     { id: 'lg-soar', result: 'Likely Bald Eagle, Osprey, Turkey Vulture, or Red-tailed Hawk.' },
-    { id: 'lg-water', result: 'Likely Great Blue Heron, Great Egret, or Common Loon.' },
+    { id: 'lg-water', result: 'Likely a Mallard, Wood Duck, Common Merganser, or Herring/Ring-billed Gull.' },
     { id: 'lg-forest', result: 'Likely Pileated Woodpecker or Wild Turkey or Great Horned Owl.' },
     { id: 'huge', question: 'Where?',
       choices: [
         { label: 'In flight', next: 'huge-flight' },
         { label: 'On water', next: 'huge-water' }] },
     { id: 'huge-flight', result: 'Likely Bald Eagle or Canada Goose or Wild Turkey or Great Blue Heron.' },
-    { id: 'huge-water', result: 'Likely Bald Eagle or Common Loon or Great Blue Heron or Wild Turkey.' }
+    { id: 'huge-water', result: 'Likely Common Loon, Canada Goose, Double-crested Cormorant, or Great Blue Heron (wading).' }
   ];
 
   // ── BIRDING ACROSS SEASONS — Maine year-round guide
@@ -7632,9 +8417,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { season: 'Fall — Sep/Oct/Nov',
       character: 'Migration season — many species moving south. Hawk migration peaks September. Songbird migration October. Late ducks arrive.',
       species: 'Hawks: Broad-winged (Sept peak), Sharp-shinned, Cooper\'s, Bald Eagle, Red-tailed. Songbirds: warblers in fall plumage (challenging ID), Sparrows: White-throated, White-crowned, juncos arriving. Ducks: Common Eider arrivals + Common Goldeneye + scoters returning. Snow Buntings arrive late October.',
-      where: 'Hawkwatch Mountain (Sandy Point), Bradbury Mountain (Pownal), coastal lookouts.',
+      where: 'Cadillac Mountain (Acadia) and Mount Agamenticus (York) hawkwatches, coastal lookouts.',
       tip: 'Hawkwatches require clear NW-wind days after cold front. Songbird migration is more elusive than spring.',
-      hotspots: 'Bradbury Mountain Hawkwatch (Sept), coastal Maine for migrants, sea-watching offshore' }
+      hotspots: 'Cadillac Mountain Hawk Watch (Sept), coastal Maine for migrants, sea-watching offshore' }
   ];
 
   // ── BIRD PHOTOGRAPHY — techniques
@@ -7677,15 +8462,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { category: 'Maine Organizations',
       items: 'Maine Audubon (maineaudubon.org) — events, education, advocacy. Acadia Birding Festival (annual). Maine Department of Inland Fisheries + Wildlife (biology + management). Project Puffin (Audubon — seabird restoration). Bigelow Laboratory (Gulf of Maine research).' },
     { category: 'Citizen Science Projects',
-      items: 'eBird (Cornell) — submit all sightings. NestWatch (Cornell) — track nests. FeederWatch (Cornell) — winter feeder data. Project Owlnet (Cornell) — Northern Saw-whet Owl banding. Hawkwatch (national hawk migration counts). Christmas Bird Count (Audubon — Maine has 30+ circles).' },
+      items: 'eBird (Cornell) — submit all sightings. NestWatch (Cornell) — track nests. FeederWatch (Cornell) — winter feeder data. Project Owlnet (a banding network) — Northern Saw-whet Owl banding. Hawkwatch (national hawk migration counts). Christmas Bird Count (Audubon — Maine has 30+ circles).' },
     { category: 'Books — Beginner',
       items: 'Birds of Maine by Peter D. Vickery (the definitive Maine bird guide). The Birding Life by Larry Master + Tom Rich. A Guide to Bird Behavior (Donald + Lillian Stokes).' },
     { category: 'Books — Advanced',
-      items: 'Hawks at a Distance by Jerry Liguori. The Sibley Guide to Bird Life + Behavior. Birds + People by Mark Cocker. Where the Crawdads Sing — bird poetry adjacent.' },
+      items: 'Hawks at a Distance by Jerry Liguori. The Sibley Guide to Bird Life + Behavior. Birds + People by Mark Cocker. The Genius of Birds by Jennifer Ackerman.' },
     { category: 'Websites',
       items: 'allaboutbirds.org (Cornell — encyclopedic). audubon.org (advocacy + ID). ebird.org (citizen science + hotspots). xeno-canto.org (bird sound recordings).' },
     { category: 'Festivals + Events',
-      items: 'Acadia Birding Festival (early June). Eastern Egg Rock Puffin tours (May–Aug). Maine Audubon events (year-round). Bradbury Mountain Hawkwatch (Sept-Oct). Christmas Bird Counts (Dec).' },
+      items: 'Acadia Birding Festival (late May). Eastern Egg Rock Puffin tours (May–Aug). Maine Audubon events (year-round). Bradbury Mountain Hawkwatch (Mar–May), Cadillac Mountain Hawk Watch (Aug–Oct). Christmas Bird Counts (Dec).' },
     { category: 'Conservation Organizations',
       items: 'Maine Audubon, National Audubon Society, Cornell Lab, American Bird Conservancy, BirdLife International, BirdsCanada (relevant for shared species).' },
     { category: 'Tour Operators',
@@ -8413,7 +9198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     'Dunlin': { back: '#9a5a3a', belly: '#f4f4f2', bellyPatch: '#1c1917', legs: '#1c1917', legLen: 0.9, bill: 1.5, curve: -1, billCol: '#1c1917' },
     'Ruddy Turnstone': { back: '#a8452a', belly: '#f8fafc', harlequin: true, legs: '#f97316', legLen: 0.7, bill: 0.6, curve: 0, billCol: '#2f2f2c' },
     'Black-bellied Plover': { back: '#b0b4b8', belly: '#f8fafc', bellyPatch: '#1c1917', legs: '#3f3f3a', legLen: 1.0, bill: 0.7, curve: 0, billCol: '#2f2f2c', stoutBill: true, plover: true, checker: true },
-    'Common Snipe': { back: '#6b5638', belly: '#e8e2d0', legs: '#8a9350', legLen: 0.7, bill: 2.3, curve: 0, billCol: '#5c4a30', stripedHead: true, streaky: true }
+    'Wilson\'s Snipe': { back: '#6b5638', belly: '#e8e2d0', legs: '#8a9350', legLen: 0.7, bill: 2.3, curve: 0, billCol: '#5c4a30', stripedHead: true, streaky: true }
   };
   function shorebirdFigure(h, s, key) {
     var cid = 'sbB-' + key;
@@ -9386,27 +10171,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { name: 'Common Loon',
       why_iconic: 'Maine\'s lake-country iconic species. Eerie wail + tremolo call defines Maine wilderness lakes. Photo subject + memorable encounter.',
-      cultural: 'Maine\'s "loon song" is internationally famous. Featured on Maine quarter coin. Conservation success story.',
-      conservation: 'Population recovered + stable. Maine ~3,500 breeding pairs. Lead-tackle bans + nest protection help.' },
+      cultural: 'Maine\'s "loon song" is internationally famous. Conservation success story.',
+      conservation: 'Population recovered + stable. Maine ~1,700 breeding pairs. Lead-tackle bans + nest protection help.' },
 
     { name: 'Atlantic Puffin',
       why_iconic: 'Maine\'s most famous restoration story (Project Puffin). Charismatic seabird with colorful breeding bill.',
       cultural: 'Major Maine tourist attraction (boat trips to Eastern Egg Rock + Matinicus Rock). State licensed plate option. Featured prominently in Maine wildlife media.',
-      conservation: 'From 0 birds 1970s to ~1,500 pairs today. Climate-vulnerable; food fish (alewives, sand lance) shifting.' },
+      conservation: 'From a single surviving pair (1901) to more than 1,300 pairs today. Climate-vulnerable; food fish (alewives, sand lance) shifting.' },
 
     { name: 'Bald Eagle',
-      why_iconic: 'National symbol + Maine\'s premier raptor recovery story. From near-extinction (60 nests in 1970) to ~700 nests today.',
+      why_iconic: 'National symbol + Maine\'s premier raptor recovery story. From 21 nesting pairs in 1967 to more than 700 today.',
       cultural: 'National + Maine pride. Eagle sightings now common. Penobscot Restoration project + climate awareness.',
-      conservation: 'Federal delisted (recovered). State threatened. Lead poisoning + collisions ongoing concerns.' },
+      conservation: 'Recovered: delisted federally in 2007 and removed from Maine\'s endangered and threatened list in 2009. Lead poisoning + collisions ongoing concerns.' },
 
     { name: 'Wild Turkey',
-      why_iconic: 'Maine\'s state game bird. Recovery from extirpation in 1900 (none in Maine) to 50,000+ today through restoration.',
+      why_iconic: 'Gone from Maine by the early 1800s. 41 birds released in York and Eliot in 1977–78 took hold; a 2018–2020 study estimated up to 70,000 in spring.',
       cultural: 'Symbol of Maine wildlife management success. Important game species + visible everywhere now.',
-      conservation: 'Stable + thriving. Maine has more turkeys than at any time since European arrival.' },
+      conservation: 'Stable + thriving, now found in all 16 Maine counties.' },
 
     { name: 'Piping Plover',
       why_iconic: 'Maine\'s federally threatened beach-nesting bird. Symbol of beach conservation + delicate balance.',
-      cultural: 'Maine\'s ~50 pairs each season monitored by volunteers. Symbolic beach fencing visible Apr–Aug.',
+      cultural: 'Maine\'s 150+ pairs each season monitored by volunteers. Symbolic beach fencing visible Apr–Aug.',
       conservation: 'Threatened; populations slowly recovering with continued nest protection.' },
 
     { name: 'Wood Duck',
@@ -9441,19 +10226,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { fact: 'Wandering Albatross has largest wingspan — 11 ft.', category: 'Records' },
     { fact: 'Peregrine Falcon stoops at 240+ mph — fastest animal alive.', category: 'Records' },
     { fact: 'Arctic Tern migrates ~44,000 miles annually — longest migration.', category: 'Records' },
-    { fact: 'Sooty Tern can stay aloft 10+ years before first landing.', category: 'Records' },
+    { fact: 'Young Sooty Terns may stay out at sea 3 to 10 years before they first come to land.', category: 'Records' },
     { fact: 'Crows can recognize human faces + remember them for years.', category: 'Intelligence' },
     { fact: 'New Caledonian Crows use + manufacture tools.', category: 'Intelligence' },
-    { fact: 'African Grey Parrots can learn 1,000+ words + use them in context.', category: 'Intelligence' },
+    { fact: 'African Grey Parrots can learn 100+ words + use them in context.', category: 'Intelligence' },
     { fact: 'Magpies pass the mirror self-recognition test.', category: 'Intelligence' },
     { fact: 'Chickadees vary "dee" notes in their call by predator threat level.', category: 'Intelligence' },
     { fact: 'Ravens cache food + remember dozens of cache locations.', category: 'Intelligence' },
-    { fact: 'Birds have ~10,500 species worldwide.', category: 'Diversity' },
-    { fact: 'Maine has ~280 regular breeding + visiting species.', category: 'Maine' },
+    { fact: 'Birds have ~11,000 species worldwide.', category: 'Diversity' },
+    { fact: 'About 475 species have been recorded in Maine; over 200 breed here.', category: 'Maine' },
     { fact: 'Highest-elevation breeding bird in Maine: Bicknell\'s Thrush.', category: 'Maine' },
     { fact: 'Lowest-elevation breeding bird in Maine: salt marsh sparrows.', category: 'Maine' },
     { fact: 'Maine state bird: Black-capped Chickadee (since 1927).', category: 'Maine' },
-    { fact: 'Maine state game bird: Wild Turkey.', category: 'Maine' },
+    { fact: 'Maine\'s Wild Turkeys were restored from 41 birds released in York and Eliot in 1977–78.', category: 'Maine' },
     { fact: 'Birds evolved from theropod dinosaurs ~160 million years ago.', category: 'Evolution' },
     { fact: 'Archaeopteryx is the famous "transitional fossil" linking dinosaurs + birds.', category: 'Evolution' },
     { fact: 'K-Pg extinction (66 mya) wiped out non-avian dinosaurs; ornithurine birds survived.', category: 'Evolution' },
@@ -9468,7 +10253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { fact: 'Birds have hollow bones with internal struts — strong + light.', category: 'Physiology' },
     { fact: 'A 9-pound Bald Eagle has a skeleton weighing less than 1 pound.', category: 'Physiology' },
     { fact: 'Bird body temperature is ~104-108°F (humans: 98.6°F).', category: 'Physiology' },
-    { fact: 'Pelicans store + carry water in their gular sac.', category: 'Anatomy' },
+    { fact: 'Pelicans scoop fish in their throat pouch, then drain the water out before swallowing.', category: 'Anatomy' },
     { fact: 'Hoatzin chicks have claws on their wings (recede in adults) — like a reptile.', category: 'Anatomy' },
     { fact: 'Cassowaries have a casque (bony helmet) + 4-inch dagger-like claws.', category: 'Anatomy' },
     { fact: 'Flamingos are pink because of beta-carotene in shrimp they eat.', category: 'Coloration' },
@@ -9477,8 +10262,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { fact: 'Some bird feathers are stronger by weight than steel.', category: 'Feathers' },
     { fact: 'A bald eagle has ~7,000 feathers; a wild turkey ~5,500; a hummingbird ~940.', category: 'Feathers' },
     { fact: 'A single feather has 1 million+ microscopic hooklets binding barbs together.', category: 'Feathers' },
-    { fact: 'Bar-headed Goose flies over Himalayas at 26,000+ ft.', category: 'Flight' },
-    { fact: 'Bar-tailed Godwit record nonstop flight: Alaska to New Zealand 7,500 miles.', category: 'Flight' },
+    { fact: 'Bar-headed Geese have been tracked over the Himalayas at nearly 24,000 ft.', category: 'Flight' },
+    { fact: 'Bar-tailed Godwit record nonstop flight: Alaska to Tasmania, about 8,400 miles (2022).', category: 'Flight' },
     { fact: 'Hummingbirds hover by figure-8 wing movement generating lift on both up + downstroke.', category: 'Flight' },
     { fact: 'Penguins are the only birds that "fly" exclusively underwater.', category: 'Flight' },
     { fact: 'Penguins evolved from flying ancestors but lost flight ~65 million years ago.', category: 'Evolution' },
@@ -9492,10 +10277,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { fact: 'Domestic cats kill ~2.4 billion US birds annually.', category: 'Conservation' },
     { fact: 'Up to 1 billion US birds die in window collisions annually.', category: 'Conservation' },
     { fact: '3 billion North American birds have been lost since 1970 (Rosenberg 2019).', category: 'Conservation' },
-    { fact: 'Maine has 700+ active Bald Eagle nests today (from <60 in 1970).', category: 'Conservation' },
-    { fact: 'Wild Turkey was extirpated from Maine by 1900 + restored to 50,000+ today.', category: 'Conservation' },
-    { fact: 'Project Puffin restored Atlantic Puffin from 0 Maine birds 1970s to ~1,500 pairs today.', category: 'Conservation' },
-    { fact: 'Cornell Lab\'s Christmas Bird Count is the longest-running citizen science project (since 1900).', category: 'Citizen Science' },
+    { fact: 'Maine has more than 700 Bald Eagle nesting pairs today (from 21 in 1967).', category: 'Conservation' },
+    { fact: 'Wild Turkey was extirpated from Maine by the early 1800s + restored to 50,000+ today.', category: 'Conservation' },
+    { fact: 'Project Puffin brought Atlantic Puffins back to Maine islands where hunting had wiped them out; Maine now has more than 1,300 pairs.', category: 'Conservation' },
+    { fact: 'Audubon\'s Christmas Bird Count is the longest-running citizen science bird survey (since 1900).', category: 'Citizen Science' },
     { fact: 'eBird has 1 billion+ bird observations from millions of contributors.', category: 'Citizen Science' },
     { fact: 'Hooded Mergansers + Wood Ducks both use the same nest boxes.', category: 'Nesting' },
     { fact: 'Cliff Swallows make 1,000+ trips to gather mud for one nest.', category: 'Nesting' },
@@ -9506,20 +10291,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { fact: 'A loon nest must be inches from water — loons can\'t walk far on land.', category: 'Nesting' },
     { fact: 'A puffin pair has just one egg per year.', category: 'Reproduction' },
     { fact: 'Most songbirds molt completely once annually.', category: 'Molt' },
-    { fact: 'Goldfinches uniquely molt twice (more brilliant breeding plumage).', category: 'Molt' },
+    { fact: 'American Goldfinches are the only finches of their subfamily to molt twice a year.', category: 'Molt' },
     { fact: 'Maine\'s most-common breeding warbler: Yellow-rumped (also "myrtle warbler").', category: 'Maine' },
-    { fact: 'Hawkwatch Mountain (Sandy Point) sometimes sees 10,000+ Broad-winged Hawks in a day.', category: 'Maine' },
+    { fact: 'Cadillac Mountain in Acadia counts about 3,000 migrating raptors each fall.', category: 'Maine' },
     { fact: 'Penobscot River Restoration removed dams + restored 1,000+ miles of fish habitat.', category: 'Maine' },
     { fact: 'Wabanaki peoples have lived alongside Maine birds for ~13,000 years.', category: 'Cultural' },
     { fact: 'Cornell Lab of Ornithology is the leading bird research + education center in US.', category: 'Education' },
-    { fact: 'Audubon was the first major bird painter + namesake of major conservation orgs.', category: 'Education' },
+    { fact: 'Audubon\'s Birds of America made him the most famous bird painter + namesake of major conservation orgs.', category: 'Education' },
     { fact: 'Rachel Carson\'s "Silent Spring" (1962) exposed DDT impact on birds + changed environmental movement.', category: 'Education' },
     { fact: 'Roger Tory Peterson\'s Field Guide (1934) revolutionized field birding.', category: 'Education' },
     { fact: 'Sibley Guide is the modern standard birding field guide.', category: 'Education' },
     { fact: 'Merlin Bird ID app (Cornell, free) uses AI to identify birds from photos + songs.', category: 'Technology' },
     { fact: 'eBird and BirdNet apps help millions identify and report birds.', category: 'Technology' },
     { fact: 'Geolocators tagged on songbirds reveal individual migration routes never before known.', category: 'Technology' },
-    { fact: 'Some birds (Brown Pelicans, Common Murres) recovered from near-extinction in 1950s-70s.', category: 'Conservation' },
+    { fact: 'Some birds (Brown Pelicans, Ospreys, Peregrines) recovered from DDT-era crashes of the 1950s-70s.', category: 'Conservation' },
     { fact: 'Many North American bird species declined 50%+ since 1970 (Rosenberg 2019).', category: 'Conservation' },
     { fact: 'Bird populations responding to climate change at measurable rates.', category: 'Conservation' },
     { fact: 'Wild Turkey courtship: gobbler "strut" — fanned tail, dropped wings, raised feathers.', category: 'Courtship' },
@@ -9538,24 +10323,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { fact: 'Loon flight requires running takeoff — many lakes need 100+ ft of open water.', category: 'Maine' },
     { fact: 'Loons are nearly silent in winter; loud only on breeding lakes.', category: 'Maine' },
     { fact: 'Penobscot Nation, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki peoples all have deep connections to Maine birds.', category: 'Cultural' },
-    { fact: 'Many Maine bird names + lore originated with Wabanaki peoples (loon: "tau" in Passamaquoddy).', category: 'Cultural' }
+    { fact: 'Wabanaki languages have their own names for Maine birds (loon: "oqim" in Passamaquoddy-Maliseet).', category: 'Cultural' }
   ];
 
   // ── HISTORICAL EXTINCT BIRDS
   var HISTORICAL_EXTINCT = [
     { species: 'Great Auk (Pinguinus impennis)',
-      extinction: 'Last seen 1844 off Iceland; possibly Funk Island Newfoundland nests',
+      extinction: 'Last breeding pair killed 1844 on Eldey, Iceland; a last bird was reported off the Grand Banks in 1852',
       reason: 'Hunted to extinction for feathers + meat + eggs. Flightless seabird, easy to catch.',
-      relation_maine: 'Once common Gulf of Maine breeder. Closest relatives: razorbills, murres, puffins, guillemots — all still in Maine waters.',
+      relation_maine: 'Bones in Maine shell heaps show it once lived in the Gulf of Maine. Closest relatives: razorbills, murres, puffins, guillemots — all still in Maine waters.',
       lesson: 'A wake-up call for seabird conservation. Project Puffin built on this.' },
     { species: 'Passenger Pigeon (Ectopistes migratorius)',
       extinction: 'Last known died at Cincinnati Zoo 1914',
       reason: 'Once 3-5 billion strong; mass commercial hunting + habitat loss in 1880s-1900s.',
-      relation_maine: 'Once visited Maine in massive numbers each spring. Now: extinct. Modern descendant: Mourning Dove + Eurasian Collared-Dove.',
+      relation_maine: 'Once visited Maine in massive numbers each spring. Now: extinct, with no living descendants; its closest living relatives are Patagioenas pigeons such as the Band-tailed Pigeon.',
       lesson: 'No species too abundant to be safe from human impact.' },
     { species: 'Carolina Parakeet (Conuropsis carolinensis)',
       extinction: 'Last died 1918 at Cincinnati Zoo',
-      reason: 'Hunted for plumage + crop damage; loss of old-growth hardwood forest. North America\'s only native parrot.',
+      reason: 'Hunted for plumage + crop damage; loss of old-growth hardwood forest. The only native parrot of the eastern US.',
       relation_maine: 'Possibly occasional summer visitor to far southern Maine in 1600s.',
       lesson: 'Native parrot of North America — lost.' },
     { species: 'Labrador Duck (Camptorhynchus labradorius)',
@@ -9574,14 +10359,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       relation_maine: 'Once visited New England including possibly southern Maine. Sister birds (Greater Prairie-Chicken) still in Midwest.',
       lesson: 'Local extinction (extirpation) precedes total extinction.' },
     { species: 'Dodo (Raphus cucullatus)',
-      extinction: 'Last reliable record 1681 on Mauritius',
+      extinction: 'Last widely accepted sighting 1662 on Mauritius',
       reason: 'Flightless. Hunted + predated by introduced rats + pigs.',
       relation_maine: 'Never in Maine — but iconic global extinction warning.',
       lesson: 'Island species hyper-vulnerable. First major recorded human-caused extinction.' },
     { species: 'Bachman\'s Warbler (Vermivora bachmanii)',
-      extinction: 'Last confirmed 1962 (US); 1988 (Cuba)',
+      extinction: 'Last widely accepted 1962 (South Carolina); disputed 1988 Louisiana report; declared extinct 2023',
       reason: 'Lost most habitat in Southeast bottomland forest.',
-      relation_maine: 'Closest Maine relative: Tennessee Warbler.',
+      relation_maine: 'Closest relatives: Blue-winged + Golden-winged Warblers (both rare in Maine).',
       lesson: 'Tropical-wintering migrant vulnerable to combined breeding + wintering ground loss.' }
   ];
 
@@ -9771,14 +10556,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { pair: 'Red-shouldered vs Red-tailed Hawk',
       art: { kind: 'tail', a: { name: 'Red-shouldered', note: 'boldly BARRED tail', fill: '#2f3138', tip: 'square', bars: true }, b: { name: 'Red-tailed', note: 'plain brick-red tail', fill: '#a8482a', tip: 'round' } },
       similarity: 'Both buteo hawks, similar size + posture.',
-      key_diff: 'Red-shouldered: barred tail (no red), rufous shoulders. Red-tailed: brick-red tail in adults, plain belly.' },
+      key_diff: 'Red-shouldered: barred tail (no red), rufous shoulders. Red-tailed: brick-red tail in adults, pale breast with dark belly band.' },
     { pair: 'Common vs Hooded Merganser',
       art: { kind: 'head', a: { name: 'Hooded (male)', note: 'big raised white hood', fill: '#23262d', crest: true, crestFill: '#f8fafc', bill: 13 }, b: { name: 'Common (male)', note: 'green head, no crest', fill: '#1f4a3a', bill: 17 } },
       similarity: 'Both diving mergansers in Maine.',
       key_diff: 'Size: Common merganser larger. Crest: Hooded male has dramatic large white hood (can be raised/lowered); Common male has no crest, green head. Female Hooded: cinnamon crest; Common female: rusty unstreaked head.' },
     { pair: 'Black-capped vs Carolina Chickadee',
       similarity: 'Both chickadees, similar size + pattern.',
-      key_diff: 'In Maine: only Black-capped present (Carolina south of NJ). Where both: Black-capped has whiter wing feathers + larger bib + more buff flanks.' },
+      key_diff: 'In Maine: only Black-capped present (Carolina only north to New Jersey). Where both: Black-capped has whiter wing feathers + larger bib + more buff flanks.' },
     { pair: 'Sharp-shinned vs Cooper\'s vs Goshawk (3-way)',
       art: { kind: 'size3', birds: [
         { name: 'Sharp-shinned', note: '4-8 oz', f: 0.52 },
@@ -9803,7 +10588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       maine: 'Greater Shearwater, Wilson\'s Storm-Petrel, Northern Fulmar (offshore)',
       what: 'Open-ocean specialists with tube-shaped nostrils for excreting excess salt. Wing-locking mechanism for soaring.' },
     { family: 'Pelecaniformes (Pelicans + Heron-like)',
-      common: 'Pelicans, herons, egrets, ibises, anhingas',
+      common: 'Pelicans, herons, egrets, ibises, spoonbills',
       maine: 'Great Blue Heron, Great Egret, Snowy Egret, Black-crowned Night Heron, Glossy Ibis',
       what: 'Long-legged waders. Many specialize in fish.' },
     { family: 'Accipitriformes (Hawks + Eagles)',
@@ -9837,7 +10622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { family: 'Passeriformes (Songbirds)',
       common: 'All "perching birds" — songbirds, jays, crows, sparrows, warblers',
       maine: '50%+ of Maine birds are passerines.',
-      what: 'Most diverse bird order — ~5,500 species. Three forward + one rear toe for perching. Most have complex song.' }
+      what: 'Most diverse bird order — ~6,500 species. Three forward + one rear toe for perching. Most have complex song.' }
   ];
 
   // ── BIRDING WITH KIDS
@@ -9930,7 +10715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { topic: 'Cross-curricular connections',
       details: 'Math: count + graph. Reading: bird-themed books + field guides. Writing: nature journals + bird descriptions. Art: bird drawing + photography. History: bird in literature + culture. Social studies: birds + conservation.',
-      maine_connections: 'Wabanaki bird stories (LD 291 requirement). Maine-specific conservation issues. Local Maine birders to interview.' },
+      maine_connections: 'Wabanaki history + culture (LD 291); invite Wabanaki educators. Maine-specific conservation issues. Local Maine birders to interview.' },
 
     { topic: 'Bird-themed writing prompts',
       details: 'Describe a bird you saw. Tell the bird\'s story. What would it be like to fly? Compare two birds. What does this bird teach us about conservation? Why should we protect birds?',
@@ -9958,50 +10743,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // engaging with specific Wabanaki cultural authorities for primary sources.
   var WABANAKI_BIRDS = [
     { species: 'Common Loon',
-      penobscot_name: 'Tau / Towi (loon — varying spellings)',
-      cultural: 'The loon\'s mournful call is significant in Wabanaki traditional stories — sometimes associated with loss + grief, sometimes with the spirit world\'s call.',
+      penobscot_name: 'oqim (Passamaquoddy-Maliseet)',
+      cultural: 'In Wabanaki stories recorded by Charles Leland (1884), the loon is Koluskap\'s (Glooskap\'s) messenger, and its cry is said to be the loon calling him.',
       ecological_knowledge: 'Wabanaki peoples knew loons returned each year at ice-out. Loons fed during summer + then left when freeze approached — connecting weather + seasonal change.',
       modern_engagement: 'Modern Penobscot Nation + other Wabanaki communities continue to value loons + advocate for lake protection.' },
 
     { species: 'Bald Eagle',
-      penobscot_name: 'Wapikwsisok (or similar — variations exist)',
-      cultural: 'Eagle as messenger to Creator + sacred in many Algonquian cultures including Wabanaki. Eagle feathers are sacred objects in cultural + ceremonial use.',
+      penobscot_name: 'cihpolakon (Passamaquoddy-Maliseet)',
+      cultural: 'Eagle feathers are sacred objects in ceremonial use. A Wabanaki story recorded by Leland tells how Koluskap bound Wuchowsen, the great bird whose wings make the wind.',
       ecological_knowledge: 'Eagle nests on specific large white pines + cottonwoods near water; nest sites used for generations.',
       modern_engagement: 'Wabanaki tribal natural resource departments work with USFWS on eagle conservation + monitoring.' },
 
     { species: 'Wild Turkey',
-      penobscot_name: 'Nasekek (variations exist)',
-      cultural: 'Important food source historically. Turkey feathers used in art + ceremonial dress. Modern turkey restoration partnered with tribal communities.',
-      ecological_knowledge: 'Wabanaki peoples had detailed knowledge of turkey behavior + flock dynamics that informed harvest practices.',
+      penobscot_name: 'nahama (Abenaki)',
+      cultural: 'Wild turkeys lived mainly in southern Maine, at the northern edge of their original range.',
+      ecological_knowledge: 'Turkeys were gone from Maine by the early 1800s; they were restored with releases in 1977–78.',
       modern_engagement: 'Tribal natural resource departments contribute to turkey management.' },
 
     { species: 'Atlantic Puffin',
-      penobscot_name: 'Variations exist',
-      cultural: 'Coastal Wabanaki peoples knew puffin colonies + harvested puffins + eggs sustainably until European-era overharvest.',
-      ecological_knowledge: 'Detailed knowledge of offshore island ecology + seasonal patterns of seabirds. Wabanaki peoples were the original "Audubon" of Maine coast.',
-      modern_engagement: 'Project Puffin restoration recognized + honors Indigenous coastal stewardship.' },
+      penobscot_name: null,
+      cultural: 'Coastal Wabanaki peoples used seabirds and their eggs, as bird bones in Maine shell heaps show.',
+      ecological_knowledge: 'Detailed knowledge of offshore island ecology + seasonal patterns of seabirds.',
+      modern_engagement: 'Seabird islands remain part of Wabanaki coastal homelands.' },
 
     { species: 'Great Blue Heron',
-      penobscot_name: 'Variations exist',
-      cultural: 'Heron significance varies by community — sometimes associated with patience, watchfulness, fishing skill.',
+      penobscot_name: null,
+      cultural: 'Meanings differ between communities; learn them from Wabanaki sources rather than general books.',
       ecological_knowledge: 'Knowledge of heron rookeries (heronries) + seasonal returns.',
-      modern_engagement: 'Heron rookery protection coordinated with tribal communities.' },
+      modern_engagement: 'The Abbe Museum (Bar Harbor) and tribal cultural departments are places to learn more.' },
 
     { species: 'Common Raven',
-      penobscot_name: 'Variations exist',
-      cultural: 'Raven figures in many Algonquian stories — sometimes trickster, sometimes wise creature, sometimes Creator\'s helper.',
-      ecological_knowledge: 'Ravens recognized for intelligence + communication. Many traditional stories about raven\'s tricks + lessons.',
+      penobscot_name: null,
+      cultural: 'Raven trickster tales belong mainly to Pacific Northwest nations; Wabanaki stories center on Koluskap (Gluskabe), so raven lore here should come from Wabanaki sources.',
+      ecological_knowledge: 'Ravens recognized for intelligence + communication.',
       modern_engagement: 'Ravens still common across Wabanaki territories.' },
 
     { species: 'Pileated Woodpecker',
-      penobscot_name: 'Variations exist',
-      cultural: 'Distinctive drumming + striking appearance — woodpeckers feature in some traditional stories about persistence + finding food.',
+      penobscot_name: null,
+      cultural: 'No published Wabanaki story about this bird is given here; ask Wabanaki cultural authorities.',
       ecological_knowledge: 'Indicator of mature forest health. Pileated cavities used by many other species — a "keystone" species understood for centuries.',
       modern_engagement: 'Old-growth forest protection valued by tribal natural resource priorities.' },
 
     { species: 'Indigenous Land-Bird Stewardship',
-      penobscot_name: 'Various practices',
-      cultural: 'Wabanaki peoples managed Maine landscape for ~13,000 years using fire + selective harvest + protection of specific places. Bird populations flourished under this management.',
+      penobscot_name: null,
+      cultural: 'Wabanaki peoples have lived in and cared for this land for about 13,000 years.',
       ecological_knowledge: 'Knowledge of bird-habitat relationships + seasonal patterns far predates European arrival.',
       modern_engagement: 'Tribal natural resource departments + collaborative management with state + federal agencies continue this stewardship.' }
   ];
@@ -10021,7 +10806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       what: 'Detailed observations of New England birds. Thoreau was a careful observer who noted hundreds of species.',
       cultural: 'Foundational American nature writing.' },
     { reference: 'Rachel Carson — "Silent Spring" (1962)',
-      what: '"What sense would it make to deplete the soil + then watch the world get sick?" Carson noted bird declines from DDT.',
+      what: '"Spring now comes unheralded by the return of the birds" (ch. 8). Carson documented bird declines from DDT.',
       cultural: 'Launched modern environmental movement. Carson spent summers in Maine.' },
     { reference: 'Sy Montgomery — "Birdology" (2010)',
       what: 'Investigation of bird intelligence + relationship with people.',
@@ -10029,10 +10814,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { reference: 'Bernd Heinrich — "Mind of the Raven" (1999), "Winter World" (2003)',
       what: 'Maine biologist\'s research-based writing on ravens + winter ecology.',
       cultural: 'Heinrich is based in Maine; his books are essential modern bird literature.' },
-    { reference: 'Carl Safina — "Beyond Words" (2015)',
+    { reference: 'Carl Safina — "Alfie and Me" (2023)',
       what: 'Bird (+ other animal) cognition + emotion explorations.',
       cultural: 'Recent + comprehensive look at what we know about bird minds.' },
-    { reference: 'Stephen Lyn Bales — "Ghost Birds" (2016)',
+    { reference: 'Stephen Lyn Bales — "Ghost Birds" (2010)',
       what: 'About the search for Ivory-billed Woodpecker — likely extinct + symbol of bird loss.',
       cultural: 'Modern bird conservation literature.' },
     { reference: 'Maine state poetry + ornithology',
@@ -10055,7 +10840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       benchmark: 'Add: shorebirds, sea ducks, hawk migration species, rare migrants. Begin sub-species awareness.' },
 
     { tier: 'Expert (10+ years)',
-      goals: '250+ Maine life list. Hawk + warbler ID experts. Volunteer at Hawkwatch Mountain or banding stations. Mentor newer birders.',
+      goals: '250+ Maine life list. Hawk + warbler ID experts. Volunteer at a hawkwatch (Bradbury, Cadillac) or banding stations. Mentor newer birders.',
       benchmark: 'Add: rare species, vagrants, subspecies. Trip leader-level knowledge.' },
 
     { tier: 'Big Year Maine (1 year)',
@@ -10078,16 +10863,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── HAWKWATCH GUIDE
   var HAWKWATCH_GUIDE = [
     { topic: 'What is a hawkwatch?',
-      details: 'Annual systematic counting of migrating raptors at strategic geographic points where birds concentrate. Bradbury Mountain (Pownal, Maine) is the state\'s premier hawkwatch.',
-      season: 'Sept 1 to Oct 31 (peak Sept 5-20 for broad-winged hawks)' },
+      details: 'Annual systematic counting of migrating raptors at strategic geographic points where birds concentrate. In Maine, Bradbury Mountain (Pownal) counts the spring flight and Cadillac Mountain (Acadia) the fall flight.',
+      season: 'Bradbury: Mar 15 to May 15. Cadillac: late Aug to Oct (broad-winged peak mid-Sept).' },
 
     { topic: 'What you\'ll see at a Maine hawkwatch',
-      details: 'Broad-winged Hawk (most numerous, peak Sept), Sharp-shinned Hawk, Cooper\'s Hawk, Northern Harrier, American Kestrel, Merlin, Peregrine Falcon, Red-tailed Hawk, Bald Eagle, Turkey Vulture, occasional Northern Goshawk.',
+      details: 'Broad-winged Hawk (most numerous, peak Sept), Sharp-shinned Hawk, Cooper\'s Hawk, Northern Harrier, American Kestrel, Merlin, Peregrine Falcon, Red-tailed Hawk, Bald Eagle, Turkey Vulture, occasional American Goshawk.',
       timing: 'Best mornings after cold front passage. Wind from NW typical for peak migration.' },
 
     { topic: 'How to participate',
-      details: 'Bradbury Mountain Hawkwatch is staffed daily by official counter — visit any day. Free, open to public. Bring binoculars + warm layers + lunch.',
-      maine_specific: 'Bradbury Mountain State Park (Pownal). Sandy Point Hawkwatch (Sandy Point, ME) is the other major Maine site.' },
+      details: 'Bradbury Mountain Hawkwatch is staffed daily Mar 15 to May 15 by an official counter — visit any day. Free, open to public. Bring binoculars + warm layers + lunch.',
+      maine_specific: 'Bradbury Mountain State Park (Pownal) in spring. Cadillac Mountain (Acadia) and Mount Agamenticus (York) are the main fall hawkwatches.' },
 
     { topic: 'What to bring',
       details: 'Binoculars (8×42 ideal). Warm hat + layers. Sunglasses + sunscreen. Snacks + water. Notebook + pencil. Camera.',
@@ -10103,7 +10888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { topic: 'Data + science contribution',
       details: 'Counter data flows to HMANA (Hawk Migration Association of North America). Long-term data tracks raptor populations + climate trends.',
-      maine: 'Bradbury Mountain Hawkwatch was first established in 1992. Long-term Maine raptor data is invaluable.' },
+      maine: 'Bradbury Mountain Hawkwatch began in 2007; ranger-led counts on Cadillac Mountain began in 1994. Long-term Maine raptor data is invaluable.' },
 
     { topic: 'Best days to attend',
       details: 'Clear skies. NW wind (especially after passing cold front). Temperatures 50-70°F. Low humidity. Visibility 10+ miles.',
@@ -10121,7 +10906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       science: 'Audubon publishes annual + cumulative analyses; CBC data informs conservation priorities + population modeling.' },
 
     { topic: 'Maine CBC circles',
-      details: 'Maine has ~30 CBC circles. Major: Portland, Bath, Boothbay, Belfast, Bangor, Brewer, Penobscot Indian Island, Skidompha, Pemaquid, Knox, more.',
+      details: 'Maine has ~30 CBC circles. Major: Greater Portland, Bath-Phippsburg-Georgetown, Bangor-Bucksport, Orono-Old Town, Pemaquid-Damariscotta, Thomaston-Rockland, Mount Desert Island, Augusta, more.',
       participation: 'Each circle has a compiler who organizes parties. Volunteer signup typically Oct-Dec.' },
 
     { topic: 'How to participate',
@@ -10160,7 +10945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       truth: 'Owls are predators going about their business. Their hoots are territorial + courtship calls. Maine has 8 owl species + their calls are part of healthy ecosystems.' },
 
     { lore: 'Loon call = sadness/death',
-      origin: 'Loon\'s haunting cry is genuinely mournful-sounding. Wabanaki + European cultures both noted this.',
+      origin: 'Loon\'s haunting cry is genuinely mournful-sounding. European folklore heard grief; in Wabanaki stories recorded by Leland (1884) the cry is the loon calling Koluskap.',
       truth: 'Loon calls are territorial + mate-contact signals. Loons live ~25 years; their calls are part of life cycle.' },
 
     { lore: 'Magpie sees you in robe = good luck',
@@ -10233,22 +11018,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
   // ── HAWKWATCH SCIENCE DATA
   var HAWKWATCH_DATA = [
-    { year: '2023 Bradbury Mountain peak',
-      total_count: '~11,000 raptors total',
-      peak_day: 'September 14, 2023 — ~1,800 Broad-winged Hawks',
-      conditions: 'Clear NW wind day after cold front. Multiple "kettles" (groups) of Broad-winged Hawks circling overhead.' },
-    { year: '2022 Bradbury Mountain peak',
-      total_count: '~9,500 raptors',
-      peak_day: 'September 17 — ~1,200 broad-wings',
-      conditions: 'Good migration year. Multiple cold fronts.' },
-    { year: '2021 Bradbury Mountain peak',
-      total_count: '~10,500 raptors',
-      peak_day: 'September 19 — ~2,000 broad-wings',
-      conditions: 'Outstanding year. Bradbury Mountain\'s top-10 count.' },
-    { year: 'Multi-decade trends',
-      total_count: 'Maine raptor migration data shows: stable Bald Eagle, declining American Kestrel, expanding Merlin + Cooper\'s Hawk, climate-driven shifts.',
-      peak_day: 'Bradbury Mountain established 1992 — 30+ years of data.',
-      conditions: 'Climate change visible in subtle shifts of peak timing + species composition.' }
+    { year: 'Bradbury Mountain, Pownal (spring, since 2007)',
+      total_count: 'Averages about 4,180 raptors each spring (Mar 15–May 15), including about 1,500 Broad-winged Hawks.',
+      peak_day: 'Record: about 1,800 raptors in a single day in 2020.',
+      conditions: 'Big spring days come on warm south or southwest winds. Maine\'s only spring hawk count.' },
+    { year: 'Cadillac Mountain, Acadia (fall, since 1994)',
+      total_count: 'About 3,000 raptors a season; more than 71,000 counted in 25 years.',
+      peak_day: 'Broad-winged Hawk kettles peak in mid-September.',
+      conditions: 'Fall flights ride northwest winds on the clear days after a cold front.' },
+    { year: 'Reading the data yourself',
+      total_count: 'HawkCount.org posts every Maine count, day by day, for 11 sites.',
+      peak_day: 'Look up the biggest day of any season, back to each site\'s first year.',
+      conditions: 'Compare the same site, dates and effort. Bradbury\'s counters have noted declines in American Kestrels + Sharp-shinned Hawks.' }
   ];
 
   // ── URBAN BIRDING — Maine cities
@@ -10329,7 +11110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var INTELLIGENCE = [
     { topic: 'Crows + Tool Use',
       details: 'New Caledonian Crows manufacture + use tools. Will bend wires into hooks to retrieve food. Recognize human individual faces + remember them for years.',
-      research: 'Cornell + UK research has documented sequential problem solving comparable to 7-year-old children in some tasks.',
+      research: 'Auckland + Cambridge research (2014) found crows solving water-displacement puzzles as well as 5–7-year-old children.',
       maine: 'American Crows in Maine + worldwide show similar (though less studied) cognitive abilities.' },
 
     { topic: 'Parrot Language',
@@ -10338,14 +11119,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       maine: 'No parrots native to Maine. Pet birds + captive studies inform understanding.' },
 
     { topic: 'Magpie Self-Recognition',
-      details: 'Magpies pass the mirror self-recognition test — only bird species confirmed to do so. Comparable to chimpanzees + dolphins.',
+      details: 'Eurasian Magpies passed a mirror mark test in 2008, the first non-mammal to do so, but a 2020 repeat study did not confirm it.',
       research: 'European magpie research is foundational. North American birds less studied.',
       maine: 'Black-billed Magpies (West) + jays + crows in Maine show related cognition.' },
 
     { topic: 'Caching Behavior',
       details: 'Nutcrackers cache 33,000+ pine seeds annually + recover most over 9 months. Memory of cache locations + their freshness.',
       research: 'Clark\'s Nutcracker research shows spatial memory rivals or exceeds most mammals.',
-      maine: 'Gray Jays + chickadees cache food. Maine\'s Gray Jay (Canada Jay) is a master cacher.' },
+      maine: 'Canada Jays + chickadees cache food. The Canada Jay (once called Gray Jay) is a master cacher.' },
 
     { topic: 'Long-term Memory',
       details: 'Crows remember threatening humans for years. Some studies suggest 5+ year memory of specific people.',
@@ -10358,12 +11139,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       maine: 'Maine corvid cognition likely similar.' },
 
     { topic: 'Bird Communication',
-      details: 'Black-capped Chickadee call has variable "dee" syllables that signal threat level — more dees = bigger predator. Information communication.',
-      research: 'University of Washington + Cornell research has decoded chickadee predator-threat communication.',
+      details: 'Black-capped Chickadee call has variable "dee" syllables that signal threat level — more dees = smaller, more dangerous predator (like a pygmy-owl).',
+      research: 'University of Montana research (Templeton et al., Science 2005) decoded chickadee predator-threat calls.',
       maine: 'Maine chickadees use this system. Listen + learn.' },
 
     { topic: 'Migration Memory',
-      details: 'Adult songbirds may pass migration routes to first-year birds (geese, cranes). Inherited compass + learned map.',
+      details: 'Geese and cranes learn routes from their parents; most first-year songbirds migrate alone on an inherited program.',
       research: 'Goose research demonstrates parental learning. Songbird research shows innate compass + learned map.',
       maine: 'Maine\'s Canada Geese + first-year songbirds depend on these.' }
   ];
@@ -10382,7 +11163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { service: 'Insect Pest Control',
       birds: 'Warblers, flycatchers, woodpeckers, swallows',
-      details: 'Insectivorous birds consume enormous quantities of insects. A pair of Black-throated Green Warblers can consume 700,000+ caterpillars in breeding season.',
+      details: 'Insectivorous birds consume enormous quantities of insects. A pair of chickadees needs thousands of caterpillars to raise a single brood.',
       value: '~$5 billion/yr globally; particularly important for forestry + agriculture.' },
 
     { service: 'Carrion Removal',
@@ -10414,24 +11195,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── BIRD DECLINE + RECOVERY STORIES
   var RECOVERY_STORIES = [
     { species: 'Bald Eagle',
-      decline: '1900-1970: From 100,000+ pairs in continental US to ~400 pairs by 1963.',
+      decline: 'From perhaps 100,000 nesting eagles (1782) to 417 known pairs in the lower 48 by 1963.',
       causes: 'DDT thinning eggshells. Habitat destruction. Hunting + persecution. Lead poisoning.',
       action: 'DDT banned 1972 (US). Endangered Species Act 1973. Habitat protection. Translocation programs.',
       result: '~70,000 pairs in 2020. Federally delisted 2007. Continued state-level monitoring.',
-      maine: 'Maine: <60 nests in 1970 → 700+ today. State-threatened (recovered).' },
+      maine: 'Maine: 21 nesting pairs in 1967 → 700+ today. Removed from Maine\'s endangered and threatened list in 2009.' },
 
     { species: 'Peregrine Falcon',
       decline: 'Near-extinction by 1970. East of Mississippi: 0 breeding pairs by 1965.',
       causes: 'DDT thinning eggshells.',
       action: 'DDT ban. Captive-breeding + reintroduction (Cornell, others). Hack tower releases.',
       result: '~3,000 pairs in continental US by 2020. Delisted federally 1999.',
-      maine: 'Maine: 0 pairs 1960s → 30+ pairs today including urban + bridge nests. State Threatened (downgraded from Endangered).' },
+      maine: 'Maine: 0 pairs 1960s → about 38 known pairs (2024), including urban + bridge nests. Still listed Endangered in Maine.' },
 
     { species: 'Atlantic Puffin',
       decline: '1880s-1970s: Maine puffin populations exterminated by egg + feather collection.',
       causes: 'Commercial hunting + habitat disturbance.',
       action: 'Project Puffin (Steve Kress, Audubon, 1973-present). Decoys + audio + chick translocation.',
-      result: '~1,500 pairs in Maine today (from 0 birds 1970s). Climate-vulnerable.',
+      result: 'More than 1,300 pairs in Maine today (from a single pair in 1901). Climate-vulnerable.',
       maine: 'Maine: Eastern Egg Rock, Matinicus Rock, Petit Manan, Seal Island colonies.' },
 
     { species: 'Brown Pelican',
@@ -10442,25 +11223,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       maine: 'Not Maine breeder, but visible to Maine residents on Atlantic coast travel.' },
 
     { species: 'Whooping Crane',
-      decline: '1941: 21 individuals total (15 wild + 6 captive). Near-extinction.',
+      decline: '1941: 21 wild birds (15 migratory + 6 in a Louisiana flock). Near-extinction.',
       causes: 'Hunting + habitat loss.',
       action: 'Captive breeding programs. Whooping Crane Conservation Association. Costume-rearing + ultralight migration training.',
-      result: '~500 individuals today, multiple wild populations. Still endangered.',
+      result: '~800 today, including about 550 in the one self-sustaining wild flock. Still endangered.',
       maine: 'Not Maine resident. Iconic recovery story.' },
 
     { species: 'California Condor',
-      decline: '1987: 22 birds left in world; all captured for emergency captive breeding.',
+      decline: '1987: 27 birds left in world; all captured for emergency captive breeding.',
       causes: 'Lead poisoning. Habitat loss. Microbial contamination.',
       action: 'Most ambitious + expensive bird recovery in history. All birds captured + bred.',
-      result: '~500 condors + ~200 free-flying birds in 2020. Continued lead-ammunition + monitoring.',
+      result: '~500 condors in 2020, about 330 of them flying free. Continued lead-ammunition + monitoring.',
       maine: 'Not Maine resident. Recovery story.' },
 
     { species: 'Wild Turkey',
-      decline: 'Eliminated from much of New England by 1850. Maine: extirpated by 1900.',
+      decline: 'Eliminated from much of New England by 1850. Maine: extirpated by the early 1800s.',
       causes: 'Hunting + habitat conversion.',
       action: 'Maine Department of Inland Fisheries + Wildlife restoration program 1977+.',
       result: 'Maine: 50,000+ turkeys today. National Wild Turkey Federation supports continued recovery.',
-      maine: 'Maine restoration started with trapped birds from Pennsylvania.' },
+      maine: 'Earlier releases failed; 41 wild turkeys from Vermont, released in York and Eliot in 1977–78, took hold.' },
 
     { species: 'Eastern Bluebird',
       decline: 'Declined 90% from 1900-1970 due to habitat loss + nest box competition (House Sparrow, Starling).',
@@ -10475,7 +11256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { topic: 'The Wind Energy + Birds Question',
       details: 'Wind turbines kill birds + bats by collision + rotor impact. Estimated 200,000-600,000 bird deaths annually in US. Maine + Eastern US developing offshore wind.',
       research: 'Maine Audubon + state biologists + wildlife agencies + wind developers collaborate on mitigation research.',
-      maine_specifics: 'Maine: small but growing wind sector. Offshore wind in Gulf of Maine planned + controversial.' },
+      maine_specifics: 'Maine: New England\'s largest wind producer (about a quarter of in-state power). Offshore wind in Gulf of Maine planned + controversial.' },
 
     { topic: 'Mitigation Strategies',
       details: 'Site selection (avoid migration corridors, raptor concentration areas). Curtailment during high-risk periods (low-wind migration nights). Painted blades (one black blade reduces strikes ~70% in some studies). Lighting controls.',
@@ -10548,30 +11329,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
   // ── MAINE BIRDING FESTIVALS + EVENTS
   var FESTIVALS = [
-    { event: 'Acadia Birding Festival (early June)',
+    { event: 'Acadia Birding Festival (late May)',
       details: 'Bar Harbor + Acadia area. Annual celebration of bird migration + breeding. Multiple speakers, field trips, workshops.',
       audience: 'Beginners to experienced birders welcome.',
       cost: 'Variable; some free events; multi-day registration $200-400.' },
 
     { event: 'Project Puffin Tours (May-Aug)',
-      details: 'Hardy Boat Cruises + Cap\'n Fish from New Harbor. Eastern Egg Rock visit + puffin viewing.',
+      details: 'Hardy Boat Cruises (New Harbor) + Cap\'n Fish (Boothbay Harbor). Eastern Egg Rock visit + puffin viewing.',
       audience: 'All ages. Field naturalists on board.',
       cost: '$40-60 per trip.' },
 
-    { event: 'Bradbury Mountain Hawkwatch (Sept-Oct)',
+    { event: 'Bradbury Mountain Hawkwatch (Mar 15–May 15)',
       details: 'Daily counter at Bradbury Mountain State Park. Public viewing welcome.',
       audience: 'All levels.',
       cost: 'Free (park entrance fee separate).' },
 
     { event: 'Great Backyard Bird Count (mid-Feb)',
-      details: 'Cornell-coordinated 4-day winter count. Any location + any duration. Free participation.',
+      details: 'Cornell, Audubon + Birds Canada 4-day winter count. Any location; count for 15 minutes or more. Free participation.',
       audience: 'Beginners welcome.',
       cost: 'Free.' },
 
     { event: 'Maine Christmas Bird Counts (Dec-Jan)',
       details: '~30 Maine circles. Coordinated through Maine Audubon.',
       audience: 'Some experience preferred; pair with experienced counter.',
-      cost: 'Often $5-10 compiler fee.' },
+      cost: 'Free (no fee since 2012; donations welcome).' },
 
     { event: 'Maine Audubon events year-round',
       details: 'Bird walks, workshops, lectures, field trips. maineaudubon.org.',
@@ -10593,7 +11374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       audience: 'All levels.',
       cost: 'Usually free or small membership.' },
 
-    { event: 'World Migratory Bird Day (October)',
+    { event: 'World Migratory Bird Day (2nd Saturday of May)',
       details: 'Maine Audubon + national celebrations. Field trips + events.',
       audience: 'Family-friendly.',
       cost: 'Free.' }
@@ -10609,12 +11390,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { name: 'Northern Cardinal', season: 'Year-round', visit_freq: 'Daily', feeder: 'Safflower + sunflower' },
     { name: 'Tufted Titmouse', season: 'Year-round', visit_freq: 'Daily', feeder: 'Sunflower' },
     { name: 'White-breasted Nuthatch', season: 'Year-round', visit_freq: 'Daily', feeder: 'Sunflower, suet' },
-    { name: 'Red-breasted Nuthatch', season: 'Winter visitor', visit_freq: 'Daily winter', feeder: 'Sunflower, suet' },
+    { name: 'Red-breasted Nuthatch', season: 'Year-round (more conspicuous in irruption winters)', visit_freq: 'Daily winter', feeder: 'Sunflower, suet' },
     { name: 'Downy Woodpecker', season: 'Year-round', visit_freq: 'Daily', feeder: 'Suet, peanuts' },
     { name: 'Hairy Woodpecker', season: 'Year-round', visit_freq: 'Weekly', feeder: 'Suet, peanuts' },
     { name: 'Pileated Woodpecker', season: 'Year-round', visit_freq: 'Weekly', feeder: 'Suet, peanuts' },
     { name: 'Mourning Dove', season: 'Year-round', visit_freq: 'Daily', feeder: 'Ground feeder, mixed seed' },
-    { name: 'Dark-eyed Junco', season: 'Winter (breeds further north + mountains)', visit_freq: 'Daily winter', feeder: 'Ground feeder, mixed seed' },
+    { name: 'Dark-eyed Junco', season: 'Year-round (breeds across most of Maine; most visible in winter)', visit_freq: 'Daily winter', feeder: 'Ground feeder, mixed seed' },
     { name: 'American Tree Sparrow', season: 'Winter visitor', visit_freq: 'Daily winter', feeder: 'Mixed seed, millet' },
     { name: 'Blue Jay', season: 'Year-round', visit_freq: 'Daily', feeder: 'Peanuts, sunflower' },
     { name: 'American Crow', season: 'Year-round', visit_freq: 'Variable', feeder: 'Larger food items' },
@@ -10629,7 +11410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { name: 'Common Redpoll', season: 'Winter visitor (irruptive)', visit_freq: 'Variable', feeder: 'Nyjer' },
     { name: 'Cedar Waxwing', season: 'Year-round (mobile)', visit_freq: 'Variable', feeder: 'Fruit' },
     { name: 'Northern Mockingbird', season: 'Year-round (some)', visit_freq: 'Daily where occurs', feeder: 'Fruit, mealworms' },
-    { name: 'White-throated Sparrow', season: 'Migrant + winter visitor southern Maine', visit_freq: 'Daily fall/winter', feeder: 'Mixed seed, ground' },
+    { name: 'White-throated Sparrow', season: 'Abundant breeder statewide; a few winter in southern Maine', visit_freq: 'Daily fall/winter', feeder: 'Mixed seed, ground' },
     { name: 'Common Grackle', season: 'Spring-fall', visit_freq: 'Daily warm season', feeder: 'Mixed seed' },
     { name: 'Red-winged Blackbird', season: 'Spring-fall', visit_freq: 'Daily warm season', feeder: 'Sunflower, mixed seed' },
     { name: 'Brown-headed Cowbird', season: 'Spring-fall', visit_freq: 'Variable', feeder: 'Mixed seed' },
@@ -10652,7 +11433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       activities: 'Look for first arrivals + listen for new songs.',
       tip: 'Spring is starting; warm days bring activity.' },
     { month: 'April',
-      species: 'Tree Swallows returning. Chipping Sparrow. Eastern Phoebe singing. First warblers (Yellow-rumped, Pine, Yellow). Waterfowl on lakes. Loon return ~end of April.',
+      species: 'Tree Swallows returning. Chipping Sparrow. Eastern Phoebe singing. First warblers (Palm, Pine, Yellow-rumped). Waterfowl on lakes. Loon return ~end of April.',
       activities: 'Early spring birding. Maine Audubon spring walks begin.',
       tip: 'Watch for migrant ducks + first warblers.' },
     { month: 'May',
@@ -10661,7 +11442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       tip: 'Start dawn. Migration peaks during light winds + warm days.' },
     { month: 'June',
       species: 'Breeding season peak. All warbler species singing. Loons on lakes. Eagles + ospreys at nests. Wood Thrush, Hermit Thrush, Veery. Maine\'s premier birding month for breeders.',
-      activities: 'Acadia Birding Festival (early June). Maine Audubon programs. Maine Coast tours.',
+      activities: 'Acadia Birding Festival (late May). Maine Audubon programs. Maine Coast tours.',
       tip: 'Dawn chorus peaks late May–early June. Wear layers.' },
     { month: 'July',
       species: 'Many birds quieter as nesting ends. Continued warblers + thrushes. Young of the year appearing. Begin pre-migration buildup.',
@@ -10673,7 +11454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       tip: 'Mudflats + sand flats best for shorebirds. Pre-dawn arrivals.' },
     { month: 'September',
       species: 'HAWK MIGRATION PEAK. Broad-winged Hawk migration peaks mid-September. Sharp-shinned, Cooper\'s, eagles. Songbird migration ramping up. Late warblers in fall plumage. Loons leaving lakes.',
-      activities: 'Bradbury Mountain Hawkwatch. Maine Audubon hawk identification programs.',
+      activities: 'Cadillac Mountain Hawk Watch (Acadia). Maine Audubon hawk identification programs.',
       tip: 'Hawkwatches require clear NW winds after cold front. Plan accordingly.' },
     { month: 'October',
       species: 'Late warblers, sparrows, juncos arriving. Waterfowl staging on lakes + coast. Late shorebirds. Snow buntings arriving. Snowy Owl arrivals (in irruption years).',
@@ -10713,7 +11494,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       details: 'Taxonomy revises as DNA analysis improves. "Splits" = one species becomes two. "Lumps" = two species become one.',
       example: 'Northern Oriole was split into Baltimore Oriole + Bullock\'s Oriole based on genetic + behavior differences.' },
     { topic: 'Maine\'s First Bird Names',
-      details: 'Many Maine bird names come from European tradition (robin, sparrow, hawk). Some are Indigenous (loon ≈ tau in Penobscot).',
+      details: 'Most English bird names come from European tradition (robin, sparrow, hawk; "loon" is from Old Norse lómr). Wabanaki languages have their own names for these birds.',
       example: 'When English colonists named American birds, they often used Old World names (robin, finch) even though species different.' }
   ];
 
@@ -10772,8 +11553,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       examples: 'Local feed stores, hardware stores. National Audubon\'s recommendations + bird-feeding seasonal cycles.',
       source: 'Wild Bird Feeding Industry.' },
     { topic: 'Career Opportunities',
-      data: 'Maine careers in: ornithology research (UMaine, Bigelow), wildlife management (DIFW), conservation (Maine Audubon), education (Maine Audubon, schools, summer camps), bird-tour guiding, photography.',
-      examples: 'Maine Audubon employs ~50+. UMaine + Bigelow have multiple ornithology research positions.',
+      data: 'Maine careers in: ornithology research (UMaine, Biodiversity Research Institute), wildlife management (DIFW), conservation (Maine Audubon), education (Maine Audubon, schools, summer camps), bird-tour guiding, photography.',
+      examples: 'Maine Audubon employs ~50+. UMaine + Biodiversity Research Institute (Portland) hire bird researchers.',
       source: 'Job postings + nonprofit + research listings.' },
     { topic: 'Climate Impact + Economics',
       data: 'Climate change threatens Maine\'s natural-resource-based economy including birding tourism.',
@@ -10850,11 +11631,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── BIRD QUIZ BANK — 50 quiz questions about Maine birds
   var QUIZ_BANK = [
     { q: 'What is Maine\'s state bird?', a: 'Black-capped Chickadee', topic: 'Maine' },
-    { q: 'How many active bald eagle nests does Maine have today?', a: 'Approximately 700 (up from <60 in 1970)', topic: 'Maine' },
+    { q: 'How many active bald eagle nests does Maine have today?', a: 'About 730 nesting pairs at the 2018 count (up from 21 pairs in 1967)', topic: 'Maine' },
     { q: 'What is the world\'s fastest animal?', a: 'Peregrine Falcon (stooping at 240+ mph)', topic: 'Records' },
-    { q: 'Which Maine bird has the longest migration of any North American songbird?', a: 'Bobolink (to Argentina + back)', topic: 'Maine' },
+    { q: 'Which Maine songbird makes one of the longest migrations of any songbird?', a: 'Bobolink (~12,500 miles round trip to Argentina + back)', topic: 'Maine' },
     { q: 'What is a "lifer" in birding?', a: 'A species you have seen for the first time + added to your life list', topic: 'Birding' },
-    { q: 'Which bird family has the most species?', a: 'Passeriformes (songbirds) — over 5,000 species', topic: 'Taxonomy' },
+    { q: 'Which bird order has the most species?', a: 'Passeriformes (perching birds/songbirds) — about 6,500 species, ~60% of all birds', topic: 'Taxonomy' },
     { q: 'Where do Atlantic Puffins nest?', a: 'Coastal islands in burrows or rock crevices', topic: 'Behavior' },
     { q: 'What does "DDT" stand for + why is it relevant to birds?', a: 'Dichloro-diphenyl-trichloroethane — pesticide that thinned eggshells of many raptors causing population crashes; banned 1972', topic: 'Conservation' },
     { q: 'Which Maine bird is on the federally threatened list?', a: 'Piping Plover (beach-nesting shorebird)', topic: 'Conservation' },
@@ -10865,17 +11646,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { q: 'What does "supercilium" mean in birding?', a: 'The eyebrow stripe — pale stripe above the eye', topic: 'Anatomy' },
     { q: 'What is the difference between altricial + precocial chicks?', a: 'Altricial = born helpless, naked, eyes closed (songbirds, raptors); precocial = born feathered, eyes open, mobile (ducks, geese, sandpipers)', topic: 'Reproduction' },
     { q: 'What is a "kettle" in birding terms?', a: 'A group of soaring hawks circling on thermals during migration', topic: 'Birding' },
-    { q: 'Which Maine birding hotspot is on Lake Penobscot?', a: 'Multiple — including Bangor area below dam (eagle concentration)', topic: 'Maine' },
+    { q: 'Which river draws wintering Bald Eagles to open water around Bangor?', a: 'The Penobscot River: ice-free stretches near Bangor concentrate eagles', topic: 'Maine' },
     { q: 'When do most Maine warblers arrive?', a: 'Mid-May (with peak diversity late May)', topic: 'Migration' },
     { q: 'What does a Bald Eagle\'s adult plumage of white head + tail develop?', a: 'At age 4-5 years', topic: 'Biology' },
     { q: 'Why do birds sing at dawn?', a: 'Quieter air carries sound further; quieter background; cooler temperature; sexual selection peak', topic: 'Behavior' },
     { q: 'What is the longest annual migration of any animal?', a: 'Arctic Tern — ~44,000 miles annually (pole to pole twice)', topic: 'Migration' },
-    { q: 'How long does a Common Loon take to fly?', a: 'Requires running takeoff — needs 100+ ft of open water', topic: 'Maine' },
+    { q: 'How much open water does a Common Loon need to take off?', a: 'A running start across 30 yards to a quarter mile of water', topic: 'Maine' },
     { q: 'How do hummingbirds hover?', a: 'Figure-8 wing path; lift on both up + downstroke', topic: 'Physiology' },
     { q: 'What is "eclipse plumage"?', a: 'Drab male duck plumage during summer molt — male wood ducks become drab female-like for 2 months', topic: 'Plumage' },
     { q: 'Why do Cliff Swallows nest in colonies?', a: 'Cooperative behavior + shared predator defense + accumulated nest sites', topic: 'Behavior' },
     { q: 'What is the most-common breeding warbler in Maine?', a: 'Yellow-rumped Warbler (Myrtle subspecies)', topic: 'Maine' },
-    { q: 'How does a Peregrine Falcon recover energy mid-stoop?', a: 'Falcons cannot breathe during high-speed dive — they alternate stoops with recovery climbs', topic: 'Physiology' },
+    { q: 'How can a Peregrine Falcon breathe during a high-speed stoop?', a: 'Small bony cones (tubercles) in its nostrils slow + deflect the rushing air so it can keep breathing', topic: 'Physiology' },
     { q: 'What is the Maine Bird Atlas?', a: 'A comprehensive citizen-science project mapping Maine breeding birds', topic: 'Maine' },
     { q: 'Why are some bird species called "irruptive"?', a: 'They appear in massive flocks in unpredictable years driven by food availability in their northern range', topic: 'Migration' },
     { q: 'What is the largest Maine breeding owl?', a: 'Great Horned Owl', topic: 'Maine' },
@@ -10892,12 +11673,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { q: 'Why are Cedar Waxwings called "waxwings"?', a: 'Red waxy tips on their secondary wing feathers — actually colored feather modifications', topic: 'Anatomy' },
     { q: 'What is the Maine bird that returns first in spring?', a: 'Red-winged Blackbird typically arrives early March', topic: 'Maine' },
     { q: 'What family does the American Crow belong to?', a: 'Corvidae (corvids — including ravens, jays, magpies)', topic: 'Taxonomy' },
-    { q: 'How many bird species are there worldwide?', a: 'Approximately 10,500', topic: 'Diversity' },
+    { q: 'How many bird species are there worldwide?', a: 'About 11,000', topic: 'Diversity' },
     { q: 'What is the "dawn chorus"?', a: 'Peak bird singing at dawn during breeding season', topic: 'Behavior' },
     { q: 'What does it mean if a bird is "endemic" to a place?', a: 'It is found only there + nowhere else', topic: 'Ecology' },
     { q: 'How do birds navigate during migration?', a: 'Multiple cues: sun + star positions, Earth\'s magnetic field, landmarks, polarized light, possibly smell', topic: 'Migration' },
     { q: 'What does "primaries" refer to on a bird?', a: 'The outermost flight feathers — main flying surface', topic: 'Anatomy' },
-    { q: 'Why is the Penobscot River Restoration significant?', a: 'Dam removals restored ~1,000 miles of fish habitat + recovering bird populations', topic: 'Conservation' },
+    { q: 'Why is the Penobscot River Restoration significant?', a: 'Dam removals reopened nearly 2,000 miles of sea-run fish habitat; alewives now feed eagles, ospreys + more', topic: 'Conservation' },
     { q: 'What is the Maine Audubon\'s main mission?', a: 'Conserving Maine\'s wildlife + habitat through education, advocacy, + community engagement', topic: 'Maine' }
   ];
 
@@ -10949,7 +11730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { topic: 'Group Roosting',
       details: 'Cluster together. Body heat shared. Especially in cavity-nesting species.',
-      method: 'Up to 50 bluebirds can pack into single nest box in extreme cold.' },
+      method: 'Up to about 20 bluebirds have been counted packing into a single box on cold nights.' },
 
     { topic: 'Heat Reduction Strategies',
       details: 'Gular fluttering (rapid throat shaking) — like dog panting. Open-mouth breathing. Wings spread to allow cooling.',
@@ -11028,7 +11809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { color: 'Gray',
       art: { kind: 'plumage', items: [{ name: 'Junco', note: 'slate gray, white belly', body: '#6b7280', wing: '#5a616e', head: '#6b7280', tail: '#5a616e', patch: '#f8fafc' }, { name: 'Titmouse', note: 'gray with crest', body: '#9aa0a8', wing: '#8a9098', head: '#9aa0a8', tail: '#8a9098' }, { name: 'Raven', note: 'all dark', body: '#1b1e24', wing: '#22252b', head: '#1b1e24', tail: '#22252b' }] },
-      birds: 'Tufted Titmouse, Dark-eyed Junco (slate gray), Eastern Phoebe, American Crow, Common Raven',
+      birds: 'Tufted Titmouse, Dark-eyed Junco (slate gray), Eastern Phoebe, Gray Catbird',
       tip: 'Gray often combines with white belly. Check tail shape + behavior.' },
 
     { color: 'Iridescent',
@@ -11091,7 +11872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { goal: 'Hawkwatching',
       tools: '8×42 or 10×42 binoculars, hawk-specific field guide (Hawks at a Distance), warm clothes, food, notebook',
       cost: '$150-500 for optics',
-      where: 'Bradbury Mountain Hawkwatch (Sept-Oct)' },
+      where: 'Bradbury Mountain (spring) or Cadillac Mountain (fall) hawkwatches' },
 
     { goal: 'Bird-banding volunteering',
       tools: 'Permit required (training under licensed bander). Nets, bands, banding tools provided by stations.',
@@ -11128,8 +11909,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       details: 'Outdoor + free-roaming cats kill ~2.4 billion US birds annually. Single biggest human-caused threat.',
       benefit: 'Protects local birds + cat from disease + vehicle.' },
     { action: 'Apply window-collision mitigation',
-      details: 'Decals (every 4 inches), ultraviolet film, or screens on outside surface of glass. Curtain closure during peak migration.',
-      benefit: 'Reduces 1 billion+ US bird deaths annually.' },
+      details: 'Decals or markers no more than 2 inches apart (the 2×2 rule), ultraviolet film, or screens on outside surface of glass. Curtain closure during peak migration.',
+      benefit: 'Helps cut the 365–988 million US bird deaths at buildings each year.' },
     { action: 'Reduce or eliminate pesticides',
       details: 'Pesticides kill insects + can poison birds directly. Organic gardening protects food chain.',
       benefit: 'Restores insect populations critical for breeding birds.' },
@@ -11203,7 +11984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { topic: 'Where do migrants concentrate?',
       details: 'Coastal stopover sites concentrate songbirds. Mountains channel hawks. Lakes + reservoirs hold waterfowl.',
-      maine_specific: 'Coastal Maine (Acadia, Schoodic, Petit Manan, Quoddy Head) for songbird stopovers. Bradbury Mountain + Sandy Point for hawks.' },
+      maine_specific: 'Coastal Maine (Acadia, Schoodic, Petit Manan, Quoddy Head) for songbird stopovers. Cadillac Mountain + Mount Agamenticus for hawks.' },
 
     { topic: 'Weather patterns',
       details: 'Songbird migration moves on NW winds following cold fronts. Hawk migration moves with thermals after cold fronts.',
@@ -11215,7 +11996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { topic: 'Hawk migration peaks',
       details: 'Broad-winged Hawks peak Sept 15-20. Sharp-shinned + Cooper\'s peak late Sept. American Kestrel + Merlin throughout. Bald Eagle + Red-tailed throughout.',
-      maine_specific: 'Bradbury Mountain Hawkwatch (Pownal): mid-Sept to late Oct.' },
+      maine_specific: 'Cadillac Mountain Hawk Watch (Acadia): late Aug to Oct, broad-winged peak mid-Sept.' },
 
     { topic: 'Shorebird stopover',
       details: 'Bay of Fundy is largest stopover area in Western Hemisphere. Maine coastal mudflats see lots of migrants from there.',
@@ -11282,7 +12063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { region: 'Trinidad + Tobago',
       species: 'Caribbean + South American species mixed; Yellow-rumped Cacique, Blue-headed Parrots, tanagers.',
-      best_time: 'Year-round; rainy season Dec-April less wet.',
+      best_time: 'Year-round; drier January–May (rainy season June–December).',
       access: 'Asa Wright Nature Centre famous birding lodge.' },
 
     { region: 'Iceland',
@@ -11405,10 +12186,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       prevention: 'Eliminate standing water. Mosquito control.' },
 
     { disease: 'Avian Influenza (H5N1, others)',
-      affected: 'Waterfowl + chickens + occasionally other species',
+      affected: 'Waterfowl, gulls, seabirds, raptors (eagles, owls), poultry, and in 2022 Maine seals',
       symptoms: 'Lethargy, neurological signs, sudden death.',
       maine_status: 'H5N1 detected in Maine. State monitoring ongoing.',
-      prevention: 'Avoid handling dead waterfowl. Wash hands. Cooked poultry only.' },
+      prevention: 'Do not touch sick or dead wild birds; report them to MDIFW. If one must be moved, use gloves + a mask, double-bag it, and wash hands.' },
 
     { disease: 'Salmonellosis',
       affected: 'Many species; common at feeders',
@@ -11418,9 +12199,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { disease: 'House Finch Eye Disease (Conjunctivitis)',
       affected: 'House Finch + some other species',
-      symptoms: 'Swollen, watery, crusty eyes. Eventually death.',
+      symptoms: 'Swollen, watery, crusty eyes. Some recover; many die of starvation or predation.',
       maine_status: 'Common in Maine feeder finches.',
-      prevention: 'Clean feeders. Avoid bird-to-bird contact.' },
+      prevention: 'If you see sick finches, take feeders down, scrub with 10% bleach, and wait a week before refilling.' },
 
     { disease: 'Trichomoniasis',
       affected: 'Mourning Dove + raptors + finches',
@@ -11504,7 +12285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var BIRD_STORIES = [
     { story: 'The Steve Kress + Project Puffin Saga',
       details: 'Steve Kress at Cornell + later Audubon Society started Project Puffin in 1973 with a radical idea — could you bring puffins BACK to Maine after their century of absence?',
-      development: 'Kress used decoys + recorded calls + chick translocation. Sceptics said it couldn\'t work. By 1981 first puffin chick hatched on Eastern Egg Rock. By 2020 — 1,500 pairs across 4 Maine islands.',
+      development: 'Kress used decoys + recorded calls + chick translocation. Sceptics said it couldn\'t work. By 1981 first puffin chick hatched on Eastern Egg Rock. Today more than 1,300 pairs nest on Maine islands.',
       lesson: 'Audacious conservation goals can succeed. Maine\'s Project Puffin is now textbook restoration ecology.' },
 
     { story: 'The Cornell Lab + eBird Revolution',
@@ -11513,7 +12294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       lesson: 'Open data + citizen science can revolutionize a field. Bird research today depends on amateur birders.' },
 
     { story: 'The DDT + Bald Eagle Story',
-      details: '1962: Rachel Carson\'s Silent Spring exposed DDT impact on birds. Bald Eagle near extinction (<400 US pairs).',
+      details: '1962: Rachel Carson\'s Silent Spring exposed DDT impact on birds. Bald Eagle near extinction (417 nesting pairs in the lower 48 by 1963).',
       development: 'DDT banned 1972. Endangered Species Act 1973. Captive breeding + reintroduction. Today: ~70,000 US pairs.',
       lesson: 'Science-based policy + dedicated conservation work can recover species from near-extinction.' },
 
@@ -11523,8 +12304,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       lesson: 'State-level conservation + community engagement work.' },
 
     { story: 'The Great Auk Extinction',
-      details: 'Great Auk once bred in Gulf of Maine + Labrador. Massive flightless seabird. Slaughtered by fishermen + collectors.',
-      development: 'Last seen 1844 off Iceland. Closely related to Maine\'s razorbills + puffins.',
+      details: 'Great Auk once bred off Newfoundland + in the Gulf of St. Lawrence, wintering south into the Gulf of Maine. Massive flightless seabird. Slaughtered by fishermen + collectors.',
+      development: 'Last breeding pair killed 1844 on Eldey, Iceland. Closely related to Maine\'s razorbills + puffins.',
       lesson: 'No species too abundant to lose. Wake-up call for seabird conservation.' },
 
     { story: 'The Passenger Pigeon Devastation',
@@ -11533,17 +12314,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       lesson: 'Population can collapse rapidly even from massive abundance.' },
 
     { story: 'The Wild Turkey Restoration',
-      details: 'Eliminated from Maine by 1900. Hunted out + habitat lost.',
-      development: 'Maine Department of Inland Fisheries + Wildlife restoration program 1977+. Trapped Pennsylvania turkeys released in Maine. Population grew from 0 to 50,000+.',
+      details: 'Eliminated from Maine by the early 1800s. Hunted out + habitat lost.',
+      development: 'Maine Department of Inland Fisheries + Wildlife restoration program 1977+. 41 wild turkeys from Vermont released in York and Eliot. Population grew from 0 to 50,000+.',
       lesson: 'Restoration is possible. Habitat regeneration + careful management.' },
 
     { story: 'The Snowy Owl 2013-2014 Maine Irruption',
       details: 'In winter 2013-2014, Maine experienced unprecedented Snowy Owl numbers. Photographers + birders + Maine Audubon mobilized.',
-      development: 'Project Snowstorm + Maine Audubon tracking. Multiple Maine snowy owls fitted with GPS transmitters. Data revealed migration patterns.',
+      development: 'Project SNOWstorm tracking (with Biodiversity Research Institute in Maine). Multiple Maine snowy owls fitted with GPS transmitters. Data revealed migration patterns.',
       lesson: 'Irruption years offer rare research + viewing opportunities.' },
 
     { story: 'The Mary Oliver Birding Legacy',
-      details: 'Maine + Massachusetts poet whose attention to birds + nature has inspired millions.',
+      details: 'Ohio-born poet who lived 40+ years in Provincetown, Massachusetts; her attention to birds + nature has inspired millions.',
       development: 'Hundreds of poems featuring birds. Her observation + reverence cultivated public engagement with nature.',
       lesson: 'Art + literature shape public love of birds + create constituency for conservation.' },
 
@@ -11648,7 +12429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   var BIRD_ATLASES = [
     { topic: 'Maine Breeding Bird Atlas',
       details: 'State-coordinated citizen science project mapping breeding birds. Volunteers survey blocks of land + record breeding evidence.',
-      years: 'First conducted 1978-1983; updated 2015-2024 (2nd Maine atlas)',
+      years: 'First conducted 1978-1983; updated 2018-2022 (2nd Maine atlas)',
       benefit: 'Tracks population changes + range shifts across decades.' },
 
     { topic: 'North American Breeding Bird Survey',
@@ -11657,8 +12438,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       benefit: 'Long-term continental population trends. Foundational data for conservation.' },
 
     { topic: 'Maine Bird Atlas — Latest Edition',
-      details: 'Second Maine atlas (2015-2024) updated breeding distribution + abundance.',
-      years: '2015-2024 fieldwork',
+      details: 'Second Maine atlas (2018-2022) updated breeding distribution + abundance.',
+      years: '2018-2022 fieldwork',
       benefit: 'Documents how Maine\'s breeding bird community has changed over 40 years.' },
 
     { topic: 'eBird',
@@ -11675,7 +12456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       lesson: 'Conservation + legislation works.' },
 
     { species: 'Wild Turkey',
-      historic: 'Extirpated from Maine by 1900. Lost to hunting + habitat conversion.',
+      historic: 'Extirpated from Maine by the early 1800s. Lost to hunting + habitat conversion.',
       modern: 'Restored: 50,000+ Maine turkeys today via state restoration program.',
       lesson: 'Restoration is possible when habitat + protection align.' },
 
@@ -11696,7 +12477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
     { species: 'Common Loon',
       historic: 'Common Maine breeder. Declined mid-20th century from pollution + lead tackle + boat wake disturbance.',
-      modern: 'Recovered: ~3,500 Maine breeding pairs. Lead tackle bans + lake awareness help.',
+      modern: 'Recovered: ~1,700 Maine breeding pairs. Lead tackle bans + lake awareness help.',
       lesson: 'Local awareness + regulation can recover species.' },
 
     { species: 'Evening Grosbeak',
@@ -11793,10 +12574,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       action: 'Coastal mudflats + Scarborough Marsh.' },
     { window: 'Early September',
       activity: 'Songbird migration begins. Late warblers in fall plumage',
-      action: 'Coastal Maine + Bradbury Mountain.' },
+      action: 'Coastal migrant stopovers (Monhegan, Biddeford Pool).' },
     { window: 'Mid-September',
       activity: 'PEAK HAWK MIGRATION — Broad-winged Hawks + accipiters',
-      action: 'Bradbury Mountain Hawkwatch (Pownal). Sandy Point Hawkwatch.' },
+      action: 'Cadillac Mountain (Acadia) or Mount Agamenticus hawkwatches.' },
     { window: 'Late September',
       activity: 'More songbird migration. Late shorebirds.',
       action: 'Coastal Maine + offshore islands.' },
@@ -11831,7 +12612,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       maine: 'Audubon spent time in Maine; his bird illustrations remain influential.' },
     { period: 'Peterson Era (1934+)',
       details: 'Roger Tory Peterson\'s field guide art revolutionized birding accessibility. Diagrammatic arrows to field marks.',
-      maine: 'Peterson summered in Maine; many illustrations are of Maine birds.' },
+      maine: 'Peterson taught at Audubon\'s Hog Island camp in Maine from 1936.' },
     { period: 'Modern Photography',
       details: 'High-quality bird photography became affordable + widespread late 1900s onward.',
       maine: 'Maine bird photographers contribute to journals + websites + state parks.' },
@@ -11877,29 +12658,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── BIRD STATS — Maine in numbers
   var MAINE_BIRD_STATS = [
     { stat: 'Total bird species recorded in Maine',
-      number: '~424 species (Maine state list)',
+      number: '~475 species (Maine state list, 2025)',
       context: 'Includes regular breeders + visitors + vagrants. Maine birding has grown' },
     { stat: 'Maine breeding species',
-      number: '~280 species',
+      number: '200+ species',
       context: 'Species breeding regularly. Other species are migrants + winter visitors only.' },
     { stat: 'Maine endemic species (only here)',
       number: 'Zero — Maine has no endemic species',
       context: 'All Maine birds occur elsewhere. But many populations depend on Maine breeding habitat.' },
     { stat: 'Maine endangered/threatened species',
-      number: '~12 state-listed species',
+      number: '25 state-listed bird species (12 endangered, 13 threatened)',
       context: 'Piping Plover, Roseate Tern, Bicknell\'s Thrush, Saltmarsh Sparrow + more.' },
     { stat: 'Maine Bald Eagle nests today',
       number: '~700 active nests',
-      context: 'Up from <60 in 1970. Federal recovery story.' },
+      context: 'Up from 21 nesting pairs in 1967. Federal recovery story.' },
     { stat: 'Maine Common Loon breeding pairs',
-      number: '~3,500',
-      context: 'Recovered from mid-20th century low.' },
+      number: '~1,700 pairs',
+      context: 'About 3,400 breeding adults, plus ~700 non-breeders (BRI estimate).' },
     { stat: 'Maine Atlantic Puffin pairs',
-      number: '~1,500',
-      context: 'Restored via Project Puffin from 0 birds 1970s.' },
+      number: '1,300+',
+      context: 'Restored to Eastern Egg Rock and Seal Island by Project Puffin.' },
     { stat: 'Maine Piping Plover pairs',
-      number: '~50',
-      context: 'Federally threatened. Each nest monitored by volunteers.' },
+      number: '~185 (2026 record)',
+      context: 'Up from 7 pairs in 1981. Federally threatened; each nest monitored by volunteers.' },
     { stat: 'Maine Wild Turkey population',
       number: '~50,000+',
       context: 'Restored from 0 in 1900 via state restoration program.' },
@@ -11938,7 +12719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { q: 'Do I need a guide?',
       a: 'Not required, but Maine Audubon walks + local birding clubs offer free or low-cost guided experiences. Excellent for learning. Self-guided is also possible.' },
     { q: 'How do I deal with bug bites?',
-      a: 'Maine mosquitoes + black flies can be intense May-July. Use DEET 30%+, picaridin, or eucalyptus oil. Long-sleeve clothing + hat help. Check for ticks after birding.' },
+      a: 'Maine mosquitoes + black flies can be intense May-July. Use an EPA-registered repellent: DEET (30% max for kids), picaridin, or oil of lemon eucalyptus (OLE, not plain eucalyptus oil). Long-sleeve clothing + hat help. Check for ticks after birding.' },
     { q: 'Is birding only for retirees?',
       a: 'Not at all! Birding has wide age range. Maine has young birders, families, professionals + retirees all participating. Inclusive community.' },
     { q: 'What about climate change\'s impact on Maine birds?',
@@ -11967,16 +12748,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
   // ── ABSOLUTE FINAL: BIRDING WISDOM QUOTES
   var BIRDING_QUOTES = [
-    { quote: '"Birds have wings; they\'re free; they can fly where they want when they want. They have the kind of mobility many people envy."', author: 'Roger Tory Peterson' },
+    { quote: '"Birds have wings; they\'re free; they can fly where they want when they want. They have the kind of mobility many people envy."', author: 'Roger Tory Peterson (widely attributed)' },
     { quote: '"In every walk with nature one receives far more than he seeks."', author: 'John Muir' },
-    { quote: '"The bird-watcher is not a tourist, but a participant — a co-collaborator with the bird."', author: 'Ned Brinkley' },
     { quote: '"To attract birds, plant a garden — to attract a soul, watch the birds in it."', author: 'Anonymous birding wisdom' },
-    { quote: '"A bird does not sing because it has an answer; it sings because it has a song."', author: 'Maya Angelou (Chinese proverb)' },
-    { quote: '"What we don\'t see, we can\'t care about. Birds invite us to see."', author: 'Sy Montgomery' },
-    { quote: '"Hope is a thing with feathers."', author: 'Emily Dickinson' },
-    { quote: '"You don\'t have to see the puffin to be saved by it."', author: 'Steve Kress (Project Puffin)' },
-    { quote: '"The bird and a book of birds and a quiet morning — that\'s wealth."', author: 'Adapted from Roger Tory Peterson' },
-    { quote: '"Maine\'s loons sing for all of us. May we listen well + protect them better."', author: 'Maine Loon Project' }
+    { quote: '"A bird doesn\'t sing because it has an answer, it sings because it has a song."', author: 'Joan Walsh Anglund, A Cup of Sun (1967); often credited to Maya Angelou' },
+    { quote: '"\'Hope\' is the thing with feathers."', author: 'Emily Dickinson' },
+    { quote: '"Those who contemplate the beauty of the earth find reserves of strength that will endure as long as life lasts."', author: 'Rachel Carson, The Sense of Wonder' },
+    { quote: '"Instructions for living a life: Pay attention. Be astonished. Tell about it."', author: 'Mary Oliver, "Sometimes"' }
   ];
 
   // ── Phase-4/5 deep-dive views (MODULE scope on purpose) ──
@@ -11986,6 +12764,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // writes toolData (XP awards, badges, view sync, hydration). Stable
   // identities here mean re-renders reconcile instead of remounting.
   // Gate: tests/stem_birdlab_view_state_stability.test.js.
+  // [100, 200, 700, 900] per accent family.
+  var FAMILY_TINTS = {
+    stone:   ['#f5f5f4', '#d6d3d1', '#44403c', '#1c1917'],
+    amber:   ['#fef3c7', '#fcd34d', '#b45309', '#78350f'],
+    rose:    ['#ffe4e6', '#fda4af', '#be123c', '#881337'],
+    yellow:  ['#fef9c3', '#fde047', '#a16207', '#713f12'],
+    slate:   ['#f1f5f9', '#cbd5e1', '#334155', '#0f172a'],
+    emerald: ['#d1fae5', '#6ee7b7', '#047857', '#064e3b'],
+    teal:    ['#ccfbf1', '#5eead4', '#0f766e', '#134e4a']
+  };
   function BirdSpeciesFamilyView(props) {
     var ctx = props.ctx;
     var React = ctx.React || window.React;
@@ -11999,6 +12787,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var idx = idxState[0], setIdx = idxState[1];
     var cur = items[idx];
     var bg = accent.replace('bg-', '').split('-')[0];
+    // Inline, not classes: the host shim resets text-*-900 to the shell's
+    // light ink on any -100 tint, and runtime-built class names may not be
+    // in the compiled CSS.
+    var tint = FAMILY_TINTS[bg] || FAMILY_TINTS.slate;
     return h('div', { className: 'p-4 max-w-5xl mx-auto' },
       h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
         h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, icon + ' ' + title),
@@ -12008,11 +12800,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('div', { className: 'flex gap-2 flex-wrap mb-3' },
         items.map(function(it, i) {
           return h('button', { key: i, onClick: function() { setIdx(i); },
-            className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? accent + ' text-white' : 'bg-' + bg + '-100 text-' + bg + 'transition-colors -900 hover:bg- active:scale-[0.97]' + bg + '-200')
+            'aria-pressed': i === idx ? 'true' : 'false',
+            className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors active:scale-[0.97]' + (i === idx ? ' ' + accent + ' text-white' : ''),
+            style: i === idx ? { background: tint[2], color: '#ffffff', borderColor: tint[2] } : { background: tint[0], color: tint[3], borderColor: tint[1] }
           }, it.name);
         })),
-      h('div', { className: 'bg-white rounded-xl shadow border-2 border-' + bg + '-200 p-5' },
-        h('h2', { className: 'text-xl font-black text- tracking-tight' + bg + '-900 mb-1' }, icon + ' ' + cur.name),
+      h('div', { className: 'bg-white rounded-xl shadow border-2 p-5', style: { borderColor: tint[1] } },
+        h('h2', { className: 'text-xl font-black tracking-tight mb-1', style: { color: tint[3] } }, icon + ' ' + cur.name),
         h('div', { className: 'text-xs italic text-slate-600 mb-3' }, cur.sci + (cur.size ? ' · ' + cur.size : '')),
         // Head plate, where the species has one. sparrowHead returns null for
         // anything unspecced, so this one call serves every family view and
@@ -12799,7 +13593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           {
             id: 'raptors', title: __alloT('stem.birdlab.maine_raptors_deep_dive', 'Maine Raptors Deep Dive'), icon: '🦅',
             subtitle: __alloT('stem.birdlab.12_maine_raptor_species', '12 Maine raptor species'),
-            desc: __alloT('stem.birdlab.eagles_hawks_falcons_harriers_vultures', 'Eagles, hawks, falcons, harriers, vultures. 12 Maine raptor species with group, size, voice, diet, hunting style, breeding, conservation status. From the Bradbury Mountain broadwings to recovered peregrines on city bridges.'),
+            desc: __alloT('stem.birdlab.eagles_hawks_falcons_harriers_vultures', 'Eagles, hawks, falcons, harriers, vultures. 12 Maine raptor species with group, size, voice, diet, hunting style, breeding, conservation status. From Broad-winged Hawk kettles over Cadillac Mountain to recovered peregrines on city bridges.'),
             color: 'from-rose-700 to-amber-700',
             ring: 'ring-rose-500/40',
             ready: true
@@ -13007,7 +13801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           {
             id: 'blackbirds', title: __alloT('stem.birdlab.maine_blackbirds_corvids', 'Maine Blackbirds + Corvids'), icon: '⬛',
             subtitle: __alloT('stem.birdlab.10_species', '10 species'),
-            desc: __alloT('stem.birdlab.red_winged_blackbird_common_grackle_eu', 'Red-winged Blackbird, Common Grackle, European Starling (intro), Brown-headed Cowbird (parasite), Baltimore Oriole, Bobolink, American Crow, Common Raven, Blue Jay, Gray Jay. Maine\'s most intelligent + most controversial bird family.'),
+            desc: __alloT('stem.birdlab.red_winged_blackbird_common_grackle_eu', 'Red-winged Blackbird, Common Grackle, European Starling (intro), Brown-headed Cowbird (parasite), Baltimore Oriole, Bobolink, American Crow, Common Raven, Blue Jay, Canada Jay. Maine\'s most intelligent + most controversial bird family.'),
             color: 'from-slate-700 to-stone-800',
             ring: 'ring-slate-500/40',
             ready: true
@@ -13159,7 +13953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           {
             id: 'extinct', title: __alloT('stem.birdlab.historically_extinct_birds', 'Historically Extinct Birds'), icon: '🦤',
             subtitle: __alloT('stem.birdlab.8_lost_species_lessons', '8 lost species + lessons'),
-            desc: __alloT('stem.birdlab.great_auk_1844_gulf_of_maine_breeder_p', 'Great Auk (1844, Gulf of Maine breeder), Passenger Pigeon (1914), Carolina Parakeet (1918), Labrador Duck (1875), Eskimo Curlew (1962), Heath Hen (1932), Dodo (1681), Bachman\'s Warbler (1962+). Each with reasons + Maine connection + lessons.'),
+            desc: __alloT('stem.birdlab.great_auk_1844_gulf_of_maine_breeder_p', 'Great Auk (1844), Passenger Pigeon (1914), Carolina Parakeet (1918), Labrador Duck (1875), Eskimo Curlew (1962), Heath Hen (1932), Dodo (1662), Bachman\'s Warbler (1962+). Each with reasons + Maine connection + lessons.'),
             color: 'from-stone-700 to-rose-800',
             ring: 'ring-stone-500/40',
             ready: true
@@ -13230,8 +14024,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           },
           {
             id: 'hawkwatch', title: __alloT('stem.birdlab.maine_hawkwatch_guide', 'Maine Hawkwatch Guide'), icon: '🦅',
-            subtitle: __alloT('stem.birdlab.bradbury_mountain_sandy_point', 'Bradbury Mountain + Sandy Point'),
-            desc: __alloT('stem.birdlab.maine_s_premier_hawkwatching_sites_sep', 'Maine\'s premier hawkwatching sites. Sept-Oct migration peaks for broad-wings + other raptors. How to participate, what to bring, hawk ID basics, etiquette. Data feeds HMANA.'),
+            subtitle: __alloT('stem.birdlab.bradbury_mountain_sandy_point', 'Bradbury + Cadillac Mountain'),
+            desc: __alloT('stem.birdlab.maine_s_premier_hawkwatching_sites_sep', 'Maine\'s hawkwatches: Bradbury Mountain in spring, Cadillac Mountain in fall (broad-wings peak mid-September). How to participate, what to bring, hawk ID basics, etiquette. Data feeds HMANA.'),
             color: 'from-orange-700 to-red-800',
             ring: 'ring-orange-500/40',
             ready: true
@@ -13262,8 +14056,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           },
           {
             id: 'hawkData', title: __alloT('stem.birdlab.hawkwatch_science_data', 'Hawkwatch Science Data'), icon: '📊',
-            subtitle: __alloT('stem.birdlab.bradbury_mountain_trends', 'Bradbury Mountain + trends'),
-            desc: __alloT('stem.birdlab.30_years_of_bradbury_mountain_hawkwatc', '30+ years of Bradbury Mountain Hawkwatch data. Annual totals, peak days, multi-decade trends. Climate-driven shifts. Citizen-science contributing real conservation data.'),
+            subtitle: __alloT('stem.birdlab.bradbury_mountain_trends', 'Bradbury + Cadillac counts'),
+            desc: __alloT('stem.birdlab.30_years_of_bradbury_mountain_hawkwatc', 'What Maine\'s hawkwatches count: Bradbury Mountain (spring, since 2007) and Cadillac Mountain (fall, since 1994). Season averages, record days, and how to read the data yourself on HawkCount.org.'),
             color: 'from-orange-700 to-amber-800',
             ring: 'ring-orange-500/40',
             ready: true
@@ -13327,7 +14121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           {
             id: 'festivals', title: __alloT('stem.birdlab.maine_birding_events_festivals', 'Maine Birding Events + Festivals'), icon: '🎉',
             subtitle: __alloT('stem.birdlab.10_maine_events', '10 Maine events'),
-            desc: __alloT('stem.birdlab.acadia_birding_festival_june_project_p', 'Acadia Birding Festival (June), Project Puffin Tours, Bradbury Mountain Hawkwatch, Great Backyard Bird Count, Maine CBCs, Maine Audubon walks, Bird-A-Thon, local birding clubs, World Migratory Bird Day. Year-round events.'),
+            desc: __alloT('stem.birdlab.acadia_birding_festival_june_project_p', 'Acadia Birding Festival (late May), Project Puffin Tours, Bradbury Mountain Hawkwatch, Great Backyard Bird Count, Maine CBCs, Maine Audubon walks, Bird-A-Thon, local birding clubs, World Migratory Bird Day. Year-round events.'),
             color: 'from-amber-700 to-orange-800',
             ring: 'ring-amber-500/40',
             ready: true
@@ -13591,7 +14385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           {
             id: 'maineStats', title: __alloT('stem.birdlab.maine_birds_in_numbers', 'Maine Birds in Numbers'), icon: '📊',
             subtitle: __alloT('stem.birdlab.15_statistics', '15 statistics'),
-            desc: __alloT('stem.birdlab.total_species_424_breeding_species_280', 'Total species (~424), breeding species (~280), endangered listings (~12), Bald Eagle recovery (~700 nests), Loon pairs (~3,500), Puffin pairs (~1,500), Plover pairs (~50), Wild Turkey recovery (~50,000+), birding tourism ($200M+/yr), eBird contributions, big year records.'),
+            desc: __alloT('stem.birdlab.total_species_424_breeding_species_280', 'Total species (~475), breeding species (200+), state-listed birds (25), Bald Eagle recovery (~700 nests), Loon pairs (~1,700), Puffin pairs (1,300+), Plover pairs (~185), Wild Turkey recovery (~50,000+), birding tourism ($200M+/yr), eBird contributions, big year records.'),
             color: 'from-emerald-700 to-amber-800',
             ring: 'ring-emerald-500/40',
             ready: true
@@ -13615,7 +14409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           {
             id: 'quotes', title: __alloT('stem.birdlab.birding_wisdom_quotes', 'Birding Wisdom Quotes'), icon: '💬',
             subtitle: __alloT('stem.birdlab.10_thoughtful_quotes', '10 thoughtful quotes'),
-            desc: __alloT('stem.birdlab.quotes_from_roger_tory_peterson_john_m', 'Quotes from Roger Tory Peterson, John Muir, Sy Montgomery, Steve Kress, Emily Dickinson, Maya Angelou, Maine Loon Project + more. Birding wisdom across generations.'),
+            desc: __alloT('stem.birdlab.quotes_from_roger_tory_peterson_john_m', 'Quotes from Roger Tory Peterson, John Muir, Rachel Carson, Emily Dickinson, Mary Oliver + more. Birding wisdom across generations.'),
             color: 'from-amber-700 to-violet-800',
             ring: 'ring-amber-500/40',
             ready: true
@@ -13832,7 +14626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     flexShrink: 0
                   }
                 },
-                  h('svg', { viewBox: '0 0 30 30', 'aria-hidden': 'true', focusable: 'false', style: { width: 50, height: 50 } },
+                  h('svg', { 'data-bird-art-fit': 'true', ref: function(el) { fitBirdArt(el); }, viewBox: '0 0 30 30', 'aria-hidden': 'true', focusable: 'false', style: { width: 50, height: 50 } },
                     h('g', { transform: 'translate(2, 2)' }, __sp.svg(h))
                   )
                 ),
@@ -17277,7 +18071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }
                   },
-                    h('svg', { viewBox: '0 0 30 30', style: { width: '76px', height: '76px' }, role: 'img', 'aria-label': picked.name + ' illustration' },
+                    h('svg', { 'data-bird-art-fit': 'true', ref: function(el) { fitBirdArt(el); }, viewBox: '0 0 30 30', style: { width: '76px', height: '76px' }, role: 'img', 'aria-label': picked.name + ' illustration' },
                       h('g', { transform: 'translate(2, 2)' }, picked.svg(h))
                     )
                   ),
@@ -17456,7 +18250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     className: 'text-[0.625rem] font-bold px-2 py-1 rounded-md border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                       (isActive ? 'bg-amber-100 text-amber-900 border-amber-500' : 'bg-white text-slate-700 border-slate-300 hover:border-amber-400'),
                     title: budget + ' hint' + (budget === 1 ? '' : 's') + ' per habitat'
-                  }, DIFFICULTY_LABELS[diffKey], h('span', { className: 'ml-1 text-slate-500 font-mono' }, '(' + budget + ')'));
+                  }, DIFFICULTY_LABELS[diffKey], h('span', { className: 'ml-1 font-mono', style: { color: isActive ? '#78350f' : '#475569' } }, '(' + budget + ')'));
                 })
               ),
               h('p', { className: 'text-[0.6875rem] text-slate-700 mb-3 leading-snug' },
@@ -17763,7 +18557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // CHICKADEE_FIELD_MARKS.
         var SPECIES_OPTIONS = [
           { id: 'chickadee', label: __alloT('stem.birdlab.chickadee', 'Chickadee'),             icon: '🐦', tagline: 'Black-capped Chickadee · Poecile atricapillus · Maine\'s state bird',                       data: CHICKADEE_FIELD_MARKS },
-          { id: 'yrwarbler', label: __alloT('stem.birdlab.yellow_rumped_warbler', 'Yellow-rumped Warbler'), icon: '🟡', tagline: 'Setophaga coronata coronata (Myrtle subspecies) · Maine\'s most common warbler',           data: YELLOW_RUMPED_WARBLER_FIELD_MARKS },
+          { id: 'yrwarbler', label: __alloT('stem.birdlab.yellow_rumped_warbler', 'Yellow-rumped Warbler'), icon: '🟡', tagline: 'Setophaga coronata coronata (Myrtle subspecies) · the warbler most likely in early spring and late fall',           data: YELLOW_RUMPED_WARBLER_FIELD_MARKS },
           { id: 'wtsparrow', label: __alloT('stem.birdlab.white_throated_sparrow', 'White-throated Sparrow'), icon: '🟫', tagline: 'Zonotrichia albicollis · Maine breeder, "Old-Sam-Peabody" singer',                         data: WHITE_THROATED_SPARROW_FIELD_MARKS }
         ];
 
@@ -17830,7 +18624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('div', { className: 'text-xs text-slate-700 italic' }, current.tagline)
             ),
             // Big bird with clickable hotspots
-            h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden relative', style: { aspectRatio: '320 / 240', minHeight: '300px' } },
+            h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden relative', style: { aspectRatio: '320 / 240' } },
               h('svg', {
                 viewBox: fm.bigSvgViewBox,
                 className: 'w-full h-full',
@@ -17844,6 +18638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   var isPicked = picked && picked.id === hs.id;
                   return h('circle', {
                     key: 'circle-' + hs.id,
+                    'data-hotspot': hs.id,
                     cx: hs.x, cy: hs.y, r: hs.r,
                     fill: 'none',
                     stroke: isPicked ? '#0284c7' : (isVisited ? '#059669' : '#fbbf24'),
@@ -18421,7 +19216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 ),
                 h('h3', { className: 'text-base font-black text-emerald-900 mb-1', style: { lineHeight: 1.2 } }, __alloT('stem.birdlab.see_evolution_change_a_beak_gal_pagos_', 'See evolution change a beak: Galápagos finches')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.birdlab.darwin_watched_13_finch_species_on_the', 'Darwin watched 13 finch species on the Galápagos and realized they\'d all evolved from a single ancestor — each beak matched a different food. Peter & Rosemary Grant later watched these beaks '),
+                  __alloT('stem.birdlab.darwin_watched_13_finch_species_on_the', 'Darwin collected these finches without realizing what they were; back in London the ornithologist John Gould showed they were a new group of a dozen species. Today about 15 to 18 are recognized, all from one ancestor, each beak suited to a different food. Peter & Rosemary Grant later watched these beaks '),
                   h('em', null, __alloT('stem.birdlab.continue_evolving', 'continue evolving')),
                   __alloT('stem.birdlab.across_droughts_for_the_deep_story_ope', ' across droughts. For the deep story, open '),
                   h('strong', { className: 'font-mono text-emerald-800' }, __alloT('stem.birdlab.evolab_gal_pagos_beak_lab', 'EvoLab → Galápagos Beak Lab')),
@@ -18441,16 +19236,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     className: 'text-left p-3 rounded-xl border-2 transition focus:outline-none focus:ring-2 ring-amber-500/40 birdlab-card-lift ' +
                       (sel ? 'bg-amber-100 border-amber-600 shadow-lg' : 'bg-white border-slate-300 hover:border-amber-500')
                   },
-                    h('div', { className: 'flex items-center justify-center bg-slate-50 rounded-lg p-2 mb-2', style: { height: '40px' } },
-                      h('svg', { 'aria-hidden': 'true', viewBox: '0 0 35 20', style: { width: '60px', height: '32px' } }, b.svg(h))
+                    h('div', { className: 'flex items-center justify-center bg-slate-50 rounded-lg p-2 mb-2', style: { height: '78px' } },
+                      h('svg', { 'aria-hidden': 'true', viewBox: '0 0 35 20', 'data-beak-icon': b.id, style: { width: '112px', height: '64px', maxWidth: '100%' } }, b.svg(h))
                     ),
                     h('div', { className: 'text-xs font-bold text-slate-800' }, b.label)
                   );
                 })
               ),
               pickedBeak && h('div', { className: 'mt-3 p-4 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-start gap-4 flex-wrap', 'aria-live': 'polite' },
-                pickedBeak.svg && h('div', { className: 'flex-shrink-0 bg-white rounded-xl border-2 border-amber-300 p-2 shadow-sm', style: { width: 100, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
-                  h('svg', { viewBox: '0 0 35 20', style: { width: 84, height: 48 }, role: 'img', 'aria-label': pickedBeak.label + ' diagram' }, pickedBeak.svg(h))
+                pickedBeak.svg && h('div', { className: 'flex-shrink-0 bg-white rounded-xl border-2 border-amber-300 p-2 shadow-sm', style: { width: 156, height: 96, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+                  h('svg', { viewBox: '0 0 35 20', style: { width: 140, height: 80 }, role: 'img', 'aria-label': pickedBeak.label + ' diagram' }, pickedBeak.svg(h))
                 ),
                 h('div', { className: 'flex-1 min-w-0' },
                   h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, pickedBeak.label),
@@ -18478,8 +19273,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     className: 'text-left p-3 rounded-xl border-2 transition focus:outline-none focus:ring-2 ring-amber-500/40 birdlab-card-lift ' +
                       (sel ? 'bg-amber-100 border-amber-600 shadow-lg' : 'bg-white border-slate-300 hover:border-amber-500')
                   },
-                    h('div', { className: 'flex items-center justify-center bg-slate-50 rounded-lg p-2 mb-2', style: { height: '60px' } },
-                      f.svg ? h('svg', { 'aria-hidden': 'true', viewBox: '0 0 40 40', style: { width: '60px', height: '52px' } }, f.svg(h))
+                    h('div', { className: 'flex items-center justify-center bg-slate-50 rounded-lg p-2 mb-2', style: { height: '100px' } },
+                      f.svg ? h('svg', { 'aria-hidden': 'true', viewBox: '0 0 40 40', 'data-foot-icon': f.id, style: { width: '84px', height: '84px' } }, f.svg(h))
                             : h('span', { className: 'text-3xl text-slate-500', 'aria-hidden': true }, '🦶')
                     ),
                     h('div', { className: 'text-xs font-bold text-slate-800' }, f.label)
@@ -18487,8 +19282,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 })
               ),
               pickedFoot && h('div', { className: 'mt-3 p-4 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-start gap-4 flex-wrap', 'aria-live': 'polite' },
-                pickedFoot.svg && h('div', { className: 'flex-shrink-0 bg-white rounded-xl border-2 border-amber-300 p-2 shadow-sm', style: { width: 84, height: 84, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
-                  h('svg', { viewBox: '0 0 40 40', style: { width: 64, height: 64 }, role: 'img', 'aria-label': pickedFoot.label + ' diagram' }, pickedFoot.svg(h))
+                pickedFoot.svg && h('div', { className: 'flex-shrink-0 bg-white rounded-xl border-2 border-amber-300 p-2 shadow-sm', style: { width: 124, height: 124, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+                  h('svg', { viewBox: '0 0 40 40', style: { width: 108, height: 108 }, role: 'img', 'aria-label': pickedFoot.label + ' diagram' }, pickedFoot.svg(h))
                 ),
                 h('div', { className: 'flex-1 min-w-0' },
                   h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, pickedFoot.label),
@@ -18517,7 +19312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('span', { className: 'text-blue-700 font-bold flex-shrink-0' }, '◆'),
                   h('span', null,
                     h('strong', null, 'Together: '),
-                    __alloT('stem.birdlab.a_hooked_bill_on_a_webbed_foot_you_re_', 'a hooked bill on a webbed foot? You\'re looking at a fish-eating raptor — Bald Eagle, Osprey. A cone bill on a perching foot? Seedeater songbird — cardinal, finch.')))
+                    __alloT('stem.birdlab.a_hooked_bill_on_a_webbed_foot_you_re_', 'a hooked bill on taloned feet? A raptor: Bald Eagle, Osprey, Red-tailed Hawk. A cone bill on a perching foot? A seedeater songbird: cardinal, finch.')))
               )
             ),
             h(TeacherNotes, {
@@ -18605,7 +19400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function callShapeLabels() {
         return {
           rising:    { icon: '↗', text: __alloT('stem.birdlab.rising', 'Rising'),   bg: '#0e7490', fg: '#cffafe' },
-          falling:   { icon: '↘', text: __alloT('stem.birdlab.falling', 'Falling'),  bg: '#a16207', fg: '#fef3c7' },
+          falling:   { icon: '↘', text: __alloT('stem.birdlab.falling', 'Falling'),  bg: '#854d0e', fg: '#fef3c7' },
           steady:    { icon: '→', text: __alloT('stem.birdlab.steady', 'Steady'),   bg: '#475569', fg: '#e2e8f0' },
           'two-note':{ icon: '⤴', text: __alloT('stem.birdlab.two_note', 'Two-note'), bg: '#7c3aed', fg: '#ede9fe' },
           arch:      { icon: '⌒', text: __alloT('stem.birdlab.rise_then_fall', 'Rise, then fall'), bg: '#0f766e', fg: '#ccfbf1' },
@@ -18747,7 +19542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           ),
           // Call-shape badge + text alternative for the audio
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' } },
-            shapeStyle && h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.birdlab.shape', 'Shape')),
+            shapeStyle && h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #475569)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.birdlab.shape', 'Shape')),
             shapeStyle && h('span', {
               style: {
                 display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -18759,7 +19554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('span', { 'aria-hidden': true, style: { fontSize: 11 } }, shapeStyle.icon),
               shapeStyle.text
             ),
-            h('span', { className: 'birdlab-call-sketch-desc', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } },
+            h('span', { className: 'birdlab-call-sketch-desc', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', fontStyle: 'italic' } },
               __alloT('stem.birdlab.sounds_like', 'Sounds like: ') + info.text)
           )
         );
@@ -19409,7 +20204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     ),
                     lt.attempts > 0 && h('div', null,
                       h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.accuracy', 'Accuracy')),
-                      h('span', { className: 'ml-1.5 font-mono font-bold', style: { color: pct >= 70 ? '#059669' : pct >= 40 ? '#d97706' : '#dc2626' } }, pct + '%')
+                      h('span', { className: 'ml-1.5 font-mono font-bold', style: { color: pct >= 70 ? '#047857' : pct >= 40 ? '#b45309' : '#b91c1c' } }, pct + '%')
                     ),
                     lt.streak > 0 && h('div', { className: 'flex items-center gap-1' },
                       h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.streak', 'Streak')),
@@ -19545,7 +20340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 'Why do birds sing more at dawn than at any other time of day? (Hint: vocal carrying distance + competing background sounds + territorial signaling.)',
                 'A young songbird raised in isolation never produces a normal species song. What does that tell you about how songs are learned?',
                 'Two Black-capped Chickadees in the same flock will end their "chick-a-dee" call with different numbers of "dees." What might that variation encode?',
-                'Maine\'s state bird is the chickadee, but the loon is on the state quarter. If you had to pick a single Maine bird sound to put on a "soundtrack of Maine," which would it be and why?'
+                'Maine\'s state bird is the chickadee, but the loon may be its most famous voice. If you had to pick a single Maine bird sound to put on a "soundtrack of Maine," which would it be and why?'
               ],
               misconceptions: [
                 '"Female birds don\'t sing" — many female songbirds DO sing, though sometimes more quietly. Female cardinals sing complex songs from the nest. The "only males sing" idea came from biased early research.',
@@ -19657,13 +20452,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     ),
                     h('div', null,
                       h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.score_3', 'Score')),
-                      h('span', { className: 'ml-1.5 font-mono font-bold', style: { color: b2hScore === b2hAnswered ? '#059669' : '#0c4a6e' } }, b2hScore + ' / ' + b2hAnswered)
+                      h('span', { className: 'ml-1.5 font-mono font-bold', style: { color: b2hScore === b2hAnswered ? '#047857' : '#0c4a6e' } }, b2hScore + ' / ' + b2hAnswered)
                     ),
                     b2hAnswered > 0 && h('div', null,
                       h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.accuracy_2', 'Accuracy')),
                       h('span', {
                         className: 'ml-1.5 font-mono font-bold',
-                        style: { color: b2hScore === b2hAnswered ? '#059669' : (b2hScore / Math.max(1, b2hAnswered)) >= 0.7 ? '#16a34a' : '#dc2626' }
+                        style: { color: b2hScore === b2hAnswered ? '#047857' : (b2hScore / Math.max(1, b2hAnswered)) >= 0.7 ? '#15803d' : '#b91c1c' }
                       }, Math.round((b2hScore / Math.max(1, b2hAnswered)) * 100) + '%')
                     )
                   ),
@@ -19714,6 +20509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 return h('div', { className: 'bg-white rounded-2xl border-2 border-lime-300 shadow p-5 space-y-4' },
                   h('div', { className: 'text-center' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-lime-700 mb-1' }, __alloT('stem.birdlab.where_would_you_find_this_species', 'Where would you find this species?')),
+                    h('div', { className: 'flex justify-center mb-1', 'data-habitat-portrait': current.bird }, birdArt(h, current.bird, 132)),
                     h('h3', { className: 'text-2xl font-black text-slate-800 tracking-tight' }, current.bird)
                   ),
                   h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.birdlab.habitat_choices', 'Habitat choices'), className: 'grid grid-cols-2 md:grid-cols-5 gap-2' },
@@ -19901,8 +20697,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         onClick: function() { toggleH2b(species); },
                         'aria-pressed': picked ? 'true' : 'false',
                         'aria-disabled': revealed ? 'true' : 'false',
-                        className: btnClass
+                        className: btnClass + ' flex items-center gap-2'
                       },
+                        birdArt(h, species, 30),
                         h('span', { className: 'mr-1.5' },
                           revealMissed ? '⊘' :
                           revealWrong ? '✗' :
@@ -20119,7 +20916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       (sel ? 'bg-stone-100 border-stone-600 shadow-lg' : 'bg-white border-slate-300 hover:border-stone-500')
                   },
                     h('div', { className: 'flex items-start gap-2 mb-2' },
-                      sp ? h('svg', { viewBox: '0 0 30 30', style: { width: '36px', height: '36px', flexShrink: 0 }, role: 'img', 'aria-label': b.name },
+                      sp ? h('svg', { 'data-bird-art-fit': 'true', ref: function(el) { fitBirdArt(el); }, viewBox: '0 0 30 30', style: { width: '36px', height: '36px', flexShrink: 0 }, role: 'img', 'aria-label': b.name },
                         h('g', { transform: 'translate(2, 2)' }, sp.svg(h))
                       ) : h('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': true }, '🐦'),
                       h('div', { className: 'flex-1 min-w-0' },
@@ -20319,7 +21116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           display: 'flex', alignItems: 'center', justifyContent: 'center'
                         }
                       },
-                        h('svg', { viewBox: '0 0 30 30', style: { width: '60px', height: '60px' }, role: 'img', 'aria-label': picked.name },
+                        h('svg', { 'data-bird-art-fit': 'true', ref: function(el) { fitBirdArt(el); }, viewBox: '0 0 30 30', style: { width: '60px', height: '60px' }, role: 'img', 'aria-label': picked.name },
                           h('g', { transform: 'translate(2, 2)' }, BIRDS[picked.speciesKey].svg(h))
                         )
                       ),
@@ -20390,7 +21187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 'Monhegan Island':              { x: 85, y: 246, region: 'midcoast' },
                 'Bradbury Mountain Hawkwatch':  { x: 43, y: 237, region: 'south' },
                 'Petit Manan NWR':              { x: 153, y: 204, region: 'downeast' },
-                'Sebasticook Lake':             { x: 86, y: 174, region: 'central' },
+                'Sebasticook River':            { x: 86, y: 174, region: 'central' },
                 'Baxter State Park':            { x: 105, y: 91,  region: 'north' },
                 'Moosehorn NWR':                { x: 180, y: 156, region: 'downeast' },
                 'Wells Reserve at Laudholm':    { x: 26, y: 275, region: 'south' },
@@ -20399,7 +21196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               };
               return h('div', { className: 'space-y-3' },
                 h('p', { className: 'text-sm text-slate-700 italic' },
-                  __alloT('stem.birdlab.maine_has_dozens_of_birding_hotspots_t', 'Maine has dozens of birding hotspots; these are the most accessible + species-rich. Most are free to visit. Maine Audubon (maineaudubon.org) maintains the official Maine Birding Trail with detailed driving directions.')),
+                  __alloT('stem.birdlab.maine_has_dozens_of_birding_hotspots_t', 'Maine has dozens of birding hotspots; these are the most accessible + species-rich. Most are free to visit. The Maine Birding Trail (mainebirdingtrail.com), created by Bob Duchesne, has detailed driving directions.')),
                 // ── Maine map with pinned hotspots ──
                 h('div', { className: 'bg-gradient-to-br from-sky-50 via-emerald-50 to-amber-50 rounded-2xl border-2 border-stone-300 shadow p-4' },
                   h('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-2' },
@@ -20596,13 +21393,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               questions: [
                 'Project Puffin (1973) used decoys + recordings to bring puffins back to Eastern Egg Rock. Why did the puffins disappear in the first place, and why did this restoration approach work?',
                 'Wood Thrushes have declined 50%+ since 1970. Their forests in Maine are still mostly intact. Where might the population pressure actually come from?',
-                'Bald Eagles in Maine recovered from 21 nesting pairs (1972) to ~700 today. What changed between then and now? (Hint: 1972 EPA action.)',
-                'Maine\'s state bird is the Black-capped Chickadee. Maine\'s state quarter shows a Common Loon. If you had to pick a single Maine bird as the "essential Maine experience," which would you pick and why?'
+                'Bald Eagles in Maine recovered from 21 nesting pairs (1967) to ~700 today. What changed between then and now? (Hint: 1972 EPA action.)',
+                'Maine\'s state bird is the Black-capped Chickadee. Many people would name the Common Loon instead. If you had to pick a single Maine bird as the "essential Maine experience," which would you pick and why?'
               ],
               misconceptions: [
                 '"All Maine birds live here year-round" — only ~8 of these 25 are year-round. Most Maine birds migrate; warblers especially go to Central + South America for half the year.',
                 '"Habitat loss in Maine is what threatens Maine birds" — partly true, but for many species (warblers, Wood Thrush, swallows) the threats are on the WINTERING grounds in Latin America. International cooperation matters.',
-                '"Snowy Owls only show up in Arctic-tundra movies" — coastal Maine is roughly the southernmost regular wintering range. Most Maine school-age kids could see one in an irruption year if they knew where to look.'
+                '"Snowy Owls only show up in Arctic-tundra movies" — Snowy Owls reach coastal Maine most winters, and regularly winter as far south as Boston. Most Maine school-age kids could see one in an irruption year if they knew where to look.'
               ],
               extension: 'Pick a Maine birding hotspot near you. Plan a 1-hour visit during peak season (May for migrants, July for breeders, January for winter visitors). Keep an eBird checklist of everything you see + hear.',
               sources: 'Maine Audubon (maineaudubon.org). Cornell Lab All About Birds. Project Puffin (Audubon Seabird Restoration Program). Maine Bird Atlas data. Rosenberg et al. 2019 "Decline of the North American avifauna" (Science).'
@@ -20663,128 +21460,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('strong', null, __alloT('stem.birdlab.atlantic_flyway', 'Atlantic Flyway')), '.'),
               // ── Flyways map: distinct colors per route, bird silhouettes along active path, Maine star ──
               (function() {
-                var flyways = [
-                  { id: 'pacific',     color: '#0ea5e9', label: __alloT('stem.birdlab.pacific', 'Pacific'),     d: 'M 60 60 Q 55 110 65 160 Q 78 210 95 240 Q 110 260 130 268' },
-                  { id: 'central',     color: '#f97316', label: __alloT('stem.birdlab.central', 'Central'),     d: 'M 175 50 Q 178 110 195 165 Q 212 220 230 250 Q 245 268 260 270' },
-                  { id: 'mississippi', color: '#a855f7', label: __alloT('stem.birdlab.mississippi', 'Mississippi'), d: 'M 240 50 Q 248 110 270 165 Q 290 215 305 245 Q 318 265 335 270' },
-                  { id: 'atlantic',    color: '#dc2626', label: __alloT('stem.birdlab.atlantic', 'Atlantic'),    d: 'M 340 60 Q 348 110 360 160 Q 372 210 380 245 Q 384 262 380 270' }
-                ];
-                var activePath = (flyways.filter(function(x) { return x.id === pickedFlyway; })[0] || flyways[3]).d;
+                var FLYWAY_LABELS = {
+                  pacific: __alloT('stem.birdlab.pacific', 'Pacific'),
+                  central: __alloT('stem.birdlab.central', 'Central'),
+                  mississippi: __alloT('stem.birdlab.mississippi', 'Mississippi'),
+                  atlantic: __alloT('stem.birdlab.atlantic', 'Atlantic')
+                };
+                // Legend colours come from the same route table the map draws.
+                var flyways = FLYWAY_MAP.routes.map(function(r) { return { id: r.id, color: r.color, label: FLYWAY_LABELS[r.id] }; });
                 return h('div', { className: 'bg-gradient-to-b from-sky-50 to-amber-50 rounded-2xl border-2 border-slate-300 shadow p-4', role: 'img', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_schematic_map_of_the_four_north_american_flyway', 'Schematic map of the four North American flyways. {value1} Flyway is highlighted. Maine sits on the Atlantic Flyway.'), { value1: (flyways.filter(function(x) { return x.id === pickedFlyway; })[0] || flyways[3]).label })},
                   h('svg', { 'aria-hidden': 'true', viewBox: '0 0 440 300', className: 'w-full h-auto', preserveAspectRatio: 'xMidYMid meet' },
-                    h('defs', null,
-                      h('linearGradient', { id: 'fwLand', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
-                        h('stop', { offset: '0%', stopColor: '#fef3c7' }),
-                        h('stop', { offset: '100%', stopColor: '#d97706' })
-                      ),
-                      h('linearGradient', { id: 'fwOcean', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
-                        h('stop', { offset: '0%', stopColor: '#bae6fd' }),
-                        h('stop', { offset: '100%', stopColor: '#7dd3fc' })
-                      ),
-                      // Active flyway gradient
-                      h('linearGradient', { id: 'fwActive', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
-                        h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: '0' }),
-                        h('stop', { offset: '50%', stopColor: '#fbbf24', stopOpacity: '0.4' }),
-                        h('stop', { offset: '100%', stopColor: '#dc2626', stopOpacity: '0' })
-                      ),
-                      // Arrowhead marker (for showing southward direction)
-                      h('marker', { id: 'fwArrow', viewBox: '0 0 10 10', refX: '8', refY: '5', markerWidth: '6', markerHeight: '6', orient: 'auto-start-reverse' },
-                        h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#1e293b' })
-                      )
-                    ),
-                    // Ocean
-                    h('rect', { x: 0, y: 0, width: 440, height: 300, fill: 'url(#fwOcean)' }),
-                    // North America landmass (more recognizable shape with peninsulas)
-                    h('path', {
-                      d: 'M 30 70 ' +
-                        'Q 50 50 100 55 ' +                  // Alaska panhandle area
-                        'L 130 48 Q 160 38 200 42 ' +        // Canadian arctic / NW territories
-                        'L 245 38 Q 280 36 310 42 ' +        // Hudson Bay region
-                        'L 340 48 Q 365 56 380 75 ' +        // Newfoundland approach
-                        'Q 392 95 400 130 ' +                // East coast
-                        'Q 405 165 395 200 ' +
-                        'Q 388 230 372 252 ' +
-                        'L 350 270 Q 320 282 290 280 ' +     // Florida tip
-                        'L 280 295 Q 260 290 250 275 ' +     // Florida indent
-                        'Q 220 280 195 278 ' +
-                        'L 165 282 Q 145 285 125 282 ' +     // Gulf Coast
-                        'Q 105 285 92 270 ' +                // Yucatan curve
-                        'Q 84 250 78 225 ' +
-                        'Q 65 200 52 175 ' +                 // Baja
-                        'Q 40 145 30 115 ' +
-                        'Q 24 92 30 70 Z',
-                      fill: 'url(#fwLand)', stroke: '#78350f', strokeWidth: 1
-                    }),
-                    // Great Lakes hint
-                    h('path', { d: 'M 270 110 Q 285 105 300 110 Q 305 116 295 120 Q 280 122 270 118 Z',
-                      fill: '#7dd3fc', stroke: '#0c4a6e', strokeWidth: 0.6, opacity: 0.85 }),
-                    h('path', { d: 'M 305 115 Q 318 112 328 116 Q 332 122 322 124 Q 310 124 305 120 Z',
-                      fill: '#7dd3fc', stroke: '#0c4a6e', strokeWidth: 0.6, opacity: 0.85 }),
-                    // Compass rose (top-left of ocean)
-                    h('g', { transform: 'translate(35, 30)' },
-                      h('circle', { cx: 0, cy: 0, r: 14, fill: '#ffffff', stroke: '#1e293b', strokeWidth: 1, opacity: 0.85 }),
-                      h('path', { d: 'M 0 -10 L 2 0 L 0 10 L -2 0 Z', fill: '#dc2626' }),
-                      h('path', { d: 'M -10 0 L 0 -2 L 10 0 L 0 2 Z', fill: '#1e293b' }),
-                      h('text', { x: 0, y: -16, fontSize: 8, textAnchor: 'middle', fontWeight: 'bold', fill: '#1e293b' }, 'N')
-                    ),
-                    // Inactive flyway routes (background, soft)
-                    flyways.map(function(f) {
-                      if (f.id === pickedFlyway) return null;
-                      return h('path', { key: f.id + '-bg',
-                        d: f.d, stroke: f.color, strokeWidth: 2.5, fill: 'none',
-                        strokeDasharray: '5,5', opacity: 0.4 });
-                    }),
-                    // Direction-of-migration glow band on active route
-                    h('path', { d: activePath, stroke: 'url(#fwActive)', strokeWidth: 14, fill: 'none', opacity: 0.5 }),
-                    // Active flyway route (bold, solid, with arrowhead)
-                    flyways.map(function(f) {
-                      if (f.id !== pickedFlyway) return null;
-                      return h('g', { key: f.id + '-active' },
-                        h('path', { d: f.d, stroke: f.color, strokeWidth: 6, fill: 'none', strokeLinecap: 'round',
-                          markerEnd: 'url(#fwArrow)' }),
-                        // Bird silhouettes (3 birds along the path, V-formation pairs)
-                        [{ pos: 0.18 }, { pos: 0.45 }, { pos: 0.72 }].map(function(pt, idx) {
-                          // Sample point along path approximately (linear interpolation between control points for simplicity)
-                          // Easier: use absolute positions corresponding to flyway curves
-                          var byId = {
-                            pacific:     [{x:62,y:90},{x:75,y:175},{x:108,y:248}],
-                            central:     [{x:178,y:85},{x:200,y:175},{x:235,y:255}],
-                            mississippi: [{x:248,y:90},{x:280,y:180},{x:310,y:250}],
-                            atlantic:    [{x:344,y:90},{x:368,y:180},{x:382,y:255}]
-                          };
-                          var pts = byId[f.id] || byId.atlantic;
-                          var p = pts[idx];
-                          // V-formation of 3 birds
-                          return h('g', { key: 'b' + idx, transform: 'translate(' + p.x + ',' + p.y + ')' },
-                            h('path', { d: 'M -8,0 q 4,-4 8,0 q 4,-4 8,0',
-                              fill: 'none', stroke: '#1e293b', strokeWidth: 2.2, strokeLinecap: 'round' }),
-                            h('path', { d: 'M -16,8 q 3,-3 6,0 q 3,-3 6,0',
-                              fill: 'none', stroke: '#1e293b', strokeWidth: 1.8, strokeLinecap: 'round' }),
-                            h('path', { d: 'M 4,8 q 3,-3 6,0 q 3,-3 6,0',
-                              fill: 'none', stroke: '#1e293b', strokeWidth: 1.8, strokeLinecap: 'round' })
-                          );
-                        })
-                      );
-                    }),
-                    // Maine — emphasized star marker (always visible)
-                    h('g', { transform: 'translate(370, 75)' },
-                      h('circle', { cx: 0, cy: 0, r: 14, fill: '#dc2626', opacity: 0.18 }),
-                      h('path', {
-                        d: 'M 0,-7 L 1.8,-2.2 L 7,-2.2 L 2.6,1.2 L 4.4,6 L 0,3.2 L -4.4,6 L -2.6,1.2 L -7,-2.2 L -1.8,-2.2 Z',
-                        fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 1
-                      }),
-                      h('text', { x: 12, y: 4, fontSize: 11, fill: '#7f1d1d', fontWeight: 'bold',
-                        style: { fontFamily: 'system-ui, sans-serif' } }, __alloT('stem.birdlab.maine_2', 'Maine'))
-                    ),
-                    // Title overlay top-right
-                    h('g', { transform: 'translate(440, 12)' },
-                      h('rect', { x: -110, y: 0, width: 102, height: 24, rx: 12,
-                        fill: '#1e293b', opacity: 0.92, stroke: '#94a3b8', strokeWidth: 1 }),
-                      h('text', { x: -59, y: 16, textAnchor: 'middle',
-                        fill: '#f1f5f9', fontWeight: 800, fontSize: 11, letterSpacing: '0.05em',
-                        style: { textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }
-                      }, __alloT('stem.birdlab.4_flyways', '🦅 4 Flyways'))
-                    )
+                    FLYWAY_MAP.draw(h, pickedFlyway)
                   ),
                   // Legend below
                   h('div', { className: 'flex flex-wrap gap-2 mt-3' },
@@ -21194,7 +21880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 '"All birds migrate" — most permanent residents (chickadees, ravens, eagles in Maine) don\'t. Migration is one strategy among several.',
                 '"Birds know where they\'re going from birth" — partially. Inherited route maps + magnetic compass + sun + stars + landmarks ALL contribute. First migrants do learn from experience and improve route efficiency over years.'
               ],
-              extension: 'Visit Bradbury Mountain Hawkwatch (Pownal) on a September day. Spend an hour with the official counters. Compare what they tally to what shows up on Cornell\'s BirdCast forecast that morning.',
+              extension: 'Visit a hawkwatch on a migration day: Bradbury Mountain (Pownal) in April, or Cadillac Mountain (Acadia) in September. Spend an hour with the official counters. Compare what they tally to what shows up on Cornell\'s BirdCast forecast that morning.',
               sources: 'Cornell Lab All About Birds + BirdCast (radar migration forecasting). USGS Bird Banding Lab. Audubon Society migration data. eBird Status & Trends maps. Maine Audubon hawkwatch records.'
             })
           )
@@ -21859,7 +22545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 questions: [
                   'Most bird-career paths start with volunteering or low-paid seasonal work. What does that say about how the field selects? Who benefits, who gets filtered out?',
                   'Photography + writing + guiding are all "no degree required" bird careers. What kind of person succeeds in those vs. PhD-track ornithology?',
-                  'Maine has UMaine, Unity College, and College of the Atlantic. All three have different philosophies. How would you research which one fits a specific student?',
+                  'Maine has UMaine, Unity Environmental University, and College of the Atlantic. All three have different philosophies. How would you research which one fits a specific student?',
                   'A bird career often means living somewhere remote for years. Honest question: would you trade salary for that lifestyle? Where\'s your line?'
                 ],
                 misconceptions: [
@@ -24352,7 +25038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       flexShrink: 0
                     }
                   },
-                    h('svg', { viewBox: '0 0 30 30', style: { width: 80, height: 80 }, role: 'img', 'aria-label': bird.name },
+                    h('svg', { 'data-bird-art-fit': 'true', ref: function(el) { fitBirdArt(el); }, viewBox: '0 0 30 30', style: { width: 80, height: 80 }, role: 'img', 'aria-label': bird.name },
                       h('g', { transform: 'translate(2, 2)' }, bird.svg(h))
                     )
                   ),
@@ -24560,7 +25246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           return h('li', {
             key: k,
             className: 'rounded-xl border-2 p-3 transition flex items-start gap-3 ' +
-              (isSpotted ? 'bg-white border-emerald-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-75')
+              (isSpotted ? 'bg-white border-emerald-300 shadow-sm' : 'bg-slate-50 border-slate-300 border-dashed')
           },
             // Species silhouette (de-saturated when not yet spotted)
             h('div', {
@@ -24574,7 +25260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 filter: isSpotted ? 'none' : 'grayscale(100%) opacity(0.55)'
               }
             },
-              h('svg', { 'aria-hidden': 'true', viewBox: '0 0 30 30', style: { width: 44, height: 44 } },
+              h('svg', { 'data-bird-art-fit': 'true', ref: function(el) { fitBirdArt(el); }, 'aria-hidden': 'true', viewBox: '0 0 30 30', style: { width: 44, height: 44 } },
                 h('g', { transform: 'translate(2, 2)' }, sp.svg(h))
               )
             ),
@@ -24583,7 +25269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('h3', { className: 'text-sm font-black ' + (isSpotted ? 'text-slate-800' : 'text-slate-600') }, sp.name),
                 isSpotted
                   ? h('span', { className: 'text-[0.625rem] font-mono text-emerald-700' }, '✓ ' + fmtDate(entry.firstSeen))
-                  : h('span', { className: 'text-[0.625rem] font-mono uppercase tracking-wider text-slate-500' }, __alloT('stem.birdlab.not_yet_spotted', 'Not yet spotted'))
+                  : h('span', { className: 'text-[0.625rem] font-mono uppercase tracking-wider', style: { color: '#475569' } }, __alloT('stem.birdlab.not_yet_spotted', 'Not yet spotted'))
               ),
               h('div', { className: 'text-[0.6875rem] italic text-slate-700 mb-1' }, sp.sciName || ''),
               isSpotted && h('div', { className: 'flex flex-wrap gap-1 mt-1' },
@@ -24683,69 +25369,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var sel = selState[0], setSel = selState[1];
         var picked = NESTS.find(function(n) { return n.id === sel; }) || NESTS[0];
 
-        var renderNestSVG = function(svg) {
-          var sz = svg.size || 100;
-          var w = 400, hgt = 320;
-          var cx = w / 2, cy = hgt / 2;
-          var eggs = [];
-          for (var i = 0; i < (svg.eggCount || 1); i++) {
-            var angle = (i / Math.max(svg.eggCount, 1)) * Math.PI * 2;
-            var r = sz / 6;
-            eggs.push(h('ellipse', {
-              key: 'e' + i,
-              cx: cx + Math.cos(angle) * r,
-              cy: cy + Math.sin(angle) * r * 0.6,
-              rx: Math.max(8, sz / 12),
-              ry: Math.max(10, sz / 9),
-              fill: svg.eggColor || '#fef3c7',
-              stroke: '#475569', strokeWidth: 1
-            }));
-          }
-          var shapeEl;
-          if (svg.shape === 'platform' || svg.shape === 'cup' || svg.shape === 'mound' || svg.shape === 'scrape') {
-            shapeEl = h('g', null,
-              h('ellipse', { cx: cx, cy: cy + sz/4, rx: sz/1.5, ry: sz/4, fill: svg.color || '#92400e', stroke: '#451a03', strokeWidth: 2 }),
-              h('ellipse', { cx: cx, cy: cy + sz/6, rx: sz/2.2, ry: sz/5, fill: '#1e293b', opacity: 0.35 }));
-          } else if (svg.shape === 'pouch') {
-            shapeEl = h('path', { d: 'M ' + (cx-sz/3) + ' ' + (cy-sz/4) + ' Q ' + cx + ' ' + (cy+sz/1.2) + ' ' + (cx+sz/3) + ' ' + (cy-sz/4) + ' Z', fill: svg.color || '#a16207', stroke: '#451a03', strokeWidth: 2 });
-          } else if (svg.shape === 'gourd') {
-            shapeEl = h('path', { d: 'M ' + (cx-sz/3) + ' ' + (cy-sz/3) + ' Q ' + (cx-sz/2) + ' ' + cy + ' ' + cx + ' ' + (cy+sz/3) + ' Q ' + (cx+sz/2) + ' ' + cy + ' ' + (cx+sz/3) + ' ' + (cy-sz/3) + ' Q ' + cx + ' ' + (cy-sz/2.4) + ' ' + (cx-sz/3) + ' ' + (cy-sz/3) + ' Z', fill: svg.color || '#a16207', stroke: '#451a03', strokeWidth: 2 });
-          } else if (svg.shape === 'cavity') {
-            shapeEl = h('g', null,
-              h('rect', { x: cx-sz/2.5, y: cy-sz/2, width: sz*0.8, height: sz, fill: svg.treeColor || '#44403c', rx: 6 }),
-              h('ellipse', { cx: cx, cy: cy, rx: sz/3, ry: sz/2.5, fill: '#0a0a0a' }),
-              h('ellipse', { cx: cx, cy: cy + sz/4, rx: sz/3.5, ry: sz/8, fill: svg.color || '#92400e' }));
-          } else if (svg.shape === 'burrow') {
-            shapeEl = h('g', null,
-              h('rect', { x: 50, y: cy-20, width: w-100, height: hgt/2, fill: svg.treeColor || '#a3a3a3', rx: 8 }),
-              h('ellipse', { cx: cx, cy: cy, rx: sz/2.5, ry: sz/3.5, fill: '#0a0a0a' }));
-          } else {
-            shapeEl = h('ellipse', { cx: cx, cy: cy + sz/4, rx: sz/2, ry: sz/5, fill: svg.color || '#92400e', stroke: '#451a03', strokeWidth: 2 });
-          }
-          return h('svg', { role: 'img', 'aria-label': __alloT('stem.birdlab.shape_img', 'Bird body-shape sketch'), viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', maxHeight: 280, background: 'linear-gradient(180deg, #dbeafe 0%, #fef3c7 60%, #d6d3d1 100%)', borderRadius: 12 } },
-            shapeEl,
-            eggs);
-        };
-
         return h('div', { className: 'p-4 max-w-6xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
             h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.nest_gallery_maine_breeding_birds', '🪺 Nest Gallery — Maine Breeding Birds')),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_2', '← Menu'))
           ),
-          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.click_any_species_to_see_its_nest_stru', 'Click any species to see its nest structure, dimensions, materials, eggs, and story. Maine\'s 20 breeding species + nest profiles.')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.click_any_species_to_see_its_nest_stru', 'Click any species to see its nest structure, dimensions, materials, eggs, and story. 19 Maine breeding species and their nests.')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
             h('div', { className: 'md:col-span-1 bg-white rounded-xl shadow border border-slate-200 p-3 max-h-[600px] overflow-y-auto' },
               NESTS.map(function(n, i) {
                 var active = n.id === sel;
-                return h('button', { key: n.id, onClick: function() { setSel(n.id); },
+                return h('button', { key: n.id, onClick: function() { setSel(n.id); }, 'aria-pressed': active ? 'true' : 'false', 'data-nest-pick': n.id,
                   className: 'w-full text-left px-3 py-2 rounded-lg mb-1.5 text-sm transition ' +
                     (active ? 'bg-amber-100 border-amber-500 border-2 font-bold text-amber-900' : 'bg-slate-50 hover:bg-amber-50 border border-slate-200 text-slate-800 active:scale-[0.97]')
                 }, n.species);
               })),
             h('div', { className: 'md:col-span-2 bg-white rounded-xl shadow border border-slate-200 p-4' },
               h('h2', { className: 'text-xl font-black text-amber-900 mb-2 tracking-tight' }, picked.species),
-              h('div', { className: 'mb-3' }, renderNestSVG(picked.svg)),
+              h('figure', { className: 'mb-3 m-0' },
+                NEST_ART.draw(h, picked, nestEgg(picked), picked.species.split(' (')[0] + ': ' + picked.type),
+                h('figcaption', { className: 'text-[0.6875rem] mt-1', style: { color: '#475569' } },
+                  __alloT('stem.birdlab.nest_scale_note', 'Eggs are drawn to scale with their nest. A white zigzag means the tunnel or cavity is longer than shown.'))),
               h('div', { className: 'space-y-2 text-sm' },
                 h('div', null, h('b', null, 'Type: '), picked.type),
                 h('div', null, h('b', null, 'Location: '), picked.location),
@@ -24775,33 +25420,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           return a.species.localeCompare(b.species);
         });
 
-        var renderEgg = function(e, scale) {
-          var dim = (e.dimensions||'').match(/(\d+)\s*×\s*(\d+)/);
-          var w = dim ? parseInt(dim[1]) : 25;
-          var hgt = dim ? parseInt(dim[2]) : 18;
-          var s = scale || 1.5;
-          var rx = w * s / 2, ry = hgt * s / 2;
-          var patternEl = null;
-          if (e.pattern === 'spotted' || e.pattern === 'speckled') {
-            patternEl = [];
-            for (var i = 0; i < 12; i++) {
-              var ang = (i / 12) * Math.PI * 2;
-              var pr = Math.random() * rx * 0.7;
-              patternEl.push(h('circle', { key: 'p' + i, cx: rx + Math.cos(ang) * pr, cy: ry + Math.sin(ang) * pr * 0.8, r: 1.5, fill: '#7c2d12' }));
-            }
-          } else if (e.pattern === 'blotched') {
-            patternEl = [];
-            for (var j = 0; j < 6; j++) {
-              var ang2 = (j / 6) * Math.PI * 2;
-              patternEl.push(h('ellipse', { key: 'p' + j, cx: rx + Math.cos(ang2) * rx * 0.5, cy: ry + Math.sin(ang2) * ry * 0.5, rx: 3, ry: 2, fill: '#7c2d12', opacity: 0.6 }));
-            }
-          } else if (e.pattern === 'scrawled') {
-            patternEl = h('path', { d: 'M ' + (rx*0.4) + ' ' + (ry*0.6) + ' Q ' + rx + ' ' + (ry*0.3) + ' ' + (rx*1.6) + ' ' + (ry*0.7) + ' M ' + (rx*0.5) + ' ' + (ry*1.3) + ' Q ' + rx + ' ' + (ry*1.5) + ' ' + (rx*1.5) + ' ' + (ry*1.2), stroke: '#0c0a09', strokeWidth: 1, fill: 'none' });
-          }
-          return h('svg', { role: 'img', 'aria-label': __alloT('stem.birdlab.egg_img', 'Egg illustration showing colour and pattern'), viewBox: '0 0 ' + (rx*2) + ' ' + (ry*2), style: { width: rx*2, height: ry*2 } },
-            h('ellipse', { cx: rx, cy: ry, rx: rx-1, ry: ry-1, fill: e.color || '#fef3c7', stroke: '#475569', strokeWidth: 0.8 }),
-            patternEl);
+        // One scale for the whole gallery, so sizes compare truthfully.
+        var PX_PER_MM = 1.5;
+        var eggLabel = function(e) {
+          return e.species + ': ' + __alloT('stem.birdlab.egg_img', 'Egg illustration showing colour and pattern') + ', ' + e.dimensions;
         };
+        var COLOR_CAUSES = [
+          { egg: 'Belted Kingfisher', title: __alloT('stem.birdlab.egg_cause_white', 'White: little or no pigment'),
+            body: __alloT('stem.birdlab.egg_cause_white_body', 'Common in birds that nest in holes and tunnels, where no predator sees the eggs: kingfisher, woodpeckers, swallows.') },
+          { egg: 'American Robin', title: __alloT('stem.birdlab.egg_cause_blue', 'Blue-green: biliverdin'),
+            body: __alloT('stem.birdlab.egg_cause_blue_body', 'A pigment made from broken-down hemoglobin, spread through the shell as it forms: robin, thrushes, heron.') },
+          { egg: 'Piping Plover', title: __alloT('stem.birdlab.egg_cause_brown', 'Brown marks: protoporphyrin'),
+            body: __alloT('stem.birdlab.egg_cause_brown_body', 'A red-brown pigment, often laid down as spots and blotches. On open ground it hides the egg: plover, tern, loon.') }
+        ];
+        var byName = function(n) { for (var i = 0; i < EGGS_DATA.length; i++) { if (EGGS_DATA[i].species === n) return EGGS_DATA[i]; } return null; };
+        // The detail egg is enlarged to a readable size; the quarter beside it
+        // gets the same enlargement, so the comparison stays true.
+        var detailScale = detail ? Math.min(3.2, 190 / EGG_ART.size(detail).L) : 1;
+        var showDetail = function(e) {
+          setDetail(e);
+          setTimeout(function() {
+            try {
+              var el = document.querySelector('[data-egg-detail]');
+              var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' });
+            } catch (err) { /* scrolling is a convenience */ }
+          }, 60);
+        };
+        var sortBtn = function(key, label) {
+          return h('button', { onClick: function() { setSortBy(key); }, 'aria-pressed': sortBy === key ? 'true' : 'false',
+            className: 'px-3 py-1 rounded text-xs font-bold ' + (sortBy === key ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700') }, label);
+        };
+        var BAR_MM = 20;
 
         return h('div', { className: 'p-4 max-w-6xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
@@ -24811,31 +25461,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, __alloT('stem.birdlab.eggs_shown_to_relative_scale_click_any', 'Eggs shown to relative scale. Click any egg to read its species story.')),
           h('div', { className: 'flex gap-2 mb-3' },
-            h('button', { onClick: function() { setSortBy('size'); },
-              className: 'px-3 py-1 rounded text-xs font-bold ' + (sortBy === 'size' ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700') }, __alloT('stem.birdlab.sort_by_size', 'Sort by size')),
-            h('button', { onClick: function() { setSortBy('alpha'); },
-              className: 'px-3 py-1 rounded text-xs font-bold ' + (sortBy === 'alpha' ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700') }, __alloT('stem.birdlab.sort_alphabetically', 'Sort alphabetically'))
+            sortBtn('size', __alloT('stem.birdlab.sort_by_size', 'Sort by size')),
+            sortBtn('alpha', __alloT('stem.birdlab.sort_alphabetically', 'Sort alphabetically'))
           ),
-          h('div', { className: 'bg-amber-50 rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3' },
-            sorted.map(function(e, i) {
-              var picked = detail && detail.species === e.species;
-              return h('button', { key: i, onClick: function() { setDetail(e); },
-                className: 'flex flex-col items-center p-2 rounded-lg ' + (picked ? 'bg-amber-200 ring-2 ring-amber-600' : 'transition-colors bg-white hover:bg-amber-100 active:scale-[0.97]') + ' transition border border-amber-200'
-              },
-                renderEgg(e, 1.5),
-                h('div', { className: 'text-[0.625rem] text-center mt-1 font-bold text-slate-800' }, e.species),
-                h('div', { className: 'text-[0.625rem] text-slate-500' }, e.dimensions));
-            })),
-          detail && h('div', { className: 'mt-4 p-4 bg-white rounded-xl shadow border-2 border-amber-300' },
-            h('div', { className: 'flex items-center gap-4 mb-3' },
-              h('div', null, renderEgg(detail, 3)),
-              h('div', null,
+          h('div', { className: 'bg-amber-50 rounded-xl p-4' },
+            h('div', { className: 'flex items-center justify-end gap-1.5 mb-2 text-xs font-bold', style: { color: '#1e293b' }, 'data-egg-scalebar': BAR_MM },
+              h('svg', { width: Math.round(BAR_MM * PX_PER_MM) + 2, height: 9, 'aria-hidden': 'true' },
+                h('path', { d: 'M1 1 V8 M1 4.5 H' + (1 + BAR_MM * PX_PER_MM) + ' M' + (1 + BAR_MM * PX_PER_MM) + ' 1 V8', stroke: '#1e293b', strokeWidth: 1.4, fill: 'none' })),
+              __alloT('stem.birdlab.egg_scale_bar', 'Every egg is drawn at the same scale: this bar is 2 cm')),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3' },
+              sorted.map(function(e) {
+                var picked = detail && detail.species === e.species;
+                return h('button', { key: e.species, onClick: function() { showDetail(e); }, 'aria-pressed': picked ? 'true' : 'false', 'data-egg-card': EGG_ART.slug(e.species),
+                  className: 'flex flex-col items-center p-2 rounded-lg transition border active:scale-[0.97] ' + (picked ? 'ring-2 ring-amber-600 border-amber-600' : 'border-amber-200 hover:border-amber-500'),
+                  style: { background: picked ? '#fde68a' : '#ffffff', color: '#1e293b' }
+                },
+                  // Grows to the row's tallest card and sits the egg on the bottom,
+                  // so eggs in a row stand on one line.
+                  h('div', { className: 'flex items-end justify-center w-full', style: { flex: '1 1 auto', minHeight: 24 } }, EGG_ART.draw(h, e, PX_PER_MM, 'g')),
+                  h('div', { className: 'text-[0.625rem] text-center mt-1 font-bold' }, e.species),
+                  h('div', { className: 'text-[0.625rem]', style: { color: '#475569' } }, e.dimensions));
+              }))),
+          detail && h('div', { className: 'mt-4 p-4 bg-white rounded-xl shadow border-2 border-amber-300', 'data-egg-detail': EGG_ART.slug(detail.species) },
+            h('div', { className: 'flex items-end gap-5 mb-3 flex-wrap' },
+              h('figure', { className: 'm-0' },
+                h('div', { className: 'flex items-end gap-3' },
+                  EGG_ART.draw(h, detail, detailScale, 'd', eggLabel(detail)),
+                  EGG_ART.quarter(h, detailScale)),
+                h('figcaption', { className: 'text-[0.6875rem] mt-1', style: { color: '#475569' } }, __alloT('stem.birdlab.egg_beside_quarter', 'Beside a US quarter (24 mm) at the same scale'))),
+              h('div', { className: 'min-w-0', style: { flex: '1 1 220px' } },
                 h('h2', { className: 'text-xl font-black text-amber-900 tracking-tight' }, detail.species),
                 h('div', { className: 'text-sm text-slate-700' }, h('b', null, 'Dimensions: '), detail.dimensions),
                 h('div', { className: 'text-sm text-slate-700' }, h('b', null, __alloT('stem.birdlab.clutch_size', 'Clutch size: ')), detail.clutch),
                 h('div', { className: 'text-sm text-slate-700' }, h('b', null, 'Pattern: '), detail.pattern))),
             h('p', { className: 'text-sm text-slate-700 italic leading-relaxed' }, detail.notes)
-          )
+          ),
+          h('div', { className: 'mt-4 bg-white rounded-xl border-2 border-amber-200 p-4', 'data-egg-colors': 'true' },
+            h('h2', { className: 'text-base font-black text-amber-900 mb-2' }, __alloT('stem.birdlab.egg_color_title', 'Where egg colors come from')),
+            h('div', { className: 'grid gap-3 sm:grid-cols-3' },
+              COLOR_CAUSES.map(function(c) {
+                var e = byName(c.egg);
+                return h('div', { key: c.egg, className: 'flex items-end gap-2' },
+                  e && EGG_ART.draw(h, e, 2.2, 'c'),
+                  h('div', { className: 'text-xs leading-snug min-w-0' },
+                    h('b', { className: 'block text-amber-900' }, c.title), c.body));
+              })))
         );
       }
 
@@ -24851,28 +25521,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_4', '← Menu'))
           ),
-          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.click_any_labeled_part_of_the_feather_', 'Click any labeled part of the feather to learn its name and function. Feathers are the most complex structure ever evolved.')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.click_any_labeled_part_of_the_feather_', 'Click any labeled part of the feather to learn its name and function. Feathers are the most complex skin structures of any vertebrate.')),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
             h('div', { className: 'bg-gradient-to-b from-sky-100 to-amber-50 rounded-xl p-6 shadow' },
               h('svg', { role: 'group', 'aria-label': __alloT('stem.birdlab.a11y_interactive_feather_anatomy_diagram', 'Interactive feather anatomy diagram'), viewBox: '0 0 400 420', style: { width: '100%', maxHeight: 500 } },
-                h('defs', null,
-                  h('linearGradient', { id: 'featherShaft', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
-                    h('stop', { offset: '0%', stopColor: '#fef3c7' }),
-                    h('stop', { offset: '100%', stopColor: '#92400e' })),
-                  h('linearGradient', { id: 'featherVane', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
-                    h('stop', { offset: '0%', stopColor: '#7dd3fc' }),
-                    h('stop', { offset: '50%', stopColor: '#60a5fa' }),
-                    h('stop', { offset: '100%', stopColor: '#3b82f6' }))),
-                h('path', { d: 'M 200 40 Q 360 100 320 220 Q 280 320 200 380 Q 120 320 80 220 Q 40 100 200 40 Z',
-                  fill: 'url(#featherVane)', stroke: '#1e293b', strokeWidth: 1.5, opacity: 0.7 }),
-                Array.from({length: 28}).map(function(_, i) {
-                  var yp = 50 + i * 12;
-                  var w = i < 4 ? 25 + i*15 : (i > 22 ? 80 - (i-22)*16 : 120 - Math.abs(i-13)*3);
-                  return h('g', { key: 'b' + i },
-                    h('line', { x1: 200, y1: yp, x2: 200-w, y2: yp+5, stroke: '#0c4a6e', strokeWidth: 0.6, opacity: 0.6 }),
-                    h('line', { x1: 200, y1: yp, x2: 200+w, y2: yp+5, stroke: '#0c4a6e', strokeWidth: 0.6, opacity: 0.6 }));
-                }),
-                h('rect', { x: 195, y: 40, width: 10, height: 340, fill: 'url(#featherShaft)', rx: 4 }),
+                FEATHER_ART.draw(h),
                 FEATHER_PARTS.map(function(p, i) {
                   var active = pick === p.id;
                   return h('g', { key: p.id,
@@ -24888,9 +25541,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       setPick(pid);
                     }; }(p.id),
                     onClick: function() { setPick(p.id); }, style: { cursor: 'pointer' } },
-                    h('circle', { cx: p.x, cy: p.y, r: 18, fill: active ? '#fde047' : 'rgba(254,243,199,0.9)', stroke: active ? '#ca8a04' : '#92400e', strokeWidth: 2 }),
-                    h('text', { x: p.x, y: p.y+5, textAnchor: 'middle', fontSize: 16, fontWeight: 900, fill: '#7c2d12' }, (i+1).toString()));
-                }))),
+                    h('circle', { cx: p.x, cy: p.y, r: 15, fill: active ? '#fde047' : 'rgba(254,243,199,0.92)', stroke: active ? '#ca8a04' : '#92400e', strokeWidth: 2, 'data-feather-ring': p.id }),
+                    h('text', { x: p.x, y: p.y+5, textAnchor: 'middle', fontSize: 14, fontWeight: 900, fill: '#7c2d12' }, (i+1).toString()));
+                })),
+              h('p', { className: 'text-[0.6875rem] mt-2 leading-snug', style: { color: '#334155' } },
+                __alloT('stem.birdlab.feather_zoom_key', 'The circle magnifies the vane: hooklets on the blue barbules catch the orange, ridged barbules of the next barb, zipping the vane together.'))),
             h('div', { className: 'space-y-3' },
               picked
                 ? h('div', { className: 'bg-white rounded-xl shadow p-4 border-2 border-amber-300' },
@@ -24906,10 +25561,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('div', { className: 'bg-slate-50 rounded-xl p-4 text-xs text-slate-700' },
                 h('h3', { className: 'font-bold text-slate-800 mb-2' }, __alloT('stem.birdlab.did_you_know_4', 'Did you know?')),
                 h('ul', { className: 'list-disc ml-5 space-y-1' },
-                  h('li', null, __alloT('stem.birdlab.feathers_evolved_from_reptile_scales_f', 'Feathers evolved from reptile scales — feathered dinosaurs preceded modern birds.')),
-                  h('li', null, __alloT('stem.birdlab.a_single_feather_has_1_million_microsc', 'A single feather has 1 million+ microscopic hooklets binding barbs together.')),
+                  h('li', null, __alloT('stem.birdlab.feathers_evolved_from_reptile_scales_f', 'Feathers are not modified scales: they began as simple filaments on dinosaurs, growing from the same kind of skin bud. Feathered dinosaurs preceded modern birds.')),
+                  h('li', null, __alloT('stem.birdlab.a_single_feather_has_1_million_microsc', 'A large flight feather can carry more than a million barbules, zipped together by tiny hooklets.')),
                   h('li', null, __alloT('stem.birdlab.birds_preen_daily_to_re_hook_disrupted', 'Birds preen daily to re-hook disrupted barbules + apply oil from the uropygial gland.')),
-                  h('li', null, __alloT('stem.birdlab.bird_feathers_are_stronger_by_weight_t', 'Bird feathers are stronger by weight than steel.')),
+                  h('li', null, __alloT('stem.birdlab.bird_feathers_are_stronger_by_weight_t', 'A feather shaft is very strong for its weight: a foam-like core inside a stiff keratin wall.')),
                   h('li', null, __alloT('stem.birdlab.a_wild_turkey_has_5_500_feathers_a_hum', 'A wild turkey has ~5,500 feathers; a hummingbird ~940.'))))
             ))
         );
@@ -24925,6 +25580,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var attempted = stateAttempted[0], setAttempted = stateAttempted[1];
         var stateFeedback = useState(null);
         var feedback = stateFeedback[0], setFeedback = stateFeedback[1];
+        // One answer per question. Without it every click counted, so clicking
+        // the right answer again kept adding points.
+        var stateAnswered = useState(null);
+        var answered = stateAnswered[0], setAnswered = stateAnswered[1];
 
         var cur = SILHOUETTES[idx];
 
@@ -25103,8 +25762,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           return h('rect', { x: 100, y: 90, width: 100, height: 20, fill: '#475569' });
         };
 
-        var others = SILHOUETTES.filter(function(s) { return s.id !== cur.id; }).sort(function() { return Math.random() - 0.5 }).slice(0, 3);
-        var choices = [cur].concat(others).sort(function() { return Math.random() - 0.5; });
+        // Options are a pure function of the question. Math.random() here used
+        // to re-roll them on every render, so choosing an answer (a state change)
+        // swapped the buttons under the student's click. Distractors come from
+        // the same shape family first: telling a hawk from a falcon is the skill;
+        // telling one from a duck is not.
+        var SIL_FAMILY = {
+          eagle: 'raptor', osprey: 'raptor', turkeyvulture: 'raptor', redtailhawk: 'raptor', cooper: 'raptor', kestrel: 'raptor', peregrine: 'raptor',
+          gull: 'water', tern: 'water', heron: 'water', cormorant: 'water', loon: 'water', duck: 'water', goose: 'water',
+          crow: 'land', raven: 'land', kingfisher: 'land', pileated: 'land', turkey: 'land', songbird: 'land'
+        };
+        var silRank = function(id, seed) {
+          var x = seed * 7919;
+          for (var i = 0; i < id.length; i++) x = (x * 31 + id.charCodeAt(i)) % 1000003;
+          return x;
+        };
+        var byRank = function(seed) { return function(a, b) { return silRank(a.id, seed) - silRank(b.id, seed); }; };
+        var pool = SILHOUETTES.filter(function(s) { return s.id !== cur.id; });
+        var sameFamily = pool.filter(function(s) { return SIL_FAMILY[s.id] === SIL_FAMILY[cur.id]; }).sort(byRank(idx + 1));
+        var otherFamily = pool.filter(function(s) { return SIL_FAMILY[s.id] !== SIL_FAMILY[cur.id]; }).sort(byRank(idx + 1));
+        var others = sameFamily.concat(otherFamily).slice(0, 3);
+        var choices = [cur].concat(others).sort(byRank(idx + 101));
 
         return h('div', { className: 'p-4 max-w-4xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
@@ -25118,21 +25796,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               renderSilhouette(cur.shape)),
             h('p', { className: 'mt-2 text-center text-xs text-slate-600 italic' }, 'Habitat: ' + cur.habitat)),
           h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
-            choices.map(function(c, i) {
-              return h('button', { key: i, onClick: function() {
-                setAttempted(attempted + 1);
-                if (c.id === cur.id) {
-                  setScore(score + 1);
-                  setFeedback({ ok: true, msg: '✓ Correct! ' + cur.name + ' — ' + cur.clue });
-                } else {
-                  setFeedback({ ok: false, msg: '✗ That was ' + c.name + '. Correct: ' + cur.name + ' — ' + cur.clue });
-                }
-              }, className: 'transition-colors p-3 rounded-lg font-bold text-sm bg-white hover:bg-amber-100 border-2 border-amber-300 text-slate-800 active:scale-[0.97]' }, c.name);
+            choices.map(function(c) {
+              var isRight = !!answered && c.id === cur.id;
+              var isWrongPick = !!answered && c.id === answered && c.id !== cur.id;
+              return h('button', { key: c.id, 'data-sil-choice': c.id, 'aria-disabled': answered ? 'true' : undefined,
+                onClick: function() {
+                  if (answered) return;
+                  setAnswered(c.id);
+                  setAttempted(attempted + 1);
+                  if (c.id === cur.id) {
+                    setScore(score + 1);
+                    setFeedback({ ok: true, msg: '✓ Correct! ' + cur.name + ' — ' + cur.clue });
+                  } else {
+                    setFeedback({ ok: false, msg: '✗ That was ' + c.name + '. Correct: ' + cur.name + ' — ' + cur.clue });
+                  }
+                },
+                className: 'transition-colors p-3 rounded-lg font-bold text-sm border-2 ' + (isRight
+                  ? 'bg-emerald-100 border-emerald-600 text-emerald-900'
+                  : isWrongPick ? 'bg-rose-100 border-rose-600 text-rose-900'
+                  : answered ? 'bg-white border-slate-200 text-slate-500'
+                  : 'bg-white hover:bg-amber-100 border-amber-300 text-slate-800 active:scale-[0.97]')
+              }, (isRight ? '✓ ' : isWrongPick ? '✗ ' : '') + c.name);
             })),
-          feedback && h('div', { className: 'p-3 rounded-lg mb-3 ' + (feedback.ok ? 'bg-emerald-100 border-2 border-emerald-500' : 'bg-rose-100 border-2 border-rose-500') }, feedback.msg),
+          // Inline colour: inside the host's dark tool shell, dark text CLASSES
+          // are reset to inherit (light), and bg-*-100 is not on its list of
+          // light backgrounds, so class-based text here rendered light-on-pale.
+          feedback && h('div', { role: 'status', style: { color: '#1e293b' }, className: 'p-3 rounded-lg mb-3 ' + (feedback.ok ? 'bg-emerald-100 border-2 border-emerald-500' : 'bg-rose-100 border-2 border-rose-500') }, feedback.msg),
           h('button', { onClick: function() {
             setIdx((idx + 1) % SILHOUETTES.length);
             setFeedback(null);
+            setAnswered(null);
           }, className: 'transition-colors w-full p-3 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.next_silhouette', 'Next silhouette →'))
         );
       }
@@ -25758,7 +26451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.bird_evolution_dinosaurs_to_today', '🦖 Bird Evolution — Dinosaurs to Today')),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_23', '← Menu'))),
-          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.birds_are_dinosaurs_the_path_from_feat', 'Birds are dinosaurs. The path from feathered theropods 160 million years ago to today\'s 10,500+ species.')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.birds_are_dinosaurs_the_path_from_feat', 'Birds are dinosaurs. The path from feathered theropods 160 million years ago to today\'s 11,000+ species.')),
           h('div', { className: 'space-y-3' },
             EVOLUTION.map(function(e, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-stone-500 p-4' },
@@ -25802,8 +26495,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, __alloT('stem.birdlab.7_maine_gull_species_birders_consider_', '7 Maine gull species. Birders consider gulls among hardest ID — multiple plumages over 3–4 years.')),
           h('div', { className: 'flex gap-2 flex-wrap mb-3' },
             GULL_ID.map(function(g, i) {
-              return h('button', { key: i, onClick: function() { setIdx(i); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-stone-700 text-white' : 'transition-colors bg-stone-100 text-stone-900 hover:bg-stone-200 active:scale-[0.97]')
+              return h('button', { key: i, onClick: function() { setIdx(i); }, 'aria-pressed': i === idx ? 'true' : 'false',
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-stone-700 text-white' : 'transition-colors bg-stone-100 hover:bg-stone-200 active:scale-[0.97]'),
+                style: i === idx ? null : { color: '#1c1917' }
               }, g.name);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-stone-200 p-5' },
@@ -26159,7 +26853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.climate_change_maine_birds_2', '🌡️ Climate Change + Maine Birds')),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_35', '← Menu'))),
-          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.how_climate_change_is_reshaping_maine_', 'How climate change is reshaping Maine bird populations. Gulf of Maine is warming 4× global ocean average. Birds are moving + adapting + failing.')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.how_climate_change_is_reshaping_maine_', 'How climate change is reshaping Maine bird populations. Gulf of Maine is warming nearly 3× the global ocean average. Birds are moving + adapting + failing.')),
           h('div', { className: 'space-y-3' },
             CLIMATE_BIRDS.map(function(c, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
@@ -26316,7 +27010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           }, '🦴 ' + __alloT('stem.birdlab.glossary_see_topography', 'Body-part terms (lore, malar, nape, rump...) are drawn on a labelled bird in the Bird Topography Lab')),
           h('input', { 'aria-label': __alloT('stem.birdlab.glossary_search_label', 'Search birding glossary'), type: 'text', value: q, onInput: function(e) { setQ(e.target.value); },
             placeholder: __alloT('stem.birdlab.search_terms_or_definitions', 'Search terms or definitions...'),
-            className: 'w-full px-4 py-2 rounded-lg border-2 border-stone-300 mb-3 text-sm' }),
+            className: 'w-full px-4 py-2 rounded-lg border-2 border-stone-300 mb-3 text-sm bg-white', style: { color: '#1e293b' } }),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
             filtered.map(function(g, i) {
               return h('div', { key: i, className: 'bg-white rounded-lg shadow border-l-4 border-violet-500 p-3' },
@@ -26358,7 +27052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               var prev = history.slice(0, -1);
               setHistory(prev);
               setStep(prev[prev.length - 1] || 'start');
-            }, className: 'px-3 py-1 rounded bg-stone-200 text-stone-700 text-xs font-bold' }, __alloT('stem.birdlab.back', '← Back'))),
+            }, className: 'px-3 py-1 rounded bg-stone-200 text-xs font-bold', style: { color: '#44403c' } }, __alloT('stem.birdlab.back', '← Back'))),
           node ? h('div', { className: 'bg-white rounded-xl shadow-lg border-2 border-violet-300 p-5' },
             node.question ? h('div', null,
               h('h2', { className: 'text-lg font-black text-violet-900 mb-4 tracking-tight' }, '❓ ' + node.question),
@@ -26741,7 +27435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.maine_hawkwatch_guide_2', '🦅 Maine Hawkwatch Guide')),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_58', '← Menu'))),
-          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.bradbury_mountain_pownal_is_maine_s_pr', 'Bradbury Mountain (Pownal) is Maine\'s premier hawkwatch. Sept-Oct migration peaks. Citizen science + viewing.')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.bradbury_mountain_pownal_is_maine_s_pr', 'Bradbury Mountain (Pownal) counts Maine\'s spring hawk flight; Cadillac Mountain (Acadia) counts the fall flight. Citizen science + viewing.')),
           h('div', { className: 'space-y-3' },
             HAWKWATCH_GUIDE.map(function(h2, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
@@ -26830,7 +27524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.hawkwatch_science_data_2', '📊 Hawkwatch Science Data')),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_62', '← Menu'))),
-          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.bradbury_mountain_hawkwatch_maine_rapt', 'Bradbury Mountain Hawkwatch + Maine raptor migration data. 30+ years of citizen-science records.')),
+          h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.bradbury_mountain_hawkwatch_maine_rapt', 'Maine raptor migration data from Bradbury Mountain (spring, since 2007) and Cadillac Mountain (fall, since 1994).')),
           h('div', { className: 'space-y-3' },
             HAWKWATCH_DATA.map(function(d, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
