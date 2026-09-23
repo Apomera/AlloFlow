@@ -166,7 +166,7 @@ it('preserves a new observation draft while editing an existing record', async (
   await mount(); await click('Add observation');
   await change('[aria-label="Behavior narrative"]', 'Unfinished separate observation');
   await click('Keep draft and close');
-  await click(host.querySelector('[aria-label="Toggle edit entry"]'));
+  await click(host.querySelector('[aria-label="Edit entry"]'));
   await change('[aria-label="Behavior narrative"]', 'Asked for help using a card');
   await click('Save Entry'); await tick();
   expect(workspace().abcEntries).toHaveLength(1);

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { behaviorLensInternals } from './helpers/behavior_lens_component_harness.js';
 
 const source = readFileSync('behavior_lens_module.js', 'utf8');
 new Function(readFileSync('behavior_lens_workspace_module.js', 'utf8'))();
@@ -42,6 +43,15 @@ function componentHarness(name, props) {
     X: 'svg', Save: 'svg', fmtDuration: String,
     ABA_GRAPH_COLORS: ['#6366f1'], JABA_GRAPH_COLORS: ['#000']
   };
+  // Module-scope helpers the component calls (graph math, entry readers) come from
+  // the real module; the stubs above still win.
+  const lookup = behaviorLensInternals();
+  const reserved = /^(null|true|false|this|new|return|if|else|for|const|let|var|function|typeof|in|of|do|while|switch|case|break|continue|try|catch|finally|throw|delete|void|instanceof|class|extends|super|import|export|default|yield|await|async|undefined|NaN|Infinity|arguments|eval|get|set|static|enum|with|debugger)$/;
+  for (const id of new Set(source.slice(start, end).match(/\b[A-Za-z_$][\w$]*\b/g) || [])) {
+    if (id in env || id === name || reserved.test(id)) continue;
+    const value = lookup(id);
+    if (value !== undefined && value !== globalThis[id]) env[id] = value;
+  }
   const component = new Function(...Object.keys(env), source.slice(start, end) + '\nreturn ' + name)(...Object.values(env));
   const render = (runEffects = false) => { cursor = 0; tree = component(props); if (runEffects) { const pending = [...effects.values()]; effects.clear(); pending.forEach(effect => effect()); } return tree; };
   const all = (predicate, node = tree, result = []) => { if (node && typeof node === 'object') { if (predicate(node)) result.push(node); node.children.forEach(child => all(predicate, child, result)); } return result; };
@@ -80,11 +90,11 @@ describe('Behavior Lens measurement flows', () => {
     let exported; const addToast = vi.fn();
     const q = componentHarness('ABAGraphEngine', { t, phases: [], sessionHistory: [], onExportData: value => exported = value, addToast });
     q.button('Manual Entry').props.onClick(); q.render();
-    q.label('Toggle show csv import').props.onClick(); q.render();
+    q.button('Paste CSV').props.onClick(); q.render();
     q.label('Session data CSV input').props.onChange({ target: { value: '1,12\n2,8\n3,4' } }); q.render();
     q.label('Import Data').props.onClick(); q.render(true);
     expect(exported.dataSeries.map(point => point.value)).toEqual([12, 8, 4]);
-    q.label('Toggle show csv import').props.onClick(); q.render();
+    q.button('Paste CSV').props.onClick(); q.render();
     q.label('Session data CSV input').props.onChange({ target: { value: '1,6\n2,broken' } }); q.render();
     q.label('Import Data').props.onClick(); q.render(true);
     expect(exported.dataSeries.map(point => point.value)).toEqual([12, 8, 4]);
@@ -133,11 +143,11 @@ describe('Behavior Lens measurement flows', () => {
     let saved; const q = componentHarness('SessionDataTracker', { t, abcEntries: [], onSaveSession: data => saved = data });
     q.label('Target behavior name').props.onChange({ target: { value: 'Task' } }); q.render();
     q.label('Data collection type for Task').props.onChange({ target: { value: 'duration' } }); q.render();
-    q.button('Start Session').props.onClick(); q.render(); q.label('Toggle Duration').props.onClick(); q.render();
+    q.button('Start Session').props.onClick(); q.render(); q.all(n => n.type === 'button' && /^(▶ Start|⏹ Stop)$/.test(q.text(n)))[0].props.onClick(); q.render();
     now += 5500; q.label('End Session & Save').props.onClick(); q.render();
     expect(saved.targets[0].durations).toEqual([5.5]); expect(saved.targets[0].count).toBe(1); expect(saved.durationSec).toBe(5);
     now += 10000; q.button('Start Session').props.onClick(); q.render();
-    expect(q.text(q.label('Toggle Duration'))).toContain('Start');
+    expect(q.text(q.all(n => n.type === 'button' && /^(▶ Start|⏹ Stop)$/.test(q.text(n)))[0])).toContain('Start');
   });
 
   it('saves timed zero-event observations and retains both zero and nonzero bridge counters', () => {

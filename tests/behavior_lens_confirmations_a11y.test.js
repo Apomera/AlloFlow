@@ -23,9 +23,11 @@ describe('Behavior Lens destructive confirmations accessibility', () => {
   });
 
   it('routes destructive workflows and observation exit choices through the service', () => {
-    const titles = ['Delete ABC entry', 'Remove frequency counter', 'Reset frequency data', 'Delete behavior goal', 'Remove crisis contact', 'Delete self-check entry', 'Reset skill progress', 'Keep observation draft', 'Discard observation draft'];
+    // Every confirmation, by title. A new one must be added here on purpose; the old
+    // bare count (9) went stale when two legitimate ones were added.
+    const titles = ['AI draft', 'Reset consent form', 'Delete ABC entry', 'Remove frequency counter', 'Reset frequency data', 'Delete behavior goal', 'Remove crisis contact', 'Delete self-check entry', 'Reset skill progress', 'Keep observation draft', 'Discard observation draft', 'Replace strategy draft', 'Discard session correction'];
     for (const title of titles) expect(source).toContain(`title: '${title}'`);
-    expect(source.match(/await askBehaviorLensConfirmation\(/g)).toHaveLength(9);
+    expect(source.match(/await askBehaviorLensConfirmation\(/g)).toHaveLength(titles.length);
   });
 
   it('contains no native alert, confirm, or prompt calls', () => {

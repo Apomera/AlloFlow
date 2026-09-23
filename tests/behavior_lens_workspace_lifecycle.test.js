@@ -348,7 +348,7 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
         updatedAt: '2026-08-09T13:00:00.000Z'
       }));
 
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-label="Toggle is expanded"]')).find(
+      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
         (button) => button.textContent.includes('Student Profile')
       );
       expect(profileToggle).toBeTruthy();
@@ -435,7 +435,7 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
 
     try {
       await waitForCondition(() => abcMetric(host) === '1', 'Retry test workspace did not hydrate');
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-label="Toggle is expanded"]')).find(
+      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
         (button) => button.textContent.includes('Student Profile')
       );
       expect(profileToggle).toBeTruthy();
@@ -589,7 +589,7 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
       expect(draftKey).toBeTruthy();
       expect(JSON.parse(localStorage.getItem(draftKey)).abcEntries).toHaveLength(1);
 
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-label="Toggle is expanded"]')).find(
+      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
         (button) => button.textContent.includes('Student Profile')
       );
       await React.act(async () => {
@@ -695,7 +695,7 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
         }
         return originalSetItem.call(this, key, value);
       });
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-label="Toggle is expanded"]')).find(
+      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
         (button) => button.textContent.includes('Student Profile')
       );
       await React.act(async () => {
@@ -741,7 +741,7 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
 
     try {
       await waitForCondition(() => abcMetric(host) === '1', 'Delayed-save workspace did not hydrate');
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-label="Toggle is expanded"]')).find(
+      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
         (button) => button.textContent.includes('Student Profile')
       );
       await React.act(async () => {

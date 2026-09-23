@@ -20,7 +20,7 @@ describe('Missing ratings in import and sharing paths',()=>{
  it('preserves an unrated voice observation through review and saving',async()=>{
   let speech;window.SpeechRecognition=class{constructor(){speech=this;}start(){}stop(){}};
   await mount('VoiceToABC',{callGemini:async()=>JSON.stringify([{antecedent:'Task',behavior:'Help card shown',consequence:'Help offered'}])});
-  await click(label('Toggle transcript'));await React.act(async()=>speech.onresult({resultIndex:0,results:[Object.assign([{transcript:'Help card shown during work'}],{isFinal:true})]}));await click(label('Toggle transcript'));await click(label('Parse ABC Entries from Transcript'));
+  await click([...document.querySelectorAll('button')].find(b=>b.textContent.includes('Start Recording')||b.textContent.includes('Stop Recording')));await React.act(async()=>speech.onresult({resultIndex:0,results:[Object.assign([{transcript:'Help card shown during work'}],{isFinal:true})]}));await click([...document.querySelectorAll('button')].find(b=>b.textContent.includes('Start Recording')||b.textContent.includes('Stop Recording')));await click(label('Parse ABC Entries from Transcript'));
   expect(host.textContent).toContain('Not rated');await click(label('Add Selected Entries'));expect(entries[0].intensity).toBeNull();
  });
  it.each([[null,null],[null,4]])('shares rated-only summaries for %j and %j',async(a,b)=>{

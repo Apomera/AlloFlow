@@ -28,6 +28,37 @@
         } catch (e) { return null; }
     }
 
+    // FCT replacement words and how much Word Garden practice each has. Three places
+    // used three rules: the FBA card needed a weighted score of 12.5 ("Ready"), the BIP
+    // card said "Student can use" after taps + 2 x quest answers passed 5, and the BIP
+    // prompt told the AI a word was practiced after 3. Taps show PRACTICE, not that the
+    // student uses the word to communicate, so the labels now say practice.
+    const FCT_REPLACEMENT_WORDS = {
+        Attention: { icon: '👀', teach: 'Teach attention-getting words', kind: 'attention-getting', words: ['look', 'help', 'hi', 'excuse me', 'come here', 'play', 'friend', 'my turn'] },
+        Escape: { icon: '🏃', teach: 'Teach break/help-seeking words', kind: 'break/help-seeking', words: ['break', 'stop', 'all done', 'help', 'too hard', 'need help', 'not now', 'finished'] },
+        Tangible: { icon: '🎁', teach: 'Teach requesting vocabulary', kind: 'requesting', words: ['want', 'more', 'give', 'my turn', 'can i', 'please', 'open', 'play'] },
+        Sensory: { icon: '🌀', teach: 'Teach sensory self-advocacy words', kind: 'sensory self-advocacy', words: ['too loud', 'need break', 'need quiet', 'need headphones', 'feel overwhelmed', 'need to move', 'deep breath', 'help'] }
+    };
+    const FCT_PRACTICE_OFTEN = 12.5;
+    function fctPracticeScore(entry) {
+        return entry ? (Number(entry.taps) || 0) + (Number(entry.questCorrect) || 0) * 2 + (Number(entry.exposures) || 0) * 0.3 : 0;
+    }
+    function fctWordPractice(words, famData, galleryLabels) {
+        const out = { often: [], some: [], carded: [], none: [] };
+        (words || []).forEach(w => {
+            const key = String(w).toLowerCase().trim();
+            const score = fctPracticeScore(famData && famData[key]);
+            (score >= FCT_PRACTICE_OFTEN ? out.often : score > 0 ? out.some : galleryLabels && galleryLabels[key] ? out.carded : out.none).push(w);
+        });
+        return out;
+    }
+    // The active student's Symbol Studio picture bank, as a set of lower-case labels.
+    function fctGalleryLabels() {
+        const labels = {};
+        try { const raw = _blGalleryRaw(); if (raw) { JSON.parse(raw).forEach(g => { if (g && g.label) labels[String(g.label).toLowerCase().trim()] = true; }); } } catch (e) {}
+        return labels;
+    }
+
     function _blGalleryRaw() {
         try {
             var profs = []; try { profs = JSON.parse(localStorage.getItem('alloStudentProfiles') || '[]') || []; } catch (e) {}
@@ -420,6 +451,8 @@
     // statistic. Buckets at 70/40 prevent over-reading; "AI estimate"
     // suffix prevents under-reading too (the model's signal is not noise).
     const aiConfidenceBucket = (n) => {
+        // A missing value is unknown, not "Low": Number(null) is 0.
+        if (n == null || n === '') return { label: 'Unknown', tier: 'unknown' };
         const v = Number(n);
         if (!Number.isFinite(v)) return { label: 'Unknown', tier: 'unknown' };
         if (v >= 70) return { label: 'High', tier: 'high' };
@@ -456,6 +489,202 @@
         const s = Math.floor(seconds % 60);
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
+
+    // ─── ABC entry readers ───────────────────────────────────────────────
+    // Saved entries are normalized by the workspace runtime: the day is `localDate`
+    // (from occurredAt + timezoneOffset), the function is `function`, and array order
+    // depends on how the data arrived (the form prepends, imports append or sort
+    // oldest first). Tools that read the old names (date, functionTag,
+    // perceivedFunction) or treated abcEntries[0] as newest showed an empty heatmap,
+    // blank export dates and trends pointing the wrong way. Read through these.
+    const blLocalDateKey = (date) => {
+        const d = date instanceof Date ? date : new Date(date);
+        if (isNaN(d)) return '';
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    };
+    const abcEntryTime = (e) => {
+        const t = Date.parse(e && (e.occurredAt || e.timestamp || e.date));
+        return Number.isFinite(t) ? t : NaN;
+    };
+    const abcEntryDay = (e) => {
+        if (!e) return '';
+        if (typeof e.localDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.localDate)) return e.localDate;
+        const when = e.occurredAt || e.timestamp || e.date;
+        const runtime = getBehaviorLensWorkspaceRuntime();
+        const key = runtime && runtime.localDayKey ? runtime.localDayKey(when, e.timezoneOffset) : null;
+        if (key) return key;
+        if (typeof e.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.date)) return e.date;
+        return blLocalDateKey(when);
+    };
+    const abcEntryFunction = (e) => String((e && (e.function || e.functionTag || e.perceivedFunction)) || '').trim();
+    // A sorted COPY, newest first; entries without a time keep their order at the end.
+    const abcEntriesNewestFirst = (entries) => (Array.isArray(entries) ? entries : [])
+        .map((entry, index) => ({ entry, index, time: abcEntryTime(entry) }))
+        .sort((a, b) => {
+            const aValid = !isNaN(a.time), bValid = !isNaN(b.time);
+            if (aValid && bValid && a.time !== b.time) return b.time - a.time;
+            if (aValid !== bValid) return aValid ? -1 : 1;
+            return a.index - b.index;
+        })
+        .map(item => item.entry);
+    // Mean over RATED entries only. Counting an unrated entry as 0 put report
+    // averages below the 1-5 scale.
+    const ratedIntensityMean = (entries) => {
+        const runtime = getBehaviorLensWorkspaceRuntime();
+        if (runtime && runtime.summarizeIntensity) return runtime.summarizeIntensity(entries || []);
+        const rated = (entries || []).map(e => Number(e && e.intensity)).filter(v => Number.isFinite(v) && v >= 1 && v <= 5);
+        return { mean: rated.length ? rated.reduce((s, v) => s + v, 0) / rated.length : null, ratedCount: rated.length, missingCount: (entries || []).length - rated.length, totalCount: (entries || []).length };
+    };
+    // The AI analysis is an object; interpolating it printed "[object Object]" and
+    // `.substring` on it threw, which failed every BCBA handoff packet.
+    const aiAnalysisText = (analysis, maxLength) => {
+        if (analysis == null) return '';
+        let text;
+        if (typeof analysis === 'string') text = analysis;
+        else if (typeof analysis === 'object') {
+            const parts = [];
+            if (analysis.hypothesizedFunction) parts.push('Hypothesized function: ' + analysis.hypothesizedFunction + ' (AI estimate, confidence ' + aiConfidenceBucket(analysis.confidence).label + ')');
+            if (analysis.summary) parts.push(analysis.summary);
+            if (Array.isArray(analysis.recommendations) && analysis.recommendations.length) parts.push('Recommendations: ' + analysis.recommendations.join('; '));
+            text = parts.join('\n');
+        } else text = String(analysis);
+        return maxLength && text.length > maxLength ? text.slice(0, maxLength) : text;
+    };
+    // One CSV cell: always quoted, quotes doubled, and a leading = + - @ (or tab/CR)
+    // neutralised so a spreadsheet cannot run a note as a formula (OWASP CSV injection).
+    const csvCell = (value) => {
+        let s = value == null ? '' : String(value);
+        if (typeof value !== 'number' && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+        return '"' + s.replace(/"/g, '""') + '"';
+    };
+    // Applying an AI "edit this entry" result. It used to spread the whole reply over
+    // the saved entry (a stray id, phase or timestamp in the reply overwrote the
+    // record) and forced intensity to 1-5, so "fix the spelling" on an unrated entry
+    // wrote a rating of 1 that then entered every average. Only the six edited fields
+    // are taken, and an unrated entry stays unrated unless the instruction is about
+    // intensity.
+    const AI_EDIT_FIELDS = ['antecedent', 'behavior', 'consequence', 'setting', 'notes'];
+    const mergeAiAbcEdit = (entry, parsed, instruction) => {
+        const updated = Object.assign({}, entry);
+        const reply = parsed && typeof parsed === 'object' ? parsed : {};
+        AI_EDIT_FIELDS.forEach(field => { if (typeof reply[field] === 'string') updated[field] = reply[field]; });
+        const proposed = reply.intensity == null || reply.intensity === '' ? null : Number(reply.intensity);
+        const valid = Number.isInteger(proposed) && proposed >= 1 && proposed <= 5 ? proposed : null;
+        const asksAboutIntensity = /intens|rating|rate it|severity|severe|mild|moderate|level|[1-5]\s*(\/\s*5|out of)/i.test(String(instruction || ''));
+        if (entry.intensity == null || entry.intensity === '') updated.intensity = asksAboutIntensity ? valid : null;
+        else updated.intensity = asksAboutIntensity && valid != null ? valid : entry.intensity;
+        return updated;
+    };
+    // Hub alerts from the ABC log. Pure (clock passed in) so the order-dependence
+    // fixed 2026-09-23 stays tested.
+    function computeSmartAlerts(abcEntries, options) {
+        abcEntries = Array.isArray(abcEntries) ? abcEntries : [];
+        const userRole = options && options.userRole, aiAnalysis = options && options.aiAnalysis;
+        const now = options && Number.isFinite(options.now) ? options.now : Date.now();
+        const alerts = [];
+        // Newest first BY TIME: the stored array is newest first for the form but
+        // oldest first after an import, which inverted the intensity alerts and
+        // dated the "no new entries" alert from the oldest entry.
+        const ordered = abcEntriesNewestFirst(abcEntries);
+        const entryMs = e => new Date(e.occurredAt || e.timestamp).getTime();
+        if (abcEntries.length >= 3) {
+            // Intensity trend: 3+ consecutive entries with increasing intensity
+            const recent = ordered.slice(0, 5);
+            const hasRatings = recent.every(entry => getBehaviorLensWorkspaceRuntime().normalizeIntensity(entry.intensity) !== null);
+            let increasing = 0;
+            for (let i = 0; i < recent.length - 1; i++) {
+                if (hasRatings && (recent[i].intensity || 0) > (recent[i + 1].intensity || 0)) increasing++;
+            }
+            if (increasing >= 3) {
+                alerts.push({ id: 'intensity_up', type: 'warning', icon: '⚠️', msg: `Behavior intensity has increased across ${increasing} recent entries. Review escalation patterns.` });
+            }
+            // Positive trend: decreasing intensity
+            let decreasing = 0;
+            for (let i = 0; i < recent.length - 1; i++) {
+                if (hasRatings && (recent[i].intensity || 0) < (recent[i + 1].intensity || 0)) decreasing++;
+            }
+            if (decreasing >= 3) {
+                alerts.push({ id: 'intensity_down', type: 'positive', icon: '🎉', msg: `Great news! Behavior intensity has decreased across ${decreasing} recent entries.` });
+            }
+        }
+        // Frequency spike: more entries in last 3 days than the per-3-day average
+        if (abcEntries.length >= 5) {
+            const threeDays = 3 * 24 * 60 * 60 * 1000;
+            const recentCount = abcEntries.filter(e => (now - entryMs(e)) < threeDays).length;
+            const totalDays = Math.max(1, (now - entryMs(ordered[ordered.length - 1])) / (24 * 60 * 60 * 1000));
+            const avgPer3Days = (abcEntries.length / totalDays) * 3;
+            if (recentCount > avgPer3Days * 1.5 && recentCount >= 3) {
+                alerts.push({ id: 'freq_spike', type: 'warning', icon: '📈', msg: `Frequency spike: ${recentCount} entries in the last 3 days (avg is ${Math.round(avgPer3Days)}).` });
+            }
+        }
+        // No data warning
+        if (abcEntries.length > 0) {
+            const latest = new Date(entryMs(ordered[0]));
+            const daysSince = (now - latest.getTime()) / (24 * 60 * 60 * 1000);
+            if (daysSince >= 7) {
+                alerts.push({ id: 'stale', type: 'info', icon: '📭', msg: `No new entries in ${Math.round(daysSince)} days. Consider collecting more data.` });
+            }
+        }
+        // Role-aware consultation alerts for teachers and parents
+        const highIntensityCount = abcEntries.filter(e => (e.intensity || 0) >= 4).length;
+        if (highIntensityCount >= 3 && userRole !== 'bcba') {
+            alerts.push({ id: 'consult_bcba', type: 'warning', icon: '⚠️', msg: `${highIntensityCount} high-intensity incidents recorded. Consider consulting your BCBA or behavioral specialist. Open the BCBA Consultation tool to prepare a handoff packet.` });
+        }
+        if (abcEntries.length >= 10 && !aiAnalysis && userRole !== 'bcba') {
+            alerts.push({ id: 'run_analysis', type: 'info', icon: '🧠', msg: 'You have enough data for AI analysis. Run Pattern Analysis to identify behavioral functions before your next team meeting.' });
+        }
+        return alerts;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensAlerts = Object.freeze({ computeSmartAlerts });
+
+    // Conditional probability verdict, using the SAME bands as the legend beside it.
+    // The verdict said "strong association" whenever P(B|A) beat P(B|not A) by 0.15,
+    // so 0.96 vs 0.80 (risk ratio 1.2, "weak" on the legend) was called strong; an
+    // antecedent present in EVERY entry read "exclusively more likely" with nothing to
+    // compare; and it judged any sample size.
+    function conditionalAssociation(a) {
+        if (!a) return null;
+        const MIN_N = 5;
+        if (!a.withoutAntN) return { band: 'no-comparison', color: 'slate' };
+        if (a.withAntN < MIN_N || a.withoutAntN < MIN_N) return { band: 'too-few', color: 'slate', minN: MIN_N };
+        const rr = a.riskRatio;
+        if (rr === Infinity || rr > 2) return { band: 'strong', color: 'red' };
+        if (rr >= 1.5) return { band: 'moderate', color: 'amber' };
+        if (rr > 1) return { band: 'weak', color: 'green' };
+        return { band: 'none', color: 'green' };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensConditional = Object.freeze({ conditionalAssociation });
+
+    // A 0-10 score from an AI reply, or null when it gave none (never a made-up 5).
+    const aiScore10 = (value) => {
+        if (value == null || value === '') return null;
+        const n = Number(value);
+        return Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : null;
+    };
+
+    // One wording for the observed-time incident rate on every screen: how many logged
+    // incidents fell inside observed time, and why there is no rate when none did.
+    const observedRateText = (rate) => {
+        if (!rate || !rate.denominatorAvailable) return 'Per-hour rate unavailable: no valid observation duration is recorded.';
+        const hours = rate.exposure.hours.toFixed(2);
+        return `${rate.perObservedHour.toFixed(2)} incidents per observed hour: ${rate.observedIncidents} of ${rate.loggedIncidents} logged incidents happened during ${hours} observed hours.`
+            + (rate.outsideObservation ? ` The other ${rate.outsideObservation} were logged outside observed time and are not in this rate.` : '');
+    };
+
+    // Toolbar CSV downloads. Dates come from the entry's local day (entries have no
+    // `date` field, so this column was blank for every row), rows run oldest first,
+    // and every cell goes through csvCell.
+    const buildAbcCsv = (entries) => 'Date,Time,Antecedent,Behavior,Consequence,Setting,Intensity,Phase,Function\n'
+        + abcEntriesNewestFirst(entries).reverse().map(e => [abcEntryDay(e), fmtTime(e.occurredAt || e.timestamp), e.antecedent, e.behavior, e.consequence,
+            e.setting, e.intensity == null ? '' : e.intensity, e.phase, abcEntryFunction(e)].map(csvCell).join(',') + '\n').join('');
+    const buildSessionCsv = (sessions) => 'Date,Behavior,Count,Rate,Phase,Duration\n'
+        + (Array.isArray(sessions) ? sessions : []).map(s => [s.date, s.behavior, s.count ?? '', s.rate ?? '', s.phase, s.duration].map(csvCell).join(',') + '\n').join('');
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensEntryReaders = Object.freeze({
+        abcEntryDay, abcEntryFunction, abcEntriesNewestFirst, ratedIntensityMean, aiAnalysisText, csvCell, blLocalDateKey, buildAbcCsv, buildSessionCsv, mergeAiAbcEdit
+    });
 
     // ─── Glossary Tooltip System ─────────────────────────────────────────
     // Shared term→definition map used by the GlossaryTip component to
@@ -735,7 +964,7 @@
                 var desc = null;
                 try { desc = mod.describeSeatForStudent(rk, studentName, { includeNeighbors: includeNeighbors }); } catch (e) { warnLog('Seating lookup failed:', e); }
                 if (!desc) {
-                    if (addToast) addToast(t('behavior_lens.abc.student_not_on_chart') || `${studentName} is not seated on the active seating chart.`, 'info');
+                    if (addToast) addToast(tt('behavior_lens.abc.student_not_on_chart_v2', '{studentName} is not seated on the active seating chart.', { studentName }), 'info');
                     return;
                 }
                 setSetting(prev => prev && prev.trim() ? prev + ' — ' + desc : desc);
@@ -1195,7 +1424,7 @@ Generate questions that:
 4. Guide toward making things right
 
 Make questions warm, specific to THIS incident (not generic), and age-appropriate. Number each question.`;
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setRestorativeText(result);
             } catch (err) {
                 warnLog('Restorative questions failed:', err);
@@ -1214,20 +1443,21 @@ Current entry:
 - Antecedent: ${entry.antecedent}
 - Behavior: ${entry.behavior}
 - Consequence: ${entry.consequence}
-- Intensity: ${entry.intensity}
+- Intensity: ${entry.intensity == null ? 'not rated' : entry.intensity}
 - Setting: ${entry.setting || ''}
 - Notes: ${entry.notes || ''}
 
 User instruction: "${nlEditInput}"
 
 Return ONLY valid JSON with the modified fields (include ALL fields, even unchanged ones):
-{ "antecedent": "...", "behavior": "...", "consequence": "...", "intensity": 1-5, "setting": "...", "notes": "..." }`;
+{ "antecedent": "...", "behavior": "...", "consequence": "...", "intensity": 1-5 or null if not rated, "setting": "...", "notes": "..." }
+Leave intensity exactly as it is unless the instruction changes it. Never invent a rating.`;
                 const result = await callGemini(prompt, true);
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                const updated = { ...entry, ...parsed, intensity: Math.min(5, Math.max(1, parseInt(parsed.intensity) || entry.intensity)) };
+                const updated = mergeAiAbcEdit(entry, parsed, nlEditInput);
                 handleSaveEntry(updated);
                 setShowModal(false);
                 if (addToast) addToast(tt('behavior_lens.toast.entry_updated_via_ai', 'Entry updated via AI ✨'), 'success');
@@ -1523,8 +1753,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             selectedIds.size > 0 && h('div', { className: 'flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5' },
                 h('span', { className: 'text-xs font-bold text-red-700' }, `${selectedIds.size} selected`),
                 !confirmBulkDelete
-                    ? h('button', { "aria-label": "Toggle confirm bulk delete",
-                        onClick: () => setConfirmBulkDelete(true),
+                    ? h('button', { onClick: () => setConfirmBulkDelete(true),
                         className: 'text-[11px] px-3 py-1 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-all'
                     }, tt('behavior_lens.delete_selected', '🗑 Delete Selected'))
                     : h('div', { className: 'flex items-center gap-2' },
@@ -1532,13 +1761,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         h('button', { onClick: handleBulkDelete,
                             className: 'text-[11px] px-3 py-1 bg-red-700 text-white rounded-lg font-black hover:bg-red-600 transition-all'
                         }, tt('behavior_lens.yes_delete', 'Yes, Delete')),
-                        h('button', { "aria-label": "Toggle confirm bulk delete",
-                            onClick: () => setConfirmBulkDelete(false),
+                        h('button', { onClick: () => setConfirmBulkDelete(false),
                             className: 'text-[11px] px-3 py-1 bg-white text-slate-600 border border-slate-400 rounded-lg font-bold hover:bg-slate-50 transition-all'
                         }, tt('common.cancel', 'Cancel'))
                     ),
-                h('button', { "aria-label": "Toggle selected ids",
-                    onClick: () => { setSelectedIds(new Set()); setConfirmBulkDelete(false); },
+                h('button', { onClick: () => { setSelectedIds(new Set()); setConfirmBulkDelete(false); },
                     className: 'ms-auto text-[11px] text-red-600 hover:text-red-600 font-bold transition-colors'
                 }, tt('behavior_lens.clear_selection', 'Clear selection'))
             ),
@@ -1557,8 +1784,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     ? h('div', { className: 'text-center py-10 bg-white rounded-xl border border-slate-400' },
                         h('div', { className: 'text-2xl mb-2' }, '🔍'),
                         h('p', { className: 'text-sm font-bold text-slate-600' }, tt('behavior_lens.no_entries_match', 'No entries match your filters')),
-                        h('button', { "aria-label": "Toggle search text",
-                            onClick: () => { setSearchText(''); setDateRange('all'); setFilterBehavior(''); },
+                        h('button', { onClick: () => { setSearchText(''); setDateRange('all'); setFilterBehavior(''); },
                             className: 'mt-2 text-xs text-indigo-600 font-bold hover:underline'
                         }, tt('behavior_lens.clear_all_filters', 'Clear all filters'))
                     )
@@ -1667,7 +1893,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                 ),
                                                 // Notes indicator
                                                 h('td', { className: 'px-2 py-2.5 text-center' },
-                                                    (entry.notes || entry.setting) && h('button', { "aria-label": "Toggle expanded id",
+                                                    (entry.notes || entry.setting) && h('button', { 'aria-label': expandedId === entry.id ? 'Hide notes' : 'Show notes', 'aria-expanded': expandedId === entry.id ? 'true' : 'false',
                                                         onClick: () => setExpandedId(expandedId === entry.id ? null : entry.id),
                                                         className: `text-xs transition-all ${expandedId === entry.id ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-400'}`,
                                                         title: entry.notes ? 'View notes' : 'View setting'
@@ -1680,12 +1906,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                             className: `p-2 rounded transition-colors ${restorativeId === entry.id ? 'bg-purple-100 text-purple-800' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400`,
                                                             title: tt('behavior_lens.restorative_questions', 'Restorative Questions')
                                                         }, restorativeLoading && restorativeId === entry.id ? '⏳' : '💬'),
-                                                        callGemini && h('button', { "aria-label": "Toggle nl edit id",
+                                                        callGemini && h('button', { 'aria-label': 'Edit with AI', 'aria-expanded': nlEditId === entry.id ? 'true' : 'false',
                                                             onClick: () => { setNlEditId(nlEditId === entry.id ? null : entry.id); setNlEditInput(''); },
                                                             className: `p-2 rounded transition-colors ${nlEditId === entry.id ? 'bg-amber-100 text-amber-800' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400`,
                                                             title: tt('behavior_lens.ai_edit', 'AI Edit')
                                                         }, '✏️🧠'),
-                                                        h('button', { "aria-label": "Toggle edit entry",
+                                                        h('button', { 'aria-label': 'Edit entry',
                                                             onClick: () => { setEditEntry(entry); setShowModal(true); },
                                                             className: 'p-2 rounded hover:bg-indigo-100 text-slate-600 hover:text-indigo-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400'
                                                         }, h(Edit2, { size: 13 })),
@@ -1746,7 +1972,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                     h('div', { className: 'space-y-2' },
                                                         h('div', { className: 'flex justify-between items-center' },
                                                             h('h4', { className: 'text-xs font-black text-purple-700 uppercase flex items-center gap-1.5' }, tt('behavior_lens.restorative_title', '💬 Restorative Conversation Starters')),
-                                                            h('button', { "aria-label": "Toggle restorative id", onClick: () => setRestorativeId(null), className: 'text-purple-700 hover:text-purple-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
+                                                            h('button', { onClick: () => setRestorativeId(null), className: 'text-purple-700 hover:text-purple-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
                                                         ),
                                                         restorativeLoading
                                                             ? h('div', { className: 'text-xs text-purple-500 animate-pulse motion-reduce:animate-none' }, tt('behavior_lens.generating_questions', '⏳ Generating context-specific questions...'))
@@ -2010,6 +2236,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [latencyStart, setLatencyStart] = useState(null);
         const [latencyEnd, setLatencyEnd] = useState(recoveredDraft?.latencyMs != null ? Date.now() : null);
         const [latencyMs, setLatencyMs] = useState(recoveredDraft?.latencyMs ?? null);
+        // Latency is cue to response. It used to save the WHOLE recording's elapsed
+        // seconds (30 s of frequency, then a 5 s latency, saved 35 s). The cue time and
+        // any pause between cue and response are kept here instead.
+        const latencyClockRef = useRef({ cueAt: null, pausedMs: 0, pausedAt: null });
         const [notes, setNotes] = useState(recoveredDraft?.notes || '');
         const timerRef = useRef(null);
         const intervalTimerRef = useRef(null);
@@ -2045,8 +2275,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     setDurations(prev => [...prev, dur]);
                     setDurationStart(null);
                 }
+                if (method === 'latency' && latencyClockRef.current.cueAt != null && !latencyEnd) latencyClockRef.current.pausedAt = pausedAt;
             } else {
                 setIsRunning(true);
+                const resumedAt = Date.now();
+                const lc = latencyClockRef.current;
+                if (lc.pausedAt != null) { lc.pausedMs += resumedAt - lc.pausedAt; lc.pausedAt = null; }
                 const start = Date.now() - timer * 1000;
                 recordingStartRef.current = start;
                 timerRef.current = setInterval(() => {
@@ -2066,10 +2300,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     }, intervalLength * 1000);
                 }
                 if (method === 'latency' && !latencyStart) {
-                    setLatencyStart(Date.now());
+                    setLatencyStart(resumedAt);
+                    latencyClockRef.current = { cueAt: resumedAt, pausedMs: 0, pausedAt: null };
                 }
             }
-        }, [isRunning, timer, method, intervalLength, latencyStart, durationStart]);
+        }, [isRunning, timer, method, intervalLength, latencyStart, latencyEnd, durationStart]);
 
         // Cleanup
         useEffect(() => {
@@ -2238,8 +2473,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             [10, 15, 20, 30, 60].map(v => h('option', { key: v, value: v }, `${v}s`))
                         )
                     ),
-                    currentInterval && isRunning && h('button', { "aria-label": "Toggle current interval",
-                        onClick: () => setCurrentInterval(prev => { const next = { ...prev, occurred: !prev.occurred }; currentIntervalRef.current = next; return next; }),
+                    currentInterval && isRunning && h('button', { onClick: () => setCurrentInterval(prev => { const next = { ...prev, occurred: !prev.occurred }; currentIntervalRef.current = next; return next; }),
                         className: `px-6 py-4 rounded-xl text-sm font-bold transition-all ${currentInterval.occurred ? 'bg-red-600 ring-2 ring-red-400' : 'bg-white/10 hover:bg-white/20'
                             }`
                     }, currentInterval.occurred ? '✅ Behavior occurred' : '❌ Not occurred'),
@@ -2255,8 +2489,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                 ? (tt('behavior_lens.obs.waiting_for_behavior', '⏳ Waiting for behavior...'))
                                 : (tt('behavior_lens.obs.start_to_begin', 'Start timer to begin latency measurement'))
                     ),
-                    latencyStart && !latencyEnd && h('button', { "aria-label": "Toggle latency end",
-                        onClick: () => { setLatencyEnd(Date.now()); setLatencyMs(Math.max(0, timer * 1000)); },
+                    latencyStart && !latencyEnd && h('button', { type: 'button', 'aria-label': tt('behavior_lens.obs.latency_response', 'Response started: stop the latency timer'),
+                        onClick: () => {
+                            const now = Date.now(), lc = latencyClockRef.current;
+                            setLatencyEnd(now);
+                            setLatencyMs(lc.cueAt != null ? Math.max(0, now - lc.cueAt - lc.pausedMs) : Math.max(0, now - latencyStart));
+                        },
                         disabled: !isRunning,
                         className: 'w-20 h-20 rounded-full bg-amber-600 hover:bg-amber-700 text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40'
                     }, '🎯'),
@@ -2731,9 +2969,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 aiAnalysisStale && h('p', { className: 'text-sm text-amber-900' }, 'The saved AI analysis predates the current data. It is not included in this filtered review.'),
             h('div', { className: 'text-[11px] text-slate-700 -mt-3 space-y-1' },
                 h('p', null, 'Counts represent logged ABC entries. Average intensity uses rated entries only; n = ' + stats.intensityN + '; missing = ' + stats.missingIntensityCount + '.'),
-                h('p', null, stats.rate.denominatorAvailable
-                    ? 'Logged context notes per observed hour: ' + stats.rate.perObservedHour.toFixed(2) + ' across ' + stats.rate.exposure.hours.toFixed(2) + ' hours.'
-                    : 'Exposure-adjusted rate is unavailable because no valid observation duration is recorded.'),
+                h('p', { 'data-observed-rate': stats.rate.rateAvailable ? 'available' : 'unavailable' }, observedRateText(stats.rate)),
                 stats.quality.undefinedBehaviorCount > 0 && h('p', { className: 'font-bold text-amber-700' }, stats.quality.undefinedBehaviorCount + ' behavior group(s) need a canonical definition or alias.')
             ),
             // Week-over-week comparison strip
@@ -2827,7 +3063,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('div', { key: phase.phase, className: 'rounded-lg border border-slate-200 bg-slate-50 p-3' },
                         h('div', { className: 'text-xs font-black text-slate-800' }, phase.phase),
                         h('div', { className: 'mt-1 text-[11px] text-slate-700' }, phase.count + ' context notes; intensity ' + (phase.intensity.mean === null ? 'not rated' : phase.intensity.mean.toFixed(1) + ' (n=' + phase.intensity.ratedCount + ')')),
-                        h('div', { className: 'text-[11px] text-slate-700' }, phase.rate.denominatorAvailable ? phase.rate.perObservedHour.toFixed(2) + ' per observed hour' : 'No phase-specific exposure denominator')
+                        h('div', { className: 'text-[11px] text-slate-700' }, phase.rate.rateAvailable ? phase.rate.perObservedHour.toFixed(2) + ' per observed hour' + (phase.rate.outsideObservation ? ' (' + phase.rate.outsideObservation + ' logged outside observed time)' : '') : 'No phase-specific exposure denominator')
                     )
                 ))
             ),
@@ -3037,7 +3273,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             const count = c ? c.count : 0;
             // Only prompt when the counter has un-saved tallies to lose
             if (count > 0) {
-                const msg = (t && t('behavior_lens.confirm.remove_counter')) || `Remove this counter? You'll lose ${count} tallies that haven't been saved as a session.`;
+                const msg = tt('behavior_lens.confirm.remove_counter_v2', 'Remove this counter? You\'ll lose {count} tallies that haven\'t been saved as a session.', { count });
                 if (!await askBehaviorLensConfirmation(msg, { title: 'Remove frequency counter', confirmText: 'Remove counter' })) return;
             }
             setCounters(prev => prev.filter(c => c.id !== id));
@@ -3190,6 +3426,28 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         );
     };
 
+    // Interval timing from the wall clock. The grid counted 1-second TICKS, and browsers
+    // slow or stop timers in a background tab or on a locked phone, so a "15 s" interval
+    // could run for minutes and the saved duration (the rate's denominator) came out
+    // short. Now elapsed time is read from the clock; a gap longer than
+    // INTERVAL_GRID_MAX_GAP_MS means the page was stopped, so recording pauses at the
+    // last moment it was running rather than scoring time nobody watched.
+    const INTERVAL_GRID_MAX_GAP_MS = 3000;
+    // Momentary time sampling looks at the END of each interval. Marks are taken in
+    // the last INTERVAL_GRID_LOOK_SEC seconds only; before, "Occurred" worked at any
+    // time in the interval, which is partial-interval recording under another name.
+    const INTERVAL_GRID_LOOK_SEC = 2;
+    function intervalGridPosition(elapsedMs, intervalSec, totalIntervals) {
+        const lengthMs = intervalSec * 1000;
+        const capped = Math.max(0, Math.min(elapsedMs, totalIntervals * lengthMs));
+        const completed = Math.min(totalIntervals, Math.floor(capped / lengthMs));
+        const intoInterval = completed >= totalIntervals ? 0 : (capped - completed * lengthMs) / 1000;
+        const secondsLeft = completed >= totalIntervals ? 0 : intervalSec - intoInterval;
+        return { elapsedSec: Math.floor(capped / 1000), completed, secondsLeft, lookWindow: completed < totalIntervals && secondsLeft <= INTERVAL_GRID_LOOK_SEC, finished: completed >= totalIntervals };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensIntervalGrid = Object.freeze({ intervalGridPosition, INTERVAL_GRID_MAX_GAP_MS, INTERVAL_GRID_LOOK_SEC });
+
     // ─── IntervalGrid ───────────────────────────────────────────────────
     // Visual interval recording with partial/whole/momentary modes
     const IntervalGrid = ({ onClose, studentName, studentDraftId, onSaveSession, t, addToast, initialTarget, initialMethod }) => {
@@ -3203,47 +3461,71 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [currentInterval, setCurrentInterval] = useState(recoveredDraft?.currentInterval || 0);
         const [grid, setGrid] = useState(recoveredDraft?.grid || []);
         const [elapsed, setElapsed] = useState(recoveredDraft?.elapsed || 0);
-        const timerRef = useRef(null);
+        const [secondsLeft, setSecondsLeft] = useState(null);
+        const [suspendedFor, setSuspendedFor] = useState(null);
+        // baseMs: time recorded before the current run; startedAt/lastTick: this run.
+        const clockRef = useRef({ baseMs: (recoveredDraft?.elapsed || 0) * 1000, startedAt: null, lastTick: null });
         const dialogRef = useRef(null);
         const recovery = useObservationRecovery({ kind: 'interval', identity: draftIdentity, onClose, addToast,
             hasData: elapsed > 0 || grid.length > 0 || !!recordingTarget, draft: { target: recordingTarget, mode, intervalSec, totalIntervals, currentInterval, grid, elapsed } });
         useBehaviorLensModal(dialogRef, recovery.requestClose);
         useEffect(() => { if (recoveredDraft && addToast) addToast('Recovered interval draft. Recording is paused.', 'info'); }, []);
 
+        const syncClock = (elapsedMs) => {
+            const pos = intervalGridPosition(elapsedMs, intervalSec, totalIntervals);
+            setElapsed(pos.elapsedSec);
+            setSecondsLeft(pos.secondsLeft);
+            setCurrentInterval(pos.completed);
+            setGrid(g => {
+                if (g.length >= pos.completed && g.slice(0, pos.completed).every(v => v !== undefined)) return g;
+                const ng = [...g];
+                for (let i = 0; i < pos.completed; i++) if (ng[i] === undefined) ng[i] = false;
+                return ng;
+            });
+            if (pos.finished) setRunning(false);
+        };
         useEffect(() => {
-            if (running && currentInterval < totalIntervals) {
-                timerRef.current = setInterval(() => {
-                    setElapsed(p => {
-                        const next = p + 1;
-                        if (next % intervalSec === 0) {
-                            setCurrentInterval(ci => {
-                                const nextI = ci + 1;
-                                if (nextI >= totalIntervals) { setRunning(false); }
-                                setGrid(g => {
-                                    const ng = [...g];
-                                    if (ng[ci] === undefined) ng[ci] = false;
-                                    return ng;
-                                });
-                                return nextI;
-                            });
-                        }
-                        return next;
-                    });
-                }, 1000);
-            }
-            return () => { if (timerRef.current) clearInterval(timerRef.current); };
-        }, [running, currentInterval, totalIntervals, intervalSec]);
+            if (!running) return undefined;
+            const clock = clockRef.current;
+            clock.startedAt = Date.now();
+            clock.lastTick = clock.startedAt;
+            const id = setInterval(() => {
+                const now = Date.now();
+                if (now - clock.lastTick > INTERVAL_GRID_MAX_GAP_MS) {
+                    // The page was stopped: keep only the time it was running.
+                    clock.baseMs += clock.lastTick - clock.startedAt;
+                    clock.startedAt = null;
+                    setSuspendedFor(Math.round((now - clock.lastTick) / 1000));
+                    syncClock(clock.baseMs);
+                    setRunning(false);
+                    return;
+                }
+                clock.lastTick = now;
+                syncClock(clock.baseMs + now - clock.startedAt);
+            }, 250);
+            return () => {
+                clearInterval(id);
+                if (clock.startedAt != null) {
+                    clock.baseMs += Date.now() - clock.startedAt;
+                    clock.startedAt = null;
+                }
+            };
+        }, [running]);
+        const lookOpen = mode !== 'momentary' || (running && secondsLeft != null && secondsLeft <= INTERVAL_GRID_LOOK_SEC);
 
         const mark = (idx) => {
             setGrid(g => { const ng = [...g]; ng[idx] = !ng[idx]; return ng; });
         };
 
-        const occurredCount = grid.filter(Boolean).length;
+        // Scored COMPLETED intervals over completed intervals. A mark on the unfinished
+        // interval used to join the numerator only: 1 of 4 completed plus a marked
+        // current interval showed and saved 50% (correct: 25%). It is now reported
+        // separately, and `complete` records whether the planned session finished.
         const completedCount = Math.min(currentInterval, totalIntervals);
-        // Denominator counts marked cells too so an in-progress interval the
-        // observer already marked can't push the percentage above 100%.
-        const pctDenom = Math.max(completedCount, occurredCount);
-        const pct = pctDenom > 0 ? ((occurredCount / pctDenom) * 100).toFixed(0) : '0';
+        const occurredCount = grid.slice(0, completedCount).filter(Boolean).length;
+        const inProgressScored = currentInterval < totalIntervals && grid[currentInterval] === true;
+        const pctValue = completedCount > 0 ? Math.round(occurredCount / completedCount * 1000) / 10 : null;
+        const pct = pctValue == null ? '—' : String(pctValue);
 
         const handleSave = () => {
             onSaveSession({
@@ -3253,7 +3535,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 behavior: recordingTarget?.label || '',
                 timestamp: new Date().toISOString(),
                 duration: elapsed,
-                data: { mode, intervalSec, totalIntervals, grid: [...grid], occurredCount, completedCount, percentage: parseFloat(pct) }
+                data: { mode, intervalSec, totalIntervals, grid: [...grid], occurredCount, completedCount, percentage: pctValue == null ? 0 : pctValue, complete: completedCount >= totalIntervals, inProgressScored }
             });
             if (addToast) addToast(tt('behavior_lens.interval.saved', 'Interval session saved ✅'), 'success');
             recovery.clearDraft();
@@ -3282,7 +3564,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             ),
             h(RecordingTargetContext, { target: recordingTarget, recovered: !!recoveredDraft, requestedTarget: initialTarget }),
             // Setup (shown when not running and no data)
-            !running && completedCount === 0 && h('div', { className: 'p-4 sm:p-6 shrink-0 space-y-4' },
+            !running && completedCount === 0 && elapsed === 0 && h('div', { className: 'p-4 sm:p-6 shrink-0 space-y-4' },
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                     Object.entries(modeLabels).map(([key, { label }]) =>
                         h('button', { 'aria-label': label, 'aria-pressed': mode === key,
@@ -3314,19 +3596,19 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     )
                 ),
                 h('button', { "aria-label": "Start recording",
-                    onClick: () => { setRunning(true); setGrid([]); setCurrentInterval(0); setElapsed(0); },
+                    onClick: () => { clockRef.current = { baseMs: 0, startedAt: null, lastTick: null }; setSuspendedFor(null); setSecondsLeft(intervalSec); setRunning(true); setGrid([]); setCurrentInterval(0); setElapsed(0); },
                     className: 'w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all'
                 }, '▶ ' + (tt('behavior_lens.interval.start', 'Start Recording')))
             ),
             // Grid display
-            (running || completedCount > 0) && h('div', { className: 'flex-1 overflow-y-auto p-4' },
+            (running || completedCount > 0 || elapsed > 0) && h('div', { className: 'flex-1 overflow-y-auto p-4' },
                 // Progress bar
                 h('div', { className: 'mb-4 flex items-center gap-3' },
                     h('div', { className: 'flex-1 bg-slate-700 rounded-full h-3 overflow-hidden' },
                         h('div', { role: 'progressbar', 'aria-label': 'Completed observation intervals', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round((completedCount / totalIntervals) * 100), className: 'h-full bg-indigo-500 transition-all', style: { width: `${(completedCount / totalIntervals) * 100}%` } })
                     ),
                     h('span', { className: 'text-sm font-bold text-white tabular-nums' }, `${completedCount}/${totalIntervals}`),
-                    h('span', { className: 'text-lg font-black text-indigo-400 tabular-nums' }, `${pct}%`)
+                    h('span', { className: 'text-lg font-black text-indigo-400 tabular-nums', 'data-interval-pct': pct }, pctValue == null ? pct : `${pct}%`)
                 ),
                 // Grid cells
                 h('div', { className: 'grid grid-cols-5 md:grid-cols-10 gap-2' },
@@ -3342,7 +3624,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         return h('button', {
                             "aria-label": `Interval ${i + 1} — ${statusLabel}`,
                             key: i,
-                            onClick: () => { if (isComplete || isCurrent) mark(i); },
+                            onClick: () => { if (isComplete || (isCurrent && lookOpen)) mark(i); },
                             className: `bl-interval-cell aspect-square rounded-lg flex flex-col items-center justify-center text-xs font-bold text-white leading-none transition-all ${bg} ${isComplete || isCurrent ? 'cursor-pointer hover:opacity-80' : 'opacity-40 cursor-default'}`
                         },
                             h('span', null, i + 1),
@@ -3353,19 +3635,24 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     })
                 ),
                 // Controls
+                suspendedFor != null && h('p', { role: 'status', 'data-interval-suspended': suspendedFor, className: 'mt-4 text-sm text-amber-200 text-center' },
+                    tt('behavior_lens.interval.suspended', 'Recording paused: this page stopped running for {n} seconds (screen locked or another app). That time is not counted. Resume when you are watching again.', { n: suspendedFor })),
+                running && mode === 'momentary' && h('p', { role: 'status', 'data-interval-look': lookOpen ? 'open' : 'wait', className: `mt-4 text-center font-black ${lookOpen ? 'text-amber-300 text-xl' : 'text-slate-300 text-sm'}` },
+                    lookOpen ? tt('behavior_lens.interval.look_now', 'Look now: is it happening at this moment?') : tt('behavior_lens.interval.look_in', 'Look in {n} s', { n: Math.max(0, Math.ceil((secondsLeft == null ? intervalSec : secondsLeft) - INTERVAL_GRID_LOOK_SEC)) })),
                 running && h('div', { className: 'mt-4 flex gap-3 justify-center' },
-                    h('button', { "aria-label": "Mark current interval as occurred",
-                        onClick: () => mark(currentInterval),
-                        className: 'bl-occurred-btn px-8 py-3 bg-red-700 text-white rounded-xl font-bold text-lg hover:bg-red-700 active:scale-95 transition-all'
-                    }, '✓ ' + (tt('behavior_lens.obs_occurred', 'Occurred'))),
+                    h('button', { "aria-label": mode === 'momentary' ? 'Mark: occurring at the end of this interval' : "Mark current interval as occurred",
+                        onClick: () => { if (lookOpen) mark(currentInterval); },
+                        disabled: !lookOpen,
+                        className: 'bl-occurred-btn px-8 py-3 bg-red-700 text-white rounded-xl font-bold text-lg hover:bg-red-700 active:scale-95 transition-all disabled:opacity-40'
+                    }, '✓ ' + (mode === 'momentary' ? tt('behavior_lens.interval.occurring_now', 'Occurring now') : tt('behavior_lens.obs_occurred', 'Occurred'))),
                     h('button', { "aria-label": "Pause",
                         onClick: () => setRunning(false),
                         className: 'px-6 py-3 bg-white/10 text-white rounded-xl font-bold hover:bg-white/20 transition-all'
                     }, '⏸ Pause')
                 ),
-                !running && completedCount > 0 && h('div', { className: 'mt-4 flex gap-3 justify-center' },
+                !running && (completedCount > 0 || elapsed > 0) && h('div', { className: 'mt-4 flex gap-3 justify-center' },
                     h('button', { "aria-label": "Resume",
-                        onClick: () => setRunning(true),
+                        onClick: () => { setSuspendedFor(null); setRunning(true); },
                         disabled: completedCount >= totalIntervals,
                         className: 'px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-40 transition-all'
                     }, '▶ Resume')
@@ -3381,14 +3668,40 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
     // ─── TokenBoard ─────────────────────────────────────────────────────
     // Visual reinforcement tracker with configurable token slots AND reinforcement schedule engine
+    // Variable schedules must AVERAGE their value. VR drew a whole number from
+    // floor(0.5p)..floor(1.5p), which averages p - 0.5 for odd p (VR-5 averaged 4.5).
+    // A range symmetric about p averages exactly p. VI (in seconds) already averaged p
+    // minutes; its tip said "varies 1-5 min" for a 1.5-4.5 min range.
+    function variableRatioRange(p) {
+        const n = Math.max(1, Math.round(Number(p) || 1));
+        const d = Math.floor(n / 2);
+        return { min: n - d, max: n + d };
+    }
+    function variableIntervalRangeSec(p) {
+        const sec = Math.max(1, Number(p) || 1) * 60;
+        return { min: Math.max(1, Math.round(sec * 0.5)), max: Math.round(sec * 1.5) };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensSchedules = Object.freeze({ variableRatioRange, variableIntervalRangeSec });
+
     const SCHEDULE_TYPES = [
         { id: 'token', label: '⭐ Token Economy', desc: 'Simple: earn tokens, get reward', tip: 'Best for: building new behaviors' },
         { id: 'FR', label: '📊 Fixed Ratio (FR)', desc: 'Reinforce every Nth response', tip: 'e.g. FR-5 = every 5th correct behavior' },
-        { id: 'VR', label: '🎲 Variable Ratio (VR)', desc: 'Reinforce around every Nth response (randomized)', tip: 'e.g. VR-5 = average of every 5th, but varies' },
+        { id: 'VR', label: '🎲 Variable Ratio (VR)', desc: 'Reinforce around every Nth response (randomized)', tip: 'e.g. VR-5 = every 3rd to 7th response, averaging every 5th' },
         { id: 'FI', label: '⏰ Fixed Interval (FI)', desc: 'Reinforce first response after N minutes', tip: 'e.g. FI-3 = first correct behavior after 3 min' },
-        { id: 'VI', label: '🎲⏰ Variable Interval (VI)', desc: 'Reinforce first response after ~N minutes (randomized)', tip: 'e.g. VI-3 = average 3 min, varies 1-5 min' },
+        { id: 'VI', label: '🎲⏰ Variable Interval (VI)', desc: 'Reinforce first response after ~N minutes (randomized)', tip: 'e.g. VI-3 = first response after 1.5 to 4.5 min, averaging 3 min' },
         { id: 'DRO', label: '⏱️ DRO (Differential Reinforcement)', desc: 'Reinforce after N minutes with NO target behavior', tip: 'e.g. DRO-5 = reinforce if no target behavior for 5 min' },
     ];
+
+    // First empty token slot. The board starts as an EMPTY array, and findIndex never
+    // visits past its end, so "Record Behavior" and every schedule's reinforcement
+    // found no slot and filled nothing until a slot had been clicked by hand.
+    const nextEmptyTokenSlot = (tokens, slots) => {
+        for (let i = 0; i < slots; i++) if (!(tokens && tokens[i])) return i;
+        return -1;
+    };
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensTokenBoard = Object.freeze({ nextEmptyTokenSlot });
 
     const TokenBoard = ({ onClose, studentName, studentKey, t, addToast, callGemini }) => {
         const [slots, setSlots] = useState(5);
@@ -3407,7 +3720,13 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [timerSeconds, setTimerSeconds] = useState(0);
         const [timerActive, setTimerActive] = useState(false);
         const [intervalReady, setIntervalReady] = useState(false);
-        const timerRef = useRef(null);
+        // FI/VI/DRO clock, read from the wall clock. It counted 1-second TICKS, so a
+        // background tab or a locked screen stretched every interval; DRO ran with no
+        // timer on screen and no pause, filling tokens while nobody watched; and its
+        // reinforcement ran inside a state updater, which React may call twice.
+        const clockRef = useRef({ startedAt: null, bankedMs: 0, lastTick: null, targetSec: null });
+        const readyRef = useRef(false);
+        const [timerStopped, setTimerStopped] = useState(null);
         const [sessionHistory, setSessionHistory] = useDurableToolState('tokenHistory', []);
         const [showHistory, setShowHistory] = useState(false);
         const [showThinning, setShowThinning] = useState(false);
@@ -3471,9 +3790,8 @@ Return ONLY valid JSON:
         const computeNextReinforce = useCallback((type, param, currentCount) => {
             if (type === 'FR') return currentCount + param;
             if (type === 'VR') {
-                const min = Math.max(1, Math.floor(param * 0.5));
-                const max = Math.floor(param * 1.5);
-                return currentCount + min + Math.floor(Math.random() * (max - min + 1));
+                const range = variableRatioRange(param);
+                return currentCount + range.min + Math.floor(Math.random() * (range.max - range.min + 1));
             }
             return null;
         }, []);
@@ -3486,9 +3804,8 @@ Return ONLY valid JSON:
             // 1 second instead of the set interval.
             if (type === 'DRO') return param * 60;
             if (type === 'VI') {
-                const min = Math.max(30, Math.floor(param * 0.5 * 60));
-                const max = Math.floor(param * 1.5 * 60);
-                return min + Math.floor(Math.random() * (max - min + 1));
+                const range = variableIntervalRangeSec(param);
+                return range.min + Math.floor(Math.random() * (range.max - range.min + 1));
             }
             return null;
         }, []);
@@ -3498,7 +3815,7 @@ Return ONLY valid JSON:
         // never toggles a stale slot). Mirrors toggleToken's confetti logic.
         const fillNextToken = useCallback(() => {
             setTokens(prev => {
-                const i = prev.findIndex((t2, idx) => !t2 && idx < slots);
+                const i = nextEmptyTokenSlot(prev, slots);
                 if (i < 0) return prev;
                 const next = prev.slice();
                 next[i] = true;
@@ -3518,7 +3835,9 @@ Return ONLY valid JSON:
             setIntervalReady(false);
             setTimerSeconds(0);
             setTimerActive(false);
-            if (timerRef.current) clearInterval(timerRef.current);
+            setTimerStopped(null);
+            clockRef.current = { startedAt: null, bankedMs: 0, lastTick: null, targetSec: null };
+            readyRef.current = false;
             if (scheduleType === 'FR' || scheduleType === 'VR') {
                 setNextReinforceAt(computeNextReinforce(scheduleType, scheduleParam, 0));
             } else {
@@ -3532,37 +3851,65 @@ Return ONLY valid JSON:
             }
         }, [scheduleType, scheduleParam]);
 
+        // Start a new interval now: zero elapsed and, for VI, a new draw.
+        const restartInterval = () => {
+            const c = clockRef.current;
+            c.bankedMs = 0;
+            c.targetSec = computeNextInterval(scheduleType, scheduleParam);
+            if (c.startedAt != null) { c.startedAt = Date.now(); c.lastTick = c.startedAt; }
+            readyRef.current = false;
+            setIntervalReady(false);
+            setTimerSeconds(0);
+        };
+        const fillNextTokenRef = useRef(fillNextToken);
+        fillNextTokenRef.current = fillNextToken;
+        const addToastRef = useRef(addToast);
+        addToastRef.current = addToast;
+
         // Timer for interval schedules
         useEffect(() => {
-            if (timerRef.current) clearInterval(timerRef.current);
-            if (!timerActive || (scheduleType !== 'FI' && scheduleType !== 'VI' && scheduleType !== 'DRO')) return;
-            const targetSec = computeNextInterval(scheduleType, scheduleParam);
-            timerRef.current = setInterval(() => {
-                setTimerSeconds(prev => {
-                    const next = prev + 1;
-                    if (scheduleType === 'DRO') {
-                        // DRO reinforces EACH completed interval, then restarts.
-                        // Do NOT latch intervalReady — that blocked every
-                        // interval after the first (the timer effect re-ran and
-                        // the `!intervalReady` guard stayed false forever).
-                        if (targetSec && next >= targetSec) {
-                            setReinforceNow(true);
-                            setTimeout(() => setReinforceNow(false), 3000);
-                            fillNextToken();
-                            if (addToast) addToast(tt('behavior_lens.toast.dro_interval_complete_reinforce_no_target_behavior', '🎉 DRO interval complete — REINFORCE! No target behavior occurred!'), 'success');
-                            return 0; // restart the DRO interval
-                        }
-                        return next;
-                    }
-                    if (next >= targetSec && !intervalReady) {
-                        setIntervalReady(true);
-                        if (addToast) addToast(tt('behavior_lens.toast.interval_ready_reinforce_next_behavior', '⏰ Interval ready — reinforce next behavior!'), 'info');
-                    }
-                    return next;
-                });
-            }, 1000);
-            return () => clearInterval(timerRef.current);
-        }, [timerActive, scheduleType, scheduleParam, intervalReady]);
+            if (!timerActive || (scheduleType !== 'FI' && scheduleType !== 'VI' && scheduleType !== 'DRO')) return undefined;
+            const c = clockRef.current;
+            if (c.targetSec == null) c.targetSec = computeNextInterval(scheduleType, scheduleParam);
+            c.startedAt = Date.now();
+            c.lastTick = c.startedAt;
+            const id = setInterval(() => {
+                const now = Date.now();
+                if (now - c.lastTick > INTERVAL_GRID_MAX_GAP_MS) {
+                    // The page was stopped (screen locked, another app): keep only
+                    // the time it ran, and wait for the teacher.
+                    c.bankedMs += c.lastTick - c.startedAt;
+                    c.startedAt = null;
+                    setTimerStopped(Math.round((now - c.lastTick) / 1000));
+                    setTimerActive(false);
+                    return;
+                }
+                c.lastTick = now;
+                const elapsedSec = Math.floor((c.bankedMs + now - c.startedAt) / 1000);
+                if (!c.targetSec || elapsedSec < c.targetSec) { setTimerSeconds(elapsedSec); return; }
+                if (scheduleType === 'DRO') {
+                    // DRO reinforces EACH completed interval, then starts the next.
+                    c.bankedMs = 0;
+                    c.startedAt = now;
+                    setTimerSeconds(0);
+                    setReinforceNow(true);
+                    setTimeout(() => setReinforceNow(false), 3000);
+                    fillNextTokenRef.current();
+                    if (addToastRef.current) addToastRef.current(tt('behavior_lens.toast.dro_interval_complete_reinforce_no_target_behavior', '🎉 DRO interval complete — REINFORCE! No target behavior occurred!'), 'success');
+                    return;
+                }
+                setTimerSeconds(elapsedSec);
+                if (!readyRef.current) {
+                    readyRef.current = true;
+                    setIntervalReady(true);
+                    if (addToastRef.current) addToastRef.current(tt('behavior_lens.toast.interval_ready_reinforce_next_behavior', '⏰ Interval ready — reinforce next behavior!'), 'info');
+                }
+            }, 250);
+            return () => {
+                clearInterval(id);
+                if (c.startedAt != null) { c.bankedMs += Date.now() - c.startedAt; c.startedAt = null; }
+            };
+        }, [timerActive, scheduleType, scheduleParam]);
 
         // Record a behavior response
         const recordResponse = () => {
@@ -3571,7 +3918,7 @@ Return ONLY valid JSON:
 
             if (scheduleType === 'token') {
                 // Simple token toggle auto-advance
-                const nextEmpty = tokens.findIndex((t2, i) => !t2 && i < slots);
+                const nextEmpty = nextEmptyTokenSlot(tokens, slots);
                 if (nextEmpty >= 0) toggleToken(nextEmpty);
                 return;
             }
@@ -3581,7 +3928,7 @@ Return ONLY valid JSON:
                     setReinforceNow(true);
                     setTimeout(() => setReinforceNow(false), 3000);
                     if (addToast) addToast(tt('behavior_lens.toast.reinforce_now', '🎉 REINFORCE NOW!'), 'success');
-                    const nextEmpty = tokens.findIndex((t2, i) => !t2 && i < slots);
+                    const nextEmpty = nextEmptyTokenSlot(tokens, slots);
                     if (nextEmpty >= 0) toggleToken(nextEmpty);
                     setNextReinforceAt(computeNextReinforce(scheduleType, scheduleParam, newCount));
                 }
@@ -3589,18 +3936,16 @@ Return ONLY valid JSON:
 
             if ((scheduleType === 'FI' || scheduleType === 'VI') && intervalReady) {
                 setReinforceNow(true);
-                setIntervalReady(false);
                 setTimeout(() => setReinforceNow(false), 3000);
                 if (addToast) addToast(tt('behavior_lens.toast.reinforce_now', '🎉 REINFORCE NOW!'), 'success');
-                const nextEmpty = tokens.findIndex((t2, i) => !t2 && i < slots);
+                const nextEmpty = nextEmptyTokenSlot(tokens, slots);
                 if (nextEmpty >= 0) toggleToken(nextEmpty);
-                setTimerSeconds(0);
+                restartInterval();
             }
 
             // DRO: behavior occurred = RESET timer (no reinforcement)
             if (scheduleType === 'DRO') {
-                setTimerSeconds(0);
-                setIntervalReady(false);
+                restartInterval();
                 if (addToast) addToast(tt('behavior_lens.toast.behavior_occurred_dro_timer_reset', '⚠️ Behavior occurred — DRO timer reset'), 'warning');
             }
         };
@@ -3628,7 +3973,7 @@ Return ONLY valid JSON:
                 h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-2' }, '📋 ' + (tt('behavior_lens.token.schedule_type', 'Reinforcement Schedule'))),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2' },
                     SCHEDULE_TYPES.map(st =>
-                        h('button', { "aria-label": "Toggle schedule type",
+                        h('button', { 'aria-pressed': scheduleType === st.id ? 'true' : 'false',
                             key: st.id,
                             onClick: () => setScheduleType(st.id),
                             className: `text-start p-3 rounded-xl border-2 transition-all ${scheduleType === st.id ? 'border-rose-400 bg-rose-50 shadow-md' : 'border-slate-100 hover:border-slate-200'}`
@@ -3656,12 +4001,12 @@ Return ONLY valid JSON:
                         scheduleType === 'FR' ? `Every ${scheduleParam} responses` :
                             scheduleType === 'VR' ? `Average every ${scheduleParam} responses` :
                                 scheduleType === 'FI' ? `Every ${scheduleParam} minute(s)` :
+                                    scheduleType === 'DRO' ? `A token after ${scheduleParam} minute(s) without the behavior` :
                                     `Average every ${scheduleParam} minute(s)`
                     )
                 ),
                 // Schedule thinning
-                scheduleType !== 'token' && h('button', { 'aria-expanded': String(showThinning), "aria-label": "Toggle show thinning",
-                    onClick: () => setShowThinning(!showThinning),
+                scheduleType !== 'token' && h('button', { 'aria-expanded': String(showThinning), onClick: () => setShowThinning(!showThinning),
                     className: 'mt-2 text-xs text-rose-500 hover:text-rose-700 font-bold'
                 }, showThinning ? '▾ Hide Thinning Guide' : '▸ Schedule Thinning Guide'),
                 showThinning && h('div', { className: 'mt-2 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800 space-y-1' },
@@ -3704,7 +4049,7 @@ Return ONLY valid JSON:
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🔢 ' + (tt('behavior_lens.token.count', 'Number of Tokens'))),
                     h('div', { className: 'flex gap-2' },
                         [3, 4, 5, 6, 8, 10].map(n =>
-                            h('button', { "aria-label": "Toggle slots",
+                            h('button', { 'aria-label': `${n} tokens`, 'aria-pressed': slots === n ? 'true' : 'false',
                                 key: n,
                                 onClick: () => { setSlots(n); setTokens([]); },
                                 className: `px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${slots === n ? 'bg-rose-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
@@ -3719,16 +4064,18 @@ Return ONLY valid JSON:
                 className: 'w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
             }, aiSuggestLoading ? '⏳ Thinking...' : '🧠 AI Suggest Setup'),
             // Interval timer (for FI/VI)
-            (scheduleType === 'FI' || scheduleType === 'VI') && h('div', { className: `rounded-xl border-2 p-4 text-center transition-all ${intervalReady ? 'border-green-400 bg-green-50 animate-pulse motion-reduce:animate-none' : 'border-slate-200 bg-white'}` },
-                h('div', { className: 'text-3xl font-black text-slate-800 mb-2' }, fmtTimer(timerSeconds)),
+            (scheduleType === 'FI' || scheduleType === 'VI' || scheduleType === 'DRO') && h('div', { 'data-token-timer': scheduleType, className: `rounded-xl border-2 p-4 text-center transition-all ${intervalReady ? 'border-green-400 bg-green-50 animate-pulse motion-reduce:animate-none' : 'border-slate-200 bg-white'}` },
+                h('div', { className: 'text-3xl font-black text-slate-800 mb-2', 'data-token-clock': 'true' }, fmtTimer(scheduleType === 'DRO' ? Math.max(0, scheduleParam * 60 - timerSeconds) : timerSeconds)),
+                scheduleType === 'DRO' && h('div', { className: 'text-xs text-slate-600 mb-2' }, tt('behavior_lens.token.dro_until', 'until the next token, if the behavior does not occur')),
+                timerStopped != null && h('p', { role: 'status', 'data-token-stopped': timerStopped, className: 'text-xs text-amber-800 mb-2' }, tt('behavior_lens.token.timer_stopped', 'Timer paused: this page stopped running for {n} seconds. That time is not counted. Start it again when you are watching.', { n: timerStopped })),
                 intervalReady && h('div', { className: 'text-lg font-black text-green-600 mb-2 animate-bounce motion-reduce:animate-none' }, '✅ INTERVAL READY — Reinforce next behavior!'),
-                h('div', { 'aria-expanded': String(timerActive), className: 'flex gap-2 justify-center' },
-                    h('button', { 'aria-expanded': String(timerActive), "aria-label": "Toggle timer active",
-                        onClick: () => setTimerActive(!timerActive),
+                h('div', { className: 'flex gap-2 justify-center' },
+                    h('button', { 'aria-pressed': timerActive ? 'true' : 'false',
+                        onClick: () => { setTimerStopped(null); setTimerActive(!timerActive); },
                         className: `px-4 py-2 rounded-lg font-bold text-sm ${timerActive ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`
                     }, timerActive ? '⏸ Pause' : '▶ Start Timer'),
-                    h('button', { "aria-label": "Reset first-then board",
-                        onClick: () => { setTimerSeconds(0); setIntervalReady(false); },
+                    h('button', { "aria-label": "Reset interval timer",
+                        onClick: restartInterval,
                         className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm'
                     }, '↺ Reset')
                 )
@@ -3787,7 +4134,7 @@ Return ONLY valid JSON:
             ),
             // Action buttons
             h('div', { className: 'flex gap-2 justify-center flex-wrap' },
-                h('button', { "aria-label": "Toggle tokens",
+                h('button', {
                     onClick: () => { setTokens([]); setShowConfetti(false); setResponseCount(0); setReinforceNow(false); },
                     className: 'px-6 py-2 bg-slate-100 text-slate-600 rounded-full text-sm font-bold hover:bg-slate-200 transition-all'
                 }, '↺ ' + (tt('behavior_lens.token.reset', 'Reset Board'))),
@@ -3796,8 +4143,7 @@ Return ONLY valid JSON:
                     disabled: responseCount === 0 && earnedCount === 0,
                     className: 'px-6 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-all disabled:opacity-40'
                 }, '💾 Save Session'),
-                h('button', { 'aria-expanded': String(showHistory), "aria-label": "Toggle show history",
-                    onClick: () => setShowHistory(!showHistory),
+                h('button', { 'aria-expanded': String(showHistory), onClick: () => setShowHistory(!showHistory),
                     className: 'px-6 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold hover:bg-indigo-200 transition-all'
                 }, `📊 History (${sessionHistory.length})`)
             ),
@@ -3838,8 +4184,9 @@ Return ONLY valid JSON:
             'Morning Arrival', 'Circle Time', 'Reading/ELA', 'Math',
             'Lunch', 'Recess', 'Specials (Art/PE/Music)', 'Dismissal'
         ];
-        const [routines, setRoutines] = useState(defaultRoutines);
-        const [matrix, setMatrix] = useState(() => {
+        // Kept with the student's workspace (tallies were lost when the panel closed).
+        const [routines, setRoutines] = useDurableToolState('hotspotRoutines', defaultRoutines);
+        const [matrix, setMatrix] = useDurableToolState('hotspotMatrix', () => {
             const m = {};
             defaultRoutines.forEach(r => { m[r] = 0; });
             return m;
@@ -3864,7 +4211,7 @@ Return ONLY valid JSON:
             setAnalyzing(true);
             try {
                 const matrixStr = Object.entries(matrix)
-                    .map(([routine, count]) => `${routine}: ${count} observations`)
+                    .map(([routine, count]) => `${routine}: ${count} tallied incidents`)
                     .join('\n');
                 const prompt = `You are a BCBA analyzing a behavior hotspot matrix for a student.
 ${RESTORATIVE_PREAMBLE}
@@ -3894,13 +4241,23 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
         };
 
         const startEdit = (routine) => { setEditingRoutine(routine); setEditVal(routine); };
+        // Rename a routine and carry its tally. "Math " (a trailing space) renamed Math onto
+        // itself after trimming and then DELETED its tally; renaming onto another routine's
+        // name overwrote that routine's count and left two rows with one key.
         const finishEdit = () => {
-            if (editVal.trim() && editVal !== editingRoutine) {
-                setRoutines(r => r.map(x => x === editingRoutine ? editVal.trim() : x));
+            const prev = editingRoutine;
+            const next = editVal.trim();
+            if (next && next !== prev) {
+                if (routines.includes(next)) {
+                    if (addToast) addToast(tt('behavior_lens.hotspot.name_taken', 'There is already a routine called {name}. Choose another name.', { name: next }), 'warning');
+                    setEditingRoutine(null);
+                    return;
+                }
+                setRoutines(r => r.map(x => x === prev ? next : x));
                 setMatrix(m => {
                     const nm = { ...m };
-                    nm[editVal.trim()] = nm[editingRoutine] || 0;
-                    delete nm[editingRoutine];
+                    nm[next] = nm[prev] || 0;
+                    delete nm[prev];
                     return nm;
                 });
             }
@@ -3926,7 +4283,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                                     'aria-label': 'Edit routine name',
                                     className: 'w-44 text-xs border border-indigo-600 rounded px-2 py-1.5 focus:ring-2 focus:ring-indigo-400 outline-none'
                                 })
-                                : h('button', { "aria-label": "Start Edit",
+                                : h('button', { 'aria-label': 'Rename ' + routine,
                                     onClick: () => startEdit(routine),
                                     className: 'w-44 text-xs font-medium text-slate-600 text-start truncate hover:text-indigo-600 transition-colors'
                                 }, routine),
@@ -4057,7 +4414,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     content += '\n\n' + ['Session Timestamp', 'Method', 'Duration (s)', 'Count/Rate', 'Notes'].join(',');
                     filteredObs.forEach(s => {
                         const detail = s.method === 'frequency' ? `${s.data?.count || 0} (${s.data?.rate || 0}/min)` :
-                            s.method === 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0}` :
+                            s.method === 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.completedCount ?? s.data?.totalIntervals ?? 0}` :
                                 s.method === 'duration' ? `${s.data?.totalDuration || 0}s total` : '';
                         content += '\n' + [
                             csvEscape(s.timestamp),
@@ -4089,7 +4446,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 filteredObs.forEach((s, i) => {
                     text += `\n#${i + 1} — ${fmtDate(s.timestamp)} | ${s.method} | ${fmtDuration(s.duration)}\n`;
                     if (s.method === 'frequency') text += `  Count: ${s.data?.count || 0} (${s.data?.rate || '?'}/min)\n`;
-                    if (s.method === 'interval') text += `  ${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0} intervals (${s.data?.percentage || 0}%)\n`;
+                    if (s.method === 'interval') text += `  ${s.data?.occurredCount || 0}/${s.data?.completedCount ?? s.data?.totalIntervals ?? 0} intervals (${s.data?.percentage || 0}%)\n`;
                 });
                 if (aiAnalysis) {
                     text += '\n\nAI-ASSISTED ANALYSIS\n' + '─'.repeat(30) + '\n';
@@ -4116,8 +4473,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.format', 'Format')),
                     h('div', { className: 'flex gap-2' },
                         [['json', '📦 JSON'], ['csv', '📊 CSV'], ['text', '📝 Text']].map(([key, label]) =>
-                            h('button', { "aria-label": "Toggle format",
-                                key, onClick: () => setFormat(key),
+                            h('button', { key, onClick: () => setFormat(key),
                                 className: `flex-1 py-2 rounded-lg text-sm font-bold transition-all ${format === key ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                             }, label)
                         )
@@ -4136,8 +4492,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.date_range', 'Date Range')),
                     h('div', { className: 'flex gap-2' },
                         [['all', 'All Time'], ['month', 'Last 30 Days'], ['week', 'Last 7 Days']].map(([key, label]) =>
-                            h('button', { "aria-label": "Toggle date range",
-                                key, onClick: () => setDateRange(key),
+                            h('button', { key, onClick: () => setDateRange(key),
                                 className: `flex-1 py-2 rounded-lg text-xs font-bold transition-all ${dateRange === key ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                             }, label)
                         )
@@ -4184,7 +4539,9 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         </style></head><body>`;
                         html += `<h1>📊 BehaviorLens Portfolio</h1><div class="subtitle">Student: <strong>${esc(student)}</strong> | Generated: ${esc(now)}</div>`;
                         // Summary stats
-                        const avgInt = filteredAbc.length > 0 ? (filteredAbc.reduce((s, e) => s + (e.intensity || 0), 0) / filteredAbc.length).toFixed(1) : '—';
+                        // Rated entries only: an unrated entry counted as 0 printed averages below the 1-5 scale.
+                        const avgIntSummary = ratedIntensityMean(filteredAbc);
+                        const avgInt = avgIntSummary.mean == null ? 'Not rated' : esc(avgIntSummary.mean.toFixed(1) + (avgIntSummary.missingCount ? ' (' + avgIntSummary.ratedCount + ' of ' + avgIntSummary.totalCount + ' rated)' : ''));
                         html += `<div class="stat-row"><div class="stat"><div class="stat-value">${filteredAbc.length}</div><div class="stat-label">${t('bl.abc_entries') || 'ABC Entries'}</div></div><div class="stat"><div class="stat-value">${filteredObs.length}</div><div class="stat-label">${t('bl.observations') || 'Observations'}</div></div><div class="stat"><div class="stat-value">${avgInt}</div><div class="stat-label">${t('bl.avg_intensity') || 'Avg Intensity'}</div></div></div>`;
                         // ABC table
                         if (filteredAbc.length > 0) {
@@ -4200,7 +4557,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         if (filteredObs.length > 0) {
                             html += `<h2>🔍 Observation Sessions</h2><table><tr><th>#</th><th>Date</th><th>${t('bl.method') || 'Method'}</th><th>${t('bl.duration') || 'Duration'}</th><th>${t('bl.result') || 'Result'}</th></tr>`;
                             filteredObs.forEach((s, i) => {
-                                const detail = s.method === 'frequency' ? `${Number(s.data?.count) || 0} (${Number(s.data?.rate) || 0}/min)` : s.method === 'interval' ? `${Number(s.data?.occurredCount) || 0}/${Number(s.data?.totalIntervals) || 0} intervals` : s.method === 'duration' ? `${Number(s.data?.totalDuration) || 0}s` : '—';
+                                const detail = s.method === 'frequency' ? `${Number(s.data?.count) || 0} (${Number(s.data?.rate) || 0}/min)` : s.method === 'interval' ? `${Number(s.data?.occurredCount) || 0}/${Number(s.data?.completedCount ?? s.data?.totalIntervals) || 0} intervals` : s.method === 'duration' ? `${Number(s.data?.totalDuration) || 0}s` : '—';
                                 html += `<tr><td>${i + 1}</td><td>${fmtDate(s.timestamp)}</td><td>${esc(s.method) || '—'}</td><td>${fmtDuration(s.duration)}</td><td>${detail}</td></tr>`;
                             });
                             html += '</table>';
@@ -4242,16 +4599,17 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                             if (e.antecedent) aCount[e.antecedent] = (aCount[e.antecedent]||0)+1;
                             if (e.consequence) cCount[e.consequence] = (cCount[e.consequence]||0)+1;
                             if (e.setting) sCount[e.setting] = (sCount[e.setting]||0)+1;
-                            if (e.functionTag) fCount[e.functionTag] = (fCount[e.functionTag]||0)+1;
+                            const fTag = abcEntryFunction(e); if (fTag) fCount[fTag] = (fCount[fTag]||0)+1;
                             if (e.intensity) iDist[e.intensity] = (iDist[e.intensity]||0)+1;
-                            if (e.phase) { if (!phaseData[e.phase]) phaseData[e.phase]={count:0,totalInt:0}; phaseData[e.phase].count++; phaseData[e.phase].totalInt+=(e.intensity||0); }
+                            if (e.phase) { if (!phaseData[e.phase]) phaseData[e.phase]={count:0,totalInt:0,rated:0}; phaseData[e.phase].count++; const iv = e.intensity == null || e.intensity === '' ? NaN : Number(e.intensity); if (Number.isFinite(iv)) { phaseData[e.phase].totalInt+=iv; phaseData[e.phase].rated++; } }
                         });
                         const topA = Object.entries(aCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
                         const topC = Object.entries(cCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
                         const topS = Object.entries(sCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
                         const topF = Object.entries(fCount).sort((a,b)=>b[1]-a[1]);
                         const total = abc.length;
-                        const avgInt = (abc.reduce((s,e)=>s+(e.intensity||0),0)/total).toFixed(1);
+                        const avgIntSummary = ratedIntensityMean(abc);
+                        const avgInt = avgIntSummary.mean == null ? 'Not rated' : esc(avgIntSummary.mean.toFixed(1) + (avgIntSummary.missingCount ? ' (' + avgIntSummary.ratedCount + ' of ' + avgIntSummary.totalCount + ' rated)' : ''));
 
                         // ── Temporal pattern (Mon–Fri × Morning/Mid/Afternoon) ──
                         const timeSlots = {'Morning (7–10)': [7,8,9], 'Midday (10–13)': [10,11,12], 'Afternoon (13–16)': [13,14,15], 'Late (16–18)': [16,17,18]};
@@ -4272,7 +4630,11 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         const timestamps = abc.map(e=>new Date(e.timestamp||e.date)).filter(d=>!isNaN(d)).sort((a,b)=>a-b);
                         const firstDate = timestamps.length ? timestamps[0].toLocaleDateString() : '—';
                         const lastDate = timestamps.length ? timestamps[timestamps.length-1].toLocaleDateString() : '—';
-                        const spanDays = timestamps.length > 1 ? Math.round((timestamps[timestamps.length-1]-timestamps[0])/(86400000)) : 0;
+                        // Inclusive calendar span and the days that actually have data. The elapsed
+                        // span alone read 0 for one day of data and 4 for Monday to Friday.
+                        const dayKeys = [...new Set(abc.map(e => abcEntryDay(e)).filter(Boolean))].sort();
+                        const spanDays = dayKeys.length ? Math.round((Date.parse(dayKeys[dayKeys.length-1]+'T00:00:00Z') - Date.parse(dayKeys[0]+'T00:00:00Z'))/86400000) + 1 : 0;
+                        const daysWithData = dayKeys.length;
                         const topSetting = topS.length ? topS[0][0] : '—';
 
                         // ── Helper: horizontal bar row ──────────────────────────
@@ -4300,9 +4662,9 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         ).join('');
 
                         // ── Phase colors ────────────────────────────────────────
-                        const phaseColors = {baseline:'#64748b',intervention:'#059669',maintenance:'#3b82f6','return to baseline':'#f97316'};
+                        const phaseColors = {baseline:'#64748b',intervention:'#059669',maintenance:'#3b82f6','return to baseline':'#f97316',return_to_baseline:'#f97316'};
                         const phaseRows = Object.entries(phaseData).map(([ph,d]) =>
-                            `<tr><td><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${phaseColors[ph]||'#e2e8f0'};color:white;font-weight:700;font-size:8.5pt;">${esc(ph)}</span></td><td>${Number(d.count) || 0}</td><td>${Math.round(d.count/total*100)}%</td><td>${d.count>0?(d.totalInt/d.count).toFixed(1):'—'}</td></tr>`
+                            `<tr><td><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${phaseColors[ph]||'#e2e8f0'};color:white;font-weight:700;font-size:8.5pt;">${esc(ph)}</span></td><td>${Number(d.count) || 0}</td><td>${Math.round(d.count/total*100)}%</td><td>${d.rated>0?(d.totalInt/d.rated).toFixed(1):'Not rated'}</td></tr>`
                         ).join('');
 
                         // ── Temporal grid ───────────────────────────────────────
@@ -4366,7 +4728,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                                 <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">ABC Entries</div></div>
                                 <div class="stat-card"><div class="stat-val">${filteredObs.length}</div><div class="stat-lbl">Observation Sessions</div></div>
                                 <div class="stat-card"><div class="stat-val">${avgInt}</div><div class="stat-lbl">Avg Intensity (1–5)</div></div>
-                                <div class="stat-card"><div class="stat-val">${spanDays}</div><div class="stat-lbl">Days of Data</div></div>
+                                <div class="stat-card"><div class="stat-val">${daysWithData}</div><div class="stat-lbl">Days with Data</div></div>
                             </div>
                             ${topS.length?`<p style="font-size:9.5pt;color:#475569;margin:0"><strong>Most common setting:</strong> ${esc(topSetting)} (${Number(topS[0][1]) || 0} incidents, ${Math.round(topS[0][1]/total*100)}% of entries)</p>`:''}
                         </section>`;
@@ -4472,9 +4834,15 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
 
     // ─── RecordReview ───────────────────────────────────────────────────
     // Paste IEP/eval text → AI-powered structured summary
+    // Record review read only the first 4,000 characters of a pasted document and said
+    // nothing: a 20,000-character evaluation was summarized from its opening pages, and
+    // "Current Goals" (usually later) came back empty or invented. The limit is now
+    // 30,000, and a longer document is summarized with a notice to the model and the
+    // teacher. The summary is kept with the workspace (it was lost on close).
+    const RECORD_REVIEW_MAX_CHARS = 30000;
     const RecordReview = ({ studentName, callGemini, t, addToast }) => {
         const [text, setText] = useState('');
-        const [summary, setSummary] = useState(null);
+        const [summary, setSummary] = useDurableToolState('recordReviewSummary', null);
         const [loading, setLoading] = useState(false);
 
         const handleSummarize = async () => {
@@ -4484,8 +4852,8 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 const prompt = `You are a school psychologist reviewing educational documents for a student (codename: "${studentName || 'Student'}").
 ${RESTORATIVE_PREAMBLE}
 
-PASTED DOCUMENT TEXT:
-${text.substring(0, 4000)}
+PASTED DOCUMENT TEXT${text.length > RECORD_REVIEW_MAX_CHARS ? ` (only the first ${RECORD_REVIEW_MAX_CHARS.toLocaleString()} of ${text.length.toLocaleString()} characters; say that sections after this point were not reviewed)` : ''}:
+${text.substring(0, RECORD_REVIEW_MAX_CHARS)}
 
 Analyze this document and return ONLY valid JSON:
 {
@@ -4503,7 +4871,7 @@ Analyze this document and return ONLY valid JSON:
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                setSummary(parsed);
+                setSummary(Object.assign({}, parsed, { reviewedChars: Math.min(text.length, RECORD_REVIEW_MAX_CHARS), totalChars: text.length }));
                 if (addToast) addToast(tt('behavior_lens.toast.record_review_complete', 'Record review complete ✨'), 'success');
             } catch (err) {
                 warnLog('Record review failed:', err);
@@ -4545,6 +4913,8 @@ Analyze this document and return ONLY valid JSON:
                     h('h3', { className: 'text-sm font-black text-cyan-800' }, '📋 Record Summary'),
                     summary.documentType && h('span', { className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold' }, summary.documentType)
                 ),
+                summary.totalChars > summary.reviewedChars && h('p', { role: 'status', 'data-review-partial': 'true', className: 'text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2' },
+                    tt('behavior_lens.review.partial', 'Only the first {n} of {total} characters were reviewed. Anything after that, such as later goals or recommendations, is not in this summary.', { n: summary.reviewedChars.toLocaleString(), total: summary.totalChars.toLocaleString() })),
                 summary.summary && h('p', { className: 'text-sm text-cyan-700 bg-white p-3 rounded-lg border border-cyan-100 mb-3' }, summary.summary),
                 renderSection('🔍', 'Key Findings', summary.keyFindings),
                 renderSection('🎯', 'Current Goals', summary.currentGoals),
@@ -4576,10 +4946,10 @@ Analyze this document and return ONLY valid JSON:
             if (!callGemini) return;
             setGenerating(true);
             try {
-                const dataStr = abcEntries.slice(0, 15).map((e, i) =>
+                const dataStr = abcEntriesNewestFirst(abcEntries).slice(0, 15).map((e, i) =>
                     `#${i + 1}: A="${e.antecedent}", B="${e.behavior}", C="${e.consequence}"${e.setting ? ', Setting="' + e.setting + '"' : ''}`
                 ).join('\n');
-                const existing = aiAnalysis ? `\nExisting AI analysis: Function=${aiAnalysis.hypothesizedFunction}, Confidence=${aiAnalysis.confidence}%` : '';
+                const existing = aiAnalysis ? `\nExisting AI analysis: Function=${aiAnalysis.hypothesizedFunction}, Confidence=${aiAnalysis.confidence == null ? 'not given' : aiAnalysis.confidence + '%'}` : '';
                 const prompt = `You are a BCBA creating a functional behavior hypothesis diagram.
 ${RESTORATIVE_PREAMBLE}
 
@@ -4657,50 +5027,30 @@ Create a hypothesis diagram and return ONLY valid JSON:
             (function () {
                 const behaviorFn = aiAnalysis?.hypothesizedFunction;
                 if (!behaviorFn) return null;
-                const FCT_WORDS = {
-                    Attention: { icon: '👀', tip: 'Teach attention-getting words', words: ['look','help','hi','excuse me','come here','play','friend','my turn'] },
-                    Escape: { icon: '🏃', tip: 'Teach break/help-seeking words', words: ['break','stop','all done','help','too hard','need help','not now','finished'] },
-                    Tangible: { icon: '🎁', tip: 'Teach requesting vocabulary', words: ['want','more','give','my turn','can i','please','open','play'] },
-                    Sensory: { icon: '🌀', tip: 'Teach sensory self-advocacy words', words: ['too loud','need break','need quiet','need headphones','feel overwhelmed','need to move','deep breath','help'] }
-                };
-                const fctData = FCT_WORDS[behaviorFn];
+                const fctData = FCT_REPLACEMENT_WORDS[behaviorFn];
                 if (!fctData) return null;
-                // Read familiarity data from Symbol Studio's localStorage
                 let famData = {};
                 try { const raw = _blFamiliarityRaw(); if (raw) famData = JSON.parse(raw); } catch(e) {}
-                // Read gallery for image availability
-                let galleryLabels = {};
-                try { const raw = _blGalleryRaw(); if (raw) { JSON.parse(raw).forEach(g => { galleryLabels[g.label.toLowerCase().trim()] = true; }); } } catch(e) {}
-                const ready = []; const growing = []; const missing = [];
-                fctData.words.forEach(w => {
-                    const k = w.toLowerCase().trim();
-                    const entry = famData[k];
-                    if (entry) {
-                        const interactions = (entry.taps||0) + (entry.questCorrect||0)*2 + (entry.exposures||0)*0.3;
-                        const score = Math.min(1, interactions / 25);
-                        if (score >= 0.5) ready.push(w);
-                        else growing.push(w);
-                    } else if (galleryLabels[k]) {
-                        growing.push(w);
-                    } else {
-                        missing.push(w);
-                    }
-                });
+                const practice = fctWordPractice(fctData.words, famData, fctGalleryLabels());
+                const ready = practice.often, growing = practice.some, carded = practice.carded, missing = practice.none;
                 const fc2 = FUNCTION_COLORS[behaviorFn] || FUNCTION_COLORS['Attention'];
                 return h('div', { className: 'bg-white rounded-xl border-2 p-4 mt-3', style: { borderColor: fc2.border, background: fc2.bg + '80' } },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                         h('span', { className: 'text-lg' }, '🌱'),
                         h('span', { className: 'text-xs font-black uppercase tracking-wide', style: { color: fc2.text } }, 'FCT Vocabulary Readiness'),
                         h('span', { className: 'text-xs font-medium', style: { color: fc2.text, opacity: 0.7 } }, '(from Word Garden)')),
-                    h('p', { className: 'text-xs mb-3', style: { color: fc2.text } }, fctData.tip + ' so the student can communicate instead of using behavior.'),
+                    h('p', { className: 'text-xs mb-3', style: { color: fc2.text } }, fctData.teach + ' so the student can communicate instead of using behavior.'),
                     ready.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
-                        h('span', { className: 'text-xs font-bold text-emerald-700' }, '✅ Ready: '),
+                        h('span', { className: 'text-xs font-bold text-emerald-700' }, '✅ Practiced often: '),
                         ready.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold' }, w))),
                     growing.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
-                        h('span', { className: 'text-xs font-bold text-amber-700' }, '🌿 Growing: '),
+                        h('span', { className: 'text-xs font-bold text-amber-700' }, '🌿 Some practice: '),
                         growing.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold' }, w))),
+                    carded.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
+                        h('span', { className: 'text-xs font-bold text-slate-700' }, '🖼️ Card made, not practiced yet: '),
+                        carded.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-slate-100 text-slate-800 rounded-full text-xs font-semibold' }, w))),
                     missing.length > 0 && h('div', { className: 'flex flex-wrap gap-1 items-center' },
-                        h('span', { className: 'text-xs font-bold text-red-700' }, '🌰 Needs planting: '),
+                        h('span', { className: 'text-xs font-bold text-red-700' }, '🌰 Not in Word Garden yet: '),
                         missing.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-semibold' }, w))),
                     h('p', { className: 'text-xs mt-2 italic', style: { color: fc2.text, opacity: 0.7 } }, 'Open Symbol Studio → Word Garden to create and practice these words.'));
             })()
@@ -4789,7 +5139,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
 
         const setGoalStatus = (goalId, status) => {
             setSavedGoals(prev => prev.map(g => g.id === goalId ? { ...g, status } : g));
-            if (addToast) addToast(t('behavior_lens.toast.goal_marked_as_n') || `Goal marked as ${status}`, 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.goal_marked_as_n_v2', 'Goal marked as {status}', { status }), 'success');
         };
 
         const addProgressPoint = (goalId) => {
@@ -4813,7 +5163,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
         const deleteGoal = async (goalId) => {
             const g = savedGoals.find(x => x.id === goalId);
             const label = g && g.specific ? `"${g.specific.slice(0, 40)}${g.specific.length > 40 ? '…' : ''}"` : 'this goal';
-            const msg = (t && t('behavior_lens.confirm.delete_goal')) || `Delete ${label}? This can't be undone.`;
+            const msg = tt('behavior_lens.confirm.delete_goal_v2', 'Delete {label}? This can\'t be undone.', { label });
             if (!await askBehaviorLensConfirmation(msg, { title: 'Delete behavior goal', confirmText: 'Delete goal' })) return;
             setSavedGoals(prev => prev.filter(g => g.id !== goalId));
             if (addToast) addToast(tt('behavior_lens.toast.goal_removed', 'Goal removed'), 'info');
@@ -4953,16 +5303,14 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                         ),
                         // Action buttons
                         g.status === 'active' && h('div', { className: 'flex items-center gap-2 mt-3 pt-3 border-t border-slate-100' },
-                            h('button', { "aria-label": "Toggle progress goal id",
-                                onClick: () => { setProgressGoalId(progressGoalId === g.id ? null : g.id); setProgressScore(3); setProgressNotes(''); },
+                            h('button', { onClick: () => { setProgressGoalId(progressGoalId === g.id ? null : g.id); setProgressScore(3); setProgressNotes(''); },
                                 className: 'text-[11px] px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-600 rounded-lg font-bold hover:bg-emerald-100 transition-all'
                             }, progressGoalId === g.id ? '▾ Close' : '📊 Log Progress'),
                             h('button', { "aria-label": "Mark Met",
                                 onClick: () => setGoalStatus(g.id, 'met'),
                                 className: 'text-[11px] px-3 py-1.5 bg-blue-50 text-blue-800 border border-blue-600 rounded-lg font-bold hover:bg-blue-100 transition-all'
                             }, '✓ Mark Met'),
-                            h('button', { "aria-label": "Toggle goal status",
-                                onClick: () => setGoalStatus(g.id, 'discontinued'),
+                            h('button', { onClick: () => setGoalStatus(g.id, 'discontinued'),
                                 className: 'text-[11px] px-3 py-1.5 bg-slate-50 text-slate-600 border border-slate-400 rounded-lg font-bold hover:bg-slate-100 transition-all'
                             }, (tt('behavior_lens.raw.discontinue', 'Discontinue')))
                         ),
@@ -4980,8 +5328,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                                 h('label', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.score_1_5', 'Score (1–5):')),
                                 h('div', { className: 'flex gap-1' },
                                     [1, 2, 3, 4, 5].map(s =>
-                                        h('button', { "aria-label": "Toggle progress score",
-                                            key: s,
+                                        h('button', { key: s,
                                             onClick: () => setProgressScore(s),
                                             className: `w-8 h-8 rounded-lg font-black text-sm transition-all ${progressScore === s ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:border-emerald-600'}`
                                         }, s)
@@ -5112,8 +5459,7 @@ Generate a behavior contract and return ONLY valid JSON:
                     className: 'flex-1 py-3 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, drafting ? '⏳ Drafting...' : ('🧠 ' + (tt('behavior_lens.contract.draft', 'AI Draft Contract')))),
                 h('button', { 'aria-expanded': String(showHistory), onClick: saveContract, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save'),
-                history.length > 0 && h('button', { 'aria-expanded': String(showHistory), "aria-label": "Toggle show history",
-                    onClick: () => setShowHistory(!showHistory),
+                history.length > 0 && h('button', { 'aria-expanded': String(showHistory), onClick: () => setShowHistory(!showHistory),
                     className: 'px-4 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
                 }, `📋 History (${history.length})`)
             ),
@@ -5132,8 +5478,7 @@ Generate a behavior contract and return ONLY valid JSON:
             // Status badge bar
             h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.status', 'Status:')),
-                ['active', 'expired', 'renewed'].map(s => h('button', { "aria-label": "Toggle status",
-                    key: s, onClick: () => setStatus(s),
+                ['active', 'expired', 'renewed'].map(s => h('button', { key: s, onClick: () => setStatus(s),
                     style: { fontSize: '10px', padding: '3px 10px', borderRadius: 20, fontWeight: 700, textTransform: 'uppercase', border: `1.5px solid ${statusColors[s].border}`, background: status === s ? statusColors[s].bg : 'transparent', color: status === s ? statusColors[s].text : '#94a3b8', cursor: 'pointer', transition: 'all .15s' }
                 }, s))
             ),
@@ -5225,7 +5570,7 @@ Generate a behavior contract and return ONLY valid JSON:
             if (!callGemini) return;
             setPersonalizing(true);
             try {
-                const dataStr = abcEntries.slice(0, 10).map((e, i) =>
+                const dataStr = abcEntriesNewestFirst(abcEntries).slice(0, 10).map((e, i) =>
                     `#${i + 1}: A="${e.antecedent}", B="${e.behavior}", C="${e.consequence}", Intensity=${e.intensity}/5`
                 ).join('\n');
                 const prompt = `You are a BCBA personalizing a Colvin & Sugai escalation cycle for a student.
@@ -5265,8 +5610,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
                     className: 'flex-1 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, personalizing ? '⏳ Personalizing...' : ('🧠 ' + (tt('behavior_lens.cycle.personalize', 'Personalize for This Student')))),
                 h('button', { 'aria-expanded': String(editing), onClick: saveCycle, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save'),
-                h('button', { 'aria-expanded': String(editing), "aria-label": "Toggle editing",
-                    onClick: () => setEditing(!editing),
+                h('button', { 'aria-expanded': String(editing), onClick: () => setEditing(!editing),
                     className: `px-4 py-3 rounded-xl font-bold text-sm transition-all ${editing ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                 }, editing ? '✏️ Editing' : '✏️ Edit'),
                 Object.keys(personalized).length > 0 && h('button', { "aria-label": "Reset", onClick: resetCycle, className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-red-50 hover:text-red-800 transition-all' }, '🔄 Reset')
@@ -5281,8 +5625,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
                         const signsVal = p.signs || phase.signs;
                         const responseVal = p.response || phase.response;
                         return h('div', { key: phase.name },
-                            h('button', { "aria-label": "Toggle selected",
-                                onClick: () => setSelected(isSelected ? null : idx),
+                            h('button', { onClick: () => setSelected(isSelected ? null : idx),
                                 className: 'w-full text-start rounded-xl p-4 border-2 transition-all hover:shadow-md',
                                 style: { background: phase.bg, borderColor: isSelected ? phase.color : 'transparent' }
                             },
@@ -5427,8 +5770,7 @@ Recommend reinforcers and return ONLY valid JSON:
                     disabled: rankedItems.length === 0,
                     className: 'flex-1 py-2.5 bg-violet-700 text-white rounded-xl font-bold shadow hover:bg-violet-600 disabled:opacity-40 transition-all text-sm'
                 }, '📸 Snapshot'),
-                snapshots.length > 0 && h('button', { 'aria-expanded': String(showHistory), "aria-label": "Toggle show history",
-                    onClick: () => setShowHistory(!showHistory),
+                snapshots.length > 0 && h('button', { 'aria-expanded': String(showHistory), onClick: () => setShowHistory(!showHistory),
                     className: 'py-2.5 px-4 bg-slate-100 text-slate-700 rounded-xl font-bold border border-slate-400 hover:bg-slate-200 transition-all text-sm'
                 }, showHistory ? '▲ Hide' : `📊 History (${snapshots.length})`)
             ),
@@ -5479,7 +5821,7 @@ Recommend reinforcers and return ONLY valid JSON:
                                 h('span', { className: 'text-sm text-slate-700' }, item),
                                 h('div', { className: 'flex gap-1' },
                                     [1, 2, 3, 4, 5].map(star =>
-                                        h('button', { "aria-label": "Toggle rating",
+                                        h('button', { 'aria-label': 'Rate ' + item + ': ' + star + ' of 5',
                                             key: star,
                                             onClick: () => setRating(item, star),
                                             className: `text-lg transition-all ${(ratings[item] || 0) >= star ? 'text-amber-400 scale-110' : 'text-slate-200 hover:text-amber-200'}`
@@ -5601,7 +5943,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
             setSelected(idx);
             setSelectionAnnouncement(`Selected ${choices[idx].label}.`);
             setLog(prev => [...prev, { choice: choices[idx].label, time: new Date().toISOString() }]);
-            if (addToast) addToast(t('behavior_lens.toast.choice_n') || `Choice: ${choices[idx].label} `, 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.choice_n_v2', 'Choice: {v1} ', { v1: choices[idx].label }), 'success');
             setTimeout(() => setSelected(null), 2000);
         };
 
@@ -5665,8 +6007,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                 ),
                 h('div', { className: 'flex-1 grid grid-cols-2 gap-6 p-6 overflow-y-auto sm:overflow-hidden' },
                     // FIRST panel
-                    h('button', { "aria-label": "Toggle first done",
-                        onClick: () => { setFirstDone(true); if (addToast) addToast(tt('behavior_lens.toast.first_task_complete', 'First task complete! ✅'), 'success'); },
+                    h('button', { onClick: () => { setFirstDone(true); if (addToast) addToast(tt('behavior_lens.toast.first_task_complete', 'First task complete! ✅'), 'success'); },
                         className: `rounded-3xl flex flex-col items-center justify-center shadow-2xl transition-all duration-500 ${firstDone
                             ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 scale-95 ring-4 ring-emerald-300/50'
                             : 'bg-gradient-to-br from-blue-400 to-indigo-600 hover:scale-[1.02] active:scale-95'
@@ -5731,6 +6072,30 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
 
     // ─── EnvironmentAudit ───────────────────────────────────────────────
     // 8-item classroom environment checklist with scoring
+    // 1-5 rating checklists (Environment Audit, Feasibility). An UNRATED area counted
+    // as 0, so one rating of 5 read 5/40 = 13% "Needs Improvement" (or "Not Feasible"),
+    // a verdict after a single answer; the AI prompt called every unrated area "0/5"
+    // and "low". Now only rated areas count, and the overall score waits for all.
+    function ratedChecklistScore(ids, ratings) {
+        const list = Array.isArray(ids) ? ids : [];
+        const value = id => { const v = Number(ratings && ratings[id]); return Number.isInteger(v) && v >= 1 && v <= 5 ? v : null; };
+        const rated = list.filter(id => value(id) != null);
+        const total = rated.reduce((sum, id) => sum + value(id), 0);
+        const max = list.length * 5;
+        const complete = list.length > 0 && rated.length === list.length;
+        return { rated: rated.length, of: list.length, total, max, complete, pct: complete ? Math.round(total / max * 100) : null, unrated: list.filter(id => value(id) == null), value };
+    }
+    // What the AI is told: each area's rating or "not rated"; low = rated 1 or 2.
+    function ratedChecklistPromptLines(items, score) {
+        return {
+            ratings: items.map(it => `${it.label}: ${score.value(it.id) == null ? 'not rated' : score.value(it.id) + '/5'}`).join(', '),
+            low: items.filter(it => score.value(it.id) != null && score.value(it.id) <= 2).map(it => it.label).join(', ')
+        };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensFct = Object.freeze({ fctWordPractice, fctPracticeScore, FCT_PRACTICE_OFTEN, FCT_REPLACEMENT_WORDS });
+    window.AlloModules.BehaviorLensRatedChecklist = Object.freeze({ ratedChecklistScore, ratedChecklistPromptLines });
+
     const EnvironmentAudit = ({ studentName, callGemini, t, addToast }) => {
         const items = [
             { id: 'structure', label: (tt('behavior_lens.raw.classroom_structure', 'Classroom Structure')), desc: 'Clear physical layout, defined areas, organized spaces' },
@@ -5746,9 +6111,10 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
         const [aiRecs, setAiRecs] = useState(null);
         const [loading, setLoading] = useState(false);
 
-        const total = useMemo(() => Object.values(ratings).reduce((s, v) => s + v, 0), [ratings]);
-        const maxScore = items.length * 5;
-        const pct = maxScore > 0 ? Math.round((total / maxScore) * 100) : 0;
+        const score = ratedChecklistScore(items.map(it => it.id), ratings);
+        const total = score.total;
+        const maxScore = score.max;
+        const pct = score.pct == null ? 0 : score.pct;
         const grade = pct >= 80 ? { label: (tt('behavior_lens.raw.strong', 'Strong')), color: '#22c55e', bg: '#f0fdf4' } :
             pct >= 50 ? { label: (tt('behavior_lens.raw.developing', 'Developing')), color: '#f59e0b', bg: '#fefce8' } :
                 { label: (tt('behavior_lens.raw.needs_improvement', 'Needs Improvement')), color: '#ef4444', bg: '#fef2f2' };
@@ -5757,13 +6123,13 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
             if (!callGemini) return;
             setLoading(true);
             try {
-                const lowItems = items.filter(it => (ratings[it.id] || 0) <= 2).map(it => it.label).join(', ');
+                const lines = ratedChecklistPromptLines(items, score);
                 const prompt = `You are a behavior specialist reviewing a classroom environment audit.
         ${RESTORATIVE_PREAMBLE}
 
-Total score: ${total}/${maxScore} (${pct}%)
-    Low - scoring areas: ${lowItems || 'None'}
-    Ratings: ${items.map(it => `${it.label}: ${ratings[it.id] || 0}/5`).join(', ')}
+Areas rated: ${score.rated} of ${score.of}${score.complete ? ` (total ${total}/${maxScore}, ${pct}%)` : '. Do not treat unrated areas as low.'}
+    Low - scoring areas: ${lines.low || 'None'}
+    Ratings: ${lines.ratings}
 
 Provide improvement recommendations and return ONLY valid JSON:
     {
@@ -5773,7 +6139,7 @@ Provide improvement recommendations and return ONLY valid JSON:
             ]
     } `;
                 const result = await callGemini(prompt, true);
-                const cleaned = result.replace(/```json\n ? /g, '').replace(/```\n?/g, '').trim();
+                const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
@@ -5797,7 +6163,7 @@ Provide improvement recommendations and return ONLY valid JSON:
                             ),
                             h('div', { className: 'flex gap-0.5 shrink-0' },
                                 [1, 2, 3, 4, 5].map(v =>
-                                    h('button', { "aria-label": "Toggle ratings",
+                                    h('button', { 'aria-label': `${item.label}: ${v} of 5`, 'aria-pressed': ratings[item.id] === v ? 'true' : 'false',
                                         key: v,
                                         onClick: () => setRatings(prev => ({ ...prev, [item.id]: prev[item.id] === v ? 0 : v })),
                                         className: `w-7 h-7 rounded-md text-xs font-bold transition-all ${(ratings[item.id] || 0) >= v ?
@@ -5812,7 +6178,9 @@ Provide improvement recommendations and return ONLY valid JSON:
                 )
             ),
             // Score card
-            Object.keys(ratings).length > 0 && h('div', { className: 'rounded-xl border-2 p-5', style: { background: grade.bg, borderColor: grade.color } },
+            score.rated > 0 && !score.complete && h('p', { role: 'status', 'data-checklist-progress': 'audit', className: 'text-xs text-slate-600 text-center' },
+                tt('behavior_lens.checklist.rate_all', '{n} of {m} areas rated. Rate every area for an overall score.', { n: score.rated, m: score.of })),
+            score.complete && h('div', { 'data-checklist-score': 'audit', className: 'rounded-xl border-2 p-5', style: { background: grade.bg, borderColor: grade.color } },
                 h('div', { className: 'flex items-center justify-between' },
                     h('div', null,
                         h('div', { className: 'text-xs font-bold uppercase', style: { color: grade.color } }, tt('behavior_lens.overall_score', 'Overall Score')),
@@ -5826,7 +6194,7 @@ Provide improvement recommendations and return ONLY valid JSON:
             ),
             // AI recommend
             callGemini && h('button', { onClick: handleRecommend,
-                disabled: loading || Object.keys(ratings).length < 3, 'aria-busy': loading,
+                disabled: loading || score.rated < 3, 'aria-busy': loading,
                 className: 'w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
             }, loading ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.audit.recommend', 'AI Recommend Improvements')))),
             // Recommendations
@@ -5849,6 +6217,29 @@ Provide improvement recommendations and return ONLY valid JSON:
 
     // ─── TriangulationCheck ─────────────────────────────────────────────
     // Cross-references ABC data, observation sessions, and AI analysis
+    // One observation session as a line for an AI prompt. Triangulation sent
+    // `count=${s.data?.count || 'N/A'}`: a measured ZERO read "N/A" and interval or
+    // duration sessions (no data.count) read "N/A" too; and it sent the first five
+    // stored sessions, not the latest.
+    function observationSessionLine(sess) {
+        const d = (sess && sess.data) || {};
+        const when = sess && sess.timestamp ? blLocalDateKey(sess.timestamp) : 'undated';
+        const over = Number(sess && sess.duration) > 0 ? ' over ' + fmtDuration(sess.duration) : '';
+        const num = v => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? null : Number(v);
+        switch (sess && sess.method) {
+            case 'frequency': {
+                const total = num(d.totalCount) != null ? num(d.totalCount) : Array.isArray(d.counters) ? d.counters.reduce((a, c) => a + (num(c && c.count) || 0), 0) : num(d.count);
+                return when + ': frequency count, ' + (total == null ? 'count not recorded' : total + ' occurrences') + over;
+            }
+            case 'interval': return when + ': interval recording, ' + (num(d.occurredCount) || 0) + ' of ' + (num(d.completedCount) != null ? num(d.completedCount) : num(d.totalIntervals) || 0) + ' intervals with the behavior' + over;
+            case 'duration': return when + ': duration, ' + (num(d.totalDuration) || 0) + ' s in total' + over;
+            case 'latency': return when + ': latency, ' + (num(d.latencySeconds) != null ? num(d.latencySeconds) + ' s' : 'not recorded') + over;
+            default: return when + ': ' + ((sess && sess.method) || 'observation') + (num(d.count) != null ? ', count ' + num(d.count) : '') + over;
+        }
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensTriangulation = Object.freeze({ observationSessionLine });
+
     const TriangulationCheck = ({ abcEntries, observationSessions, aiAnalysis, studentName, callGemini, t, addToast }) => {
         const [analysis, setAnalysis] = useState(null);
         const [loading, setLoading] = useState(false);
@@ -5858,19 +6249,20 @@ Provide improvement recommendations and return ONLY valid JSON:
             { key: 'obs', label: (tt('behavior_lens.raw.observations', 'Observations')), icon: '🔍', count: observationSessions.length, color: '#10b981' },
             { key: 'ai', label: (tt('behavior_lens.raw.ai_analysis', 'AI Analysis')), icon: '🧠', count: aiAnalysis ? 1 : 0, color: '#8b5cf6' },
         ];
-        const totalSources = sources.filter(s => s.count > 0).length;
+        // The AI analysis is worked out FROM the ABC data, so it is not an independent source:
+        // "3/3 sources" could rest on one source agreeing with itself.
+        const totalSources = sources.filter(s => s.key !== 'ai' && s.count > 0).length;
 
         const handleAnalyze = async () => {
             if (!callGemini) return;
             setLoading(true);
             try {
-                const abcSummary = abcEntries.slice(0, 10).map((e, i) =>
+                const abcSummary = abcEntriesNewestFirst(abcEntries).slice(0, 10).map((e, i) =>
                     `#${i + 1}: A="${e.antecedent}", B="${e.behavior}", C="${e.consequence}"`
                 ).join('\n');
-                const obsSummary = observationSessions.slice(0, 5).map((s, i) =>
-                    `#${i + 1}: method=${s.method}, count=${s.data?.count || 'N/A'}, duration=${fmtDuration(s.duration)}`
-                ).join('\n');
-                const aiSummary = aiAnalysis ? `Function: ${aiAnalysis.hypothesizedFunction}, Confidence: ${aiAnalysis.confidence}%, Summary: ${aiAnalysis.summary || ''}` : 'No AI analysis yet';
+                const latestObs = observationSessions.slice().sort((a, b) => (Date.parse(b && b.timestamp) || 0) - (Date.parse(a && a.timestamp) || 0)).slice(0, 5);
+                const obsSummary = latestObs.map((s, i) => `#${i + 1}: ${observationSessionLine(s)}`).join('\n');
+                const aiSummary = aiAnalysis ? `Function: ${aiAnalysis.hypothesizedFunction}, Confidence: ${aiAnalysis.confidence == null ? 'not given' : aiAnalysis.confidence + '%'}, Summary: ${aiAnalysis.summary || ''}` : 'No AI analysis yet';
 
                 const prompt = `You are a BCBA performing data triangulation for a student.
 ${RESTORATIVE_PREAMBLE}
@@ -5881,7 +6273,7 @@ ${abcSummary || 'No entries'}
 SOURCE 2 — OBSERVATIONS (${observationSessions.length} sessions):
 ${obsSummary || 'No sessions'}
 
-SOURCE 3 — AI ANALYSIS:
+EARLIER AI ANALYSIS (worked out from the ABC data above, so NOT an independent source; do not count its agreement with the ABC data as convergence):
 ${aiSummary}
 
 Analyze data convergence and return ONLY valid JSON:
@@ -5932,7 +6324,7 @@ Analyze data convergence and return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'mt-3 text-center text-xs text-slate-600' },
-                    `${totalSources}/3 data sources available`
+                    tt('behavior_lens.triangulation.sources', '{n} of 2 independent data sources available. The AI analysis is worked out from the ABC data, so it does not count as a third.', { n: totalSources })
                 )
             ),
             // Analyze button
@@ -6074,6 +6466,32 @@ Provide a brief impact interpretation and return ONLY valid JSON:
 
     // ─── CrisisIntervention ─────────────────────────────────────────────
     // 3-tier emergency protocol with persistence + structured contacts
+    // Crisis plan AI draft. It asked the model for emergency contacts (example phone
+    // "555-0000") and REPLACED the contacts staff had entered, with no question asked,
+    // while removing one contact by hand needs a confirmation. It also overwrote typed
+    // plan text, and the old "Last reviewed" date then sat on text nobody had read.
+    // Now the AI never touches contacts, fills empty fields only unless staff agree to
+    // replace, and the plan reads as an unreviewed draft until Save Plan.
+    const CRISIS_TIERS = ['prevention', 'deescalation', 'emergency'];
+    const CRISIS_FIELDS = ['triggers', 'staffActions', 'communication'];
+    function crisisPlanHasText(plan) {
+        return CRISIS_TIERS.some(tier => CRISIS_FIELDS.some(f => String((plan && plan[tier] && plan[tier][f]) || '').trim()));
+    }
+    function mergeCrisisDraft(plan, draft, replace) {
+        const out = {};
+        CRISIS_TIERS.forEach(tier => {
+            out[tier] = {};
+            CRISIS_FIELDS.forEach(f => {
+                const mine = String((plan && plan[tier] && plan[tier][f]) || '');
+                const theirs = draft && draft[tier] && typeof draft[tier][f] === 'string' ? draft[tier][f] : '';
+                out[tier][f] = replace || !mine.trim() ? (theirs || mine) : mine;
+            });
+        });
+        return out;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensCrisis = Object.freeze({ crisisPlanHasText, mergeCrisisDraft });
+
     const CrisisIntervention = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const tiers = [
             { key: 'prevention', label: (tt('behavior_lens.raw.prevention', 'Prevention')), icon: '🛡️', color: '#22c55e', bg: '#f0fdf4' },
@@ -6084,10 +6502,12 @@ Provide a brief impact interpretation and return ONLY valid JSON:
         const [plan, setPlan] = useDurableToolState('crisisPlan', emptyPlan);
         const [contacts, setContacts] = useDurableToolState('crisisContacts', [{ id: 'initial-contact', name: '', role: '', phone: '' }]);
         const [lastReviewed, setLastReviewed] = useDurableToolState('crisisLastReviewed', null);
+        const [draftedAt, setDraftedAt] = useDurableToolState('crisisDraftedAt', null);
         const [drafting, setDrafting] = useState(false);
 
         const savePlan = () => {
             setLastReviewed(new Date().toISOString());
+            setDraftedAt(null);
             if (addToast) addToast(tt('behavior_lens.toast.crisis_plan_saved', 'Crisis plan saved'), 'success');
         };
 
@@ -6098,15 +6518,19 @@ Provide a brief impact interpretation and return ONLY valid JSON:
             // Confirm + toast on every removal.
             const c = contacts[i] || {};
             const label = c.name || c.role || `contact #${i + 1}`;
-            const msg = (t && t('behavior_lens.confirm.remove_contact')) || `Remove "${label}" from the crisis plan? This can't be undone.`;
+            const msg = tt('behavior_lens.confirm.remove_contact_v2', 'Remove "{label}" from the crisis plan? This can\'t be undone.', { label });
             if (!await askBehaviorLensConfirmation(msg, { title: 'Remove crisis contact', confirmText: 'Remove contact' })) return;
             setContacts(prev => prev.filter((_, idx) => idx !== i));
-            if (addToast) addToast(t('behavior_lens.toast.contact_removed') || `Removed "${label}"`, 'info');
+            if (addToast) addToast(tt('behavior_lens.toast.contact_removed_v2', 'Removed "{label}"', { label }), 'info');
         };
         const updateContact = (i, field, val) => setContacts(prev => prev.map((c, idx) => idx === i ? { ...c, [field]: val } : c));
 
         const handleDraft = async () => {
             if (!callGemini) return;
+            let replace = false;
+            if (crisisPlanHasText(plan)) {
+                replace = await askBehaviorLensConfirmation(tt('behavior_lens.crisis.replace_confirm', 'This plan already has text. Replace it with the AI draft? Choose Keep to fill only the empty boxes. Contacts are never changed.'), { title: 'AI draft', confirmText: 'Replace my text', cancelText: 'Keep my text' });
+            }
             setDrafting(true);
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
@@ -6132,20 +6556,16 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
   "emergency": {
     "triggers": "when to activate emergency protocol",
     "staffActions": "immediate safety steps",
-    "communication": "who to notify and how"
-  },
-  "emergencyContacts": [{"name":"Name","role":"Role","phone":"555-0000"}]
+    "communication": "who to notify and how, by role (e.g. the administrator on duty); never invent names or phone numbers"
+  }
 }`;
                 const result = await callGemini(prompt, true);
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                setPlan({ prevention: parsed.prevention || {}, deescalation: parsed.deescalation || {}, emergency: parsed.emergency || {} });
-                if (parsed.emergencyContacts) {
-                    if (Array.isArray(parsed.emergencyContacts)) setContacts(parsed.emergencyContacts);
-                    else setContacts([{ id: uid(), name: String(parsed.emergencyContacts), role: '', phone: '' }]);
-                }
+                setPlan(prev => mergeCrisisDraft(prev, parsed, replace));
+                setDraftedAt(new Date().toISOString());
                 if (addToast) addToast(tt('behavior_lens.toast.crisis_plan_drafted', 'Crisis plan drafted ✨'), 'success');
             } catch (err) {
                 warnLog('Crisis plan failed:', err);
@@ -6173,7 +6593,9 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
                     tt('behavior_lens.crisis.disclaimer', '⚠️ Planning aid for education — not a substitute for your district\'s crisis protocol or certified crisis-response training (e.g., CPI / Mandt / NCI). It does NOT authorize restraint or seclusion; physical-management decisions belong to trained, authorized staff. Have a qualified professional review this plan and follow district policy in any real emergency.'))
             ),
             // Last reviewed badge
-            lastReviewed && h('div', { className: 'flex items-center gap-2 text-xs text-slate-600' },
+            draftedAt && h('p', { role: 'status', 'data-crisis-draft': 'true', className: 'text-xs font-bold text-amber-900 bg-amber-100 border border-amber-400 rounded-lg px-3 py-2' },
+                tt('behavior_lens.crisis.unreviewed', 'AI draft, not reviewed yet. Read and correct every box, then press Save Plan.')),
+            lastReviewed && !draftedAt && h('div', { className: 'flex items-center gap-2 text-xs text-slate-600' },
                 h('span', null, '🕐'),
                 h('span', null, `Last reviewed: ${fmtDate(lastReviewed)} at ${fmtTime(lastReviewed)}`)
             ),
@@ -6220,7 +6642,7 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
                                 h('input', { type: 'text', value: c.name || '', onChange: (e) => updateContact(i, 'name', e.target.value), placeholder: (tt('behavior_lens.raw.name', 'Name')), 'aria-label': 'Contact name', maxLength: 80, className: 'flex-1 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
                                 h('input', { type: 'text', value: c.role || '', onChange: (e) => updateContact(i, 'role', e.target.value), placeholder: (tt('behavior_lens.raw.role', 'Role')), 'aria-label': 'Contact role', maxLength: 60, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
                                 h('input', { type: 'text', value: c.phone || '', onChange: (e) => updateContact(i, 'phone', e.target.value), placeholder: (tt('behavior_lens.raw.phone', 'Phone')), 'aria-label': 'Contact phone', maxLength: 20, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
-                                contacts.length > 1 && h('button', { onClick: () => removeContact(i), title: 'Remove contact', 'aria-label': 'Remove contact', className: 'text-red-600 hover:text-red-500 text-sm', title: (tt('behavior_lens.raw.remove', 'Remove')) }, '✕')
+                                contacts.length > 1 && h('button', { onClick: () => removeContact(i), 'aria-label': 'Remove contact' + (c.name || c.role ? ': ' + (c.name || c.role) : ''), className: 'text-red-600 hover:text-red-500 text-sm', title: (tt('behavior_lens.raw.remove', 'Remove')) }, '✕')
                             )
                         )
                     )
@@ -6236,8 +6658,24 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
 
     // ─── TrafficLightVisual ─────────────────────────────────────────────
     // Student-facing red/yellow/green behavior zone poster
+    // Traffic-light zones from the AI. Models often return each zone's items as a LIST;
+    // the poster called .split on it and crashed. A reply missing a zone wiped it.
+    const TRAFFIC_ZONES = ['green', 'yellow', 'red'];
+    function normalizeTrafficZones(current, parsed) {
+        const out = {};
+        TRAFFIC_ZONES.forEach(key => {
+            const zone = parsed && typeof parsed === 'object' ? parsed[key] : null;
+            const prev = (current && current[key]) || { title: '', items: '' };
+            if (!zone || typeof zone !== 'object') { out[key] = prev; return; }
+            const items = Array.isArray(zone.items) ? zone.items.map(v => String(v).trim()).filter(Boolean).join('; ') : typeof zone.items === 'string' ? zone.items : prev.items;
+            out[key] = { title: typeof zone.title === 'string' && zone.title.trim() ? zone.title : prev.title, items };
+        });
+        return out;
+    }
+    window.AlloModules.BehaviorLensTrafficLight = Object.freeze({ normalizeTrafficZones });
+
     const TrafficLightVisual = ({ studentName, aiAnalysis, callGemini, t, addToast }) => {
-        const [zones, setZones] = useState({
+        const [zones, setZones] = useDurableToolState('trafficLightZones', {
             green: { title: (tt('behavior_lens.raw.ready_to_learn', 'Ready to Learn')), items: 'Sitting in seat; Eyes on teacher; Raising hand; Following directions' },
             yellow: { title: (tt('behavior_lens.raw.slow_down', 'Slow Down')), items: 'Feeling frustrated; Getting distracted; Talking out of turn; Need a break' },
             red: { title: (tt('behavior_lens.raw.stop_get_help', 'Stop & Get Help')), items: 'Feeling very upset; Wanting to leave; Cannot focus; Need adult support' },
@@ -6266,7 +6704,7 @@ Create student-friendly language and return ONLY valid JSON:
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                setZones(parsed);
+                setZones(prev => normalizeTrafficZones(prev, parsed));
                 if (addToast) addToast(tt('behavior_lens.toast.traffic_light_generated', 'Traffic light generated ✨'), 'success');
             } catch (err) {
                 warnLog('Traffic light failed:', err);
@@ -6275,9 +6713,9 @@ Create student-friendly language and return ONLY valid JSON:
         };
 
         const zoneConfig = [
-            { key: 'green', emoji: '🟢', color: '#22c55e', bg: '#f0fdf4', border: '#86efac' },
-            { key: 'yellow', emoji: '🟡', color: '#eab308', bg: '#fefce8', border: '#fde68a' },
-            { key: 'red', emoji: '🔴', color: '#ef4444', bg: '#fef2f2', border: '#fca5a5' },
+            { key: 'green', name: 'Green', emoji: '🟢', color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
+            { key: 'yellow', name: 'Yellow', emoji: '🟡', color: '#a16207', bg: '#fefce8', border: '#fde68a' },
+            { key: 'red', name: 'Red', emoji: '🔴', color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' },
         ];
 
         return h('div', { className: 'max-w-md mx-auto space-y-4' },
@@ -6301,7 +6739,7 @@ Create student-friendly language and return ONLY valid JSON:
                                     value: zone.title || '',
                                     onChange: (e) => setZones(prev => ({ ...prev, [z.key]: { ...prev[z.key], title: e.target.value } })),
                                     className: 'flex-1 bg-transparent font-black text-lg outline-none focus:ring-2 focus:ring-indigo-300 rounded',
-                                    'aria-label': 'Zone title',
+                                    'aria-label': z.name + ' zone title',
                                     style: { color: z.color }
                                 })
                             ),
@@ -6316,7 +6754,7 @@ Create student-friendly language and return ONLY valid JSON:
                                 value: zone.items || '',
                                 onChange: (e) => setZones(prev => ({ ...prev, [z.key]: { ...prev[z.key], items: e.target.value } })),
                                 placeholder: tt('behavior_lens.ph.items_separated_by_semicolons', 'Items separated by semicolons'),
-                                'aria-label': 'Zone items separated by semicolons',
+                                'aria-label': z.name + ' zone items, separated by semicolons',
                                 rows: 1,
                                 className: 'w-full mt-2 bg-white/50 rounded-lg px-3 py-1.5 text-xs border border-transparent focus:border-slate-200 focus:ring-2 focus:ring-slate-300 outline-none resize-none print:hidden'
                             })
@@ -6560,9 +6998,9 @@ Return ONLY valid JSON:
             try {
                 const prompt = `Translate the following home note to ${translateLang.trim()}. Maintain the same tone, formatting, and professionalism. Return ONLY the translated text, no explanations:\n\n${note}`;
                 setPreAiNote(note);
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setNote(result);
-                if (addToast) addToast(t('behavior_lens.toast.translated_to_n') || `Translated to ${translateLang.trim()} ✨`, 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.translated_to_n_v2', 'Translated to {v1} ✨', { v1: translateLang.trim() }), 'success');
                 setTranslateLang('');
             } catch (err) {
                 warnLog('Translation failed:', err);
@@ -6581,7 +7019,7 @@ Return ONLY valid JSON:
             setGenerating(true);
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
-                const recentEntries = abcEntries.slice(-5).map(e =>
+                const recentEntries = abcEntriesNewestFirst(abcEntries).slice(0, 5).map(e =>
                     `B: ${e.behavior}, A: ${e.antecedent}, C: ${e.consequence}`
                 ).join('\n');
                 const prompt = `You are a special education teacher writing a home note to a parent/guardian.
@@ -6597,7 +7035,7 @@ Write a home note using the positive sandwich approach (positive → concern →
 Use ${tone === 'friendly' ? 'warm, encouraging' : tone === 'formal' ? 'professional, structured' : 'brief, concise'} language.
 Do NOT use the student codename in the note — use "your child" or "your student" instead.
 Return the note as plain text (no JSON). Include date placeholder and signature line.`;
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setNote(result);
                 if (addToast) addToast(tt('behavior_lens.toast.home_note_generated', 'Home note generated ✨'), 'success');
             } catch (err) {
@@ -6612,8 +7050,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📝 ' + (tt('behavior_lens.homenote.title', 'Home Note Generator'))),
                 h('div', { className: 'grid grid-cols-3 gap-2' },
                     tones.map(tn =>
-                        h('button', { "aria-label": "Toggle tone",
-                            key: tn.id,
+                        h('button', { key: tn.id,
                             onClick: () => setTone(tn.id),
                             className: `p-3 rounded-xl border-2 text-center transition-all ${tone === tn.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-100 hover:border-slate-200'}`
                         },
@@ -6646,8 +7083,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
                     h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
                     // Translate — free-text language input
                     callGemini && h('div', { 'aria-expanded': String(showTranslate), className: 'relative' },
-                        h('button', { 'aria-expanded': String(showTranslate), "aria-label": "Toggle show translate",
-                            onClick: () => setShowTranslate(!showTranslate),
+                        h('button', { 'aria-expanded': String(showTranslate), onClick: () => setShowTranslate(!showTranslate),
                             disabled: translating,
                             className: 'px-4 py-2 bg-blue-50 text-blue-700 border border-blue-600 rounded-lg text-sm font-bold hover:bg-blue-100 transition-all'
                         }, translating ? '⏳ Translating...' : '🌐 Translate'),
@@ -6686,7 +7122,8 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
     const FidelityChecklist = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const [items, setItems] = useDurableToolState('fidelityItems', []);
         const [generating, setGenerating] = useState(false);
-        const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+        // Local calendar days: the UTC day put a US evening entry under tomorrow.
+        const [date, setDate] = useState(blLocalDateKey(new Date()));
         const [history, setHistory] = useDurableToolState('fidelityHistory', {});
         const [checks, setChecks] = useState({});
 
@@ -6695,14 +7132,16 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
         }, [history, date]);
 
         const totalItems = items.length;
-        const checkedCount = Object.values(checks).filter(Boolean).length;
+        // Only ticks on CURRENT items count. A day saved with a longer list left ticks
+        // past the end, which scored 8/6 = 133%.
+        const checkedCount = items.filter((_, i) => !!checks[i]).length;
         const pct = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
         const saveToday = () => {
             if (items.length === 0) { if (addToast) addToast(tt('behavior_lens.toast.generate_a_checklist_first', 'Generate a checklist first'), 'error'); return; }
             const updated = { ...history, [date]: { checks: { ...checks }, score: checkedCount, total: totalItems, pct } };
             setHistory(updated);
-            if (addToast) addToast(t('behavior_lens.toast.fidelity_saved_for_n') || `Fidelity saved for ${date} ✅`, 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.fidelity_saved_for_n_v2', 'Fidelity saved for {date} ✅', { date }), 'success');
         };
 
         const clearChecks = () => { setChecks({}); };
@@ -6718,7 +7157,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
             const days = [];
             for (let i = 6; i >= 0; i--) {
                 const d = new Date(); d.setDate(d.getDate() - i);
-                const ds = d.toISOString().slice(0, 10);
+                const ds = blLocalDateKey(d);
                 const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2);
                 const dayNum = d.getDate();
                 days.push({ ds, dayLabel, dayNum, data: history[ds] || null });
@@ -6899,9 +7338,10 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
         const [aiRecs, setAiRecs] = useState(null);
         const [loading, setLoading] = useState(false);
 
-        const total = useMemo(() => Object.values(ratings).reduce((s, v) => s + v, 0), [ratings]);
-        const maxScore = questions.length * 5;
-        const pct = maxScore > 0 ? Math.round((total / maxScore) * 100) : 0;
+        const score = ratedChecklistScore(questions.map(q => q.id), ratings);
+        const total = score.total;
+        const maxScore = score.max;
+        const pct = score.pct == null ? 0 : score.pct;
         const verdict = pct >= 80 ? { label: (tt('behavior_lens.raw.feasible', 'Feasible')), color: '#22c55e', bg: '#f0fdf4' } :
             pct >= 50 ? { label: (tt('behavior_lens.raw.needs_modification', 'Needs Modification')), color: '#f59e0b', bg: '#fefce8' } :
                 { label: (tt('behavior_lens.raw.not_feasible', 'Not Feasible')), color: '#ef4444', bg: '#fef2f2' };
@@ -6910,17 +7350,17 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
             if (!callGemini) return;
             setLoading(true);
             try {
-                const lowItems = questions.filter(q => (ratings[q.id] || 0) <= 2).map(q => q.label).join(', ');
+                const lines = ratedChecklistPromptLines(questions, score);
                 const prompt = `You are a behavior consultant reviewing a BIP feasibility assessment.
 ${RESTORATIVE_PREAMBLE}
 
-Total: ${total}/${maxScore} (${pct}%)
-Low areas: ${lowItems || 'None'}
-Ratings: ${questions.map(q => `${q.label}: ${ratings[q.id] || 0}/5`).join(', ')}
+Areas rated: ${score.rated} of ${score.of}${score.complete ? ` (total ${total}/${maxScore}, ${pct}%)` : '. Do not treat unrated areas as low.'}
+Low areas: ${lines.low || 'None'}
+Ratings: ${lines.ratings}
 
 Provide recommendations to improve feasibility. Return ONLY valid JSON:
 {
-  "verdict": "${verdict.label}",
+  "verdict": "${score.complete ? verdict.label : 'Not all areas rated'}",
   "summary": "1-2 sentence assessment",
   "recommendations": ["rec 1", "rec 2", "rec 3"]
 }`;
@@ -6940,7 +7380,7 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-1' }, '⚖️ ' + (tt('behavior_lens.feasibility.title', 'Contextual Fit Assessment'))),
-                h('p', { className: 'text-[11px] text-slate-600 mb-4' }, tt('behavior_lens.ui.based_on_horner_salentine_albin_2003', 'Based on Horner, Salentine, & Albin (2003)')),
+                h('p', { className: 'text-[11px] text-slate-600 mb-4', 'data-feasibility-source': 'true' }, tt('behavior_lens.feasibility.source_note', 'Areas adapted from the Self-Assessment of Contextual Fit in Schools (Horner, Salentine & Albin, 2003). This 5-item version is not that instrument, and its 80% and 50% bands are a rough guide, not published cutoffs.')),
                 h('div', { className: 'space-y-3' },
                     questions.map(q =>
                         h('div', { key: q.id },
@@ -6951,7 +7391,7 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
                                 ),
                                 h('div', { className: 'flex gap-0.5 shrink-0' },
                                     [1, 2, 3, 4, 5].map(v =>
-                                        h('button', { "aria-label": "Toggle ratings",
+                                        h('button', { 'aria-label': `${q.label}: ${v} of 5`, 'aria-pressed': ratings[q.id] === v ? 'true' : 'false',
                                             key: v,
                                             onClick: () => setRatings(prev => ({ ...prev, [q.id]: prev[q.id] === v ? 0 : v })),
                                             className: `w-7 h-7 rounded-md text-xs font-bold transition-all ${(ratings[q.id] || 0) >= v ?
@@ -6966,14 +7406,16 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
                 )
             ),
             // Score
-            Object.keys(ratings).length > 0 && h('div', { className: 'rounded-xl border-2 p-4 text-center', style: { background: verdict.bg, borderColor: verdict.color } },
+            score.rated > 0 && !score.complete && h('p', { role: 'status', 'data-checklist-progress': 'feasibility', className: 'text-xs text-slate-600 text-center' },
+                tt('behavior_lens.checklist.rate_all', '{n} of {m} areas rated. Rate every area for an overall score.', { n: score.rated, m: score.of })),
+            score.complete && h('div', { 'data-checklist-score': 'feasibility', className: 'rounded-xl border-2 p-4 text-center', style: { background: verdict.bg, borderColor: verdict.color } },
                 h('div', { className: 'text-xs font-bold uppercase', style: { color: verdict.color } }, tt('behavior_lens.contextual_fit', 'Contextual Fit')),
                 h('div', { className: 'text-3xl font-black', style: { color: verdict.color } }, `${total}/${maxScore}`),
                 h('div', { className: 'text-xs font-bold px-2 py-0.5 rounded-full text-white inline-block mt-1', style: { background: verdict.color } }, verdict.label)
             ),
             // AI recommend
             callGemini && h('button', { onClick: handleRecommend,
-                disabled: loading || Object.keys(ratings).length < 3, 'aria-busy': loading,
+                disabled: loading || score.rated < 3, 'aria-busy': loading,
                 className: 'w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
             }, loading ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.feasibility.recommend', 'AI Recommendations')))),
             aiRecs && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-5 animate-in slide-in-from-bottom-4 duration-300' },
@@ -7080,7 +7522,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                                         value: descriptors[String(lv.score)] || '',
                                         onChange: (e) => setDescriptors(prev => ({ ...prev, [String(lv.score)]: e.target.value })),
                                         className: 'w-full bg-transparent outline-none focus:ring-2 focus:ring-indigo-300 rounded text-sm',
-                                        'aria-label': 'Rating descriptor',
+                                        'aria-label': 'Descriptor for ' + (lv.score > 0 ? '+' + lv.score : lv.score) + ', ' + lv.label,
                                         placeholder: tt('behavior_lens.ph.enter_descriptor', 'Enter descriptor...')
                                     })
                                 )
@@ -7319,10 +7761,30 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
 
     // ─── HomeBehaviorLog ────────────────────────────────────────────────
     // Simplified ABC logging designed for parents/family context
+    // A home-log entry as an ABC record. "Push to ABC" used the time the parent SAVED the
+    // entry as the time the behavior happened (a 7:30 am morning-routine incident logged
+    // at 9 pm counted at 21:00, and a Monday incident logged Tuesday counted Tuesday),
+    // wrote "Parent response recorded" as the consequence when the parent recorded no
+    // response, and skipped normalization (no local day or time zone). Entries now carry
+    // when it happened; older ones say their time is when they were logged.
+    function homeLogToAbc(e) {
+        const when = e.occurredAt || e.timestamp;
+        const loggedTimeOnly = !e.occurredAt;
+        const notes = ['[Home Log]', e.mood ? 'Mood: ' + e.mood : '', e.notes || '', loggedTimeOnly ? '(time shown is when this was logged, not when it happened)' : ''].filter(Boolean).join(' ');
+        const normalized = getBehaviorLensWorkspaceRuntime().normalizeAbcEntry({
+            id: 'home_' + e.id, occurredAt: when, recordedAt: e.timestamp, timezoneOffset: e.timezoneOffset,
+            antecedent: e.context || 'Home setting', behavior: e.behavior, consequence: e.response || '',
+            intensity: null, duration: null, notes, setting: 'Home'
+        });
+        return normalized && normalized.entry ? Object.assign({}, normalized.entry, { id: 'home_' + e.id }) : null;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensHomeLog = Object.freeze({ homeLogToAbc });
+
     const HomeBehaviorLog = ({ studentName, studentKey, t, addToast, callGemini, setAbcEntries }) => {
         const [entries, setEntries] = useDurableToolState('homeLog', []);
         const [showForm, setShowForm] = useState(false);
-        const [newEntry, setNewEntry] = useState({ context: '', behavior: '', response: '', notes: '', mood: '' });
+        const [newEntry, setNewEntry] = useState({ context: '', behavior: '', response: '', notes: '', mood: '', occurredAt: '' });
         const [aiPatternLoading, setAiPatternLoading] = useState(false);
         const [aiPatternResult, setAiPatternResult] = useState('');
 
@@ -7346,9 +7808,13 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
 
         const saveEntry = () => {
             if (!newEntry.behavior.trim()) return;
-            const entry = { ...newEntry, id: uid(), timestamp: new Date().toISOString() };
+            const now = new Date();
+            // datetime-local is the parent's local clock; blank means "just now".
+            const happened = newEntry.occurredAt ? new Date(newEntry.occurredAt) : now;
+            const occurredAt = isNaN(happened) || happened > now ? now.toISOString() : happened.toISOString();
+            const entry = { ...newEntry, id: uid(), timestamp: now.toISOString(), occurredAt, timezoneOffset: now.getTimezoneOffset() };
             setEntries(previous => [entry, ...previous].slice(0, 250));
-            setNewEntry({ context: '', behavior: '', response: '', notes: '', mood: '' });
+            setNewEntry({ context: '', behavior: '', response: '', notes: '', mood: '', occurredAt: '' });
             setShowForm(false);
             if (addToast) addToast(tt('behavior_lens.toast.entry_saved', 'Entry saved ✅'), 'success');
         };
@@ -7413,23 +7879,12 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             ),
             // Action buttons row
             h('div', { 'aria-expanded': String(showForm), className: 'flex gap-2 flex-wrap' },
-                h('button', { 'aria-expanded': String(showForm), "aria-label": "Toggle show form",
-                    onClick: () => setShowForm(!showForm),
+                h('button', { 'aria-expanded': String(showForm), onClick: () => setShowForm(!showForm),
                     className: 'flex-1 py-3 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm'
                 }, showForm ? '▾ Close Form' : '➕ Log a Behavior'),
                 // Enhancement #3: Push home log entries into the main ABC data stream
                 setAbcEntries && entries.length > 0 && h('button', { onClick: () => {
-                        const newAbcEntries = entries.map(e => ({
-                            id: `home_${e.id}`,
-                            timestamp: e.timestamp,
-                            antecedent: e.context || 'Home setting',
-                            behavior: e.behavior,
-                            consequence: e.response || 'Parent response recorded',
-                            intensity: null,
-                            duration: null,
-                            notes: `[Home Log] ${e.mood ? `Mood: ${e.mood}` : ''} ${e.notes || ''}`.trim(),
-                            setting: 'Home',
-                        }));
+                        const newAbcEntries = entries.map(homeLogToAbc).filter(Boolean);
                         setAbcEntries(prev => {
                             const existingIds = new Set(prev.map(p => p.id));
                             const fresh = newAbcEntries.filter(n => !existingIds.has(n.id));
@@ -7463,7 +7918,7 @@ Provide a brief analysis (3-5 bullet points) covering:
 - Patterns in mood and behavior
 - Which responses seem most effective
 - 1-2 practical suggestions for the family`;
-                            const result = await callGemini(prompt, true);
+                            const result = await callGemini(prompt, false);
                             setAiPatternResult(result);
                             if (addToast) addToast(tt('behavior_lens.toast.pattern_analysis_complete', 'Pattern analysis complete ✨'), 'success');
                         } catch (err) {
@@ -7479,7 +7934,7 @@ Provide a brief analysis (3-5 bullet points) covering:
             aiPatternResult && h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-4' },
                 h('div', { className: 'flex justify-between items-start mb-2' },
                     h('h4', { className: 'text-xs font-black text-purple-700 uppercase' }, '🧠 AI Pattern Analysis'),
-                    h('button', { "aria-label": "Toggle ai pattern result", onClick: () => setAiPatternResult(''), className: 'text-purple-700 hover:text-purple-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
+                    h('button', { onClick: () => setAiPatternResult(''), className: 'text-purple-700 hover:text-purple-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
                 ),
                 h('div', { className: 'text-xs text-purple-800 whitespace-pre-wrap leading-relaxed' }, aiPatternResult)
             ),
@@ -7490,7 +7945,7 @@ Provide a brief analysis (3-5 bullet points) covering:
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🎭 How was the day overall?'),
                     h('div', { className: 'flex gap-2' },
                         homeMoods.map(m =>
-                            h('button', { "aria-label": "Toggle new entry",
+                            h('button', { 'aria-pressed': newEntry.mood === m.emoji ? 'true' : 'false',
                                 key: m.emoji,
                                 onClick: () => setNewEntry(p => ({ ...p, mood: m.emoji })),
                                 className: `flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all ${newEntry.mood === m.emoji
@@ -7504,13 +7959,19 @@ Provide a brief analysis (3-5 bullet points) covering:
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '📍 When did it happen?'),
                     h('div', { className: 'flex flex-wrap gap-1.5' },
                         homeContexts.map(ctx =>
-                            h('button', { "aria-label": "Toggle new entry",
+                            h('button', { 'aria-pressed': newEntry.context === ctx ? 'true' : 'false',
                                 key: ctx,
                                 onClick: () => setNewEntry(p => ({ ...p, context: ctx })),
                                 className: `px-3 py-1.5 rounded-full text-xs font-bold transition-all ${newEntry.context === ctx ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                             }, ctx)
                         )
                     )
+                ),
+                h('div', null,
+                    h('label', { htmlFor: 'bl-homelog-when', className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🕒 ' + tt('behavior_lens.homelog.when', 'When did it happen?')),
+                    h('input', { id: 'bl-homelog-when', type: 'datetime-local', value: newEntry.occurredAt || '', onChange: (e) => setNewEntry(p => ({ ...p, occurredAt: e.target.value })),
+                        className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none' }),
+                    h('p', { className: 'text-[11px] text-slate-600 mt-1' }, tt('behavior_lens.homelog.when_hint', 'Leave blank if it just happened.'))
                 ),
                 h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '👀 What happened? (behavior)'),
@@ -7527,7 +7988,7 @@ Provide a brief analysis (3-5 bullet points) covering:
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '💬 What did you do? (response)'),
                     h('div', { className: 'flex flex-wrap gap-1.5' },
                         homeResponses.map(r =>
-                            h('button', { "aria-label": "Toggle new entry",
+                            h('button', { 'aria-pressed': newEntry.response === r ? 'true' : 'false',
                                 key: r,
                                 onClick: () => setNewEntry(p => ({ ...p, response: r })),
                                 className: `px-3 py-1.5 rounded-full text-xs font-bold transition-all ${newEntry.response === r ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
@@ -7592,7 +8053,7 @@ Provide a brief analysis (3-5 bullet points) covering:
             setGenerating(true);
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
-                const recentABC = abcEntries.slice(-5).map(e => `B: ${e.behavior}`).join('; ');
+                const recentABC = abcEntriesNewestFirst(abcEntries).slice(0, 5).map(e => `B: ${e.behavior}`).join('; ');
                 const prompt = `You are a BCBA creating a pocket-sized BIP reference card.
 ${RESTORATIVE_PREAMBLE}
 
@@ -7875,8 +8336,7 @@ Respond only with the student's words:`;
                     h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🎭 ' + (tt('behavior_lens.counseling.choose_scenario', 'Choose a Scenario'))),
                     h('div', { className: 'space-y-2' },
                         SCENARIOS.map(s =>
-                            h('button', { "aria-label": "Toggle scenario",
-                                key: s.id,
+                            h('button', { key: s.id,
                                 onClick: () => setScenario(s),
                                 className: `w-full text-start rounded-xl p-4 border-2 transition-all hover:shadow-md ${scenario?.id === s.id ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-transparent bg-slate-50 hover:bg-slate-100'}`,
                             },
@@ -7970,15 +8430,16 @@ Respond only with the student's words:`;
                 ),
                 aiFeedback && h('div', { className: 'bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-xl border border-indigo-200 p-5 shadow-sm space-y-4' },
                     h('div', { className: 'text-center' },
-                        h('div', { className: 'text-3xl font-black text-indigo-600' }, aiFeedback.overall_grade || 'B'),
+                        // A missing grade or score used to show as "B" and "5/10", invented mid marks.
+                        h('div', { className: 'text-3xl font-black text-indigo-600', 'data-cs-grade': aiFeedback.overall_grade || '' }, aiFeedback.overall_grade || '—'),
                         h('div', { className: 'text-[11px] text-indigo-400 font-bold uppercase tracking-wider mt-1' }, 'AI Clinical Supervisor Score'),
                         h('div', { className: 'w-32 mx-auto mt-2 h-2 bg-slate-200 rounded-full overflow-hidden' },
                             h('div', {
                                 className: 'h-full rounded-full transition-all duration-1000 ' + (aiFeedback.overall_score >= 8 ? 'bg-emerald-500' : aiFeedback.overall_score >= 6 ? 'bg-teal-500' : aiFeedback.overall_score >= 4 ? 'bg-amber-500' : 'bg-red-500'),
-                                style: { width: ((aiFeedback.overall_score || 5) * 10) + '%' }
+                                style: { width: (aiScore10(aiFeedback.overall_score) == null ? 0 : aiScore10(aiFeedback.overall_score) * 10) + '%' }
                             })
                         ),
-                        h('div', { className: 'text-[11px] text-slate-600 mt-1' }, (aiFeedback.overall_score || 5) + '/10')
+                        h('div', { className: 'text-[11px] text-slate-600 mt-1', 'data-cs-score': 'overall' }, aiScore10(aiFeedback.overall_score) == null ? 'Not scored' : aiScore10(aiFeedback.overall_score) + '/10')
                     ),
                     h('div', { className: 'grid grid-cols-5 gap-2' },
                         [
@@ -7988,11 +8449,11 @@ Respond only with the student's words:`;
                             { key: 'choice_giving', icon: '🤲', label: 'Choice' },
                             { key: 'rapport', icon: '🤝', label: 'Rapport' },
                         ].map(function(skill) {
-                            var score = aiFeedback[skill.key + '_score'] || 5;
+                            var score = aiScore10(aiFeedback[skill.key + '_score']);
                             var note = aiFeedback[skill.key + '_note'] || '';
                             return h('div', { key: skill.key, className: 'text-center group relative' },
                                 h('div', { className: 'text-lg' }, skill.icon),
-                                h('div', { className: 'text-xs font-black text-slate-700 mt-0.5' }, score + '/10'),
+                                h('div', { className: 'text-xs font-black text-slate-700 mt-0.5', 'data-cs-score': skill.key }, score == null ? '—' : score + '/10'),
                                 h('div', { className: 'text-[11px] text-slate-600' }, skill.label),
                                 note && h('div', { className: 'absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 bg-slate-800 text-white text-[11px] rounded-lg shadow-lg z-10' }, note)
                             );
@@ -8212,7 +8673,7 @@ Respond only with the student's words:`;
         const deleteEntry = async (id) => {
             const e = entries.find(x => x.id === id);
             const when = e && e.timestamp ? fmtDate(e.timestamp) : 'this entry';
-            const msg = (t && t('behavior_lens.confirm.delete_self_check')) || `Delete the self-check from ${when}? This can't be undone.`;
+            const msg = tt('behavior_lens.confirm.delete_self_check_v2', 'Delete the self-check from {when}? This can\'t be undone.', { when });
             if (!await askBehaviorLensConfirmation(msg, { title: 'Delete self-check entry', confirmText: 'Delete entry' })) return;
             setEntries(previous => previous.filter(entry => entry.id !== id));
             if (addToast) addToast(tt('behavior_lens.toast.self_check_deleted', 'Self-check entry deleted'), 'info');
@@ -8257,8 +8718,7 @@ Respond only with the student's words:`;
             ),
             // Add button + AI Analyze
             h('div', { 'aria-expanded': String(showForm), className: 'flex gap-2' },
-                h('button', { 'aria-expanded': String(showForm), "aria-label": "Toggle show form",
-                    onClick: () => setShowForm(!showForm),
+                h('button', { 'aria-expanded': String(showForm), onClick: () => setShowForm(!showForm),
                     className: 'flex-1 py-3 bg-gradient-to-r from-violet-700 to-indigo-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm'
                 }, showForm ? '▾ Close' : '✨ How am I feeling right now?'),
                 callGemini && entries.length >= 2 && h('button', { onClick: async () => {
@@ -8278,7 +8738,7 @@ Provide a brief, warm analysis (3-4 bullet points) that:
 - Celebrates self-awareness growth
 - Suggests 1 strategy they could try
 Keep language warm and age-appropriate.`;
-                            const result = await callGemini(prompt, true);
+                            const result = await callGemini(prompt, false);
                             setAiReflectionResult(result);
                             if (addToast) addToast(tt('behavior_lens.toast.reflection_analysis_ready', 'Reflection analysis ready 🌟'), 'success');
                         } catch (err) {
@@ -8294,7 +8754,7 @@ Keep language warm and age-appropriate.`;
             aiReflectionResult && h('div', { className: 'bg-violet-50 rounded-xl border border-violet-200 p-4' },
                 h('div', { className: 'flex justify-between items-start mb-2' },
                     h('h4', { className: 'text-xs font-black text-violet-700 uppercase' }, '🌟 My Reflection Patterns'),
-                    h('button', { "aria-label": "Toggle ai reflection result", onClick: () => setAiReflectionResult(''), className: 'text-violet-700 hover:text-violet-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
+                    h('button', { onClick: () => setAiReflectionResult(''), className: 'text-violet-700 hover:text-violet-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
                 ),
                 h('div', { className: 'text-xs text-violet-800 whitespace-pre-wrap leading-relaxed' }, aiReflectionResult)
             ),
@@ -8305,8 +8765,7 @@ Keep language warm and age-appropriate.`;
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-2' }, '🎭 Pick your mood'),
                     h('div', { className: 'flex gap-2 justify-center' },
                         MOODS.map(m =>
-                            h('button', { "aria-label": "Toggle mood",
-                                key: m.emoji,
+                            h('button', { key: m.emoji,
                                 onClick: () => setMood(m.emoji),
                                 className: `flex flex-col items-center p-3 rounded-xl border-2 transition-all min-w-[60px] ${mood === m.emoji
                                     ? `${moodColorClass(m.color)} shadow-md scale-110`
@@ -8392,6 +8851,34 @@ Keep language warm and age-appropriate.`;
 
     // ─── SnapshotExchange ────────────────────────────────────────────────
     // Sneakernet JSON export/import for parent-teacher data exchange
+    // Home-log and self-check entries in a snapshot. Export included them, but import
+    // merged only ABC entries and observations, so a family's home log (the main thing
+    // a family sends) and the student's self-checks were DROPPED without a word, and a
+    // family file holding only home-log entries could not be merged at all.
+    const SNAPSHOT_TEXT_FIELDS = { homeLog: ['context', 'behavior', 'response', 'notes', 'mood'], selfCheck: ['mood', 'happening', 'feeling', 'needed', 'nextTime'] };
+    function snapshotSideEntries(kind, incoming, existing, from) {
+        const fields = SNAPSHOT_TEXT_FIELDS[kind];
+        const seen = new Set();
+        (Array.isArray(existing) ? existing : []).forEach(e => { if (e && e.id) seen.add('id:' + e.id); if (e && e.timestamp) seen.add('ts:' + e.timestamp); });
+        const fresh = [];
+        let rejected = 0;
+        (Array.isArray(incoming) ? incoming : []).forEach(e => {
+            const at = e && typeof e.timestamp === 'string' ? Date.parse(e.timestamp) : NaN;
+            if (!e || typeof e !== 'object' || !Number.isFinite(at) || fields.some(f => e[f] != null && typeof e[f] !== 'string')) { rejected += 1; return; }
+            if ((e.id && seen.has('id:' + e.id)) || seen.has('ts:' + e.timestamp)) return;
+            const clean = { id: typeof e.id === 'string' && e.id ? e.id : 'import-' + kind + '-' + at, timestamp: new Date(at).toISOString(), importedFrom: from === 'family' ? 'family' : 'educator' };
+            fields.forEach(f => { clean[f] = String(e[f] || '').slice(0, 2000); });
+            seen.add('ts:' + e.timestamp);
+            fresh.push(clean);
+        });
+        return { fresh, rejected };
+    }
+    // Newest first, capped like the log itself.
+    const mergeSnapshotSide = (existing, fresh) => [...fresh, ...(Array.isArray(existing) ? existing : [])]
+        .sort((a, b) => (Date.parse(b.timestamp) || 0) - (Date.parse(a.timestamp) || 0)).slice(0, 250);
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensSnapshot = Object.freeze({ snapshotSideEntries, mergeSnapshotSide });
+
     const SnapshotExchange = ({ studentName, studentKey, abcEntries, observationSessions, aiAnalysis, setAbcEntries, setObservationSessions, t, addToast, callGemini }) => {
         const [tab, setTab] = useState('export');
         const [role, setRole] = useState('educator');
@@ -8410,8 +8897,8 @@ Keep language warm and age-appropriate.`;
         const fileRef = useRef(null);
         const [aiMessageLoading, setAiMessageLoading] = useState(false);
 
-        const [homeLogEntries] = useDurableToolState('homeLog', []);
-        const [selfCheckEntries] = useDurableToolState('selfCheck', []);
+        const [homeLogEntries, setHomeLogEntries] = useDurableToolState('homeLog', []);
+        const [selfCheckEntries, setSelfCheckEntries] = useDurableToolState('selfCheck', []);
 
         const allChecks = [includeAbc, includeObs, includeAi, includeHomeLog, includeSelfCheck];
         const allSelected = allChecks.every(Boolean);
@@ -8454,7 +8941,7 @@ Keep language warm and age-appropriate.`;
             const a = document.createElement('a');
             a.href = url; a.download = filename; a.click();
             URL.revokeObjectURL(url);
-            addToast && addToast(t('behavior_lens.toast.snapshot_exported_as_n') || `Snapshot exported as ${filename}`, 'success');
+            addToast && addToast(tt('behavior_lens.toast.snapshot_exported_as_n_v2', 'Snapshot exported as {filename}', { filename }), 'success');
         };
 
         // Per-entry validators. The snapshot exchange is THE parent↔teacher
@@ -8498,8 +8985,7 @@ Keep language warm and age-appropriate.`;
                     const rawObs = Array.isArray(data.behaviorLens?.observationSessions) ? data.behaviorLens.observationSessions : [];
                     if (rawAbc.length > SNAPSHOT_MAX_ENTRIES || rawObs.length > SNAPSHOT_MAX_ENTRIES) {
                         addToast && addToast(
-                            t('behavior_lens.toast.snapshot_too_large')
-                                || `Snapshot exceeds the ${SNAPSHOT_MAX_ENTRIES.toLocaleString()}-entry safety limit; refusing to import.`,
+                            tt('behavior_lens.toast.snapshot_too_large_v2', 'Snapshot exceeds the {v1}-entry safety limit; refusing to import.', { v1: SNAPSHOT_MAX_ENTRIES.toLocaleString() }),
                             'error'
                         );
                         return;
@@ -8510,8 +8996,7 @@ Keep language warm and age-appropriate.`;
                     const rejectedObs = rawObs.length - validObs.length;
                     if (rejectedAbc + rejectedObs > 0) {
                         addToast && addToast(
-                            t('behavior_lens.toast.snapshot_rejected_entries')
-                                || `Skipped ${rejectedAbc + rejectedObs} malformed entries (missing/invalid timestamp or wrong field types). ${validAbc.length + validObs.length} valid entries kept for review.`,
+                            tt('behavior_lens.toast.snapshot_rejected_entries_v2', 'Skipped {v1} malformed entries (missing/invalid timestamp or wrong field types). {v2} valid entries kept for review.', { v1: rejectedAbc + rejectedObs, v2: validAbc.length + validObs.length }),
                             'warning'
                         );
                     }
@@ -8521,12 +9006,16 @@ Keep language warm and age-appropriate.`;
                     const existingObsTs = new Set(observationSessions.map(s => s.timestamp));
                     const newObs = validObs.filter(s => !existingObsTs.has(s.timestamp));
                     const dupeCount = (validAbc.length - newAbc.length) + (validObs.length - newObs.length);
+                    const home = snapshotSideEntries('homeLog', data.behaviorLens?.homeLogEntries, homeLogEntries, data.exportedBy);
+                    const self = snapshotSideEntries('selfCheck', data.behaviorLens?.selfCheckEntries, selfCheckEntries, data.exportedBy);
                     setImportPreview({
                         raw: data,
                         newAbc,
                         newObs,
+                        newHome: home.fresh,
+                        newSelf: self.fresh,
                         dupeCount,
-                        rejectedCount: rejectedAbc + rejectedObs,
+                        rejectedCount: rejectedAbc + rejectedObs + home.rejected + self.rejected,
                         hasAi: !!data.behaviorLens?.aiAnalysis,
                     });
                 } catch (err) {
@@ -8551,9 +9040,13 @@ Keep language warm and age-appropriate.`;
         const handleMerge = () => {
             if (!importPreview) return;
             const { newAbc, newObs, raw } = importPreview;
+            const newHome = importPreview.newHome || [];
+            const newSelf = importPreview.newSelf || [];
+            if (newHome.length > 0) setHomeLogEntries(prev => mergeSnapshotSide(prev, newHome));
+            if (newSelf.length > 0) setSelfCheckEntries(prev => mergeSnapshotSide(prev, newSelf));
             if (newAbc.length > 0) setAbcEntries(prev => [...prev, ...newAbc].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)));
             if (newObs.length > 0) setObservationSessions(prev => [...prev, ...newObs].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)));
-            addToast && addToast(t('behavior_lens.toast.merged_n_abc_entries_and_n_observations', { abc: newAbc.length, observations: newObs.length }) || `Merged ${newAbc.length} ABC entries and ${newObs.length} observations`, 'success');
+            addToast && addToast(tt('behavior_lens.snapshot.merged_all', 'Merged {abc} ABC entries, {obs} observations, {home} home-log entries and {self} self-checks.', { abc: newAbc.length, obs: newObs.length, home: newHome.length, self: newSelf.length }), 'success');
             setImportPreview(null);
         };
 
@@ -8564,7 +9057,7 @@ Keep language warm and age-appropriate.`;
                 h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.your_role', 'Your Role')),
                 h('div', { className: 'flex gap-2' },
                     [['educator', '🏫 Educator'], ['family', '👨‍👩‍👧 Family']].map(([key, label]) =>
-                        h('button', { "aria-label": "Toggle role",
+                        h('button', { 'aria-pressed': role === key ? 'true' : 'false',
                             key, onClick: () => setRole(key),
                             className: `flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${role === key ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                         }, label)
@@ -8575,8 +9068,7 @@ Keep language warm and age-appropriate.`;
             h('div', null,
                 h('div', { className: 'flex items-center justify-between mb-2' },
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.data_to_include', 'Data to Include')),
-                    h('button', { "aria-label": "Toggle All",
-                        onClick: toggleAll,
+                    h('button', { onClick: toggleAll,
                         className: 'text-[11px] font-bold text-cyan-600 hover:text-cyan-800 transition-colors'
                     }, allSelected ? 'Deselect All' : 'Select All')
                 ),
@@ -8632,7 +9124,7 @@ Student codename: ${studentName || 'the student'}
 Data included: ${dataOverview.join(', ') || 'None selected'}
 
 Write 2-3 sentences that are professional, warm, and collaborative. Focus on partnership and shared success. Do NOT use the student's codename in the message.`;
-                            const result = await callGemini(prompt, true);
+                            const result = await callGemini(prompt, false);
                             setMessage(result.trim());
                             if (addToast) addToast(tt('behavior_lens.toast.message_drafted', 'Message drafted ✨'), 'success');
                         } catch (err) {
@@ -8687,7 +9179,9 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
                         h('div', { className: 'font-bold text-slate-700 mb-1' }, tt('behavior_lens.ui.incoming_data', 'Incoming Data')),
                         h('div', { className: 'flex justify-between' }, h('span', null, '📋 New ABC Entries'), h('span', { className: 'font-bold text-emerald-600' }, `+${importPreview.newAbc.length}`)),
                         h('div', { className: 'flex justify-between' }, h('span', null, '🔍 New Observations'), h('span', { className: 'font-bold text-emerald-600' }, `+${importPreview.newObs.length}`)),
-                        importPreview.hasAi && h('div', { className: 'flex justify-between' }, h('span', null, '🧠 AI Analysis'), h('span', { className: 'font-bold text-blue-600' }, tt('behavior_lens.ui.included', 'Included'))),
+                        h('div', { className: 'flex justify-between', 'data-snapshot-home': importPreview.newHome ? importPreview.newHome.length : 0 }, h('span', null, '🏠 New Home Log Entries'), h('span', { className: 'font-bold text-emerald-600' }, `+${(importPreview.newHome || []).length}`)),
+                        h('div', { className: 'flex justify-between' }, h('span', null, '🪞 New Self-Check Entries'), h('span', { className: 'font-bold text-emerald-600' }, `+${(importPreview.newSelf || []).length}`)),
+                        importPreview.hasAi && h('div', { className: 'flex justify-between', 'data-snapshot-ai': 'true' }, h('span', null, '🧠 AI Analysis'), h('span', { className: 'font-bold text-slate-600' }, tt('behavior_lens.snapshot.ai_not_imported', 'In the file, not imported (your own analysis is kept)'))),
                         importPreview.dupeCount > 0 && h('div', { className: 'text-amber-600 mt-1 flex items-center gap-1' }, `⚠️ ${importPreview.dupeCount} duplicate(s) will be skipped`)
                     ),
                     // Codename mismatch warning
@@ -8696,13 +9190,13 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
                         `⚠️ Codename mismatch: file says "${importPreview.raw.studentCodename}" but current session is "${studentName}". Data will still merge if you proceed.`),
                     // Action buttons
                     h('div', { className: 'flex gap-2' },
-                        h('button', { "aria-label": "Toggle import preview",
+                        h('button', {
                             onClick: () => setImportPreview(null),
                             className: 'flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all'
                         }, (tt('behavior_lens.raw.cancel', 'Cancel'))),
                         h('button', { "aria-label": "Merge Data",
                             onClick: handleMerge,
-                            disabled: importPreview.newAbc.length === 0 && importPreview.newObs.length === 0,
+                            disabled: importPreview.newAbc.length === 0 && importPreview.newObs.length === 0 && !(importPreview.newHome || []).length && !(importPreview.newSelf || []).length,
                             className: 'flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                         }, '✅ Merge Data')
                     )
@@ -8721,7 +9215,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
                 // Tab selector
                 h('div', { className: 'flex gap-2 bg-slate-50 p-1 rounded-lg' },
                     [['export', '↗️ Export'], ['import', '↙️ Import']].map(([key, label]) =>
-                        h('button', { "aria-label": "Toggle tab",
+                        h('button', { 'aria-pressed': tab === key ? 'true' : 'false',
                             key, onClick: () => { setTab(key); setImportPreview(null); },
                             className: `flex-1 py-2 rounded-md text-sm font-bold transition-all ${tab === key ? 'bg-white text-cyan-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`
                         }, label)
@@ -8735,6 +9229,27 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
 
     // ─── ConsentManager ──────────────────────────────────────────────────
     // FERPA consent form builder for parent-teacher data exchange
+    // Consent-form sections. "AI Customize Language" rewrote EVERY section, the FERPA
+    // rights list included, straight into the saved form, with no undo and nothing to
+    // say a model had changed legal text. An imported template was not checked, and
+    // "Reset to Default" wiped all edits without asking. Now the rights section is never
+    // sent for rewriting, the previous text is kept for Undo, the form says it was
+    // AI-rewritten until someone accepts it, and imports must be well formed.
+    const CONSENT_LOCKED_SECTIONS = { rights: true };
+    function applyConsentRewrite(sections, rewritten) {
+        const list = Array.isArray(rewritten) ? rewritten : [];
+        return (sections || []).map(s => {
+            if (CONSENT_LOCKED_SECTIONS[s.id]) return s;
+            const updated = list.find(u => u && u.id === s.id && typeof u.content === 'string' && u.content.trim());
+            return updated ? { ...s, content: updated.content } : s;
+        });
+    }
+    function validConsentSections(sections) {
+        return Array.isArray(sections) && sections.length > 0 && sections.length <= 40 && sections.every(s => s && typeof s === 'object' && typeof s.id === 'string' && typeof s.title === 'string' && typeof s.content === 'string');
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensConsent = Object.freeze({ applyConsentRewrite, validConsentSections, CONSENT_LOCKED_SECTIONS });
+
     const ConsentManager = ({ studentName, studentKey, t, addToast, callGemini }) => {
         const DEFAULT_SECTIONS = [
             {
@@ -8776,6 +9291,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
         ];
 
         const [sections, setSections] = useDurableToolState('consentSections', DEFAULT_SECTIONS);
+        const [beforeAi, setBeforeAi] = useDurableToolState('consentSectionsBeforeAi', null);
         const [editingId, setEditingId] = useState(null);
         const [editBuffer, setEditBuffer] = useState('');
         const [schoolName, setSchoolName] = useState('');
@@ -8794,8 +9310,10 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
             addToast && addToast(tt('behavior_lens.toast.section_updated', 'Section updated'), 'success');
         };
 
-        const resetToDefault = () => {
+        const resetToDefault = async () => {
+            if (!await askBehaviorLensConfirmation(tt('behavior_lens.consent.reset_confirm', 'Replace every section with the default template? Your edits to this form will be lost.'), { title: 'Reset consent form', confirmText: 'Reset form' })) return;
             setSections(DEFAULT_SECTIONS);
+            setBeforeAi(null);
             addToast && addToast(tt('behavior_lens.toast.reset_to_default_template', 'Reset to default template'), 'info');
         };
 
@@ -8812,9 +9330,9 @@ School/District: ${schoolName || 'Not specified'}
 Teacher/Specialist: ${teacherName || 'Not specified'}
 
 Current sections:
-${sections.map(s => `## ${s.title}\n${s.content}`).join('\n\n')}
+${sections.filter(s => !CONSENT_LOCKED_SECTIONS[s.id]).map(s => `## ${s.title} (id: ${s.id})\n${s.content}`).join('\n\n')}
 
-Rewrite all section content to be warmer, more accessible, and family-friendly while keeping legal accuracy. Return ONLY valid JSON:
+Rewrite each section to be warmer, more accessible, and family-friendly. Keep every fact, right, option and limit it states; do not add promises it does not make. Return ONLY valid JSON:
 {
   "sections": [
     { "id": "section_id", "content": "rewritten content" }
@@ -8826,10 +9344,8 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 if (parsed.sections && Array.isArray(parsed.sections)) {
-                    setSections(prev => prev.map(s => {
-                        const updated = parsed.sections.find(u => u.id === s.id);
-                        return updated ? { ...s, content: updated.content } : s;
-                    }));
+                    setBeforeAi(sections);
+                    setSections(prev => applyConsentRewrite(prev, parsed.sections));
                     if (addToast) addToast(tt('behavior_lens.toast.language_customized_u2728', 'Language customized \u2728'), 'success');
                 }
             } catch (err) {
@@ -8863,7 +9379,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
             reader.onload = (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    if (!data.alloflowConsentTemplate || !data.sections) {
+                    if (!data.alloflowConsentTemplate || !validConsentSections(data.sections)) {
                         addToast && addToast(tt('behavior_lens.toast.not_a_valid_consent_template_file', 'Not a valid consent template file'), 'error');
                         return;
                     }
@@ -8910,6 +9426,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                 </div>
                 </body></html>`;
             const win = window.open('', '_blank');
+            if (!win) { if (addToast) addToast(tt('behavior_lens.toast.popup_blocked', 'The print window was blocked. Allow pop-ups for this site and try again.'), 'error'); return; }
             win.document.write(printContent);
             win.document.close();
             win.focus();
@@ -8990,7 +9507,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                                 }),
                                 h('div', { className: 'flex gap-2' },
                                     h('button', { onClick: saveEdit, className: 'px-3 py-1.5 bg-cyan-700 text-white rounded-lg text-[11px] font-bold hover:bg-cyan-700 transition-colors' }, '✅ Save'),
-                                    h('button', { "aria-label": "Toggle editing id", onClick: () => setEditingId(null), className: 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors' }, tt('behavior_lens.ui.cancel', 'Cancel'))
+                                    h('button', { onClick: () => setEditingId(null), className: 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors' }, tt('behavior_lens.ui.cancel', 'Cancel'))
                                 )
                             )
                         ) : (
@@ -9025,7 +9542,12 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                 callGemini && h('button', { onClick: handleAiCustomize,
                     disabled: aiCustomizeLoading,
                     className: 'w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg disabled:opacity-40 transition-all'
-                }, aiCustomizeLoading ? '⏳ Customizing...' : '🧠 AI Customize Language')
+                }, aiCustomizeLoading ? '⏳ Customizing...' : '🧠 AI Customize Language'),
+                beforeAi && h('div', { role: 'status', 'data-consent-ai': 'true', className: 'rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900 space-y-2' },
+                    h('p', null, tt('behavior_lens.consent.ai_rewritten', 'AI rewrote this consent text (the FERPA rights section was left as it was). Compare each section with the original, and have your school or district approve it before families sign.')),
+                    h('div', { className: 'flex gap-2' },
+                        h('button', { onClick: () => { setSections(beforeAi); setBeforeAi(null); }, className: 'px-3 py-1.5 bg-white border border-amber-600 rounded-lg font-bold' }, tt('behavior_lens.consent.undo_ai', 'Undo AI rewrite')),
+                        h('button', { onClick: () => setBeforeAi(null), className: 'px-3 py-1.5 bg-amber-700 text-white rounded-lg font-bold' }, tt('behavior_lens.consent.accept_ai', 'I have reviewed it'))))
             )
         );
     };
@@ -9044,7 +9566,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
             const request = ++generation.current;
             setGenerating(true);
             try {
-                const behaviors = abcEntries.slice(-10).map(e =>
+                const behaviors = abcEntriesNewestFirst(abcEntries).slice(0, 10).map(e =>
                     `B: ${e.behavior} | A: ${e.antecedent} | C: ${e.consequence} | Intensity: ${e.intensity}/5`
                 ).join('\n');
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'not yet determined';
@@ -9076,16 +9598,13 @@ Use plain text formatting. Be specific and actionable.`;
                     const famRaw = _blFamiliarityRaw();
                     if (famRaw) {
                         const fam = JSON.parse(famRaw);
-                        const knownWords = Object.keys(fam).filter(k => {
-                            const e2 = fam[k];
-                            return ((e2.taps||0) + (e2.questCorrect||0)*2) > 3;
-                        });
-                        if (knownWords.length > 0) fctEnrichment = '\n\nNOTE: The student has practiced these AAC vocabulary words (from Word Garden): ' + knownWords.slice(0,15).join(', ') + '. Include these in replacement behavior recommendations where appropriate.';
+                        const knownWords = Object.keys(fam).filter(k => fctPracticeScore(fam[k]) >= FCT_PRACTICE_OFTEN);
+                        if (knownWords.length > 0) fctEnrichment = '\n\nNOTE: In Word Garden (a symbol practice app) the student has practiced these AAC words often: ' + knownWords.slice(0,15).join(', ') + '. Practice there does not show the student uses them to communicate yet. Include these in replacement behavior recommendations where appropriate.';
                     }
                 } catch(e3) {}
                 const fullPrompt = prompt + fctEnrichment;
                 setPreAiPlan(plan);
-                const result = await callGemini(fullPrompt, true);
+                const result = await callGemini(fullPrompt, false);
                 if (request !== generation.current || !result) return;
                 setPlan(result);
                 if (addToast) addToast(tt('behavior_lens.toast.intervention_plan_generated', 'Intervention plan generated ✨'), 'success');
@@ -9102,8 +9621,7 @@ Use plain text formatting. Be specific and actionable.`;
                 h('div', { className: 'flex items-center gap-3 mb-4' },
                     h('label', { className: 'text-xs font-bold text-slate-600' }, tt('behavior_lens.ui.weeks', 'Weeks:')),
                     [2, 4, 6, 8].map(w =>
-                        h('button', { "aria-label": "Toggle weeks",
-                            key: w,
+                        h('button', { key: w,
                             onClick: () => setWeeks(w),
                             className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${weeks === w ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                         }, `${w}w`)
@@ -9144,38 +9662,29 @@ Use plain text formatting. Be specific and actionable.`;
             // FCT Vocabulary Readiness card — appears when plan exists and function is known
             plan && aiAnalysis?.hypothesizedFunction && (function () {
                 const behaviorFn = aiAnalysis.hypothesizedFunction;
-                const FCT_WORDS = {
-                    Attention: { words: ['look','help','hi','excuse me','come here','play','friend','my turn'], tip: 'attention-getting' },
-                    Escape: { words: ['break','stop','all done','help','too hard','need help','not now','finished'], tip: 'break/help-seeking' },
-                    Tangible: { words: ['want','more','give','my turn','can i','please','open','play'], tip: 'requesting' },
-                    Sensory: { words: ['too loud','need break','need quiet','need headphones','feel overwhelmed','need to move','deep breath','help'], tip: 'sensory self-advocacy' }
-                };
-                const fctData = FCT_WORDS[behaviorFn];
+                const fctData = FCT_REPLACEMENT_WORDS[behaviorFn];
                 if (!fctData) return null;
                 let famData = {};
                 try { const raw = _blFamiliarityRaw(); if (raw) famData = JSON.parse(raw); } catch(e4) {}
-                const ready = []; const growing2 = []; const missing2 = [];
-                fctData.words.forEach(w => {
-                    const k = w.toLowerCase().trim();
-                    const entry = famData[k];
-                    if (entry && ((entry.taps||0) + (entry.questCorrect||0)*2) > 5) ready.push(w);
-                    else if (entry) growing2.push(w);
-                    else missing2.push(w);
-                });
+                const practice = fctWordPractice(fctData.words, famData, fctGalleryLabels());
+                const ready = practice.often, growing2 = practice.some, carded2 = practice.carded, missing2 = practice.none;
                 const fc3 = FUNCTION_COLORS[behaviorFn] || FUNCTION_COLORS['Attention'];
                 return h('div', { className: 'rounded-xl border-2 p-4', style: { borderColor: fc3.border, background: fc3.bg } },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                         h('span', { className: 'text-lg' }, '🌱'),
-                        h('span', { className: 'text-xs font-black uppercase tracking-wide', style: { color: fc3.text } }, 'FCT Replacement Vocabulary — from Word Garden')),
-                    h('p', { className: 'text-xs mb-3', style: { color: fc3.text } }, 'These ' + fctData.tip + ' words serve as communication replacements for ' + behaviorFn.toLowerCase() + '-maintained behavior:'),
+                        h('span', { className: 'text-xs font-black uppercase tracking-wide', style: { color: fc3.text } }, 'FCT Replacement Vocabulary (from Word Garden)')),
+                    h('p', { className: 'text-xs mb-3', style: { color: fc3.text } }, 'These ' + fctData.kind + ' words serve as communication replacements for ' + behaviorFn.toLowerCase() + '-maintained behavior:'),
                     ready.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
-                        h('span', { className: 'text-xs font-bold text-emerald-700' }, '✅ Student can use: '),
+                        h('span', { className: 'text-xs font-bold text-emerald-700' }, '✅ Practiced often: '),
                         ready.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold' }, w))),
                     growing2.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
-                        h('span', { className: 'text-xs font-bold text-amber-700' }, '🌿 Developing: '),
+                        h('span', { className: 'text-xs font-bold text-amber-700' }, '🌿 Some practice: '),
                         growing2.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold' }, w))),
+                    carded2.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
+                        h('span', { className: 'text-xs font-bold text-slate-700' }, '🖼️ Card made, not practiced yet: '),
+                        carded2.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-slate-100 text-slate-800 rounded-full text-xs font-semibold' }, w))),
                     missing2.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
-                        h('span', { className: 'text-xs font-bold text-red-700' }, '🌰 Not yet taught: '),
+                        h('span', { className: 'text-xs font-bold text-red-700' }, '🌰 Not in Word Garden yet: '),
                         missing2.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-semibold' }, w))),
                     h('p', { className: 'text-xs mt-1 italic opacity-70', style: { color: fc3.text } }, 'Practice these words in Symbol Studio → Word Garden → Symbol Quest'));
             })()
@@ -9193,7 +9702,7 @@ Use plain text formatting. Be specific and actionable.`;
             if (!callGemini) return;
             setGenerating(true);
             try {
-                const behaviors = abcEntries.slice(-15).map(e =>
+                const behaviors = abcEntriesNewestFirst(abcEntries).slice(0, 15).map(e =>
                     `${new Date(e.timestamp).toLocaleDateString()}: B=${e.behavior}, A=${e.antecedent}, C=${e.consequence}, Intensity=${e.intensity}/5`
                 ).join('\n');
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'not yet determined';
@@ -9220,7 +9729,7 @@ Write an IEP-ready progress monitoring narrative that includes:
 ${style === 'brief' ? 'Keep it concise — 1-2 paragraphs maximum.' : 'Provide a detailed narrative with specific data references.'}
 Use professional, objective language. Do NOT use the student codename — use "the student" instead. Include the reporting period.`;
                 setPreAiNarrative(narrative);
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setNarrative(result);
                 if (addToast) addToast(tt('behavior_lens.toast.progress_narrative_generated', 'Progress narrative generated ✨'), 'success');
             } catch (err) {
@@ -9236,8 +9745,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                     h('label', { className: 'text-xs font-bold text-slate-600' }, tt('behavior_lens.ui.style', 'Style:')),
                     ['brief', 'detailed'].map(s =>
-                        h('button', { "aria-label": "Toggle style",
-                            key: s,
+                        h('button', { key: s,
                             onClick: () => setStyle(s),
                             className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${style === s ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                         }, s === 'brief' ? '⚡ Brief' : '📄 Detailed')
@@ -9412,7 +9920,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     observations: scenario.observations,
                     name: scenario.title
                 });
-                if (addToast) addToast(t('behavior_lens.toast.loaded_n') || `Loaded: ${scenario.title}`, 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.loaded_n_v2', 'Loaded: {v1}', { v1: scenario.title }), 'success');
             }
         };
 
@@ -9471,7 +9979,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                         observations: data.observations || [],
                         name: data.title || 'AI-Generated Scenario'
                     });
-                    if (addToast) addToast(t('behavior_lens.toast.generated_n') || `Generated: ${data.title || 'Custom Scenario'} ✨`, 'success');
+                    if (addToast) addToast(tt('behavior_lens.toast.generated_n_v2', 'Generated: {v1} ✨', { v1: data.title || 'Custom Scenario' }), 'success');
                 }
             } catch (err) {
                 warnLog('Custom scenario generation failed:', err);
@@ -9637,8 +10145,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                             { id: 'intervention', label: '💊 Intervention', color: 'emerald' },
                             { id: 'maintenance', label: '📈 Maintenance', color: 'blue' },
                             { id: 'return_baseline', label: '🔄 Return to Baseline', color: 'amber' }
-                        ].map(p => h('button', { "aria-label": "Toggle phase label",
-                            key: p.id,
+                        ].map(p => h('button', { key: p.id,
                             onClick: () => setPhaseLabel(p.id),
                             className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${phaseLabel === p.id
                                 ? `bg-${p.color}-100 text-${p.color}-700 border-2 border-${p.color}-400`
@@ -9669,8 +10176,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                             { id: 'stable', label: '➡️ Stable', desc: 'Behavior stays at similar levels' },
                             { id: 'regressing', label: '📉 Regressing', desc: 'Behavior worsens over time' },
                             { id: 'variable', label: '🔀 Variable', desc: 'Inconsistent — some good days, some bad' }
-                        ].map(p => h('button', { "aria-label": "Toggle expected pattern",
-                            key: p.id,
+                        ].map(p => h('button', { key: p.id,
                             onClick: () => setExpectedPattern(p.id),
                             className: `p-2 rounded-lg text-start transition-all ${expectedPattern === p.id
                                 ? 'bg-indigo-50 border-2 border-indigo-400'
@@ -9725,7 +10231,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                             const startDate = new Date(latestTs + 86400000); // day after last entry
 
                             // Get last 5 entries for context
-                            const recentEntries = abcEntries.slice(-5).map(e =>
+                            const recentEntries = abcEntriesNewestFirst(abcEntries).slice(0, 5).map(e =>
                                 `[${new Date(e.timestamp || e.date || 0).toLocaleDateString()}] B: ${e.behavior} | A: ${e.antecedent} | C: ${e.consequence} | Intensity: ${e.intensity}/5`
                             ).join('\n');
 
@@ -9938,8 +10444,7 @@ Rules:
                         key: term.term,
                         className: `bg-white rounded-xl border transition-all ${isOpen ? 'border-blue-300 shadow-md' : 'border-slate-100 shadow-sm hover:border-slate-200'}`
                     },
-                        h('button', { "aria-label": "Toggle expanded term",
-                            onClick: () => setExpandedTerm(isOpen ? null : term.term),
+                        h('button', { onClick: () => setExpandedTerm(isOpen ? null : term.term),
                             className: 'w-full text-start p-4 flex items-center justify-between'
                         },
                             h('div', { className: 'flex items-center gap-3' },
@@ -9985,7 +10490,7 @@ Rules:
         const complete = entries.filter(e => e.antecedent && e.behavior && e.consequence).length;
         const compScore = entries.length > 0 ? complete / entries.length : 0;
         // 5. Temporal Spread (20%)
-        const uniqueDays = new Set(entries.map(e => e.date || (e.timestamp ? new Date(e.timestamp).toISOString().split('T')[0] : '')).filter(Boolean));
+        const uniqueDays = new Set(entries.map(e => abcEntryDay(e)).filter(Boolean));
         const spreadScore = Math.min(1, uniqueDays.size / 3);
 
         const total = Math.round((volScore + recScore + divScore + compScore + spreadScore) * 20);
@@ -10017,8 +10522,7 @@ Rules:
         const barColors = { emerald: 'bg-emerald-500', amber: 'bg-amber-500', red: 'bg-red-500' };
 
         return h('div', { className: 'relative' },
-            h('button', { "aria-label": "Toggle expanded",
-                onClick: () => setExpanded(v => !v),
+            h('button', { onClick: () => setExpanded(v => !v),
                 className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all ${ringColors[quality.color]}`,
                 title: `Data Quality: ${quality.grade} (${quality.score}%)`
             }, ringIcons[quality.grade], ` ${quality.score}%`),
@@ -10075,7 +10579,7 @@ Rules:
 
         return h('div', { className: `bg-gradient-to-r ${stepColors} rounded-xl p-4 text-white shadow-lg relative overflow-hidden` },
             h('div', { className: 'absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2' }),
-            h('button', { "aria-label": "Toggle dismissed",
+            h('button', { 'aria-label': 'Dismiss',
                 onClick: () => setDismissed(true),
                 className: 'absolute top-2 right-2 text-white/40 hover:text-white/80 text-sm z-10'
             }, '✕'),
@@ -10118,13 +10622,13 @@ Rules:
                 // Rewind to current week's Monday, then offset
                 const currentDay = now.getDay() || 7; // Sun=7
                 date.setDate(now.getDate() - (currentDay - 1) - (w * 7) + d);
-                const dateStr = date.toISOString().split('T')[0];
-                const dayEntries = abcEntries.filter(e => e.date === dateStr);
+                const dateStr = blLocalDateKey(date);
+                const dayEntries = abcEntries.filter(e => abcEntryDay(e) === dateStr);
                 const count = dayEntries.length;
                 const functions = {};
                 const phases = {};
                 dayEntries.forEach(e => {
-                    const fn = e.perceivedFunction || 'Unknown';
+                    const fn = abcEntryFunction(e) || 'Unknown';
                     functions[fn] = (functions[fn] || 0) + 1;
                     if (e.phase) phases[e.phase] = (phases[e.phase] || 0) + 1;
                 });
@@ -10436,8 +10940,7 @@ Rules:
             ),
             // Badges Section
             h('div', { className: 'bg-white rounded-xl border border-slate-400 shadow-sm overflow-hidden' },
-                h('button', { "aria-label": "Toggle show badges",
-                    onClick: () => setShowBadges(v => !v),
+                h('button', { onClick: () => setShowBadges(v => !v),
                     className: 'w-full flex items-center justify-between px-5 py-3 bg-slate-50 hover:bg-slate-100 transition-all text-start'
                 },
                     h('div', { className: 'flex items-center gap-2' },
@@ -10469,8 +10972,7 @@ Rules:
                     const domainPct = Math.round((domainCompleted / domainTotal) * 100);
                     const isOpen = expandedDomain === domain.id;
                     return h('div', { key: domain.id, className: `rounded-xl border-2 overflow-hidden transition-all ${domainColors[domain.color]}` },
-                        h('button', { "aria-label": "Toggle expanded domain",
-                            onClick: () => setExpandedDomain(isOpen ? null : domain.id),
+                        h('button', { onClick: () => setExpandedDomain(isOpen ? null : domain.id),
                             className: 'w-full flex items-center justify-between px-5 py-4 text-start hover:opacity-90 transition-all'
                         },
                             h('div', { className: 'flex items-center gap-3' },
@@ -10495,7 +10997,7 @@ Rules:
                                     key: skill.id,
                                     className: `flex items-center gap-3 p-3 rounded-xl border transition-all ${isDone ? 'bg-white/80 border-emerald-200' : 'bg-white/50 border-slate-200 hover:border-slate-300'}`
                                 },
-                                    h('button', { "aria-label": "Toggle Skill",
+                                    h('button', { 'aria-label': skill.label, 'aria-pressed': isDone ? 'true' : 'false',
                                         onClick: () => toggleSkill(skill.id),
                                         className: `w-7 h-7 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all shrink-0 ${isDone ? 'bg-emerald-700 border-emerald-500 text-white' : 'border-slate-300 hover:border-indigo-400 text-transparent hover:text-indigo-300'}`
                                     }, isDone ? '✓' : ''),
@@ -10793,7 +11295,7 @@ Step progress:
 ${stepsStatus}
 
 Based on this progress, recommend the ONE most important next action. Be specific and actionable. Keep to 2-3 sentences. Start with the step number and name.`;
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setAiRec(result || 'Keep going — you\'re making great progress!');
                 if (alloBotRef?.current?.speak) {
                     try { alloBotRef.current.speak((result || '').slice(0, 180)); } catch (_) {}
@@ -10817,8 +11319,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                         const subsDone = tr.steps.reduce((s, st) => s + st.subs.filter(sub => isSubDone(sub.id)).length, 0);
                         const subsTotal = tr.steps.reduce((s, st) => s + st.subs.length, 0);
                         const hasProg = subsDone > 0;
-                        return h('button', { "aria-label": "Toggle workflow track",
-                            key: tr.id,
+                        return h('button', { key: tr.id,
                             onClick: () => setWorkflowTrack(tr.id),
                             className: 'w-full text-start group'
                         },
@@ -10852,7 +11353,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             // Header with back button
             h('div', { className: 'flex items-center gap-3' },
-                h('button', { "aria-label": "Toggle workflow track",
+                h('button', { 'aria-label': 'Back to all workflows',
                     onClick: () => { setWorkflowTrack(null); setExpandedStep(null); setAiRec(''); },
                     className: 'w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors shrink-0'
                 }, '←'),
@@ -10888,8 +11389,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                         className: `bg-white rounded-xl border-2 transition-all duration-200 ${complete ? 'border-green-300 bg-green-50/30' : isExpanded ? 'border-blue-300 shadow-md' : 'border-slate-100 hover:border-slate-200'}`
                     },
                         // Step header (always visible)
-                        h('button', { "aria-label": "Toggle expanded step",
-                            onClick: () => setExpandedStep(isExpanded ? null : step.id),
+                        h('button', { onClick: () => setExpandedStep(isExpanded ? null : step.id),
                             className: 'w-full flex items-center gap-3 p-4 text-start'
                         },
                             // Step number circle
@@ -10929,7 +11429,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                             h('div', { className: 'space-y-1.5' },
                                 step.subs.map(sub => {
                                     const checked = isSubDone(sub.id);
-                                    return h('button', { "aria-label": "Toggle active panel",
+                                    return h('button', { 'aria-pressed': checked ? 'true' : 'false',
                                         key: sub.id,
                                         onClick: (e) => { e.stopPropagation(); toggleSub(sub.id); },
                                         className: `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-start transition-all ${checked ? 'bg-green-50 border border-green-600' : 'bg-slate-50 border border-slate-100 hover:border-slate-200'}`
@@ -10942,8 +11442,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                                 })
                             ),
                             // Open tool button
-                            h('button', { "aria-label": "Toggle active panel",
-                                onClick: () => setActivePanel(step.tool),
+                            h('button', { onClick: () => setActivePanel(step.tool),
                                 className: `w-full py-2.5 bg-gradient-to-r ${track.gradient} text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all shadow-sm active:scale-[0.98]`
                             }, `→ Open ${step.toolName}`),
                             // ── Scenario Practice Card ──
@@ -10967,7 +11466,7 @@ Correct answer: "${correctChoice}"
 Explanation: ${sc.explain}
 
 Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their reasoning and extend their thinking with a follow-up consideration. If incorrect, gently explain why and connect it to real-world practice. Use warm, encouraging language. End with one practical takeaway they can use in their classroom tomorrow.`;
-                                        const result = await callGemini(prompt, true);
+                                        const result = await callGemini(prompt, false);
                                         setScenarioReflection(prev => ({ ...prev, [step.id]: result }));
                                         if (alloBotRef?.current?.speak) {
                                             try { alloBotRef.current.speak((result || '').slice(0, 180)); } catch (_) {}
@@ -10976,8 +11475,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                                     finally { setScenarioReflLoading(false); }
                                 };
                                 return h('div', { className: 'mt-2' },
-                                    h('button', { "aria-label": "Toggle scenario open",
-                                        onClick: () => setScenarioOpen(isOpen ? null : step.id),
+                                    h('button', { onClick: () => setScenarioOpen(isOpen ? null : step.id),
                                         className: `w-full flex items-center justify-between px-3 py-2.5 rounded-xl border-2 transition-all ${isOpen ? 'border-violet-300 bg-violet-50' : 'border-dashed border-violet-600 bg-white hover:border-violet-300'}`
                                     },
                                         h('div', { className: 'flex items-center gap-2' },
@@ -11086,7 +11584,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                     'Evaluate observable specificity, ABC completeness, immediate antecedent detail, actual consequence detail, repeated/copy-pasted language, operational definitions, and whether the sample supports pattern analysis.',
                     'Return concise plain text with headings QUALITY, STRENGTHS, AREAS FOR IMPROVEMENT, and SPECIFIC SUGGESTIONS. State that findings apply to the disclosed sample.'
                 ].join('\n');
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setReport(result);
                 setReportProvenance(provenance);
                 if (addToast) addToast(tt('behavior_lens.toast.quality_check_complete', 'Quality check complete'), 'success');
@@ -11099,9 +11597,12 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
         const quickChecks = useMemo(() => {
             if (abcEntries.length === 0) return [];
             const checks = [];
-            const vague = abcEntries.filter(entry => entry.behavior && entry.behavior.trim().length < 15).length;
+            // A short name for a DEFINED target behavior ("Elopement") is not vague: its
+            // operational definition lives with the target. Only a short free-text description is.
+            const runtimeQ = getBehaviorLensWorkspaceRuntime();
+            const vague = abcEntries.filter(entry => entry.behavior && entry.behavior.trim().length < 15 && !runtimeQ.resolveCanonicalBehavior(entry, targetBehaviors || []).defined).length;
             if (inspection.incompleteAbcCount > 0) checks.push({ msg: inspection.incompleteAbcCount + ' records have an incomplete ABC chain', type: 'warning' });
-            if (vague > 0) checks.push({ msg: vague + ' records have very brief behavior descriptions', type: 'warning' });
+            if (vague > 0) checks.push({ msg: vague + ' records describe the behavior in a few words and do not match a defined target behavior', type: 'warning' });
             if (inspection.missingIntensityCount > 0) checks.push({ msg: inspection.missingIntensityCount + ' records have no valid intensity rating; they are excluded from averages', type: 'warning' });
             if (inspection.invalidTimestampCount > 0) checks.push({ msg: inspection.invalidTimestampCount + ' records have invalid occurrence timestamps', type: 'warning' });
             if (inspection.undefinedBehaviorCount > 0) checks.push({ msg: inspection.undefinedBehaviorCount + ' canonical behavior groups need definitions or aliases', type: 'warning' });
@@ -11109,7 +11610,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
             if (inspection.recordCount < 5) checks.push({ msg: 'Only ' + inspection.recordCount + ' valid records; collect more across representative routines before inferring patterns', type: 'info' });
             if (inspection.recordCount >= 10 && inspection.incompleteAbcCount === 0) checks.push({ msg: inspection.recordCount + ' valid records with complete ABC chains', type: 'positive' });
             return checks;
-        }, [abcEntries, inspection]);
+        }, [abcEntries, inspection, targetBehaviors]);
         const checkColors = { warning: 'bg-amber-50 border-amber-200 text-amber-800', info: 'bg-blue-50 border-blue-200 text-blue-800', positive: 'bg-green-50 border-green-200 text-green-800' };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
@@ -11314,7 +11815,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                     const intensityText = phase.intensity.mean === null
                         ? 'unavailable'
                         : phase.intensity.mean.toFixed(1) + ' (n=' + phase.intensity.ratedCount + ')';
-                    const rateText = phase.rate.denominatorAvailable
+                    const rateText = phase.rate.rateAvailable
                         ? phase.rate.perObservedHour.toFixed(2) + ' per observed hour'
                         : 'no exposure denominator';
                     return h('div', { key: phase.phase, className: 'rounded-lg border border-slate-200 p-3' },
@@ -11350,7 +11851,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 renderMetric('Incidents', filteredEntries.length, 'indigo'),
                 renderMetric('Rated mean (n=' + intensitySummary.ratedCount + ')', intensitySummary.mean === null ? 'No ratings' : intensitySummary.mean.toFixed(1), 'amber'),
-                renderMetric('Per observed hour', selectedRate.denominatorAvailable ? selectedRate.perObservedHour.toFixed(2) : 'Unavailable', 'emerald'),
+                renderMetric('Per observed hour', selectedRate.rateAvailable ? selectedRate.perObservedHour.toFixed(2) : 'Unavailable', 'emerald'),
                 renderMetric('Missing ratings', intensitySummary.missingCount, 'slate')
             ),
             h('div', { className: 'flex flex-wrap gap-2 bg-white rounded-xl border border-slate-400 p-2 shadow-sm' },
@@ -11419,7 +11920,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
             // Add note
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
-                    roles.map(r => h('button', { "aria-label": "Toggle role", "aria-pressed": role === r.id ? "true" : "false",
+                    roles.map(r => h('button', { "aria-pressed": role === r.id ? "true" : "false",
                         key: r.id,
                         onClick: () => setRole(r.id),
                         className: `px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${role === r.id ? roleColors[r.color] + ' shadow-sm' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'}`
@@ -11488,7 +11989,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
             setGenerating(true);
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'not yet determined';
-                const recentEntries = abcEntries.slice(-10).map((e, i) =>
+                const recentEntries = abcEntriesNewestFirst(abcEntries).slice(0, 10).map((e, i) =>
                     `${i + 1}. B: "${e.behavior}" | A: "${e.antecedent}" | C: "${e.consequence}" | Intensity: ${e.intensity || 'N/A'} | Setting: ${e.setting || 'N/A'}`
                 ).join('\n');
                 const obsSummary = observationSessions.slice(-3).map((s, i) =>
@@ -11500,7 +12001,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                 if (graphExport && graphExport.phaseAnalysis && graphExport.phaseAnalysis.length >= 2) {
                     graphContext = `\n\nGRAPH DATA (${graphExport.behaviorName}):\n`;
                     graphExport.phaseAnalysis.forEach(pa => {
-                        graphContext += `- ${pa.label}: Mean=${pa.mean.toFixed(1)}, Trend=${pa.trendSlope > 0.1 ? 'Increasing' : pa.trendSlope < -0.1 ? 'Decreasing' : 'Stable'}, ${pa.data.length} data points\n`;
+                        graphContext += `- ${pa.label}: Mean=${pa.mean.toFixed(1)}, Trend=${TREND_WORDS[phaseTrendDirection(pa)] || 'Too few points'}, ${pa.data.length} data points\n`;
                     });
                     const baseline = graphExport.phaseAnalysis[0];
                     const intervention = graphExport.phaseAnalysis[graphExport.phaseAnalysis.length - 1];
@@ -11566,7 +12067,7 @@ ${effectContext ? '- Cite effect sizes to quantify intervention effectiveness' :
 Keep the language strengths-based and restorative. Use "your child" not the codename. Be specific and data-driven.`;
 
                 setPreAiPacket(packet);
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setPacket(result);
                 if (addToast) addToast(tt('behavior_lens.toast.iep_prep_packet_generated', 'IEP prep packet generated ✨'), 'success');
             } catch (err) {
@@ -11669,13 +12170,16 @@ Keep the language strengths-based and restorative. Use "your child" not the code
             if (topDay && topDay[1] > days.length * 0.35) {
                 patterns.push({ icon: '📅', text: `${dayNames[topDay[0]]} has the most incidents (${topDay[1]} of ${days.length})`, type: 'day' });
             }
-            // Intensity trend
-            const recentInt = abcEntries.slice(0, 5).map(e => e.intensity || 0);
-            const olderInt = abcEntries.slice(-5).map(e => e.intensity || 0);
-            const recentAvg = recentInt.reduce((a, b) => a + b, 0) / Math.max(1, recentInt.length);
-            const olderAvg = olderInt.reduce((a, b) => a + b, 0) / Math.max(1, olderInt.length);
-            if (recentAvg > olderAvg + 0.5) patterns.push({ icon: '📈', text: `Intensity trending UP: recent avg ${recentAvg.toFixed(1)} vs earlier avg ${olderAvg.toFixed(1)}`, type: 'trend' });
-            if (recentAvg < olderAvg - 0.5) patterns.push({ icon: '📉', text: `Intensity trending DOWN: recent avg ${recentAvg.toFixed(1)} vs earlier avg ${olderAvg.toFixed(1)} — positive progress!`, type: 'trend' });
+            // Intensity trend: the 5 newest vs the 5 oldest RATED entries, by time. It read
+            // array positions (whose order depends on how the data arrived), overlapped
+            // the two windows under 10 entries, and averaged unrated entries as 0.
+            const ratedByTime = abcEntriesNewestFirst(abcEntries).filter(e => e.intensity != null && e.intensity !== '' && Number.isFinite(Number(e.intensity)));
+            if (ratedByTime.length >= 10) {
+                const avg = list => list.reduce((a, e) => a + Number(e.intensity), 0) / list.length;
+                const recentAvg = avg(ratedByTime.slice(0, 5)), olderAvg = avg(ratedByTime.slice(-5));
+                if (recentAvg > olderAvg + 0.5) patterns.push({ icon: '📈', text: `Intensity ratings higher lately: newest 5 average ${recentAvg.toFixed(1)} vs earliest 5 average ${olderAvg.toFixed(1)}`, type: 'trend' });
+                if (recentAvg < olderAvg - 0.5) patterns.push({ icon: '📉', text: `Intensity ratings lower lately: newest 5 average ${recentAvg.toFixed(1)} vs earliest 5 average ${olderAvg.toFixed(1)}`, type: 'trend' });
+            };
             // Top antecedent
             const antCounts = {};
             abcEntries.forEach(e => {
@@ -11694,7 +12198,7 @@ Keep the language strengths-based and restorative. Use "your child" not the code
             if (insights) { setInsights(''); return; }
             setAnalyzing(true);
             try {
-                const entriesStr = abcEntries.slice(-15).map((e, i) =>
+                const entriesStr = abcEntriesNewestFirst(abcEntries).slice(0, 15).map((e, i) =>
                     `${i + 1}. [${new Date(e.timestamp).toLocaleString()}] A: "${e.antecedent}" B: "${e.behavior}" C: "${e.consequence}" Setting: "${e.setting || 'N/A'}" Intensity: ${e.intensity || 'N/A'}`
                 ).join('\n');
 
@@ -11725,7 +12229,7 @@ Provide a structured prediction report:
 
 Be specific with percentages where possible. Keep language strengths-based and actionable.`;
 
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setInsights(result);
                 if (addToast) addToast(tt('behavior_lens.toast.predictive_analysis_complete', 'Predictive analysis complete ✨'), 'success');
             } catch (err) {
@@ -11868,8 +12372,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '💭 How are you feeling right now?'),
                 h('div', { className: 'flex gap-3 justify-center mb-3' },
-                    moods.map(m => h('button', { "aria-label": "Toggle selected mood",
-                        key: m.id,
+                    moods.map(m => h('button', { key: m.id,
                         onClick: () => setSelectedMood(m.id),
                         className: `w-14 h-14 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${selectedMood === m.id ? moodColors[m.color] + ' scale-110 shadow-md' : 'border-slate-100 hover:border-slate-200 hover:scale-105'}`
                     },
@@ -12062,7 +12565,7 @@ Provide:
 🛠️ SUPPORT SUGGESTION:
 [One actionable strategy that honors the student's agency]`;
 
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setOutput(result);
                 if (addToast) addToast(tt('behavior_lens.toast.reframed_through_strengths_lens', 'Reframed through strengths lens ✨'), 'success');
             } catch (err) {
@@ -12180,7 +12683,7 @@ IMPORTANT: Your role is to gently surface patterns for REFLECTION, not accusatio
 
 Analyze these ${abcEntries.length} ABC entries for potential implicit bias patterns:
 
-${abcEntries.slice(-15).map((e, i) => `${i + 1}. B: "${e.behavior}" | A: "${e.antecedent}" | C: "${e.consequence}" | Setting: "${e.setting || 'N/A'}"`).join('\n')}
+${abcEntriesNewestFirst(abcEntries).slice(0, 15).map((e, i) => `${i + 1}. B: "${e.behavior}" | A: "${e.antecedent}" | C: "${e.consequence}" | Setting: "${e.setting || 'N/A'}"`).join('\n')}
 
 Provide a reflective report structured as:
 
@@ -12204,7 +12707,7 @@ Provide a reflective report structured as:
 
 Remember: this is about growth, not guilt. Keep the tone supportive and empowering.`;
 
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setAiReport(result);
                 if (addToast) addToast(tt('behavior_lens.toast.bias_reflection_complete', 'Bias reflection complete'), 'success');
             } catch (err) {
@@ -12313,8 +12816,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
             ),
             // Guide selector
             !activeGuide && h('div', { className: 'space-y-3' },
-                guides.map(g => h('button', { "aria-label": "Toggle active guide",
-                    key: g.id,
+                guides.map(g => h('button', { key: g.id,
                     onClick: () => setActiveGuide(g.id),
                     className: `w-full text-start p-5 rounded-xl border-2 ${guideColors[g.color]} shadow-sm hover:shadow-md transition-all`
                 },
@@ -12545,7 +13047,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                             h('span', { className: `text-[11px] font-bold px-2 py-0.5 rounded-full ${completedCount === completionSteps.length ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}` }, `${completedCount}/${completionSteps.length}`)
                         ),
                         h('div', { className: 'space-y-2' },
-                            completionSteps.map(step => h('button', { "aria-label": "Toggle Step", key: step.id, onClick: () => toggleStep(step.id), className: `w-full text-start flex items-center gap-3 p-3 rounded-lg border transition-all ${step.done ? 'bg-green-50 border-green-600' : 'bg-white border-slate-100 hover:border-slate-200'}` },
+                            completionSteps.map(step => h('button', { 'aria-pressed': step.done ? 'true' : 'false', key: step.id, onClick: () => toggleStep(step.id), className: `w-full text-start flex items-center gap-3 p-3 rounded-lg border transition-all ${step.done ? 'bg-green-50 border-green-600' : 'bg-white border-slate-100 hover:border-slate-200'}` },
                                 h('div', { className: `w-5 h-5 rounded-full border-2 flex items-center justify-center text-[11px] transition-all ${step.done ? 'bg-green-700 border-green-700 text-white' : 'border-slate-300'}` }, step.done ? '✓' : ''),
                                 h('span', { className: `text-xs ${step.done ? 'text-green-700 line-through' : 'text-slate-700'}` }, step.label)
                             ))
@@ -12640,15 +13142,13 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                     }, '+')
                 ),
                 h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
-                    roles.map(r => h('button', { "aria-label": "Toggle new role",
-                        key: r.id,
+                    roles.map(r => h('button', { key: r.id,
                         onClick: () => setNewRole(r.id),
                         className: `px-2 py-1 rounded-full text-[11px] font-bold border transition-all ${newRole === r.id ? roleColors[r.color] : 'bg-white border-slate-100 text-slate-600'}`
                     }, r.label))
                 ),
                 h('div', { className: 'flex gap-2' },
-                    strengths.map(s => h('button', { "aria-label": "Toggle new strength",
-                        key: s.id,
+                    strengths.map(s => h('button', { key: s.id,
                         onClick: () => setNewStrength(s.id),
                         className: `px-3 py-1 rounded-full text-[11px] font-bold border transition-all ${newStrength === s.id ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-600'}`
                     }, `${s.label}`))
@@ -12758,7 +13258,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 const entry = entries.find(e => e.id === entryId);
                 if (!entry) return;
                 const prompt = `Translate the following family observation into ${translateLang}. Maintain the tone and meaning. Only return the translated text.\n\n"${entry.text}"`;
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setEntries(prev => prev.map(e => e.id === entryId ? { ...e, translated: result } : e));
                 if (addToast) addToast(tt('behavior_lens.toast.translated', 'Translated!'), 'success');
             } catch (err) {
@@ -12775,8 +13275,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
             // Input form
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
-                    categories.map(c => h('button', { "aria-label": "Toggle category",
-                        key: c.id,
+                    categories.map(c => h('button', { key: c.id,
                         onClick: () => setCategory(c.id),
                         className: `px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${category === c.id ? catColors[c.color] : 'bg-white border-slate-100 text-slate-600'}`
                     }, `${c.icon} ${c.label}`))
@@ -13011,7 +13510,8 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
     // Personalized self-regulation toolkit builder (student-facing)
     const SelfRegulationToolkit = ({ studentName, callGemini, t, addToast }) => {
         const [selectedQuadrant, setSelectedQuadrant] = useState(null);
-        const [toolkit, setToolkit] = useState({ high_unpleasant: [], high_pleasant: [], low_unpleasant: [], low_pleasant: [] });
+        // Kept with the student's workspace (it was lost when the panel closed).
+        const [toolkit, setToolkit] = useDurableToolState('selfRegulationToolkit', { high_unpleasant: [], high_pleasant: [], low_unpleasant: [], low_pleasant: [] });
         const [customStrategy, setCustomStrategy] = useState('');
         const [aiLoading, setAiLoading] = useState(false);
         const [showPrint, setShowPrint] = useState(false);
@@ -13188,7 +13688,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 quadrants.map(q => {
                     const c = quadrantColors[q.color];
                     const count = (toolkit[q.id] || []).length;
-                    return h('button', { "aria-label": "Toggle selected quadrant", key: q.id, onClick: () => setSelectedQuadrant(q.id), className: `text-start p-4 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
+                    return h('button', { key: q.id, onClick: () => setSelectedQuadrant(q.id), className: `text-start p-4 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
                         h('div', { className: 'text-3xl mb-1' }, q.emoji),
                         h('h3', { className: `text-xs font-black ${c.text}` }, q.label),
                         h('p', { className: 'text-[11px] text-slate-600 mt-0.5 mb-2' }, q.desc),
@@ -13240,7 +13740,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
         }, [breathPhase]);
 
         const tools = [
-            { id: 'breathe', icon: '🌊', title: (tt('behavior_lens.raw.breathing_exercise', 'Breathing Exercise')), desc: '4-4-6 box breathing with visual animation', color: 'blue' },
+            { id: 'breathe', icon: '🌊', title: (tt('behavior_lens.raw.breathing_exercise', 'Breathing Exercise')), desc: '4-4-6 paced breathing (in 4, hold 4, out 6) with a visual guide', color: 'blue' },
             { id: 'timer', icon: '⏱️', title: (tt('behavior_lens.raw.visual_break_timer', 'Visual Break Timer')), desc: 'Countdown timer for calm-down breaks', color: 'green' },
             { id: 'sensory', icon: '🎧', title: (tt('behavior_lens.raw.sensory_break_menu', 'Sensory Break Menu')), desc: 'Quick sensory strategies organized by type', color: 'purple' },
             { id: 'grounding', icon: '🌿', title: '5-4-3-2-1 Grounding', desc: 'Guided grounding exercise for anxiety', color: 'teal' },
@@ -13271,7 +13771,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
             ),
             // Tool selector or active tool
             !activeTool && h('div', { className: 'grid grid-cols-2 gap-3' },
-                tools.map(t => h('button', { "aria-label": "Toggle active tool",
+                tools.map(t => h('button', {
                     key: t.id,
                     onClick: () => setActiveTool(t.id),
                     className: `text-start p-4 rounded-xl border-2 ${toolColors[t.color]} shadow-sm hover:shadow-md transition-all`
@@ -13290,7 +13790,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
             activeTool === 'breathe' && h('div', { className: 'bg-blue-50 rounded-2xl border-2 border-blue-200 p-8 text-center' },
                 h('div', { className: 'mb-6' },
                     h('div', {
-                        className: `mx-auto rounded-full bg-gradient-to-br from-blue-300 to-cyan-400 flex items-center justify-center transition-all duration-[4000ms] ease-in-out shadow-lg`,
+                        className: `mx-auto rounded-full bg-gradient-to-br from-blue-300 to-cyan-400 flex items-center justify-center transition-all duration-[4000ms] ease-in-out motion-reduce:transition-none shadow-lg`,
                         style: {
                             width: breathPhase === 'inhale' || breathPhase === 'hold' ? '160px' : breathPhase === 'exhale' ? '80px' : '100px',
                             height: breathPhase === 'inhale' || breathPhase === 'hold' ? '160px' : breathPhase === 'exhale' ? '80px' : '100px',
@@ -13329,8 +13829,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 ),
                 !timerRunning && timerRemaining === timerSeconds && h('div', { className: 'flex justify-center gap-2 mb-4' },
                     [30, 60, 120, 300].map(sec =>
-                        h('button', { "aria-label": "Toggle timer seconds",
-                            key: sec,
+                        h('button', { key: sec,
                             onClick: () => { setTimerSeconds(sec); setTimerRemaining(sec); },
                             className: `px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${timerSeconds === sec ? 'bg-green-700 text-white border-green-500' : 'bg-white text-green-600 border-green-600'}`
                         }, sec < 60 ? `${sec}s` : `${sec / 60}m`)
@@ -13338,8 +13837,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 ),
                 h('div', { className: 'flex justify-center gap-3' },
                     !timerRunning
-                        ? h('button', { "aria-label": "Toggle timer running",
-                            onClick: () => { if (timerRemaining <= 0) setTimerRemaining(timerSeconds); setTimerRunning(true); },
+                        ? h('button', { onClick: () => { if (timerRemaining <= 0) setTimerRemaining(timerSeconds); setTimerRunning(true); },
                             className: 'px-6 py-3 bg-green-700 text-white rounded-xl font-bold shadow-lg hover:bg-green-800'
                         }, timerRemaining <= 0 ? '🔄 Restart' : '▶️ Start')
                         : h('button', { "aria-label": "Pause",
@@ -13468,8 +13966,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 h('h3', { className: 'text-xs font-bold text-slate-600 mb-2' }, '📊 From Your ABC Data:'),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                     topBehaviors.map(([b, count]) =>
-                        h('button', { "aria-label": "Toggle form",
-                            key: b,
+                        h('button', { key: b,
                             onClick: () => setForm(prev => ({ ...prev, targetBehavior: b })),
                             className: 'px-2.5 py-1 bg-slate-50 text-slate-700 rounded-lg text-[11px] font-bold border border-slate-100 hover:bg-slate-100'
                         }, `${b} (${count}×)`)
@@ -13487,8 +13984,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                     className: 'w-full px-3 py-2 border border-red-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-300 mb-2 bg-red-50'
                 }),
                 h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
-                    functions.map(f => h('button', { "aria-label": "Toggle form",
-                        key: f.id,
+                    functions.map(f => h('button', { key: f.id,
                         onClick: () => setForm(prev => ({ ...prev, function: f.id })),
                         className: `px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${form.function === f.id ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-600'}`
                     }, f.label))
@@ -13584,8 +14080,7 @@ JSON only, no markdown.`;
                             plan.reinforcement && h('p', { className: 'text-[11px] text-amber-600 mb-2' }, `⭐ ${plan.reinforcement}`),
                             h('div', { className: 'flex gap-1' },
                                 progressOptions.map(po =>
-                                    h('button', { "aria-label": "Toggle plans",
-                                        key: po.id,
+                                    h('button', { key: po.id,
                                         onClick: () => setPlans(prev => prev.map(p => p.id === plan.id ? { ...p, progress: po.id } : p)),
                                         className: `px-2 py-0.5 rounded-full text-[11px] font-bold transition-all ${plan.progress === po.id ? po.color : 'bg-white text-slate-600 border border-slate-100'}`
                                     }, po.label)
@@ -13599,12 +14094,16 @@ JSON only, no markdown.`;
 
     // ─── BehaviorMomentumPlanner ─────────────────────────────────────────
     // High-p request sequencing for building behavioral momentum
+    // High-p request sequences. The request bank, sequences and attempt log were plain
+    // component state (lost on close); with 0 attempts the rate showed a red "0%";
+    // "Partial" silently counted as a failure; and "Momentum is working!" was declared
+    // with no comparison to how often the low-p request is followed WITHOUT a sequence.
     const BehaviorMomentumPlanner = ({ studentName, abcEntries, callGemini, t, addToast }) => {
-        const [lowPRequest, setLowPRequest] = useState('');
-        const [highPBank, setHighPBank] = useState([]);
+        const [lowPRequest, setLowPRequest] = useDurableToolState('momentumLowP', '');
+        const [highPBank, setHighPBank] = useDurableToolState('momentumHighPBank', []);
         const [newHighP, setNewHighP] = useState('');
-        const [sequences, setSequences] = useState([]);
-        const [attempts, setAttempts] = useState([]);
+        const [sequences, setSequences] = useDurableToolState('momentumSequences', []);
+        const [attempts, setAttempts] = useDurableToolState('momentumAttempts', []);
         const [aiLoading, setAiLoading] = useState(false);
         const [activeView, setActiveView] = useState('setup'); // setup | sequence | log
 
@@ -13620,7 +14119,7 @@ JSON only, no markdown.`;
             if (!callGemini) return;
             setAiLoading(true);
             try {
-                const abcContext = abcEntries?.length > 0 ? `ABC Data (${abcEntries.length} entries): ${abcEntries.slice(0, 5).map(e => `A: ${e.antecedent || '?'}, B: ${e.behavior || '?'}`).join('; ')}` : 'No ABC data available';
+                const abcContext = abcEntries?.length > 0 ? `ABC Data (${abcEntries.length} entries): ${abcEntriesNewestFirst(abcEntries).slice(0, 5).map(e => `A: ${e.antecedent || '?'}, B: ${e.behavior || '?'}`).join('; ')}` : 'No ABC data available';
                 const existing = highPBank.map(h => h.request).join(', ');
                 const prompt = `You are a BCBA planning a behavioral momentum (high-p request) sequence for a student.
 ${RESTORATIVE_PREAMBLE}
@@ -13669,8 +14168,9 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
         };
 
         const successCount = attempts.filter(a => a.outcome === 'success').length;
+        const partialCount = attempts.filter(a => a.outcome === 'partial').length;
         const totalAttempts = attempts.length;
-        const successRate = totalAttempts > 0 ? Math.round((successCount / totalAttempts) * 100) : 0;
+        const successRate = totalAttempts > 0 ? Math.round((successCount / totalAttempts) * 100) : null;
 
         const views = [
             { id: 'setup', label: '⚙️ Setup', desc: 'Build request bank' },
@@ -13687,7 +14187,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
             ),
             // View tabs
             h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
-                views.map(v => h('button', { "aria-label": "Toggle active view", key: v.id, onClick: () => setActiveView(v.id),
+                views.map(v => h('button', { 'aria-pressed': activeView === v.id ? 'true' : 'false', key: v.id, onClick: () => setActiveView(v.id),
                     className: `flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${activeView === v.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}` },
                     `${v.label}`
                 ))
@@ -13711,7 +14211,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                     highPBank.length > 0 && h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
                         highPBank.map(hp => h('span', { key: hp.id, className: 'inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-lg text-[11px] font-bold border border-green-200' },
                             hp.request,
-                            h('button', { onClick: () => removeHighP(hp.id), title: 'Close', 'aria-label': 'Close', className: 'text-green-700 hover:text-red-500 ms-1' }, '✕')
+                            h('button', { onClick: () => removeHighP(hp.id), title: 'Remove', 'aria-label': 'Remove ' + hp.request, className: 'text-green-700 hover:text-red-500 ms-1' }, '✕')
                         ))
                     ),
                     callGemini && h('button', { onClick: handleAISuggest, disabled: aiLoading, 'aria-busy': aiLoading, className: 'w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-xs disabled:opacity-50 transition-all' }, aiLoading ? '⏳ Thinking...' : '🧠 AI Suggest High-P Requests')
@@ -13775,8 +14275,9 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                         h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Successes')
                     ),
                     h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 text-center shadow-sm' },
-                        h('div', { className: `text-2xl font-black ${successRate >= 70 ? 'text-green-600' : successRate >= 40 ? 'text-amber-600' : 'text-red-600'}` }, `${successRate}%`),
-                        h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Success Rate')
+                        h('div', { 'data-momentum-rate': successRate == null ? 'none' : successRate, className: `text-2xl font-black ${successRate == null ? 'text-slate-600' : successRate >= 70 ? 'text-green-600' : successRate >= 40 ? 'text-amber-600' : 'text-red-600'}` }, successRate == null ? '—' : `${successRate}%`),
+                        h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Worked'),
+                        partialCount > 0 && h('div', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.momentum.partial_count', '{n} partial, not counted as worked', { n: partialCount }))
                     )
                 ),
                 // Attempt log
@@ -13800,9 +14301,9 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                 // Recommendations
                 totalAttempts >= 3 && h('div', { className: `p-4 rounded-xl border-2 ${successRate >= 70 ? 'bg-green-50 border-green-200' : successRate >= 40 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}` },
                     h('h4', { className: 'text-xs font-black mb-1' },
-                        successRate >= 70 ? '🌟 Momentum is working!' : successRate >= 40 ? '🔄 Adjust your approach' : '⚠️ Consider changes'),
+                        successRate >= 70 ? '🌟 High follow-through after the sequence' : successRate >= 40 ? '🔄 Adjust your approach' : '⚠️ Consider changes'),
                     h('p', { className: 'text-[11px] leading-relaxed' },
-                        successRate >= 70 ? 'The high-p sequence is effectively building momentum. Continue using and gradually increase low-p demand complexity.' :
+                        successRate >= 70 ? 'The request was followed after most sequences. To know the sequence is what helped, compare with how often the same request is followed without it. Then gradually increase the demand.' :
                         successRate >= 40 ? 'Partial success — try adding more high-p requests before the low-p, or choose even easier high-p tasks.' :
                         'Low success rate — first check whether the "no" is meaningful: a student who keeps declining may be telling you the demand needs to change. If the request is genuinely in their interest, verify the high-p requests are truly high-probability for this student, and consider making the low-p request easier or adjusting reinforcement.')
                 )
@@ -13904,7 +14405,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                                 h('span', { className: 'text-[11px] text-slate-600 font-bold flex-1' }, item),
                                 h('div', { className: 'flex gap-1' },
                                     ratings.map(r =>
-                                        h('button', { "aria-label": "Rate",
+                                        h('button', { 'aria-label': item + ': ' + r.label.replace(/^\S+\s/, ''), 'aria-pressed': responses[item] === r.value ? 'true' : 'false',
                                             key: r.value,
                                             onClick: () => handleRate(item, r.value),
                                             className: `w-7 h-7 rounded-full text-[11px] transition-all ${responses[item] === r.value ? r.color : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`
@@ -13928,7 +14429,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                         'aria-label': 'Add a custom reinforcer',
                         className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-300'
                     }),
-                    h('button', { "aria-label": "Rate",
+                    h('button', { 'aria-label': 'Add custom reinforcer',
                         onClick: () => { if (newCustom.trim()) { setCustomItems(prev => [...prev, newCustom.trim()]); setNewCustom(''); } },
                         className: 'px-3 py-2 bg-amber-700 text-white rounded-lg text-sm font-bold'
                     }, '+')
@@ -13939,7 +14440,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                             h('span', { className: 'text-[11px] text-slate-600 font-bold flex-1' }, item),
                             h('div', { className: 'flex gap-1' },
                                 ratings.map(r =>
-                                    h('button', { "aria-label": "Rate",
+                                    h('button', { 'aria-label': item + ': ' + r.label.replace(/^\S+\s/, ''), 'aria-pressed': responses[item] === r.value ? 'true' : 'false',
                                         key: r.value,
                                         onClick: () => handleRate(item, r.value),
                                         className: `w-7 h-7 rounded-full text-[11px] transition-all ${responses[item] === r.value ? r.color : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`
@@ -13993,7 +14494,7 @@ ${RESTORATIVE_PREAMBLE}
 Analyze these ABC entries and recommend specific environmental modifications to PREVENT behaviors before they occur.
 
 ABC Data (${abcEntries.length} entries):
-${abcEntries.slice(-15).map((e, i) => `${i + 1}. A: "${e.antecedent}" → B: "${e.behavior}" → C: "${e.consequence}" | Setting: "${e.setting || 'N/A'}"`).join('\n')}
+${abcEntriesNewestFirst(abcEntries).slice(0, 15).map((e, i) => `${i + 1}. A: "${e.antecedent}" → B: "${e.behavior}" → C: "${e.consequence}" | Setting: "${e.setting || 'N/A'}"`).join('\n')}
 
 For each recommendation, provide:
 
@@ -14015,7 +14516,7 @@ For each recommendation, provide:
 
 For each suggestion, rate the effort level (Low/Medium/High) and expected impact (Low/Medium/High).`;
 
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 setAiSuggestions(result);
                 if (addToast) addToast(tt('behavior_lens.toast.modification_plan_generated', 'Modification plan generated'), 'success');
             } catch (err) {
@@ -14141,8 +14642,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                         mod.rationale && h('p', { className: 'text-[11px] text-slate-600 italic mb-2' }, `💡 ${mod.rationale}`),
                         h('div', { className: 'flex gap-1' },
                             statusOptions.map(so =>
-                                h('button', { "aria-label": "Toggle mods",
-                                    key: so.id,
+                                h('button', { key: so.id,
                                     onClick: () => setMods(prev => prev.map(m => m.id === mod.id ? { ...m, status: so.id } : m)),
                                     className: `px-2 py-0.5 rounded-full text-[11px] font-bold transition-all ${mod.status === so.id ? so.color : 'bg-white text-slate-600 border border-slate-100'}`
                                 }, so.label)
@@ -14346,8 +14846,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                             onClick: () => handleSaveEdit(note.id),
                                             className: 'px-3 py-1 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-800'
                                         }, '✅ ' + (tt('common.save', 'Save'))),
-                                        h('button', { "aria-label": "Toggle editing id",
-                                            onClick: () => { setEditingId(null); setEditText(''); },
+                                        h('button', { onClick: () => { setEditingId(null); setEditText(''); },
                                             className: 'px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200'
                                         }, tt('common.cancel', 'Cancel'))
                                     )
@@ -14356,7 +14855,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                     h('div', { className: 'flex items-start justify-between' },
                                         h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1 whitespace-pre-wrap' }, note.text),
                                         h('div', { className: 'flex gap-1 ms-2 opacity-0 group-hover:opacity-100 transition-opacity' },
-                                            h('button', { "aria-label": "Toggle editing id",
+                                            h('button', { 'aria-label': 'Edit note',
                                                 onClick: () => { setEditingId(note.id); setEditText(note.text); },
                                                 className: 'p-1 hover:bg-slate-100 rounded text-xs',
                                                 title: (tt('behavior_lens.raw.edit', 'Edit'))
@@ -14402,6 +14901,36 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
         { id: 'complex', label: 'Multi-Function (Complex)', tKey: 'behavior_lens.raw.multifunction_complex', icon: '🧩', scenario: 'A student whose behavior appears to serve multiple functions depending on context', grade: '7th grade', setting: 'middle school, multiple teachers' },
         { id: 'custom', label: 'Custom Scenario', tKey: 'behavior_lens.raw.custom_scenario', icon: '✏️', scenario: 'Define your own case study parameters', grade: '', setting: '' },
     ];
+
+    // Case study scoring. The results screen said "Case Study Mastery!" at 70 while the
+    // debrief prompt called only 80+ competent (60-79 "developing, some areas needing
+    // attention"), so a 72 was told both. A phase whose AI reply did not match
+    // "OVERALL: n/25" scored 0 without a word, and the total trusted the AI's own sum.
+    // Now the five sub-scores are added here, an unread phase is "not scored" (not 0),
+    // and one set of bands drives the prompt and the screen.
+    function parseCaseStudyScore(text) {
+        const src = String(text || '');
+        const line = /SCORES:\s*([^\n]+)/i.exec(src);
+        if (line) {
+            const parts = (line[1].match(/\d+(?:\.\d+)?\s*\/\s*5\b/g) || []).map(part => parseFloat(part));
+            if (parts.length === 5 && parts.every(v => v >= 1 && v <= 5)) return parts.reduce((a, b) => a + b, 0);
+        }
+        const overall = /OVERALL:\s*(\d+)\s*\/\s*25/i.exec(src);
+        if (overall) { const v = parseInt(overall[1], 10); if (v >= 0 && v <= 25) return v; }
+        return null;
+    }
+    function caseStudyTotals(phases, evaluations) {
+        const list = Array.isArray(phases) ? phases : [];
+        const scored = list.filter(ph => evaluations && evaluations[ph.id] && Number.isFinite(evaluations[ph.id].score));
+        const total = scored.reduce((sum, ph) => sum + evaluations[ph.id].score, 0);
+        const max = scored.length * 25;
+        const pct = max > 0 ? Math.round(total / max * 100) : null;
+        return { total, max, pct, scored: scored.length, complete: list.length > 0 && scored.length === list.length,
+            unscored: list.filter(ph => !scored.includes(ph)).map(ph => ph.label),
+            band: pct == null ? null : pct >= 80 ? 'competent' : pct >= 60 ? 'developing' : 'more_practice' };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensCaseStudy = Object.freeze({ parseCaseStudyScore, caseStudyTotals });
 
     const CaseStudyEngine = ({ callGemini, t, addToast }) => {
         const [difficulty, setDifficulty] = useState(null);
@@ -14463,7 +14992,7 @@ Session 2: [count]
 
 Respond ONLY with the three sections above. No preamble.`;
 
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 if (!result) throw new Error('Empty response');
 
                 // Parse sections
@@ -14537,12 +15066,11 @@ FEEDBACK:
 
 ${diffLabel === 'guided' ? '\nHINT FOR NEXT PHASE:\n[A helpful hint for what to focus on next]' : ''}`;
 
-                const result = await callGemini(prompt, true);
-                const scoreMatch = result.match(/OVERALL:\s*(\d+)\s*\/\s*25/i);
-                const score = scoreMatch ? parseInt(scoreMatch[1]) : null;
+                const result = await callGemini(prompt, false);
+                const score = parseCaseStudyScore(result);
 
                 setEvaluations(prev => ({ ...prev, [phase.id]: { text: result, score } }));
-                if (addToast) addToast(t('behavior_lens.toast.phase_n_evaluated_n') || `Phase ${phaseIdx + 1} evaluated! ${score ? score + '/25' : ''}`, 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.phase_n_evaluated_n_v2', 'Phase {v1} evaluated! {v2}', { v1: phaseIdx + 1, v2: score ? score + '/25' : '' }), 'success');
             } catch (err) {
                 warnLog('CaseStudy evaluation error:', err);
                 if (addToast) addToast(tt('behavior_lens.toast.evaluation_failed_try_again', 'Evaluation failed. Try again.'), 'error');
@@ -14556,25 +15084,25 @@ ${diffLabel === 'guided' ? '\nHINT FOR NEXT PHASE:\n[A helpful hint for what to 
             setLoading(true);
             try {
                 const allResponses = CASE_STUDY_PHASES.map(p => `### ${p.label}\n${userResponses[p.id] || '(not completed)'}\n\n### Evaluation\n${evaluations[p.id]?.text || '(not evaluated)'}`).join('\n\n---\n\n');
-                const totalScore = CASE_STUDY_PHASES.reduce((sum, p) => sum + (evaluations[p.id]?.score || 0), 0);
+                const totals = caseStudyTotals(CASE_STUDY_PHASES, evaluations);
 
                 const prompt = `You are an ABA professor providing an end-of-case reflection and debrief for a graduate student who just completed a 4-phase case study exercise.
 
 ${allResponses}
 
-Total Score: ${totalScore}/100
+Total Score: ${totals.scored ? `${totals.total}/${totals.max} over ${totals.scored} scored phase(s)` : 'no phase was scored'}${totals.unscored.length ? ` (not scored: ${totals.unscored.join(', ')})` : ''}
 
 Provide a comprehensive but encouraging debrief that includes:
 1. **Strengths Demonstrated** — What did the student do particularly well across all phases?
 2. **Growth Areas** — Where should the student focus their studies? Be specific and constructive.
 3. **Clinical Takeaway** — One key clinical insight from this case that the student should remember.
 4. **Recommended Resources** — 2-3 specific topics or ABA concepts to review further.
-5. **Competency Assessment** — ${totalScore >= 80 ? 'The student has demonstrated competency.' : totalScore >= 60 ? 'The student shows developing competency with some areas needing attention.' : 'The student would benefit from additional practice before working with real cases.'}
+5. **Competency Assessment** — ${!totals.complete ? 'Not every phase was scored, so do not judge overall competency; comment on the scored phases only.' : totals.band === 'competent' ? 'The student has demonstrated competency.' : totals.band === 'developing' ? 'The student shows developing competency with some areas needing attention.' : 'The student would benefit from additional practice before working with real cases.'}
 
 Keep it encouraging and professional. Under 300 words.`;
 
-                const result = await callGemini(prompt, true);
-                setOverallScore({ total: totalScore, debrief: result });
+                const result = await callGemini(prompt, false);
+                setOverallScore({ total: totals.total, totals, debrief: result });
                 setShowResults(true);
                 if (addToast) addToast(tt('behavior_lens.toast.case_study_complete_review_your_debrief', 'Case study complete! Review your debrief.'), 'success');
             } catch (err) {
@@ -14599,18 +15127,21 @@ Keep it encouraging and professional. Under 300 words.`;
 
         // ── Results view ──
         if (showResults && overallScore) {
-            const pct = Math.round((overallScore.total / 100) * 100);
-            const passed = pct >= 70;
+            const totals = overallScore.totals || caseStudyTotals(CASE_STUDY_PHASES, evaluations);
+            const pct = totals.pct == null ? 0 : totals.pct;
+            const passed = totals.complete && totals.band === 'competent';
             return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
                 h('div', { className: `text-center py-8 rounded-2xl border-2 ${passed ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300' : 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300'}` },
                     h('div', { className: 'text-6xl mb-3' }, passed ? '🏆' : '📚'),
-                    h('h2', { className: `text-2xl font-black ${passed ? 'text-green-800' : 'text-amber-800'}` }, passed ? 'Case Study Mastery!' : 'Keep Practicing!'),
-                    h('p', { className: 'text-lg font-bold mt-2' }, `${overallScore.total}/100 (${pct}%)`),
+                    h('h2', { className: `text-2xl font-black ${passed ? 'text-green-800' : 'text-amber-800'}` }, passed ? 'Case Study Mastery!' : totals.complete && totals.band === 'developing' ? 'Developing: Keep Practicing' : 'Keep Practicing!'),
+                    h('p', { className: 'text-lg font-bold mt-2', 'data-case-total': 'true' }, totals.max > 0 ? `${totals.total}/${totals.max} (${pct}%)` : tt('behavior_lens.case.no_scores', 'No phase was scored')),
+                    totals.unscored.length > 0 && h('p', { role: 'status', 'data-case-unscored': 'true', className: 'text-xs text-amber-800 mt-1' }, tt('behavior_lens.case.unscored', 'Not scored: {list}. The feedback could not be read as a score; re-evaluate those phases for a complete result.', { list: totals.unscored.join(', ') })),
                     h('div', { className: 'flex justify-center gap-3 mt-3' },
                         CASE_STUDY_PHASES.map((p, i) => {
-                            const s = evaluations[p.id]?.score || 0;
+                            const s = evaluations[p.id]?.score;
+                            const has = Number.isFinite(s);
                             return h('div', { key: p.id, className: 'text-center' },
-                                h('div', { className: `w-12 h-12 rounded-full flex items-center justify-center text-sm font-black mx-auto ${s >= 20 ? 'bg-green-100 text-green-700' : s >= 15 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}` }, s),
+                                h('div', { className: `w-12 h-12 rounded-full flex items-center justify-center text-sm font-black mx-auto ${!has ? 'bg-slate-100 text-slate-600' : s >= 20 ? 'bg-green-100 text-green-700' : s >= 15 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}` }, has ? s : 'n/a'),
                                 h('p', { className: 'text-[11px] text-slate-600 mt-1' }, `Phase ${i + 1}`)
                             );
                         })
@@ -14655,7 +15186,7 @@ Keep it encouraging and professional. Under 300 words.`;
                     h('button', { onClick: resetCase, className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← Exit Case Study'),
                     h('div', { className: 'flex gap-1' },
                         CASE_STUDY_PHASES.map((p, i) =>
-                            h('button', { "aria-label": "Toggle current phase",
+                            h('button', { 'aria-label': `Phase ${i + 1}: ${p.label}`, 'aria-current': i === currentPhase ? 'step' : undefined,
                                 key: p.id,
                                 onClick: () => setCurrentPhase(i),
                                 className: `w-8 h-8 rounded-full text-[11px] font-black flex items-center justify-center transition-all ${
@@ -14743,7 +15274,7 @@ Keep it encouraging and professional. Under 300 words.`;
                         onClick: () => setCurrentPhase(currentPhase - 1),
                         className: 'px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200'
                     }, '← Previous Phase'),
-                    currentPhase < CASE_STUDY_PHASES.length - 1 && h('button', { "aria-label": "Toggle current phase",
+                    currentPhase < CASE_STUDY_PHASES.length - 1 && h('button', {
                         onClick: () => setCurrentPhase(currentPhase + 1),
                         className: 'flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700'
                     }, `Next Phase: ${CASE_STUDY_PHASES[currentPhase + 1]?.label} →`),
@@ -14784,8 +15315,7 @@ Keep it encouraging and professional. Under 300 words.`;
                 h('h3', { className: 'text-sm font-bold text-slate-700 mb-3' }, '🎚️ Step 1: Select Difficulty'),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
                     CASE_STUDY_DIFFICULTY.map(d =>
-                        h('button', { "aria-label": "Toggle difficulty",
-                            key: d.id,
+                        h('button', { key: d.id,
                             onClick: () => setDifficulty(d),
                             className: `text-start p-3 rounded-xl border-2 transition-all ${
                                 difficulty?.id === d.id ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 hover:border-indigo-600 bg-white'
@@ -14803,8 +15333,7 @@ Keep it encouraging and professional. Under 300 words.`;
                 h('h3', { className: 'text-sm font-bold text-slate-700 mb-3' }, '📄 Step 2: Choose Case Scenario'),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     CASE_TEMPLATES.map(tmpl =>
-                        h('button', { "aria-label": "Toggle selected template",
-                            key: tmpl.id,
+                        h('button', { key: tmpl.id,
                             onClick: () => setSelectedTemplate(tmpl),
                             className: `text-start p-3 rounded-xl border-2 transition-all ${
                                 selectedTemplate?.id === tmpl.id ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 hover:border-indigo-600 bg-white'
@@ -14867,10 +15396,10 @@ Keep it encouraging and professional. Under 300 words.`;
             try {
                 const contextBlock = buildStudentContext ? buildStudentContext() : '';
                 const abcSummary = (abcEntries || []).length > 0
-                    ? `\nABC Data Summary: ${abcEntries.length} entries recorded. Most recent: ${JSON.stringify(abcEntries[0] || {}).slice(0, 200)}`
+                    ? `\nABC Data Summary: ${abcEntries.length} entries recorded. Most recent: ${JSON.stringify(abcEntriesNewestFirst(abcEntries)[0] || {}).slice(0, 200)}`
                     : '';
                 const analysisSummary = aiAnalysis
-                    ? `\nPrevious AI Analysis Summary: ${String(aiAnalysis).slice(0, 300)}`
+                    ? `\nPrevious AI Analysis Summary: ${aiAnalysisText(aiAnalysis).slice(0, 300)}`
                     : '';
                 // Build richer context thread (multi-turn memory up to 10 messages)
                 const threadHistory = messages.slice(-10).map(m => `${m.role === 'user' ? 'Teacher' : 'AlloBot'}: ${m.content}`).join('\n');
@@ -14884,7 +15413,7 @@ ${threadHistory}
 Teacher: ${text}
 
 Respond helpfully and concisely as AlloBot:`;
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(prompt, false);
                 // Null from callGemini means the consent gate blocked it — the
                 // toast from the gate already explains why; don't double up
                 // with a bot "I was unable to..." message that masks the cause.
@@ -14932,8 +15461,7 @@ Respond helpfully and concisely as AlloBot:`;
                     h('p', { className: 'text-xs text-slate-600 mt-1 max-w-md mx-auto' }, tt('behavior_lens.allobot_chat.empty_desc', 'I can help with FBA strategies, intervention ideas, data interpretation, de-escalation techniques, and more.')),
                     h('div', { className: 'flex flex-wrap justify-center gap-2 mt-4' },
                         ['How do I interpret this ABC data?', 'Suggest replacement behaviors', 'Help me write a BIP goal', 'De-escalation strategies'].map((q, i) =>
-                            h('button', { "aria-label": "Toggle input",
-                                key: i,
+                            h('button', { key: i,
                                 onClick: () => setInput(q),
                                 className: 'text-xs px-3 py-1.5 bg-white border border-indigo-600 rounded-full text-indigo-600 hover:bg-indigo-50 transition-colors font-medium'
                             }, q)
@@ -15000,8 +15528,7 @@ Respond helpfully and concisely as AlloBot:`;
 
         return h('div', { className: 'bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300' },
             // Collapsed header
-            h('button', { 'aria-expanded': String(isExpanded), "aria-label": "Toggle is expanded",
-                onClick: () => setIsExpanded(!isExpanded),
+            h('button', { 'aria-expanded': String(isExpanded), onClick: () => setIsExpanded(!isExpanded),
                 className: 'w-full flex items-center justify-between px-4 py-3 text-start hover:bg-teal-100/50 transition-colors'
             },
                 h('div', { className: 'flex items-center gap-2' },
@@ -15239,23 +15766,53 @@ Respond helpfully and concisely as AlloBot:`;
     // district's protocol (VTA, STAG, or NTAC frameworks). The old
     // "Aligned with Virginia Threat Assessment Guidelines" framing was an
     // overclaim and was reframed 2026-06-02 per memory:project_alloflow_pipeline_findings.
+    const RISK_SCREENING_ITEMS = [
+        { id: 'harm_self', cat: 'safety', q: 'Has the student expressed thoughts of harming themselves?', severity: 'high' },
+        { id: 'harm_others', cat: 'safety', q: 'Has the student expressed thoughts of harming others?', severity: 'high' },
+        { id: 'weapon', cat: 'safety', q: 'Has the student referenced weapons, brought weapons, or drawn weapons?', severity: 'high' },
+        { id: 'escalation', cat: 'pattern', q: 'Has the intensity or frequency of behaviors been escalating over recent weeks?', severity: 'medium' },
+        { id: 'withdrawn', cat: 'social', q: 'Has the student become noticeably more withdrawn or isolated?', severity: 'medium' },
+        { id: 'peer_conflict', cat: 'social', q: 'Is there ongoing, unresolved peer conflict or bullying involvement?', severity: 'medium' },
+        { id: 'home_change', cat: 'context', q: 'Are there known significant changes at home (family crisis, housing instability)?', severity: 'medium' },
+        { id: 'substance', cat: 'context', q: 'Are there concerns about substance use?', severity: 'medium' },
+        { id: 'hopeless', cat: 'emotional', q: 'Has the student expressed hopelessness about their future?', severity: 'high' },
+        { id: 'plan', cat: 'safety', q: 'Has the student communicated a specific plan to act on harmful thoughts?', severity: 'critical' },
+    ];
+    // The level used to count only "Yes" on high items and appeared only after all ten
+    // answers: "Yes" to self-harm thoughts alone said "check-in within the week" (school
+    // suicide-prevention policy calls for a same-day risk assessment), "Unsure" about a
+    // plan could read LOW, and a "Yes" on the plan showed nothing until every item was
+    // answered. Now any "Yes" on a safety item means act today, "Unsure" on one is never
+    // treated as "No", and those levels show as soon as they are answered. LOW needs
+    // every item answered "No". Pure, so the rule is tested directly.
+    function assessRiskScreening(responses) {
+        responses = responses || {};
+        const is = (id, value) => responses[id] === value;
+        const SAFETY = ['plan', 'harm_self', 'harm_others', 'weapon'];
+        const answered = RISK_SCREENING_ITEMS.filter(it => responses[it.id] === 'yes' || responses[it.id] === 'no' || responses[it.id] === 'unsure').length;
+        const complete = answered === RISK_SCREENING_ITEMS.length;
+        const reasons = [];
+        SAFETY.forEach(id => { if (is(id, 'yes')) reasons.push(id + ':yes'); });
+        SAFETY.forEach(id => { if (is(id, 'unsure')) reasons.push(id + ':unsure'); });
+        if (is('hopeless', 'yes')) reasons.push('hopeless:yes');
+        const concerns = RISK_SCREENING_ITEMS.filter(it => it.severity === 'medium' && is(it.id, 'yes')).map(it => it.id);
+        const unsureOther = RISK_SCREENING_ITEMS.filter(it => SAFETY.indexOf(it.id) === -1 && is(it.id, 'unsure')).map(it => it.id);
+        let level;
+        if (SAFETY.some(id => is(id, 'yes'))) level = 'critical';
+        else if (SAFETY.some(id => is(id, 'unsure')) || is('hopeless', 'yes')) level = 'high';
+        else if (concerns.length || unsureOther.length) level = complete ? 'elevated' : null;
+        else level = complete ? 'low' : null;
+        return { level: level, answered: answered, total: RISK_SCREENING_ITEMS.length, complete: complete, reasons: reasons, concerns: concerns, unsure: unsureOther };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensRiskScreening = Object.freeze({ assess: assessRiskScreening, items: RISK_SCREENING_ITEMS });
+
     const RiskScreening = ({ studentName, abcEntries, callGemini, t, addToast }) => {
         const [responses, setResponses] = useState({});
         const [aiInsight, setAiInsight] = useState('');
         const [loading, setLoading] = useState(false);
 
-        const SCREENING_ITEMS = [
-            { id: 'harm_self', cat: 'safety', q: 'Has the student expressed thoughts of harming themselves?', severity: 'high' },
-            { id: 'harm_others', cat: 'safety', q: 'Has the student expressed thoughts of harming others?', severity: 'high' },
-            { id: 'weapon', cat: 'safety', q: 'Has the student referenced weapons, brought weapons, or drawn weapons?', severity: 'high' },
-            { id: 'escalation', cat: 'pattern', q: 'Has the intensity or frequency of behaviors been escalating over recent weeks?', severity: 'medium' },
-            { id: 'withdrawn', cat: 'social', q: 'Has the student become noticeably more withdrawn or isolated?', severity: 'medium' },
-            { id: 'peer_conflict', cat: 'social', q: 'Is there ongoing, unresolved peer conflict or bullying involvement?', severity: 'medium' },
-            { id: 'home_change', cat: 'context', q: 'Are there known significant changes at home (family crisis, housing instability)?', severity: 'medium' },
-            { id: 'substance', cat: 'context', q: 'Are there concerns about substance use?', severity: 'medium' },
-            { id: 'hopeless', cat: 'emotional', q: 'Has the student expressed hopelessness about their future?', severity: 'high' },
-            { id: 'plan', cat: 'safety', q: 'Has the student communicated a specific plan to act on harmful thoughts?', severity: 'critical' },
-        ];
+        const SCREENING_ITEMS = RISK_SCREENING_ITEMS;
 
         const RESPONSE_OPTIONS = [
             { value: 'no', label: 'No', color: 'bg-green-100 border-green-300 text-green-800' },
@@ -15263,19 +15820,28 @@ Respond helpfully and concisely as AlloBot:`;
             { value: 'yes', label: 'Yes', color: 'bg-red-100 border-red-300 text-red-800' },
         ];
 
-        const highCount = SCREENING_ITEMS.filter(it => (it.severity === 'high' || it.severity === 'critical') && responses[it.id] === 'yes').length;
-        const criticalCount = SCREENING_ITEMS.filter(it => it.severity === 'critical' && responses[it.id] === 'yes').length;
-        const answeredCount = Object.keys(responses).length;
-
-        const riskLevel = criticalCount > 0 ? 'critical' : highCount >= 2 ? 'high' : highCount >= 1 ? 'elevated' : 'low';
+        const assessment = assessRiskScreening(responses);
+        const answeredCount = assessment.answered;
+        const riskLevel = assessment.level;
         const riskColors = { critical: 'bg-red-600 text-white', high: 'bg-red-100 text-red-800', elevated: 'bg-amber-100 text-amber-800', low: 'bg-green-100 text-green-800' };
+        const REASON_TEXT = {
+            'plan:yes': tt('behavior_lens.risk.reason_plan_yes', 'A specific plan: follow your crisis protocol now. Do not leave the student alone; notify administration and the school psychologist or counselor immediately.'),
+            'harm_self:yes': tt('behavior_lens.risk.reason_harm_self_yes', 'Thoughts of self-harm: a school mental-health professional should complete a suicide risk assessment today. Notify parents or guardians as your district policy directs.'),
+            'harm_others:yes': tt('behavior_lens.risk.reason_harm_others_yes', 'Thoughts of harming others: notify administration today and follow your district threat assessment protocol.'),
+            'weapon:yes': tt('behavior_lens.risk.reason_weapon_yes', 'Weapons: notify administration today. If a weapon may be at school, follow your emergency protocol immediately.'),
+            'plan:unsure': tt('behavior_lens.risk.reason_plan_unsure', 'Unsure whether there is a plan: this cannot be treated as "No". Ask the school psychologist or counselor to follow up today.'),
+            'harm_self:unsure': tt('behavior_lens.risk.reason_harm_self_unsure', 'Unsure about self-harm thoughts: ask the school psychologist or counselor to follow up within 24 hours.'),
+            'harm_others:unsure': tt('behavior_lens.risk.reason_harm_others_unsure', 'Unsure about thoughts of harming others: consult administration or the school psychologist within 24 hours.'),
+            'weapon:unsure': tt('behavior_lens.risk.reason_weapon_unsure', 'Unsure about weapons: consult administration within 24 hours.'),
+            'hopeless:yes': tt('behavior_lens.risk.reason_hopeless_yes', 'Hopelessness is a recognized suicide risk factor: consult the school psychologist or counselor within 24 hours.')
+        };
 
         const handleAiAnalysis = async () => {
             if (!callGemini) return;
             setLoading(true);
             try {
                 const screeningData = SCREENING_ITEMS.map(it => `${it.q}: ${responses[it.id] || 'not answered'}`).join('\n');
-                const abcSummary = abcEntries.slice(0, 10).map(e => `${e.behavior} (${e.setting || 'unknown setting'})`).join('; ');
+                const abcSummary = abcEntriesNewestFirst(abcEntries).slice(0, 10).map(e => `${e.behavior} (${e.setting || 'unknown setting'})`).join('; ');
                 const result = await callGemini(`You are a school safety consultant. Based on this screening data, provide a brief, actionable summary. Do NOT diagnose or make clinical determinations. Focus on:
 1. Environmental patterns that suggest elevated concern
 2. Recommended next steps (who to notify, what protocols to follow)
@@ -15303,21 +15869,28 @@ Respond in 150 words or fewer. Use bullet points.`);
             h('div', { className: 'bg-amber-50 rounded-xl border-2 border-amber-200 p-4' },
                 h('p', { className: 'text-xs font-bold text-amber-800' }, '⚠️ IMPORTANT: This tool is a screening aid only. It does NOT replace professional threat assessment. Always follow your district\'s safety protocols. If a student is in immediate danger, contact administration and/or 911 immediately.'),
             ),
-            answeredCount === SCREENING_ITEMS.length && h('div', { className: `rounded-xl p-4 border-2 ${riskColors[riskLevel]} font-bold text-center` },
+            riskLevel && h('div', { role: riskLevel === 'critical' || riskLevel === 'high' ? 'alert' : 'status', 'data-risk-level': riskLevel, className: `rounded-xl p-4 border-2 ${riskColors[riskLevel]} font-bold text-center` },
                 h('span', { className: 'text-sm' }, `Risk Level: ${riskLevel.toUpperCase()}`),
                 riskLevel !== 'low' && h('p', { className: 'text-xs mt-1 font-medium' },
-                    riskLevel === 'critical' ? '🚨 IMMEDIATE: Contact administration, school psychologist, and follow crisis protocol NOW.' :
+                    riskLevel === 'critical' ? '🚨 ' + tt('behavior_lens.risk.act_today', 'ACT TODAY: contact administration and the school psychologist or counselor, and follow your crisis protocol.') :
                         riskLevel === 'high' ? '⚠️ Consult school psychologist or counselor within 24 hours. Document and share with team.' :
                             '📋 Monitor closely. Consider scheduling a team check-in within the week.'
-                )
+                ),
+                assessment.reasons.length > 0 && h('ul', { className: 'text-xs mt-2 font-medium text-start list-disc ps-5 space-y-1' },
+                    assessment.reasons.map(code => h('li', { key: code }, REASON_TEXT[code] || code))
+                ),
+                !assessment.complete && h('p', { className: 'text-[11px] mt-2 font-medium' },
+                    tt('behavior_lens.risk.incomplete_note', 'Shown before every item is answered because of the answers above. Answer the rest for a full picture.'))
             ),
+            !riskLevel && answeredCount > 0 && h('p', { 'data-risk-level': 'incomplete', className: 'text-[11px] text-slate-600 text-center' },
+                tt('behavior_lens.risk.answer_all', 'Answer all {n} items to see an overall level. A "Yes" or "Unsure" on a safety item shows guidance right away.', { n: SCREENING_ITEMS.length }) + ` (${answeredCount}/${SCREENING_ITEMS.length})`),
             h('div', { className: 'space-y-3' },
                 SCREENING_ITEMS.map(item =>
                     h('div', { key: item.id, className: `bg-white rounded-xl border ${item.severity === 'critical' ? 'border-red-200' : 'border-slate-200'} p-4 shadow-sm` },
-                        h('p', { className: 'text-xs font-medium text-slate-700 mb-2' }, item.q),
-                        h('div', { className: 'flex gap-2' },
+                        h('p', { id: 'risk-q-' + item.id, className: 'text-xs font-medium text-slate-700 mb-2' }, item.q),
+                        h('div', { role: 'group', 'aria-labelledby': 'risk-q-' + item.id, 'data-risk-item': item.id, className: 'flex gap-2' },
                             RESPONSE_OPTIONS.map(opt =>
-                                h('button', { "aria-label": "Toggle responses",
+                                h('button', { type: 'button', 'aria-pressed': responses[item.id] === opt.value ? 'true' : 'false', 'data-risk-answer': opt.value,
                                     key: opt.value,
                                     onClick: () => setResponses(prev => ({ ...prev, [item.id]: opt.value })),
                                     className: `px-3 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all ${responses[item.id] === opt.value ? opt.color : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`
@@ -15368,7 +15941,7 @@ Respond in 150 words or fewer. Use bullet points.`);
             abcEntries.forEach(e => {
                 const b = (e.behavior || '').trim();
                 if (b) behaviorCounts[b] = (behaviorCounts[b] || 0) + 1;
-                const f = (e.functionTag || '').trim();
+                const f = abcEntryFunction(e);
                 if (f) functionCounts[f] = (functionCounts[f] || 0) + 1;
                 const s = (e.setting || '').trim();
                 if (s) settingCounts[s] = (settingCounts[s] || 0) + 1;
@@ -15379,7 +15952,11 @@ Respond in 150 words or fewer. Use bullet points.`);
                 topBehaviors: Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5),
                 topFunctions: Object.entries(functionCounts).sort((a, b) => b[1] - a[1]).slice(0, 4),
                 topSettings: Object.entries(settingCounts).sort((a, b) => b[1] - a[1]).slice(0, 5),
-                dateRange: abcEntries.length > 0 ? { first: abcEntries[abcEntries.length - 1]?.date, last: abcEntries[0]?.date } : null,
+                dateRange: (() => {
+                    // Entries carry localDate, not date, and are not stored in time order.
+                    const ordered = abcEntriesNewestFirst(abcEntries);
+                    return ordered.length ? { first: abcEntryDay(ordered[ordered.length - 1]), last: abcEntryDay(ordered[0]) } : null;
+                })(),
             };
         }, [abcEntries, observationSessions]);
 
@@ -15407,13 +15984,13 @@ Respond in 150 words or fewer. Use bullet points.`);
                 const templateCtx = buildTemplateContext();
                 const dataAttachments = [];
                 if (attachData.abc && abcEntries.length > 0) {
-                    dataAttachments.push(`\nATTACHED ABC DATA (last 10 entries):\n${abcEntries.slice(0, 10).map((e, i) => `${i + 1}. A: ${e.antecedent || '?'} | B: ${e.behavior || '?'} | C: ${e.consequence || '?'} | Function: ${e.functionTag || '?'} | Setting: ${e.setting || '?'} | Intensity: ${e.intensity || '?'}/5`).join('\n')}`);
+                    dataAttachments.push(`\nATTACHED ABC DATA (last 10 entries, newest first):\n${abcEntriesNewestFirst(abcEntries).slice(0, 10).map((e, i) => `${i + 1}. [${abcEntryDay(e)}] A: ${e.antecedent || '?'} | B: ${e.behavior || '?'} | C: ${e.consequence || '?'} | Function: ${abcEntryFunction(e) || '?'} | Setting: ${e.setting || '?'} | Intensity: ${e.intensity == null ? 'not rated' : e.intensity + '/5'}`).join('\n')}`);
                 }
                 if (attachData.observations && (observationSessions || []).length > 0) {
                     dataAttachments.push(`\nATTACHED OBSERVATION SUMMARY: ${dataStats.totalObs} observation sessions recorded`);
                 }
                 if (attachData.aiAnalysis && aiAnalysis) {
-                    dataAttachments.push(`\nATTACHED AI ANALYSIS SUMMARY:\n${aiAnalysis.substring(0, 600)}`);
+                    dataAttachments.push(`\nATTACHED AI ANALYSIS SUMMARY (AI-assisted, not a clinical conclusion):\n${aiAnalysisText(aiAnalysis, 600)}`);
                 }
                 const result = await callGemini(`Generate a professional BCBA handoff packet for a student behavioral case. Include:
 1. Referral Information & Urgency
@@ -15460,8 +16037,7 @@ Format as a professional, structured report with clear sections and headers. Kee
             // Tab navigation — 3 tabs now
             h('div', { className: 'flex gap-2' },
                 ['dashboard', 'template', 'packet'].map(mode =>
-                    h('button', { "aria-label": "Toggle view mode",
-                        key: mode,
+                    h('button', { key: mode,
                         onClick: () => setViewMode(mode),
                         className: `flex-1 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === mode ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-600'}`
                     }, mode === 'dashboard' ? '📊 Dashboard' : mode === 'template' ? '📝 Template' : '📄 Packet')
@@ -15728,7 +16304,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                 h('span', { className: 'text-[11px] text-slate-600 font-bold' }, `Question ${currentQ + 1} of ${QUESTIONS.length}`),
                 h('h3', { className: 'text-sm font-bold text-slate-800 mt-2 mb-4' }, q.q),
                 h('div', { className: 'space-y-2' }, q.opts.map((opt, i) =>
-                    h('button', { "aria-label": "Answer",
+                    h('button', {
                         key: i, onClick: () => handleAnswer(i),
                         className: `w-full text-start px-4 py-3 rounded-xl border-2 text-xs font-medium transition-all ${answers[currentQ] === i ? (i === q.answer ? 'bg-green-100 border-green-600' : 'bg-red-100 border-red-600') : 'bg-white border-slate-200 hover:border-indigo-600 hover:bg-indigo-50'}`
                     }, opt)
@@ -15739,8 +16315,15 @@ Format as a professional, structured report with clear sections and headers. Kee
 
     // ─── CompetingPathways ────────────────────────────────────────────────
     // Visual Competing Pathways Model builder for FBA/BIP planning
+    // Competing behavior model (O'Neill et al., 1997): the problem pathway, the DESIRED
+    // behavior pathway (what staff ultimately want, e.g. finishing the task) and the
+    // ALTERNATIVE (replacement) pathway, functionally equivalent to the problem
+    // behavior. The replacement was labelled "Desired" and the desired behavior
+    // "Competing", and Copy Model carried that into BIPs. Data keys are unchanged:
+    // replacementBehavior/desiredConsequence = replacement pathway,
+    // competingBehavior/competingConsequence = desired pathway.
     const CompetingPathways = ({ abcEntries, callGemini, t, addToast }) => {
-        const [model, setModel] = useState({
+        const [model, setModel] = useDurableToolState('competingPathwaysModel', {
             targetBehavior: '',
             settingEvent: '',
             antecedent: '',
@@ -15768,7 +16351,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                     if (e.behavior) topBehaviors[e.behavior] = (topBehaviors[e.behavior] || 0) + 1;
                     if (e.antecedent) topAntecedents[e.antecedent] = (topAntecedents[e.antecedent] || 0) + 1;
                     if (e.consequence) topConsequences[e.consequence] = (topConsequences[e.consequence] || 0) + 1;
-                    const fn = e.functionTag || e.perceivedFunction || '';
+                    const fn = abcEntryFunction(e);
                     if (fn) topFunctions[fn] = (topFunctions[fn] || 0) + 1;
                 });
                 const sortDesc = obj => Object.entries(obj).sort((a, b) => b[1] - a[1]);
@@ -15781,7 +16364,7 @@ Data:
 - Top consequences: ${sortDesc(topConsequences).slice(0, 3).map(([c, n]) => `${c} (${n}x)`).join(', ')}
 - Hypothesized functions: ${sortDesc(topFunctions).slice(0, 3).map(([f, c]) => `${f} (${c}x)`).join(', ')}
 
-Fill in clinically appropriate values. The replacement behavior should serve the same function as the target behavior. Keep each value under 25 words.`);
+Fill in clinically appropriate values. replacementBehavior is the ALTERNATIVE behavior that serves the same function as the target behavior, and desiredConsequence is what it earns (the same reinforcer). competingBehavior is the DESIRED behavior staff ultimately want (e.g. finishing the task), and competingConsequence is its typical consequence. Keep each value under 25 words.`);
                 try {
                     const cleaned = result.replace(/\x60\x60\x60json?\\n?/g, '').replace(/\x60\x60\x60/g, '').trim();
                     const parsed = JSON.parse(cleaned);
@@ -15808,13 +16391,13 @@ Fill in clinically appropriate values. The replacement behavior should serve the
                 `▸ Maintaining Consequence: ${model.consequence || '(not specified)'}`,
                 `▸ Function: ${model.function || '(not specified)'}`,
                 '',
-                '═══ DESIRED PATHWAY ═══',
+                '═══ REPLACEMENT (ALTERNATIVE) PATHWAY, SAME FUNCTION ═══',
                 `▸ Replacement Behavior: ${model.replacementBehavior || '(not specified)'}`,
-                `▸ Desired Consequence: ${model.desiredConsequence || '(not specified)'}`,
+                `▸ Replacement Consequence: ${model.desiredConsequence || '(not specified)'}`,
                 '',
-                '═══ COMPETING PATHWAY ═══',
-                `▸ Competing Behavior: ${model.competingBehavior || '(not specified)'}`,
-                `▸ Competing Consequence: ${model.competingConsequence || '(not specified)'}`,
+                '═══ DESIRED BEHAVIOR PATHWAY ═══',
+                `▸ Desired Behavior: ${model.competingBehavior || '(not specified)'}`,
+                `▸ Typical Consequence: ${model.competingConsequence || '(not specified)'}`,
             ];
             navigator.clipboard.writeText(lines.join('\n')).then(() => {
                 if (addToast) addToast(t('toasts.pathways_model_copied'), 'success');
@@ -15842,7 +16425,7 @@ Fill in clinically appropriate values. The replacement behavior should serve the
             const arrow = (x1, y1, x2, y2, color) =>
                 h('line', { key: `a-${x1}-${y1}-${x2}-${y2}`, x1, y1, x2, y2, stroke: color, strokeWidth: 2, markerEnd: 'url(#arrowhead)' });
             const cx = w / 2 - nodeW / 2;
-            return h('svg', { role: 'img', 'aria-label': `Competing behavior pathways. Setting event: ${model.settingEvent || 'not specified'}. Antecedent: ${model.antecedent || 'not specified'}. Desired pathway: ${model.replacementBehavior || 'replacement behavior not specified'}, then ${model.desiredConsequence || 'desired consequence not specified'}. Problem pathway: ${model.targetBehavior || 'target behavior not specified'}, then ${model.consequence || 'maintaining consequence not specified'}. Competing pathway: ${model.competingBehavior || 'not specified'}, then ${model.competingConsequence || 'not specified'}.`, viewBox: `0 0 ${w} 340`, className: 'w-full', style: { maxHeight: 340 } },
+            return h('svg', { role: 'img', 'aria-label': `Competing behavior pathways. Setting event: ${model.settingEvent || 'not specified'}. Antecedent: ${model.antecedent || 'not specified'}. Replacement pathway: ${model.replacementBehavior || 'replacement behavior not specified'}, then ${model.desiredConsequence || 'its consequence not specified'}. Problem pathway: ${model.targetBehavior || 'target behavior not specified'}, then ${model.consequence || 'maintaining consequence not specified'}. Desired behavior pathway: ${model.competingBehavior || 'not specified'}, then ${model.competingConsequence || 'not specified'}.`, viewBox: `0 0 ${w} 340`, className: 'w-full', style: { maxHeight: 340 } },
                 h('defs', null,
                     h('marker', { id: 'arrowhead', markerWidth: 10, markerHeight: 7, refX: 10, refY: 3.5, orient: 'auto' },
                         h('polygon', { points: '0 0, 10 3.5, 0 7', fill: '#64748b' })
@@ -15860,19 +16443,19 @@ Fill in clinically appropriate values. The replacement behavior should serve the
                 // Desired pathway (left)
                 ...drawBox(pad, pad + 2 * nodeH + 54, model.replacementBehavior || 'Replacement', colors.replacement, '#4ade80'),
                 arrow(pad + nodeW / 2, pad + 3 * nodeH + 54, pad + nodeW / 2, pad + 3 * nodeH + 84, '#22c55e'),
-                ...drawBox(pad, pad + 3 * nodeH + 86, model.desiredConsequence || 'Desired Consequence', colors.desired, '#22c55e'),
+                ...drawBox(pad, pad + 3 * nodeH + 86, model.desiredConsequence || 'Replacement Consequence', colors.desired, '#22c55e'),
                 // Problem pathway (center)
                 ...drawBox(cx, pad + 2 * nodeH + 54, model.targetBehavior || 'Problem Behavior', colors.problem, '#f87171'),
                 arrow(cx + nodeW / 2, pad + 3 * nodeH + 54, cx + nodeW / 2, pad + 3 * nodeH + 84, '#ef4444'),
                 ...drawBox(cx, pad + 3 * nodeH + 86, model.consequence || 'Maintaining Consequence', colors.maintain, '#ef4444'),
                 // Competing pathway (right)
-                ...drawBox(w - pad - nodeW, pad + 2 * nodeH + 54, model.competingBehavior || 'Competing Behavior', colors.competing, '#facc15'),
+                ...drawBox(w - pad - nodeW, pad + 2 * nodeH + 54, model.competingBehavior || 'Desired Behavior', colors.competing, '#facc15'),
                 arrow(w - pad - nodeW / 2, pad + 3 * nodeH + 54, w - pad - nodeW / 2, pad + 3 * nodeH + 84, '#eab308'),
-                ...drawBox(w - pad - nodeW, pad + 3 * nodeH + 86, model.competingConsequence || 'Competing Consequence', colors.compConseq, '#eab308'),
+                ...drawBox(w - pad - nodeW, pad + 3 * nodeH + 86, model.competingConsequence || 'Typical Consequence', colors.compConseq, '#eab308'),
                 // Labels
-                h('text', { x: pad + nodeW / 2, y: pad + 2 * nodeH + 48, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#16a34a' }, '✅ DESIRED'),
+                h('text', { x: pad + nodeW / 2, y: pad + 2 * nodeH + 48, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#16a34a' }, '🔁 REPLACEMENT'),
                 h('text', { x: cx + nodeW / 2, y: pad + 2 * nodeH + 48, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#dc2626' }, '❌ PROBLEM'),
-                h('text', { x: w - pad - nodeW / 2, y: pad + 2 * nodeH + 48, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#ca8a04' }, '⚡ COMPETING'),
+                h('text', { x: w - pad - nodeW / 2, y: pad + 2 * nodeH + 48, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#a16207' }, '✅ DESIRED'),
                 // Function label
                 h('text', { x: cx + nodeW + 10, y: pad + 3 * nodeH + 20, fontSize: 10, fill: '#6366f1', fontWeight: 700 }, `fn: ${model.function || '?'}`)
             );
@@ -15904,20 +16487,20 @@ Fill in clinically appropriate values. The replacement behavior should serve the
             ),
             // Desired Pathway
             h('div', { className: 'bg-green-50 rounded-xl border border-green-200 p-4 shadow-sm space-y-3' },
-                h('h3', { className: 'text-xs font-bold text-green-700 flex items-center gap-1' }, '✅ ', 'Desired Pathway'),
+                h('h3', { 'data-pathway': 'replacement', className: 'text-xs font-bold text-green-700 flex items-center gap-1' }, '🔁 ', 'Replacement (Alternative) Pathway'),
+                h('p', { className: 'text-[11px] text-green-700' }, 'A behavior that gets the student the SAME thing the problem behavior gets.'),
                 field('Replacement Behavior *', 'replacementBehavior', 'Functionally equivalent alternative (e.g., request a break)', 1),
-                field('Desired Consequence', 'desiredConsequence', 'What the student gets (e.g., 2-minute break honored)', 1)
+                field('Replacement Consequence', 'desiredConsequence', 'What the student gets, the same function (e.g., 2-minute break honored)', 1)
             ),
             // Competing Pathway
             h('div', { className: 'bg-yellow-50 rounded-xl border border-yellow-200 p-4 shadow-sm space-y-3' },
-                h('h3', { className: 'text-xs font-bold text-yellow-700 flex items-center gap-1' }, '⚡ ', 'Competing Pathway'),
-                h('p', { className: 'text-[11px] text-yellow-600' }, 'What other behaviors compete with both the problem and replacement?'),
-                field('Competing Behavior', 'competingBehavior', 'e.g., Compliant task completion without requesting break', 1),
-                field('Competing Consequence', 'competingConsequence', 'e.g., Teacher praise, token earned', 1)
+                h('h3', { 'data-pathway': 'desired', className: 'text-xs font-bold text-yellow-800 flex items-center gap-1' }, '✅ ', 'Desired Behavior Pathway'),
+                h('p', { className: 'text-[11px] text-yellow-800' }, 'The behavior you ultimately want, and what usually follows it.'),
+                field('Desired Behavior', 'competingBehavior', 'e.g., Completes the task without a break', 1),
+                field('Typical Consequence', 'competingConsequence', 'e.g., Teacher praise, token earned', 1)
             ),
             // Diagram toggle
-            filled && h('button', { 'aria-expanded': String(showDiagram), "aria-label": "Toggle show diagram",
-                onClick: () => setShowDiagram(!showDiagram),
+            filled && h('button', { 'aria-expanded': String(showDiagram), onClick: () => setShowDiagram(!showDiagram),
                 className: 'w-full py-2 bg-indigo-50 text-indigo-700 border border-indigo-600 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-all'
             }, showDiagram ? '➖ Hide Diagram' : '📐 Show Visual Diagram'),
             showDiagram && filled && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -16078,6 +16661,49 @@ Fill in clinically appropriate values. The replacement behavior should serve the
 
     // ─── CantDoWontDo ─────────────────────────────────────────────────────
     // Skill Deficit vs Performance Deficit Assessment Tool
+    // Can't Do / Won't Do decision. An untested condition counted as 0%: testing only
+    // "with support" at 50% read "Likely Skill Deficit" against a baseline and a
+    // motivation probe that were never run. Telling a skill deficit from a performance
+    // deficit needs baseline, support AND motivation probes; improvement with both
+    // single levers read "Inconclusive" when the combined probe was skipped; and
+    // successes above attempts gave percentages over 100. The 15-point margin stays a
+    // disclosed rule of thumb.
+    const CDWD_DIAGNOSES = {
+        adequate: { type: 'adequate', label: 'Adequate Performance', color: 'green', icon: '✅', desc: 'Student demonstrates the skill consistently at baseline. No deficit identified — consider whether the referral concern is about a different context or expectation.' },
+        cantdo: { type: 'cantdo', label: "Likely Skill (Acquisition) Deficit", color: 'red', icon: '📚', desc: 'Performance improved with instructional support but not with motivation alone — this suggests a likely SKILL (acquisition) deficit. Treat it as a hypothesis to confirm with more probes; focus on explicit instruction, modeling, guided practice, and scaffolding.' },
+        wontdo: { type: 'wontdo', label: "Likely Performance Deficit", color: 'amber', icon: '⭐', desc: 'Performance improved with motivation/incentives but not with support alone — this suggests the skill is present but not reliably shown under current conditions (a performance deficit). Treat it as a hypothesis, not a "won\'t"; look for competing contingencies or an unmet need, and focus on reinforcement, choice, engagement, and the behavior\'s function.' },
+        mixed: { type: 'mixed', label: 'Mixed Deficit', color: 'purple', icon: '🔀', desc: 'Performance improves with both support AND motivation. The student needs a combined approach — teach the skill while also building motivation through reinforcement and functional alternatives.' },
+        combined: { type: 'combined', label: 'Combined Approach Needed', color: 'blue', icon: '🔗', desc: 'Only the combined condition shows improvement. The student needs simultaneous instructional support and motivational strategies to succeed.' },
+        unclear: { type: 'unclear', label: 'Inconclusive', color: 'slate', icon: '❓', desc: 'No condition produced meaningful improvement over baseline. Consider whether the probes were adequate, the behavior was properly operationalized, or additional assessment is needed.' },
+    };
+    const CDWD_LABELS = { baseline: 'baseline', withSupport: 'with support', withMotivation: 'with motivation', withBoth: 'with both' };
+    function cantDoWontDoDiagnosis(probes) {
+        const read = key => {
+            const p = (probes && probes[key]) || {};
+            const s = parseInt(p.success, 10), a = parseInt(p.attempts, 10);
+            const tested = Number.isFinite(a) && a > 0;
+            const success = Number.isFinite(s) ? s : 0;
+            return { tested, invalid: tested && (success < 0 || success > a), pct: tested ? Math.round(success / a * 100) : null };
+        };
+        const c = { baseline: read('baseline'), withSupport: read('withSupport'), withMotivation: read('withMotivation'), withBoth: read('withBoth') };
+        if (!Object.values(c).some(x => x.tested)) return null;
+        const invalid = Object.keys(c).filter(k => c[k].invalid);
+        if (invalid.length) return { type: 'invalid', label: 'Check the numbers', color: 'slate', icon: '⚠️', desc: 'Successes cannot be more than attempts (' + invalid.map(k => CDWD_LABELS[k]).join(', ') + ').' };
+        if (!c.baseline.tested) return { type: 'needs-baseline', label: 'Baseline probe needed', color: 'slate', icon: '📏', desc: 'Record baseline trials (no added support or motivation) first. Every condition is judged against baseline.' };
+        const base = c.baseline.pct;
+        if (base >= 80) return CDWD_DIAGNOSES.adequate;
+        const missing = ['withSupport', 'withMotivation'].filter(k => !c[k].tested);
+        if (missing.length) return { type: 'needs-probes', label: 'More probes needed', color: 'slate', icon: '🧪', desc: 'Run the ' + missing.map(k => CDWD_LABELS[k] + ' probe').join(' and the ') + ' too. Telling a skill deficit from a performance deficit needs both the support and the motivation probe.' };
+        const up = key => c[key].tested && c[key].pct > base + 15;
+        if (up('withSupport') && !up('withMotivation')) return CDWD_DIAGNOSES.cantdo;
+        if (up('withMotivation') && !up('withSupport')) return CDWD_DIAGNOSES.wontdo;
+        if (up('withSupport') && up('withMotivation')) return CDWD_DIAGNOSES.mixed;
+        if (up('withBoth')) return CDWD_DIAGNOSES.combined;
+        return CDWD_DIAGNOSES.unclear;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensCantDoWontDo = Object.freeze({ diagnose: cantDoWontDoDiagnosis });
+
     const CantDoWontDo = ({ abcEntries, callGemini, t, addToast }) => {
         const [behavior, setBehavior] = useState('');
         const [student, setStudent] = useState('');
@@ -16100,25 +16726,12 @@ Fill in clinically appropriate values. The replacement behavior should serve the
             const a = parseInt(probes[condition].attempts) || 0;
             return a > 0 ? Math.round((s / a) * 100) : 0;
         };
+        const tested = (condition) => (parseInt(probes[condition].attempts) || 0) > 0;
+        const pctText = (condition) => tested(condition) ? pct(condition) + '%' : 'not tested';
 
         const hasData = Object.values(probes).some(p => parseInt(p.attempts) > 0);
 
-        const getDiagnosis = () => {
-            const base = pct('baseline');
-            const support = pct('withSupport');
-            const motivation = pct('withMotivation');
-            const both = pct('withBoth');
-
-            if (!hasData) return null;
-
-            // Decision tree logic
-            if (base >= 80) return { type: 'adequate', label: 'Adequate Performance', color: 'green', icon: '✅', desc: 'Student demonstrates the skill consistently at baseline. No deficit identified — consider whether the referral concern is about a different context or expectation.' };
-            if (support > base + 15 && motivation <= base + 15) return { type: 'cantdo', label: "Likely Skill (Acquisition) Deficit", color: 'red', icon: '📚', desc: 'Performance improved with instructional support but not with motivation alone — this suggests a likely SKILL (acquisition) deficit. Treat it as a hypothesis to confirm with more probes; focus on explicit instruction, modeling, guided practice, and scaffolding.' };
-            if (motivation > base + 15 && support <= base + 15) return { type: 'wontdo', label: "Likely Performance Deficit", color: 'amber', icon: '⭐', desc: 'Performance improved with motivation/incentives but not with support alone — this suggests the skill is present but not reliably shown under current conditions (a performance deficit). Treat it as a hypothesis, not a "won\'t"; look for competing contingencies or an unmet need, and focus on reinforcement, choice, engagement, and the behavior\'s function.' };
-            if (both > base + 15 && support > base + 15 && motivation > base + 15) return { type: 'mixed', label: 'Mixed Deficit', color: 'purple', icon: '🔀', desc: 'Performance improves with both support AND motivation. The student needs a combined approach — teach the skill while also building motivation through reinforcement and functional alternatives.' };
-            if (both > base + 15) return { type: 'combined', label: 'Combined Approach Needed', color: 'blue', icon: '🔗', desc: 'Only the combined condition shows improvement. The student needs simultaneous instructional support and motivational strategies to succeed.' };
-            return { type: 'unclear', label: 'Inconclusive', color: 'slate', icon: '❓', desc: 'No condition produced meaningful improvement over baseline. Consider whether the probes were adequate, the behavior was properly operationalized, or additional assessment is needed.' };
-        };
+        const getDiagnosis = () => cantDoWontDoDiagnosis(probes);
 
         const runAiAnalysis = async () => {
             if (!callGemini) return;
@@ -16131,10 +16744,10 @@ Student: ${student || 'unnamed'}
 Target Behavior: ${behavior || 'unspecified'}
 
 Probe Results:
-1. Baseline (no support, no motivation): ${pct('baseline')}% success (${probes.baseline.success}/${probes.baseline.attempts}) - Notes: ${probes.baseline.notes || 'none'}
-2. With Instructional Support: ${pct('withSupport')}% success (${probes.withSupport.success}/${probes.withSupport.attempts}) - Notes: ${probes.withSupport.notes || 'none'}
-3. With Motivation/Incentives: ${pct('withMotivation')}% success (${probes.withMotivation.success}/${probes.withMotivation.attempts}) - Notes: ${probes.withMotivation.notes || 'none'}
-4. With Both: ${pct('withBoth')}% success (${probes.withBoth.success}/${probes.withBoth.attempts}) - Notes: ${probes.withBoth.notes || 'none'}
+1. Baseline (no support, no motivation): ${pctText('baseline')} success (${probes.baseline.success}/${probes.baseline.attempts}) - Notes: ${probes.baseline.notes || 'none'}
+2. With Instructional Support: ${pctText('withSupport')} success (${probes.withSupport.success}/${probes.withSupport.attempts}) - Notes: ${probes.withSupport.notes || 'none'}
+3. With Motivation/Incentives: ${pctText('withMotivation')} success (${probes.withMotivation.success}/${probes.withMotivation.attempts}) - Notes: ${probes.withMotivation.notes || 'none'}
+4. With Both: ${pctText('withBoth')} success (${probes.withBoth.success}/${probes.withBoth.attempts}) - Notes: ${probes.withBoth.notes || 'none'}
 
 Assessment suggests: ${diagnosis ? diagnosis.label : 'pending'}
 ${abcContext}
@@ -16155,10 +16768,10 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
                 `Date: ${new Date().toLocaleDateString()}`,
                 '',
                 '── PROBE RESULTS ──',
-                `Baseline:             ${pct('baseline')}%  (${probes.baseline.success || 0}/${probes.baseline.attempts || 0})  ${probes.baseline.notes ? '| ' + probes.baseline.notes : ''}`,
-                `With Support:         ${pct('withSupport')}%  (${probes.withSupport.success || 0}/${probes.withSupport.attempts || 0})  ${probes.withSupport.notes ? '| ' + probes.withSupport.notes : ''}`,
-                `With Motivation:      ${pct('withMotivation')}%  (${probes.withMotivation.success || 0}/${probes.withMotivation.attempts || 0})  ${probes.withMotivation.notes ? '| ' + probes.withMotivation.notes : ''}`,
-                `With Both:            ${pct('withBoth')}%  (${probes.withBoth.success || 0}/${probes.withBoth.attempts || 0})  ${probes.withBoth.notes ? '| ' + probes.withBoth.notes : ''}`,
+                `Baseline:             ${pctText('baseline')}  (${probes.baseline.success || 0}/${probes.baseline.attempts || 0})  ${probes.baseline.notes ? '| ' + probes.baseline.notes : ''}`,
+                `With Support:         ${pctText('withSupport')}  (${probes.withSupport.success || 0}/${probes.withSupport.attempts || 0})  ${probes.withSupport.notes ? '| ' + probes.withSupport.notes : ''}`,
+                `With Motivation:      ${pctText('withMotivation')}  (${probes.withMotivation.success || 0}/${probes.withMotivation.attempts || 0})  ${probes.withMotivation.notes ? '| ' + probes.withMotivation.notes : ''}`,
+                `With Both:            ${pctText('withBoth')}  (${probes.withBoth.success || 0}/${probes.withBoth.attempts || 0})  ${probes.withBoth.notes ? '| ' + probes.withBoth.notes : ''}`,
                 '',
                 `── DIAGNOSIS: ${diagnosis ? diagnosis.label : 'N/A'} ──`,
                 diagnosis ? diagnosis.desc : '',
@@ -16207,7 +16820,7 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
             const barW = 60, gap = 30, chartH = 120, padL = 30, padB = 30;
             const w = padL + conditions.length * (barW + gap) + gap;
             const h2 = chartH + padB + 20;
-            return h('svg', { role: 'img', 'aria-label': `Probe results. Baseline ${pct('baseline')} percent; with support ${pct('withSupport')} percent; with motivation ${pct('withMotivation')} percent; with both ${pct('withBoth')} percent.`, viewBox: `0 0 ${w} ${h2}`, className: 'w-full', style: { maxHeight: 180 } },
+            return h('svg', { role: 'img', 'aria-label': `Probe results. Baseline ${pctText('baseline')}; with support ${pctText('withSupport')}; with motivation ${pctText('withMotivation')}; with both ${pctText('withBoth')}.`, viewBox: `0 0 ${w} ${h2}`, className: 'w-full', style: { maxHeight: 180 } },
                 // Y axis labels
                 [0, 25, 50, 75, 100].map(v => [
                     h('text', { key: `yl-${v}`, x: padL - 4, y: 10 + chartH - (v / 100) * chartH + 3, textAnchor: 'end', fontSize: 8, fill: '#94a3b8' }, `${v}`),
@@ -16220,7 +16833,7 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
                     const x = padL + gap + i * (barW + gap);
                     return [
                         h('rect', { key: `bar-${c.key}`, x, y: 10 + chartH - barH, width: barW, height: Math.max(barH, 2), rx: 4, fill: c.color, opacity: 0.85 }),
-                        h('text', { key: `val-${c.key}`, x: x + barW / 2, y: 10 + chartH - barH - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: c.color }, `${val}%`),
+                        h('text', { key: `val-${c.key}`, x: x + barW / 2, y: 10 + chartH - barH - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: c.color }, tested(c.key) ? `${val}%` : 'n/t'),
                         h('text', { key: `lbl-${c.key}`, x: x + barW / 2, y: 10 + chartH + 14, textAnchor: 'middle', fontSize: 8, fill: '#64748b', fontWeight: 600 }, c.label)
                     ];
                 }).flat()
@@ -17031,7 +17644,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ),
                 h('div', { className: 'flex gap-2' },
                     h('button', { onClick: startSession, className: 'flex-1 py-3 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-700 shadow-lg transition-all' }, '▶ Start Session'),
-                    h('button', { "aria-label": "Toggle view history", onClick: () => setViewHistory(true), className: 'px-4 py-3 bg-white border border-slate-400 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50' }, `📋 ${sessionHistory.length}`)
+                    h('button', { onClick: () => setViewHistory(true), className: 'px-4 py-3 bg-white border border-slate-400 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50' }, `📋 ${sessionHistory.length}`)
                 )
             ) :
                 // Active session
@@ -17056,8 +17669,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 )
                             ) :
                                 tgt.type === 'duration' ? h('div', { className: 'flex items-center gap-4' },
-                                    h('button', { "aria-label": "Toggle Duration",
-                                        onClick: () => toggleDuration(tgt.id),
+                                    h('button', { onClick: () => toggleDuration(tgt.id),
                                         className: `w-20 h-20 rounded-2xl text-white text-lg font-black shadow-lg hover:scale-105 active:scale-95 transition-transform ${isDurationActive ? 'bg-gradient-to-br from-red-500 to-orange-600 animate-pulse motion-reduce:animate-none' : 'bg-gradient-to-br from-amber-500 to-orange-600'}`
                                     }, isDurationActive ? '⏹ Stop' : '▶ Start'),
                                     h('div', null,
@@ -17078,7 +17690,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                                 h('button', { onClick: () => recordPercentage(tgt.id, true), className: 'px-4 py-3 bg-green-100 text-green-700 rounded-xl font-bold text-sm hover:bg-green-200' }, '✓ Correct'),
                                                 h('button', { "aria-label": "Incorrect", onClick: () => recordPercentage(tgt.id, false), className: 'px-4 py-3 bg-red-100 text-red-700 rounded-xl font-bold text-sm hover:bg-red-200' }, '✗ Incorrect'),
                                             ),
-                                            h('p', { className: 'text-xs text-slate-600' }, `${tgt.count}/${tgt.total || tgt.count} = ${tgt.total ? Math.round(tgt.count / tgt.total * 100) : 100}%`)
+                                            h('p', { className: 'text-xs text-slate-600', 'data-tracker-pct': tgt.id }, tgt.total ? `${tgt.count}/${tgt.total} = ${Math.round(tgt.count / tgt.total * 100)}%` : tt('behavior_lens.tracker.no_trials_yet', 'No trials yet'))
                                         ) : null
                         );
                     }),
@@ -17094,6 +17706,92 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
     const ABA_GRAPH_COLORS = ['#6366f1', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6'];
     const JABA_GRAPH_COLORS = ['#000000', '#4b5563', '#9ca3af', '#1f2937', '#6b7280']; // Grayscale for JABA
 
+    // ─── ABA graph math (pure; tested directly) ─────────────────────────
+    // Phase membership. A phase with no start (null) has not begun: it holds no data
+    // and the phase before it runs on. The old filter used "next start - 1" and read a
+    // 0 as Infinity (`|| Infinity`), so when every phase defaulted to session 1 (a
+    // design chosen before there was one session per phase) EVERY phase held ALL the
+    // data, and baseline and intervention were identical.
+    function abaPhaseMembership(dataSeries, phases) {
+        const list = Array.isArray(phases) ? phases : [];
+        const starts = list.map(phase => { const n = Number(phase && phase.startSession); return phase && phase.startSession != null && phase.startSession !== '' && Number.isFinite(n) && n >= 1 ? Math.floor(n) : null; });
+        return list.map((phase, i) => {
+            const start = starts[i];
+            if (start == null) return { start: null, end: null, data: [] };
+            let end = Infinity;
+            for (let j = i + 1; j < list.length; j++) { if (starts[j] != null) { end = starts[j] - 1; break; } }
+            return { start, end, data: (dataSeries || []).filter(d => d.session >= start && d.session <= end) };
+        });
+    }
+    // Later phases start only when there is at least one recorded session for each;
+    // otherwise they wait (null) until "advance phase" or a typed start.
+    function defaultPhaseStarts(sessionCount, phaseCount) {
+        const per = Math.floor((Number(sessionCount) || 0) / Math.max(1, phaseCount));
+        return Array.from({ length: phaseCount }, (_, i) => i === 0 ? 1 : (per >= 1 ? per * i + 1 : null));
+    }
+    // Condition letter from a design's phase label. Every Alternating Treatments
+    // condition used to be tagged 'B'.
+    function phaseCondition(label) {
+        const text = String(label || '');
+        const lettered = /Condition ([A-Z])\b/.exec(text);
+        if (lettered) return lettered[1];
+        return /Baseline|Withdrawal|\(A\d?\)/.test(text) ? 'A' : 'B';
+    }
+    // The x axis spans the highest session number shown. Sessions are numbered across
+    // every behavior and measure, so a filtered series has gaps; scaling to the point
+    // COUNT put later points past the right edge (sessions 1,3,5,7,9 on a 5-wide axis
+    // drew session 9 at twice the plot width).
+    function abaGraphSessionSpan(dataSeries) {
+        return Math.max(5, (dataSeries || []).length, ...(dataSeries || []).map(d => Number(d.session) || 0));
+    }
+    // Effect sizes on the graph, oriented by the goal. PND (Scruggs, Mastropieri &
+    // Casto, 1987): % of intervention points beyond the most extreme baseline point in
+    // the improving direction. PEM (Ma, 2006): % beyond the baseline median, ties as
+    // half. The old version counted change in EITHER direction for PND and "above the
+    // median" for PEM, so a behavior that got WORSE under a decrease goal read as an
+    // effect.
+    function abaGraphEffectSizes(baseVals, intVals, direction) {
+        const base = (baseVals || []).filter(Number.isFinite), inter = (intVals || []).filter(Number.isFinite);
+        if (!base.length || !inter.length) return null;
+        const decrease = direction !== 'increase';
+        const extreme = decrease ? Math.min(...base) : Math.max(...base);
+        const sorted = base.slice().sort((a, b) => a - b), mid = Math.floor(sorted.length / 2);
+        const median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        const better = (v, ref) => decrease ? v < ref : v > ref;
+        const mean = list => list.reduce((sum, v) => sum + v, 0) / list.length;
+        return {
+            direction: decrease ? 'decrease' : 'increase',
+            pnd: inter.filter(v => better(v, extreme)).length / inter.length * 100,
+            pem: inter.reduce((sum, v) => sum + (better(v, median) ? 1 : v === median ? 0.5 : 0), 0) / inter.length * 100,
+            levelChange: mean(inter) - mean(base),
+            baselineMedian: median,
+            baselineExtreme: extreme,
+        };
+    }
+    window.AlloModules = window.AlloModules || {};
+    // Trend direction without units. A fixed +/-0.1 slope cutoff read a rate rising
+    // 0.05 -> 0.5 per minute over 10 sessions (slope 0.045) as "Stable", and a behavior
+    // near 30 a day that rose by 1 over 10 days as "Increasing". Now: the fitted change
+    // across the data as a share of its average level; under 20% (the band single-case
+    // visual analysis uses for stability) is stable. Fewer than 3 points: no trend.
+    const TREND_STABLE_SHARE = 0.2;
+    function trendDirection(slope, span, values) {
+        const vals = (Array.isArray(values) ? values : []).map(Number).filter(Number.isFinite);
+        if (!Number.isFinite(slope) || vals.length < 3) return null;
+        const level = Math.abs(vals.reduce((a, b) => a + b, 0) / vals.length);
+        const change = slope * Math.max(0, Number(span) || 0);
+        if (level === 0) return change > 0 ? 'increasing' : change < 0 ? 'decreasing' : 'stable';
+        const share = change / level;
+        return share >= TREND_STABLE_SHARE ? 'increasing' : share <= -TREND_STABLE_SHARE ? 'decreasing' : 'stable';
+    }
+    // A phase's split-middle trend is drawn per data point, across (points - 1) steps.
+    const phaseTrendDirection = (pa) => {
+        const values = (pa && Array.isArray(pa.data) ? pa.data : []).map(d => d && d.value);
+        return trendDirection(pa && pa.trendSlope, values.length - 1, values);
+    };
+    const TREND_WORDS = { increasing: 'Increasing', decreasing: 'Decreasing', stable: 'Stable' };
+    window.AlloModules.BehaviorLensGraphMath = Object.freeze({ trendDirection, phaseTrendDirection, abaPhaseMembership, defaultPhaseStarts, phaseCondition, abaGraphSessionSpan, abaGraphEffectSizes });
+
     const ABAGraphEngine = ({ sessionHistory, phases, designType, onExportData, setActivePanel, t, addToast }) => {
         const [showTrend, setShowTrend] = useState(true);
         const [showLevel, setShowLevel] = useState(true);
@@ -17105,6 +17803,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         const [graphTitle, setGraphTitle] = useState('');
         const [yAxisLabel, setYAxisLabel] = useState('');
         const [xAxisLabel, setXAxisLabel] = useState('Sessions');
+        const [goalDirection, setGoalDirection] = useDurableToolState('abaGraphGoalDirection', 'decrease');
 
         // ── Manual Data Entry State ──
         const [dataMode, setDataMode] = useState('auto'); // 'auto' | 'manual'
@@ -17184,8 +17883,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     else if (measurement === 'interval') value = target.intervals?.length ? target.intervals.filter(Boolean).length / target.intervals.length * 100 : null;
                     else value = target.count;
                 } else if (s.behavior === bName) {
-                    measurement = s.measurementType || (s.source === 'observation-interval' ? 'interval' : s.source === 'observation-latency' ? 'latency' : s.source === 'observation-duration' ? 'duration' : 'frequency');
-                    value = s.value != null ? s.value : (measurement === 'interval' || measurement === 'percentage' || measurement === 'rate' ? s.rate : s.count != null ? s.count : s.rate);
+                    measurement = s.measurementType || (s.source === 'observation-interval' ? 'interval' : s.source === 'observation-latency' || s.source === 'latency-recorder' ? 'latency' : s.source === 'observation-duration' ? 'duration' : 'frequency');
+                    value = s.value != null ? s.value : (measurement === 'interval' || measurement === 'percentage' || measurement === 'rate' || measurement === 'latency' ? s.rate : s.count != null ? s.count : s.rate);
                 }
                 const unit = measurement === 'duration' || measurement === 'latency' ? 'seconds' : measurement === 'interval' || measurement === 'percentage' ? '%' : measurement === 'rate' ? 'per minute' : 'count';
                 return { session: s.sessionNumber, sessionId: s.sessionId, date: s.date, value: value == null ? null : Number(value), measurement, unit };
@@ -17234,7 +17933,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             setManualData(parsed.map((v, i) => ({ session: i + 1, value: v, date: new Date().toISOString().slice(0, 10) })));
             setShowCsvImport(false);
             setCsvText('');
-            if (addToast) addToast(t('behavior_lens.toast.imported_n_data_points') || `Imported ${parsed.length} data points!`, 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.imported_n_data_points_v2', 'Imported {v1} data points!', { v1: parsed.length }), 'success');
         };
 
         const handleSvgPointClick = (idx) => {
@@ -17271,8 +17970,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 }
                 return [{ label: (tt('behavior_lens.raw.all_data', 'All Data')), startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries, mean, trendSlope, trendIntercept }];
             }
+            const membership = abaPhaseMembership(dataSeries, resolvedPhases);
             return resolvedPhases.map((p, pi) => {
-                const phaseData = dataSeries.filter(d => d.session >= p.startSession && d.session <= (resolvedPhases[pi + 1]?.startSession - 1 || Infinity));
+                const phaseData = membership[pi].data;
                 const values = phaseData.map(d => d.value);
                 const mean = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
                 // Split-middle trend
@@ -17306,7 +18006,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     label: p.label || `Phase ${pi + 1}`,
                     condition: p.condition || 'A',
                     startSession: p.startSession,
-                    endSession: resolvedPhases[pi + 1]?.startSession - 1 || dataSeries[dataSeries.length - 1]?.session || 0,
+                    endSession: membership[pi].start == null ? null : Number.isFinite(membership[pi].end) ? membership[pi].end : (dataSeries[dataSeries.length - 1]?.session || 0),
                     data: phaseData,
                     mean,
                     trendSlope,
@@ -17327,9 +18027,10 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     dataMode,
                     unit: dataMode === 'auto' ? autoDataSeries[0]?.unit || null : null,
                     measurementType: dataMode === 'auto' ? selectedMeasurement || null : null,
+                    goalDirection,
                 });
             }
-        }, [dataSeries, phaseAnalysis, graphTitle, dataMode, selectedBehavior]);
+        }, [dataSeries, phaseAnalysis, graphTitle, dataMode, selectedBehavior, goalDirection]);
 
         // SVG rendering
         const W = 700, H = 300, padL = 60, padR = 30, padT = 50, padB = 50;
@@ -17337,7 +18038,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         const plotH = H - padT - padB;
 
         const maxVal = Math.max(5, ...dataSeries.map(d => d.value));
-        const maxSession = Math.max(5, dataSeries.length);
+        const maxSession = abaGraphSessionSpan(dataSeries);
 
         const toX = (session) => padL + ((session - 1) / Math.max(1, maxSession - 1)) * plotW;
         const toY = (val) => padT + plotH - (val / maxVal) * plotH;
@@ -17779,12 +18480,10 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
             // ── Data Source Toggle ──
             h('div', { className: 'flex gap-2 justify-center' },
-                h('button', { "aria-label": "Toggle data mode",
-                    onClick: () => setDataMode('auto'),
+                h('button', { onClick: () => setDataMode('auto'),
                     className: `px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataMode === 'auto' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                 }, `📊 Session Data${autoDataSeries.length > 0 ? ` (${autoDataSeries.length})` : ''}`),
-                h('button', { "aria-label": "Toggle data mode",
-                    onClick: () => setDataMode('manual'),
+                h('button', { onClick: () => setDataMode('manual'),
                     className: `px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataMode === 'manual' ? 'bg-fuchsia-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                 }, `✏️ Manual Entry${manualData.length > 0 ? ` (${manualData.length})` : ''}`)
             ),
@@ -17800,8 +18499,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 h('div', { className: 'flex items-center justify-between' },
                     h('h3', { className: 'text-sm font-bold text-fuchsia-800' }, '✏️ Manual Data Entry'),
                     h('div', { 'aria-expanded': String(showCsvImport), className: 'flex gap-2' },
-                        h('button', { 'aria-expanded': String(showCsvImport), "aria-label": "Toggle show csv import",
-                            onClick: () => setShowCsvImport(!showCsvImport),
+                        h('button', { 'aria-expanded': String(showCsvImport), onClick: () => setShowCsvImport(!showCsvImport),
                             className: 'px-3 py-1 bg-white border border-fuchsia-600 rounded-lg text-[11px] font-bold text-fuchsia-800 hover:bg-fuchsia-50'
                         }, showCsvImport ? '← Back' : '📋 Paste CSV'),
                         manualData.length > 0 && h('button', { "aria-label": "Clear",
@@ -17920,7 +18618,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 dataMode === 'auto' && behaviorNames.length > 1 && h('div', { className: 'flex gap-2 mt-2' },
                     h('span', { className: 'text-[11px] font-bold text-slate-600' }, tt('behavior_lens.ui.behavior', 'Behavior:')),
                     behaviorNames.map((bn, i) =>
-                        h('button', { "aria-label": "Toggle selected behavior", key: bn, onClick: () => setSelectedBehavior(i), className: `px-2 py-1 rounded-lg text-[11px] font-bold border ${i === selectedBehavior ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, bn)
+                        h('button', { key: bn, onClick: () => setSelectedBehavior(i), className: `px-2 py-1 rounded-lg text-[11px] font-bold border ${i === selectedBehavior ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, bn)
                     )
                 ),
                 h('div', { className: 'flex gap-3 mt-3 flex-wrap' },
@@ -17989,8 +18687,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     h('line', { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     // Phase change lines
-                    ...(phases || []).slice(1).map((p, i) => {
-                        const x = toX(p.startSession) - (plotW / maxSession) * 0.5;
+                    ...resolvedPhases.slice(1).map((p, i) => {
+                        if (p.startSession == null || p.startSession === '') return null;
+                        const x = toX(p.startSession) - (plotW / Math.max(1, maxSession - 1)) * 0.5;
                         return h('g', { key: 'phase' + i },
                             h('line', { x1: x, y1: padT - 5, x2: x, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5, strokeDasharray: '6,4' }),
                         );
@@ -18007,6 +18706,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ),
                     // Phase condition labels
                     ...phaseAnalysis.map((pa, i) => {
+                        if (pa.startSession == null && !pa.data.length) return null;
                         const startX = toX(pa.data[0]?.session || pa.startSession || 1);
                         const endX = toX(pa.data[pa.data.length - 1]?.session || pa.endSession || maxSession);
                         const midX = (startX + endX) / 2;
@@ -18113,9 +18813,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             h('h4', { className: 'text-[11px] font-bold text-indigo-700 mb-1' }, pa.label),
                             h('div', { className: 'space-y-0.5 text-[11px] text-slate-600' },
                                 h('p', null, `Level: ${pa.mean.toFixed(1)}`),
-                                h('p', null, `Trend: ${pa.trendSlope > 0.1 ? '↗ Increasing' : pa.trendSlope < -0.1 ? '↘ Decreasing' : '→ Stable'}`),
+                                h('p', { 'data-trend': phaseTrendDirection(pa) || 'none' }, `Trend: ${({ increasing: '↗ Increasing', decreasing: '↘ Decreasing', stable: '→ Stable' })[phaseTrendDirection(pa)] || 'Too few points (3 needed)'}`),
                                 h('p', null, `Variability: ${pa.data.length > 1 ? (Math.max(...pa.data.map(d => d.value)) - Math.min(...pa.data.map(d => d.value))).toFixed(1) + ' range' : 'N/A'}`),
-                                pa.celeration && h('p', null, `Celeration: ×${pa.celeration.toFixed(2)} ${pa.celeration > 1 ? '(accelerating)' : pa.celeration < 1 ? '(decelerating)' : '(flat)'}`),
+                                pa.celeration && h('p', { title: 'Geometric mean of the second half of the phase divided by the first half, zero sessions left out. Not Standard Celeration Chart celeration, which is fitted per week of calendar time.' }, `Half-to-half change: ×${pa.celeration.toFixed(2)} ${pa.celeration.toFixed(2) === '1.00' ? '(about flat)' : pa.celeration > 1 ? '(rising)' : '(falling)'}`),
                                 h('p', null, `Data Points: ${pa.data.length}`)
                             )
                         )
@@ -18125,18 +18825,25 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     const baseline = phaseAnalysis[0];
                     const intervention = phaseAnalysis[1];
                     if (baseline.data.length < 3 || intervention.data.length < 3) return null;
-                    const baseVals = baseline.data.map(d => d.value);
-                    const intVals = intervention.data.map(d => d.value);
-                    const baseMax = Math.max(...baseVals);
-                    const pnd = Math.round((intVals.filter(v => v < Math.min(...baseVals) || v > baseMax).length / intVals.length) * 100);
-                    const pem = Math.round((intVals.filter(v => v > (baseVals.sort((a, b) => a - b)[Math.floor(baseVals.length / 2)])).length / intVals.length) * 100);
-                    return h('div', { className: 'mt-3 bg-purple-50 rounded-lg p-3 border border-purple-200' },
-                        h('h4', { className: 'text-[11px] font-bold text-purple-800 mb-1' }, '📐 Effect Size Estimates'),
-                        h('div', { className: 'flex gap-4' },
-                            h('span', { className: 'text-[11px] text-purple-700' }, `PND: ${pnd}%`),
-                            h('span', { className: 'text-[11px] text-purple-700' }, `PEM: ${pem}%`),
-                            h('span', { className: 'text-[11px] text-purple-700' }, `Level Change: ${(intervention.mean - baseline.mean).toFixed(1)}`)
-                        )
+                    const es = abaGraphEffectSizes(baseline.data.map(d => d.value), intervention.data.map(d => d.value), goalDirection);
+                    if (!es) return null;
+                    const directionButton = (value, label) => h('button', { type: 'button', 'aria-pressed': goalDirection === value ? 'true' : 'false', onClick: () => setGoalDirection(value),
+                        className: `px-2 py-0.5 rounded-full text-[11px] font-bold border ${goalDirection === value ? 'bg-purple-700 text-white border-purple-700' : 'bg-white text-purple-800 border-purple-300'}` }, label);
+                    return h('div', { className: 'mt-3 bg-purple-50 rounded-lg p-3 border border-purple-200', 'data-graph-effect-sizes': es.direction },
+                        h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+                            h('h4', { className: 'text-[11px] font-bold text-purple-800' }, '📐 Effect Size Estimates: ' + baseline.label + ' vs ' + intervention.label),
+                            h('div', { role: 'group', 'aria-label': tt('behavior_lens.graph.goal_direction', 'Goal direction for effect sizes'), className: 'flex gap-1' },
+                                directionButton('decrease', tt('behavior_lens.graph.goal_decrease', 'Goal: decrease')),
+                                directionButton('increase', tt('behavior_lens.graph.goal_increase', 'Goal: increase')))
+                        ),
+                        h('div', { className: 'flex gap-4 flex-wrap' },
+                            h('span', { className: 'text-[11px] text-purple-700', 'data-es': 'pnd' }, `PND: ${Math.round(es.pnd)}%`),
+                            h('span', { className: 'text-[11px] text-purple-700', 'data-es': 'pem' }, `PEM: ${Math.round(es.pem)}%`),
+                            h('span', { className: 'text-[11px] text-purple-700', 'data-es': 'level' }, `Mean level change: ${es.levelChange.toFixed(1)}`)
+                        ),
+                        h('p', { className: 'text-[10px] text-purple-700 mt-1' }, es.direction === 'decrease'
+                            ? tt('behavior_lens.graph.es_note_decrease', 'Counted as improvement: intervention points BELOW the lowest baseline point (PND) or below the baseline median (PEM). Descriptive only; these are not tests of an effect.')
+                            : tt('behavior_lens.graph.es_note_increase', 'Counted as improvement: intervention points ABOVE the highest baseline point (PND) or above the baseline median (PEM). Descriptive only; these are not tests of an effect.'))
                     );
                 })()
             ),
@@ -18199,10 +18906,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             setSelectedDesign(design);
             if (onDesignChange) onDesignChange(design);
             if (designId !== 'MB') {
+                const starts = defaultPhaseStarts((sessionHistory || []).length, design.phases.length);
                 const newPhases = design.phases.map((label, i) => ({
                     label,
-                    condition: label.includes('Baseline') || label.includes('(A') ? 'A' : 'B',
-                    startSession: i === 0 ? 1 : Math.max(1, Math.floor((sessionHistory || []).length / design.phases.length) * i + 1),
+                    condition: phaseCondition(label),
+                    startSession: starts[i],
                 }));
                 setPhases(newPhases);
                 setCurrentPhase(0);
@@ -18211,7 +18919,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         };
 
         const updatePhaseStart = (idx, val) => {
-            const newPhases = phases.map((p, i) => i === idx ? { ...p, startSession: parseInt(val) || 1 } : p);
+            const parsedStart = parseInt(val, 10);
+            const newPhases = phases.map((p, i) => i === idx ? { ...p, startSession: String(val).trim() === '' ? (i === 0 ? 1 : null) : Number.isFinite(parsedStart) && parsedStart >= 1 ? parsedStart : p.startSession } : p);
             setPhases(newPhases);
             if (onPhasesChange) onPhasesChange(newPhases);
         };
@@ -18223,7 +18932,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 setPhases(newPhases);
                 setCurrentPhase(nextPhase);
                 if (onPhasesChange) onPhasesChange(newPhases);
-                if (addToast) addToast(t('behavior_lens.toast.phase_changed_to_n') || `Phase changed to: ${phases[nextPhase].label}`, 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.phase_changed_to_n_v2', 'Phase changed to: {v1}', { v1: phases[nextPhase].label }), 'success');
             }
         };
 
@@ -18325,7 +19034,7 @@ Keep under 200 words. Use bullet points.`);
                             h('div', { className: 'flex items-center gap-1' },
                                 h('span', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.ui.starts_at_session', 'Starts at session:')),
                                 h('input', {
-                                    type: 'number', min: 1, value: p.startSession,
+                                    type: 'number', min: 1, value: p.startSession ?? '', placeholder: i === 0 ? '1' : tt('behavior_lens.graph.phase_not_started', 'not started'),
                                     onChange: e => updatePhaseStart(i, e.target.value),
                                     'aria-label': 'Phase ' + (i + 1) + ' start session',
                                     className: 'w-16 text-xs border border-slate-400 rounded px-2 py-1 text-center'
@@ -18396,8 +19105,7 @@ Keep under 200 words. Use bullet points.`);
             h('div', { className: 'space-y-3' },
                 STRATEGIES.map(s =>
                     h('div', { key: s.id, className: `bg-white rounded-xl border-2 ${selected === s.id ? `border-${s.color}-400` : 'border-slate-200'} overflow-hidden transition-all shadow-sm` },
-                        h('button', { "aria-label": "Toggle selected",
-                            onClick: () => setSelected(selected === s.id ? null : s.id),
+                        h('button', { onClick: () => setSelected(selected === s.id ? null : s.id),
                             className: 'w-full text-start p-4'
                         },
                             h('div', { className: 'flex items-center gap-3' },
@@ -18457,7 +19165,7 @@ Keep under 200 words. Use bullet points.`);
 ${RESTORATIVE_PREAMBLE}
 
 Based on the following aggregated data:
-- ABC Data Summary (${abcEntries.length} entries): ${JSON.stringify(abcEntries.slice(-10))}
+- ABC Data Summary (${abcEntries.length} entries): ${JSON.stringify(abcEntriesNewestFirst(abcEntries).slice(0, 10))}
 - Known Preferences: ${studentProfile.preferences || 'Unknown'}
 - Preference Assessment Data: ${preAssessData}
 
@@ -18601,8 +19309,7 @@ Keep under 250 words. Use clear sections.`);
                 h('h3', { className: 'text-xs font-bold text-slate-600 mb-3' }, '🧠 Behavior Function'),
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                     FUNCTIONS.map(f =>
-                        h('button', { "aria-label": "Toggle func",
-                            key: f.id,
+                        h('button', { key: f.id,
                             onClick: () => { setFunc(f.id); if (!targetPhrase) setTargetPhrase(f.phrase); },
                             className: `text-start p-3 rounded-xl border-2 transition-all ${func === f.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`
                         },
@@ -18622,8 +19329,7 @@ Keep under 250 words. Use clear sections.`);
                 h('h3', { className: 'text-xs font-bold text-slate-600 mb-3' }, '📢 Communication Modality'),
                 h('div', { className: 'grid grid-cols-3 gap-2' },
                     MODALITIES.map(m =>
-                        h('button', { "aria-label": "Toggle modality",
-                            key: m.id,
+                        h('button', { key: m.id,
                             onClick: () => setModality(m.id),
                             className: `text-center p-2 rounded-xl border-2 transition-all ${modality === m.id ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`
                         },
@@ -18765,7 +19471,7 @@ Keep under 250 words. Use clear sections.`);
                             btnClass += 'bg-slate-50 border-slate-200 text-slate-600 opacity-50';
                         }
                     }
-                    return h('button', { "aria-label": "Answer",
+                    return h('button', {
                         key: opt,
                         onClick: () => handleAnswer(opt),
                         disabled: showExplanation,
@@ -18788,6 +19494,20 @@ Keep under 250 words. Use clear sections.`);
     };
 
     // ─── PreferenceAssessmentWizard ─────────────────────────────────────
+    // Free operant results: engagement with each item as a share of the WHOLE session
+    // (Roane, Vollmer, Ringdahl & Marcus, 1998). Engaged time alone as the denominator
+    // made the shares always sum to 100% and hid how much of the session the student
+    // spent with nothing.
+    function scoreFreeOperant(items, msByItem, sessionMs) {
+        const total = Math.max(0, Number(sessionMs) || 0);
+        return items.map(item => {
+            const ms = Math.max(0, Number(msByItem && msByItem[item]) || 0);
+            return { item, ms, pct: total > 0 ? Math.min(100, ms / total * 100) : 0 };
+        }).sort((a, b) => b.ms - a.ms);
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensPreference = Object.freeze({ scoreFreeOperant: scoreFreeOperant });
+
     // Guides through MSWO, Paired Choice, and Free Operant preference assessments
     const PreferenceAssessmentWizard = ({ studentName, callGemini, t, addToast }) => {
         const [mode, setMode] = useState(null); // 'mswo', 'paired', 'free'
@@ -18805,10 +19525,41 @@ Keep under 250 words. Use clear sections.`);
         const [currentTrialIdx, setCurrentTrialIdx] = useState(0);
         const [pairedResults, setPairedResults] = useState({});
 
-        // Free Operant State
-        const [foTimers, setFoTimers] = useState({});
+        // Free Operant State. Timed from the clock, not by counting 1 s ticks: a locked
+        // iPad or background tab stalls ticks and shortened every engagement. The two
+        // handlers the run screen calls were never defined, so the screen threw.
         const [activeTimer, setActiveTimer] = useState(null);
-        const [foTotalTime, setFoTotalTime] = useState(0);
+        const [, setFoTick] = useState(0);
+        const foClockRef = useRef(null);
+        const foNow = () => Date.now();
+        const foItemMs = (item) => {
+            const c = foClockRef.current;
+            if (!c) return 0;
+            return (c.ms[item] || 0) + (c.active === item && c.since != null ? (c.end || foNow()) - c.since : 0);
+        };
+        const foSessionMs = () => {
+            const c = foClockRef.current;
+            return c ? Math.max(0, (c.end || foNow()) - c.start) : 0;
+        };
+        const toggleFoTimer = (item) => {
+            const c = foClockRef.current;
+            if (!c || c.end) return;
+            const now = foNow();
+            if (c.active != null && c.since != null) c.ms[c.active] = (c.ms[c.active] || 0) + (now - c.since);
+            if (c.active === item) { c.active = null; c.since = null; }
+            else { c.active = item; c.since = now; }
+            setActiveTimer(c.active);
+        };
+        const stopFoSession = () => {
+            const c = foClockRef.current;
+            if (c && !c.end) {
+                const now = foNow();
+                if (c.active != null && c.since != null) c.ms[c.active] = (c.ms[c.active] || 0) + (now - c.since);
+                c.active = null; c.since = null; c.end = now;
+            }
+            setActiveTimer(null);
+            setStep('results');
+        };
 
         const validItems = items.filter(i => i.trim() !== '');
 
@@ -18846,11 +19597,10 @@ Keep under 250 words. Use clear sections.`);
                 validItems.forEach(i => res[i] = { selected: 0, presented: 0 });
                 setPairedResults(res);
             } else if (mode === 'free') {
-                const timers = {};
-                validItems.forEach(i => timers[i] = 0);
-                setFoTimers(timers);
+                const ms = {};
+                validItems.forEach(i => ms[i] = 0);
+                foClockRef.current = { start: foNow(), end: null, active: null, since: null, ms };
                 setActiveTimer(null);
-                setFoTotalTime(0);
             }
             setStep('run');
         };
@@ -18879,17 +19629,16 @@ Keep under 250 words. Use clear sections.`);
             else setCurrentTrialIdx(prev => prev + 1);
         };
 
+        // Only repaints the clock; the times themselves come from foClockRef.
         useEffect(() => {
-            if (step === 'run' && mode === 'free' && activeTimer) {
-                const interval = setInterval(() => {
-                    setFoTimers(prev => ({ ...prev, [activeTimer]: prev[activeTimer] + 1 }));
-                    setFoTotalTime(prev => prev + 1);
-                }, 1000);
+            if (step === 'run' && mode === 'free') {
+                const interval = setInterval(() => setFoTick(n => n + 1), 500);
                 return () => clearInterval(interval);
             }
-        }, [step, mode, activeTimer]);
+        }, [step, mode]);
 
         const formatTime = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
+        const formatMs = (ms) => formatTime(Math.floor((Number(ms) || 0) / 1000));
 
         const generateAnalysis = async (resultsData) => {
             if (!callGemini) return;
@@ -18924,7 +19673,7 @@ Keep it under 150 words.`);
                         { id: 'mswo', name: 'Multiple Stimulus Without Replacement (MSWO)', desc: 'Quickly rank an array of items. Chosen items are removed in subsequent trials.', icon: '🎯' },
                         { id: 'paired', name: 'Paired Choice (Paired Stimulus)', desc: 'Thoroughly test all combinations of two items. Highly reliable hierarchy.', icon: '⚖️' },
                         { id: 'free', name: 'Free Operant', desc: 'Naturalistic observation of engagement duration with available items.', icon: '⏱️' }
-                    ].map(m => h('button', { "aria-label": "Toggle mode",
+                    ].map(m => h('button', { type: 'button', 'data-pref-mode': m.id,
                         key: m.id, onClick: () => setMode(m.id),
                         className: 'p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-indigo-400 hover:shadow-lg text-start transition-all group'
                     },
@@ -18973,7 +19722,7 @@ Keep it under 150 words.`);
                 mode === 'mswo' && h('div', { className: 'text-center' },
                     h('p', { className: 'mb-6 text-slate-600' }, 'Present the array. Which item did the student choose?'),
                     h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4 mb-6' },
-                        mswoRemaining.map(item => h('button', { "aria-label": "Mswo Select",
+                        mswoRemaining.map(item => h('button', { type: 'button', 'data-mswo-item': item,
                             key: item, onClick: () => mswoSelect(item),
                             className: 'p-6 bg-white border-2 border-indigo-600 rounded-2xl hover:bg-indigo-50 hover:border-indigo-400 hover:-translate-y-1 transition-all shadow-sm font-bold text-indigo-900 text-lg'
                         }, item))
@@ -18994,18 +19743,19 @@ Keep it under 150 words.`);
                 mode === 'free' && h('div', { className: 'space-y-6' },
                     h('div', { className: 'text-center bg-slate-900 text-slate-100 p-6 rounded-2xl shadow-inner' },
                         h('div', { className: 'text-xs font-bold text-slate-300 mb-1 uppercase tracking-widest' }, 'Total Session Time'),
-                        h('div', { className: 'text-5xl font-mono' }, formatTime(foTotalTime))
+                        h('div', { className: 'text-5xl font-mono', 'data-fo-session': 'true' }, formatMs(foSessionMs())),
+                        h('p', { className: 'text-[11px] text-slate-300 mt-2' }, tt('behavior_lens.pref.fo_hint', 'Tap an item while the student engages with it; tap again (or another item) when they stop. Sessions usually run 5 minutes.'))
                     ),
                     h('div', { className: 'grid grid-cols-2 gap-4' },
-                        validItems.map(item => h('button', { "aria-label": "Toggle Fo Timer",
+                        validItems.map(item => h('button', { type: 'button', 'aria-pressed': activeTimer === item ? 'true' : 'false', 'data-fo-item': item,
                             key: item, onClick: () => toggleFoTimer(item),
                             className: `p-4 rounded-xl border-2 transition-all text-start flex justify-between items-center ${activeTimer === item ? 'bg-green-100 border-green-500 shadow-md ring-4 ring-green-200' : 'bg-white border-slate-200 hover:bg-slate-50'}`
                         },
                             h('span', { className: `font-bold text-lg ${activeTimer === item ? 'text-green-800' : 'text-slate-700'}` }, item),
-                            h('span', { className: `font-mono text-xl ${activeTimer === item ? 'text-green-700' : 'text-slate-600'}` }, formatTime(foTimers[item]))
+                            h('span', { className: `font-mono text-xl ${activeTimer === item ? 'text-green-700' : 'text-slate-600'}` }, formatMs(foItemMs(item)))
                         ))
                     ),
-                    h('button', { "aria-label": "End Session & View Results", onClick: stopFoSession, className: 'w-full py-4 bg-red-100 text-red-700 border-2 border-red-600 rounded-xl font-black text-lg hover:bg-red-200 transition-colors' }, '⏹️ End Session & View Results')
+                    h('button', { type: 'button', onClick: stopFoSession, className: 'w-full py-4 bg-red-100 text-red-700 border-2 border-red-600 rounded-xl font-black text-lg hover:bg-red-200 transition-colors' }, '⏹️ End Session & View Results')
                 )
             );
         }
@@ -19023,11 +19773,10 @@ Keep it under 150 words.`);
                 return { item, pct, label: `${Math.round(pct)}% (${data.selected}/${data.presented})` };
             }).sort((a, b) => b.pct - a.pct);
         } else if (mode === 'free') {
-            hierarchy = validItems.map(item => {
-                const secs = foTimers[item];
-                const pct = foTotalTime > 0 ? (secs / foTotalTime) * 100 : 0;
-                return { item, secs, pct, label: `${formatTime(secs)} (${Math.round(pct)}%)` };
-            }).sort((a, b) => b.secs - a.secs);
+            const msByItem = {};
+            validItems.forEach(item => { msByItem[item] = foItemMs(item); });
+            hierarchy = scoreFreeOperant(validItems, msByItem, foSessionMs()).map(r => (
+                Object.assign(r, { label: `${formatMs(r.ms)} (${Math.round(r.pct)}% ${tt('behavior_lens.pref.of_session', 'of session')})` })));
         }
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-6' },
@@ -19106,6 +19855,23 @@ Keep it under 150 words.`);
         if (parts.length > 1 && parts[parts.length - 1] === '') parts.pop();
         return parts;
     }
+    // The IOA grid's rows. A blank cell was read as an observed 0, so pressing Calculate
+    // on the empty 10-row grid reported 100% "Acceptable", and a 6-interval session in
+    // the default 10 rows gained 4 intervals of perfect agreement (4/6 = 67% read as
+    // 8/10 = 80%). A row both observers left blank is now an interval nobody recorded
+    // and is left out; a row only one observer filled cannot be scored.
+    function ioaGridLists(rows) {
+        const d1 = [], d2 = [], oneSided = [], rowNumbers = [];
+        let blankRows = 0;
+        (rows || []).forEach((r, i) => {
+            const a = String((r && r.obs1) == null ? '' : r.obs1).trim();
+            const b = String((r && r.obs2) == null ? '' : r.obs2).trim();
+            if (!a && !b) { blankRows += 1; return; }
+            if (!a || !b) { oneSided.push(i + 1); return; }
+            d1.push(a); d2.push(b); rowNumbers.push(i + 1);
+        });
+        return { d1, d2, blankRows, oneSided, rowNumbers };
+    }
     function computeIOA(method, obs1, obs2) {
         obs1 = obs1 || []; obs2 = obs2 || [];
         if (obs1.length === 0 || obs2.length === 0) return { error: 'empty', message: 'Enter data for both observers.' };
@@ -19165,7 +19931,24 @@ Keep it under 150 words.`);
         return { error: 'method', message: 'Unknown IOA method: ' + method };
     }
     window.AlloModules = window.AlloModules || {};
-    window.AlloModules.BehaviorLensIOA = Object.freeze({ computeIOA: computeIOA, splitIOAList: splitIOAList, methods: IOA_METHODS });
+    // The AI-assisted comparisons read the practitioner's record with the same rules.
+    // They used parseFloat and DROPPED anything else, so one blank or "+" shifted every
+    // later interval, and they padded the shorter record with nulls that "agreed"
+    // with any AI zero: the invented agreement computeIOA stopped on 2026-09-22.
+    function parseIOARecord(text) {
+        var parts = splitIOAList(text);
+        var values = parts.map(parseIOAValue);
+        var bad = [];
+        values.forEach(function (v, i) { if (v === null) bad.push(i + 1); });
+        return { values: values, bad: bad };
+    }
+    function ioaRecordProblem(label, record, otherLabel, otherLength) {
+        if (!record.values.length) return 'Enter the ' + label + ' coding (one value per interval, separated by commas).';
+        if (record.bad.length) return label + ' interval ' + record.bad.slice(0, 3).join(', ') + (record.bad.length > 3 ? ', ...' : '') + ' is not a count or occurrence mark.';
+        if (otherLength != null && record.values.length !== otherLength) return label + ' has ' + record.values.length + ' intervals and ' + otherLabel + ' has ' + otherLength + '. Agreement compares the same intervals, so both need the same number.';
+        return null;
+    }
+    window.AlloModules.BehaviorLensIOA = Object.freeze({ ioaGridLists: ioaGridLists, computeIOA: computeIOA, splitIOAList: splitIOAList, parseIOARecord: parseIOARecord, ioaRecordProblem: ioaRecordProblem, methods: IOA_METHODS });
 
     // ─── IOACalculator ────────────────────────────────────────────────
     // Inter-Observer Agreement Calculator with AI-Assisted Video/Audio IOA
@@ -19203,8 +19986,9 @@ Keep it under 150 words.`);
             });
         }
         function syncStructuredToCSV() {
-            setObs1Data(intervalData.map(function(r) { return r.obs1 || '0'; }).join(', '));
-            setObs2Data(intervalData.map(function(r) { return r.obs2 || '0'; }).join(', '));
+            var lists = ioaGridLists(intervalData);
+            setObs1Data(lists.d1.join(', '));
+            setObs2Data(lists.d2.join(', '));
         }
         function ioaTimeLabel(idx) {
             if (!intervalDuration || intervalDuration <= 0) return '';
@@ -19347,17 +20131,24 @@ Keep it under 150 words.`);
         // the NEXT render) and then read obs1Data, so every result was computed
         // from the previous grid, one click behind the clinician's edits.
         function calcTraditionalIOA() {
-            var d1 = bulkMode ? splitIOAList(obs1Data) : intervalData.map(function(r) { return String(r.obs1 || '').trim() || '0'; });
-            var d2 = bulkMode ? splitIOAList(obs2Data) : intervalData.map(function(r) { return String(r.obs2 || '').trim() || '0'; });
+            var grid = bulkMode ? null : ioaGridLists(intervalData);
+            if (grid && grid.oneSided.length) {
+                if (addToast) addToast(tt('behavior_lens.ioa.one_sided', 'Only one observer recorded interval {list}. Fill in both observers, or clear the row if nobody recorded it.', { list: grid.oneSided.join(', ') }), 'error');
+                return;
+            }
+            var d1 = bulkMode ? splitIOAList(obs1Data) : grid.d1;
+            var d2 = bulkMode ? splitIOAList(obs2Data) : grid.d2;
             var result = computeIOA(ioaMethod, d1, d2);
             if (result.error) {
                 if (addToast) addToast(result.error === 'empty' ? t('toasts.enter_data_both_observers') : result.message, 'error');
                 return;
             }
-            setIoaResults(result);
+            // Interval numbers stay the grid's own rows, so labels line up past a skipped row.
+            setIoaResults(grid && grid.blankRows ? Object.assign({}, result, { blankRows: grid.blankRows, scoredRows: grid.d1.length,
+                details: Array.isArray(result.details) ? result.details.map(function(d, i) { return Object.assign({}, d, { interval: grid.rowNumbers[i] || d.interval }); }) : result.details }) : result);
             if (addToast) {
                 if (result.agreement === null) addToast(result.interpretation, 'info');
-                else addToast(t('toasts.ioa_calculated') + result.agreement + '% agreement', 'success');
+                else addToast(t('toasts.ioa_calculated') + result.agreement + '% agreement' + (grid && grid.blankRows ? ' ' + tt('behavior_lens.ioa.blank_rows', '({n} blank rows not counted)', { n: grid.blankRows }) : ''), 'success');
             }
         }
 
@@ -19499,8 +20290,14 @@ Keep it under 150 words.`);
             var p1 = pass1 || aiCoding;
             var p2 = pass2 || aiCoding2;
             if (!p1 || !p2 || !p1.intervals || !p2.intervals) return;
-            var practData = practitionerCoding.trim() ? practitionerCoding.split(',').map(function(s) { return parseFloat(s.trim()); }).filter(function(n) { return !isNaN(n); }) : [];
-            var maxLen = Math.max(p1.intervals.length, p2.intervals.length, practData.length);
+            var practRecord = parseIOARecord(practitionerCoding);
+            var practData = practRecord.values;
+            if (p1.intervals.length !== p2.intervals.length) {
+                setAiVsAiComparison({ agreementPct: null, totalIntervals: 0, agreements: 0, disagreements: 0, interpretation: 'Not comparable: the AI passes coded ' + p1.intervals.length + ' and ' + p2.intervals.length + ' intervals', details: [] });
+                if (addToast) addToast(tt('behavior_lens.ioa.ai_lengths_differ', 'The two AI passes coded different numbers of intervals, so they cannot be compared.'), 'warning');
+                return;
+            }
+            var maxLen = p1.intervals.length;
             // AI1 vs AI2
             var aiAgree = 0;
             var aiDetails = [];
@@ -19522,8 +20319,10 @@ Keep it under 150 words.`);
             var aiPct = maxLen > 0 ? ((aiAgree / maxLen) * 100).toFixed(1) : '0';
             setAiVsAiComparison({ agreementPct: aiPct, totalIntervals: maxLen, agreements: aiAgree, disagreements: maxLen - aiAgree, interpretation: parseFloat(aiPct) >= 80 ? 'Acceptable (≥80%)' : 'Below threshold', details: aiDetails });
 
-            // Practitioner vs AI2
-            if (practData.length > 0) {
+            // Practitioner vs AI2: only a clean record of the same length is compared.
+            var practProblem = practData.length ? ioaRecordProblem('Your record', practRecord, 'the AI coding', p2.intervals.length) : null;
+            if (practProblem && addToast) addToast(practProblem, 'warning');
+            if (practData.length > 0 && !practProblem) {
                 var agree2 = 0;
                 var details2 = [];
                 var disagree2 = [];
@@ -19551,13 +20350,15 @@ Keep it under 150 words.`);
         function doIOAComparison(aiData) {
             var ai = aiData || aiCoding;
             if (!ai || !ai.intervals) return;
-            var practData = practitionerCoding.split(',').map(function(s) { return parseFloat(s.trim()); }).filter(function(n) { return !isNaN(n); });
-            if (practData.length === 0) {
-                if (addToast) addToast(t('toasts.enter_coding_data_comma_separated'), 'error');
+            var practRecord = parseIOARecord(practitionerCoding);
+            var aiIntervals = ai.intervals;
+            var problem = ioaRecordProblem('Your record', practRecord, 'the AI coding', aiIntervals.length);
+            if (problem) {
+                if (addToast) addToast(practRecord.values.length ? problem : (t('toasts.enter_coding_data_comma_separated') || problem), 'error');
                 return;
             }
-            var aiIntervals = ai.intervals;
-            var maxLen = Math.max(practData.length, aiIntervals.length);
+            var practData = practRecord.values;
+            var maxLen = practData.length;
             var agreements = 0;
             var disagreeList = [];
             var detailList = [];
@@ -19609,7 +20410,7 @@ Keep it under 150 words.`);
                 if (aiVsAiComparison) {
                     lines.push('');
                     lines.push('=== AI Pass 1 × AI Pass 2 (Reliability) ===');
-                    lines.push('Agreement: ' + aiVsAiComparison.agreementPct + '%');
+                    lines.push('Agreement: ' + (aiVsAiComparison.agreementPct == null ? 'N/A (' + aiVsAiComparison.interpretation + ')' : aiVsAiComparison.agreementPct + '%'));
                 }
                 lines.push('');
                 lines.push('WARNING: AI coding is supplementary only. Not for primary data.');
@@ -19775,7 +20576,7 @@ Keep it under 150 words.`);
                     h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📐 Select IOA Method'),
                     h('div', { className: 'grid grid-cols-3 gap-2' },
                         IOA_METHODS_LIST.map(function(m) {
-                            return h('button', { "aria-label": "Set Ioa Method", key: m.id, onClick: function() { setIoaMethod(m.id); }, className: 'p-3 rounded-xl border-2 text-start transition-all ' + (ioaMethod === m.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
+                            return h('button', { key: m.id, onClick: function() { setIoaMethod(m.id); }, className: 'p-3 rounded-xl border-2 text-start transition-all ' + (ioaMethod === m.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
                                 h('div', { className: 'text-lg mb-1' }, m.icon),
                                 h('div', { className: 'text-xs font-bold text-slate-800' }, m.label),
                                 h('div', { className: 'text-[11px] text-slate-600' }, m.desc)
@@ -19786,7 +20587,7 @@ Keep it under 150 words.`);
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm space-y-3' },
                     h('div', { className: 'flex items-center justify-between mb-1' },
                         h('h3', { className: 'text-sm font-black text-slate-800' }, '📝 Enter Observer Data'),
-                        h('button', { 'aria-expanded': String(bulkMode), "aria-label": "Set Bulk Mode", onClick: function() { setBulkMode(!bulkMode); }, className: 'text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all ' + (bulkMode ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, bulkMode ? '📋 Structured View' : '📄 Bulk CSV Import')
+                        h('button', { 'aria-expanded': String(bulkMode), onClick: function() { setBulkMode(!bulkMode); }, className: 'text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all ' + (bulkMode ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, bulkMode ? '📋 Structured View' : '📄 Bulk CSV Import')
                     ),
                     // Interval config row
                     !bulkMode && h('div', { className: 'flex items-center gap-4 bg-slate-50 rounded-lg p-3 border border-slate-100' },
@@ -19798,7 +20599,7 @@ Keep it under 150 words.`);
                             h('label', { className: 'text-[11px] font-bold text-slate-600 whitespace-nowrap' }, '⏱️ Each interval'),
                             h('div', { className: 'flex gap-1' },
                                 [1, 2, 5, 10, 15, 30].map(function(min) {
-                                    return h('button', { "aria-label": "Set Interval Duration", key: min, onClick: function() { setIntervalDuration(min); }, className: 'px-2 py-1 rounded-md text-[11px] font-bold transition-all ' + (intervalDuration === min ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-slate-100') }, min + ' min');
+                                    return h('button', { key: min, onClick: function() { setIntervalDuration(min); }, className: 'px-2 py-1 rounded-md text-[11px] font-bold transition-all ' + (intervalDuration === min ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-slate-100') }, min + ' min');
                                 })
                             )
                         ),
@@ -19821,8 +20622,8 @@ Keep it under 150 words.`);
                                     h('div', { className: 'text-xs font-black text-slate-600 text-center' }, idx + 1),
                                     h('div', { className: 'text-[11px] text-indigo-500 font-medium' }, ioaTimeLabel(idx)),
                                     h('input', { type: 'text', value: row.label, onChange: function(e) { updateIntervalField(idx, 'label', e.target.value); }, 'aria-label': 'Interval ' + (idx + 1) + ' label', placeholder: 'e.g. Math time', className: 'w-full border border-slate-100 rounded px-2 py-1 text-[11px] focus:ring-1 focus:ring-indigo-300 outline-none bg-transparent' }),
-                                    h('input', { type: 'text', value: row.obs1, onChange: function(e) { updateIntervalField(idx, 'obs1', e.target.value); }, 'aria-label': 'Interval ' + (idx + 1) + ' observer 1', placeholder: '0', className: 'w-full border border-slate-400 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:ring-2 focus:ring-indigo-400 outline-none' }),
-                                    h('input', { type: 'text', value: row.obs2, onChange: function(e) { updateIntervalField(idx, 'obs2', e.target.value); }, 'aria-label': 'Interval ' + (idx + 1) + ' observer 2', placeholder: '0', className: 'w-full border border-slate-400 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:ring-2 focus:ring-indigo-400 outline-none' })
+                                    h('input', { type: 'text', value: row.obs1, onChange: function(e) { updateIntervalField(idx, 'obs1', e.target.value); }, 'aria-label': 'Interval ' + (idx + 1) + ' observer 1', className: 'w-full border border-slate-400 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:ring-2 focus:ring-indigo-400 outline-none' }),
+                                    h('input', { type: 'text', value: row.obs2, onChange: function(e) { updateIntervalField(idx, 'obs2', e.target.value); }, 'aria-label': 'Interval ' + (idx + 1) + ' observer 2', className: 'w-full border border-slate-400 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:ring-2 focus:ring-indigo-400 outline-none' })
                                 );
                             })
                         )
@@ -19900,7 +20701,7 @@ Keep it under 150 words.`);
                     ),
                     h('div', { className: 'grid grid-cols-5 gap-2 mb-3' },
                         IOA_SAMPLING.map(function(s) {
-                            return h('button', { "aria-label": "Set Sampling Method", key: s.id, onClick: function() { setSamplingMethod(s.id); }, className: 'p-2 rounded-xl border-2 text-center transition-all ' + (samplingMethod === s.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
+                            return h('button', { key: s.id, onClick: function() { setSamplingMethod(s.id); }, className: 'p-2 rounded-xl border-2 text-center transition-all ' + (samplingMethod === s.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
                                 h('div', { className: 'text-lg' }, s.icon),
                                 h('div', { className: 'text-[11px] font-bold text-slate-700 mt-1' }, s.label)
                             );
@@ -19910,7 +20711,7 @@ Keep it under 150 words.`);
                         h('label', { className: 'text-xs font-bold text-slate-600' }, 'Interval length:'),
                         h('div', { className: 'flex gap-1' },
                             [30, 60, 120, 300, 600].map(function(sec) {
-                                return h('button', { "aria-label": "Set Ai Interval Sec", key: sec, onClick: function() { setAiIntervalSec(sec); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ' + (aiIntervalSec === sec ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, sec < 60 ? sec + 's' : (sec / 60) + ' min');
+                                return h('button', { key: sec, onClick: function() { setAiIntervalSec(sec); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ' + (aiIntervalSec === sec ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, sec < 60 ? sec + 's' : (sec / 60) + ' min');
                             })
                         )
                     )
@@ -19922,7 +20723,7 @@ Keep it under 150 words.`);
                     ),
                     h('input', { ref: ioaFileRef, type: 'file', accept: 'video/*,audio/*', onChange: handleIoaMediaUpload, className: 'hidden' }),
                     !mediaFile
-                        ? h('button', { "aria-label": "Set Media File", onClick: function() { ioaFileRef.current && ioaFileRef.current.click(); }, className: 'w-full py-8 border-2 border-dashed border-indigo-600 rounded-xl bg-indigo-50/50 hover:bg-indigo-50 transition-all text-center' },
+                        ? h('button', { onClick: function() { ioaFileRef.current && ioaFileRef.current.click(); }, className: 'w-full py-8 border-2 border-dashed border-indigo-600 rounded-xl bg-indigo-50/50 hover:bg-indigo-50 transition-all text-center' },
                             h('div', { className: 'text-3xl mb-2' }, '📁'),
                             h('div', { className: 'text-sm font-bold text-indigo-600' }, 'Click to upload video or audio'),
                             h('div', { className: 'text-[11px] text-indigo-400 mt-1' }, 'Supports .mp4, .webm, .wav, .mp3')
@@ -19969,7 +20770,8 @@ Keep it under 150 words.`);
                     h('div', { className: 'text-4xl font-black ' + (ioaResults.agreement === null ? 'text-slate-500' : parseFloat(ioaResults.agreement) >= 80 ? 'text-emerald-600' : parseFloat(ioaResults.agreement) >= 70 ? 'text-amber-600' : 'text-red-600') }, ioaResults.agreement === null ? '—' : ioaResults.agreement + '%'),
                     h('div', { className: 'text-xs text-slate-600 font-bold uppercase mt-1' }, ioaResults.method + ' Agreement'),
                     h('div', { className: 'text-sm font-bold mt-2 px-3 py-1 rounded-full inline-block ' + (ioaResults.agreement === null ? 'bg-slate-100 text-slate-700' : parseFloat(ioaResults.agreement) >= 80 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700') }, ioaResults.interpretation),
-                    ioaResults.note && h('p', { className: 'text-xs text-slate-600 mt-2' }, ioaResults.note)
+                    ioaResults.note && h('p', { className: 'text-xs text-slate-600 mt-2' }, ioaResults.note),
+                    ioaResults.blankRows > 0 && h('p', { 'data-ioa-blank': ioaResults.blankRows, className: 'text-xs text-slate-600 mt-2' }, tt('behavior_lens.ioa.scored_of', '{n} intervals scored. {blank} blank rows were not counted.', { n: ioaResults.scoredRows, blank: ioaResults.blankRows }))
                 ),
                 ioaResults.details && h('details', { className: 'bg-slate-50 rounded-lg p-3' },
                     h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, 'Interval Details (' + ioaResults.details.length + ' intervals)'),
@@ -20089,7 +20891,7 @@ Keep it under 150 words.`);
                     ),
                     // AI-1 × AI-2 — relabeled: model-consistency, NOT a reliability metric
                     h('div', { className: 'bg-white rounded-xl border border-violet-200 p-3 text-center' },
-                        h('div', { className: 'text-2xl font-black ' + (parseFloat(aiVsAiComparison.agreementPct) >= 80 ? 'text-emerald-600' : 'text-amber-600') }, aiVsAiComparison.agreementPct + '%'),
+                        h('div', { className: 'text-2xl font-black ' + (parseFloat(aiVsAiComparison.agreementPct) >= 80 ? 'text-emerald-600' : 'text-amber-600') }, aiVsAiComparison.agreementPct == null ? 'N/A' : aiVsAiComparison.agreementPct + '%'),
                         h('div', { className: 'text-[11px] text-violet-600 font-bold uppercase mt-1' }, 'AI-1 × AI-2 Consistency')
                     )
                 ),
@@ -20137,7 +20939,7 @@ Keep it under 150 words.`);
                     ),
                     h('div', { className: 'grid grid-cols-3 gap-2' },
                         IA_ROLES.map(function(r) {
-                            return h('button', { "aria-label": "Set Ia Role", key: r.id, onClick: function() { setIaRole(r.id); }, className: 'p-3 rounded-xl border-2 text-center transition-all ' + (iaRole === r.id ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
+                            return h('button', { key: r.id, onClick: function() { setIaRole(r.id); }, className: 'p-3 rounded-xl border-2 text-center transition-all ' + (iaRole === r.id ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
                                 h('div', { className: 'text-xl mb-1' }, r.icon),
                                 h('div', { className: 'text-xs font-bold text-slate-800' }, r.label),
                                 h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, r.desc)
@@ -20179,7 +20981,7 @@ Keep it under 150 words.`);
                     h('input', { value: iaReinfSchedule, onChange: function(e) { setIaReinfSchedule(e.target.value); }, 'aria-label': 'Reinforcement schedule (optional, e.g. FR3, VR5, DRO 2min)', placeholder: 'e.g., FR3 (fixed-ratio 3), VR5, DRO 2min, FI 30s, token economy every 5 correct', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-400 outline-none font-mono' }),
                     h('div', { className: 'flex flex-wrap gap-1 mt-2' },
                         ['FR3', 'VR5', 'FI 30s', 'VI 2min', 'DRO 2min', 'DRA', 'DRI', 'Token economy'].map(function(ex) {
-                            return h('button', { "aria-label": "Set Ia Reinf Schedule", key: ex, onClick: function() { setIaReinfSchedule(ex); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (iaReinfSchedule === ex ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, ex);
+                            return h('button', { key: ex, onClick: function() { setIaReinfSchedule(ex); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (iaReinfSchedule === ex ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, ex);
                         })
                     )
                 ),
@@ -20191,7 +20993,7 @@ Keep it under 150 words.`);
                     ),
                     h('input', { ref: iaFileRef, type: 'file', accept: 'video/*,audio/*', onChange: handleIaMediaUpload, className: 'hidden' }),
                     !mediaFile
-                        ? h('button', { "aria-label": "Set Media File", onClick: function() { iaFileRef.current && iaFileRef.current.click(); }, className: 'w-full py-8 border-2 border-dashed border-emerald-600 rounded-xl bg-emerald-50/50 hover:bg-emerald-50 transition-all text-center' },
+                        ? h('button', { onClick: function() { iaFileRef.current && iaFileRef.current.click(); }, className: 'w-full py-8 border-2 border-dashed border-emerald-600 rounded-xl bg-emerald-50/50 hover:bg-emerald-50 transition-all text-center' },
                             h('div', { className: 'text-3xl mb-2' }, '📁'),
                             h('div', { className: 'text-sm font-bold text-emerald-600' }, 'Click to upload interaction recording'),
                             h('div', { className: 'text-[11px] text-emerald-700 mt-1' }, 'Supports .mp4, .webm, .wav, .mp3')
@@ -20322,12 +21124,31 @@ Keep it under 150 words.`);
 
     // ─── TaskAnalysisTool ───────────────────────────────────────────────
     // Task analysis with forward/backward/total-task chaining
+    // Task-analysis mastery, per STEP. It was matched by POSITION: delete step 1 and
+    // step 2 inherited step 1's history ("✓ MAS" from the wrong step's data), and
+    // sessions of any other task counted too. Blank rows sat in the "% independent"
+    // denominator, and prompt levels were not cleared after Save, so pressing Save three
+    // times "mastered" a step with no new data.
+    const taskKey = (name) => String(name || '').trim().toLowerCase();
+    function taskStepMastered(sessions, taskName, step, need) {
+        const mine = (sessions || []).filter(sess => taskKey(sess.taskName) === taskKey(taskName));
+        const recent = mine.slice(0, need);
+        if (recent.length < need) return false;
+        return recent.every(sess => (sess.steps || []).some(st => (st.id ? st.id === step.id : taskKey(st.desc) === taskKey(step.desc)) && st.promptLevel === 'I'));
+    }
+    function taskIndependentPct(steps) {
+        const described = (steps || []).filter(st => String(st.desc || '').trim());
+        return described.length ? Math.round(described.filter(st => st.promptLevel === 'I').length / described.length * 100) : null;
+    }
+    window.AlloModules.BehaviorLensTaskAnalysis = Object.freeze({ taskStepMastered, taskIndependentPct });
+
     const TaskAnalysisTool = ({ studentName, callGemini, t, addToast }) => {
-        const [taskName, setTaskName] = useState('');
-        const [steps, setSteps] = useState([{ id: 's1', desc: '', status: 'not_started', promptLevel: 'FP', notes: '' }]);
-        const [chainingMethod, setChainingMethod] = useState('total');
-        const [masteryCriteria, setMasteryCriteria] = useState(3);
-        const [sessions, setSessions] = useState([]);
+        // Kept with the student's workspace (the task, its steps and every session were lost on close).
+        const [taskName, setTaskName] = useDurableToolState('taskAnalysisName', '');
+        const [steps, setSteps] = useDurableToolState('taskAnalysisSteps', [{ id: 's1', desc: '', status: 'not_started', promptLevel: '', notes: '' }]);
+        const [chainingMethod, setChainingMethod] = useDurableToolState('taskAnalysisChaining', 'total');
+        const [masteryCriteria, setMasteryCriteria] = useDurableToolState('taskAnalysisMastery', 3);
+        const [sessions, setSessions] = useDurableToolState('taskAnalysisSessions', []);
         const [showHistory, setShowHistory] = useState(false);
         const [generatingAi, setGeneratingAi] = useState(false);
 
@@ -20368,7 +21189,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         id: `ai_${Date.now()}_${idx}`, 
                         desc, 
                         status: 'not_started', 
-                        promptLevel: 'FP', 
+                        promptLevel: '', 
                         notes: '' 
                     }));
                     setSteps(newSteps);
@@ -20397,34 +21218,44 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             { id: 'total', name: 'Total Task', desc: 'Practice all steps each trial with prompting as needed' },
         ];
 
-        const addStep = () => setSteps(prev => [...prev, { id: uid(), desc: '', status: 'not_started', promptLevel: 'FP', notes: '' }]);
+        const addStep = () => setSteps(prev => [...prev, { id: uid(), desc: '', status: 'not_started', promptLevel: '', notes: '' }]);
         const removeStep = (id) => { if (steps.length > 1) setSteps(prev => prev.filter(s => s.id !== id)); };
         const updateStep = (id, field, value) => setSteps(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
 
+        const described = steps.filter(s => String(s.desc || '').trim());
+        const unrecorded = described.filter(s => !s.promptLevel).length;
         const saveSession = () => {
+            if (!described.length || unrecorded) {
+                if (addToast) addToast(!described.length ? tt('behavior_lens.task.describe_first', 'Describe at least one step first.') : tt('behavior_lens.task.record_all', 'Record a prompt level for every step before saving ({n} not recorded).', { n: unrecorded }), 'warning');
+                return;
+            }
             const session = {
                 id: Date.now().toString(36),
                 date: new Date().toISOString(),
                 taskName,
                 chainingMethod,
-                steps: steps.map(s => ({ desc: s.desc, promptLevel: s.promptLevel, status: s.status })),
-                independentPct: Math.round((steps.filter(s => s.promptLevel === 'I').length / steps.length) * 100),
+                steps: described.map(s => ({ id: s.id, desc: s.desc, promptLevel: s.promptLevel, status: s.status })),
+                independentPct: taskIndependentPct(described),
             };
             setSessions(prev => [session, ...prev]);
-            if (addToast) addToast(t('behavior_lens.toast.session_saved_n_independent') || `Session saved! ${session.independentPct}% independent`, 'success');
+            // Each session records its own prompt levels.
+            setSteps(prev => prev.map(s => ({ ...s, promptLevel: '' })));
+            if (addToast) addToast(tt('behavior_lens.toast.session_saved_n_independent_v2', 'Session saved! {v1}% independent', { v1: session.independentPct }), 'success');
         };
 
         const isMastered = (stepIdx) => {
-            const recent = sessions.slice(0, masteryCriteria);
-            return recent.length >= masteryCriteria && recent.every(s => s.steps[stepIdx]?.promptLevel === 'I');
+            const step = steps[stepIdx];
+            return !!step && !!String(step.desc || '').trim() && taskStepMastered(sessions, taskName, step, masteryCriteria);
         };
+        const taskSessions = sessions.filter(sess => taskKey(sess.taskName) === taskKey(taskName));
+        const nowPct = taskIndependentPct(steps);
 
         if (showHistory) {
             return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
                 h('button', { "aria-label": "Back", onClick: () => setShowHistory(false), className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← Back'),
-                h('h2', { className: 'text-lg font-black text-slate-800 text-center' }, `📋 Session History (${sessions.length})`),
-                sessions.length === 0 ? h('p', { className: 'text-center text-sm text-slate-600 py-8' }, tt('behavior_lens.ui.no_sessions_yet', 'No sessions yet.')) :
-                    sessions.map(s => h('div', { key: s.id, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
+                h('h2', { className: 'text-lg font-black text-slate-800 text-center' }, `📋 Session History (${taskSessions.length})`),
+                taskSessions.length === 0 ? h('p', { className: 'text-center text-sm text-slate-600 py-8' }, tt('behavior_lens.ui.no_sessions_yet', 'No sessions yet.')) :
+                    taskSessions.map(s => h('div', { key: s.id, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                         h('div', { className: 'flex justify-between items-center mb-2' },
                             h('span', { className: 'text-xs font-bold text-slate-600' }, new Date(s.date).toLocaleString()),
                             h('span', { className: `text-xs font-bold px-2 py-0.5 rounded-full ${s.independentPct >= 80 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}` }, `${s.independentPct}% independent`)
@@ -20460,7 +21291,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         h(InfoTooltip, { text: "Forward chaining teaches the first step independently. Backward chaining teaches the last step first. Total task requires the student to complete every step with prompting as needed." })
                     ),
                     h('div', { className: 'flex gap-2' },
-                        CHAINING.map(c => h('button', { "aria-label": "Toggle chaining method", key: c.id, onClick: () => setChainingMethod(c.id), className: `flex-1 p-2 rounded-lg border-2 text-start ${chainingMethod === c.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
+                        CHAINING.map(c => h('button', { 'aria-pressed': chainingMethod === c.id ? 'true' : 'false', key: c.id, onClick: () => setChainingMethod(c.id), className: `flex-1 p-2 rounded-lg border-2 text-start ${chainingMethod === c.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                             h('span', { className: 'text-[11px] font-bold text-slate-700 block' }, c.name),
                             h('span', { className: 'text-[11px] text-slate-600' }, c.desc)
                         ))
@@ -20490,11 +21321,12 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         const mastered = isMastered(idx);
                         return h('div', { key: step.id, className: `flex items-center gap-2 p-2 rounded-lg ${mastered ? 'bg-green-50 border border-green-200' : 'bg-slate-50'}` },
                             h('span', { className: 'text-xs font-bold text-slate-600 w-6 text-center' }, idx + 1),
-                            h('input', { value: step.desc, onChange: e => updateStep(step.id, 'desc', e.target.value), 'aria-label': 'Step description', placeholder: tt('behavior_lens.ph.step_description', 'Step description...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white' }),
-                            h('select', { value: step.promptLevel, onChange: e => updateStep(step.id, 'promptLevel', e.target.value), 'aria-label': 'Prompt level for this step', className: 'text-[11px] border border-slate-400 rounded-lg px-1 py-1.5 bg-white font-medium' },
+                            h('input', { value: step.desc, onChange: e => updateStep(step.id, 'desc', e.target.value), 'aria-label': 'Step ' + (idx + 1) + ' description', placeholder: tt('behavior_lens.ph.step_description', 'Step description...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white' }),
+                            h('select', { value: step.promptLevel || '', onChange: e => updateStep(step.id, 'promptLevel', e.target.value), 'aria-label': 'Prompt level for step ' + (idx + 1), className: 'text-[11px] border border-slate-400 rounded-lg px-1 py-1.5 bg-white font-medium' },
+                                h('option', { value: '' }, tt('behavior_lens.task.not_recorded', 'Not recorded')),
                                 PROMPT_LEVELS.map(p => h('option', { key: p.id, value: p.id }, `${p.icon} ${p.label}`))
                             ),
-                            mastered && h('span', { className: 'text-[11px] font-bold text-green-600' }, '✓ MAS'),
+                            mastered && h('span', { 'data-task-mastered': step.id, className: 'text-[11px] font-bold text-green-600' }, '✓ MAS'),
                             steps.length > 1 && h('button', { onClick: () => removeStep(step.id), title: 'Remove step', 'aria-label': 'Remove task analysis step', className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')
                         );
                     })
@@ -20507,7 +21339,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             // Summary bar
             h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
                 h('div', { className: 'flex justify-between items-center' },
-                    h('span', { className: 'text-xs font-bold text-indigo-800' }, `${steps.filter(s => s.promptLevel === 'I').length}/${steps.length} steps independent (${Math.round((steps.filter(s => s.promptLevel === 'I').length / steps.length) * 100)}%)`),
+                    h('span', { 'data-task-summary': 'true', className: 'text-xs font-bold text-indigo-800' }, nowPct == null ? tt('behavior_lens.task.no_steps', 'No steps described yet') : `${described.filter(s => s.promptLevel === 'I').length}/${described.length} steps independent (${nowPct}%)` + (unrecorded ? ` · ${unrecorded} not recorded` : '')),
                     h('div', { className: 'flex gap-1' },
                         steps.map((s, i) => {
                             const pl = PROMPT_LEVELS.find(p => p.id === s.promptLevel);
@@ -20518,20 +21350,38 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             ),
             h('div', { className: 'flex gap-2' },
                 h('button', { onClick: saveSession, disabled: !taskName.trim(), className: 'flex-1 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-600 hover:to-emerald-700 shadow-lg disabled:opacity-50' }, '💾 Save Session'),
-                h('button', { "aria-label": "Toggle show history", onClick: () => setShowHistory(true), className: 'px-4 py-3 bg-white border border-slate-400 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50' }, `📋 ${sessions.length}`)
+                h('button', { 'aria-label': 'Session history (' + taskSessions.length + ')', onClick: () => setShowHistory(true), className: 'px-4 py-3 bg-white border border-slate-400 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50' }, `📋 ${taskSessions.length}`)
             )
         );
     };
 
     // ─── DTTDataSheet ───────────────────────────────────────────────────
     // Discrete Trial Training with mastery criteria and auto-advance
+    // DTT mastery, worked out from the saved sessions every time. The consecutive
+    // count was a stored counter, so raising the criterion from 80% to 90% kept the
+    // count earned at 80% and the next 90% session declared "MASTERED" after ONE session
+    // at the new criterion. Mastery also locked the program (Start was disabled while
+    // its label promised a new program), and "auto-advance" was promised but not built.
+    function dttMastery(sessions, criteria) {
+        const pct = Number(criteria && criteria.pct) || 80;
+        const need = Math.max(1, Number(criteria && criteria.sessions) || 3);
+        let consecutive = 0;
+        for (let i = (sessions || []).length - 1; i >= 0; i--) {
+            if (Number(sessions[i].pct) >= pct) consecutive += 1; else break;
+        }
+        return { consecutive, need, pct, mastered: consecutive >= need };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensDTT = Object.freeze({ dttMastery });
+
     const DTTDataSheet = ({ studentName, t, addToast }) => {
-        const [programs, setPrograms] = useState([{
+        // Kept with the student's workspace (every program and session was lost on close).
+        const [programs, setPrograms] = useDurableToolState('dttPrograms', [{
             id: 'p1', name: '', target: '', trials: [],
             masteryCriteria: { pct: 80, sessions: 3 },
-            consecutiveMastered: 0, status: 'active',
         }]);
-        const [activeProgram, setActiveProgram] = useState('p1');
+        const [activeProgramRaw, setActiveProgram] = useState('p1');
+        const activeProgram = programs.some(p => p.id === activeProgramRaw) ? activeProgramRaw : (programs[0] && programs[0].id);
         const [sessionTrials, setSessionTrials] = useState([]);
         const [sessionActive, setSessionActive] = useState(false);
 
@@ -20543,9 +21393,10 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         ];
 
         const program = programs.find(p => p.id === activeProgram);
+        const mastery = program ? dttMastery(program.trials, program.masteryCriteria) : null;
 
         const addProgram = () => {
-            const newProg = { id: 'p' + (programs.length + 1), name: '', target: '', trials: [], masteryCriteria: { pct: 80, sessions: 3 }, consecutiveMastered: 0, status: 'active' };
+            const newProg = { id: uid(), name: '', target: '', trials: [], masteryCriteria: { pct: 80, sessions: 3 } };
             setPrograms(prev => [...prev, newProg]);
             setActiveProgram(newProg.id);
         };
@@ -20569,18 +21420,12 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 total: sessionTrials.length,
                 pct,
             };
-            setPrograms(prev => prev.map(p => {
-                if (p.id !== activeProgram) return p;
-                const newTrials = [...p.trials, sessionData];
-                const newConsec = pct >= p.masteryCriteria.pct ? p.consecutiveMastered + 1 : 0;
-                const mastered = newConsec >= p.masteryCriteria.sessions;
-                return { ...p, trials: newTrials, consecutiveMastered: newConsec, status: mastered ? 'mastered' : 'active' };
-            }));
+            setPrograms(prev => prev.map(p => p.id !== activeProgram ? p : { ...p, trials: [...p.trials, sessionData] }));
             setSessionActive(false);
-            if (addToast) addToast(t('behavior_lens.toast.session_n_correct_nn') || `Session: ${pct}% correct (${correct}/${sessionTrials.length})`, pct >= (program?.masteryCriteria.pct || 80) ? 'success' : 'warning');
-            // Check mastery
-            const updatedConsec = pct >= (program?.masteryCriteria.pct || 80) ? (program?.consecutiveMastered || 0) + 1 : 0;
-            if (updatedConsec >= (program?.masteryCriteria.sessions || 3)) {
+            if (addToast) addToast(tt('behavior_lens.toast.session_n_correct_nn_v2', 'Session: {pct}% correct ({correct}/{v3})', { pct, correct, v3: sessionTrials.length }), pct >= (program?.masteryCriteria.pct || 80) ? 'success' : 'warning');
+            // Mastery from ALL the sessions, at the criterion as it stands now.
+            const after = dttMastery([...(program ? program.trials : []), sessionData], program && program.masteryCriteria);
+            if (after.mastered && !(mastery && mastery.mastered)) {
                 if (addToast) addToast(t('behavior_lens.toast.mastered_n_n_consecutive_sessions_at_criterion', { name: program?.name || 'Target', n: program?.masteryCriteria.sessions }) || `🎉 MASTERED! ${program?.name || 'Target'} — ${program?.masteryCriteria.sessions} consecutive sessions at criterion!`, 'success');
             }
         };
@@ -20589,12 +21434,12 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🎯'),
                 h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_dtt_data_sheet' }, tt('behavior_lens.ui.dtt_data_sheet', 'DTT Data Sheet')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.discrete_trial_training_with_mastery_tracking_and', 'Discrete Trial Training with mastery tracking and auto-advance'))
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.dtt.subtitle', 'Discrete Trial Training with mastery tracking'))
             ),
             // Program tabs
             h('div', { className: 'flex gap-1 overflow-x-auto pb-1' },
-                programs.map(p => h('button', { key: p.id, onClick: () => setActiveProgram(p.id), className: `px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap border-2 ${activeProgram === p.id ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600'}` },
-                    `${p.status === 'mastered' ? '🏆 ' : ''}${p.name || 'Unnamed'}`
+                programs.map(p => h('button', { key: p.id, 'aria-pressed': activeProgram === p.id ? 'true' : 'false', onClick: () => setActiveProgram(p.id), className: `px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap border-2 ${activeProgram === p.id ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600'}` },
+                    `${dttMastery(p.trials, p.masteryCriteria).mastered ? '🏆 ' : ''}${p.name || 'Unnamed'}`
                 )),
                 h('button', { onClick: addProgram, 'aria-label': 'Add new program', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold border-2 border-dashed border-slate-300 text-slate-600 hover:border-indigo-600' }, '+')
             ),
@@ -20603,11 +21448,11 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.program_name', 'Program Name')),
-                        h('input', { value: program.name, onChange: e => updateProgram(program.id, 'name', e.target.value), 'aria-label': 'eg Receptive ID Colors', placeholder: tt('behavior_lens.ph.eg_receptive_id_colors', 'e.g. Receptive ID Colors'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('input', { value: program.name, onChange: e => updateProgram(program.id, 'name', e.target.value), 'aria-label': 'Program name', placeholder: tt('behavior_lens.ph.eg_receptive_id_colors', 'e.g. Receptive ID Colors'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.current_target', 'Current Target')),
-                        h('input', { value: program.target, onChange: e => updateProgram(program.id, 'target', e.target.value), 'aria-label': 'eg Touch red', placeholder: tt('behavior_lens.ph.eg_touch_red', 'e.g. Touch "red"'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('input', { value: program.target, onChange: e => updateProgram(program.id, 'target', e.target.value), 'aria-label': 'Current target', placeholder: tt('behavior_lens.ph.eg_touch_red', 'e.g. Touch "red"'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                 ),
                 h('div', { className: 'flex items-center gap-3' },
@@ -20617,29 +21462,29 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('input', { type: 'number', min: 1, max: 10, value: program.masteryCriteria.sessions, onChange: e => updateProgram(program.id, 'masteryCriteria', { ...program.masteryCriteria, sessions: parseInt(e.target.value) || 3 }), 'aria-label': 'Mastery consecutive sessions', className: 'w-12 text-xs border border-slate-400 rounded px-2 py-1 text-center' }),
                     h('span', { className: 'text-[11px] text-slate-600' }, 'consecutive sessions')
                 ),
-                program.status === 'mastered' && h('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200 text-center' },
+                mastery && mastery.mastered && h('div', { 'data-dtt-mastered': 'true', className: 'bg-green-50 rounded-lg p-3 border border-green-200 text-center' },
                     h('span', { className: 'text-2xl' }, '🏆'),
                     h('p', { className: 'text-xs font-bold text-green-700 mt-1' }, tt('behavior_lens.ui.mastered', 'MASTERED!')),
                     h('p', { className: 'text-[11px] text-green-600' }, `Met criterion across ${program.masteryCriteria.sessions} sessions`)
                 ),
                 h('div', { className: 'flex items-center justify-between bg-indigo-50 rounded-lg p-2' },
-                    h('span', { className: 'text-[11px] text-indigo-700 font-medium' }, `Progress: ${program.consecutiveMastered}/${program.masteryCriteria.sessions} consecutive at ≥${program.masteryCriteria.pct}%`),
+                    h('span', { 'data-dtt-progress': 'true', className: 'text-[11px] text-indigo-700 font-medium' }, `Progress: ${Math.min(mastery.consecutive, mastery.need)}/${mastery.need} consecutive at ≥${mastery.pct}%`),
                     h('div', { className: 'flex gap-1' },
-                        Array.from({ length: program.masteryCriteria.sessions }).map((_, i) =>
-                            h('div', { key: i, className: `w-3 h-3 rounded-full ${i < program.consecutiveMastered ? 'bg-green-500' : 'bg-slate-200'}` })
+                        Array.from({ length: mastery.need }).map((_, i) =>
+                            h('div', { key: i, className: `w-3 h-3 rounded-full ${i < mastery.consecutive ? 'bg-green-500' : 'bg-slate-200'}` })
                         )
                     )
                 )
             ),
             // Session recording
-            !sessionActive ? h('button', { "aria-label": "Start Session", onClick: startSession, disabled: program?.status === 'mastered', className: 'w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-600 hover:to-emerald-700 shadow-lg disabled:opacity-50' }, program?.status === 'mastered' ? '🏆 Mastered — Start New Program' : '▶ Start Trial Session') :
+            !sessionActive ? h('button', { onClick: startSession, className: 'w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-600 hover:to-emerald-700 shadow-lg disabled:opacity-50' }, mastery && mastery.mastered ? '▶ Start Maintenance Session' : '▶ Start Trial Session') :
                 h('div', { className: 'space-y-3' },
                     h('div', { className: 'bg-gradient-to-r from-indigo-700 to-purple-700 rounded-xl p-4 text-white text-center' },
                         h('p', { className: 'text-[11px] opacity-70' }, program?.target || 'Current Target'),
                         h('div', { className: 'text-3xl font-black mt-1' }, `Trial ${sessionTrials.length + 1}`),
                     ),
                     h('div', { className: 'grid grid-cols-4 gap-2' },
-                        RESPONSES.map(r => h('button', { "aria-label": "Record Trial", key: r.id, onClick: () => recordTrial(r.id), className: `py-4 rounded-xl font-bold text-sm border-2 hover:scale-105 active:scale-95 transition-transform ${r.color === 'green' ? 'bg-green-100 border-green-600 text-green-700' : r.color === 'red' ? 'bg-red-100 border-red-600 text-red-700' : r.color === 'amber' ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-300 text-slate-700'}` },
+                        RESPONSES.map(r => h('button', { 'aria-label': 'Record trial: ' + r.label, key: r.id, onClick: () => recordTrial(r.id), className: `py-4 rounded-xl font-bold text-sm border-2 hover:scale-105 active:scale-95 transition-transform ${r.color === 'green' ? 'bg-green-100 border-green-600 text-green-700' : r.color === 'red' ? 'bg-red-100 border-red-600 text-red-700' : r.color === 'amber' ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-300 text-slate-700'}` },
                             h('div', { className: 'text-2xl' }, r.icon),
                             h('div', { className: 'text-[11px] mt-1' }, r.label)
                         ))
@@ -20828,7 +21673,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('h3', { className: 'text-xs font-bold text-slate-600 mb-3' }, '📋 Assessment Method'),
                     h('div', { className: 'flex gap-2' },
-                        METHODS.map(m => h('button', { "aria-label": "Toggle method", key: m.id, onClick: () => setMethod(m.id), className: `flex-1 p-3 rounded-xl border-2 text-start ${method === m.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
+                        METHODS.map(m => h('button', { key: m.id, onClick: () => setMethod(m.id), className: `flex-1 p-3 rounded-xl border-2 text-start ${method === m.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                             h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', null, m.icon), h('span', { className: 'text-xs font-bold text-slate-700' }, m.name)),
                             h('p', { className: 'text-[11px] text-slate-600' }, m.desc)
                         ))
@@ -20884,9 +21729,48 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
 
     // ─── ScatterplotAnalysis ────────────────────────────────────────────
     // Time-of-day × behavior grid with pattern detection
+    // Day and hour of an entry on the RECORDER's clock (timezoneOffset), not the viewer's.
+    function abcEntryLocalParts(e) {
+        const t = Date.parse(e && (e.occurredAt || e.timestamp || e.date));
+        if (!Number.isFinite(t)) return null;
+        const offset = e && e.timezoneOffset != null && e.timezoneOffset !== '' && Number.isFinite(Number(e.timezoneOffset)) ? Number(e.timezoneOffset) : null;
+        if (offset == null) { const d = new Date(t); return { dow: d.getDay(), hour: d.getHours() }; }
+        const shifted = new Date(t - offset * 60000);
+        return { dow: shifted.getUTCDay(), hour: shifted.getUTCHours() };
+    }
+    // Scatterplot auto-fill: none / some / high per weekday-by-hour cell. Codes came
+    // from each cell's share of the week's BUSIEST cell, so one incident all week showed
+    // red "High"; the total summed the codes (1s and 2s), not incidents; entries on
+    // weekends or outside 7 AM-7 PM vanished unreported; hours were the viewer's. Now:
+    // fixed thresholds (1 incident = some, 2 or more = high), counts kept per cell, and
+    // what fell outside the grid reported.
+    function scatterplotFromEntries(entries, behaviorFilter) {
+        const counts = {};
+        let included = 0, outside = 0;
+        const filter = String(behaviorFilter || '').trim().toLowerCase();
+        (entries || []).forEach(e => {
+            if (filter && !String(e.behavior || '').toLowerCase().includes(filter)) return;
+            const parts = abcEntryLocalParts(e);
+            if (!parts) { outside += 1; return; }
+            const dayIdx = parts.dow - 1;
+            if (dayIdx >= 0 && dayIdx < 5 && parts.hour >= 7 && parts.hour <= 18) {
+                const key = dayIdx + '_' + parts.hour;
+                counts[key] = (counts[key] || 0) + 1;
+                included += 1;
+            } else outside += 1;
+        });
+        const codes = {};
+        Object.keys(counts).forEach(k => { codes[k] = counts[k] >= 2 ? 2 : 1; });
+        return { counts, codes, included, outside };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensScatterplot = Object.freeze({ scatterplotFromEntries, abcEntryLocalParts });
+
     const ScatterplotAnalysis = ({ abcEntries, t, addToast }) => {
         const [behaviorName, setBehaviorName] = useState('');
         const [grid, setGrid] = useState({});
+        const [autoCounts, setAutoCounts] = useState({});
+        const [autoMeta, setAutoMeta] = useState(null);
         const [days, setDays] = useState(5);
 
         const TIME_SLOTS = Array.from({ length: 12 }, (_, i) => {
@@ -20898,6 +21782,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
 
         const toggleCell = (day, hour) => {
             const key = `${day}_${hour}`;
+            // A hand-set level replaces the auto-filled count for that cell.
+            setAutoCounts(prev => { if (!(key in prev)) return prev; const next = { ...prev }; delete next[key]; return next; });
             setGrid(prev => {
                 const current = prev[key] || 0;
                 return { ...prev, [key]: current >= 2 ? 0 : current + 1 };
@@ -20912,40 +21798,32 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
 
         // Auto-populate from ABC
         const autoPopulate = () => {
-            const newGrid = {};
-            abcEntries.forEach(e => {
-                if (behaviorName && !(e.behavior || '').toLowerCase().includes(behaviorName.toLowerCase())) return;
-                const d = new Date(e.timestamp || e.date);
-                const dayIdx = d.getDay() - 1;
-                const hour = d.getHours();
-                if (dayIdx >= 0 && dayIdx < 5 && hour >= 7 && hour <= 18) {
-                    const key = `${dayIdx}_${hour}`;
-                    newGrid[key] = (newGrid[key] || 0) + 1;
-                }
-            });
-            // Normalize to 0-2 scale
-            const maxVal = Math.max(1, ...Object.values(newGrid));
-            Object.keys(newGrid).forEach(k => {
-                newGrid[k] = newGrid[k] >= maxVal * 0.6 ? 2 : newGrid[k] >= 1 ? 1 : 0;
-            });
-            setGrid(newGrid);
-            if (addToast) addToast(t('behavior_lens.toast.populated_from_n_abc_entries', { n: abcEntries.length }) || `Populated from ${abcEntries.length} ABC entries`, 'success');
+            const result = scatterplotFromEntries(abcEntries, behaviorName);
+            setGrid(result.codes);
+            setAutoCounts(result.counts);
+            setAutoMeta({ included: result.included, outside: result.outside });
+            if (addToast) addToast(`Placed ${result.included} ABC ${result.included === 1 ? 'entry' : 'entries'} on the grid` + (result.outside ? `; ${result.outside} outside Mon-Fri 7 AM-7 PM` : ''), 'success');
         };
 
         // Pattern detection
         const patterns = useMemo(() => {
             const hotHours = {};
             const hotDays = {};
+            let incidents = 0, cells = 0;
             Object.entries(grid).forEach(([key, val]) => {
                 if (val < 1) return;
+                cells += 1;
+                // Auto-filled cells weigh by their incident count; hand-marked by level.
+                const weight = key in autoCounts ? autoCounts[key] : val;
+                if (key in autoCounts) incidents += autoCounts[key];
                 const [day, hour] = key.split('_').map(Number);
-                hotHours[hour] = (hotHours[hour] || 0) + val;
-                hotDays[day] = (hotDays[day] || 0) + val;
+                hotHours[hour] = (hotHours[hour] || 0) + weight;
+                hotDays[day] = (hotDays[day] || 0) + weight;
             });
             const peakHour = Object.entries(hotHours).sort((a, b) => b[1] - a[1])[0];
             const peakDay = Object.entries(hotDays).sort((a, b) => b[1] - a[1])[0];
-            return { peakHour, peakDay, totalOccurrences: Object.values(grid).reduce((a, b) => a + b, 0) };
-        }, [grid]);
+            return { peakHour, peakDay, cells, incidents, totalOccurrences: cells };
+        }, [grid, autoCounts]);
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
@@ -20972,9 +21850,12 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                                 h('tr', { key: slot.id },
                                     h('td', { className: 'text-[11px] text-slate-600 font-medium p-1 whitespace-nowrap' }, slot.label),
                                     ...Array.from({ length: days }, (_, di) => {
-                                        const val = grid[`${di}_${slot.hour}`] || 0;
+                                        const cellKey = `${di}_${slot.hour}`;
+                                        const val = grid[cellKey] || 0;
+                                        const count = autoCounts[cellKey];
+                                        const level = val >= 2 ? 'high' : val === 1 ? 'some' : 'none';
                                         return h('td', { key: di, className: 'p-0.5' },
-                                            h('button', { "aria-label": "Toggle Cell", onClick: () => toggleCell(di, slot.hour), className: `w-full h-6 rounded ${getCellColor(val)} border border-slate-400 text-[11px] font-bold transition-colors` }, val > 0 ? val : '')
+                                            h('button', { type: 'button', 'data-scatter-cell': cellKey, 'aria-label': `${DAY_LABELS[di]} ${slot.label}: ${level}` + (count != null ? ` (${count} ${count === 1 ? 'incident' : 'incidents'})` : ''), onClick: () => toggleCell(di, slot.hour), className: `w-full h-6 rounded ${getCellColor(val)} border border-slate-400 text-[11px] font-bold transition-colors` }, count != null ? count : (val > 0 ? val : ''))
                                         );
                                     })
                                 )
@@ -20984,16 +21865,18 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 ),
                 h('div', { className: 'flex gap-3 mt-2 text-[11px] text-slate-600' },
                     h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-white border border-slate-400 rounded' }), tt('behavior_lens.ui.no_occurrence', 'No occurrence')),
-                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-amber-200 rounded' }), tt('behavior_lens.ui.some', 'Some')),
-                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-red-400 rounded' }), tt('behavior_lens.ui.high', 'High'))
-                )
+                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-amber-200 rounded' }), tt('behavior_lens.ui.some', 'Some'), autoMeta ? ' (1 incident)' : ''),
+                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-red-600 rounded' }), tt('behavior_lens.ui.high', 'High'), autoMeta ? ' (2 or more)' : '')
+                ),
+                autoMeta && h('p', { className: 'text-[11px] text-slate-600 mt-1', 'data-scatter-meta': autoMeta.outside },
+                    `Auto-filled from ${autoMeta.included} ${autoMeta.included === 1 ? 'entry' : 'entries'} on the recorder's clock.` + (autoMeta.outside ? ` ${autoMeta.outside} outside Mon-Fri 7 AM-7 PM are not shown.` : ''))
             ),
             patterns.totalOccurrences > 0 && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-4' },
                 h('h3', { className: 'text-xs font-bold text-amber-800 mb-2' }, '🔍 Pattern Detection'),
                 h('div', { className: 'space-y-1 text-xs text-amber-700' },
                     patterns.peakHour && h('p', null, `⏰ Peak hour: ${TIME_SLOTS.find(s => s.hour === parseInt(patterns.peakHour[0]))?.label || patterns.peakHour[0]}`),
                     patterns.peakDay && h('p', null, `📅 Peak day: ${DAY_LABELS[parseInt(patterns.peakDay[0])] || patterns.peakDay[0]}`),
-                    h('p', null, `📊 Total occurrences marked: ${patterns.totalOccurrences}`)
+                    h('p', { 'data-scatter-total': patterns.cells }, `📊 Cells marked: ${patterns.cells}` + (patterns.incidents ? ` · Incidents auto-filled: ${patterns.incidents}` : ''))
                 )
             )
         );
@@ -21012,12 +21895,22 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const saveToSessionHistory = () => {
             if (trials.length === 0 || !onSaveSession) return;
             const validTrials = trials.filter(t => t.latency !== null);
-            const avgLatency = validTrials.length > 0 ? (validTrials.reduce((a, t) => a + t.latency, 0) / validTrials.length) : 0;
+            // A latency record. It carried no measurement type, so the graph plotted
+            // `count` (the number of TRIALS) as "Frequency", and all no-response trials
+            // saved an average latency of 0 s, an instant response that never happened.
+            const avgLatency = validTrials.length > 0 ? (validTrials.reduce((a, t) => a + t.latency, 0) / validTrials.length) : null;
+            const savedAt = new Date().toISOString();
             onSaveSession({
-                date: new Date().toISOString().split('T')[0],
+                date: savedAt,
+                occurredAt: savedAt,
                 behavior: behaviorName || 'Latency Recording',
                 count: trials.length,
-                rate: parseFloat(avgLatency.toFixed(2)),
+                rate: avgLatency == null ? null : parseFloat(avgLatency.toFixed(2)),
+                value: avgLatency == null ? null : parseFloat(avgLatency.toFixed(2)),
+                unit: 'seconds',
+                measurementType: 'latency',
+                trials: trials.length,
+                noResponseTrials: trials.length - validTrials.length,
                 phase: 'Latency',
                 duration: `${trials.length} trials`,
                 source: 'latency-recorder'
@@ -21184,15 +22077,59 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('button', { "aria-label": "Clear", onClick: clearTrials, className: 'px-3 py-2 bg-red-50 text-red-800 border border-red-600 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-all' }, '🗑️ Clear')
                 ),
                 // Goal summary
-                !isNaN(goalNum) && goalNum > 0 && validTrials.length > 0 && h('div', { className: `rounded-lg p-3 border text-xs ${validTrials.filter(tr => tr.latency <= goalNum).length / validTrials.length >= 0.8 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'}` },
-                    `🎯 Goal (≤${goalNum}s): ${validTrials.filter(tr => tr.latency <= goalNum).length}/${validTrials.length} trials met criteria (${Math.round(validTrials.filter(tr => tr.latency <= goalNum).length / validTrials.length * 100)}%)`
-                )
+                // Every trial counts: a trial with no response did not meet a latency goal.
+                // Leaving them out showed [2 s, NR, NR, NR] against a 3 s goal as 1/1, 100%.
+                !isNaN(goalNum) && goalNum > 0 && trials.length > 0 && (() => {
+                    const met = validTrials.filter(tr => tr.latency <= goalNum).length;
+                    const noResponse = trials.length - validTrials.length;
+                    const share = met / trials.length;
+                    return h('div', { 'data-latency-goal': Math.round(share * 100), className: `rounded-lg p-3 border text-xs ${share >= 0.8 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'}` },
+                        `🎯 Goal (≤${goalNum}s): ${met}/${trials.length} trials met criteria (${Math.round(share * 100)}%)` + (noResponse ? `; ${noResponse} with no response count as not met` : ''));
+                })()
             )
         );
     };
 
     // ─── SocialValidityMeasures ─────────────────────────────────────────
     // TARF, IRP-15, custom survey builder, AI interpretation, pre/post comparison
+    // Social validity scoring. Responses score 1..k on a k-point scale (reverse items
+    // k + 1 - s). Before 2026-09-23 every measure was scored 0..k-1 against one
+    // home-grown rule (>= 70% of maximum "Acceptable", >= 50% "Marginal"), and the
+    // IRP-15 was shown on a 7-point scale with a Neutral point. The published IRP-15
+    // (Martens, Witt, Elliott & Darveaux, 1985) is 6-point, totals 15-90, and totals
+    // above 52.5 are read as acceptable; that criterion applies only with all 15
+    // items answered. The adapted TARF and custom surveys have no published cutoff,
+    // so none is claimed.
+    function scoreSocialValidity(def, responses) {
+        const k = def.scale.length;
+        const reverse = def.reverseItems || [];
+        let total = 0, count = 0;
+        const itemScores = {};
+        def.items.forEach((_, i) => {
+            const v = responses ? responses[i] : undefined;
+            if (v === undefined || v === null) return;
+            const raw = Number(v) + 1;
+            const scored = reverse.includes(i) ? k + 1 - raw : raw;
+            itemScores[i] = scored;
+            total += scored;
+            count += 1;
+        });
+        const mean = count ? total / count : null;
+        const pct = count ? Math.round((total - count) / (count * (k - 1)) * 100) : 0;
+        let interpretation, criterion = null;
+        if (def.cutoffTotal != null) {
+            criterion = `${def.shortName || def.name} total above ${def.cutoffTotal} (all ${def.items.length} items)`;
+            interpretation = count < def.items.length
+                ? `Incomplete: the published criterion applies with all ${def.items.length} items answered`
+                : total > def.cutoffTotal ? 'Acceptable by the published criterion' : 'Below the published acceptability criterion';
+        } else {
+            interpretation = mean == null ? 'No responses' : `No published cutoff: mean ${mean.toFixed(2)} of ${k} (higher = more acceptable)`;
+        }
+        return { total, count, mean, avg: mean == null ? 0 : Math.round(mean * 100) / 100, pct, scalePoints: k, interpretation, criterion, itemScores };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensSocialValidity = Object.freeze({ scoreSocialValidity });
+
     const SocialValidityMeasures = ({ studentName, callGemini, t, addToast }) => {
         const [measure, setMeasure] = useState('tarf');
         const [responses, setResponses] = useState({});
@@ -21210,7 +22147,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const MEASURES = {
             tarf: {
                 name: 'Treatment Acceptability Rating Form',
-                desc: 'Assesses acceptability of behavioral interventions (adapted TARF)',
+                shortName: 'Adapted TARF',
+                desc: 'Assesses acceptability of behavioral interventions (adapted TARF; no published cutoff)',
                 items: [
                     'How acceptable do you find this treatment?',
                     'How willing would you be to carry out this treatment?',
@@ -21223,12 +22161,14 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     'How much time is required to implement this treatment?',
                     'How reasonable are the costs associated with this treatment?',
                 ],
-                scale: ['Strongly Disagree', 'Disagree', 'Slightly Disagree', 'Neutral', 'Slightly Agree', 'Agree', 'Strongly Agree'],
+                // Its items ask "how much"; an agree/disagree scale did not answer them.
+                scale: ['Not at all', '2', '3', 'Somewhat', '5', '6', 'Very much'],
                 reverseItems: [5, 8],
             },
             irp15: {
                 name: 'Intervention Rating Profile (IRP-15)',
-                desc: 'Measures teacher acceptability of classroom interventions',
+                shortName: 'IRP-15',
+                desc: 'Teacher acceptability of classroom interventions (6-point; total above 52.5 of 90 = acceptable)',
                 items: [
                     'This would be an acceptable intervention for the student\'s problem.',
                     'Most teachers would find this intervention appropriate.',
@@ -21246,8 +22186,9 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     'This intervention is a good way to handle this problem.',
                     'Overall, this intervention would be beneficial for the student.',
                 ],
-                scale: ['Strongly Disagree', 'Disagree', 'Slightly Disagree', 'Neutral', 'Slightly Agree', 'Agree', 'Strongly Agree'],
+                scale: ['Strongly Disagree', 'Disagree', 'Slightly Disagree', 'Slightly Agree', 'Agree', 'Strongly Agree'],
                 reverseItems: [],
+                cutoffTotal: 52.5,
             },
         };
 
@@ -21264,20 +22205,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const total = current.items.length;
 
         const score = () => {
-            let sum = 0, count = 0;
-            const scaleMax = current.scale.length - 1;
-            current.items.forEach((_, i) => {
-                const val = responses[i];
-                if (val !== undefined) {
-                    const adjusted = current.reverseItems?.includes(i) ? (scaleMax - val) : val;
-                    sum += adjusted;
-                    count++;
-                }
-            });
-            const avg = count > 0 ? (sum / count).toFixed(2) : 0;
-            const maxScore = count * scaleMax;
-            const pct = count > 0 ? Math.round((sum / maxScore) * 100) : 0;
-            const r = { measure: isCustom ? customName || 'Custom' : MEASURES[measure].name, avg: parseFloat(avg), total: sum, pct, count, date: new Date().toISOString(), interpretation: pct >= 70 ? 'Acceptable' : pct >= 50 ? 'Marginally Acceptable' : 'Not Acceptable' };
+            const scored = scoreSocialValidity(current, responses);
+            const r = Object.assign({ measure: isCustom ? customName || 'Custom' : MEASURES[measure].name, measureId: measure, date: new Date().toISOString() }, scored);
             setResult(r);
             setAiInterpretation('');
         };
@@ -21291,8 +22220,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
 
 Survey: ${current.name}
 Student: ${studentName || 'student'}
-Overall Score: ${result.pct}% (${result.interpretation})
-Mean: ${result.avg}/${current.scale.length - 1}
+Overall Score: ${result.pct}% of maximum (${result.interpretation})
+Mean: ${result.avg} on a 1-${current.scale.length} scale${result.criterion ? `; criterion: ${result.criterion}` : '; no published cutoff'}
 
 Item responses:
 ${itemSummary}
@@ -21320,7 +22249,8 @@ Keep the language professional but accessible.`;
                 `Date: ${new Date().toLocaleDateString()}`,
                 `Measure: ${current.name}`, '',
                 `Overall Score: ${result.pct}% (${result.interpretation})`,
-                `Mean Rating: ${result.avg}/${current.scale.length - 1}`,
+                `Mean Rating: ${result.avg} on a 1-${current.scale.length} scale`,
+                result.criterion ? `Criterion: ${result.criterion}` : 'Criterion: none published for this measure',
                 `Total: ${result.total} | Items: ${result.count}`, '',
                 '── Item Responses ──',
                 ...current.items.map((item, i) => `  ${i + 1}. ${item}\n     Response: ${responses[i] !== undefined ? current.scale[responses[i]] : 'N/A'}${current.reverseItems?.includes(i) ? ' (reverse-scored)' : ''}`),
@@ -21338,6 +22268,8 @@ Keep the language professional but accessible.`;
         if (showComparison && savedResults.length >= 2) {
             const pre = savedResults[0], post = savedResults[savedResults.length - 1];
             const delta = post.pct - pre.pct;
+            // Different measures cannot be compared item by item or by percent.
+            const sameMeasure = (pre.measureId || pre.measure) === (post.measureId || post.measure);
             return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
                 h('button', { "aria-label": "Back", onClick: () => setShowComparison(false), className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← Back'),
                 h('div', { className: 'text-center py-3' },
@@ -21353,7 +22285,8 @@ Keep the language professional but accessible.`;
                     h('div', { className: `rounded-xl p-4 text-center border ${delta > 0 ? 'bg-green-50 border-green-200' : delta < 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'}` },
                         h('p', { className: 'text-[11px] text-slate-600 font-bold' }, 'CHANGE'),
                         h('p', { className: `text-2xl font-black ${delta > 0 ? 'text-green-700' : delta < 0 ? 'text-red-700' : 'text-slate-700'}` }, `${delta > 0 ? '+' : ''}${delta}%`),
-                        h('p', { className: 'text-[11px] text-slate-600' }, delta > 10 ? 'Meaningful improvement' : delta > 0 ? 'Slight improvement' : delta < -10 ? 'Notable decline' : 'Minimal change')
+                        h('p', { className: 'text-[11px] text-slate-600', 'data-sv-change': sameMeasure ? (delta > 0 ? 'higher' : delta < 0 ? 'lower' : 'same') : 'different-measures' },
+                            !sameMeasure ? 'Different measures: not comparable' : delta > 0 ? 'Rated higher (percent of maximum)' : delta < 0 ? 'Rated lower (percent of maximum)' : 'No change')
                     ),
                     h('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-200' },
                         h('p', { className: 'text-[11px] text-purple-600 font-bold' }, 'POST'),
@@ -21365,9 +22298,10 @@ Keep the language professional but accessible.`;
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('h3', { className: 'text-xs font-bold text-slate-700 mb-3' }, 'Item-Level Changes'),
                     h('div', { className: 'space-y-2' },
-                        savedResults[0].responses && current.items.slice(0, Math.min(current.items.length, Object.keys(pre.responses || {}).length)).map((item, i) => {
-                            const preVal = (pre.responses || {})[i];
-                            const postVal = (post.responses || {})[i];
+                        sameMeasure && savedResults[0].responses && current.items.map((item, i) => {
+                            // Reverse-scored, so a rise in "discomfort" reads as a drop.
+                            const preVal = (pre.itemScores || {})[i];
+                            const postVal = (post.itemScores || {})[i];
                             if (preVal === undefined || postVal === undefined) return null;
                             const d = postVal - preVal;
                             return h('div', { key: i, className: 'flex items-center gap-2' },
@@ -21389,11 +22323,11 @@ Keep the language professional but accessible.`;
             ),
             // Measure selector tabs (TARF, IRP-15, Custom)
             h('div', { className: 'flex gap-2' },
-                Object.entries(MEASURES).map(([id, m]) => h('button', { "aria-label": "Toggle measure", key: id, onClick: () => { setMeasure(id); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-start ${measure === id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
+                Object.entries(MEASURES).map(([id, m]) => h('button', { type: 'button', 'aria-pressed': measure === id ? 'true' : 'false', key: id, onClick: () => { setMeasure(id); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-start ${measure === id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200'}` },
                     h('span', { className: 'text-xs font-bold text-slate-700 block' }, m.name),
                     h('span', { className: 'text-[11px] text-slate-600' }, m.desc)
                 )),
-                h('button', { "aria-label": "Toggle measure", onClick: () => { setMeasure('custom'); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-start ${isCustom ? 'border-purple-400 bg-purple-50' : 'border-slate-200'}` },
+                h('button', { type: 'button', 'aria-pressed': isCustom ? 'true' : 'false', onClick: () => { setMeasure('custom'); setResponses({}); setResult(null); setAiInterpretation(''); }, className: `flex-1 p-3 rounded-xl border-2 text-start ${isCustom ? 'border-purple-400 bg-purple-50' : 'border-slate-200'}` },
                     h('span', { className: 'text-xs font-bold text-slate-700 block' }, '✏️ Custom Survey'),
                     h('span', { className: 'text-[11px] text-slate-600' }, 'Build your own')
                 )
@@ -21424,7 +22358,7 @@ Keep the language professional but accessible.`;
                 )
             ),
             // Saved comparison button
-            savedResults.length >= 2 && h('button', { "aria-label": "Toggle show comparison", onClick: () => setShowComparison(true), className: 'w-full py-2 bg-gradient-to-r from-blue-700 to-purple-700 text-white rounded-xl text-[11px] font-bold shadow-sm' }, `📊 View Pre/Post Comparison (${savedResults.length} administrations)`),
+            savedResults.length >= 2 && h('button', { onClick: () => setShowComparison(true), className: 'w-full py-2 bg-gradient-to-r from-blue-700 to-purple-700 text-white rounded-xl text-[11px] font-bold shadow-sm' }, `📊 View Pre/Post Comparison (${savedResults.length} administrations)`),
             // Survey items
             !result ? h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm space-y-4' },
                 total > 0 && h('div', { className: 'flex justify-between items-center' },
@@ -21434,20 +22368,21 @@ Keep the language professional but accessible.`;
                 total === 0 && isCustom && h('p', { className: 'text-center text-sm text-slate-600 py-4' }, 'Add items above to build your survey.'),
                 current.items.map((item, i) =>
                     h('div', { key: i, className: 'space-y-1' },
-                        h('p', { className: 'text-xs text-slate-700' }, `${i + 1}. ${item}${current.reverseItems?.includes(i) ? ' ®' : ''}`),
-                        h('div', { className: 'flex gap-1' },
-                            current.scale.map((s, si) => h('button', { "aria-label": "Toggle responses", key: si, onClick: () => setResponses(prev => ({ ...prev, [i]: si })), className: `flex-1 py-1 rounded text-[11px] font-medium border ${responses[i] === si ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600'}` }, s))
+                        h('p', { id: 'sv-q-' + i, className: 'text-xs text-slate-700' }, `${i + 1}. ${item}${current.reverseItems?.includes(i) ? ' ®' : ''}`),
+                        h('div', { role: 'group', 'aria-labelledby': 'sv-q-' + i, 'data-sv-item': i, className: 'flex gap-1' },
+                            current.scale.map((s, si) => h('button', { type: 'button', 'aria-pressed': responses[i] === si ? 'true' : 'false', 'data-sv-option': si, key: si, onClick: () => setResponses(prev => ({ ...prev, [i]: si })), className: `flex-1 py-1 rounded text-[11px] font-medium border ${responses[i] === si ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600'}` }, s))
                         )
                     )
                 ),
                 total > 0 && h('button', { "aria-label": "Score", onClick: score, disabled: answered < total, className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold text-sm disabled:opacity-50 shadow-lg' }, `📊 Calculate Score (${answered}/${total})`)
             ) : result && h('div', { className: 'space-y-3' },
                 // Score display
-                h('div', { className: `rounded-xl p-5 border-2 ${result.pct >= 70 ? 'bg-green-50 border-green-300' : result.pct >= 50 ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-300'}` },
+                h('div', { 'data-sv-verdict': result.interpretation, className: `rounded-xl p-5 border-2 ${!result.criterion ? 'bg-slate-50 border-slate-300' : /^Acceptable/.test(result.interpretation) ? 'bg-green-50 border-green-300' : /^Below/.test(result.interpretation) ? 'bg-red-50 border-red-300' : 'bg-amber-50 border-amber-300'}` },
                     h('div', { className: 'text-center mb-3' },
-                        h('div', { className: `text-4xl font-black ${result.pct >= 70 ? 'text-green-600' : result.pct >= 50 ? 'text-amber-600' : 'text-red-600'}` }, `${result.pct}%`),
+                        h('div', { className: 'text-4xl font-black text-slate-700' }, `${result.pct}%`),
+                        h('p', { className: 'text-[11px] text-slate-600' }, 'of the maximum possible rating'),
                         h('p', { className: 'text-xs font-bold text-slate-700 mt-1' }, result.interpretation),
-                        h('p', { className: 'text-[11px] text-slate-600' }, `Mean: ${result.avg}/${current.scale.length - 1} | Total: ${result.total}`)
+                        h('p', { className: 'text-[11px] text-slate-600' }, `Mean: ${result.avg} on a 1-${current.scale.length} scale | Total: ${result.total}` + (result.criterion ? ` | Criterion: ${result.criterion}` : ''))
                     ),
                     h('div', { className: 'flex gap-2 mt-3' },
                         h('button', { onClick: () => { setResult(null); setResponses({}); setAiInterpretation(''); }, className: 'flex-1 py-2 bg-white border border-slate-400 rounded-xl text-xs font-bold text-slate-600' }, '🔄 New Assessment'),
@@ -21471,14 +22406,46 @@ Keep the language professional but accessible.`;
 
     // ─── MaintenanceTracker ─────────────────────────────────────────────
     // Post-mastery maintenance probes, generalization tracking, schedules, sparklines, export
+    // Maintenance probe schedule, on the teacher's calendar. Dates were UTC: a skill
+    // added in the evening (US) was "mastered" tomorrow, and "YYYY-MM-DD" was read as
+    // UTC midnight, so "next probe due" printed a day EARLY. A skill with no probe was
+    // also "maintained" before anyone had checked it.
+    const MAINTENANCE_SCHEDULE_DAYS = { daily: 1, weekly: 7, biweekly: 14, monthly: 30, quarterly: 90 };
+    const maintenanceLocalDay = (value) => {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+        const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(value);
+        if (isNaN(d)) return null;
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    };
+    const maintenanceDaysBetween = (from, to) => Math.round((Date.UTC(to.getFullYear(), to.getMonth(), to.getDate()) - Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) / 86400000);
+    function maintenanceSchedule(skill, now) {
+        const today = maintenanceLocalDay(now == null ? new Date() : now);
+        const probes = skill && Array.isArray(skill.probes) ? skill.probes : [];
+        const last = maintenanceLocalDay(probes.length ? probes[probes.length - 1].date : skill && skill.masteryDate) || today;
+        const every = MAINTENANCE_SCHEDULE_DAYS[skill && skill.schedule] || 14;
+        const daysSince = maintenanceDaysBetween(last, today);
+        const due = new Date(last.getFullYear(), last.getMonth(), last.getDate() + every);
+        return { daysSince, overdueDays: daysSince - every, isOverdue: daysSince > every, nextDueKey: blLocalDateKey(due), nextDue: due.toLocaleDateString(), probed: probes.length > 0 };
+    }
+    function maintenanceStatus(probes) {
+        const recent3 = (Array.isArray(probes) ? probes : []).slice(-3);
+        if (recent3.length === 0) return 'monitoring';
+        return recent3.length >= 3 && recent3.every(p => p.pct >= 80) ? 'maintained' : recent3.some(p => p.pct < 50) ? 'regression' : 'monitoring';
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensMaintenance = Object.freeze({ maintenanceSchedule, maintenanceStatus, maintenanceLocalDay });
+
     const MaintenanceTracker = ({ studentName, t, addToast }) => {
-        const [skills, setSkills] = useState([]);
+        // Kept with the student's workspace. It was plain component state, so every
+        // skill, probe and generalization note was lost when the panel closed.
+        const [skills, setSkills] = useDurableToolState('maintenanceTrackerSkills', []);
         const [newSkill, setNewSkill] = useState('');
         const [newMasteryDate, setNewMasteryDate] = useState('');
         const [newSchedule, setNewSchedule] = useState('biweekly');
         const [selectedSkill, setSelectedSkill] = useState(null);
+        const todayKey = blLocalDateKey(new Date());
 
-        const SCHEDULE_DAYS = { daily: 1, weekly: 7, biweekly: 14, monthly: 30, quarterly: 90 };
+        const SCHEDULE_DAYS = MAINTENANCE_SCHEDULE_DAYS;
         const BACB_TIERS = [
             { label: '1 week', days: 7, desc: 'Immediately after mastery' },
             { label: '2 weeks', days: 14, desc: 'Early maintenance' },
@@ -21490,8 +22457,8 @@ Keep the language professional but accessible.`;
         const addSkill = () => {
             if (!newSkill.trim()) return;
             setSkills(prev => [...prev, {
-                id: Date.now().toString(36), name: newSkill, masteryDate: newMasteryDate || new Date().toISOString().split('T')[0],
-                probes: [], generalization: { settings: [], people: [], materials: [] }, status: 'maintained',
+                id: Date.now().toString(36), name: newSkill.trim(), masteryDate: newMasteryDate || todayKey,
+                probes: [], generalization: { settings: [], people: [], materials: [] }, status: maintenanceStatus([]),
                 schedule: newSchedule,
             }]);
             setNewSkill('');
@@ -21502,9 +22469,7 @@ Keep the language professional but accessible.`;
             setSkills(prev => prev.map(s => {
                 if (s.id !== skillId) return s;
                 const probes = [...s.probes, { date: new Date().toISOString(), result, pct: result }];
-                const recent3 = probes.slice(-3);
-                const status = recent3.length >= 3 && recent3.every(p => p.pct >= 80) ? 'maintained' : recent3.some(p => p.pct < 50) ? 'regression' : 'monitoring';
-                return { ...s, probes, status };
+                return { ...s, probes, status: maintenanceStatus(probes) };
             }));
         };
 
@@ -21524,13 +22489,7 @@ Keep the language professional but accessible.`;
             }));
         };
 
-        const getOverdueInfo = (skill) => {
-            const schedDays = SCHEDULE_DAYS[skill.schedule] || 14;
-            const lastProbeDate = skill.probes.length > 0 ? new Date(skill.probes[skill.probes.length - 1].date) : new Date(skill.masteryDate);
-            const daysSince = Math.floor((Date.now() - lastProbeDate.getTime()) / 86400000);
-            const overdueDays = daysSince - schedDays;
-            return { daysSince, overdueDays, isOverdue: overdueDays > 0, nextDue: new Date(lastProbeDate.getTime() + schedDays * 86400000).toLocaleDateString() };
-        };
+        const getOverdueInfo = (skill) => maintenanceSchedule(skill);
 
         // SVG Sparkline renderer
         const renderSparkline = (probes) => {
@@ -21560,7 +22519,7 @@ Keep the language professional but accessible.`;
 
         // Export skill summary for IEP documentation
         const exportSummary = () => {
-            const lines = [`Maintenance & Generalization Summary — ${studentName || 'Student'}`, `Date: ${new Date().toLocaleDateString()}`, ''];
+            const lines = [`Maintenance & Generalization Summary: ${studentName || 'Student'}`, `Date: ${new Date().toLocaleDateString()}`, ''];
             skills.forEach(s => {
                 const od = getOverdueInfo(s);
                 const totalGen = [...s.generalization.settings, ...s.generalization.people, ...s.generalization.materials];
@@ -21594,7 +22553,8 @@ Keep the language professional but accessible.`;
         const skill = skills.find(s => s.id === selectedSkill);
 
         if (skill) {
-            const daysSinceMastery = Math.floor((Date.now() - new Date(skill.masteryDate).getTime()) / 86400000);
+            const masteredDay = maintenanceLocalDay(skill.masteryDate);
+            const daysSinceMastery = masteredDay ? maintenanceDaysBetween(masteredDay, maintenanceLocalDay(new Date())) : 0;
             const totalGen = [...skill.generalization.settings, ...skill.generalization.people, ...skill.generalization.materials];
             const genPct = totalGen.length > 0 ? Math.round((totalGen.filter(g => g.demonstrated).length / totalGen.length) * 100) : 0;
             const od = getOverdueInfo(skill);
@@ -21627,7 +22587,7 @@ Keep the language professional but accessible.`;
                     h('div', { className: 'flex items-center justify-between' },
                         h('div', null,
                             h('p', { className: `text-[11px] font-bold ${od.isOverdue ? 'text-red-700' : 'text-blue-700'}` }, od.isOverdue ? `⚠ Probe overdue by ${od.overdueDays} days` : `Next probe due: ${od.nextDue}`),
-                            h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, `Schedule: probe every ${SCHEDULE_DAYS[skill.schedule]} days | Last probed ${od.daysSince} days ago`)
+                            h('p', { 'data-maint-schedule': 'true', className: 'text-[11px] text-slate-600 mt-0.5' }, `Schedule: probe every ${SCHEDULE_DAYS[skill.schedule]} days | ` + (od.probed ? `Last probed ${od.daysSince} days ago` : `Not probed yet; counting from mastery, ${od.daysSince} days ago`))
                         ),
                         h('select', { value: skill.schedule, onChange: (e) => setSkills(prev => prev.map(s => s.id === skill.id ? { ...s, schedule: e.target.value } : s)), 'aria-label': 'Probe schedule for this skill', className: 'text-[11px] border border-slate-400 rounded px-2 py-1 bg-white' },
                             Object.keys(SCHEDULE_DAYS).map(k => h('option', { key: k, value: k }, k.charAt(0).toUpperCase() + k.slice(1)))
@@ -21655,7 +22615,7 @@ Keep the language professional but accessible.`;
                     h('h3', { className: 'text-xs font-bold text-slate-700 mb-3' }, '📊 Record Probe'),
                     h('div', { className: 'grid grid-cols-5 gap-2' },
                         [100, 80, 60, 40, 20].map(pct =>
-                            h('button', { "aria-label": "Add Probe", key: pct, onClick: () => addProbe(skill.id, pct), className: `py-3 rounded-xl font-bold text-sm border-2 ${pct >= 80 ? 'bg-green-100 border-green-600 text-green-700 hover:bg-green-200' : pct >= 60 ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-red-100 border-red-600 text-red-700'}` }, `${pct}%`)
+                            h('button', { 'aria-label': tt('behavior_lens.maintenance.record_probe', 'Record probe: {pct}% correct', { pct }), key: pct, onClick: () => addProbe(skill.id, pct), className: `py-3 rounded-xl font-bold text-sm border-2 ${pct >= 80 ? 'bg-green-100 border-green-600 text-green-700 hover:bg-green-200' : pct >= 60 ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-red-100 border-red-600 text-red-700'}` }, `${pct}%`)
                         )
                     ),
                     skill.probes.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-3' },
@@ -21677,7 +22637,7 @@ Keep the language professional but accessible.`;
                             ),
                             h('div', { className: 'flex flex-wrap gap-1' },
                                 skill.generalization[type].map((g, i) =>
-                                    h('button', { "aria-label": "Toggle Generalization", key: i, onClick: () => toggleGeneralization(skill.id, type, i), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${g.demonstrated ? 'bg-green-100 border-green-600 text-green-700' : 'bg-white border-slate-200 text-slate-600'}` }, `${g.demonstrated ? '✓' : '○'} ${g.name}`)
+                                    h('button', { 'aria-pressed': g.demonstrated ? 'true' : 'false', key: i, onClick: () => toggleGeneralization(skill.id, type, i), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${g.demonstrated ? 'bg-green-100 border-green-600 text-green-700' : 'bg-white border-slate-200 text-slate-600'}` }, `${g.demonstrated ? '✓' : '○'} ${g.name}`)
                                 )
                             )
                         )
@@ -21695,7 +22655,7 @@ Keep the language professional but accessible.`;
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex gap-2 mb-3' },
                     h('input', { value: newSkill, onChange: e => setNewSkill(e.target.value), 'aria-label': 'Mastered skill name', placeholder: 'Mastered skill name...', className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
-                    h('input', { type: 'date', value: newMasteryDate, onChange: e => setNewMasteryDate(e.target.value), 'aria-label': 'Mastery date', className: 'text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
+                    h('input', { type: 'date', value: newMasteryDate, max: todayKey, onChange: e => setNewMasteryDate(e.target.value), 'aria-label': 'Mastery date', className: 'text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
                     h('select', { value: newSchedule, onChange: e => setNewSchedule(e.target.value), 'aria-label': (t && t('behavior_lens.aria.probe_schedule')) || 'Probe schedule', className: 'text-[11px] border border-slate-400 rounded-lg px-2 py-1.5' },
                         Object.keys(SCHEDULE_DAYS).map(k => h('option', { key: k, value: k }, k.charAt(0).toUpperCase() + k.slice(1)))
                     ),
@@ -21710,7 +22670,7 @@ Keep the language professional but accessible.`;
                         const totalGen = [...s.generalization.settings, ...s.generalization.people, ...s.generalization.materials];
                         const genPct = totalGen.length > 0 ? Math.round((totalGen.filter(g => g.demonstrated).length / totalGen.length) * 100) : 0;
                         const od = getOverdueInfo(s);
-                        return h('button', { "aria-label": "Toggle selected skill", key: s.id, onClick: () => setSelectedSkill(s.id), className: `w-full text-start bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow ${od.isOverdue ? 'border-red-600 ring-1 ring-red-200' : 'border-slate-200'}` },
+                        return h('button', { key: s.id, onClick: () => setSelectedSkill(s.id), className: `w-full text-start bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow ${od.isOverdue ? 'border-red-600 ring-1 ring-red-200' : 'border-slate-200'}` },
                             h('div', { className: 'flex items-center justify-between' },
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('div', { className: 'flex items-center gap-2' },
@@ -21737,6 +22697,73 @@ Keep the language professional but accessible.`;
 
     // ─── CumulativeRecord ───────────────────────────────────────────────
     // Skinner-style cumulative frequency graph with phase lines, slope indicators, JABA mode, and export
+    // Cumulative record data. It reversed the stored history (assuming newest first),
+    // added every session that did not measure this behavior as a ZERO-response
+    // session (flattening the curve), and defaulted to the first stored session's first
+    // target, so flat bridge records graphed nothing. Now: sessions in time order, only
+    // sessions that counted this behavior (name matched ignoring case), and duration or
+    // latency bridge records left out: their `count` is seconds, not responses.
+    const cumrecName = (name) => String(name == null ? '' : name).trim().toLowerCase();
+    function cumulativeRecordCount(s, name) {
+        const key = cumrecName(name);
+        if (!s || !key) return null;
+        const target = (s.targets || []).find(tg => tg && cumrecName(tg.name) === key);
+        if (target) return Number.isFinite(Number(target.count)) && target.count !== null && target.count !== '' ? Number(target.count) : null;
+        if (s.targets && s.targets.length) return null;
+        if (cumrecName(s.behavior) !== key) return null;
+        const type = cumrecName(s.measurementType);
+        if (type === 'duration' || type === 'latency' || cumrecName(s.unit) === 'seconds') return null;
+        return Number.isFinite(Number(s.count)) && s.count !== null && s.count !== '' ? Number(s.count) : null;
+    }
+    function cumulativeRecordPoints(sessionHistory, behaviorName) {
+        const ordered = (Array.isArray(sessionHistory) ? sessionHistory : []).map((session, index) => ({ session, index, t: Date.parse(session && (session.occurredAt || session.date || session.timestamp)) }))
+            .sort((a, b) => ((Number.isFinite(a.t) ? a.t : 0) - (Number.isFinite(b.t) ? b.t : 0)) || (b.index - a.index))
+            .map(item => item.session);
+        let behavior = String(behaviorName || '').trim();
+        if (!behavior) {
+            for (const s of ordered) {
+                const names = (s && s.targets && s.targets.length ? s.targets.map(tg => tg && tg.name) : [s && s.behavior]).filter(Boolean);
+                const found = names.find(name => cumulativeRecordCount(s, name) != null);
+                if (found) { behavior = found; break; }
+            }
+        }
+        let cum = 0, skipped = 0;
+        const points = [];
+        ordered.forEach(s => {
+            const count = cumulativeRecordCount(s, behavior);
+            if (count == null) { skipped += 1; return; }
+            cum += count;
+            points.push({ session: points.length + 1, count, cumulative: cum });
+        });
+        return { behavior, points, skipped };
+    }
+    // Slope of each phase = responses per session DURING the phase: (last cumulative
+    // - cumulative before the phase) / sessions in the phase. The old slope ran from
+    // the phase's first point, so it left out that session's responses: [5,5,5 | 20,0,0]
+    // gave the intervention 0 instead of 20/3 = 6.7. A one-session phase has a rate too.
+    function cumulativePhaseSlopes(points, phases) {
+        if (!Array.isArray(points) || points.length < 2) return [];
+        const sortedPhases = (phases || []).slice().sort((a, b) => a.session - b.session);
+        const boundaries = [1].concat(sortedPhases.map(p => p.session), [points.length + 1]);
+        const slopes = [];
+        for (let i = 0; i < boundaries.length - 1; i++) {
+            const pts = points.filter(d => d.session >= boundaries[i] && d.session <= boundaries[i + 1] - 1);
+            if (pts.length < 1) continue;
+            const first = pts[0], last = pts[pts.length - 1];
+            const before = first.cumulative - first.count;
+            const slope = (last.cumulative - before) / pts.length;
+            slopes.push({ startSession: first.session, endSession: last.session, startCum: last.cumulative - slope * (last.session - first.session), endCum: last.cumulative, slope, label: sortedPhases[i - 1]?.label || 'Baseline' });
+        }
+        return slopes;
+    }
+    // Manual counts: whole, non-negative numbers only. A cumulative record never falls,
+    // so "-3" used to pull the curve DOWN, and "2.5" was read as 2.
+    function parseManualCounts(text) {
+        return String(text || '').split(',').map(v => v.trim()).filter(Boolean).map(Number).filter(v => Number.isInteger(v) && v >= 0);
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensCumulative = Object.freeze({ cumulativeRecordPoints, cumulativeRecordCount, cumulativePhaseSlopes, parseManualCounts });
+
     const CumulativeRecord = ({ sessionHistory, t, addToast }) => {
         const [behaviorName, setBehaviorName] = useState('');
         const [manualData, setManualData] = useState('');
@@ -21749,40 +22776,20 @@ Keep the language professional but accessible.`;
         const [showSlope, setShowSlope] = useState(true);
         const svgRef = useRef(null);
 
+        const record = useMemo(() => cumulativeRecordPoints(sessionHistory, behaviorName), [sessionHistory, behaviorName]);
+        const manualCounts = useMemo(() => parseManualCounts(manualData), [manualData]);
+        const manualRejected = showManual ? String(manualData || '').split(',').map(v => v.trim()).filter(Boolean).length - manualCounts.length : 0;
         const dataPoints = useMemo(() => {
             if (showManual && manualData.trim()) {
-                const vals = manualData.split(',').map(s => parseInt(s.trim())).filter(v => !isNaN(v));
                 let cum = 0;
-                return vals.map((v, i) => { cum += v; return { session: i + 1, count: v, cumulative: cum }; });
+                return manualCounts.map((v, i) => { cum += v; return { session: i + 1, count: v, cumulative: cum }; });
             }
-            if (!sessionHistory || sessionHistory.length === 0) return [];
-            const bName = behaviorName || (sessionHistory[0]?.targets?.[0]?.name || '');
-            let cum = 0;
-            return sessionHistory.slice().reverse().map((s, i) => {
-                const target = (s.targets || []).find(t => t.name === bName);
-                const count = target ? target.count : 0;
-                cum += count;
-                return { session: i + 1, count, cumulative: cum };
-            });
-        }, [sessionHistory, behaviorName, manualData, showManual]);
+            return record.points;
+        }, [record, manualCounts, manualData, showManual]);
+        const graphedBehavior = showManual ? '' : record.behavior;
 
         // Compute per-phase slope (responses per session)
-        const phaseSlopes = useMemo(() => {
-            if (dataPoints.length < 2) return [];
-            const sortedPhases = [...phases].sort((a, b) => a.session - b.session);
-            const boundaries = [1, ...sortedPhases.map(p => p.session), dataPoints.length + 1];
-            const slopes = [];
-            for (let i = 0; i < boundaries.length - 1; i++) {
-                const start = boundaries[i];
-                const end = boundaries[i + 1] - 1;
-                const pts = dataPoints.filter(d => d.session >= start && d.session <= end);
-                if (pts.length < 2) continue;
-                const first = pts[0]; const last = pts[pts.length - 1];
-                const slope = (last.cumulative - first.cumulative) / (last.session - first.session);
-                slopes.push({ startSession: first.session, endSession: last.session, startCum: first.cumulative, endCum: last.cumulative, slope, label: sortedPhases[i - 1]?.label || 'Baseline' });
-            }
-            return slopes;
-        }, [dataPoints, phases]);
+        const phaseSlopes = useMemo(() => cumulativePhaseSlopes(dataPoints, phases), [dataPoints, phases]);
 
         const W = 600, H = 280, padL = 55, padR = 20, padT = 30, padB = 40;
         const plotW = W - padL - padR, plotH = H - padT - padB;
@@ -21850,8 +22857,13 @@ Keep the language professional but accessible.`;
                     !showManual && h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'Behavior name from sessions', placeholder: tt('behavior_lens.ph.behavior_name_from_sessions', 'Behavior name (from sessions)...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
                     showManual && h('input', { value: manualData, onChange: e => setManualData(e.target.value), 'aria-label': 'Counts per session 3, 5, 2, 8, 4', placeholder: tt('behavior_lens.ph.counts_per_session_3_5_2_8_4', 'Counts per session: 3, 5, 2, 8, 4...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' })
                 ),
+                !showManual && record.points.length > 0 && h('p', { 'data-cumrec-scope': 'true', className: 'text-[11px] text-slate-600 mb-2' },
+                    tt('behavior_lens.cumrec.graphing', 'Graphing {behavior}: {n} sessions that counted it.', { behavior: record.behavior, n: record.points.length }),
+                    record.skipped > 0 ? ' ' + tt('behavior_lens.cumrec.skipped', '{n} other sessions did not count this behavior and are not in the record.', { n: record.skipped }) : ''),
+                showManual && manualRejected > 0 && h('p', { role: 'status', 'data-cumrec-rejected': 'true', className: 'text-[11px] text-amber-800 mb-2' },
+                    tt('behavior_lens.cumrec.rejected', '{n} values left out: counts must be whole numbers of 0 or more.', { n: manualRejected })),
                 // SVG Graph
-                dataPoints.length > 0 ? h('svg', { ref: svgRef, role: 'img', 'aria-label': `Cumulative record${behaviorName ? ` for ${behaviorName}` : ''}. ${dataPoints.map(point => `session ${point.session}, count ${point.count}, cumulative ${point.cumulative}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '320px', fontFamily: 'Arial, sans-serif' } },
+                dataPoints.length > 0 ? h('svg', { ref: svgRef, role: 'img', 'aria-label': `Cumulative record${graphedBehavior ? ` for ${graphedBehavior}` : ''}. ${dataPoints.map(point => `session ${point.session}, count ${point.count}, cumulative ${point.cumulative}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '320px', fontFamily: 'Arial, sans-serif' } },
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
                     h('text', { x: W / 2, y: 16, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }, (tt('behavior_lens.raw.cumulative_record', 'Cumulative Record'))),
                     h('text', { x: 12, y: H / 2, textAnchor: 'middle', fontSize: 10, fill: '#64748b', transform: `rotate(-90, 12, ${H / 2})` }, (tt('behavior_lens.raw.cumulative_responses', 'Cumulative Responses'))),
@@ -21911,7 +22923,7 @@ Keep the language professional but accessible.`;
                     h('span', { className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-indigo-700'}` }, `Total: ${dataPoints[dataPoints.length - 1]?.cumulative || 0} responses`),
                     h('span', { className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-indigo-700'}` }, `Sessions: ${dataPoints.length}`),
                     h('span', { className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-indigo-700'}` }, `Avg rate: ${(dataPoints[dataPoints.length - 1]?.cumulative / dataPoints.length).toFixed(1)}/session`),
-                    phaseSlopes.length > 0 && h('span', { className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-emerald-700'}` }, `Phases: ${phaseSlopes.length} (slopes: ${phaseSlopes.map(s => s.slope.toFixed(1)).join(', ')})`)
+                    phaseSlopes.length > 0 && h('span', { 'data-cumrec-slopes': 'true', className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-emerald-700'}` }, `Responses per session by phase: ${phaseSlopes.map(s => `${s.label} ${s.slope.toFixed(1)}`).join(', ')}`)
                 )
             )
         );
@@ -22011,7 +23023,7 @@ Keep the language professional but accessible.`;
             // View mode tabs
             abcEntries.length >= 5 && h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
                 [['focused', '🎯 Focused A→B'], ['consequence', '📊 P(C|B) Consequence'], ['matrix', '🗺️ All-Pairs Matrix']].map(([id, label]) =>
-                    h('button', { "aria-label": "Toggle view mode", key: id, onClick: () => setViewMode(id), className: `flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${viewMode === id ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}` }, label)
+                    h('button', { key: id, onClick: () => setViewMode(id), className: `flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${viewMode === id ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}` }, label)
                 )
             ),
             abcEntries.length < 5 ? h('div', { className: 'bg-amber-50 rounded-xl p-6 text-center border border-amber-200' },
@@ -22058,7 +23070,7 @@ Keep the language professional but accessible.`;
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-2' }, 'Select Target Behavior'),
                     h('div', { className: 'flex flex-wrap gap-1' },
-                        behaviors.slice(0, 8).map(b => h('button', { "aria-label": "Toggle selected behavior", key: b, onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
+                        behaviors.slice(0, 8).map(b => h('button', { key: b, onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
                     )
                 ),
                 selectedBehavior && consequenceAnalysis.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -22087,13 +23099,13 @@ Keep the language professional but accessible.`;
                         h('div', null,
                             h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.target_behavior', 'Target Behavior')),
                             h('div', { className: 'flex flex-wrap gap-1' },
-                                behaviors.slice(0, 6).map(b => h('button', { "aria-label": "Toggle selected behavior", key: b, onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
+                                behaviors.slice(0, 6).map(b => h('button', { key: b, onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
                             )
                         ),
                         h('div', null,
                             h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.antecedent', 'Antecedent')),
                             h('div', { className: 'flex flex-wrap gap-1' },
-                                antecedents.slice(0, 6).map(a => h('button', { "aria-label": "Toggle selected antecedent", key: a, onClick: () => setSelectedAntecedent(a), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedAntecedent === a ? 'bg-purple-100 border-purple-400 text-purple-700' : 'bg-white border-slate-200 text-slate-600'}` }, a))
+                                antecedents.slice(0, 6).map(a => h('button', { key: a, onClick: () => setSelectedAntecedent(a), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedAntecedent === a ? 'bg-purple-100 border-purple-400 text-purple-700' : 'bg-white border-slate-200 text-slate-600'}` }, a))
                             )
                         )
                     )
@@ -22156,15 +23168,23 @@ Keep the language professional but accessible.`;
                         )
                     ),
                     // Interpretation with clinical guidance
-                    h('div', { className: `rounded-xl p-4 border ${analysis.pBgivA > analysis.pBgivNoA + 0.15 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}` },
+                    (() => {
+                        const verdict = conditionalAssociation(analysis);
+                        const tone = { red: 'bg-red-50 border-red-200', amber: 'bg-amber-50 border-amber-200', green: 'bg-green-50 border-green-200', slate: 'bg-slate-50 border-slate-300' }[verdict.color];
+                        const rrText = analysis.riskRatio === Infinity ? 'only' : analysis.riskRatio.toFixed(1) + 'x as';
+                        const sample = ` (${analysis.withAntN} entries with it, ${analysis.withoutAntN} without)`;
+                        const text = {
+                            'no-comparison': `Every logged entry includes "${selectedAntecedent}", so there is nothing to compare it against. Log incidents under other conditions before judging this antecedent.`,
+                            'too-few': `Too few entries to judge: at least ${verdict.minN || 5} with and ${verdict.minN || 5} without "${selectedAntecedent}" are needed${sample}.`,
+                            strong: `"${selectedBehavior}" was logged ${rrText} often when "${selectedAntecedent}" was present${sample}. On the scale below that is a strong association: a hypothesis to test, not a confirmed function.`,
+                            moderate: `"${selectedBehavior}" was logged ${rrText} often when "${selectedAntecedent}" was present${sample}: a moderate association. More data is recommended.`,
+                            weak: `"${selectedBehavior}" was logged slightly more often with "${selectedAntecedent}" (risk ratio ${analysis.riskRatio.toFixed(2)}, φ = ${analysis.phi.toFixed(2)})${sample}: a weak association.`,
+                            none: `"${selectedBehavior}" shows no more association with "${selectedAntecedent}" than without it in this data${sample}. Consider other antecedents.`
+                        }[verdict.band];
+                        return h('div', { className: `rounded-xl p-4 border ${tone}`, 'data-cp-band': verdict.band },
                         h('h3', { className: 'text-xs font-bold text-slate-800 mb-2' }, '📋 Clinical Interpretation'),
-                        h('p', { className: 'text-xs text-slate-700 mb-2' },
-                            analysis.pBgivA > analysis.pBgivNoA + 0.15
-                                ? `The behavior "${selectedBehavior}" is ${analysis.riskRatio === Infinity ? 'exclusively' : analysis.riskRatio.toFixed(1) + 'x more'} likely when "${selectedAntecedent}" is present. This is a strong association — a hypothesis to test, not a confirmed function. Descriptive ABC data shows correlation, not causation.`
-                                : analysis.pBgivA > analysis.pBgivNoA
-                                    ? `Slight elevation of "${selectedBehavior}" given "${selectedAntecedent}", but the difference is small (φ = ${analysis.phi.toFixed(2)}). More data may clarify.`
-                                    : `"${selectedBehavior}" shows little association with "${selectedAntecedent}" in this data. Consider other antecedents.`
-                        ),
+                        h('p', { className: 'text-xs text-slate-700 mb-2' }, text),
+                        h('p', { className: 'text-[11px] text-slate-600 mb-2' }, 'An ABC log records incidents, so "without the behavior" means a different behavior was logged, not that nothing happened.'),
                         h('div', { className: 'bg-white/60 rounded-lg p-3 space-y-1' },
                             h('p', { className: 'text-[11px] font-bold text-slate-600' }, '📏 Association strength (descriptive only — not a functional relationship)'),
                             h('p', { className: 'text-[11px] text-slate-600' }, '• Risk Ratio > 2.0: Strong association'),
@@ -22173,7 +23193,7 @@ Keep the language professional but accessible.`;
                             h('p', { className: 'text-[11px] text-slate-600' }, '• φ ≥ 0.3: Medium-large effect size | φ ≥ 0.1: Small effect'),
                             h('p', { className: 'text-[11px] text-slate-500 italic pt-1' }, 'These are associations from descriptive data. A functional relationship requires experimental manipulation (functional analysis). Confirm hypotheses before writing a BIP.')
                         )
-                    )
+                    ); })()
                 )
             )
         );
@@ -22181,26 +23201,53 @@ Keep the language professional but accessible.`;
 
     // ─── TreatmentIntegrityTracker ──────────────────────────────────────
     // Track whether interventions are implemented correctly
-    const TreatmentIntegrityTracker = ({ t, addToast }) => {
-        const [interventionName, setInterventionName] = useState('');
-        const [components, setComponents] = useState([{ id: 'c1', desc: '', implemented: false }]);
-        const [sessions, setSessions] = useState([]);
+    // Treatment integrity = steps done / steps that had a chance to happen. There was
+    // no N/A, so a step with no opportunity counted as "not implemented" (3 of 3 done
+    // plus one with no opportunity read 75%, "Below 80% Threshold"); blank rows sat in
+    // the denominator; Save on an untouched form recorded 0%; checks of different
+    // interventions were averaged together; and everything was lost when the panel
+    // closed. Each step is now Done, Not done, or N/A, and every described step must be
+    // scored before a check is saved.
+    function integrityScore(components) {
+        const scored = (components || []).filter(c => c && String(c.desc || '').trim());
+        const done = scored.filter(c => c.status === 'done').length;
+        const missed = scored.filter(c => c.status === 'missed').length;
+        const na = scored.filter(c => c.status === 'na').length;
+        const unscored = scored.length - done - missed - na;
+        const opportunities = done + missed;
+        return { steps: scored.length, done, missed, na, unscored, opportunities, pct: opportunities > 0 ? Math.round(done / opportunities * 100) : null };
+    }
+    const integrityName = (name) => String(name || '').trim().toLowerCase();
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensIntegrity = Object.freeze({ integrityScore });
 
-        const addComponent = () => setComponents(prev => [...prev, { id: uid(), desc: '', implemented: false }]);
+    const TreatmentIntegrityTracker = ({ t, addToast }) => {
+        const [interventionName, setInterventionName] = useDurableToolState('integrityIntervention', '');
+        const [components, setComponents] = useDurableToolState('integrityComponents', [{ id: 'c1', desc: '', status: null }]);
+        const [sessions, setSessions] = useDurableToolState('integrityChecks', []);
+
+        const addComponent = () => setComponents(prev => [...prev, { id: uid(), desc: '', status: null }]);
         const removeComponent = (id) => { if (components.length > 1) setComponents(prev => prev.filter(c => c.id !== id)); };
         const updateComponent = (id, field, value) => setComponents(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+        const score = integrityScore(components);
+        const canSave = score.steps > 0 && score.unscored === 0 && score.opportunities > 0;
 
         const saveCheck = () => {
-            const implemented = components.filter(c => c.implemented).length;
-            const total = components.length;
-            const integrity = Math.round((implemented / total) * 100);
-            const session = { date: new Date().toISOString(), components: components.map(c => ({ desc: c.desc, implemented: c.implemented })), integrity };
+            if (!canSave) {
+                if (addToast) addToast(score.steps === 0 ? tt('behavior_lens.integrity.describe_first', 'Describe at least one step of the plan first.') : score.unscored > 0 ? tt('behavior_lens.integrity.score_all', 'Mark every step Done, Not done, or N/A before saving ({n} not marked).', { n: score.unscored }) : tt('behavior_lens.integrity.all_na', 'Every step is N/A, so there is nothing to score in this check.'), 'warning');
+                return;
+            }
+            const session = { date: new Date().toISOString(), interventionName: interventionName.trim(), components: components.filter(c => String(c.desc || '').trim()).map(c => ({ desc: c.desc, status: c.status })), integrity: score.pct, done: score.done, opportunities: score.opportunities, na: score.na };
             setSessions(prev => [session, ...prev]);
-            setComponents(prev => prev.map(c => ({ ...c, implemented: false })));
-            if (addToast) addToast(t('behavior_lens.toast.integrity_n_nn') || `Integrity: ${integrity}% (${implemented}/${total})`, integrity >= 80 ? 'success' : 'warning');
+            setComponents(prev => prev.map(c => ({ ...c, status: null })));
+            if (addToast) addToast(tt('behavior_lens.toast.integrity_n_nn_v2', 'Integrity: {integrity}% ({implemented}/{total})', { integrity: score.pct, implemented: score.done, total: score.opportunities }), score.pct >= 80 ? 'success' : 'warning');
         };
 
-        const avgIntegrity = sessions.length > 0 ? Math.round(sessions.reduce((a, s) => a + s.integrity, 0) / sessions.length) : 0;
+        // History and average for THIS intervention only.
+        const mine = sessions.filter(sess => integrityName(sess.interventionName) === integrityName(interventionName));
+        const others = sessions.length - mine.length;
+        const avgIntegrity = mine.length > 0 ? Math.round(mine.reduce((a, sess) => a + sess.integrity, 0) / mine.length) : null;
+        const STATUS = [['done', '✓', 'Done'], ['missed', '✗', 'Not done'], ['na', 'N/A', 'No chance to do it']];
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
@@ -22210,47 +23257,55 @@ Keep the language professional but accessible.`;
             ),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.interventionbip_name', 'Intervention/BIP Name')),
-                h('input', { value: interventionName, onChange: e => setInterventionName(e.target.value), 'aria-label': 'eg Token Economy  FCT Protocol', placeholder: tt('behavior_lens.ph.eg_token_economy_fct_protocol', 'e.g. Token Economy + FCT Protocol'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                h('input', { value: interventionName, onChange: e => setInterventionName(e.target.value), 'aria-label': 'Intervention or BIP name', placeholder: tt('behavior_lens.ph.eg_token_economy_fct_protocol', 'e.g. Token Economy + FCT Protocol'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
             ),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
                     h('h3', { className: 'text-sm font-bold text-slate-700' }, '📋 Implementation Components'),
-                    h('button', { "aria-label": "+ Add", onClick: addComponent, className: 'text-[11px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg font-bold' }, '+ Add')
+                    h('button', { 'aria-label': 'Add a step', onClick: addComponent, className: 'text-[11px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg font-bold' }, '+ Add')
                 ),
                 h('div', { className: 'space-y-2' },
                     components.map((comp, i) =>
                         h('div', { key: comp.id, className: 'flex items-center gap-2' },
-                            h('button', { onClick: () => updateComponent(comp.id, 'implemented', !comp.implemented), className: `w-7 h-7 rounded-lg border-2 flex items-center justify-center font-bold text-sm transition-colors ${comp.implemented ? 'bg-green-700 border-green-600 text-white' : 'bg-white border-slate-200 text-slate-600'}` }, comp.implemented ? '✓' : ''),
-                            h('input', { value: comp.desc, onChange: e => updateComponent(comp.id, 'desc', e.target.value), 'aria-label': 'Component ' + (i + 1) + ' description', placeholder: `Component ${i + 1}: e.g. "Deliver token within 5s of target behavior"`, className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
-                            components.length > 1 && h('button', { onClick: () => removeComponent(comp.id), title: 'Remove component', 'aria-label': 'Remove fidelity component', className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')
+                            h('div', { role: 'group', 'aria-label': 'Step ' + (i + 1) + (comp.desc ? ': ' + comp.desc : ''), className: 'flex gap-1 shrink-0' },
+                                STATUS.map(([value, mark, label]) => h('button', {
+                                    key: value, 'aria-label': label, 'aria-pressed': comp.status === value ? 'true' : 'false', title: label,
+                                    onClick: () => updateComponent(comp.id, 'status', comp.status === value ? null : value),
+                                    className: `min-w-7 h-7 px-1 rounded-lg border-2 flex items-center justify-center font-bold text-[11px] transition-colors ${comp.status === value ? (value === 'done' ? 'bg-green-700 border-green-700 text-white' : value === 'missed' ? 'bg-red-700 border-red-700 text-white' : 'bg-slate-600 border-slate-600 text-white') : 'bg-white border-slate-300 text-slate-700'}`
+                                }, mark))),
+                            h('input', { value: comp.desc, onChange: e => updateComponent(comp.id, 'desc', e.target.value), 'aria-label': 'Step ' + (i + 1) + ' description', placeholder: `Step ${i + 1}: e.g. "Deliver token within 5s of target behavior"`, className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
+                            components.length > 1 && h('button', { onClick: () => removeComponent(comp.id), title: 'Remove step', 'aria-label': 'Remove step ' + (i + 1), className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')
                         )
                     )
                 ),
                 h('div', { className: 'flex items-center justify-between mt-3 pt-3 border-t border-slate-100' },
-                    h('span', { className: 'text-xs font-bold text-slate-600' }, `${components.filter(c => c.implemented).length}/${components.length} implemented (${Math.round((components.filter(c => c.implemented).length / components.length) * 100)}%)`),
+                    h('span', { 'data-integrity-now': score.pct == null ? 'none' : score.pct, className: 'text-xs font-bold text-slate-600' }, score.pct == null
+                        ? tt('behavior_lens.integrity.nothing_yet', 'Mark each step to see integrity.')
+                        : `${score.done}/${score.opportunities} steps done (${score.pct}%)` + (score.na ? ` · ${score.na} N/A` : '') + (score.unscored ? ` · ${score.unscored} not marked` : '')),
                     h('div', { className: 'w-32 h-3 bg-slate-100 rounded-full overflow-hidden' },
-                        h('div', { className: `h-full rounded-full ${(components.filter(c => c.implemented).length / components.length) >= 0.8 ? 'bg-green-500' : 'bg-amber-500'}`, style: { width: `${(components.filter(c => c.implemented).length / components.length) * 100}%` } })
+                        h('div', { className: `h-full rounded-full ${(score.pct || 0) >= 80 ? 'bg-green-500' : 'bg-amber-500'}`, style: { width: `${score.pct || 0}%` } })
                     )
                 )
             ),
-            h('button', { "aria-label": "Save Integrity Check", onClick: saveCheck, className: 'w-full py-3 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-xl font-bold text-sm shadow-lg' }, '💾 Save Integrity Check'),
+            h('button', { 'aria-label': 'Save Integrity Check', 'aria-disabled': canSave ? 'false' : 'true', onClick: saveCheck, className: `w-full py-3 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-xl font-bold text-sm shadow-lg ${canSave ? '' : 'opacity-60'}` }, '💾 Save Integrity Check'),
             sessions.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
-                    h('h3', { className: 'text-xs font-bold text-slate-600' }, `📊 History (${sessions.length} checks)`),
-                    h('span', { className: `text-xs font-bold px-2 py-0.5 rounded-full ${avgIntegrity >= 80 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}` }, `Avg: ${avgIntegrity}%`)
+                    h('h3', { className: 'text-xs font-bold text-slate-600' }, `📊 History for ${interventionName.trim() || 'unnamed intervention'} (${mine.length} checks)`),
+                    avgIntegrity != null && h('span', { 'data-integrity-avg': avgIntegrity, className: `text-xs font-bold px-2 py-0.5 rounded-full ${avgIntegrity >= 80 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}` }, `Avg: ${avgIntegrity}%`)
                 ),
+                others > 0 && h('p', { className: 'text-[11px] text-slate-600 mb-2' }, tt('behavior_lens.integrity.other_checks', '{n} checks of other interventions are not in this average.', { n: others })),
                 h('div', { className: 'space-y-1' },
-                    sessions.slice(0, 10).map((s, i) =>
+                    mine.slice(0, 10).map((sess, i) =>
                         h('div', { key: i, className: 'flex items-center justify-between text-[11px] bg-slate-50 rounded-lg px-3 py-1.5' },
-                            h('span', { className: 'text-slate-600' }, new Date(s.date).toLocaleDateString()),
-                            h('span', { className: `font-bold ${s.integrity >= 80 ? 'text-green-600' : 'text-amber-600'}` }, `${s.integrity}%`),
+                            h('span', { className: 'text-slate-600' }, new Date(sess.date).toLocaleDateString()),
+                            h('span', { className: `font-bold ${sess.integrity >= 80 ? 'text-green-600' : 'text-amber-600'}` }, `${sess.integrity}%`),
                             h('div', { className: 'w-20 h-2 bg-slate-200 rounded-full overflow-hidden' },
-                                h('div', { className: `h-full rounded-full ${s.integrity >= 80 ? 'bg-green-500' : 'bg-amber-500'}`, style: { width: `${s.integrity}%` } })
+                                h('div', { className: `h-full rounded-full ${sess.integrity >= 80 ? 'bg-green-500' : 'bg-amber-500'}`, style: { width: `${sess.integrity}%` } })
                             )
                         )
                     )
                 ),
-                avgIntegrity < 80 && h('div', { className: 'mt-3 bg-amber-50 rounded-lg p-3 border border-amber-200' },
+                avgIntegrity != null && avgIntegrity < 80 && h('div', { className: 'mt-3 bg-amber-50 rounded-lg p-3 border border-amber-200' },
                     h('p', { className: 'text-[11px] font-bold text-amber-800 mb-1' }, '⚠️ Below 80% Threshold'),
                     h('ul', { className: 'text-[11px] text-amber-700 space-y-0.5 list-disc ps-4' },
                         h('li', null, tt('behavior_lens.fidelity_tip_1', 'Review implementation procedures with staff')),
@@ -22506,7 +23561,7 @@ Keep the language professional but accessible.`;
 
             try {
 
-                const abcSummary = abcEntries.slice(0, 15).map((e, i) => `${i + 1}. A:${e.antecedent} B:${e.behavior} C:${e.consequence} Func:${e.function || '?'} Int:${e.intensity}/5`).join('\n');
+                const abcSummary = abcEntriesNewestFirst(abcEntries).slice(0, 15).map((e, i) => `${i + 1}. A:${e.antecedent} B:${e.behavior} C:${e.consequence} Func:${e.function || '?'} Int:${e.intensity}/5`).join('\n');
 
                 const prompt = `You are an experienced special education consultant creating IEP behavioral goals.\nSTUDENT: ${studentName || 'Student'}\nGOAL TYPE: ${goalType}\nABC DATA (${abcEntries.length} entries):\n${abcSummary || 'No data'}\n${customContext ? 'CONTEXT: ' + customContext : ''}\n\nReturn ONLY valid JSON:\n{"presentLevel":"...","annualGoals":[{"goalNumber":1,"goal":"SMART goal","baseline":"...","targetCriteria":"...","measurementMethod":"...","schedule":"..."}],"shortTermObjectives":[{"objectiveNumber":1,"relatedGoal":1,"objective":"...","targetDate":"...","criteria":"..."}],"accommodations":["..."],"progressMonitoring":{"frequency":"...","method":"...","reportingSchedule":"..."},"suggestedInterventions":["..."]}`;
 
@@ -22556,7 +23611,7 @@ Keep the language professional but accessible.`;
 
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '🎯 Goal Focus Area'),
 
-                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, goalTypes.map(gt => h('button', { "aria-label": "Toggle goal type", key: gt.id, onClick: () => setGoalType(gt.id), className: 'p-3 rounded-lg border-2 text-start transition-all ' + (goalType === gt.id ? 'border-blue-400 bg-blue-50' : 'border-slate-200 hover:border-slate-300') }, h('div', { className: 'text-sm font-bold' }, gt.label), h('div', { className: 'text-[11px] text-slate-600' }, gt.desc)))),
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, goalTypes.map(gt => h('button', { key: gt.id, onClick: () => setGoalType(gt.id), className: 'p-3 rounded-lg border-2 text-start transition-all ' + (goalType === gt.id ? 'border-blue-400 bg-blue-50' : 'border-slate-200 hover:border-slate-300') }, h('div', { className: 'text-sm font-bold' }, gt.label), h('div', { className: 'text-[11px] text-slate-600' }, gt.desc)))),
 
                 h('textarea', { value: customContext, onChange: (e) => setCustomContext(e.target.value), 'aria-label': 'Additional context', placeholder: (tt('behavior_lens.raw.additional_context', 'Additional context...')), className: 'w-full p-2 border border-slate-400 rounded-lg text-xs resize-none', rows: 3 }),
 
@@ -22636,7 +23691,43 @@ Keep the language professional but accessible.`;
 
     // ─── CaseloadDashboard ──────────────────────────────────────
 
-    const CaseloadDashboard = ({ abcEntries, dashboardData, callGemini, t, addToast, selectedStudent, setSelectedStudent, openPanel }) => {
+    // Each caseload student's ABC entries. Caseload and MTSS filtered the OPEN student's
+    // entries by `e.student === name`, a field entries saved from the ABC form never
+    // have, so every student read "0 entries, Never, Needs Attention", nobody could be
+    // Urgent, and the AI was sent zeros for everyone. Now: the live entries for the
+    // student who is open, each other student's workspace saved on this device, or
+    // "no data on this device".
+    function caseloadStudentEntries(name, ctx) {
+        if (name && name === ctx.selectedStudent) return { entries: Array.isArray(ctx.abcEntries) ? ctx.abcEntries : [], source: 'live' };
+        const rosterItem = (ctx.studentRoster || []).find(r => r && r.name === name && r.id);
+        if (rosterItem && ctx.storage) {
+            try {
+                const raw = ctx.storage.getItem('behaviorLens_workspace_' + rosterItem.id);
+                const ws = raw ? JSON.parse(raw) : null;
+                if (ws && Array.isArray(ws.abcEntries)) return { entries: ws.abcEntries, source: 'saved' };
+            } catch (e) { /* unreadable workspace: treated as no data */ }
+        }
+        return { entries: [], source: 'none' };
+    }
+    const caseloadStorage = () => { try { return window.localStorage; } catch (e) { return null; } };
+    function caseloadRow(name, found, now) {
+        const entries = found.entries;
+        const times = entries.map(e => Date.parse(e && (e.occurredAt || e.timestamp))).filter(Number.isFinite);
+        const last = times.length ? Math.max(...times) : null;
+        const daysSinceEntry = last == null ? null : Math.floor(((now == null ? Date.now() : now) - last) / 86400000);
+        const intensity = getBehaviorLensWorkspaceRuntime().summarizeIntensity(entries);
+        let status = 'on_track';
+        if (found.source === 'none') status = 'no_data';
+        else if (intensity.mean != null && intensity.mean >= 4) status = 'urgent';
+        else if (daysSinceEntry == null || daysSinceEntry > 14 || (intensity.mean != null && intensity.mean >= 3)) status = 'needs_attention';
+        return { name, abcCount: entries.length, daysSinceEntry, avgIntensity: intensity.mean == null ? 'No ratings' : intensity.mean.toFixed(1), intensityN: intensity.ratedCount, status, source: found.source };
+    }
+    // Most urgent first.
+    const CASELOAD_STATUS_ORDER = { urgent: 0, needs_attention: 1, on_track: 2, no_data: 3 };
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensCaseload = Object.freeze({ caseloadStudentEntries, caseloadRow, CASELOAD_STATUS_ORDER });
+
+    const CaseloadDashboard = ({ abcEntries, dashboardData, callGemini, t, addToast, selectedStudent, setSelectedStudent, openPanel, studentRoster }) => {
 
         const [sortBy, setSortBy] = useState('status');
 
@@ -22649,35 +23740,15 @@ Keep the language professional but accessible.`;
         const [filterStatus, setFilterStatus] = useState('all');
 
         const studentCaseData = useMemo(() => {
-
             const students = dashboardData && Array.isArray(dashboardData) ? dashboardData : [];
-
-            return students.map(s => {
-
-                const name = s.studentNickname || 'Unknown';
-
-                const studentAbc = abcEntries.filter(e => e.student === name);
-
-                const lastEntry = studentAbc.filter(entry => Number.isFinite(Date.parse(entry.occurredAt || entry.timestamp))).sort((left, right) => Date.parse(right.occurredAt || right.timestamp) - Date.parse(left.occurredAt || left.timestamp))[0] || null;
-
-                const daysSinceEntry = lastEntry ? Math.floor((Date.now() - new Date(lastEntry.timestamp).getTime()) / 86400000) : 999;
-
-                const intensitySummary = getBehaviorLensWorkspaceRuntime().summarizeIntensity(studentAbc);
-                const avgIntensity = intensitySummary.mean;
-
-                let status = 'on_track';
-
-                if (avgIntensity >= 4) status = 'urgent';
-
-                else if (daysSinceEntry > 14 || avgIntensity >= 3) status = 'needs_attention';
-
-                return { name, abcCount: studentAbc.length, daysSinceEntry, avgIntensity: avgIntensity == null ? 'No ratings' : avgIntensity.toFixed(1), intensityN: intensitySummary.ratedCount, status };
-
+            const ctx = { selectedStudent, abcEntries, studentRoster, storage: caseloadStorage() };
+            return students.map(st => {
+                const name = st.studentNickname || 'Unknown';
+                return caseloadRow(name, caseloadStudentEntries(name, ctx));
             });
+        }, [dashboardData, abcEntries, selectedStudent, studentRoster]);
 
-        }, [dashboardData, abcEntries]);
-
-        const statusConfig = { urgent: { emoji: '🔴', label: (tt('behavior_lens.raw.urgent', 'Urgent')), bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700' }, needs_attention: { emoji: '🟡', label: (tt('behavior_lens.raw.needs_attention', 'Needs Attention')), bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700' }, on_track: { emoji: '🟢', label: (tt('behavior_lens.raw.on_track', 'On Track')), bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' } };
+        const statusConfig = { urgent: { emoji: '🔴', label: (tt('behavior_lens.raw.urgent', 'Urgent')), bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700' }, needs_attention: { emoji: '🟡', label: (tt('behavior_lens.raw.needs_attention', 'Needs Attention')), bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700' }, on_track: { emoji: '🟢', label: (tt('behavior_lens.raw.on_track', 'On Track')), bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' }, no_data: { emoji: '⚪', label: tt('behavior_lens.caseload.no_data', 'No data on this device'), bg: 'bg-white', border: 'border-slate-300', text: 'text-slate-700' } };
 
         const filtered = filterStatus === 'all' ? studentCaseData : studentCaseData.filter(s => s.status === filterStatus);
 
@@ -22689,7 +23760,7 @@ Keep the language professional but accessible.`;
 
             if (sortBy === 'abcCount') return dir * (a.abcCount - b.abcCount);
 
-            if (sortBy === 'status') { const order = { urgent: 0, needs_attention: 1, on_track: 2 }; return dir * (order[a.status] - order[b.status]); }
+            if (sortBy === 'status') return -dir * (CASELOAD_STATUS_ORDER[a.status] - CASELOAD_STATUS_ORDER[b.status]) || a.name.localeCompare(b.name);
 
             return 0;
 
@@ -22703,7 +23774,7 @@ Keep the language professional but accessible.`;
 
             try {
 
-                const dataStr = studentCaseData.map(s => `${s.name}: ${s.abcCount} entries, status=${s.status}, intensity=${s.avgIntensity}`).join('\n');
+                const dataStr = studentCaseData.map(s => s.source === 'none' ? `${s.name}: no data on this device (not assessed)` : `${s.name}: ${s.abcCount} entries, status=${s.status}, intensity=${s.avgIntensity}`).join('\n');
 
                 const prompt = `You are a school BCBA reviewing your caseload. Provide a brief caseload summary.\n\nCASELOAD (${studentCaseData.length} students):\n${dataStr}\n\nProvide 3-5 sentence summary highlighting priority students and recommendations.`;
 
@@ -22749,7 +23820,7 @@ Keep the language professional but accessible.`;
 
                 h('button', { onClick: handleCaseloadSummary, disabled: summaryLoading || studentCaseData.length === 0, className: 'px-3 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-xs hover:bg-teal-700 disabled:opacity-40' }, summaryLoading ? '⏳ Generating...' : '🤖 AI Caseload Summary'),
 
-                h('div', { className: 'flex gap-1 ms-auto' }, ['all', 'urgent', 'needs_attention', 'on_track'].map(f => h('button', { "aria-label": "Toggle filter status", key: f, onClick: () => setFilterStatus(f), className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' + (filterStatus === f ? 'bg-teal-200 text-teal-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, f === 'all' ? 'All' : f === 'needs_attention' ? '🟡' : f === 'urgent' ? '🔴' : '🟢')))
+                h('div', { className: 'flex gap-1 ms-auto' }, ['all', 'urgent', 'needs_attention', 'on_track'].map(f => h('button', { 'aria-label': 'Show ' + (f === 'all' ? 'all students' : statusConfig[f].label), 'aria-pressed': filterStatus === f ? 'true' : 'false', key: f, onClick: () => setFilterStatus(f), className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' + (filterStatus === f ? 'bg-teal-200 text-teal-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, f === 'all' ? 'All' : f === 'needs_attention' ? '🟡' : f === 'urgent' ? '🔴' : '🟢')))
 
             ),
 
@@ -22763,7 +23834,7 @@ Keep the language professional but accessible.`;
 
                         const sc = statusConfig[s.status];
 
-                        return h('div', { key: idx, className: 'flex items-center justify-between px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-all ' + sc.bg },
+                        return h('div', { key: s.name, 'data-caseload-row': s.name, className: 'flex items-center justify-between px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-all ' + sc.bg },
 
                             h('div', { className: 'flex items-center gap-3' },
 
@@ -22771,13 +23842,13 @@ Keep the language professional but accessible.`;
 
                                 h('span', { className: 'px-2 py-0.5 rounded-full text-[11px] font-bold ' + sc.text + ' border ' + sc.border }, sc.emoji + ' ' + sc.label),
 
-                                h('span', { className: 'text-[11px] text-slate-600' }, s.abcCount + ' entries'),
+                                s.source !== 'none' && h('span', { className: 'text-[11px] text-slate-600' }, s.abcCount + ' entries'),
 
-                                h('span', { className: 'text-[11px] text-slate-600' }, s.daysSinceEntry > 900 ? 'Never' : s.daysSinceEntry + 'd ago')
+                                s.source !== 'none' && h('span', { className: 'text-[11px] text-slate-600' }, s.daysSinceEntry == null ? 'No entries yet' : s.daysSinceEntry + 'd ago')
 
                             ),
 
-                            h('button', { "aria-label": "View", onClick: () => { if (setSelectedStudent) setSelectedStudent(s.name); if (openPanel) openPanel('abc'); }, className: 'px-2 py-1 bg-teal-100 text-teal-700 rounded text-[11px] font-bold hover:bg-teal-200' }, '👁️ View')
+                            h('button', { 'aria-label': 'View ' + s.name, onClick: () => { if (setSelectedStudent) setSelectedStudent(s.name); if (openPanel) openPanel('abc'); }, className: 'px-2 py-1 bg-teal-100 text-teal-700 rounded text-[11px] font-bold hover:bg-teal-200' }, '👁️ View')
 
                         );
 
@@ -22802,9 +23873,11 @@ Keep the language professional but accessible.`;
             const record = (studentRoster || []).find(item => item.name === name);
             return record && [1, 2, 3].includes(record.mtssTier) ? record.mtssTier : 1;
         };
+        // No cap: the roster keys each student's saved workspace, and `.slice(0, 20)` here
+        // dropped the 20th student (and orphaned their data) when a 21st was tiered.
         const setTier = (name, tier) => setStudentRoster(previous => {
             const exists = previous.some(item => item.name === name);
-            if (!exists) return [{ id: uid(), name, mtssTier: tier, lastAccessed: new Date().toISOString() }, ...previous].slice(0, 20);
+            if (!exists) return [{ id: uid(), name, mtssTier: tier, lastAccessed: new Date().toISOString() }, ...previous];
             return previous.map(item => item.name === name ? { ...item, mtssTier: tier } : item);
         });
 
@@ -22819,7 +23892,8 @@ Keep the language professional but accessible.`;
             try {
 
                 const runtime = getBehaviorLensWorkspaceRuntime();
-                const studentData = students.map(name => { const abc = abcEntries.filter(entry => entry.student === name); const intensity = runtime.summarizeIntensity(abc); return `${name}: Tier ${getTier(name)}, ${abc.length} entries, avg rated intensity ${intensity.mean === null ? 'N/A' : intensity.mean.toFixed(1) + ' (n=' + intensity.ratedCount + ')'}`; }).join('\n');
+                const ctx = { selectedStudent, abcEntries, studentRoster, storage: caseloadStorage() };
+                const studentData = students.map(name => { const found = caseloadStudentEntries(name, ctx); if (found.source === 'none') return `${name}: Tier ${getTier(name)}, no data on this device (do not recommend a change)`; const abc = found.entries; const intensity = runtime.summarizeIntensity(abc); return `${name}: Tier ${getTier(name)}, ${abc.length} entries, avg rated intensity ${intensity.mean === null ? 'N/A' : intensity.mean.toFixed(1) + ' (n=' + intensity.ratedCount + ')'}`; }).join('\n');
 
                 const prompt = `You are an MTSS coordinator. Review tier assignments:\n${studentData}\n\nRecommend changes. Return ONLY valid JSON:\n{"recommendations":[{"student":"name","currentTier":1,"recommendedTier":2,"reason":"..."}],"summary":"Overall MTSS health in 2 sentences"}`;
 
@@ -22835,7 +23909,13 @@ Keep the language professional but accessible.`;
 
         };
 
-        const applyRec = (rec) => { setTier(rec.student, rec.recommendedTier); if (addToast) addToast(rec.student + ' moved to Tier ' + rec.recommendedTier, 'success'); };
+        // The model may send the tier as "2", or name a student who is not on this caseload.
+        const applyRec = (rec) => {
+            const tier = Number(rec && rec.recommendedTier);
+            if (!students.includes(rec && rec.student) || ![1, 2, 3].includes(tier)) { if (addToast) addToast(tt('behavior_lens.mtss.rec_invalid', 'That recommendation names a student or tier not on this caseload, so it was not applied.'), 'error'); return; }
+            setTier(rec.student, tier);
+            if (addToast) addToast(rec.student + ' moved to Tier ' + tier, 'success');
+        };
 
         const renderTierSection = (tierNum) => {
 
@@ -22889,7 +23969,7 @@ Keep the language professional but accessible.`;
 
                         h('div', null, h('span', { className: 'text-xs font-bold text-slate-700' }, rec.student), h('span', { className: 'text-[11px] text-slate-600 mx-2' }, 'T' + rec.currentTier + ' → T' + rec.recommendedTier), h('span', { className: 'text-[11px] text-orange-600' }, rec.reason)),
 
-                        h('button', { "aria-label": "Apply", onClick: () => applyRec(rec), className: 'px-2 py-1 bg-orange-200 text-orange-800 rounded text-[11px] font-bold hover:bg-orange-300' }, '✅ Apply')
+                        h('button', { 'aria-label': 'Apply: ' + rec.student + ' to Tier ' + rec.recommendedTier, onClick: () => applyRec(rec), className: 'px-2 py-1 bg-orange-200 text-orange-800 rounded text-[11px] font-bold hover:bg-orange-300' }, '✅ Apply')
 
                     )) : h('p', { className: 'text-xs text-orange-600 italic' }, '✅ All placements appropriate!')
 
@@ -22908,6 +23988,45 @@ Keep the language professional but accessible.`;
 
     // ─── EffectSizeCalculator ───────────────────────────────────
 
+    // Which data the effect size autofill compares. From the graph it took the FIRST
+    // phase and the LAST, so an A-B-A withdrawal design compared baseline with the
+    // return to baseline. Now each pair of neighbouring phases with different
+    // conditions is a contrast; the default is the first baseline followed by treatment.
+    function effectSizeContrasts(phaseAnalysis) {
+        const phases = (Array.isArray(phaseAnalysis) ? phaseAnalysis : []).filter(pa => pa && Array.isArray(pa.data) && pa.data.length > 0);
+        const out = [];
+        for (let i = 0; i + 1 < phases.length; i++) {
+            const a = phases[i], b = phases[i + 1];
+            const ca = a.condition || phaseCondition(a.label), cb = b.condition || phaseCondition(b.label);
+            if (ca === cb) continue;
+            out.push({ key: `${i}>${i + 1}`, label: `${a.label} → ${b.label}`, fromCondition: ca, toCondition: cb, baseline: a.data.map(d => d.value), intervention: b.data.map(d => d.value) });
+        }
+        const first = out.find(c => c.fromCondition === 'A' && c.toCondition !== 'A') || out[0] || null;
+        return { contrasts: out, defaultKey: first ? first.key : null };
+    }
+    // Phase-tagged ABC entries: 'baseline' against 'intervention'. It counted every
+    // UNTAGGED entry as baseline (entries logged after the sandbox tagged the old ones
+    // are untagged) and every other tag, 'maintenance' and 'return_baseline' included,
+    // as intervention; a CSV round trip's 'Baseline' was intervention too. Now tags
+    // are matched ignoring case, and what is left out is counted.
+    const effectSizePhaseTag = (phase) => String(phase == null ? '' : phase).trim().toLowerCase().replace(/[\s-]+/g, '_');
+    function effectSizeFromPhaseTags(abcEntries, normalizeIntensity) {
+        const byTime = (Array.isArray(abcEntries) ? abcEntries : []).slice().sort((l, r) => (Date.parse(l && (l.occurredAt || l.timestamp)) || 0) - (Date.parse(r && (r.occurredAt || r.timestamp)) || 0));
+        const result = { baseline: [], intervention: [], baselineEntries: 0, interventionEntries: 0, untagged: 0, otherPhases: 0, unrated: 0 };
+        byTime.forEach(entry => {
+            const tag = effectSizePhaseTag(entry && entry.phase);
+            if (!tag) { result.untagged += 1; return; }
+            if (tag !== 'baseline' && tag !== 'intervention') { result.otherPhases += 1; return; }
+            result[tag + 'Entries'] += 1;
+            const value = normalizeIntensity(entry.intensity);
+            if (value == null) { result.unrated += 1; return; }
+            result[tag].push(value);
+        });
+        return result;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensEffectSize = Object.freeze({ effectSizeContrasts, effectSizeFromPhaseTags, effectSizePhaseTag });
+
     const EffectSizeCalculator = ({ sessionHistory, designPhases, graphExport, onResultsChange, setActivePanel, abcEntries, t, addToast }) => {
 
         const [baselineData, setBaselineData] = useState('');
@@ -22921,7 +24040,11 @@ Keep the language professional but accessible.`;
         // PND / NAP / Tau-U are all directional — without this the tool
         // assumed "higher = better" and reported successful reductions as
         // "Ineffective".
-        const [goalDirection, setGoalDirection] = useState('decrease');
+        const [goalDirection, setGoalDirection] = useState(graphExport && graphExport.goalDirection === 'increase' ? 'increase' : 'decrease');
+        const graphContrasts = useMemo(() => effectSizeContrasts(graphExport && graphExport.phaseAnalysis), [graphExport]);
+        const [contrastKey, setContrastKey] = useState(null);
+        const contrast = graphContrasts.contrasts.find(c => c.key === contrastKey) || graphContrasts.contrasts.find(c => c.key === graphContrasts.defaultKey) || null;
+        const phaseTagged = useMemo(() => effectSizeFromPhaseTags(abcEntries, getBehaviorLensWorkspaceRuntime().normalizeIntensity), [abcEntries]);
 
         // Split on separators, then drop empty tokens BEFORE Number() —
         // Number('') is 0, so a trailing comma would otherwise inject a
@@ -22930,44 +24053,39 @@ Keep the language professional but accessible.`;
 
         // Auto-fill from graph phase data
         const handleAutoFill = () => {
-            if (!graphExport?.phaseAnalysis || graphExport.phaseAnalysis.length < 2) {
+            if (!contrast) {
                 if (addToast) addToast(tt('behavior_lens.toast.need_at_least_2_phases_in_the_graph_baseline_inter', 'Need at least 2 phases in the Graph (baseline + intervention)'), 'warning');
                 return;
             }
-            const baseline = graphExport.phaseAnalysis[0];
-            const intervention = graphExport.phaseAnalysis[graphExport.phaseAnalysis.length - 1];
-            const baseVals = baseline.data.map(d => d.value);
-            const intVals = intervention.data.map(d => d.value);
+            const baseVals = contrast.baseline;
+            const intVals = contrast.intervention;
             if (baseVals.length < 2 || intVals.length < 2) {
                 if (addToast) addToast(tt('behavior_lens.toast.each_phase_needs_at_least_2_data_points', 'Each phase needs at least 2 data points'), 'warning');
                 return;
             }
             setBaselineData(baseVals.join(', '));
             setInterventionData(intVals.join(', '));
-            if (addToast) addToast(t('behavior_lens.toast.autofilled_n_baseline_n_intervention_points_from_n') || `Auto-filled: ${baseVals.length} baseline + ${intVals.length} intervention points from "${graphExport.behaviorName}"`, 'success');
+            if (graphExport.goalDirection === 'increase' || graphExport.goalDirection === 'decrease') setGoalDirection(graphExport.goalDirection);
+            if (addToast) addToast(tt('behavior_lens.effectsize.filled_from_graph', 'Auto-filled {label}: {a} and {b} points from "{behavior}".', { label: contrast.label, a: baseVals.length, b: intVals.length, behavior: graphExport.behaviorName }), 'success');
         };
 
         // Auto-fill from phase-tagged ABC entries (e.g., from Practice Sandbox)
-        const hasPhaseData = abcEntries && abcEntries.some(e => e.phase && e.phase !== 'baseline');
+        const hasPhaseData = phaseTagged.interventionEntries > 0;
         const handleAutoFillFromPhases = () => {
-            if (!abcEntries || abcEntries.length === 0) return;
-            const baseEntries = abcEntries.filter(e => e.phase === 'baseline' || !e.phase);
-            const intEntries = abcEntries.filter(e => e.phase && e.phase !== 'baseline');
-            if (baseEntries.length < 2 || intEntries.length < 2) {
+            if (phaseTagged.baselineEntries < 2 || phaseTagged.interventionEntries < 2) {
                 if (addToast) addToast(tt('behavior_lens.toast.need_2_baseline_2_intervention_entries_with_phase_tags', 'Need at least 2 baseline + 2 intervention entries with phase tags'), 'warning');
                 return;
             }
-            const runtime = getBehaviorLensWorkspaceRuntime();
-            const byOccurrence = (left, right) => (Date.parse(left.occurredAt || left.timestamp) || 0) - (Date.parse(right.occurredAt || right.timestamp) || 0);
-            const baseVals = baseEntries.slice().sort(byOccurrence).map(entry => runtime.normalizeIntensity(entry.intensity)).filter(value => value != null);
-            const intVals = intEntries.slice().sort(byOccurrence).map(entry => runtime.normalizeIntensity(entry.intensity)).filter(value => value != null);
+            const baseVals = phaseTagged.baseline;
+            const intVals = phaseTagged.intervention;
             if (baseVals.length < 2 || intVals.length < 2) {
                 if (addToast) addToast('Each phase needs at least 2 rated entries. Missing intensity ratings are excluded.', 'warning');
                 return;
             }
             setBaselineData(baseVals.join(', '));
             setInterventionData(intVals.join(', '));
-            if (addToast) addToast(t('behavior_lens.toast.autofilled_from_phase_tagged_entries') || `Auto-filled: ${baseVals.length} baseline + ${intVals.length} intervention intensity values from ABC data`, 'success');
+            const left = [phaseTagged.untagged ? tt('behavior_lens.effectsize.left_untagged', '{n} untagged', { n: phaseTagged.untagged }) : '', phaseTagged.otherPhases ? tt('behavior_lens.effectsize.left_other', '{n} in other phases', { n: phaseTagged.otherPhases }) : '', phaseTagged.unrated ? tt('behavior_lens.effectsize.left_unrated', '{n} unrated', { n: phaseTagged.unrated }) : ''].filter(Boolean).join(', ');
+            if (addToast) addToast(tt('behavior_lens.effectsize.filled_from_tags', 'Auto-filled {a} baseline and {b} intervention intensity ratings.', { a: baseVals.length, b: intVals.length }) + (left ? ' ' + tt('behavior_lens.effectsize.left_out', 'Left out: {list}.', { list: left }) : ''), 'success');
         };
 
         const calculate = () => {
@@ -23080,14 +24198,17 @@ Keep the language professional but accessible.`;
                 ),
 
                 // Auto-fill from graph button
-                graphExport && graphExport.phaseAnalysis && graphExport.phaseAnalysis.length >= 2 && h('button', { onClick: handleAutoFill,
+                contrast && graphContrasts.contrasts.length > 1 && h('label', { className: 'block text-[11px] font-bold text-slate-600 mb-1' }, tt('behavior_lens.effectsize.compare', 'Compare'),
+                    h('select', { value: contrast.key, onChange: e => setContrastKey(e.target.value), 'aria-label': tt('behavior_lens.effectsize.compare_phases', 'Phases to compare'), className: 'ms-2 text-xs border border-slate-400 rounded-lg px-2 py-1 bg-white' },
+                        graphContrasts.contrasts.map(c => h('option', { key: c.key, value: c.key }, c.label)))),
+                contrast && h('button', { onClick: handleAutoFill, 'data-es-contrast': contrast.key,
                     className: 'w-full py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-xl text-xs font-bold hover:from-emerald-800 hover:to-teal-800 shadow-md transition-all mb-2'
-                }, `📊 Auto-fill from Graph ("${graphExport.behaviorName}" — ${graphExport.phaseAnalysis.length} phases)`),
+                }, `📊 Auto-fill from Graph: "${graphExport.behaviorName}", ${contrast.label}`),
 
                 // Auto-fill from phase-tagged ABC entries
                 hasPhaseData && h('button', { onClick: handleAutoFillFromPhases,
                     className: 'w-full py-2.5 bg-gradient-to-r from-violet-700 to-purple-700 text-white rounded-xl text-xs font-bold hover:from-violet-800 hover:to-purple-800 shadow-md transition-all mb-2'
-                }, `🏷️ Auto-fill from Phase-Tagged ABC Data (${abcEntries.filter(e => e.phase === 'baseline' || !e.phase).length}A + ${abcEntries.filter(e => e.phase && e.phase !== 'baseline').length}B)`),
+                }, `🏷️ Auto-fill from Phase-Tagged ABC Data (${phaseTagged.baselineEntries} baseline, ${phaseTagged.interventionEntries} intervention)`),
 
                 !graphExport && !hasPhaseData && setActivePanel && h('button', { "aria-label": "Open ABA Graph to enable auto-fill",
                     onClick: () => setActivePanel('abagraph'),
@@ -23107,7 +24228,7 @@ Keep the language professional but accessible.`;
                 // Direction reminder + small-N caveat
                 h('div', { className: 'text-[11px] text-slate-600 flex flex-wrap items-center gap-x-2' },
                     h('span', { className: 'font-bold' }, results.goalDirection === 'decrease' ? '📉 Goal: decrease' : '📈 Goal: increase'),
-                    h('span', null, '— higher scores below = more improvement in that direction.')
+                    h('span', null, 'Higher scores below mean more improvement in that direction.')
                 ),
 
                 results.smallN && h('div', { className: 'bg-orange-50 border border-orange-200 rounded-xl p-3' },
@@ -23169,7 +24290,7 @@ Keep the language professional but accessible.`;
 
             try {
 
-                const recentAbc = abcEntries.slice(-10);
+                const recentAbc = abcEntriesNewestFirst(abcEntries).slice(0, 10);
 
                 const abcStr = recentAbc.map((e, i) => `${i + 1}. A:${e.antecedent || '?'} B:${e.behavior || '?'} C:${e.consequence || '?'} Func:${e.function || '?'} Int:${e.intensity || '?'}/5`).join('\n');
 
@@ -23275,15 +24396,52 @@ Keep the language professional but accessible.`;
 
 
     // ─── ComparisonDashboard ──────────────────────────────────────
+    // Cross-student comparison data. The trend line took `sessions.slice(-10)` of a
+    // NEWEST-first list, so it drew older sessions on the right (a falling count drew as
+    // rising), and read `abcCount || count`, fields a Session Data Tracker session does
+    // not have, so those students drew a flat zero. The behavior chart knew only each
+    // student's top 5 behaviors: a behavior that was one student's 6th showed as 0 for
+    // them. Now the trend is in date order and counts responses, and the chart uses each
+    // student's full counts.
+    const COMPARE_NON_COUNT = { duration: 1, latency: 1, interval: 1, percentage: 1 };
+    function comparisonSessionValue(sess) {
+        if (!sess) return null;
+        if (Array.isArray(sess.targets) && sess.targets.length) {
+            const counted = sess.targets.filter(tg => tg && !COMPARE_NON_COUNT[tg.type] && Number.isFinite(Number(tg.count)));
+            return counted.length ? counted.reduce((sum, tg) => sum + Number(tg.count), 0) : null;
+        }
+        if (COMPARE_NON_COUNT[String(sess.measurementType || '').toLowerCase()]) return null;
+        const v = sess.abcCount != null ? sess.abcCount : sess.count;
+        return Number.isFinite(Number(v)) && v !== null && v !== '' ? Number(v) : null;
+    }
+    function comparisonSparkValues(sessions) {
+        return (Array.isArray(sessions) ? sessions : [])
+            .map((sess, index) => ({ at: Date.parse(sess && (sess.date || sess.occurredAt || sess.timestamp)), index, v: comparisonSessionValue(sess) }))
+            .filter(x => x.v != null)
+            .sort((a, b) => ((Number.isFinite(a.at) ? a.at : 0) - (Number.isFinite(b.at) ? b.at : 0)) || (b.index - a.index))
+            .slice(-10).map(x => x.v);
+    }
+    function comparisonBehaviorMatrix(workspaces) {
+        const matrix = {}, totals = {};
+        (workspaces || []).forEach(w => {
+            matrix[w.student] = {};
+            (w.behaviorCounts || w.topBehaviors || []).forEach(([b, c]) => { matrix[w.student][b] = c; totals[b] = (totals[b] || 0) + c; });
+        });
+        const behaviors = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b)).slice(0, 8);
+        return { matrix, behaviors, partial: (workspaces || []).some(w => !w.behaviorCounts) };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensComparison = Object.freeze({ comparisonSessionValue, comparisonSparkValues, comparisonBehaviorMatrix });
+
     const ComparisonDashboard = ({ comparisonWorkspaces, setComparisonWorkspaces, compareFileInputRef, handleLoadComparisonFiles, callGemini, t, addToast, switchToStudent }) => {
         // Sparkline: renders a tiny inline SVG from session counts
         const Sparkline = ({ sessions }) => {
-            if (!sessions || sessions.length < 2) return h('span', { className: 'text-[11px] text-slate-600' }, '—');
-            const vals = sessions.slice(-10).map(s => (s.abcCount || s.count || 0));
+            const vals = comparisonSparkValues(sessions);
+            if (vals.length < 2) return h('span', { className: 'text-[11px] text-slate-600' }, '—');
             const max = Math.max(...vals, 1);
             const w = 60, ht = 18, pad = 1;
             const points = vals.map((v, i) => `${pad + i * ((w - 2 * pad) / (vals.length - 1))},${ht - pad - (v / max) * (ht - 2 * pad)}`).join(' ');
-            return h('svg', { role: 'img', 'aria-label': `Session count trend: ${vals.join(', ')}.`, width: w, height: ht, viewBox: `0 0 ${w} ${ht}`, className: 'inline-block' },
+            return h('svg', { role: 'img', 'data-spark': vals.join(','), 'aria-label': `Responses per session, oldest to newest: ${vals.join(', ')}.`, width: w, height: ht, viewBox: `0 0 ${w} ${ht}`, className: 'inline-block' },
                 h('polyline', { points, fill: 'none', stroke: '#8b5cf6', strokeWidth: 1.5, strokeLinejoin: 'round', strokeLinecap: 'round' })
             );
         };
@@ -23302,21 +24460,9 @@ Keep the language professional but accessible.`;
         }, [comparisonWorkspaces, sortKey, sortDir]);
 
         // Gather all unique behaviors across all students
-        const allBehaviors = useMemo(() => {
-            const set = new Set();
-            comparisonWorkspaces.forEach(w => (w.topBehaviors || []).forEach(([b]) => set.add(b)));
-            return Array.from(set).slice(0, 8);
-        }, [comparisonWorkspaces]);
-
-        // Build behavior matrix: student → behavior → count
-        const behaviorMatrix = useMemo(() => {
-            const m = {};
-            comparisonWorkspaces.forEach(w => {
-                m[w.student] = {};
-                (w.topBehaviors || []).forEach(([b, c]) => { m[w.student][b] = c; });
-            });
-            return m;
-        }, [comparisonWorkspaces]);
+        const behaviorTable = useMemo(() => comparisonBehaviorMatrix(comparisonWorkspaces), [comparisonWorkspaces]);
+        const allBehaviors = behaviorTable.behaviors;
+        const behaviorMatrix = behaviorTable.matrix;
 
         const maxBehaviorCount = useMemo(() => {
             let max = 1;
@@ -23334,7 +24480,7 @@ Keep the language professional but accessible.`;
             setCompareLoading(true);
             try {
                 const data = comparisonWorkspaces.map(w =>
-                    `${w.student}: ${w.abcCount} ABC entries, avg intensity=${w.avgIntensity}, top behaviors=[${(w.topBehaviors || []).map(([b, c]) => `${b}(${c})`).join(', ')}], sessions=${w.sessionCount}`
+                    `${w.student}: ${w.abcCount} ABC entries, ${w.incidentRatePerObservedHour == null ? 'no per-hour rate (no timed observation)' : w.incidentRatePerObservedHour + ' incidents per observed hour'}, avg intensity=${w.avgIntensity}, top behaviors=[${(w.topBehaviors || []).map(([b, c]) => `${b}(${c})`).join(', ')}], sessions=${w.sessionCount}`
                 ).join('\n');
                 const prompt = `You are a school BCBA comparing multiple students in your caseload. Analyze the following student data and provide insights:\n\n${data}\n\nProvide: 1) Which students need most urgent attention and why, 2) Common patterns across students, 3) Students who might benefit from group interventions, 4) Data collection recommendations. Keep response concise (150-200 words).`;
                 const result = await callGemini(prompt);
@@ -23405,18 +24551,19 @@ Keep the language professional but accessible.`;
                     h('div', { className: 'w-16 text-center' }, h(Sparkline, { sessions: w.sessionHistory })),
                     h('div', { className: 'w-32 text-center text-[11px] text-slate-600 truncate' }, (w.topBehaviors || [])[0]?.[0] || '—'),
                     h('div', { className: 'w-24 text-center text-[11px] text-slate-600' }, w.lastEntry ? new Date(w.lastEntry).toLocaleDateString() : '—'),
-                    switchToStudent && h('button', { "aria-label": "Switch",
+                    switchToStudent && h('button', { 'aria-label': 'Switch workspace to ' + w.student,
                         onClick: () => switchToStudent(w.student),
                         className: 'px-2 py-1 bg-violet-100 text-violet-700 rounded-lg text-[11px] font-bold hover:bg-violet-200 transition-all',
                         title: (tt('behavior_lens.raw.switch_workspace_to_this_student', 'Switch workspace to this student'))
                     }, '⇄ Switch'),
-                    h('button', { onClick: () => removeStudent(w.student), title: 'Close', 'aria-label': 'Close', className: 'w-8 text-center text-red-600 hover:text-red-500 text-sm' }, '✕')
+                    h('button', { onClick: () => removeStudent(w.student), title: 'Remove from comparison', 'aria-label': 'Remove ' + w.student + ' from comparison', className: 'w-8 text-center text-red-600 hover:text-red-500 text-sm' }, '✕')
                 ))
             ),
 
             // Behavior comparison chart (CSS bars)
             comparisonWorkspaces.length >= 2 && allBehaviors.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
-                h('h4', { className: 'text-xs font-black text-slate-700 uppercase tracking-wider mb-3' }, '📊 Behavior Frequency Comparison'),
+                h('h4', { className: 'text-xs font-black text-slate-700 uppercase tracking-wider mb-1' }, '📊 Behavior Frequency Comparison'),
+                h('p', { 'data-compare-caveat': 'true', className: 'text-[11px] text-slate-600 mb-3' }, tt('behavior_lens.compare.counts_caveat', 'Logged ABC entries per behavior. Students observed for different amounts of time are not directly comparable by count.') + (behaviorTable.partial ? ' ' + tt('behavior_lens.compare.partial', 'Some files were saved before full counts were kept, so only their top 5 behaviors are known.') : '')),
                 h('div', { className: 'space-y-3' },
                     allBehaviors.map(behavior =>
                         h('div', { key: behavior, className: 'space-y-1' },
@@ -23431,7 +24578,7 @@ Keep the language professional but accessible.`;
                                         h('div', { className: 'flex-1 h-3 bg-slate-100 rounded-full overflow-hidden' },
                                             h('div', { className: 'h-full rounded-full transition-all', style: { width: pct + '%', backgroundColor: colors[i % colors.length] } })
                                         ),
-                                        h('span', { className: 'text-[11px] font-bold text-slate-600 w-6 text-end' }, count || '')
+                                        h('span', { 'data-compare-count': w.student + '|' + behavior, className: 'text-[11px] font-bold text-slate-600 w-6 text-end' }, String(count))
                                     );
                                 })
                             )
@@ -23568,7 +24715,7 @@ Keep the language professional but accessible.`;
             ),
             // Mode toggle
             h('div', { className: 'flex gap-2' },
-                ['abc', 'students'].map(m => h('button', { "aria-label": "Toggle import mode", key: m, onClick: () => { setImportMode(m); setParsedRows([]); setErrors([]); setImported(false); },
+                ['abc', 'students'].map(m => h('button', { key: m, onClick: () => { setImportMode(m); setParsedRows([]); setErrors([]); setImported(false); },
                     className: `px-4 py-2 rounded-xl text-xs font-bold transition-all ${importMode === m ? 'bg-cyan-700 text-white shadow-md' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'}`
                 }, m === 'abc' ? '📋 ABC Data' : '👤 Student Profiles'))
             ),
@@ -23618,6 +24765,28 @@ Keep the language professional but accessible.`;
     };
 
 
+    // Aim line for the progress monitor. It started at the FIRST day's count, so one
+    // unusual first day moved the whole line, and a goal date before the data drew it
+    // backwards. Now it starts at the median of baseline (days before the first
+    // intervention phase, else the first 3 days), on the last baseline day.
+    function progressAimLine(dailyData, phases, goal, goalDate) {
+        const days = Array.isArray(dailyData) ? dailyData : [];
+        const goalNum = Number(goal);
+        if (!days.length || goal === '' || goal == null || !Number.isFinite(goalNum) || goalNum < 0) return null;
+        const starts = (phases || []).slice(1).map(p => p && p.startDate).filter(Boolean).sort();
+        const fromPhase = !!starts[0] && starts[0] > days[0].date;
+        const baseline = fromPhase ? days.filter(d => d.date < starts[0]) : days.slice(0, Math.min(3, days.length));
+        const counts = baseline.map(d => Number(d.count) || 0).sort((a, b) => a - b);
+        const mid = Math.floor(counts.length / 2);
+        const level = counts.length % 2 ? counts[mid] : (counts[mid - 1] + counts[mid]) / 2;
+        const startDate = baseline[baseline.length - 1].date;
+        const endDate = goalDate || days[days.length - 1].date;
+        if (endDate <= startDate) return { problem: goalDate ? 'goal-before-baseline' : 'no-span', startDate, endDate, goal: goalNum };
+        return { startDate, startLevel: level, endDate, goal: goalNum, baselineDays: baseline.length, fromPhase };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensProgressMonitor = Object.freeze({ progressAimLine });
+
     // ─── ProgressMonitorDashboard ──────────────────────────────────────
     const ProgressMonitorDashboard = ({ abcEntries, observationSessions, sessionHistory, t, addToast }) => {
         const [targetBehavior, setTargetBehavior] = useState('');
@@ -23642,6 +24811,8 @@ Keep the language professional but accessible.`;
         const hasGoal = goalCount !== '' && goalCount != null && Number.isFinite(Number(goalCount)) && Number(goalCount) >= 0;
         const dayNumber = value => { const parts = String(value).split('-').map(Number); return Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000; };
         const validGoalDate = goalDate && getBehaviorLensWorkspaceRuntime().parseLocalDateBoundary(goalDate, false) ? goalDate : null;
+        const aim = hasGoal ? progressAimLine(dailyData, phases, goalCount, validGoalDate) : null;
+        const aimDrawn = !!(aim && !aim.problem);
 
         // Linear regression for trend line.
         // Minimum 5 datapoints — a spurious "increasing trend" from a single
@@ -23658,7 +24829,7 @@ Keep the language professional but accessible.`;
             const sumX2 = xs.reduce((a, x) => a + x * x, 0);
             const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
             const intercept = (sumY - slope * sumX) / n;
-            return { slope, intercept, startY: intercept, endY: slope * xs[n - 1] + intercept };
+            return { slope, intercept, startY: intercept, endY: slope * xs[n - 1] + intercept, direction: trendDirection(slope, xs[n - 1], ys) };
         }, [dailyData]);
 
         // SVG chart dimensions
@@ -23693,15 +24864,16 @@ Keep the language professional but accessible.`;
                 ...[0, Math.floor(dailyData.length / 2), dailyData.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => h('text', { key: 'xl' + i, x: xScale(i), y: H - 10, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, dailyData[i]?.date?.slice(5) || '')),
                 // Phase change lines
                 ...phases.filter(p => p.startDate).map((p, i) => {
-                    const idx = dailyData.findIndex(d => d.date >= p.startDate);
-                    if (idx < 0) return null;
-                    return h('g', { key: 'ph' + i },
-                        h('line', { x1: xScale(idx), x2: xScale(idx), y1: PAD, y2: H - PAD, stroke: p.color || '#6366f1', strokeWidth: 2, strokeDasharray: '6,3' }),
-                        h('text', { x: xScale(idx) + 4, y: PAD + 12, fill: p.color || '#6366f1', fontSize: 10, fontWeight: 'bold' }, p.label)
+                    const day = dayNumber(p.startDate);
+                    if (!Number.isFinite(day) || day < chartStart || day > chartEnd) return null;
+                    const x = dateX(day);
+                    return h('g', { key: 'ph' + i, 'data-phase-start': p.startDate },
+                        h('line', { x1: x, x2: x, y1: PAD, y2: H - PAD, stroke: p.color || '#6366f1', strokeWidth: 2, strokeDasharray: '6,3' }),
+                        h('text', { x: x + 4, y: PAD + 12, fill: p.color || '#6366f1', fontSize: 10, fontWeight: 'bold' }, p.label)
                     );
                 }).filter(Boolean),
                 // Aim line (dashed)
-                hasGoal && dailyData.length > 0 && h('line', { x1: xScale(0), y1: yScale(dailyData[0].count), x2: dateX(goalDay), y2: yScale(Number(goalCount)), stroke: '#22c55e', strokeWidth: 2, strokeDasharray: '8,4' }),
+                aimDrawn && h('line', { 'data-aim': `${aim.startDate}:${aim.startLevel}>${aim.endDate}:${aim.goal}`, x1: dateX(dayNumber(aim.startDate)), y1: yScale(aim.startLevel), x2: dateX(dayNumber(aim.endDate)), y2: yScale(aim.goal), stroke: '#22c55e', strokeWidth: 2, strokeDasharray: '8,4' }),
                 hasGoal && h('text', { x: Math.min(W - 75, dateX(goalDay) + 4), y: yScale(Number(goalCount)) - 8, fill: '#22c55e', fontSize: 10, fontWeight: 'bold' }, validGoalDate ? 'Goal ' + validGoalDate.slice(5) : 'Goal'),
                 // Trend line
                 trendLine && h('line', { x1: xScale(0), y1: yScale(trendLine.startY), x2: xScale(dailyData.length - 1), y2: yScale(trendLine.endY), stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '4,4' }),
@@ -23716,7 +24888,7 @@ Keep the language professional but accessible.`;
         };
 
         // Trend description
-        const trendDesc = trendLine ? (trendLine.slope > 0.1 ? '📈 Increasing trend' : trendLine.slope < -0.1 ? '📉 Decreasing trend' : '➡️ Stable') : '';
+        const trendDesc = trendLine ? ({ increasing: '📈 Increasing trend', decreasing: '📉 Decreasing trend', stable: '➡️ Stable' })[trendLine.direction] || '' : '';
 
         return h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-200' },
@@ -23744,7 +24916,7 @@ Keep the language professional but accessible.`;
                 ),
                 // Phase editor toggle
                 h('div', { className: 'flex items-center gap-2' },
-                    h('button', { 'aria-expanded': String(showPhaseEditor), "aria-label": "Toggle show phase editor", onClick: () => setShowPhaseEditor(!showPhaseEditor), className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-all' }, showPhaseEditor ? '▴ Hide Phases' : '📐 Edit Phase Lines'),
+                    h('button', { 'aria-expanded': String(showPhaseEditor), onClick: () => setShowPhaseEditor(!showPhaseEditor), className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-all' }, showPhaseEditor ? '▴ Hide Phases' : '📐 Edit Phase Lines'),
                     trendDesc && h('span', { className: 'text-xs font-bold text-slate-600 ms-auto' }, trendDesc)
                 ),
                 showPhaseEditor && h('div', { className: 'space-y-2 bg-slate-50 rounded-lg p-3' },
@@ -23760,16 +24932,18 @@ Keep the language professional but accessible.`;
             // Chart
             renderChart(),
             h('p', { className: 'text-xs text-slate-600' }, 'Counts reflect logged ABC entries. Days without entries are not assumed to be observed zero-event days.'),
+            aimDrawn && h('p', { 'data-aim-note': 'true', className: 'text-xs text-slate-600' }, tt('behavior_lens.progress.aim_from', 'Aim line starts at the baseline median, {level} a day over {n} days, on {date}.', { level: Math.round(aim.startLevel * 10) / 10, n: aim.baselineDays, date: aim.startDate })),
+            aim && aim.problem === 'goal-before-baseline' && h('p', { role: 'status', 'data-aim-note': 'problem', className: 'text-xs text-amber-800' }, tt('behavior_lens.progress.goal_before_baseline', 'No aim line: the goal date {goal} is not after the last baseline day, {date}.', { goal: aim.endDate, date: aim.startDate })),
             // Legend
             h('div', { className: 'flex flex-wrap gap-4 text-[11px] text-slate-600 justify-center' },
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-indigo-500 inline-block' }), ' Data'),
-                hasGoal && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-green-500 inline-block', style: { borderTop: '2px dashed #22c55e' } }), ' Aim Line'),
+                aimDrawn && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-green-500 inline-block', style: { borderTop: '2px dashed #22c55e' } }), ' Aim Line'),
                 trendLine && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-amber-500 inline-block', style: { borderTop: '2px dashed #f59e0b' } }), ' Trend'),
                 ...phases.map((p, i) => h('span', { key: i, className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 inline-block', style: { borderTop: `2px dashed ${p.color}` } }), ` ${p.label}`))
             ),
             // Summary stats
             dailyData.length > 0 && h('div', { className: 'grid grid-cols-4 gap-3' },
-                [['📋', 'Days', dailyData.length], ['📊', 'Total', dailyData.reduce((s, d) => s + d.count, 0)], ['📈', 'Avg/Day', (dailyData.reduce((s, d) => s + d.count, 0) / dailyData.length).toFixed(1)], ['🔺', 'Peak', Math.max(...dailyData.map(d => d.count))]].map(([icon, label, val]) =>
+                [['📋', 'Days with entries', dailyData.length], ['📊', 'Total', dailyData.reduce((s, d) => s + d.count, 0)], ['📈', 'Avg on days with entries', (dailyData.reduce((s, d) => s + d.count, 0) / dailyData.length).toFixed(1)], ['🔺', 'Peak', Math.max(...dailyData.map(d => d.count))]].map(([icon, label, val]) =>
                     h('div', { key: label, className: 'bg-white rounded-xl border border-slate-400 p-3 text-center' },
                         h('div', { className: 'text-lg' }, icon),
                         h('div', { className: 'text-lg font-black text-slate-800' }, val),
@@ -23892,8 +25066,7 @@ Keep the language professional but accessible.`;
             ),
             // Record controls
             supported && h('div', { className: 'flex items-center gap-3' },
-                h('button', { "aria-label": "Toggle transcript",
-                    onClick: isRecording ? stopRecording : startRecording,
+                h('button', { onClick: isRecording ? stopRecording : startRecording,
                     className: `flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md ${isRecording ? 'bg-red-700 text-white hover:bg-red-600 animate-pulse motion-reduce:animate-none' : 'bg-rose-600 text-white hover:bg-rose-700'}`
                 }, isRecording ? '⏹️ Stop Recording' : '🎙️ Start Recording'),
                 isRecording && h('div', { className: 'flex items-center gap-2' },
@@ -23991,8 +25164,7 @@ Keep the language professional but accessible.`;
                 // ABC data, in clinical context, is worse than zero data.
                 if (encoded.length > 5000) {
                     if (addToast) addToast(
-                        t('behavior_lens.toast.share_code_too_large')
-                            || `Snapshot too large for share code (${encoded.length.toLocaleString()} chars, limit 5,000). Use 💾 Download Snapshot instead.`,
+                        tt('behavior_lens.toast.share_code_too_large_v2', 'Snapshot too large for share code ({v1} chars, limit 5,000). Use 💾 Download Snapshot instead.', { v1: encoded.length.toLocaleString() }),
                         'warning'
                     );
                     return;
@@ -24067,7 +25239,7 @@ Keep the language professional but accessible.`;
                 h('h4', { className: 'text-xs font-bold text-slate-700 uppercase tracking-wider' }, '📤 Share Workspace'),
                 // Role selector
                 h('div', { className: 'grid grid-cols-3 gap-2' },
-                    roles.map(r => h('button', { "aria-label": "Toggle share role", key: r.key, onClick: () => setShareRole(r.key),
+                    roles.map(r => h('button', { key: r.key, onClick: () => setShareRole(r.key),
                         className: `p-3 rounded-xl border-2 text-start transition-all ${shareRole === r.key ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-600'}`
                     },
                         h('div', { className: 'text-sm font-bold text-slate-800' }, r.label),
@@ -24186,7 +25358,7 @@ Keep the language professional but accessible.`;
                 const sumX2 = dailyData.reduce((sum, _, index) => sum + index * index, 0);
                 const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
                 const intercept = (sumY - slope * sumX) / n;
-                trend = { slope, intercept, startY: intercept, endY: slope * (n - 1) + intercept };
+                trend = { slope, intercept, startY: intercept, endY: slope * (n - 1) + intercept, direction: trendDirection(slope, n - 1, dailyData.map(day => day.count)) };
             }
             const freqSessions = filtered.sessions.filter(session => session.method === 'frequency');
             const intervalSessions = filtered.sessions.filter(session => session.method === 'interval');
@@ -24215,8 +25387,8 @@ Student: ${selectedStudent || 'Student'}
 Total ABC entries: ${analytics.totalEntries}
 Top behaviors: ${analytics.topBehaviors.map(([b, c]) => `${b} (${c}x)`).join(', ')}
 Average intensity: ${analytics.avgIntensity}${analytics.ratedIntensityCount ? ` / 5 from ${analytics.ratedIntensityCount} rated entries; ${analytics.missingIntensityCount} missing` : ''}
-Exposure-adjusted rate: ${analytics.rate.denominatorAvailable ? analytics.rate.perObservedHour.toFixed(2) + ' incidents per observed hour across ' + analytics.rate.exposure.hours.toFixed(2) + ' observed hours' : 'unavailable; no valid observation duration'}
-Trend: ${analytics.trend ? (analytics.trend.slope > 0.1 ? 'increasing' : analytics.trend.slope < -0.1 ? 'decreasing' : 'stable') : 'insufficient data'}
+Incidents during observed time: ${observedRateText(analytics.rate)}
+Trend: ${analytics.trend ? analytics.trend.direction : 'insufficient data'}
 ${canIncludeSavedAnalysis ? `Hypothesized function: ${aiAnalysis.hypothesizedFunction} (AI estimate: ${aiConfidenceBucket(aiAnalysis.confidence).label} confidence${aiAnalysisStale ? '; stale relative to current data' : ''})` : ''}
 ${studentProfile?.goals ? `Current goals: ${studentProfile.goals}` : ''}
 
@@ -24269,7 +25441,7 @@ Format as a numbered list. Be concise but specific.`;
             svg += `<circle cx="${PAD + 10}" cy="${PAD - 12}" r="4" fill="#6366f1"/><text x="${PAD + 18}" y="${PAD - 8}" fill="#64748b" font-size="9">${esc(tt('bl.daily_count', 'Daily Count'))}</text>`;
             if (analytics.trend) {
                 svg += `<line x1="${PAD + 110}" y1="${PAD - 12}" x2="${PAD + 130}" y2="${PAD - 12}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2"/>`;
-                const dir = analytics.trend.slope > 0.1 ? '↑ Increasing' : analytics.trend.slope < -0.1 ? '↓ Decreasing' : '→ Stable';
+                const dir = ({ increasing: '↑ Increasing', decreasing: '↓ Decreasing', stable: '→ Stable' })[analytics.trend.direction];
                 svg += `<text x="${PAD + 134}" y="${PAD - 8}" fill="#64748b" font-size="9">Trend (${dir})</text>`;
             }
             svg += '</svg>';
@@ -24277,11 +25449,13 @@ Format as a numbered list. Be concise but specific.`;
         };
 
         // ─── Build frequency table rows ─────────────────────────────────
-        const buildFreqTable = (items, label) => {
+        // Percent of ALL entries in the report period. Dividing by the rows shown (the
+        // top 5 or 8) inflated every share and always summed to 100%.
+        const buildFreqTable = (items, label, denominator) => {
             if (items.length === 0) return '';
             let html = `<table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;">`;
             html += `<tr style="background:#f1f5f9;"><th style="text-align:left;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${esc(label)}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${esc(tt('bl.count', 'Count'))}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">%</th></tr>`;
-            const total = items.reduce((s, [, c]) => s + c, 0);
+            const total = denominator > 0 ? denominator : items.reduce((s, [, c]) => s + c, 0);
             items.forEach(([name, count]) => {
                 const pct = ((count / total) * 100).toFixed(1);
                 const barW = Math.round((count / items[0][1]) * 100);
@@ -24300,7 +25474,7 @@ Format as a numbered list. Be concise but specific.`;
             const student = selectedStudent || 'Student';
             const audienceLabel = audience === 'parent' ? 'Parent Progress Report' : audience === 'iep' ? 'IEP Team Progress Report' : 'Clinical Behavior Analysis Report';
             const rangeLabel = scopeLabel;
-            const trendLabel = analytics.trend ? (analytics.trend.slope > 0.1 ? 'Increasing' : analytics.trend.slope < -0.1 ? 'Decreasing' : 'Stable') : 'Insufficient data';
+            const trendLabel = analytics.trend ? TREND_WORDS[analytics.trend.direction] : 'Insufficient data';
             // Filename slug must survive an inline JS string context (line ~22790 onclick handler)
             // AND an HTML attribute context. Strip everything but [A-Za-z0-9_-] so it can't escape either.
             const safeFilenameSlug = String(student || 'student').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 80) || 'student';
@@ -24399,19 +25573,19 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 </div>`;
                 if (analytics.topBehaviors.length > 0) {
                     html += `<h3>${esc(tt('bl.target_behaviors_frequency', 'Target Behaviors by Frequency'))}</h3>`;
-                    html += buildFreqTable(analytics.topBehaviors, 'Behavior');
+                    html += buildFreqTable(analytics.topBehaviors, 'Behavior', analytics.totalEntries);
                 }
                 if (audience !== 'parent' && analytics.topAntecedents.length > 0) {
                     html += `<h3>${esc(tt('bl.common_antecedents', 'Common Antecedents'))}</h3>`;
-                    html += buildFreqTable(analytics.topAntecedents, 'Antecedent');
+                    html += buildFreqTable(analytics.topAntecedents, 'Antecedent', analytics.totalEntries);
                 }
                 if (audience !== 'parent' && analytics.topConsequences.length > 0) {
                     html += `<h3>${esc(tt('bl.common_consequences', 'Common Consequences'))}</h3>`;
-                    html += buildFreqTable(analytics.topConsequences, 'Consequence');
+                    html += buildFreqTable(analytics.topConsequences, 'Consequence', analytics.totalEntries);
                 }
                 if (analytics.topSettings.length > 0) {
                     html += `<h3>${esc(tt('bl.settings_label', 'Settings'))}</h3>`;
-                    html += buildFreqTable(analytics.topSettings, 'Setting');
+                    html += buildFreqTable(analytics.topSettings, 'Setting', analytics.totalEntries);
                 }
             }
 
@@ -24420,7 +25594,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 html += `<h2>📈 Context Notes Over Time</h2><p>Counts reflect recorded notes, not a rate of behavior. Dates without notes are not treated as zero.</p>`;
                 html += buildChartSVG();
                 if (analytics.trend) {
-                    const dir = analytics.trend.slope > 0.1 ? 'an increasing' : analytics.trend.slope < -0.1 ? 'a decreasing' : 'a stable';
+                    const dir = ({ increasing: 'an increasing', decreasing: 'a decreasing', stable: 'a stable' })[analytics.trend.direction];
                     html += `<p style="margin-top:8px;font-style:italic;">The data shows ${dir} trend over the reporting period (slope: ${analytics.trend.slope.toFixed(2)} notes per recorded date).</p>`;
                 }
             }
@@ -24613,7 +25787,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
                 h('label', { className: 'text-[11px] font-bold text-slate-700 uppercase block mb-2' }, '📊 Report Preview'),
                 h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-3' },
-                    [['📋', analytics.totalEntries, 'ABC Entries'], ['🔬', analytics.totalSessions, 'Sessions'], ['📅', analytics.dailyData.length, 'Days'], ['📈', analytics.trend ? (analytics.trend.slope > 0.1 ? '↑' : analytics.trend.slope < -0.1 ? '↓' : '→') : '—', 'Trend']].map(([icon, val, label]) =>
+                    [['📋', analytics.totalEntries, 'ABC Entries'], ['🔬', analytics.totalSessions, 'Sessions'], ['📅', analytics.dailyData.length, 'Days'], ['📈', analytics.trend ? ({ increasing: '↑', decreasing: '↓', stable: '→' })[analytics.trend.direction] : '—', 'Trend']].map(([icon, val, label]) =>
                         h('div', { key: label, className: 'bg-white rounded-lg border border-slate-400 p-3 text-center' },
                             h('div', { className: 'text-base' }, icon),
                             h('div', { className: 'text-lg font-black text-slate-800' }, val),
@@ -24650,6 +25824,28 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
     // ─── VirtualPracticum ─────────────────────────────────────────────────
     // Interactive data collection training: practice ABA recording methods
     // against simulated scenarios and receive accuracy feedback.
+    // An interval answer key must agree with itself: behavior that fills the WHOLE
+    // interval is occurring at its end (MTS), and behavior occurring at the end
+    // occurred at some point (partial). Scenario 2 interval 5 ("raises again at second
+    // 18" of 20) was keyed NO for MTS, so trainees who scored it right were marked
+    // wrong. AI keys were accepted unchecked, strings like "true" included, which
+    // graded every answer wrong.
+    function practicumKeyProblem(expertKeys, intervals) {
+        const keys = expertKeys || {};
+        for (const method of ['mts', 'partial', 'whole']) {
+            const list = keys[method];
+            if (!Array.isArray(list) || list.length !== intervals) return `${method}: needs ${intervals} answers`;
+            if (!list.every(v => v === true || v === false)) return `${method}: answers must be true or false`;
+        }
+        for (let i = 0; i < intervals; i++) {
+            if (keys.whole[i] && !keys.mts[i]) return `interval ${i + 1}: whole interval yes but end of interval no`;
+            if (keys.mts[i] && !keys.partial[i]) return `interval ${i + 1}: end of interval yes but any time no`;
+        }
+        return null;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensPracticum = Object.freeze({ practicumKeyProblem });
+
     const VirtualPracticum = ({ t, addToast, callGemini }) => {
         const [mode, setMode] = useState(null); // 'mts' | 'partial' | 'whole'
         const [scenarioIdx, setScenarioIdx] = useState(0);
@@ -24712,7 +25908,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                     'Mia raises hand calmly for the last 3 seconds.',
                 ],
                 expertKeys: {
-                    mts:     [true,  false, true,  false, false, false, false, true,  true,  true],
+                    mts:     [true,  false, true,  false, true,  false, false, true,  true,  true],
                     partial: [true,  false, true,  false, true,  false, false, true,  true,  true],
                     whole:   [true,  false, false, false, false, false, false, true,  true,  false],
                 },
@@ -24834,11 +26030,13 @@ IMPORTANT rules for expert keys:
                 const cleaned = raw.replace(/```(?:json)?\s*/gi, '').replace(/```\s*/g, '').trim();
                 const parsed = JSON.parse(cleaned);
                 // Validate structure
-                if (!parsed.title || !parsed.narrative || parsed.narrative.length !== 10 ||
-                    !parsed.expertKeys?.mts || parsed.expertKeys.mts.length !== 10 ||
-                    !parsed.expertKeys?.partial || parsed.expertKeys.partial.length !== 10 ||
-                    !parsed.expertKeys?.whole || parsed.expertKeys.whole.length !== 10) {
+                if (!parsed.title || !Array.isArray(parsed.narrative) || parsed.narrative.length !== 10) {
                     throw new Error('Invalid scenario structure');
+                }
+                const keyProblem = practicumKeyProblem(parsed.expertKeys, 10);
+                if (keyProblem) {
+                    if (addToast) addToast(tt('behavior_lens.practicum.ai_key_rejected', 'The AI answer key did not hold together ({problem}), so the scenario was not added. Try again.', { problem: keyProblem }), 'error');
+                    return;
                 }
                 // Prefix title with AI badge
                 parsed.title = `🤖 ${parsed.title}`;
@@ -24941,7 +26139,7 @@ IMPORTANT rules for expert keys:
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                         h('span', { className: 'text-lg' }, '🤖'),
                         h('h3', { className: 'text-sm font-bold text-purple-800' }, 'AI Scenario Generator'),
-                        h('span', { className: 'text-[11px] text-purple-500 font-medium' }, '— create unique practice scenarios')
+                        h('span', { className: 'text-[11px] text-purple-500 font-medium' }, 'Create unique practice scenarios')
                     ),
                     h('div', { className: 'flex gap-2 items-center' },
                         h('input', {
@@ -24964,7 +26162,7 @@ IMPORTANT rules for expert keys:
                 // Method selection
                 !mode ? h('div', { className: 'space-y-3' },
                     h('h3', { className: 'text-sm font-bold text-slate-700 text-center' }, '📏 Choose Your Recording Method'),
-                    METHODS.map(m => h('button', { "aria-label": "Toggle mode",
+                    METHODS.map(m => h('button', {
                         key: m.id,
                         onClick: () => setMode(m.id),
                         className: `w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-100 hover:border-${m.color}-400 hover:bg-${m.color}-50 transition-all text-start group shadow-sm hover:shadow-md`
@@ -25016,7 +26214,7 @@ IMPORTANT rules for expert keys:
                     h('div', { className: 'flex items-start gap-3 mb-4' },
                         h('div', { className: 'w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg shrink-0' }, '👁️'),
                         h('div', null,
-                            h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, `Interval ${currentInterval + 1} — Observe:`),
+                            h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, `Interval ${currentInterval + 1}: observe`),
                             h('p', { className: 'text-base text-slate-800 font-medium leading-relaxed mt-1' }, `"${narrativeText}"`)
                         )
                     ),
@@ -25074,7 +26272,7 @@ IMPORTANT rules for expert keys:
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('div', { className: 'flex items-center justify-between mb-3' },
                         h('h3', { className: 'text-sm font-bold text-slate-700' }, '📋 Interval-by-Interval Review'),
-                        h('button', { 'aria-expanded': String(showFeedback), "aria-label": "Toggle show feedback", onClick: () => setShowFeedback(!showFeedback), className: 'text-[11px] text-indigo-600 font-bold hover:underline' }, showFeedback ? 'Hide Details' : 'Show Details')
+                        h('button', { 'aria-expanded': String(showFeedback), onClick: () => setShowFeedback(!showFeedback), className: 'text-[11px] text-indigo-600 font-bold hover:underline' }, showFeedback ? 'Hide Details' : 'Show Details')
                     ),
                     // Quick view row
                     h('div', { className: 'flex gap-1 flex-wrap mb-2' },
@@ -25550,8 +26748,23 @@ IMPORTANT rules for expert keys:
             let measurementUnit = 'count';
             let ratePerMinute = null;
             let percentage = null;
+            let totalDurationSeconds = null;
+            // The observation bridge writes measurementType/value/unit on duration and
+            // latency records. They were ignored, so a duration session exported as
+            // "rate 0 per minute" and a latency in seconds as a per-minute rate.
+            const explicitType = String(session && session.measurementType || '').toLowerCase();
+            const explicitValue = blAlloSheetNumber(session && session.value);
 
-            if (sourceLower === 'latency-recorder' || phaseLower === 'latency') {
+            if (explicitType === 'duration') {
+                measurementType = 'duration';
+                measurementValue = explicitValue != null ? explicitValue : count;
+                measurementUnit = 'seconds';
+                totalDurationSeconds = measurementValue;
+            } else if (explicitType === 'latency') {
+                measurementType = 'latency';
+                measurementValue = explicitValue != null ? explicitValue : legacyValue;
+                measurementUnit = 'seconds';
+            } else if (sourceLower === 'latency-recorder' || phaseLower === 'latency') {
                 measurementType = 'latency';
                 measurementValue = legacyValue;
                 measurementUnit = 'seconds';
@@ -25582,7 +26795,7 @@ IMPORTANT rules for expert keys:
                     measurement_unit: measurementUnit,
                     count,
                     rate_per_minute: ratePerMinute,
-                    total_duration_seconds: null,
+                    total_duration_seconds: totalDurationSeconds,
                     percentage,
                     phase,
                     session_duration_seconds: sessionDurationSeconds,
@@ -26614,6 +27827,7 @@ IMPORTANT rules for expert keys:
                 incidentRatePerObservedHour: rate.perObservedHour === null ? null : Number(rate.perObservedHour.toFixed(2)),
                 exposureMinutes: Number(rate.exposure.minutes.toFixed(1)),
                 topBehaviors: behaviorGroups.slice(0, 5).map(group => [group.label, group.count]),
+                behaviorCounts: behaviorGroups.map(group => [group.label, group.count]),
                 lastEntry: validTimestamps.length ? validTimestamps[validTimestamps.length - 1] : null,
                 savedAt: data.savedAt || new Date().toISOString(),
                 profile: data.studentProfile || {},
@@ -26668,7 +27882,7 @@ IMPORTANT rules for expert keys:
             applyStudentWorkspace(data);
             setSelectedStudent(data.student || studentName);
             setShowRosterDropdown(false);
-            if (addToast) addToast(t('behavior_lens.toast.switched_to_n') || `Switched to ${studentName} ✅`, 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.switched_to_n_v2', 'Switched to {studentName} ✅', { studentName }), 'success');
         }, [saveCurrentToRoster, comparisonWorkspaces, addToast, resetStudentScopedState, applyStudentWorkspace]);
 
         // ─── useBotCoach — context-aware Allobot tips ─────────────────────
@@ -27168,57 +28382,8 @@ IMPORTANT rules for expert keys:
         }, [callGemini, callGeminiGuarded, buildStudentContext]);
 
         // ── Smart Alerts computation ──
-        const smartAlerts = useMemo(() => {
-            const alerts = [];
-            if (abcEntries.length >= 3) {
-                // Intensity trend: 3+ consecutive entries with increasing intensity
-                const recent = abcEntries.slice(0, 5);
-                const hasRatings = recent.every(entry => getBehaviorLensWorkspaceRuntime().normalizeIntensity(entry.intensity) !== null);
-                let increasing = 0;
-                for (let i = 0; i < recent.length - 1; i++) {
-                    if (hasRatings && (recent[i].intensity || 0) > (recent[i + 1].intensity || 0)) increasing++;
-                }
-                if (increasing >= 3) {
-                    alerts.push({ id: 'intensity_up', type: 'warning', icon: '⚠️', msg: `Behavior intensity has increased across ${increasing} recent entries. Review escalation patterns.` });
-                }
-                // Positive trend: decreasing intensity
-                let decreasing = 0;
-                for (let i = 0; i < recent.length - 1; i++) {
-                    if (hasRatings && (recent[i].intensity || 0) < (recent[i + 1].intensity || 0)) decreasing++;
-                }
-                if (decreasing >= 3) {
-                    alerts.push({ id: 'intensity_down', type: 'positive', icon: '🎉', msg: `Great news! Behavior intensity has decreased across ${decreasing} recent entries.` });
-                }
-            }
-            // Frequency spike: more entries in last 3 days than the per-3-day average
-            if (abcEntries.length >= 5) {
-                const now = Date.now();
-                const threeDays = 3 * 24 * 60 * 60 * 1000;
-                const recentCount = abcEntries.filter(e => (now - new Date(e.timestamp).getTime()) < threeDays).length;
-                const totalDays = Math.max(1, (now - new Date(abcEntries[abcEntries.length - 1].timestamp).getTime()) / (24 * 60 * 60 * 1000));
-                const avgPer3Days = (abcEntries.length / totalDays) * 3;
-                if (recentCount > avgPer3Days * 1.5 && recentCount >= 3) {
-                    alerts.push({ id: 'freq_spike', type: 'warning', icon: '📈', msg: `Frequency spike: ${recentCount} entries in the last 3 days (avg is ${Math.round(avgPer3Days)}).` });
-                }
-            }
-            // No data warning
-            if (abcEntries.length > 0) {
-                const latest = new Date(abcEntries[0].timestamp);
-                const daysSince = (Date.now() - latest.getTime()) / (24 * 60 * 60 * 1000);
-                if (daysSince >= 7) {
-                    alerts.push({ id: 'stale', type: 'info', icon: '📭', msg: `No new entries in ${Math.round(daysSince)} days. Consider collecting more data.` });
-                }
-            }
-            // Role-aware consultation alerts for teachers and parents
-            const highIntensityCount = abcEntries.filter(e => (e.intensity || 0) >= 4).length;
-            if (highIntensityCount >= 3 && userRole !== 'bcba') {
-                alerts.push({ id: 'consult_bcba', type: 'warning', icon: '⚠️', msg: `${highIntensityCount} high-intensity incidents recorded. Consider consulting your BCBA or behavioral specialist. Open the BCBA Consultation tool to prepare a handoff packet.` });
-            }
-            if (abcEntries.length >= 10 && !aiAnalysis && userRole !== 'bcba') {
-                alerts.push({ id: 'run_analysis', type: 'info', icon: '🧠', msg: 'You have enough data for AI analysis. Run Pattern Analysis to identify behavioral functions before your next team meeting.' });
-            }
-            return alerts.filter(a => !dismissedAlerts.has(a.id));
-        }, [abcEntries, dismissedAlerts, userRole, aiAnalysis]);
+        const smartAlerts = useMemo(() => computeSmartAlerts(abcEntries, { userRole, aiAnalysis })
+            .filter(a => !dismissedAlerts.has(a.id)), [abcEntries, dismissedAlerts, userRole, aiAnalysis]);
 
         // ── Full Student Summary ──
         const handleFullSummary = async () => {
@@ -27254,7 +28419,7 @@ Write a unified student behavioral profile that synthesizes all available data. 
 5. RECOMMENDATIONS — Evidence-based next steps
 
 Use professional language. Refer to "the student" (not the codename).`;
-                const result = await callGeminiGuarded(prompt, true);
+                const result = await callGeminiGuarded(prompt, false);
                 if (result == null || !isStudentAiRequestCurrent(request)) return;
                 setFullSummary(result);
                 if (addToast) addToast(tt('behavior_lens.toast.student_summary_generated', 'Student summary generated ✨'), 'success');
@@ -27783,7 +28948,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 const normalizedAnalysis = parsed && typeof parsed === 'object' ? {
                     summary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 4000) : '',
                     hypothesizedFunction: typeof parsed.hypothesizedFunction === 'string' ? parsed.hypothesizedFunction.slice(0, 120) : 'Unknown',
-                    confidence: Math.max(0, Math.min(100, Number(parsed.confidence) || 0)),
+                    // Missing stays missing (it read as 0, "Low"); a 0-1 fraction is a percentage.
+                    confidence: (() => { const c = parsed.confidence == null || parsed.confidence === '' ? NaN : Number(parsed.confidence); if (!Number.isFinite(c)) return null; return Math.max(0, Math.min(100, c > 0 && c < 1 ? c * 100 : c)); })(),
                     patterns: Array.isArray(parsed.patterns) ? parsed.patterns.filter(item => item && typeof item === 'object').slice(0, 20).map(item => ({ pattern: typeof item.pattern === 'string' ? item.pattern.slice(0, 500) : '', frequency: typeof item.frequency === 'string' ? item.frequency.slice(0, 200) : '', evidence: typeof item.evidence === 'string' ? item.evidence.slice(0, 500) : '' })) : [],
                     recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.filter(item => typeof item === 'string').slice(0, 20).map(item => item.slice(0, 500)) : [],
                     notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 2000) : '',
@@ -28120,7 +29286,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             if (['abc', 'overview', 'trends', 'hypothesis', 'condprob', 'scatterplot', 'hotspot', 'nlabc', 'qualitycheck', 'predict', 'triangulation'].includes(panelId)) {
                 lines.push(`ABC Entries (${abcEntries.length}):`);
                 abcEntries.forEach((e, i) => {
-                    lines.push(`  ${i + 1}. [${e.date || ''}] A: ${e.antecedent || ''} | B: ${e.behavior || ''} | C: ${e.consequence || ''} | Setting: ${e.setting || ''} | Intensity: ${e.intensity || ''}`);
+                    lines.push(`  ${i + 1}. [${abcEntryDay(e)}${fmtTime(e.occurredAt || e.timestamp) ? ' ' + fmtTime(e.occurredAt || e.timestamp) : ''}] A: ${e.antecedent || ''} | B: ${e.behavior || ''} | C: ${e.consequence || ''} | Setting: ${e.setting || ''} | Intensity: ${e.intensity || ''}`);
                 });
             }
             if (['sessiontracker', 'abagraph', 'cumrecord', 'effectsize', 'trends', 'progressreport', 'printreport'].includes(panelId)) {
@@ -28130,7 +29296,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 });
             }
             if (['analysis', 'overview', 'triangulation'].includes(panelId) && aiAnalysis) {
-                lines.push('', 'AI Analysis:', aiAnalysis);
+                lines.push('', 'AI Analysis (AI-assisted, not a clinical conclusion):', aiAnalysisText(aiAnalysis));
             }
             if (['observation'].includes(panelId)) {
                 lines.push(`Observation Sessions (${observationSessions.length}):`);
@@ -28153,15 +29319,9 @@ Use professional language. Refer to "the student" (not the codename).`;
             const studentLabel = selectedStudent || 'Student';
             let csvContent = '';
             if (['abc', 'overview', 'trends', 'hypothesis'].includes(activePanel) && abcEntries.length > 0) {
-                csvContent = 'Date,Antecedent,Behavior,Consequence,Setting,Intensity,Phase,Function\n';
-                abcEntries.forEach(e => {
-                    csvContent += `"${e.date || ''}","${(e.antecedent || '').replace(/"/g, '""')}","${(e.behavior || '').replace(/"/g, '""')}","${(e.consequence || '').replace(/"/g, '""')}","${e.setting || ''}","${e.intensity || ''}","${e.phase || ''}","${e.function || ''}"\n`;
-                });
+                csvContent = buildAbcCsv(abcEntries);
             } else if (['sessiontracker', 'abagraph', 'cumrecord', 'effectsize'].includes(activePanel) && sessionHistory.length > 0) {
-                csvContent = 'Date,Behavior,Count,Rate,Phase,Duration\n';
-                sessionHistory.forEach(s => {
-                    csvContent += `"${s.date || ''}","${(s.behavior || '').replace(/"/g, '""')}","${s.count ?? ''}","${s.rate ?? ''}","${s.phase || ''}","${s.duration || ''}"\n`;
-                });
+                csvContent = buildSessionCsv(sessionHistory);
             } else {
                 csvContent = getToolExportData(activePanel);
             }
@@ -29307,8 +30467,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             h('span', { className: 'text-sm' }, '⇄'),
                             h('span', { className: 'text-[11px] font-black text-slate-600 uppercase tracking-wider' }, tt('behavior_lens.ui.quick_switch', 'Quick Switch'))
                         ),
-                        h('button', { "aria-label": "Toggle student roster",
-                            onClick: () => { setStudentRoster([]); if (addToast) addToast(tt('behavior_lens.toast.roster_cleared', 'Roster cleared'), 'info'); },
+                        h('button', { onClick: () => { setStudentRoster([]); if (addToast) addToast(tt('behavior_lens.toast.roster_cleared', 'Roster cleared'), 'info'); },
                             className: 'text-[11px] text-slate-600 hover:text-red-400 transition-colors'
                         }, (tt('behavior_lens.raw.clear', 'Clear')))
                     ),
@@ -30548,7 +31707,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }),
                 activePanel === 'caseload' && h(CaseloadDashboard, {
                     abcEntries, dashboardData, callGemini: callGeminiWithContext,
-                    t, addToast, selectedStudent, setSelectedStudent: switchToStudent, openPanel
+                    t, addToast, selectedStudent, setSelectedStudent: switchToStudent, openPanel, studentRoster
                 }),
                 activePanel === 'compare' && h(ComparisonDashboard, {
                     comparisonWorkspaces, setComparisonWorkspaces,

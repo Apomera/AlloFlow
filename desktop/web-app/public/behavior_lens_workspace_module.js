@@ -650,19 +650,59 @@
         return { seconds: seconds, minutes: seconds / 60, hours: seconds / 3600, sessionCount: sessionCount };
     }
 
+    // The time an observation session covered: it is stamped when saved, so it ran
+    // from (stamp - duration) to the stamp. A minute of slack either side absorbs the
+    // save delay. A session without a valid stamp and duration covers no known time.
+    function observationWindow(session) {
+        var iso = normalizeIsoTimestamp(session && (session.occurredAt || session.timestamp || session.date));
+        var duration = normalizeDurationSeconds(session && session.duration);
+        if (!iso || duration == null || duration <= 0) return null;
+        var end = Date.parse(iso), slack = 60000;
+        return { id: session && session.id, start: end - duration * 1000 - slack, end: end + slack };
+    }
+
+    // Incidents per observed hour counts only incidents that happened DURING the
+    // observed time (inside a session's window, or linked to that session). It used to
+    // divide every logged note by timed-session hours: an ABC log records incidents
+    // whenever they happen, so a week of notes over one 10-minute session read "120
+    // per observed hour", which the progress report printed as an exposure-adjusted
+    // rate. An observed span with no incident inside it still reads 0 (an observed
+    // zero); callers report how many logged incidents fell outside observed time.
     function calculateIncidentRate(entries, observationSessions, options) {
         options = options || {};
-        var incidents = (Array.isArray(entries) ? entries : []).filter(function (entry) {
+        var inScope = (Array.isArray(entries) ? entries : []).filter(function (entry) {
             if (!matchesObservationScope(entry, options)) return false;
             if (options.behaviorId && entry && entry.behaviorId !== options.behaviorId) return false;
             return true;
+        });
+        var sessions = (Array.isArray(observationSessions) ? observationSessions : []).filter(function (session) {
+            var duration = normalizeDurationSeconds(session && session.duration);
+            return matchesObservationScope(session, options) && duration != null && duration > 0;
+        });
+        // A session with no valid time cannot hold an incident, so its minutes stay out
+        // of the denominator too; they are reported as untimed.
+        var timed = sessions.filter(function (session) { return !!observationWindow(session); });
+        var windows = timed.map(observationWindow);
+        var ids = Object.create(null);
+        timed.forEach(function (session) { if (session && session.id) ids[session.id] = true; });
+        var observed = inScope.filter(function (entry) {
+            if (entry && entry.observationSessionId && ids[entry.observationSessionId]) return true;
+            var at = Date.parse(entry && (entry.occurredAt || entry.timestamp || entry.date));
+            if (!Number.isFinite(at)) return false;
+            return windows.some(function (w) { return at >= w.start && at <= w.end; });
         }).length;
-        var exposure = summarizeExposure(observationSessions, options);
+        var exposure = summarizeExposure(timed, options);
+        var rateAvailable = exposure.hours > 0;
         return {
-            incidents: incidents,
+            incidents: inScope.length,
+            observedIncidents: observed,
+            loggedIncidents: inScope.length,
+            outsideObservation: inScope.length - observed,
+            untimedSessions: sessions.length - timed.length,
             exposure: exposure,
-            perObservedHour: exposure.hours > 0 ? incidents / exposure.hours : null,
-            denominatorAvailable: exposure.hours > 0
+            perObservedHour: rateAvailable ? observed / exposure.hours : null,
+            denominatorAvailable: exposure.hours > 0,
+            rateAvailable: rateAvailable
         };
     }
 
@@ -1363,6 +1403,7 @@
         normalizeObservationSessions: normalizeObservationSessions,
         normalizeToolState: normalizeToolState,
         summarizeIntensity: summarizeIntensity,
+        observationWindow: observationWindow,
         groupByCanonicalBehavior: groupByCanonicalBehavior,
         groupByLocalDay: groupByLocalDay,
         filterByDateRange: filterByDateRange,

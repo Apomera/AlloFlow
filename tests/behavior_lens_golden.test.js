@@ -260,9 +260,11 @@ describe('layer 6 — should-fix sweep regressions (2026-06-02 pass 2)', () => {
     expect(MODULE_SRC).toMatch(/const\s+\[includeAi,\s*setIncludeAi\]\s*=\s*useState\(false\)/);
   });
 
-  it('destructive and recording-exit actions use the accessible confirmation service (11 sites)', () => {
+  it('destructive and recording-exit actions use the accessible confirmation service (13 sites)', () => {
+    // 13 since 2026-09-23: replacing typed crisis-plan text with an AI draft, and
+    // resetting an edited consent form, now ask first too.
     const confirmations = (MODULE_SRC.match(/await askBehaviorLensConfirmation\(/g) || []).length;
-    expect(confirmations).toBe(11);
+    expect(confirmations).toBe(13);
     expect(MODULE_SRC).not.toMatch(/(?<![\w.])(?:window\.)?confirm\s*\(/);
   });
 

@@ -107,9 +107,10 @@ describe('Behavior Lens canonical analytics and data-model runtime', () => {
       perObservedHour: null,
       denominatorAvailable: false
     });
+    // Sessions are stamped when saved; both incidents (03:30Z) fall inside the first.
     expect(runtime().calculateIncidentRate(incidents, [
-      { duration: 1800 },
-      { duration: 1800 }
+      { id: 's1', timestamp: '2026-08-13T03:45:00.000Z', duration: 1800 },
+      { id: 's2', timestamp: '2026-08-13T06:00:00.000Z', duration: 1800 }
     ])).toMatchObject({
       incidents: 2,
       perObservedHour: 2,
@@ -123,8 +124,8 @@ describe('Behavior Lens canonical analytics and data-model runtime', () => {
       entry({ id: 'b', phase: 'baseline', intensity: null }),
       entry({ id: 'c', phase: 'intervention', intensity: 2 })
     ], [
-      { phase: 'baseline', duration: 3600 },
-      { phase: 'intervention', duration: 1800 }
+      { phase: 'baseline', duration: 3600, timestamp: '2026-08-13T04:00:00.000Z' },
+      { phase: 'intervention', duration: 1800, timestamp: '2026-08-13T03:45:00.000Z' }
     ]);
 
     expect(phases.find((phase) => phase.phase === 'baseline')).toMatchObject({

@@ -29,10 +29,11 @@ describe('Behavior Lens lossless records and consistent analytics', () => {
     expect(runtime.normalizeTimezoneOffset(0)).toBe(0);
   });
   it('matches phase exposure and retains observed zero-event phases', () => {
-    const phases = runtime.summarizePhases([{ ...record, phase: null }], [{ duration: 3600, phase: 'Baseline' }, { duration: 1800, phase: 'Intervention' }]);
+    // Sessions carry the time they were saved; 02:00Z falls inside each window below.
+    const phases = runtime.summarizePhases([{ ...record, phase: null }], [{ duration: 3600, phase: 'Baseline', timestamp: '2026-09-13T02:30:00.000Z' }, { duration: 1800, phase: 'Intervention', timestamp: '2026-09-13T02:15:00.000Z' }]);
     expect(phases.find(p => p.phase === 'Unassigned').rate).toMatchObject({ denominatorAvailable: false, perObservedHour: null });
     expect(phases.find(p => p.phase === 'Intervention').rate).toMatchObject({ denominatorAvailable: true, incidents: 0, perObservedHour: 0 });
-    const scoped = runtime.summarizePhases([{ ...record, phase: 'Baseline', behaviorId: 'a' }], [{ duration: 600, phase: 'Baseline', behaviorId: 'a' }, { duration: 3600, phase: 'Baseline', behaviorId: 'b' }], { behaviorId: 'a' });
+    const scoped = runtime.summarizePhases([{ ...record, phase: 'Baseline', behaviorId: 'a' }], [{ duration: 600, phase: 'Baseline', behaviorId: 'a', timestamp: '2026-09-13T02:05:00.000Z' }, { duration: 3600, phase: 'Baseline', behaviorId: 'b', timestamp: '2026-09-13T02:30:00.000Z' }], { behaviorId: 'a' });
     expect(scoped[0].rate.exposure.seconds).toBe(600);
     expect(scoped[0].rate.perObservedHour).toBe(6);
   });
