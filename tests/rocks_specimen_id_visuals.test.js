@@ -249,7 +249,9 @@ describe('rock specimen ID visuals', () => {
     // Habit outlines are polygons; the old tile was a rounded div.
     expect(markup).toContain('<polygon');
     // Labels expose habit + lustre + hardness to assistive tech.
-    expect(markup).toContain('Cubic (Isometric) crystal');
+    // The crystal-system name now reads through the tool's sys_* keys, so the
+    // parenthetical takes the catalogue's lowercase form.
+    expect(markup).toContain('Cubic (isometric) crystal');
     expect(markup).toContain('Metallic lustre');
   });
 });

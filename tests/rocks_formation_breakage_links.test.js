@@ -11,6 +11,10 @@
 //     pH 12 "rain" as acid
 //   - texture slugs ('clastic-coarse') were printed to students untranslated
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+
+// Each test renders the whole ~1 MB tool several times: well under a second
+// normally, but past the 5 s default when the shared machine is loaded.
+vi.setConfig({ testTimeout: 30000 });
 import { readFileSync } from 'node:fs';
 import {
   React,
