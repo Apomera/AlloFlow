@@ -170,6 +170,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       src.connect(filt); filt.connect(master); master.connect(ac.destination);
       src.start();
       _mmAmbient = { src: src, master: master };
+      // Every type watches for the tool leaving the page. Only the space/EVA chirp
+      // timer did before, so closing STEAM Lab from the host (Escape, Alt+B, Close)
+      // during launch, landing or ascent left the engine rumble looping until reload,
+      // with no mute control left on screen (WCAG 1.4.2).
+      _mmAmbient._watch = setInterval(function() {
+        if (!document.querySelector('[data-moonmission-tool]')) stopMissionAmbient();
+      }, 1000);
       // Periodic radio chirps for space/EVA. Self-cleaning: if the tool has been
       // unmounted by ANY path (not just the Back button), the next tick notices the
       // root marker is gone and stops the loop + audio nodes — no leaked interval.
@@ -187,6 +194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         var ac = getMMAC();
         if (ac && _mmAmbient.master) _mmAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5);
         if (_mmAmbient._interval) clearInterval(_mmAmbient._interval);
+        if (_mmAmbient._watch) clearInterval(_mmAmbient._watch);
         var nodes = _mmAmbient;
         setTimeout(function() { try { nodes.src.stop(); } catch(e) {} }, 600);
       } catch(e) {}
@@ -1286,7 +1294,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ['MET', t('stem.moonmission.gl_met', 'Mission Elapsed Time: the clock since launch.')]
       ];
       function glossaryPanel(extraClass) {
-        return h('details', { className: 'rounded-lg border border-white/10 bg-white/5 p-2 ' + (extraClass || ''), 'data-moonmission-glossary': 'true' },
+        // Its own opaque dark ground: on phases 1-9 it renders straight onto the host's
+        // WHITE card, where the translucent ground and indigo-200 ink measured 1.49:1.
+        return h('details', { className: 'rounded-lg border border-slate-700 bg-slate-900 p-2 ' + (extraClass || ''), 'data-moonmission-glossary': 'true' },
           h('summary', { className: 'text-[0.6875rem] font-bold text-indigo-200 cursor-pointer' }, t('stem.moonmission.glossary_title', '\uD83D\uDCD6 Mission glossary \u2014 what the words mean')),
           h('dl', { className: 'mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5' },
             GLOSSARY.map(function(g) {
@@ -3375,7 +3385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('button', {
               'aria-label': t('stem.moonmission.begin_powered_descent_piloting', 'Begin powered descent piloting'),
               onClick: function() { upd('descentStarted', true); },
-              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse motion-reduce:animate-none'
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02]'
             }, t('stem.moonmission.begin_descent_take_the_controls', '\uD83D\uDE80 Begin Descent \u2014 Take the Controls!'))
           ),
           // Game canvas (after onboarding)
@@ -4053,7 +4063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('button', {
               'aria-label': t('stem.moonmission.begin_eva_on_the_lunar_surface', 'Begin EVA on the lunar surface'),
               onClick: function() { upd('evaStarted', true); },
-              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse motion-reduce:animate-none'
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02]'
             }, t('stem.moonmission.step_onto_the_moon_begin_eva', '👨‍🚀 Step Onto the Moon · Begin EVA'))
           ),
           d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
@@ -5459,8 +5469,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var evaPadBand = evaPadSize + 16;
                     var yaw = 0, pitch = 0;
                     var playerPos = new THREE.Vector3(3, _terrainHeightAt(3, 3) + 1.8, 3);
-                    var playerVelY = 0;
+                    var playerVelY = 0;   // m/s
                     var isJumping = false;
+                    // The jump integrated per FRAME: 0.12 up and 0.0027 down each frame is
+                    // 7.2 m/s against 9.72 m/s^2 at 60 fps (Earth's gravity, 2.7 m high) and
+                    // twice as strong at 120 Hz, under a label saying one-sixth gravity.
+                    // Now per second: 1.7 m/s up against the Moon's 1.62 m/s^2 is a 0.9 m hop
+                    // lasting 2.1 s, the "three feet" the LMP's radio line describes.
+                    var EVA_G = 1.62, EVA_JUMP_V0 = 1.7;
                     var speed3d = 0.06; // slower in spacesuit
 
                     // ── The astronaut's own body ──
@@ -5830,7 +5846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         case 'b': if (!e.repeat) toggleLrvAudio(); break;
                         case 'q': moveState.turnLeft = true; break;   // keyboard yaw — no mouse required
                         case 'e': moveState.turnRight = true; break;
-                        case ' ': if (!roverBoarded && !isJumping) { playerVelY = 0.12; isJumping = true; } break; // 1/6 gravity jump!
+                        case ' ': if (!roverBoarded && !isJumping) { playerVelY = EVA_JUMP_V0; isJumping = true; } break; // 1/6 gravity jump!
                         case 'c':
                           // Toggle comfort mode
                           comfortMode = !comfortMode;
@@ -5912,6 +5928,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
                     canvasEl.addEventListener('keydown', onEvaKeyDown);
                     canvasEl.addEventListener('keyup', onEvaKeyUp);
+                    // Tabbing or alt-tabbing away while holding W left the astronaut walking
+                    // with nobody at the controls; the key-up went to another window.
+                    function onEvaBlur() {
+                      Object.keys(moveState).forEach(function(k) { moveState[k] = false; });
+                    }
+                    canvasEl.addEventListener('blur', onEvaBlur);
                     canvasEl.addEventListener('mousedown', onEvaMouseDown);
                     canvasEl.addEventListener('mouseup', onEvaMouseUp);
                     document.addEventListener('mousemove', onMM);
@@ -5972,6 +5994,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       evaPad.appendChild(mmHoldButton(spec[0], spec[1], evaBtnSize, k.down, k.up));
                     });
                     canvasEl.parentElement.appendChild(evaPad);
+                    // Measure what the pad really takes: at phone width its six buttons wrap
+                    // to two rows, and a band sized for one let the pad cover the rover's
+                    // Board button and the discovery card.
+                    var _evaPadH = evaPad.offsetHeight || 0;
+                    if (_evaPadH > evaPadSize + 4) {
+                      evaPadBand = _evaPadH + 16;
+                      lrvActionEl.style.bottom = (evaPadBand + 10) + 'px';
+                      lrvSoundEl.style.bottom = (evaPadBand + 52) + 'px';
+                    }
                     // On a phone-width canvas the keyboard legend is dead weight (no keys to
                     // press) and the full HUD covered most of the scene.
                     if (W < 560) {
@@ -6035,6 +6066,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       evaTick++;
                       var evaNow = (typeof frameTime === 'number' && isFinite(frameTime)) ? frameTime : performance.now();
                       var evaDt = evaLastFrameTime ? Math.min(0.05, Math.max(0.001, (evaNow - evaLastFrameTime) / 1000)) : (1 / 60);
+                      // The hop uses real elapsed time. evaDt is clamped to 0.05 s, so below
+                      // 20 fps (a weak Chromebook, or SwiftShader) it slows the simulation, and a
+                      // 2.1 s hop stretched to 5 s at 8 fps.
+                      var evaHopDt = evaLastFrameTime ? Math.min(0.25, Math.max(0.001, (evaNow - evaLastFrameTime) / 1000)) : (1 / 60);
                       evaLastFrameTime = evaNow;
 
                       // Keyboard yaw (Q/E). Comfort mode turns at the slower rate, matching
@@ -6288,15 +6323,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           dir.applyAxisAngle(evaUpAxis, yaw);
                           playerPos.add(dir);
                         }
-                        // Preserve the established legacy jump arc. The pre-clamp
-                        // downward velocity is only normalized into a visual landing cue.
+                        // Real-time ballistic hop in lunar gravity. The downward speed at
+                        // touchdown (about 1.7 m/s) is only normalized into a landing cue.
                         var evaWasAirborne = isJumping;
-                        playerVelY -= 0.0027;
-                        playerPos.y += playerVelY;
+                        // Exact for constant gravity at any step size, so a slow frame
+                        // cannot change the arc.
+                        playerPos.y += playerVelY * evaHopDt - 0.5 * EVA_G * evaHopDt * evaHopDt;
+                        playerVelY -= EVA_G * evaHopDt;
                         var footGroundH = _terrainHeightAt(playerPos.x, playerPos.z) + 1.8;
                         if (playerPos.y <= footGroundH) {
-                          if (evaWasAirborne && playerVelY < -0.045) {
-                            evaLandingImpact = Math.min(1, (-playerVelY - 0.045) / 0.09);
+                          if (evaWasAirborne && playerVelY < -1.0) {
+                            evaLandingImpact = Math.min(1, (-playerVelY - 1.0) / 1.5);
                             evaLandingImpactEnvelope = evaLandingImpact;
                             evaLandingDatasetActive = true;
                             canvasEl.dataset.evaLandingImpact = evaLandingImpact.toFixed(3);
@@ -6821,6 +6858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       try { if (_evaVRBtnOff) _evaVRBtnOff(); } catch (e) {}
                       try { if (_evaVR && _evaVR.destroy) _evaVR.destroy(); _evaVR = null; } catch (e) {}
                       canvasEl.removeEventListener('keydown', onEvaKeyDown);
+                      canvasEl.removeEventListener('blur', onEvaBlur);
                       canvasEl.removeEventListener('keyup', onEvaKeyUp);
                       canvasEl.removeEventListener('mousedown', onEvaMouseDown);
                       canvasEl.removeEventListener('mouseup', onEvaMouseUp);
@@ -7811,7 +7849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (addToast) addToast('\uD83C\uDF89 MISSION COMPLETE! Welcome home, Commander!', 'success');
               if (typeof announceToSR === 'function') announceToSR('Mission complete! Splashdown in the Pacific Ocean. Welcome home, Commander.');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-700 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg animate-pulse motion-reduce:animate-none'
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-700 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg'
           }, t('stem.moonmission.mission_complete_splashdown', '\uD83C\uDF0A Mission Complete \u2014 SPLASHDOWN!'))
         ),
 

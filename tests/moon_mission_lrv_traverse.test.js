@@ -585,8 +585,8 @@ describe('Moon Mission optional LRV traverse', () => {
 
   it('uses the actual airborne landing transition and event-only impact telemetry', () => {
     expect(source).toContain('var evaWasAirborne = isJumping');
-    expect(source).toContain('if (evaWasAirborne && playerVelY < -0.045)');
-    expect(source).toContain('(-playerVelY - 0.045) / 0.09');
+    expect(source).toContain('if (evaWasAirborne && playerVelY < -1.0)');
+    expect(source).toContain('(-playerVelY - 1.0) / 1.5');
     expect(source).toContain("canvasEl.dataset.evaLandingImpact = evaLandingImpact.toFixed(3)");
     expect(source).toContain("canvasEl.dataset.evaLandingImpact = '0.000'");
     expect(source).toContain("canvasEl.dataset.lrvImpact = bounded.toFixed(3)");

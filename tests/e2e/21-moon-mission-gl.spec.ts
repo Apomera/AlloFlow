@@ -117,6 +117,33 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(walked, 'W did not move the astronaut — movement is mouse-gated').not.toBeNull();
   });
 
+  test('a jump is a slow lunar hop in real time, whatever the frame rate', async ({ page }) => {
+    // The jump integrated per FRAME (0.12 up, 0.0027 down each frame): Earth's gravity
+    // at 60 fps, twice that at 120 Hz, and ~7 s of airtime at SwiftShader's ~13 fps.
+    // Time-based lunar physics (1.7 m/s up, 1.62 m/s^2) gives about 2.1 s in the air.
+    // Timed in-page from the keydown to the landing cue, with a MutationObserver
+    // rather than polling, which would blur the boundary by its own sample period.
+    test.setTimeout(90000);
+    await harness.mount(page, AT_EVA, EVA_READY);
+    expect(await page.evaluate(() => (window as any).__focusEva())).toBe(true);
+    await page.waitForTimeout(1500);   // let the astronaut settle onto the ground first
+    const airtime = await page.evaluate(() => new Promise<number>((resolve) => {
+      const cv = document.querySelector('canvas[data-eva-canvas="true"]') as HTMLCanvasElement;
+      let t0 = 0;
+      const obs = new MutationObserver(() => {
+        const v = Number(cv.dataset.evaLandingImpact);
+        if (t0 && v > 0) { obs.disconnect(); resolve((performance.now() - t0) / 1000); }
+      });
+      obs.observe(cv, { attributes: true, attributeFilter: ['data-eva-landing-impact'] });
+      t0 = performance.now();
+      cv.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      setTimeout(() => { obs.disconnect(); resolve(-1); }, 20000);
+    }));
+    expect(airtime, 'no landing cue after the jump').toBeGreaterThan(0);
+    expect(airtime, 'hop too short for one-sixth gravity').toBeGreaterThan(1.6);
+    expect(airtime, 'hop too long: physics is tied to the frame rate again').toBeLessThan(3.2);
+  });
+
   test('arrow keys walk too, for students who never learned WASD', async ({ page }) => {
     // Game conventions are not universal, and WASD assumes a QWERTY layout.
     await harness.mount(page, AT_EVA, EVA_READY);
