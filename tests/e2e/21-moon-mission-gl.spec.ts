@@ -358,6 +358,19 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(Buffer.compare(c1, c2), 'canvas did not resume after play').not.toBe(0);
   });
 
+  test('with animation paused the TLI window still opens, so the burn can be flown on time', async ({ page }) => {
+    // Pausing (or the OS reduced-motion setting, which pauses by default) used to
+    // return from the orbit loop before its clock advanced. The window froze at
+    // "Houston is verifying systems", so a reduced-motion student could only ever
+    // burn "early" and was billed a mid-course correction for it.
+    test.setTimeout(120000);
+    await harness.mount(page, { moonMission: { missionPhase: 2, animPaused: true } }, undefined, { expectCanvas: false });
+    const state = page.locator('[data-moonmission-tli-state]');
+    await expect(state).toHaveAttribute('data-moonmission-tli-state', 'systems', { timeout: 20000 });
+    await expect(state).toHaveAttribute('data-moonmission-tli-state', 'go', { timeout: 60000 });
+    await expect(state).toContainText('far side of Earth');
+  });
+
   // ── On-screen control pads ──
   // Until 2026-08-25 this file contained no touchstart/pointerdown of any kind, so
   // the two hand-flown phases — the graded landing and the moonwalk — could only be

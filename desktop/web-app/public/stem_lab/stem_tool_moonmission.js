@@ -2652,9 +2652,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // 1.5 orbits over ~22 seconds of viewing (60fps × 22 = 1320 frames → angSpeed ~0.0071)
                   var orbitAngSpeed = 0.0071;
                   var _lastTliState = null, _lastTliOff = -99;   // throttle the state publish
+                  // Trans-lunar injection fires on the FAR side of Earth from where the Moon
+                  // will be: the burn raises the far end of the orbit out to the Moon's
+                  // distance, and the spacecraft coasts half an orbit out to meet it. The
+                  // window used to sit on the Moon-facing side (angle 0) under a banner
+                  // saying the velocity pointed at the Moon, which is the intuitive mistake.
+                  var tliTargetAng = Math.PI;
+                  var windowHalfWidth = 0.35;   // radians, about 20 degrees
+                  function tliState(tk) {
+                    var orbAng = -Math.PI * 0.5 + tk * orbitAngSpeed;
+                    var orbits = (tk * orbitAngSpeed) / (Math.PI * 2);
+                    var angDiff = ((((orbAng - tliTargetAng + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
+                    var inWindow = Math.abs(angDiff) < windowHalfWidth && orbits > 1.35;
+                    var readyState = orbits <= 1.35 ? 'systems' : (inWindow ? 'go' : 'aligning');
+                    // How long until the window opens: an unexplained wait reads as a
+                    // broken button, and the whole point is that they CHOOSE to wait.
+                    var toEdge = (-windowHalfWidth) - angDiff;           // angDiff climbs toward 0
+                    if (toEdge < 0) toEdge += Math.PI * 2;               // just missed it: next time round
+                    var framesAlign = toEdge / orbitAngSpeed;
+                    var framesSystems = Math.max(0, (1.35 * Math.PI * 2 / orbitAngSpeed) - tk);
+                    return {
+                      orbAng: orbAng, orbits: orbits, angDiff: angDiff, inWindow: inWindow, state: readyState,
+                      offByDeg: Math.round(Math.abs(angDiff) * 180 / Math.PI),
+                      side: angDiff < 0 ? 'early' : 'late',
+                      secsToGo: Math.max(0, Math.round(Math.max(framesAlign, framesSystems) / 60))
+                    };
+                  }
+                  // Written only when the state changes or the angle moves 10 degrees, so this
+                  // is a few commits per orbit, not one per frame.
+                  function publishWindow(st) {
+                    if (st.state !== _lastTliState || Math.abs(st.offByDeg - _lastTliOff) >= 10) {
+                      _lastTliState = st.state;
+                      _lastTliOff = st.offByDeg;
+                      upd('tliWindow', { state: st.state, offByDeg: st.offByDeg, side: st.side, secsToGo: st.secsToGo, orbits: Math.round(st.orbits * 100) / 100 });
+                    }
+                  }
                   // Moon's "future position" sits ~48° ahead of current; TLI must fire when CSM is at the opposite side of its orbit
                   function drawEarthOrbit() {
-                    if (_mmAnimPaused && tick > 0) { if (document.contains(cvEl)) requestAnimationFrame(drawEarthOrbit); return; }
+                    // Paused (or reduced motion): the orbit keeps its clock and publishes the
+                    // window, and only the painting stops. It used to return before tick++,
+                    // freezing the window at "systems", so every burn by a reduced-motion
+                    // student was graded early and billed a mid-course correction.
+                    if (_mmAnimPaused && tick > 0) {
+                      tick++;
+                      publishWindow(tliState(tick));
+                      if (document.contains(cvEl)) requestAnimationFrame(drawEarthOrbit);
+                      return;
+                    }
                     tick++;
                     ctx.clearRect(0, 0, W, HL);
                     // Space background + stars
@@ -2677,49 +2721,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     drawDetailedMoon(ctx, moonX, moonY, moonR, 42);
                     ctx.fillStyle = 'rgba(148,163,184,0.7)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
                     ctx.fillText('Moon (in 3 days)', moonX, moonY + moonR + 12);
-                    // Dashed TLI trajectory arc from Earth toward Moon's future position
+                    // Transfer path: from the burn point on the far side, half an ellipse
+                    // up and over to where the Moon will be.
+                    var _ct = Math.cos(-0.12), _stt = Math.sin(-0.12);
+                    var burnX = eX + (-orbR) * _ct, burnY = eY + (-orbR) * _stt;
+                    var _dx = (moonX - moonR - 2) - burnX, _dy = moonY - burnY;
+                    var _half = Math.sqrt(_dx * _dx + _dy * _dy) / 2;
                     ctx.save();
-                    ctx.strokeStyle = 'rgba(251,191,36,0.25)';
+                    ctx.strokeStyle = 'rgba(251,191,36,0.3)';
                     ctx.setLineDash([2, 5]); ctx.lineWidth = 1;
                     ctx.beginPath();
-                    ctx.moveTo(eX + orbR * 0.98, eY);
-                    ctx.quadraticCurveTo((eX + moonX) * 0.5, eY - 40, moonX - moonR - 2, moonY);
+                    ctx.ellipse(burnX + _dx / 2, burnY + _dy / 2, _half, Math.min(_half * 0.32, HL * 0.4), Math.atan2(_dy, _dx), Math.PI, Math.PI * 2);
                     ctx.stroke();
                     ctx.setLineDash([]);
                     ctx.restore();
-                    // Orbit angle (CCW, starts at 270° = top of orbit — a plausible LEO insertion point)
-                    var orbAng = -Math.PI * 0.5 + tick * orbitAngSpeed;
-                    var orbits = (tick * orbitAngSpeed) / (Math.PI * 2);
-                    // TLI burn window: must fire when CSM is on Earth-side-away-from-Moon
-                    // Correct burn point = orbital position where spacecraft velocity vector points toward Moon's future position (roughly 0 rad = right side of orbit)
-                    var tliTargetAng = 0;
-                    var angDiff = ((orbAng - tliTargetAng + Math.PI) % (Math.PI * 2)) - Math.PI;
-                    var windowHalfWidth = 0.35; // radians ~20°
-                    var inWindow = Math.abs(angDiff) < windowHalfWidth && orbits > 1.35;
-                    // ── Publish the window to React ──
-                    // The canvas has always drawn a burn window, flipped it to GO, and
-                    // counted down to it — and the Execute TLI Burn button underneath knew
-                    // nothing about any of it and fired identically whenever it was pressed.
-                    // The phase was teaching that timing decides whether you hit the Moon
-                    // while demonstrating that it does not matter. Written only when the
-                    // state actually changes, so this is a handful of commits per orbit,
-                    // not one per frame.
-                    var offByDeg = Math.round(Math.abs(angDiff) * 180 / Math.PI);
-                    var readyState = orbits <= 1.35 ? 'systems' : (inWindow ? 'go' : 'aligning');
-                    // How long until the window opens. Without this the student stares at
-                    // "aligning" for up to ~35 seconds with no idea whether that is five
-                    // seconds or the rest of the lesson — an unexplained wait reads as a
-                    // broken button, and the whole point is that they CHOOSE to wait.
-                    var toEdge = (-windowHalfWidth) - angDiff;           // angDiff climbs toward 0
-                    if (toEdge < 0) toEdge += Math.PI * 2;               // just missed it — go round again
-                    var framesAlign = toEdge / orbitAngSpeed;
-                    var framesSystems = Math.max(0, (1.35 * Math.PI * 2 / orbitAngSpeed) - tick);
-                    var secsToGo = Math.max(0, Math.round(Math.max(framesAlign, framesSystems) / 60));
-                    if (readyState !== _lastTliState || Math.abs(offByDeg - _lastTliOff) >= 5) {
-                      _lastTliState = readyState;
-                      _lastTliOff = offByDeg;
-                      upd('tliWindow', { state: readyState, offByDeg: offByDeg, secsToGo: secsToGo, orbits: Math.round(orbits * 100) / 100 });
-                    }
+                    var _tli = tliState(tick);
+                    var orbAng = _tli.orbAng, orbits = _tli.orbits, angDiff = _tli.angDiff, inWindow = _tli.inWindow;
+                    publishWindow(_tli);
                     // Draw TLI burn window as highlighted arc on the orbit
                     ctx.save();
                     ctx.strokeStyle = inWindow ? 'rgba(34,197,94,0.85)' : 'rgba(251,191,36,0.55)';
@@ -2784,7 +2802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
                     ctx.fillStyle = '#fbbf24'; ctx.fillText('ORBITS', W - 14, 22);
                     ctx.fillStyle = '#fff'; ctx.font = 'bold 18px monospace';
-                    ctx.fillText(Math.min(1.5, orbits).toFixed(2), W - 14, 42);
+                    ctx.fillText(orbits.toFixed(2), W - 14, 42);
                     ctx.font = 'bold 9px monospace'; ctx.fillStyle = inWindow ? '#22c55e' : '#94a3b8';
                     ctx.fillText(inWindow ? 'TLI WINDOW \u25B6 GO' : 'TLI WINDOW', W - 14, 58);
                     ctx.font = '8px monospace';
@@ -2851,19 +2869,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             var tw = d.tliWindow || { state: 'systems', offByDeg: 0, orbits: 0 };
             var go = tw.state === 'go';
             var waitingOnSystems = tw.state === 'systems';
+            // The live region carries the STATE only. With the degrees and seconds inside
+            // it, it re-announced every few degrees, about five times a second.
             return h('div', null,
               h('div', {
-                role: 'status', 'aria-live': 'polite',
                 className: 'mb-2 rounded-lg px-3 py-2 text-[0.6875rem] font-bold border ' +
                   (go ? 'bg-emerald-950 border-emerald-500/50 text-emerald-200'
                       : 'bg-slate-900 border-amber-500/50 text-amber-200')
               },
-                go ? '\u2705 In the burn window \u2014 velocity vector is pointing at where the Moon will be. GO for TLI.'
-                  : waitingOnSystems ? ('\u23F3 Houston is still verifying systems \u2014 the window opens after 1.5 orbits'
-                      + (tw.secsToGo ? ', about ' + tw.secsToGo + ' s away.' : '.'))
-                  : ('\u23F3 Aligning \u2014 about ' + tw.offByDeg + '\u00B0 off the burn point'
-                      + (tw.secsToGo ? ', window opens in ~' + tw.secsToGo + ' s.' : '.')
-                      + ' Watch the green arc, or burn now and correct later.')
+                h('p', { role: 'status', 'aria-live': 'polite', 'data-moonmission-tli-state': tw.state },
+                  go ? '\u2705 GO for TLI. You are on the far side of Earth from where the Moon will be, so this burn swings you out to meet it half an orbit later.'
+                    : waitingOnSystems ? '\u23F3 Houston is verifying systems. The burn window comes round after about an orbit and a half.'
+                    : '\u23F3 Aligning with the burn point. Watch for the green arc, or burn now and correct later.'),
+                !go && h('p', { className: 'mt-0.5 font-normal', 'data-moonmission-tli-detail': 'true' },
+                  (waitingOnSystems ? '' : 'About ' + tw.offByDeg + '\u00B0 ' + (tw.side === 'late' ? 'past' : 'before') + ' the burn point. ')
+                  + (tw.secsToGo ? 'Window in about ' + tw.secsToGo + ' s.' : ''))
               ),
               h('button', {
                 'aria-label': go
@@ -2874,7 +2894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   if (!canProceed()) return;
                   advancePhase(3);
                   upd('showQuiz', true); // Trigger quiz during coast
-                  upd('tliAccuracy', { onTime: go, offByDeg: tw.offByDeg });
+                  upd('tliAccuracy', { onTime: go, offByDeg: tw.offByDeg, side: tw.side === 'late' ? 'late' : 'early', beforeGo: waitingOnSystems });
                   if (go) {
                     log('\uD83D\uDE80 TLI burn on time \u2014 trajectory nominal.');
                     addXP(25);
@@ -7840,7 +7860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('p', { className: 'text-[0.6875rem] font-bold mb-0.5 ' + (d.tliAccuracy.onTime ? 'text-green-300' : 'text-yellow-300') },
                   d.tliAccuracy.onTime
                     ? '\ud83d\ude80 TLI ON TIME \u2014 you burned inside the window'
-                    : '\ud83d\ude80 TLI ' + d.tliAccuracy.offByDeg + '\u00b0 EARLY \u2014 outside the burn window'),
+                    : '\ud83d\ude80 TLI ' + d.tliAccuracy.offByDeg + '\u00b0 ' + (d.tliAccuracy.side === 'late' ? 'LATE' : 'EARLY') + ' \u2014 outside the burn window'),
                 h('p', { className: 'text-[0.6875rem] text-slate-200' },
                   d.tliAccuracy.onTime
                     ? 'Your velocity vector pointed at where the Moon was going to be, so the coast needed no correcting.'
