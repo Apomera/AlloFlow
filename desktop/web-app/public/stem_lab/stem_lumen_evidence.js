@@ -455,30 +455,67 @@
     return project;
   }
 
-  function tokenize(value, keepStops) {
-    var tokens = cleanText(value).toLowerCase().match(/[a-z0-9][a-z0-9'_-]*/g) || [];
-    return tokens.filter(function (token) { return token.length > 1 && (keepStops || !STOP_WORDS[token]); });
+  // Letters and digits in ANY script, with accents folded ("niño" and "nino"
+  // meet). The old ASCII-only pattern cut "niño" to "ni" and dropped Somali,
+  // Arabic or Vietnamese words entirely; for plain ASCII text the tokens are
+  // exactly what they were.
+  var TOKEN_RE = (function () { try { return new RegExp("[\\p{L}\\p{N}][\\p{L}\\p{N}'_-]*", 'gu'); } catch (e) { return /[a-z0-9][a-z0-9'_-]*/g; } })();
+  function foldAccents(text) {
+    return typeof text.normalize === 'function' ? text.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : text;
+  }
+  // Light English suffix folding, OPT-IN via retrieve(…, { stem: true }) so
+  // existing rankings do not move: "weaknesses"/"weakness", "disabilities"/
+  // "disability", "reading"/"read". Short and numeric tokens are left alone.
+  function stemToken(token) {
+    if (token.length <= 4 || /\d/.test(token)) return token;
+    if (/ies$/.test(token)) return token.slice(0, -3) + 'y';
+    if (/(?:ss|sh|ch|x|z)es$/.test(token)) return token.slice(0, -2);
+    if (/s$/.test(token) && !/(?:ss|us|is)$/.test(token)) return token.slice(0, -1);
+    if (/ing$/.test(token) && token.length > 6) return token.slice(0, -3);
+    if (/ed$/.test(token) && token.length > 5) return token.slice(0, -2);
+    return token;
+  }
+  function tokenize(value, keepStops, options) {
+    var tokens = foldAccents(cleanText(value).toLowerCase()).match(TOKEN_RE) || [];
+    tokens = tokens.filter(function (token) { return token.length > 1 && (keepStops || !STOP_WORDS[token]); });
+    return options && options.stem ? tokens.map(stemToken) : tokens;
   }
 
+  // options (all optional, all off by default so existing callers rank exactly
+  // as before):
+  //   limit     — passages to return (1-8, default 6)
+  //   stem      — fold English suffixes on query AND passages (stemToken)
+  //   sourceIds — only these sources (a caller-scoped corpus)
+  //   forAI     — drop sources whose provider does not allow AI use
+  //               (allowAI === false). Any caller that sends the result to a
+  //               model should pass it; only Lumen Study's UI enforced it.
   function retrieve(projectInput, query, options) {
     options = options || {};
     var project = migrateProject(projectInput);
     var eligible = new Set(eligibleSourceIds(project));
+    if (Array.isArray(options.sourceIds)) {
+      var wanted = new Set(options.sourceIds);
+      eligible.forEach(function (id) { if (!wanted.has(id)) eligible.delete(id); });
+    }
+    if (options.forAI) {
+      project.sources.forEach(function (source) { if (source && source.allowAI === false) eligible.delete(source.id); });
+    }
+    var tokOpts = options.stem ? { stem: true } : null;
     var nodes = project.evidenceNodes.filter(function (node) { return node.kind === 'passage' && !node.stale && eligible.has(node.sourceId); });
-    var qTokens = tokenize(query, false);
-    if (!qTokens.length) qTokens = tokenize(query, true);
+    var qTokens = tokenize(query, false, tokOpts);
+    if (!qTokens.length) qTokens = tokenize(query, true, tokOpts);
     if (!qTokens.length || !nodes.length) return [];
     var uniqueQuery = Array.from(new Set(qTokens));
     var docFreq = {};
     nodes.forEach(function (node) {
-      var unique = new Set(tokenize(node.content + ' ' + ((node.locator && node.locator.heading) || ''), true));
+      var unique = new Set(tokenize(node.content + ' ' + ((node.locator && node.locator.heading) || ''), true, tokOpts));
       uniqueQuery.forEach(function (term) { if (unique.has(term)) docFreq[term] = (docFreq[term] || 0) + 1; });
     });
-    var phrase = cleanText(query).toLowerCase();
+    var phrase = foldAccents(cleanText(query).toLowerCase());
     var scored = nodes.map(function (node) {
-      var body = node.content.toLowerCase();
-      var heading = cleanLabel(node.locator && node.locator.heading, '').toLowerCase();
-      var tokens = tokenize(body, true);
+      var body = foldAccents(node.content.toLowerCase());
+      var heading = foldAccents(cleanLabel(node.locator && node.locator.heading, '').toLowerCase());
+      var tokens = tokenize(body, true, tokOpts);
       var counts = {};
       tokens.forEach(function (token) { counts[token] = (counts[token] || 0) + 1; });
       var score = 0;
@@ -504,8 +541,11 @@
     var project = migrateProject(projectInput);
     var sourceMap = {};
     project.sources.forEach(function (source) { sourceMap[source.id] = source; });
+    // A passage whose provider does not allow AI use never enters a prompt,
+    // whatever the caller retrieved (Study refuses earlier; this is the floor).
     var evidence = (retrieved || []).map(function (row) { return row.node || row; }).filter(function (node) {
-      return !!(node && sourceMatchesRetrieval(project, sourceMap[node.sourceId]));
+      var source = node && sourceMap[node.sourceId];
+      return !!(node && sourceMatchesRetrieval(project, source) && source.allowAI !== false);
     });
     var payload = evidence.map(function (node) {
       var source = sourceMap[node.sourceId] || {};
@@ -588,7 +628,9 @@
         evidenceIds: ids,
         quote: quote || null,
         derivation: 'source-grounded-synthesis',
-        supportStatus: 'supported',
+        // A one- or two-word quote ("the", "reading skills") is present in the
+        // passage but shows little; it was recorded as fully 'supported'.
+        supportStatus: quote && quote.split(/\s+/).filter(Boolean).length >= 3 ? 'supported' : 'weakly-supported',
         generatedBy: 'ai',
         stale: false
       };

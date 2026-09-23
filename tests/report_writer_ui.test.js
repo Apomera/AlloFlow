@@ -23,6 +23,13 @@ beforeAll(() => {
   if (typeof ReportWriter !== 'function') throw new Error('ReportWriter module did not register');
 });
 
+// The host's t() returns the registered English for a registered key. A mock
+// that echoes every key made the close button's label "toasts.close_report_writer"
+// (the key is registered, so the real app says "Close report writer"), and both
+// shell tests failed on that before reaching anything they meant to check.
+const REGISTERED = { 'toasts.close_report_writer': 'Close report writer' };
+const tMock = key => REGISTERED[key] || key;
+
 const click = async (element) => {
   await React.act(async () => {
     element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -42,7 +49,7 @@ describe('Report Writer workflow shell', () => {
         onClose,
         callGemini: vi.fn(async () => '{"results":[]}'),
         addToast: vi.fn(),
-        t: key => key,
+        t: tMock,
         studentNickname: 'Student A',
         behaviorLensData: null,
         longitudinalData: null,
@@ -60,7 +67,8 @@ describe('Report Writer workflow shell', () => {
     const stepNav = host.querySelector('nav[aria-label="Report Writer steps"]');
     const stepButtons = Array.from(stepNav.querySelectorAll('button'));
     expect(stepButtons).toHaveLength(10);
-    expect(stepButtons.map(button => button.getAttribute('aria-label'))).toEqual([
+    // A step that is not available yet adds why (report_writer_step_a11y.test.js).
+    expect(stepButtons.map(button => button.getAttribute('aria-label').replace(/\. Not available yet: .*$/, ''))).toEqual([
       'Step 1: Student Selection', 'Step 2: Background & History', 'Step 3: Clinical Observations',
       'Step 4: Assessment Scores', 'Step 5: Fact Chunk Review', 'Step 6: Diagnostic Hypotheses',
       'Step 7: Report Blueprint', 'Step 8: Generate Report', 'Step 9: Accuracy Dashboard',
@@ -115,7 +123,7 @@ describe('Report Writer workflow shell', () => {
         onClose: vi.fn(),
         callGemini: vi.fn(async () => '{"results":[]}'),
         addToast: vi.fn(),
-        t: key => key,
+        t: tMock,
         studentNickname: 'Student A',
         behaviorLensData: null,
         longitudinalData: null,
@@ -343,8 +351,9 @@ describe('Report Writer safety helpers', () => {
     const start = reportSource.indexOf('const translateReport = async () =>');
     const end = reportSource.indexOf('const copyTranslatedReport = () =>', start);
     const translateSource = reportSource.slice(start, end);
-    expect(translateSource).toContain('callGemini(prompt, false)');
-    expect(translateSource).not.toContain('callGemini(prompt, true)');
+    // Translation goes through the stoppable aiCall (report_writer_stop_runs.test.js).
+    expect(translateSource).toContain("aiCall('translate', prompt, false)");
+    expect(translateSource).not.toContain("aiCall('translate', prompt, true)");
   });
 
 });
@@ -366,7 +375,7 @@ describe('Report Writer redaction disclosure', () => {
         onClose: vi.fn(),
         callGemini: vi.fn(async () => '{"results":[]}'),
         addToast: vi.fn(),
-        t: key => key,
+        t: tMock,
         behaviorLensData: null,
         longitudinalData: null,
         dashboardData: []

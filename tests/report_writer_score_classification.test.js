@@ -11,6 +11,12 @@
 // and the old clinical tests passed because they checked a frozen copy of the
 // code that held the same wrong labels.
 //
+// 2026-09-23: WIAT-4, KTEA-3, DAS-II, CELF-5 and GARS-3 got their own bands;
+// Conners 4 60-64 is "Slightly Elevated" (manual Table 4.1), not the Conners 3
+// "High Average"; SRS-2 uses its report legend (Severe/Moderate/Mild/Normal);
+// BRIEF-2 below 60 is "Average" (PAR's narratives), not an invented label.
+// WIAT-4 and KTEA-3 print 10- or 15-point descriptors, set in Q-global.
+//
 // ORACLE is written from the manuals, NOT copied from the module. It is the
 // thing the shipped code is checked against. If a manual is revised, change
 // the oracle first and let the module fail. Every band edge is listed so an
@@ -36,7 +42,7 @@ beforeAll(() => {
   if (!PC || !utils) throw new Error('Report Writer did not register');
 });
 
-// [assessment, subtest, scoreType, [[score, manual label], ...]]
+// [assessment, subtest, scoreType, [[score, manual label], ...], descriptor scale?]
 const ORACLE = [
   // WISC-V Technical and Interpretive Manual (2014): descriptive classifications.
   ['WISC-V', 'Full Scale IQ', 'standard', [
@@ -64,18 +70,54 @@ const ORACLE = [
     [70, 'Very High'], [69, 'High'], [60, 'High'], [59, 'Average'], [41, 'Average'],
     [40, 'At-Risk'], [31, 'At-Risk'], [30, 'Clinically Significant']]],
   ['BASC-3 (Teacher)', 'Study Skills', 'T-score', [[35, 'At-Risk'], [65, 'High']]],
-  // Conners 4 Manual: T-score guidelines.
+  // Conners 4 Manual Table 4.1 "Understanding T-scores and Percentiles"; an MHS
+  // sample report prints T 63 as "Slightly Elevated".
   ['Conners-4', 'Hyperactivity', 'T-score', [
-    [70, 'Very Elevated'], [69, 'Elevated'], [65, 'Elevated'], [64, 'High Average'], [60, 'High Average'],
+    [70, 'Very Elevated'], [69, 'Elevated'], [65, 'Elevated'], [64, 'Slightly Elevated'], [60, 'Slightly Elevated'],
     [59, 'Average'], [40, 'Average'], [39, 'Low']]],
-  // BRIEF-2 Professional Manual: interpretive ranges (higher = more difficulty).
+  // BRIEF-2 PAR interpretive reports: 60-64 mildly, 65-69 potentially clinically,
+  // 70+ clinically elevated. No named band below 60; narratives say "average range".
   ['BRIEF-2', 'Global Executive Composite', 'T-score', [
     [70, 'Clinically Elevated'], [69, 'Potentially Clinically Elevated'], [65, 'Potentially Clinically Elevated'],
-    [64, 'Mildly Elevated'], [60, 'Mildly Elevated'], [59, 'Within Normal Limits']]],
-  // SRS-2 Manual: T-score ranges.
+    [64, 'Mildly Elevated'], [60, 'Mildly Elevated'], [59, 'Average']]],
+  // SRS-2 WPS report legend: >=76T Severe, 66T-75T Moderate, 60T-65T Mild, <=59T Normal.
   ['SRS-2', 'Total Score', 'T-score', [
-    [76, 'Severe Range'], [75, 'Moderate Range'], [66, 'Moderate Range'], [65, 'Mild Range'], [60, 'Mild Range'],
-    [59, 'Within Normal Limits']]],
+    [76, 'Severe'], [75, 'Moderate'], [66, 'Moderate'], [65, 'Mild'], [60, 'Mild'], [59, 'Normal']]],
+  // WIAT-4 sample score reports (10-point, what Pearson's samples print).
+  ['WIAT-4', 'Reading Composite', 'standard', [
+    [130, 'Extremely High'], [129, 'Very High'], [120, 'Very High'], [119, 'High Average'], [110, 'High Average'],
+    [109, 'Average'], [90, 'Average'], [89, 'Low Average'], [80, 'Low Average'], [79, 'Very Low'], [70, 'Very Low'],
+    [69, 'Extremely Low']]],
+  // WIAT-4 15-point: the "Suggested Qualitative Descriptors" profile (Pearson
+  // 2020); endpoints per KTEA-3's published 15-point table.
+  ['WIAT-4', 'Reading Composite', 'standard', [
+    [146, 'Very High'], [145, 'High'], [131, 'High'], [130, 'Above Average'], [116, 'Above Average'],
+    [115, 'Average'], [85, 'Average'], [84, 'Below Average'], [70, 'Below Average'], [69, 'Low'], [55, 'Low'],
+    [54, 'Very Low']], '15'],
+  // KTEA-3 Q-global help, 15-point (what Pearson's KTEA-3 samples print).
+  ['KTEA-3', 'Reading Composite', 'standard', [
+    [146, 'Very High'], [145, 'High'], [131, 'High'], [130, 'Above Average'], [116, 'Above Average'],
+    [115, 'Average'], [85, 'Average'], [84, 'Below Average'], [70, 'Below Average'], [69, 'Low'], [55, 'Low'],
+    [54, 'Very Low']]],
+  // KTEA-3 Q-global help, 10-point. Same cut points as the WIAT-4, other words.
+  ['KTEA-3', 'Reading Composite', 'standard', [
+    [130, 'Very High'], [129, 'High'], [120, 'High'], [119, 'Above Average'], [110, 'Above Average'],
+    [109, 'Average'], [90, 'Average'], [89, 'Below Average'], [80, 'Below Average'], [79, 'Low'], [70, 'Low'],
+    [69, 'Very Low']], '10'],
+  // DAS-II: Dumont, Willis & Elliott (2009) Rapid Reference 5.1; Pearson samples agree.
+  ['DAS-II', 'General Conceptual Ability', 'standard', [
+    [130, 'Very High'], [129, 'High'], [120, 'High'], [119, 'Above Average'], [110, 'Above Average'],
+    [109, 'Average'], [90, 'Average'], [89, 'Below Average'], [80, 'Below Average'], [79, 'Low'], [70, 'Low'],
+    [69, 'Very Low']]],
+  // CELF-5 Examiner's Manual Table 4.5, reproduced in Pearson's "Determining the
+  // Severity of a Language Disorder" (2013).
+  ['CELF-5', 'Core Language', 'standard', [
+    [115, 'Above Average'], [114, 'Average'], [86, 'Average'], [85, 'Below Average'], [78, 'Below Average'],
+    [77, 'Low'], [71, 'Low'], [70, 'Very Low']]],
+  // GARS-3 Autism Index (Gilliam 2014, as cited by Samadi et al. 2022 and a
+  // Prader-Willi screening study): a probability of autism, so HIGH is concern.
+  ['GARS-3', 'Autism Index', 'standard', [
+    [120, 'Very Likely'], [71, 'Very Likely'], [70, 'Probable'], [55, 'Probable'], [54, 'Unlikely']]],
   // BOT-2 Manual: descriptive categories for standard scores (mean 50, SD 10).
   ['BOT-2', 'Total Motor Composite', 'standard', [
     [70, 'Well-Above Average'], [69, 'Above Average'], [60, 'Above Average'], [59, 'Average'], [41, 'Average'],
@@ -85,28 +127,29 @@ const ORACLE = [
 // Presets that knowingly get the generic WISC-V-style label because their own
 // manual's bands are not encoded yet. A NEW preset must be added to the module's
 // RW_INSTRUMENT_SYSTEMS or to this list — it may not fall through silently.
-const KNOWINGLY_GENERIC = ['WIAT-4', 'DAS-II', 'CELF-5', 'KTEA-3', 'Custom Assessment'];
+const KNOWINGLY_GENERIC = ['Custom Assessment'];
 
-const entry = (assessment, subtest, scoreType, score) => ({ assessment, subtest, scoreType, score });
+const entry = (assessment, subtest, scoreType, score, descriptorScale) => ({ assessment, subtest, scoreType, score, descriptorScale });
+const title = (assessment, subtest, scheme) => `${assessment} ${subtest}${scheme ? ` (${scheme}-point)` : ''}`;
 
 describe('each instrument is labelled with its own manual\'s term', () => {
-  for (const [assessment, subtest, scoreType, rows] of ORACLE) {
-    it(`${assessment} ${subtest}`, () => {
+  for (const [assessment, subtest, scoreType, rows, scheme] of ORACLE) {
+    it(title(assessment, subtest, scheme), () => {
       for (const [score, label] of rows) {
-        expect(utils.classifyDisplayScore(score, scoreType, assessment, subtest).label, `${assessment} ${score}`).toBe(label);
+        expect(utils.classifyDisplayScore(score, scoreType, assessment, subtest, scheme).label, `${assessment} ${score}`).toBe(label);
       }
     });
   }
 });
 
 describe('the verifier accepts the manual\'s term and rejects the neighbouring band', () => {
-  for (const [assessment, subtest, scoreType, rows] of ORACLE) {
-    it(`${assessment} ${subtest}`, () => {
+  for (const [assessment, subtest, scoreType, rows, scheme] of ORACLE) {
+    it(title(assessment, subtest, scheme), () => {
       rows.forEach(([score, label], i) => {
-        expect(PC._checkClassification(entry(assessment, subtest, scoreType, score), label).status, `${assessment} ${score} '${label}'`).toBe('ok');
+        expect(PC._checkClassification(entry(assessment, subtest, scoreType, score, scheme), label).status, `${assessment} ${score} '${label}'`).toBe('ok');
         const neighbours = [rows[i - 1], rows[i + 1]].filter(n => n && n[1] !== label);
         for (const [, other] of neighbours) {
-          expect(PC._checkClassification(entry(assessment, subtest, scoreType, score), other).status, `${assessment} ${score} '${other}'`).toBe('mismatch');
+          expect(PC._checkClassification(entry(assessment, subtest, scoreType, score, scheme), other).status, `${assessment} ${score} '${other}'`).toBe('mismatch');
         }
       });
     });
@@ -164,13 +207,100 @@ describe('regressions from the 2026-09-22 review (end to end through verifyDraft
   });
 });
 
-describe('GARS-3 is never given an ability label', () => {
-  it('an Autism Index of 100 is not "Average" and is not treated as a low-score concern', () => {
-    const c = utils.classifyDisplayScore(100, 'standard', 'GARS-3', 'Autism Index');
-    expect(c.label).not.toBe('Average');
-    expect(c.unclassified).toBe(true);
-    expect(['red', 'orange']).not.toContain(utils.classifyDisplayScore(60, 'standard', 'GARS-3', 'Autism Index').color);
-    expect(PC._checkClassification(entry('GARS-3', 'Autism Index', 'standard', 100), 'Average').status).toBe('unchecked');
+describe('GARS-3 is a probability of autism, never an ability label', () => {
+  const gars = (score) => utils.classifyDisplayScore(score, 'standard', 'GARS-3', 'Autism Index');
+  it('HIGH is the concern: an index of 100 is Very Likely, and a low index is not a deficit', () => {
+    expect(gars(100).label).toBe('Very Likely');
+    expect(gars(100).direction).toBe('high');
+    expect(['red', 'orange']).toContain(gars(100).color);
+    expect(['red', 'orange']).not.toContain(gars(50).color);
+    expect(utils.classifyDisplayScore(100, 'standard', 'WISC-V', 'Full Scale IQ').direction).toBe('low');
+  });
+  it('calling an index of 100 "Average" hides the concern and is flagged', () => {
+    expect(PC._checkClassification(entry('GARS-3', 'Autism Index', 'standard', 100), 'Average').status).toBe('mismatch');
+  });
+  const src = [{ assessment: 'GARS-3', subtest: 'Autism Index', score: 62, score_type: 'standard' }];
+  it('a GARS-3 sentence is checked in the manual\'s words', () => {
+    expect(PC.verifyDraft(src, 'On the GARS-3, the Autism Index was 62, in the Probable range.').discrepancies).toHaveLength(0);
+    const bad = PC.verifyDraft(src, 'On the GARS-3, the Autism Index was 62, meaning autism is very likely.');
+    expect(bad.discrepancies.map(d => d.kind)).toContain('classification_mismatch');
+  });
+  it('"unlikely" in a sentence about another test is an ordinary word and does not hide that test\'s label', () => {
+    const wisc = [{ assessment: 'WISC-V', subtest: 'Full Scale IQ', score: 88, score_type: 'standard' }];
+    const r = PC.verifyDraft(wisc, 'On the WISC-V, the Full Scale IQ was 88, making a disability unlikely, in the Average range.');
+    expect(r.discrepancies.map(d => d.kind)).toContain('classification_mismatch');
+  });
+});
+
+describe('WIAT-4 and KTEA-3 descriptor scales (set in Q-global)', () => {
+  const ktea = (score, scheme) => utils.classifyDisplayScore(score, 'standard', 'KTEA-3', 'Reading Composite', scheme).label;
+  it('each instrument defaults to what its publisher\'s sample reports print', () => {
+    expect(utils.descriptorScales['KTEA-3'].default).toBe('15');
+    expect(utils.descriptorScales['WIAT-4'].default).toBe('10');
+    expect(ktea(75)).toBe('Below Average');
+    expect(utils.classifyDisplayScore(85, 'standard', 'WIAT-4', 'Reading Composite').label).toBe('Low Average');
+  });
+  it('an unknown scale falls back to the default instead of dropping the instrument\'s bands', () => {
+    expect(ktea(75, '99')).toBe('Below Average');
+    expect(utils.classifyDisplayScore(75, 'standard', 'KTEA-3', 'Reading Composite', '99').generic).toBe(false);
+  });
+  it('the verifier checks the draft against the scale the score report used', () => {
+    const src = (scale) => [{ assessment: 'KTEA-3', subtest: 'Reading Composite', score: 75, score_type: 'standard', descriptorScale: scale }];
+    const text = 'On the KTEA-3, the Reading Composite was 75, in the Low range.';
+    expect(PC.verifyDraft(src('10'), text).discrepancies).toHaveLength(0);
+    const r = PC.verifyDraft(src(undefined), text);
+    expect(r.discrepancies.map(d => d.kind)).toContain('classification_mismatch');
+    expect(r.discrepancies[0].detail).toContain('KTEA-3 10-point scale');
+    expect(r.discrepancies[0].detail).toContain('Descriptors in Step 4');
+  });
+  it('a mismatch on no other scale gets no such hint', () => {
+    const r = PC.verifyDraft([{ assessment: 'KTEA-3', subtest: 'Reading Composite', score: 75, score_type: 'standard' }],
+      'On the KTEA-3, the Reading Composite was 75, in the Average range.');
+    expect(r.discrepancies[0].detail).not.toContain('Descriptors in Step 4');
+  });
+  it('a saved report keeps a valid scale, drops an invalid one, and is relabelled with it', () => {
+    const data = utils.validateReportPayload({
+      schemaVersion: 1,
+      scoreEntries: [
+        { assessment: 'KTEA-3', subtest: 'Reading Composite', score: 75, scoreType: 'standard', descriptorScale: '10', classification: 'Below Average' },
+        { assessment: 'KTEA-3', subtest: 'Math Composite', score: 75, scoreType: 'standard', descriptorScale: 'x' },
+        { assessment: 'WISC-V', subtest: 'Full Scale IQ', score: 75, scoreType: 'standard', descriptorScale: '10' },
+      ],
+      factChunks: [{ id: 'c1', type: 'score', source: 'KTEA-3', field: 'Reading Composite', value: 75, scoreType: 'standard', descriptorScale: '10' }],
+    });
+    expect(data.scoreEntries.map(r => [r.descriptorScale, r.classification])).toEqual([['10', 'Low'], [undefined, 'Below Average'], [undefined, 'Very Low']]);
+    expect(data.factChunks[0].classification).toBe('Low');
+  });
+  it('the score table names the descriptor scale only where there is a choice', () => {
+    const text = utils.scoreTableText([
+      { assessment: 'KTEA-3', subtest: 'Reading Composite', score: 75, scoreType: 'standard', descriptorScale: '10', classification: 'Low' },
+      { assessment: 'WISC-V', subtest: 'Full Scale IQ', score: 75, scoreType: 'standard', classification: 'Very Low' },
+    ]);
+    expect(text).toContain('KTEA-3 (classifications: KTEA-3 10-point scale)');
+    expect(text).toMatch(/^WISC-V$/m);
+  });
+});
+
+describe('labels from another scale', () => {
+  it('a specific band name from another metric is flagged, a plain comparison is not', () => {
+    // "High Average" is a standard-score band; no T-score manual uses it.
+    expect(PC._checkClassification(entry('BASC-3 (Teacher)', 'Attention Problems', 'T-score', 63), 'High Average').status).toBe('mismatch');
+    expect(PC._checkClassification(entry('BASC-3 (Teacher)', 'Hyperactivity', 'T-score', 38), 'Below Average').status).toBe('unchecked');
+    expect(PC._checkClassification(entry('Vineland-3', 'Communication', 'standard', 100), 'Normal').status).toBe('unchecked');
+    // GARS-3's words belong to GARS-3 alone, even on the same metric.
+    expect(PC._checkClassification(entry('WISC-V', 'Full Scale IQ', 'standard', 60), 'Unlikely').status).toBe('unchecked');
+  });
+  it('"within normal limits" is read as the SRS-2 legend\'s "Normal"', () => {
+    const src = [{ assessment: 'SRS-2', subtest: 'Total Score', score: 55, score_type: 'T-score' }];
+    expect(PC.verifyDraft(src, 'On the SRS-2, the Total Score was 55, within normal limits.').discrepancies).toHaveLength(0);
+    const high = [{ assessment: 'SRS-2', subtest: 'Total Score', score: 70, score_type: 'T-score' }];
+    expect(PC.verifyDraft(high, 'On the SRS-2, the Total Score was 70, within normal limits.').discrepancies.map(d => d.kind)).toContain('classification_mismatch');
+  });
+  it('"marginal" is CELF-5\'s Below Average (78-85)', () => {
+    const src = [{ assessment: 'CELF-5', subtest: 'Core Language', score: 80, score_type: 'standard' }];
+    expect(PC.verifyDraft(src, 'On the CELF-5, the Core Language score was 80, in the marginal range.').discrepancies).toHaveLength(0);
+    const low = [{ assessment: 'CELF-5', subtest: 'Core Language', score: 72, score_type: 'standard' }];
+    expect(PC.verifyDraft(low, 'On the CELF-5, the Core Language score was 72, in the marginal range.').discrepancies.map(d => d.kind)).toContain('classification_mismatch');
   });
 });
 
