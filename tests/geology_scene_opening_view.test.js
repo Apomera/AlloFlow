@@ -412,8 +412,8 @@ describe('Geology Explorer — no flattened separators in the interface copy', (
 describe('Geology Explorer — molten layers keep their hue', () => {
   it('raises glow in HSL instead of multiplying, which clipped red and washed orange to cream', () => {
     expect(source).not.toContain('col.multiplyScalar(1.5)');
-    expect(source).toContain('col.getHSL(glowHsl3d);');
-    expect(source).toContain('col.setHSL(glowHsl3d.h, Math.min(1, glowHsl3d.s * 1.04), Math.min(0.64, glowHsl3d.l * 1.5));');
+    expect(source).toContain('out.getHSL(glowHsl3d);');
+    expect(source).toContain('out.setHSL(glowHsl3d.h, Math.min(1, glowHsl3d.s * 1.04), Math.min(0.64, glowHsl3d.l * 1.5));');
     expect(source).toContain('var glowHsl3d = { h: 0, s: 0, l: 0 };');
   });
 

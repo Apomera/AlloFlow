@@ -270,7 +270,7 @@ describe('Geology Explorer — mountain belt registries (mission, quiz, sequence
     expect(source).toContain("'drifting-summit-cloud-sprites'");
     expect(source).toContain('function updateGeologyAlpineClouds3d(time3d)');
     expect(source).toContain('updateGeologyAlpineClouds3d(geologyMotionTime3d);');
-    expect(source).toContain("if (SCENE.id === 'collision' && v.key === 'summitLimestone') col.lerp(WHITE, 0.5);");
+    expect(source).toContain("if (SCENE.id === 'collision' && v.key === 'summitLimestone') out.lerp(WHITE, 0.5);");
     const clouds = source.slice(source.indexOf('function updateGeologyAlpineClouds3d'), source.indexOf('cnv.dataset.geologyVolcanicAtmosphereRendering'));
     expect(clouds).toContain('reducedMotion3d ? 0.61 : time3d');
     expect(clouds).toContain('cloudSprite3d.visible = !focusLens && cloudSprite3d.userData.geologyCloudBaseZ < cloudFrontZ3d + 0.4');

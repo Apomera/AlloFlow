@@ -188,6 +188,110 @@ describe('dig sound', () => {
   });
 });
 
+describe('sub-voxel digging', () => {
+  let seed = 11;
+  const rand = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+  const S = () => P.DIG_SUB;
+
+  it('a cell mask survives the 16-hex save format, and its state reads intact / dug out / partial', () => {
+    expect(S()).toBe(4);
+    for (let trial = 0; trial < 20; trial++) {
+      const mask = new Uint8Array(64); for (let i = 0; i < 64; i++) mask[i] = rand() < 0.5 ? 1 : 0;
+      const hex = P.digMaskHex(mask);
+      expect(hex).toMatch(/^[0-9a-f]{16}$/);
+      expect(Array.from(P.digMaskFromHex(hex))).toEqual(Array.from(mask));
+    }
+    expect(P.digCellState(null)).toBe('F');
+    expect(P.digCellState(new Uint8Array(64).fill(1))).toBe('F');
+    expect(P.digCellState(new Uint8Array(64))).toBe('0');
+    const one = new Uint8Array(64).fill(1); one[5] = 0;
+    expect(P.digCellState(one)).toMatch(/^[0-9a-f]{16}$/);
+  });
+
+  it('a crater stays within its ragged radius, takes the voxel it was aimed at, and only takes rock', () => {
+    const cx = 10.3, cy = 6.8, cz = 9.1, r = 1.65;
+    const all = P.digCrater(cx, cy, cz, r, () => true);
+    all.forEach(([x, y, z]) => { expect(Math.hypot(x + 0.5 - cx, y + 0.5 - cy, z + 0.5 - cz)).toBeLessThanOrEqual(r * 1.2 + 1e-9); });
+    expect(all.some(([x, y, z]) => x === 10 && y === 6 && z === 9)).toBe(true);
+    const onlyEven = P.digCrater(cx, cy, cz, r, (x) => x % 2 === 0);
+    expect(onlyEven.every(([x]) => x % 2 === 0)).toBe(true);
+    expect(P.digCrater(cx, cy, cz, r, () => true)).toEqual(all);            // deterministic: same aim, same crater
+  });
+
+  it('soft rock goes in bigger, faster bites than hard rock; the drill is quicker and narrower', () => {
+    const vol = (label) => P.digCrater(20.5, 20.5, 20.5, P.digStrike(label, 'pick').r, () => true).length;
+    expect(vol('Loose')).toBeGreaterThan(vol('Layered'));
+    expect(vol('Layered')).toBeGreaterThan(vol('Hard'));
+    expect(P.digStrike('Loose', 'pick').ms).toBeLessThan(P.digStrike('Hard', 'pick').ms);
+    ['Loose', 'Layered', 'Dense', 'Crystalline', 'Hard'].forEach((label) => {
+      const pick = P.digStrike(label, 'pick'), drill = P.digStrike(label, 'drill');
+      expect(drill.ms, label).toBeLessThan(pick.ms);
+      expect(drill.r, label).toBeLessThan(pick.r);
+      expect(pick.r * 2, label).toBeLessThan(P.DIG_SUB * 1.1);                 // a single bite never swallows a whole cell
+    });
+  });
+
+  it('digging down clears every row of the shaft across the whole footprint', () => {
+    const footR = 0.27 * P.DIG_SUB, r = footR + 0.9;                           // FP_RADIUS in small voxels, as the engine uses
+    for (let trial = 0; trial < 12; trial++) {
+      const cx = 20 + rand() * 4, cz = 30 + rand() * 4, top = 3 + Math.floor(rand() * 5), rows = 1 + Math.floor(rand() * 3);
+      const got = new Set(P.digShaft(cx, cz, top, rows, r, () => true).map((g) => g.join(',')));
+      for (let gy = top; gy < top + rows; gy++) {
+        // each of the capsule's five ground samples must lose its small voxel in every shaft row
+        [[0, 0], [footR, 0], [-footR, 0], [0, footR], [0, -footR]].forEach(([ox, oz]) => {
+          const key = Math.floor(cx + ox) + ',' + gy + ',' + Math.floor(cz + oz);
+          expect(got.has(key), `row ${gy} sample ${ox},${oz}`).toBe(true);
+        });
+      }
+      P.digShaft(cx, cz, top, rows, r, () => true).forEach(([, gy]) => { expect(gy >= top && gy < top + rows).toBe(true); });
+    }
+  });
+
+  it('the reticle ray finds the first rock, the face it entered, and nothing past its reach', () => {
+    const wall = (x) => x >= 10;                                              // solid for gx >= 10
+    const hit = P.digRayMarch(2.5, 5.5, 5.5, 1, 0, 0, 20, (x) => wall(x));
+    expect(hit.g).toEqual([10, 5, 5]);
+    expect(hit.normal).toEqual([-1, 0, 0]);
+    expect(hit.t).toBeCloseTo(7.5, 9);
+    expect(P.digRayMarch(2.5, 5.5, 5.5, 1, 0, 0, 7, (x) => wall(x))).toBeNull();
+    const down = P.digRayMarch(4.5, 0.5, 4.5, 0, 1, 0, 20, (x, y) => y >= 3);     // sub-grid y grows downward
+    expect(down.g).toEqual([4, 3, 4]); expect(down.normal).toEqual([0, -1, 0]);
+    const diag = P.digRayMarch(0.5, 0.5, 0.5, Math.SQRT1_2, Math.SQRT1_2, 0, 20, (x, y) => x + y >= 6);
+    expect(diag.g[0] + diag.g[1]).toBe(6);
+    expect(P.digRayMarch(3.2, 3.2, 3.2, 0, 0, 1, 5, () => true).t).toBe(0);    // eye inside rock
+  });
+
+  it('folding old history into a snapshot never changes the dug world it replays to', () => {
+    const history = [];
+    for (let i = 0; i < 230; i++) {
+      if (i % 17 === 0) { history.push(`${i % 14},0,${(i * 3) % 14}`); continue; }        // legacy whole-cell ids mixed in
+      const id = `${i % 14},${1 + (i % 5)},${(i * 7) % 14}`, before = rand() < 0.3 ? 'F' : P.digMaskHex(new Uint8Array(64).map(() => (rand() < 0.7 ? 1 : 0)));
+      const after = rand() < 0.2 ? '0' : P.digMaskHex(new Uint8Array(64).map(() => (rand() < 0.5 ? 1 : 0)));
+      history.push({ c: { [id]: [before, after] } });
+    }
+    const folded = P.digFoldHistory(history, 160, 120);
+    expect(folded).toHaveLength(121);
+    expect(folded[0].b).toBeTruthy();
+    expect(folded.slice(1)).toEqual(history.slice(-120));
+    expect(P.digReplay(folded)).toEqual(Object.fromEntries(Object.entries(P.digReplay(history)).filter(([, v]) => v !== 'F')));
+    expect(P.digFoldHistory(history.slice(0, 100), 160, 120)).toEqual(history.slice(0, 100));   // under the cap: untouched
+  });
+
+  it('a partly-dug mesh that starts empty can still hold a colour for every instance', () => {
+    window.THREE = THREE;
+    const geo = new THREE.BoxGeometry(1, 1, 1), mat = new THREE.MeshStandardMaterial();
+    const plain = new THREE.InstancedMesh(geo, mat, 50); plain.count = 0; plain.setColorAt(0, new THREE.Color(1, 0, 0));
+    expect(plain.instanceColor.array.length).toBe(0);                          // the r128 trap: sized from count, not capacity
+    const fixed = P.withInstanceColors3d(new THREE.InstancedMesh(geo, mat, 50), 50); fixed.count = 0;
+    fixed.setColorAt(40, new THREE.Color(0.2, 0.4, 0.6));
+    expect(fixed.instanceColor.array.length).toBe(150);
+    expect(Array.from(fixed.instanceColor.array.slice(120, 123)).map((v) => +v.toFixed(2))).toEqual([0.2, 0.4, 0.6]);
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toMatch(/var subMeshNew3d = withInstanceColors3d\(new THREE\.InstancedMesh\(subGeo3d, mat, capacity3d\), capacity3d\)/);
+    expect(src).toMatch(/var debrisMesh3d = withInstanceColors3d\(new THREE\.InstancedMesh\(debrisGeo3d, debrisMat3d, DEBRIS_MAX3d\), DEBRIS_MAX3d\)/);
+  });
+});
+
 describe('mirror', () => {
   it('keeps both app mirrors identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
