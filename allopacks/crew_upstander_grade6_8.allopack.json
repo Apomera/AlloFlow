@@ -48,7 +48,7 @@
       "type": "simplified",
       "title": "Small Moves, Not Big Speeches",
       "timestamp": "2026-09-13T18:00:00.000Z",
-      "data": "## Small Moves, Not Big Speeches\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nEveryone knows what a **bystander** is. Someone is being left out, talked over, or picked on, and a ring of people watch it happen. Almost nobody in that ring is cruel. Most of them are waiting for someone else to move first, or they are afraid that moving will make it worse, or they simply do not know what a move would look like. Researchers have a name for the waiting: the **bystander effect**. The more people watching, the less likely any one of them is to act.\n\nAn **upstander** is not a hero with a speech. An upstander is someone who makes one **small move**. The move is usually about the size of a sentence. \"Wait, I want to hear what she was saying.\" \"Come sit with us.\" \"That is not funny.\" Sometimes the move is not words at all: changing seats, starting a different conversation, catching someone's eye and nodding. Sometimes the move happens afterwards, in private, as a **check in**: \"That was rough. You okay?\"\n\nHere is a moment from a fictional **Crew**. At lunch, Tomas is telling a story and Reyna keeps cutting across him with jokes. The table laughs at the jokes. Tomas gets quieter and finally stops. Nobody at the table thinks of themselves as unkind. Then Jae says, not loudly, \"Hold on, Tomas, what happened next?\" That is the whole move: a **redirect** back to Tomas. Reyna is not called out. Tomas finishes. The table has changed shape by one sentence.\n\nSmall moves work because they are **low risk**. A big speech makes the person being **excluded** into a **spectacle** and makes everyone else defensive. A small move keeps the situation ordinary. It also does something else: it shows the ring of watchers that moving is possible. The second move is always easier than the first, and it is usually made by someone who saw the first one.\n\nBeing a respectful member of a **community**, the King Respect **HOWL**, is mostly made of these moments. Not the assembly about kindness. The lunch table. The group chat. The hallway. The moment when you could look away and do not.\n\nSome situations are bigger than a small move. If someone is being hurt, threatened, or targeted again and again, the move is to get an adult, and that is not tattling; it is the correct size of response. This week is about the everyday version: the exclusions and cut-offs that happen ten times a day and that one sentence can change.",
+      "data": "## Small Moves, Not Big Speeches\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nEveryone knows what a **bystander** is. Someone is being left out, talked over, or picked on, and a ring of people watch it happen. Almost nobody in that ring is cruel. Most of them are waiting for someone else to move first, or they are afraid that moving will make it worse, or they simply do not know what a move would look like. Researchers have a name for the waiting: the **bystander effect**. The more people watching, the less likely any one of them is to act.\n\nAn **upstander** is not a hero with a speech. An upstander is someone who makes one **small move**. The move is usually about the size of a sentence. \"Wait, I want to hear what she was saying.\" \"Come sit with us.\" \"That is not funny.\" Sometimes the move is not words at all: changing seats, starting a different conversation, catching someone's eye and nodding. Sometimes the move happens afterwards, in private, as a **check in**: \"That was rough. You okay?\"\n\nHere is a moment from a fictional **Crew**. At lunch, Tomas is telling a story and Reyna keeps cutting across him with jokes. The table laughs at the jokes. Tomas gets quieter and finally stops. Nobody at the table thinks of themselves as unkind. Then Jae says, not loudly, \"Hold on, Tomas, what happened next?\" That is the whole move: a **redirect** back to Tomas. Reyna is not called out. Tomas finishes. The table has changed shape by one sentence.\n\nSmall moves work because they are **low risk**. A big speech makes the person being **excluded** into a **spectacle** and makes everyone else defensive. A small move keeps the situation ordinary. It also does something else: it shows the ring of watchers that moving is possible. The second move is usually easier than the first, and it is often made by someone who saw the first one.\n\nBeing a respectful member of a **community**, the King Respect **HOWL**, is mostly made of these moments. Not the assembly about kindness. The lunch table. The group chat. The hallway. The moment when you could look away and do not.\n\nSome situations are bigger than a small move. If someone is being hurt or threatened, or targeted again and again, the move is to get an adult, and that is not tattling; it is the correct size of response. This week is about the everyday version: the exclusions and cut-offs that happen ten times a day and that one sentence can change.",
       "meta": "6th-8th Grade • Leveled reading"
     },
     {
@@ -159,7 +159,7 @@
           {
             "label": "BIGGER THAN A MOVE",
             "bullets": [
-              "Someone hurt, threatened, or targeted again and again",
+              "Someone hurt or threatened, or targeted again and again",
               "Get an adult",
               "That is the right size of response"
             ],
@@ -258,8 +258,8 @@
             "type": "mcq",
             "question": "What does the reading say about most people in the ring of watchers?",
             "options": [
-              "They enjoy watching someone else get picked on for a change",
-              "They have already decided the person being picked on deserves it",
+              "They enjoy watching someone else get picked on instead of them",
+              "They have already decided the person being picked on must deserve it",
               "They are too far away from what is happening to do anything",
               "They are waiting for someone else to move, or do not know what a move is"
             ],
@@ -271,8 +271,8 @@
             "question": "What is the bystander effect?",
             "options": [
               "The more people watching, the less likely any one of them is to act",
-              "People become braver when there is a crowd",
-              "Watching someone get hurt makes you feel guilty later",
+              "People become braver and more likely to help when there is a crowd",
+              "Watching someone get hurt makes you feel guilty about it for days",
               "Adults are less likely to help than students"
             ],
             "correctAnswer": "The more people watching, the less likely any one of them is to act",
@@ -282,12 +282,12 @@
             "type": "mcq",
             "question": "What was Jae's move at the lunch table?",
             "options": [
-              "He told Reyna to stop being rude",
-              "He asked the table to vote on who should talk",
-              "He said \"Hold on, Tomas, what happened next?\"",
-              "He left the table to find a teacher"
+              "Jae told Reyna, \"Stop being rude.\"",
+              "Jae asked the table to vote on who could talk",
+              "Jae said \"Hold on, Tomas, what happened next?\"",
+              "Jae left the table to find a teacher"
             ],
-            "correctAnswer": "He said \"Hold on, Tomas, what happened next?\"",
+            "correctAnswer": "Jae said \"Hold on, Tomas, what happened next?\"",
             "conceptLabel": "small moves count"
           },
           {
@@ -297,7 +297,7 @@
               "Because speeches take too long and lunch is short",
               "Because it makes a spectacle and makes everyone else defensive",
               "Because teachers do not like speeches in the lunchroom",
-              "Because the person making jokes will just make a better one"
+              "Because the person making the jokes will just tell an even better one"
             ],
             "correctAnswer": "Because it makes a spectacle and makes everyone else defensive",
             "conceptLabel": "small beats spectacle"
@@ -307,8 +307,8 @@
             "question": "Someone is being threatened after school. What size of response does the reading say fits?",
             "options": [
               "Getting an adult, which is the correct size, not tattling",
-              "A small move like changing the subject",
-              "A speech to the person doing the threatening",
+              "A small move, like quietly starting a different conversation",
+              "A speech to the person doing the threatening, in front of everyone",
               "Waiting to see whether it happens again"
             ],
             "correctAnswer": "Getting an adult, which is the correct size, not tattling",
@@ -384,7 +384,7 @@
         },
         {
           "question": "Is getting an adult tattling?",
-          "answer": "Tattling is trying to get someone in trouble for something small. Getting an adult when someone is hurt, threatened, or targeted again and again is the correct size of response. The reading is clear about the difference."
+          "answer": "Tattling is trying to get someone in trouble for something small. Getting an adult when someone is hurt or threatened, or targeted again and again is the correct size of response. The reading is clear about the difference."
         },
         {
           "question": "What if I froze and did nothing?",
@@ -414,7 +414,7 @@
         "authorshipMode": "scaffolded",
         "reflectionLevel": "quick",
         "reasoningRequired": false,
-        "sourceExcerpt": "An upstander is not a hero with a speech. An upstander is someone who makes one small move. The second move is always easier than the first, and it is usually made by someone who saw the first one.",
+        "sourceExcerpt": "An upstander is not a hero with a speech. An upstander is someone who makes one small move. The second move is usually easier than the first, and it is often made by someone who saw the first one.",
         "lessonRef": {
           "resourceId": "cu-reading",
           "title": "Small Moves, Not Big Speeches"
@@ -445,7 +445,7 @@
             "studentPrompt": "Make your own three-beat cue.",
             "reasoningPrompt": "How does your cue keep a move small instead of turning into a speech?",
             "hookFact": {
-              "text": "The second move is always easier than the first.",
+              "text": "The second move is usually easier than the first.",
               "sourceTitle": "Small Moves, Not Big Speeches (this lesson)"
             }
           },
@@ -454,7 +454,7 @@
             "target": "A small move shows the ring that moving is possible",
             "essentialFacts": [
               "A small move shows the ring of watchers that moving is possible.",
-              "The second move is usually made by someone who saw the first one."
+              "The second move is often made by someone who saw the first one."
             ],
             "factLocked": true,
             "factVerified": false,
@@ -503,7 +503,7 @@
             "Most people in the ring are waiting for someone else to move first.",
             "An upstander makes one small move, about the size of a sentence.",
             "A small move keeps the situation ordinary; a big speech makes a spectacle.",
-            "If someone is hurt, threatened, or targeted again and again, the move is to get an adult."
+            "If someone is hurt or threatened, or targeted again and again, the move is to get an adult."
           ],
           "openQuestions": [
             "Which candidate moves are really speeches?",

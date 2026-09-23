@@ -18,5 +18,5 @@ Policy: **no raster text, labels, numbers, captions or watermarks in the artwork
 ## Lesson panels (900 px wide; each carries native labels and a caption)
 
 1. `cy-img-two-threes` - *Two threes.* A split panel: on the left a student with a thought bubble holding three stars; on the right a student with a thought bubble holding a tally, a calendar day, and a small broken gear. Labels: Zoe's 3, Malik's 3. Caption: only one story has a count, a date, and a thing that went wrong.
-2. `cy-img-story` - *The shape of the story.* Three cards fanned on a table, each with a step icon, a calendar icon, and one with a small gap mark; a clock reading a short span. Labels: Level, Evidence, Gap. Caption: nine sentences, two minutes.
+2. `cy-img-story` - *The shape of the story.* Three cards fanned on a table, each with a step icon, a calendar icon, and one with a small gap mark; a clock reading a short span. Labels: Level, Evidence, Gap. Caption: five sentences, two minutes.
 3. `cy-img-conference` - *Saying it where it counts.* The conference table: the student mid-sentence, the family member leaning in, the teacher nodding, a story card on the table. Labels: The student, The story. Caption: the conference is where you say what is behind the grade.

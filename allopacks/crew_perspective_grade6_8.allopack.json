@@ -48,7 +48,7 @@
       "type": "simplified",
       "title": "Two Sides of One Story",
       "timestamp": "2026-09-13T18:00:00.000Z",
-      "data": "## Two Sides of One Story\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nHere is something that happens in every middle school every day. Someone does a small thing, and someone else decides what it meant. A classmate walks past your table without saying hi. A group chat goes quiet after you post. A partner in science takes the good beaker without asking. In each case, your brain writes a **story** in about half a second: they are mad at me, they think I am annoying, they do not care.\n\nThe story feels like a **fact**. It is not. It is a guess, made fast, with almost no information. To **assume** is to treat that guess as if it were known. Psychologists call the pattern an **attribution**: deciding why someone did something. The trouble is that we usually attribute other people's actions to who they are (\"she is rude\") and our own to the situation (\"I was in a hurry\"). That gap is where most **Crew** conflicts start.\n\nHere is a moment from a fictional Crew. Dev posts a photo of his science model in the Crew chat. Three people react. Priya, who usually reacts to everything, does not. By the next morning Dev has decided that Priya thinks his model is bad, and he does not sit near her. Priya has no idea why. Her phone had been taken away the night before. Two people spent a day being cold to each other over a story that one of them made up.\n\nThe fix is not to stop having stories. You cannot. The fix is to notice the story, **hold it loosely**, and ask one **open question**. \"Hey, everything okay this morning?\" costs five seconds. It would have saved Dev a day. In the **Perspective** Lens tool this week you will practice a **viewpoint swap**: taking the same moment and telling it from the other person's side, with the details you actually have and the ones you filled in.\n\nWorking **cooperatively** is a Respect behavior in the King **HOWLs**, and it depends on this skill more than on anything else. Groups do not fall apart because people disagree. They fall apart because people decide what a disagreement meant before they check. A Crew where people ask before they decide can survive almost any **misunderstanding**.\n\nOne more thing. Sometimes you ask, and the answer is that the person really was upset with you. That is not a failure. Now you know, and you can do something about it. A story you made up cannot be fixed. A real problem can.",
+      "data": "## Two Sides of One Story\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nHere is something that happens in every middle school every day. Someone does a small thing, and someone else decides what it meant. A classmate walks past your table without saying hi. A group chat goes quiet after you post. A partner in science takes the good beaker without asking. In each case, your brain writes a **story** in about half a second: they are mad at me, they think I am annoying, they do not care.\n\nThe story feels like a **fact**. It is not. It is a guess, made fast, with almost no information. To **assume** is to treat that guess as if it were known. Psychologists call the pattern an **attribution**: deciding why someone did something. The trouble is that we often attribute other people's actions to who they are (\"she is rude\") and our own to the situation (\"I was in a hurry\"). That gap is where many **Crew** conflicts start.\n\nHere is a moment from a fictional Crew. Dev posts a photo of his science model in the Crew chat. Three people react. Priya, who usually reacts to everything, does not. By the next morning Dev has decided that Priya thinks his model is bad, and he does not sit near her. Priya has no idea why. Her phone had been taken away the night before. Two people spent a day being cold to each other over a story that one of them made up.\n\nThe fix is not to stop having stories. You cannot. The fix is to notice the story, **hold it loosely**, and ask one **open question**. \"Hey, how is your morning going?\" costs five seconds. It would have saved Dev a day. In the **Perspective** Lens tool this week you will practice a **viewpoint swap**: taking the same moment and telling it from the other person's side, with the details you actually have and the ones you filled in.\n\nWorking **cooperatively** is a Respect behavior in the King **HOWLs**, and it depends on this skill more than on anything else. Groups do not fall apart because people disagree. They fall apart because people decide what a disagreement meant before they check. A Crew where people ask before they decide can survive almost any **misunderstanding**.\n\nOne more thing. Sometimes you ask, and the answer is that the person really was upset with you. That is not a failure. Now you know, and you can do something about it. A story you made up cannot be fixed. A real problem can.",
       "meta": "6th-8th Grade • Leveled reading"
     },
     {
@@ -151,7 +151,7 @@
             "bullets": [
               "Other people: \"that is who they are\"",
               "Ourselves: \"I was in a hurry\"",
-              "Most conflicts start here"
+              "Many conflicts start here"
             ],
             "iconPrompt": "two arrows pointing at one dot from different sides"
           },
@@ -204,7 +204,7 @@
           },
           {
             "id": "cp-i3",
-            "content": "Hey, did you see the photo I posted?",
+            "content": "Hey, what did you think of the photo I posted?",
             "categoryId": "cp-ask"
           },
           {
@@ -259,8 +259,8 @@
             "options": [
               "The explanation your brain writes, fast, for what someone did",
               "A lie someone tells to get out of trouble with an adult",
-              "A fact that everyone in the room would agree actually happened",
-              "A question you ask another person to find out what they meant"
+              "A fact that everyone in the room would say really happened",
+              "A question you ask a person to find out what they meant"
             ],
             "correctAnswer": "The explanation your brain writes, fast, for what someone did",
             "conceptLabel": "story is a guess"
@@ -269,7 +269,7 @@
             "type": "mcq",
             "question": "Why did Dev stop sitting near Priya?",
             "options": [
-              "Priya told him in the chat that she did not like his model",
+              "Priya told him in the chat she did not like his model",
               "The Crew leader moved the seats for a new project group",
               "He decided her silence meant she thought his model was bad",
               "Priya had been cold to him at lunch the day before"
@@ -279,11 +279,11 @@
           },
           {
             "type": "mcq",
-            "question": "Which pattern does the reading say causes most Crew conflicts?",
+            "question": "Which pattern does the reading say starts many Crew conflicts?",
             "options": [
               "People disagreeing about how the work should get done",
               "Explaining others by who they are and ourselves by the situation",
-              "People not liking each other from the first day of Crew",
+              "People not liking each other from the very first day of Crew",
               "Group chats that move too fast for anyone to keep up"
             ],
             "correctAnswer": "Explaining others by who they are and ourselves by the situation",
@@ -308,7 +308,7 @@
               "Asking was a mistake because it made things awkward",
               "Now you know, and a real problem can be fixed; a made-up one cannot",
               "You should apologize even if you do not know what for",
-              "It proves your story was right, so trust your stories next time"
+              "It proves your story was right, so you should trust your stories next time"
             ],
             "correctAnswer": "Now you know, and a real problem can be fixed; a made-up one cannot",
             "conceptLabel": "a real problem can be fixed"
@@ -316,7 +316,7 @@
           {
             "type": "shortAnswer",
             "question": "A classmate walks past your table without saying hi. Write one story you could tell yourself that is not about you, and one question that would find out.",
-            "expectedAnswer": "Any non-personal story (they were late, they were thinking about a test, they did not see me) plus a question such as \"Hey, everything okay this morning?\"",
+            "expectedAnswer": "Any non-personal story (they were late, they were thinking about a test, they did not see me) plus a question such as \"Hey, how is your morning going?\"",
             "conceptLabel": "ask before you decide"
           }
         ],
@@ -379,7 +379,7 @@
         },
         {
           "question": "Is it nosy to ask people why they did things?",
-          "answer": "An open question about the moment (\"everything okay this morning?\") is caring. A demand (\"why did you ignore me?\") is an accusation with a question mark on it. The difference is whether the other person gets to say what actually happened."
+          "answer": "An open question about the moment (\"how is your morning going?\") is caring. A demand (\"why did you ignore me?\") is an accusation with a question mark on it. The difference is whether the other person gets to say what actually happened."
         },
         {
           "question": "What if my story turns out to be right?",
@@ -453,8 +453,8 @@
             "id": "cp-ma-gap",
             "target": "We explain others by who they are and ourselves by the situation",
             "essentialFacts": [
-              "We usually explain other people's actions by who they are.",
-              "We usually explain our own actions by the situation."
+              "We often explain other people's actions by who they are.",
+              "We often explain our own actions by the situation."
             ],
             "factLocked": true,
             "factVerified": false,

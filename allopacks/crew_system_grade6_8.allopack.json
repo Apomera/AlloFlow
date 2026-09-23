@@ -215,7 +215,7 @@
           },
           {
             "id": "cs-i6",
-            "content": "Writing the due date on your hand.",
+            "content": "Writing it on your hand one day and on a sticky note the next.",
             "categoryId": "cs-will"
           },
           {
@@ -255,7 +255,7 @@
             "options": [
               "A planner your school gives you at the start of the year",
               "A small set of steps you do the same way every time",
-              "A promise to try harder when things get busy",
+              "A promise to yourself to try harder when things get busy",
               "An app that reminds you when things are due"
             ],
             "correctAnswer": "A small set of steps you do the same way every time",
@@ -265,7 +265,7 @@
             "type": "mcq",
             "question": "Why does the reading say willpower is not enough?",
             "options": [
-              "Because willpower is not real for most middle schoolers",
+              "Because willpower is not real for most students in middle school",
               "Because teachers do not give credit for effort alone",
               "Because it runs out, and fastest on the days you need it most",
               "Because using willpower means you did not plan ahead"
@@ -277,7 +277,7 @@
             "type": "mcq",
             "question": "What changed for Marcus by the third week?",
             "options": [
-              "His brain changed and he became more organized",
+              "His brain changed, and he became a more organized person",
               "Mr. Bell started packing his bag with him each day",
               "He switched to a paper planner that worked better",
               "Nothing about his brain changed; his system did"
@@ -302,11 +302,11 @@
             "question": "Your launch check keeps failing because you forget to do it. What does the reading say to do?",
             "options": [
               "Go back to remembering, since the system did not work",
-              "Add two more steps so you cannot forget",
-              "Fix the system by asking which part failed",
-              "Switch to a totally new system each week"
+              "Change nothing and hope that it works better next time",
+              "Fix the system by checking which part of it failed",
+              "Switch to a totally new system at the start of each week"
             ],
-            "correctAnswer": "Fix the system by asking which part failed",
+            "correctAnswer": "Fix the system by checking which part of it failed",
             "conceptLabel": "fix the system"
           },
           {

@@ -2013,6 +2013,9 @@
       var toolLinks = {
         EVENT: 'alloflow:sel-hub-open-tool',
         PENDING_TTL_MS: 20000,
+        // After the host reports a file loaded, how long to wait for it to
+        // register before calling it a failed start.
+        LOADED_GRACE_MS: 1500,
         // '#sel-hub/zones' -> 'zones'; '#sel-hub' -> '' (the tool grid); anything else -> null.
         // A '?station=<id>' query is allowed after either form and read by station().
         parse: function (href) {
@@ -2064,8 +2067,42 @@
           var age = Date.now() - (Number(p.at) || 0);
           if (!p.toolId) { window.__alloSelHubPendingTool = null; return { toolId: '', label: p.label || '', stationId: st, status: 'ready' }; }
           if (window.SelHub.isRegistered(p.toolId)) { window.__alloSelHubPendingTool = null; return { toolId: p.toolId, label: p.label || '', stationId: st, status: 'ready' }; }
-          if (age > toolLinks.PENDING_TTL_MS) { window.__alloSelHubPendingTool = null; return { toolId: p.toolId, label: p.label || '', stationId: st, status: 'unknown' }; }
-          return { toolId: p.toolId, label: p.label || '', stationId: st, status: 'waiting' };
+          // Ask the host loader what actually happened. It knows within a
+          // second or two when a school filter blocks the file; without this
+          // the student waited out the whole TTL and then read a false "not
+          // available" with no way to retry.
+          var hs = null;
+          try {
+            if (typeof window.__alloGetSelPluginState === 'function') hs = window.__alloGetSelPluginState(p.toolId);
+          } catch (e) { hs = null; }
+          var out = { toolId: p.toolId, label: p.label || '', stationId: st };
+          if (hs && hs.status === 'error') {
+            window.__alloSelHubPendingTool = null;
+            out.status = 'failed';
+            out.error = hs.error || '';
+            return out;
+          }
+          // Downloaded but never registered: the file ran and threw, or
+          // returned early. Registration happens while the script executes,
+          // so a short grace after load is plenty.
+          if (hs && hs.status === 'loaded' && hs.finishedAt && Date.now() - hs.finishedAt > toolLinks.LOADED_GRACE_MS) {
+            window.__alloSelHubPendingTool = null;
+            out.status = 'failed';
+            out.error = 'The tool downloaded but did not start.';
+            return out;
+          }
+          // The host settles every request within its own timeout, so while
+          // it still reports "loading" keep waiting -- capped, in case it
+          // never reports at all.
+          var stillLoading = hs && hs.status === 'loading';
+          if (age > toolLinks.PENDING_TTL_MS && (!stillLoading || age > toolLinks.PENDING_TTL_MS * 2)) {
+            window.__alloSelHubPendingTool = null;
+            out.status = hs ? 'failed' : 'unknown';
+            if (hs) out.error = 'The tool took too long to load.';
+            return out;
+          }
+          out.status = 'waiting';
+          return out;
         },
         handleClick: function (event) {
           try {
@@ -2130,7 +2167,11 @@
       var GripVertical = props.GripVertical;
 
       // ── Hub-Level State ──
-      var _selToolData  = React.useState({});
+      // Start from the window slot, not {}: the host renders the hub only while
+      // it is open, so it remounts on every open, and a project loaded while it
+      // was closed has already put the student's tool data there. From {} the
+      // mirror effect below overwrote that data before anything read it.
+      var _selToolData  = React.useState(function () { try { var w = window.__alloflowSelToolData; return (w && typeof w === 'object' && !Array.isArray(w)) ? w : {}; } catch (e) { return {}; } });
       var selToolData   = _selToolData[0];
       var setSelToolData = _selToolData[1];
 
@@ -2213,6 +2254,11 @@
       // Plugin-load progress tick — bumped by the allo-plugins-changed event the
       // lazy-loader fires after each sel_tool_*.js script finishes registering.
       // Forces the tile grid to re-render as plugins stream in on first hub-open.
+      // The tool whose module failed to load, so the grid can say why and
+      // offer a retry. A toast cannot carry a button.
+      var _selLoadFailureState = React.useState(null);
+      var selLoadFailure = _selLoadFailureState[0];
+      var setSelLoadFailure = _selLoadFailureState[1];
       var _pluginProgress = React.useState(0);
       var _setPluginProgressTick = _pluginProgress[1];
       React.useEffect(function() {
@@ -2894,21 +2940,51 @@
         function settle() {
           var p = links.consumePending();
           if (!p) return;
+          // Since lazy loading (2026-09-20) a tool's file is fetched only when
+          // something asks for it, and a pack link only waited for the tool to
+          // register, so the tool never loaded (20 s, then "not available").
+          // Ask for it here. The host loader ignores a repeat request while one
+          // is in flight or done, so the once-a-second re-check costs nothing.
+          if (p.status === 'waiting' && p.toolId) {
+            try { if (typeof window.__alloEnsureSelPluginLoaded === 'function') window.__alloEnsureSelPluginLoaded(p.toolId); } catch (e) {}
+            return;
+          }
           if (p.status === 'ready') {
             if (p.toolId) openSelToolById(p.toolId, p.label);
             if (p.stationId) activateStationFromLink(p.stationId);
+          } else if (p.status === 'failed') {
+            setSelLoadFailure({ toolId: p.toolId, label: p.label || p.toolId, error: p.error || '' });
+            if (typeof announceToSR === 'function') announceToSR((p.label || p.toolId) + ' could not open. ' + (p.error || ''));
+            if (p.stationId) activateStationFromLink(p.stationId);
           } else if (p.status === 'unknown') {
+            // No loader state at all: the id is not a tool this hub carries,
+            // which is the one case where "not available" is true.
             if (typeof addToast === 'function') addToast((p.label || p.toolId) + ' is not available in this SEL Hub.', 'error');
             if (p.stationId) activateStationFromLink(p.stationId);
           }
+          if (p.status === 'ready') setSelLoadFailure(null);
         }
         settle();
         function onOpenTool() { Promise.resolve().then(settle); }
         window.addEventListener(links.EVENT, onOpenTool);
-        var retry = null;
+        var poll = null;
         var pending = window.__alloSelHubPendingTool;
-        if (pending && pending.toolId) retry = setTimeout(settle, links.PENDING_TTL_MS + 50);
-        return function () { window.removeEventListener(links.EVENT, onOpenTool); if (retry) clearTimeout(retry); };
+        if (pending && pending.toolId) {
+          // Re-check once a second until the pending record clears. This
+          // replaces a one-shot "TTL from now" timer that every re-run of this
+          // effect re-armed -- each other tool that finished loading pushed
+          // the deadline back, to 30 s in a replay. consumePending measures age
+          // from the CLICK, so polling cannot drift, and it also catches a file
+          // that loads but never registers, which fires no further event.
+          poll = setInterval(function () {
+            if (!window.__alloSelHubPendingTool) { clearInterval(poll); poll = null; return; }
+            settle();
+          }, 1000);
+        }
+        return function () {
+          window.removeEventListener(links.EVENT, onOpenTool);
+          if (poll) clearInterval(poll);
+        };
       }, [showSelHub, _pluginProgressTick]);
 
       // Sync activeStation prop from parent (e.g. resource-history click).
@@ -3268,8 +3344,14 @@
         'self-management': '_cat_SelfRegulation'
       };
       _dynamicTools.forEach(function(dt) {
-        // Only add if the tool is actually registered in SelHub
-        if (!window.SelHub || !window.SelHub.isRegistered(dt.id)) return;
+        // NOT gated on isRegistered any more. Under the old batch loader every
+        // module registered seconds after the hub opened, so that check was
+        // nearly always true by first render. Lazy loading (2026-09-20) fetches
+        // a module when its card is CLICKED -- so the check hid 17 tools behind
+        // a card that is never drawn, and a student cannot click what is not
+        // there. Each entry below is a static literal with icon/label/desc, and
+        // openSelToolById() already requests an unregistered tool's module and
+        // opens it via the pending-tool watcher.
         // Don't duplicate if already in the static list
         if (_allSelTools.some(function(t) { return t.id === dt.id; })) return;
         var catHeaderId = _catPositions[dt._cat];
@@ -3543,7 +3625,13 @@
       // still batch-loads behaves exactly as before.
       function _selToolIsOpenable(toolId) {
         if (!toolId) return false;
-        if (window.SelHub && window.SelHub.isRegistered(toolId)) return true;
+        // try/catch: this runs inside the card-grid map, so a registry that
+        // throws would propagate out and blank the ENTIRE hub rather than
+        // affect one card. A registry error means "cannot confirm it is
+        // loaded", which the lazy path below already handles.
+        try {
+          if (window.SelHub && window.SelHub.isRegistered(toolId)) return true;
+        } catch (e) { /* fall through to the lazy-load path */ }
         if (typeof window.__alloEnsureSelPluginLoaded !== 'function') return false;
         return !!_selToolById(toolId);
       }
@@ -4768,7 +4856,15 @@
               h('strong', null, tool ? tool.label : item.tool),
               h('p', null, 'Why this option: ' + needLabels[item.need].toLowerCase() + ', with a suggested ' + item.min + '-minute first step and ' + (item.mode === 'write' ? 'a short written response.' : 'a way to practice without typing.')),
               h('p', null, item.first),
-              h('button', { type: 'button', disabled: !_selToolIsOpenable(item.tool), onClick: function () { openSelToolById(item.tool, tool ? tool.label : item.tool); }, style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, 'Open ' + (tool ? tool.label : item.tool))
+              (function () {
+                // Matches the step chips above: a button that cannot act
+                // says so, in the label as well as the state. It used to be
+                // disabled while still styled cursor:'pointer', so it looked
+                // live and silently did nothing.
+                var _openable = _selToolIsOpenable(item.tool);
+                var _label = tool ? tool.label : item.tool;
+                return h('button', { type: 'button', disabled: !_openable, onClick: function () { openSelToolById(item.tool, _label); }, style: Object.assign({}, control, { cursor: _openable ? 'pointer' : 'not-allowed', opacity: _openable ? 1 : 0.6, fontWeight: 700 }) }, 'Open ' + _label + (_openable ? '' : ' (not available)'));
+              })()
             );
           }))
         );
@@ -5144,6 +5240,55 @@
               st.clip = 'rect(0,0,0,0)'; st.padding = '0';
             }
           }, 'Skip to the tool list'),
+          // A tool whose module failed to load. Shows the host loader's own
+          // reason and a retry, instead of the old false "not available".
+          selLoadFailure && h('div', {
+            role: 'alert',
+            'data-sel-load-failure': selLoadFailure.toolId,
+            style: {
+              marginBottom: 12, padding: 12, borderRadius: 10,
+              background: isContrast ? '#000000' : (isDark ? '#2a1f0b' : '#fffbeb'),
+              border: '2px solid ' + (isContrast ? '#ffff00' : '#d97706'),
+              color: isContrast ? '#ffff00' : _t.text
+            }
+          },
+            h('p', { style: { margin: '0 0 6px', fontSize: 14, fontWeight: 800 } },
+              selLoadFailure.label + ' could not open.'),
+            selLoadFailure.error && h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.5 } },
+              selLoadFailure.error),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              (typeof window.__alloRetrySelPlugin === 'function') && h('button', {
+                type: 'button',
+                onClick: function () {
+                  var f = selLoadFailure;
+                  // Pending first: the retry fires a plugin event, and the
+                  // effect it re-runs must find this record to time it.
+                  try { window.__alloSelHubPendingTool = { toolId: f.toolId, label: f.label, stationId: '', at: Date.now() }; } catch (e) {}
+                  var ok = false;
+                  try { ok = !!window.__alloRetrySelPlugin(f.toolId); } catch (e) { ok = false; }
+                  if (!ok) {
+                    try { window.__alloSelHubPendingTool = null; } catch (e) {}
+                    return;
+                  }
+                  setSelLoadFailure(null);
+                  if (typeof addToast === 'function') addToast(f.label + ' is opening...', 'info');
+                },
+                style: {
+                  minHeight: 44, padding: '8px 16px', borderRadius: 8, border: 'none',
+                  background: _t.accent, color: _t.accentText, fontSize: 13, fontWeight: 800, cursor: 'pointer'
+                }
+              }, 'Try again'),
+              h('button', {
+                type: 'button',
+                onClick: function () { setSelLoadFailure(null); },
+                style: {
+                  minHeight: 44, padding: '8px 16px', borderRadius: 8,
+                  border: '1px solid ' + _t.border, background: 'transparent',
+                  color: isContrast ? '#ffff00' : _t.text, fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                }
+              }, 'Dismiss')
+            )
+          ),
           renderPathwayGuide(),
           renderStationGuide(),
           !activePathway && !activeStation && h('section', {
@@ -5964,14 +6109,17 @@
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
                   padding: isCompact ? 14 : 16, borderRadius: 8, border: '1px solid ' + _t.border,
                   background: _t.bgCard,
-                  cursor: isRegistered ? 'pointer' : 'default',
-                  opacity: isRegistered ? 1 : 0.5,
+                  // Always pointer / full opacity: the card OPENS either way.
+                  // Dimming it told sighted users "unavailable" about a tool
+                  // that works, while screen-reader users got no such signal.
+                  cursor: 'pointer',
+                  opacity: 1,
                   textAlign: 'left', transition: 'transform 0.15s, box-shadow 0.15s',
                   position: 'relative'
                 },
-                onMouseEnter: function(e) { if (isRegistered) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 20px ' + cardColor + '33'; } },
+                onMouseEnter: function(e) { { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 20px ' + cardColor + '33'; } },
                 onMouseLeave: function(e) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; },
-                onTouchStart: function(e) { if (isRegistered) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 20px ' + cardColor + '33'; } },
+                onTouchStart: function(e) { { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 20px ' + cardColor + '33'; } },
                 onTouchEnd: function(e) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }
               },
                 h('span', {
@@ -5988,7 +6136,10 @@
                   h('span', { style: { fontSize: 14, fontWeight: 700, color: _t.text, flex: 1 } }, tool.label),
                   // Usage indicator: dot count / star for tools already visited.
                   // Hidden from SR (already in aria-label of the card if needed).
-                  isRegistered && (function () {
+                  // Not gated on isRegistered: this is the student's own visit
+                  // history from selToolUsage, which persists whether or not the
+                  // module happens to be loaded right now.
+                  (function () {
                     var u = selToolUsage[tool.id];
                     if (!u || !u.count) {
                       return null;

@@ -48,7 +48,7 @@
       "type": "simplified",
       "title": "Where Your Attention Goes",
       "timestamp": "2026-09-13T18:00:00.000Z",
-      "data": "## Where Your Attention Goes\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nThe Responsibility **HOWL** asks you to participate fully and **mindfully**. Fully means you are in the room. In 2026 that is harder than it sounds, because there is a device in your pocket that was built, on purpose, by very smart people, to get you to pick it up. The red badge, the buzz, the **streak** that will break if you skip a day, the **autoplay** that starts the next video before you decide: none of that is an accident. Each one is a design **choice**, tested on millions of people, and kept because it worked.\n\nThis is not a lecture about phones being bad. Your phone is a tool, and a good one. The point is simpler: your **attention** is being **pulled** on purpose, and you should know it, so that where your attention goes is your choice and not someone else's.\n\nHere is a moment from a fictional **Crew**. Nadia is in math, a class she is actually good at. Her phone is in her hoodie pocket. It buzzes. She does not take it out. But for the next three minutes, part of her is on the buzz: who was it, what did they say, is it about her. The teacher has moved on to the next example. Nadia **catches up**, but she caught up. She was in the room for the second example and not the first. Nobody saw her look at a phone. She still lost the minutes.\n\nThat is the part most people miss. The cost of a phone in class is not only the time you spend looking at it. It is the attention you spend not looking at it. Researchers have found that a phone on the desk, face down and silent, still costs something, because part of you is keeping track of it. Out of sight does more than out of hand.\n\nSo this week is about **boundaries**, not **bans**. A boundary is a line you choose ahead of time, so that you do not have to decide in the moment when the buzz comes. Phone in the bag, not the pocket, for one class. **Notifications** off between 8 and 3. One set time to check, so the checking is a choice. The boundary does the work so willpower does not have to, which you may remember from the week on systems.\n\nBeing mindful, the other half of the HOWL, means noticing where your attention actually went, without judging it. This week you will investigate that. Not \"was I good,\" but \"where did it go, and what pulled it.\" The answer is information. What you do with it is responsibility.",
+      "data": "## Where Your Attention Goes\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nThe Responsibility **HOWL** asks you to participate fully and **mindfully**. Fully means you are in the room. In 2026 that is harder than it sounds, because there is a device in your pocket that was built, on purpose, by very smart people, to get you to pick it up. The red badge, the buzz, the **streak** that will break if you skip a day, the **autoplay** that starts the next video before you decide: none of that is an accident. Each one is a design **choice**, tested on millions of people, and kept because it worked.\n\nThis is not a lecture about phones being bad. Your phone is a tool, and a good one. The point is simpler: your **attention** is being **pulled** on purpose, and you should know it, so that where your attention goes is your choice and not someone else's.\n\nHere is a moment from a fictional **Crew**. Nadia is in math, a class she is actually good at. Her phone is in her hoodie pocket. It buzzes. She does not take it out. But for the next three minutes, part of her is on the buzz: who was it, what did they say, is it about her. The teacher has moved on to the next example. Nadia **catches up**, but first she fell behind. She was in the room for the second example and not the first. Nobody saw her look at a phone. She still lost the minutes.\n\nThat is the part most people miss. The cost of a phone in class is not only the time you spend looking at it. It is the attention you spend not looking at it. Researchers have found that a buzz you do not answer still pulls your attention away for a while. Some studies suggest that even a silent phone on the desk takes a little attention, because part of you is keeping track of it. Out of sight does more than out of hand.\n\nSo this week is about **boundaries**, not **bans**. A ban is a rule someone else makes that takes the thing away completely. A boundary is a line you choose ahead of time, so that you do not have to decide in the moment when the buzz comes. Phone in the bag, not the pocket, for one class. **Notifications** off between 8 and 3. One set time to check, so the checking is a choice. The boundary does the work so willpower does not have to, which you may remember from the week on systems.\n\nBeing mindful, the other half of the HOWL, means noticing where your attention actually went, without judging it. This week you will investigate that. Not \"was I good,\" but \"where did it go, and what pulled it.\" The answer is information. What you do with it is responsibility.",
       "meta": "6th-8th Grade • Leveled reading"
     },
     {
@@ -144,9 +144,9 @@
             "bullets": [
               "Not only the time looking",
               "The attention spent not looking",
-              "A silent phone on the desk still costs"
+              "A buzz you ignore still pulls"
             ],
-            "iconPrompt": "a phone face down with a faint dotted line to a student's head"
+            "iconPrompt": "a phone in a hoodie pocket with a small buzz mark and a faint dotted line to a student's head"
           },
           {
             "label": "BOUNDARY, NOT BAN",
@@ -262,7 +262,7 @@
             "options": [
               "They are accidents of how phones are built",
               "They are design choices, tested and kept because they work",
-              "They only affect people who use their phones too much",
+              "They only affect people who already use their phones too much",
               "They were added because students asked for them"
             ],
             "correctAnswer": "They are design choices, tested and kept because they work",
@@ -273,7 +273,7 @@
             "question": "What is the reading's main point about phones?",
             "options": [
               "Phones are bad and should be left at home",
-              "Teachers should collect phones at the door of every class",
+              "Teachers should collect every phone at the door before each class starts",
               "Notifications are fine as long as you do not look at them",
               "Where your attention goes should be your choice, not someone else's"
             ],
@@ -296,7 +296,7 @@
             "type": "mcq",
             "question": "What is the difference between a boundary and a ban, according to the reading?",
             "options": [
-              "A boundary is only for phones; a ban is for other things like food or clothes",
+              "A boundary is only for phones; a ban is for other things, like food",
               "A boundary is stricter than a ban because you cannot argue with yourself",
               "A boundary is a line you choose ahead of time; a ban comes from someone else",
               "There is no real difference between them; both take the phone away"
@@ -308,9 +308,9 @@
             "type": "mcq",
             "question": "What does \"mindful\" mean in this reading?",
             "options": [
-              "Feeling guilty every time you check your phone",
+              "Feeling guilty when you check your phone during class",
               "Meditating for ten minutes before each class",
-              "Keeping your mind on the teacher no matter what",
+              "Keeping your mind on the teacher and pushing other thoughts out",
               "Noticing where your attention went, without judging it"
             ],
             "correctAnswer": "Noticing where your attention went, without judging it",
@@ -424,7 +424,7 @@
         "cards": [
           {
             "id": "cd-ma-sight",
-            "target": "A silent phone on the desk still costs attention; out of sight beats out of hand",
+            "target": "A buzz you never answer still costs attention; out of sight beats out of hand",
             "essentialFacts": [
               "The cost of a phone in class is not only the time you spend looking at it.",
               "It is the attention you spend not looking at it.",
@@ -504,7 +504,7 @@
           "seedDirection": "Pick three classes. Each time you notice your attention left, make one mark and a one-word note of the pull. At the end of three days, count the marks by pull. Set one boundary aimed at the biggest one. Try it for two more days.",
           "lockedLessonFacts": [
             "The pulls in a phone are design choices, tested and kept because they work.",
-            "A phone on the desk, face down and silent, still costs attention.",
+            "A buzz you do not answer still pulls your attention; some studies suggest even a silent phone on the desk takes a little.",
             "A boundary is a line chosen ahead of time so you do not decide in the moment.",
             "Mindful means noticing where attention went, without judging it."
           ],

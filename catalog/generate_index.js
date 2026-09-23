@@ -84,6 +84,12 @@ function publishedAllopackEntries() {
   });
 }
 
+// Numeric-aware: "Week 2" before "Week 10". A plain localeCompare listed the Crew Launch weeks
+// 1, 10, 11, 12, 2, 3 ..., and the catalog UI keeps manifest order.
+function compareTitles(a, b) {
+  return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true });
+}
+
 function buildManifest() {
   const entries = [...approvedEntries(), ...publishedAllopackEntries()];
   const seenPath = new Set();
@@ -94,7 +100,7 @@ function buildManifest() {
     seenPath.add(e.path);
     seenSlug.add(e.slug);
   }
-  entries.sort((a, b) => a.title.localeCompare(b.title));
+  entries.sort((a, b) => compareTitles(a.title, b.title));
   return {
     schema_version: '1.0',
     generated_at: new Date().toISOString(),
@@ -111,4 +117,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { buildManifest, approvedEntries, publishedAllopackEntries, INDEX_PATH, PUBLISHED_PATH, REPO_ROOT };
+module.exports = { buildManifest, compareTitles, approvedEntries, publishedAllopackEntries, INDEX_PATH, PUBLISHED_PATH, REPO_ROOT };

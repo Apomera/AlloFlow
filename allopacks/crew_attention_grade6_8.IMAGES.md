@@ -18,5 +18,5 @@ Policy: **no raster text, labels, numbers, captions or watermarks in the artwork
 ## Lesson panels (900 px wide; each carries native labels and a caption)
 
 1. `cd-img-buzz` - *The buzz Nadia did not answer.* A math classroom; a student looking at the board, one hand resting on a hoodie pocket, a faint vibration mark near the pocket. Labels: The buzz, Still in the pocket. Caption: nobody saw her look at a phone; she still lost the minutes.
-2. `cd-img-facedown` - *Face down still costs.* A desk with a phone face down and silent; a faint dotted line runs from the phone to the student's head. Labels: Silent, Still costs. Caption: out of sight does more than out of hand.
+2. `cd-img-facedown` - *Face down, still there.* A desk with a phone face down and silent; a faint dotted line runs from the phone to the student's head. Labels: Silent, A little attention. Caption: out of sight does more than out of hand.
 3. `cd-img-tally` - *Three days of marks.* A sticky note with three clusters of tally marks of different sizes and small icons beside each: a phone, a person, a sandwich. Labels: Phone, Person, Hungry. Caption: the biggest pull is not always the one you expected.

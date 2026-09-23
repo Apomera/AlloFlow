@@ -263,10 +263,10 @@
             "type": "mcq",
             "question": "What does a steward do, according to the reading?",
             "options": [
-              "Reports anyone who damages shared equipment",
+              "Reports anyone who damages the Crew's shared equipment",
               "Takes care of something that belongs to everyone",
               "Owns the equipment the Crew uses each week",
-              "Decides who is allowed to borrow shared things"
+              "Decides who is allowed to borrow the Crew's shared things"
             ],
             "correctAnswer": "Takes care of something that belongs to everyone",
             "conceptLabel": "stewardship"
@@ -277,8 +277,8 @@
             "options": [
               "Restorative asks who was affected and how to make it right",
               "Restorative means nobody has to take responsibility",
-              "Punishment fixes the harm faster than repair does",
-              "Punishment is for adults and repair is for students"
+              "Punishment fixes the harm faster than a restorative approach does",
+              "Punishment is for adults, and a restorative approach is for students"
             ],
             "correctAnswer": "Restorative asks who was affected and how to make it right",
             "conceptLabel": "restorative approach"
@@ -288,8 +288,8 @@
             "question": "Your charger was borrowed and lost. What does the reading say your part in repair is?",
             "options": [
               "Wait quietly so you do not seem difficult about it",
-              "Ask the Crew leader to decide the punishment for you",
-              "Take the same thing from the other person to even it out",
+              "Ask the Crew leader to decide how to punish the other person",
+              "Take something that belongs to the other person to even it out",
               "Say what you need, such as the charger back or a heads-up"
             ],
             "correctAnswer": "Say what you need, such as the charger back or a heads-up",
@@ -297,14 +297,14 @@
           },
           {
             "type": "mcq",
-            "question": "\"I am really sorry about the speaker.\" Which move is still missing?",
+            "question": "Jonah says: \"The speaker fell off the desk while I was packing up, and that part was my fault. I am really sorry.\" Which move is still missing?",
             "options": [
-              "Naming it, because sorry does not say what happened",
-              "Owning it, because sorry does not say whose part it was",
-              "Fixing it, because sorry is only the first move",
+              "Naming it, because he did not say what really happened",
+              "Owning it, because he did not say whose part it was",
+              "Fixing it, because he has not helped the Crew yet",
               "Nothing is missing, because an apology is a complete repair"
             ],
-            "correctAnswer": "Fixing it, because sorry is only the first move",
+            "correctAnswer": "Fixing it, because he has not helped the Crew yet",
             "conceptLabel": "apology is first move"
           },
           {
@@ -313,7 +313,7 @@
             "options": [
               "Because stewards are expected to work without talking",
               "Because it is done so that most of the time nothing needs repairing",
-              "Because repair is loud and stewardship happens after school",
+              "Because stewardship happens after school, when the building is quiet",
               "Because it is a private job for one person in each Crew"
             ],
             "correctAnswer": "Because it is done so that most of the time nothing needs repairing",

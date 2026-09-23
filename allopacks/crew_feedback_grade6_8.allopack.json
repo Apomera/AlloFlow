@@ -253,7 +253,7 @@
             "type": "mcq",
             "question": "According to the reading, what is feedback?",
             "options": [
-              "A judgment about whether you are good at a subject",
+              "A judgment about whether you are good or bad at the subject",
               "Information about the gap between the work and the target",
               "A teacher's opinion about the effort you put in",
               "The grade explained in words instead of a number"
@@ -277,9 +277,9 @@
             "type": "mcq",
             "question": "Why does the reading say to self-assess BEFORE getting feedback?",
             "options": [
-              "So the teacher does not have to write as many comments",
+              "So the teacher does not have to write as many comments on it",
               "So you can argue for a higher grade if the feedback is unfair",
-              "So you can skip the feedback if your own rating is high",
+              "So you can skip the feedback if your own rating is already high",
               "So feedback becomes a confirmation instead of a surprise"
             ],
             "correctAnswer": "So feedback becomes a confirmation instead of a surprise",
@@ -292,7 +292,7 @@
               "Revising keeps what works and changes what the target says to change",
               "Revising means fixing spelling; redoing means fixing ideas",
               "Redoing is for big assignments and revising is for small ones",
-              "There is no real difference; they both mean improving the work"
+              "There is no real difference, because they both mean improving your work"
             ],
             "correctAnswer": "Revising keeps what works and changes what the target says to change",
             "conceptLabel": "revise not redo"

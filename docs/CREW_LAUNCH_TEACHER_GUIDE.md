@@ -23,7 +23,7 @@ Crew, HOWL, or EL Education, read `docs/EL_CREW_PRIMER.md` first; it is one page
 | 7 | Two Sides of One Story | Respect | Perspective Lens, Peer Support Coach | Ask one question before deciding what someone meant |
 | 8 | Small Moves, Not Big Speeches | Respect | Upstander Training, Peer Support Coach | One small move when someone is left out or talked over |
 | 9 | Where Your Attention Goes | Responsibility | Digital Wellbeing Studio, Executive Function | Phone in the bag for one class every day; notice the first reach |
-| 10 | The Halfway Check | Responsibility | Goal Setter, HOWL Tracker, Executive Function | Make the one change from your review and run it five days with a count |
+| 10 | The Six-Week Check | Responsibility | Goal Setter, HOWL Tracker, Executive Function | Make the one change from your review and run it five days with a count |
 | 11 | Your Part of the Whole | Perseverance | Teamwork Builder, DEAR MAN | Name your part of the whole out loud and finish it before the deadline |
 | 12 | The Story of Your Trimester | Perseverance | HOWL Tracker, Strengths Finder | Rehearse your two-minute trimester story with a partner and change one thing |
 
@@ -34,8 +34,8 @@ persevere to produce high quality work."
 ## Before week 1: how the packs work
 
 **Loading a pack.** Each week is one file. Open AlloFlow, open the History panel, and use Load
-Project (under More) to open the week's `.allopack.json`. Once the packs are published to the Community Catalog
-you will find them there under SEL / Character with the tag `crew`. Loading a pack puts ten
+Project (under More) to open the week's `.allopack.json`. Once the packs are published to the
+Community Catalog you will find them there under SEL / Character with the tag `crew`. Loading a pack puts ten
 resources in the History panel (directions, reading, glossary, chart, sort, quiz, sentence frames,
 FAQ, memory aid, and challenge) and one Crew station under SEL Stations.
 
@@ -246,14 +246,15 @@ your learning by asking questions. Asking is how persevering works, not its oppo
 | --- | --- | --- |
 | 0 to 10 | Read. The four moves of a clear ask: describe, express, ask, reinforce. | Asking for What You Need |
 | 10 to 17 | Twelve words, then the Word Scramble. | Glossary, Word Scramble |
-| 17 to 25 | Chart, sort (which move is it), quiz. Question 3 compares two ways of asking. | Four Moves of a Clear Ask, Which Move Is It?, quiz |
+| 17 to 25 | Chart, sort (which move is it), quiz. Question 3 is about why "I don't get it" is not enough. | Four Moves of a Clear Ask, Which Move Is It?, quiz |
 | 25 to 33 | Hub: DEAR MAN, build a real low-stakes ask for one class. Pair up: one asks, one plays the teacher, swap. Self-Advocacy Studio if there is time. | DEAR MAN (station starts), Self-Advocacy Studio |
 | 33 to 38 | Frames: the ask in four lines. Memory aid. | Sentence Frames, Remember Describe, Express, Ask, Reinforce |
 | 38 to 40 | Launch the challenge; say the commitment. | Decide Challenge: Ask It This Week |
 
 **In the Hub.** DEAR MAN starts with two boxes: what am I asking for in one sentence, and who am I
-asking. Then seven steps and a Rehearse tab. The pair rehearsal is the point of the slot; keep the
-asks small and real ("could you show me one worked example of the fractions problem?").
+asking. Then seven steps and a Rehearse tab. The tool calls the third move Assert; the reading calls
+it Ask, and says so. The pair rehearsal is the point of the slot; keep the asks small and real
+("could you show me one worked example of the fractions problem?").
 
 **The commitment.** Make one specific ask in one class where you are stuck, and report back on
 what happened.
@@ -316,7 +317,7 @@ check-in's rubric reveal shows what a 3 and a 4 look like in practice.
 
 The station records and the HOWL Tracker check-ins are the launch's paper trail. Each is a
 practice record the student owns, kept on the device and in the project file. Weeks 7 to 12 use the
-same shape and build on it: week 10 reopens the week-4 system and the September HOWL Tracker goal,
+same shape and build on it: week 10 reopens the week-4 system and the goal set with it,
 and week 12 turns the whole trail into the student-led conference story.
 
 ---
@@ -354,7 +355,7 @@ something, and I had it back in two minutes." A fact, a story, a question, and w
 evidence: "I was more understanding this week."
 
 **Watch for.** "Is it nosy to ask why people did things?" The FAQ separates an open question about
-the moment ("everything okay this morning?") from an accusation with a question mark on it. "What
+the moment ("how is your morning going?") from an accusation with a question mark on it. "What
 if they say nothing, but something is obviously wrong?" Then the student has done their part; "Okay.
 I am around if you want to talk" leaves the door open. "What if my story was right?" Sometimes it
 is, and then there is a real problem that can be worked on. The challenge asks for the question to
@@ -394,7 +395,7 @@ what happened.
 was the end of that?' He finished the story." The moment, the move, what happened. Not evidence: "I
 stood up for people."
 
-**Watch for.** "Is getting an adult tattling?" No, and the FAQ says so: when someone is hurt,
+**Watch for.** "Is getting an adult tattling?" No, and the FAQ says so: when someone is hurt or
 threatened, or targeted again and again, getting an adult is the correct size of response. The
 sort's "get an adult" cards (the same locker three days in a row, a photo shared without consent,
 a threat after school) are there so students practice that line; if a student recognizes a real
@@ -416,7 +417,7 @@ student sets one boundary ahead of time, so where their attention goes is their 
 
 | Minutes | What happens | Resource |
 | --- | --- | --- |
-| 0 to 10 | Read. Design pulls (badges, buzzes, streaks, autoplay), the hidden cost of a silent phone on the desk, and a boundary versus a ban. | Where Your Attention Goes |
+| 0 to 10 | Read. Design pulls (badges, buzzes, streaks, autoplay), the hidden cost of a buzz you never answer, and a boundary versus a ban. | Where Your Attention Goes |
 | 10 to 17 | Twelve words, then the Word Scramble. | Glossary, Word Scramble |
 | 17 to 25 | Chart, sort (boundary, ban, or bait), quiz. Question 3 is about what Nadia lost without ever taking her phone out. | Pulled or Chosen?, Boundary, Ban, or Bait?, Pulled on Purpose (quiz) |
 | 25 to 33 | Hub: Digital Wellbeing Studio, the Self-Check answered honestly, then one habit from the Toolkit. Executive Function's Focus tab for one move in the class where attention drifts most. | Digital Wellbeing Studio (station starts), Executive Function |
@@ -446,17 +447,17 @@ only the counts are shared.
 
 ---
 
-## Week 10: The Halfway Check
+## Week 10: The Six-Week Check
 
 **HOWL: Responsibility.** The behaviors are arriving prepared and completing assignments
 thoughtfully and on time, in November as well as September. The week reopens the week-4 system
-and the September HOWL Tracker goal, keeps what worked, and changes one part.
+and the goal set with it, keeps what worked, and changes one part.
 
 **The 40 minutes**
 
 | Minutes | What happens | Resource |
 | --- | --- | --- |
-| 0 to 10 | Read. Why halfway matters, Marcus and the puppy, and the three review questions: what did I say I would do, what happened by the count, and what is the one change. | The Halfway Check |
+| 0 to 10 | Read. Why a checkpoint matters, Marcus and the puppy, and the three review questions: what did I say I would do, what happened by the count, and what is the one change. | The Six-Week Check |
 | 10 to 17 | Twelve words, then Matching. | Glossary, Matching |
 | 17 to 25 | Chart, sort (keep, fix, or wish), quiz. Question 3 is why Marcus's launch check stopped. | Three Review Questions, Keep, Fix, or Wish?, Count, Not Feeling (quiz) |
 | 25 to 33 | Hub: Goal Setter, open the week-4 goal and answer the three questions against it. HOWL Tracker's History for the Responsibility trend. Executive Function if one part of the system needs rebuilding. | Goal Setter (station starts), HOWL Tracker, Executive Function |
@@ -532,8 +533,8 @@ any partner assignment. Tell colleagues to expect named parts and early asks.
 ## Week 12: The Story of Your Trimester
 
 **HOWL: Perseverance.** The behaviors are self-assessing with targets and rubrics, and learning from
-feedback. The week closes the trimester: each student builds a two-minute story (one level, one
-piece of evidence, and one gap for each HOWL) and rehearses it for the student-led conference.
+feedback. The week closes the trimester: each student builds a two-minute story (one level and one
+piece of evidence for each HOWL, then one gap) and rehearses it for the student-led conference.
 
 **The 40 minutes**
 

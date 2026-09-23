@@ -263,12 +263,12 @@
             "type": "mcq",
             "question": "According to the reading, what is the real problem with being in the yellow or red zone?",
             "options": [
-              "Being in those zones means you did something wrong that day",
-              "Not knowing you are there, and trying to do hard learning anyway",
+              "Being in those zones means you did something wrong earlier that day",
+              "You do not know you are there, and you try to do hard learning anyway",
               "Those zones last all day once you are in them",
               "Other students will notice and treat you differently"
             ],
-            "correctAnswer": "Not knowing you are there, and trying to do hard learning anyway",
+            "correctAnswer": "You do not know you are there, and you try to do hard learning anyway",
             "conceptLabel": "states are information"
           },
           {
@@ -276,9 +276,9 @@
             "question": "What does \"inside your window\" mean?",
             "options": [
               "You are calm because nothing stressful happened today",
-              "You are in the green zone and will stay there all class",
+              "You are in the green zone and will stay there for the whole class",
               "You are in a state where you can think, listen, and try things",
-              "You are sitting quietly so the teacher does not notice you"
+              "You are sitting very quietly so the teacher does not notice you"
             ],
             "correctAnswer": "You are in a state where you can think, listen, and try things",
             "conceptLabel": "window of tolerance"
@@ -287,9 +287,9 @@
             "type": "mcq",
             "question": "In the reading, what did Priya's one word \"yellow\" do?",
             "options": [
-              "It got her excused from sharing for the rest of Crew",
+              "It got her excused from sharing or speaking for the rest of Crew",
               "It told the Crew everything about the hallway argument",
-              "It let the Crew leader know she was going to be in trouble",
+              "It let the Crew leader know that she was going to be in trouble later",
               "It told Priya what was true and told the leader she might need a minute"
             ],
             "correctAnswer": "It told Priya what was true and told the leader she might need a minute",
@@ -299,12 +299,12 @@
             "type": "mcq",
             "question": "A student says \"I am in red\" and walks out of class. What does the reading say about this?",
             "options": [
-              "Naming a state is not an excuse; it means you know your first move back",
+              "Naming a state is not an excuse; it means you know what to do first",
               "This is exactly what naming a state is for, so it is fine",
               "Red means you should always leave until you feel green again",
-              "The student should have said yellow so they could stay"
+              "The student should have said yellow so that they could stay in the room"
             ],
-            "correctAnswer": "Naming a state is not an excuse; it means you know your first move back",
+            "correctAnswer": "Naming a state is not an excuse; it means you know what to do first",
             "conceptLabel": "naming is not an excuse"
           },
           {
@@ -314,7 +314,7 @@
               "It is the same for everyone in a grade",
               "It gets bigger every week if you practice",
               "It changes with sleep, food, stress, and what just happened",
-              "It only matters for students who have trouble with anger"
+              "It matters most for students who often have trouble with their anger"
             ],
             "correctAnswer": "It changes with sleep, food, stress, and what just happened",
             "conceptLabel": "window changes"

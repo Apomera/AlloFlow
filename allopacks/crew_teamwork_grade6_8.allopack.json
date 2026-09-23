@@ -235,7 +235,7 @@
           },
           {
             "id": "cteam-i9",
-            "content": "\"Which of us is doing the sources page? I can, if nobody has it.\"",
+            "content": "\"My captions depend on your title. Could you send it to me by Tuesday?\"",
             "categoryId": "cteam-ask"
           },
           {
@@ -258,10 +258,10 @@
             "type": "mcq",
             "question": "What does the reading say is the trap most groups fall into?",
             "options": [
-              "One person does all the work because the others are lazy",
+              "One person ends up doing all the work because the others are lazy",
               "The work belongs to the group, so no piece belongs to anyone",
               "The teacher assigns too much for the time given",
-              "Groups argue about who is in charge"
+              "Groups spend the time arguing about who is in charge"
             ],
             "correctAnswer": "The work belongs to the group, so no piece belongs to anyone",
             "conceptLabel": "the trap"
@@ -283,7 +283,7 @@
             "question": "When Lena found the data was in Omar's notebook and Omar was out sick, what did she do?",
             "options": [
               "She waited for Omar to come back",
-              "She made up numbers so the graphs would be done",
+              "She made up some numbers so the graphs would be done on time",
               "She texted Omar and asked for a photo of the page",
               "She told the teacher that Omar had not done his part"
             ],
@@ -295,7 +295,7 @@
             "question": "What are the three pieces of the sentence that names a part?",
             "options": [
               "What, where, and by when",
-              "Who, why, and how",
+              "Who, why, and how much time",
               "First, next, and last",
               "Easy, medium, and hard"
             ],
@@ -307,16 +307,16 @@
             "question": "Your part is done and a teammate's is not, and Friday is coming. What does the reading say?",
             "options": [
               "Do their part too and say nothing",
-              "Refuse to help so they learn a lesson",
-              "Ask the teacher to move you to another group",
-              "You may help, and you may say which part was yours"
+              "Refuse to help them so they learn a lesson about deadlines",
+              "Ask the teacher to move you into another group right away",
+              "Help if you want to, and say which part was yours"
             ],
-            "correctAnswer": "You may help, and you may say which part was yours",
+            "correctAnswer": "Help if you want to, and say which part was yours",
             "conceptLabel": "parts have names"
           },
           {
             "type": "shortAnswer",
-            "question": "Your group has four people and one poster due Friday. Write your part of the whole in one sentence, with what and by when.",
+            "question": "Your group has four people and one poster due Friday. Write your part of the whole in one sentence, with what, where, and by when.",
             "expectedAnswer": "A named part with a deadline: \"I will finish the two data graphs and have them on the shared slide by Wednesday.\"",
             "conceptLabel": "name your part"
           }

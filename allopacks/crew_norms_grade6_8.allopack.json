@@ -190,7 +190,7 @@
         "items": [
           {
             "id": "cn-i1",
-            "content": "No phones out during Crew.",
+            "content": "School handbook: no phones out during Crew.",
             "categoryId": "cn-rule"
           },
           {
@@ -200,7 +200,7 @@
           },
           {
             "id": "cn-i3",
-            "content": "Be nice.",
+            "content": "Our Crew agreed: be nice.",
             "categoryId": "cn-vague"
           },
           {
@@ -210,12 +210,12 @@
           },
           {
             "id": "cn-i5",
-            "content": "Crew meets at 8:05 in room 12.",
+            "content": "From the office: Crew meets at 8:05 in room 12.",
             "categoryId": "cn-rule"
           },
           {
             "id": "cn-i6",
-            "content": "Have a good attitude.",
+            "content": "Our Crew agreed: have a good attitude.",
             "categoryId": "cn-vague"
           },
           {
@@ -225,12 +225,12 @@
           },
           {
             "id": "cn-i8",
-            "content": "Students must sign in on the attendance sheet.",
+            "content": "From the office: students must sign in on the attendance sheet.",
             "categoryId": "cn-rule"
           },
           {
             "id": "cn-i9",
-            "content": "Respect everyone.",
+            "content": "Our Crew agreed: respect everyone.",
             "categoryId": "cn-vague"
           },
           {
@@ -265,12 +265,12 @@
             "type": "mcq",
             "question": "In the reading, what did Mr. Okafor do when side talk interrupted Amara?",
             "options": [
-              "He asked the group what it wanted to happen when someone shares",
-              "He moved the two talkers to a different Crew for the week",
+              "He asked the group what should happen when someone shares",
+              "He moved the two students to a different Crew for a week",
               "He told the group the rule about talking and moved on",
               "He asked Amara to speak louder so everyone could hear"
             ],
-            "correctAnswer": "He asked the group what it wanted to happen when someone shares",
+            "correctAnswer": "He asked the group what should happen when someone shares",
             "conceptLabel": "norms are shared"
           },
           {
@@ -279,10 +279,10 @@
             "options": [
               "The student is refusing to be part of the Crew today",
               "The student is in trouble and the leader will follow up",
-              "The student is still in the circle but chooses not to speak this turn",
+              "The student is still part of the circle, just not speaking this turn",
               "The student has to share twice in the next round to make up for it"
             ],
-            "correctAnswer": "The student is still in the circle but chooses not to speak this turn",
+            "correctAnswer": "The student is still part of the circle, just not speaking this turn",
             "conceptLabel": "pass protects participation"
           },
           {
@@ -291,7 +291,7 @@
             "options": [
               "Cooperating means agreeing with the group so the work gets done",
               "Cooperating means the loudest person makes the decision quickly",
-              "Cooperating means keeping quiet so there is no disagreement",
+              "Cooperating means keeping quiet so that there is no disagreement",
               "Cooperating means you can disagree and still keep the norms"
             ],
             "correctAnswer": "Cooperating means you can disagree and still keep the norms",
@@ -304,7 +304,7 @@
               "Replace it with a rule from the handbook so it carries weight",
               "Revisit it as a group and change it if it stopped working",
               "Leave it up, because norms should never be changed once set",
-              "Have the Crew leader decide privately whether to keep it"
+              "Have the Crew leader decide privately whether to keep it or not"
             ],
             "correctAnswer": "Revisit it as a group and change it if it stopped working",
             "conceptLabel": "norms are revisited"
