@@ -241,8 +241,14 @@ test.describe('Optics — reduced motion mid-session', () => {
     expect(px!.teal, 'no teal reflected rays rendered').toBeGreaterThan(0);
     // Floors are MEASURED on this canvas, same camera, same screenshot path:
     //                      1px lines   all cylinders   teal-only (shipped)
-    //   amber sky fan        1028        463             1011
-    //   teal reflected        404        284              619
+    //   amber sky fan        1000       ~434              983
+    //   teal reflected        235       ~114              448
+    // (~ = the old reading minus the readout's share, not re-measured.)
+    // Re-measured 2026-09-23 when the 3D readout moved OUT of the scene into a
+    // header band. The original table (teal 404 lines / 619 shipped) was taken
+    // with the readout floating over the canvas, and its teal text ("Sky inside
+    // cone") passes this teal class: it alone was 170 px, so both numbers held
+    // it and the floor measured part of the readout, not the rays.
     // The teal floor proves the reflected fan got thicker. The amber floor
     // guards one specific, measured failure: cylinders too thin for this
     // canvas (r=0.045 is under a pixel) rasterise with gaps and the sky fan
@@ -250,8 +256,8 @@ test.describe('Optics — reduced motion mid-session', () => {
     // thicker sky fan: at r=0.11 the fan passes this floor. Keeping the sky
     // fan as lines is a legibility judgement (the rays stay distinct near the
     // eye instead of merging), not something this test enforces.
-    expect(px!.teal, `teal rays cover ${px!.teal} px — 1px lines measured 404`)
-      .toBeGreaterThan(510);
+    expect(px!.teal, `teal rays cover ${px!.teal} px — 1px lines measured 235`)
+      .toBeGreaterThan(340);
     expect(px!.amber, `amber sky fan covers ${px!.amber} px — sub-pixel cylinders measured 463`)
       .toBeGreaterThan(800);
   });

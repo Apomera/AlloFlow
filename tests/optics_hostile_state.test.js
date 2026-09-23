@@ -82,7 +82,8 @@ describe('Optics — every persisted array read is coerced', () => {
     for (const site of [
       '_opArray(prev.opticsLab.opticsRecentModes).filter(',
       '_opArray(d.opticsRecentModes).indexOf(',
-      '_opArray(d.phenoQuantumDots).concat(',
+      // The photon run reads its stored dots here, then keeps only {s, u} points.
+      '_opArray(state.phenoQuantumDots)',
       '_opArray(d.quizAnswers).slice()',
       '_opArray(d.quizAnswers)[qi]',
     ]) {

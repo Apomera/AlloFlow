@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { createServer, Server } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { predictionKeys, opticsConstant } from '../helpers/optics_prediction.js';
 
@@ -69,7 +70,7 @@ const HARNESS = `<!doctype html>
       setStemLabTool: function () {}, setStemLabTab: function () {}, addToast: function () {},
       awardXP: function () {}, getXP: function () { return 0; }, announceToSR: function () {},
       celebrate: function () {}, beep: function () {}, callGemini: null,
-      gradeLevel: '11th Grade', toolSnapshots: [], props: {},
+      isDark: !!window.__isDark, gradeLevel: '11th Grade', toolSnapshots: [], props: {},
       t: function (k, fb) { return fb || k; },
       icons: new Proxy({}, { get: function () { return function () { return e('span'); }; } }),
       a11yClick: function (fn) { return { onClick: fn, role: 'button', tabIndex: 0 }; },
@@ -235,6 +236,80 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
 
     await page.getByRole('button', { name: /Explore/ }).click();
     expect(await page.evaluate(() => document.activeElement?.id)).toBe('op-explore-lenses');
+  });
+
+  test('keeps every slider readout inside its own row in a narrow column', async ({ page }) => {
+    // On a desktop screen the explore column is ~400px wide, two 190px slider
+    // rows side by side. A range input will not shrink below its intrinsic
+    // width, so the value readout spilled across the NEXT row's label ("600"
+    // over "d (mm):"). Measure the boxes; a style string cannot show this.
+    for (const width of [1100, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const bucket of [{ mode: 'interference' }, { mode: 'diffraction', diffMode: 'grating' }]) {
+        await mountUi(page, bucket);
+        const rows = await page.evaluate(() => Array.from(document.querySelectorAll('.opticslab-control-grid label')).map((label) => {
+          const lr = label.getBoundingClientRect();
+          const value = label.querySelector(':scope > span')!.getBoundingClientRect();
+          return { text: (label.textContent || '').trim(), l: lr.left, r: lr.right, t: lr.top, b: lr.bottom, vl: value.left, vr: value.right };
+        }));
+        expect(rows.length, `${width}px ${bucket.mode}: slider rows`).toBeGreaterThanOrEqual(4);
+        for (const row of rows) {
+          expect(row.vr, `${width}px ${row.text}: readout spills past its row`).toBeLessThanOrEqual(row.r + 0.5);
+          expect(row.vl, `${width}px ${row.text}: readout starts before its row`).toBeGreaterThanOrEqual(row.l - 0.5);
+        }
+        for (const a of rows) for (const b of rows) {
+          if (a === b) continue;
+          const overlapX = Math.min(a.r, b.r) - Math.max(a.l, b.l);
+          const overlapY = Math.min(a.b, b.b) - Math.max(a.t, b.t);
+          expect(overlapX > 0.5 && overlapY > 0.5, `${width}px: "${a.text}" overlaps "${b.text}"`).toBe(false);
+        }
+        await page.evaluate(() => (window as any).__destroy());
+      }
+    }
+  });
+
+  test('builds single photons into the classical pattern of the slits on the bench', async ({ page }) => {
+    // The photon demo drew a fixed cos² that ignored every slider: no
+    // single-slit envelope, so "the SAME pattern as the continuous wave" was
+    // false. Fire real photons and compare where they land with the intensity
+    // of THIS bench (λ 600 nm, d 0.10 mm, a 50 μm, L 1.0 m: fringes 6 mm apart,
+    // the envelope's first zero at 12 mm, so the ±12 mm orders are missing).
+    await page.setViewportSize({ width: 1100, height: 1000 });
+    await mountUi(page, { mode: 'interference', intLambda: 600, intSlitSep: 0.1, intSlitWidth: 50, intScreenL: 1.0 });
+    const screen = page.locator('[data-op-quantum-screen="true"]');
+    await screen.scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-op-quantum-envelope="true"]')).toHaveCount(1);
+    await page.getByRole('button', { name: /Auto-fire/ }).click();
+    await page.getByRole('button', { name: 'fast', exact: true }).click();
+    await page.waitForFunction(() => document.querySelectorAll('[data-op-quantum-screen] circle[data-screen-mm]').length >= 1200, null, { timeout: 60000 });
+    await page.getByRole('button', { name: '⏸ Pause', exact: true }).click();
+    const ys: number[] = await page.evaluate(() => Array.from(document.querySelectorAll('[data-op-quantum-screen] circle[data-screen-mm]'))
+      .map((c) => Number(c.getAttribute('data-screen-mm'))));
+
+    const lam = 600e-9, d = 1e-4, a = 50e-6, L = 1;
+    const I = (mm: number) => {
+      const s = mm * 1e-3 / Math.hypot(mm * 1e-3, L);
+      const b = Math.PI * a * s / lam;
+      const env = Math.abs(b) < 1e-12 ? 1 : (Math.sin(b) / b) ** 2;
+      return env * Math.cos(Math.PI * d * s / lam) ** 2;
+    };
+    const share = (lo: number, hi: number) => {
+      let part = 0; let all = 0;
+      for (let mm = -30; mm <= 30; mm += 0.01) { const v = I(mm); all += v; if (Math.abs(mm) >= lo && Math.abs(mm) < hi) part += v; }
+      return part / all;
+    };
+    const seen = (lo: number, hi: number) => ys.filter((y) => Math.abs(y) >= lo && Math.abs(y) < hi).length / ys.length;
+    // Central fringe, the first side fringes, and everything past the
+    // envelope's first zero. A flat cos² puts ~60% past 12 mm; physics ~4%.
+    for (const [lo, hi] of [[0, 3], [3, 9], [12, 30]] as const) {
+      expect(Math.abs(seen(lo, hi) - share(lo, hi)), `|y| in [${lo}, ${hi}) mm: saw ${seen(lo, hi).toFixed(3)}, expected ${share(lo, hi).toFixed(3)}`).toBeLessThan(0.05);
+    }
+
+    // A run belongs to one setup: change d and the next run starts from zero.
+    await page.evaluate(() => (window as any).__set({ intSlitSep: 0.2 }));
+    await expect(screen).toContainText('0 photons');
+    await expect(screen).toContainText('The setup above changed');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
   test('completes and persists the predict-observe-explain notebook', async ({ page }) => {
@@ -1872,4 +1947,359 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__mirrorCanvasCount())).toBe(0);
     expect(await page.evaluate(() => (window as any).__mirror().state)).toBe('idle');
   });
+});
+
+test.describe('Optics 3D readouts never cover the scene', () => {
+  // The readout floated over the top-left of a 460x280 scene and hid what sat
+  // there: P1 on the polarizer bench, the object AND the virtual image on the
+  // magnifier bench. Measured against the canvas, not the stage, because a
+  // readout inside the stage but over the canvas is exactly the old bug.
+  const VIEWS = [
+    { name: 'polarization', bucket: { mode: 'polarization', polTheta2: 30 },
+      canvas: 'canvas[data-optics-gl="true"]', ready: '__gl', hud: '[data-op-polarization-3d-outcome]', min: 260 },
+    { name: 'refraction', bucket: { mode: 'refraction', refrShow3D: true, refrN1: 1, refrN2: 1.52, refrTheta1: 30 },
+      canvas: 'canvas[data-optics-refraction-gl="true"]', ready: '__refr', hud: '[data-op-refraction-3d-outcome]', min: 280 },
+    { name: "Snell's window", bucket: { mode: 'refraction', refrShowWindow: true, refrN1: 1.333, refrN2: 1.0 },
+      canvas: 'canvas[data-optics-window-gl="true"]', ready: '__win', hud: '[data-op-snell-window-3d-outcome]', min: 280 },
+    { name: 'lens (magnifier)', bucket: { mode: 'lenses', lensShow3D: true, lensType: 'converging', lensFocal: 12, lensDo: 7 },
+      canvas: 'canvas[data-optics-lens-gl="true"]', ready: '__lens', hud: '[data-op-lens-3d-screen]', min: 280 },
+    { name: 'mirror', bucket: { mode: 'reflection', reflShow3D: true, reflMirrorType: 'concave', reflFocal: 10, reflDo: 30 },
+      canvas: 'canvas[data-optics-mirror-gl="true"]', ready: '__mirror', hud: '[data-op-mirror-3d-screen]', min: 280 },
+  ];
+
+  for (const v of VIEWS) {
+    test(`${v.name}: the readout sits above a full-height viewport`, async ({ page }) => {
+      for (const width of [1100, 360]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.goto(`${base}/__harness`);
+        await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+        await page.evaluate((b) => (window as any).__mount(b), v.bucket);
+        await page.waitForSelector(v.canvas, { timeout: 30000 });
+        await page.waitForFunction((fn) => (window as any)[fn]()?.state === 'ready', v.ready, { timeout: 30000 });
+        await expect(page.locator(v.hud)).toBeVisible();
+        await page.waitForTimeout(300);
+        const g = await page.evaluate(([canvasSel, hudSel]) => {
+          const box = (el: Element) => { const r = el.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom, h: r.height }; };
+          return { c: box(document.querySelector(canvasSel)!), h: box(document.querySelector(hudSel)!) };
+        }, [v.canvas, v.hud]);
+        const overlapX = Math.min(g.c.r, g.h.r) - Math.max(g.c.l, g.h.l);
+        const overlapY = Math.min(g.c.b, g.h.b) - Math.max(g.c.t, g.h.t);
+        expect(overlapX > 0.5 && overlapY > 0.5, `${width}px: the readout covers the canvas (${overlapX.toFixed(0)}x${overlapY.toFixed(0)} px)`).toBe(false);
+        expect(g.h.b, `${width}px: the readout is not above the scene`).toBeLessThanOrEqual(g.c.t + 0.5);
+        expect(g.c.h, `${width}px: the viewport lost height to the readout`).toBeGreaterThanOrEqual(v.min - 1);
+        expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+        await page.evaluate(() => (window as any).__destroy());
+      }
+    });
+  }
+});
+
+test.describe('Optics 3D readouts stay readable in every theme', () => {
+  // The readouts and cue chips are dark panels on the dark 3D canvas in every
+  // theme, but the light-theme colour translations recoloured their text to
+  // slate: about 1.1:1 in the DEFAULT theme, for all five 3D benches. The
+  // harness set no theme class, so no test ever looked.
+  //
+  // The app defines the --allo-stem-* surfaces in app_styles_module.js; the
+  // harness does not load it, so every var() fell back to dark. Inject the
+  // real per-theme blocks, read from that file, so the stage behind each
+  // readout is the one a student's theme actually paints.
+  const APP_STYLES = readFileSync(join(ROOT, 'app_styles_module.js'), 'utf8');
+  const THEME_VARS = [/:root, \.theme-default \{[^}]*\}/, /@media screen \{ \.theme-dark \{[^}]*\} \}/]
+    .map((re) => { const m = APP_STYLES.match(re); if (!m) throw new Error('theme block not found: ' + re); return m[0]; })
+    .join(' ');
+  const VIEWS = [
+    { name: 'polarization', bucket: { mode: 'polarization', polTheta2: 30 }, canvas: 'canvas[data-optics-gl="true"]', ready: '__gl',
+      islands: ['[data-op-polarization-3d-outcome]', '[data-op-polarization-3d-cue]'] },
+    { name: 'refraction', bucket: { mode: 'refraction', refrShow3D: true, refrN1: 1, refrN2: 1.52, refrTheta1: 30 }, canvas: 'canvas[data-optics-refraction-gl="true"]', ready: '__refr',
+      islands: ['[data-op-refraction-3d-outcome]', '[data-op-refraction-3d-cue]'] },
+    { name: "Snell's window", bucket: { mode: 'refraction', refrShowWindow: true, refrN1: 1.333, refrN2: 1.0 }, canvas: 'canvas[data-optics-window-gl="true"]', ready: '__win',
+      islands: ['[data-op-snell-window-3d-outcome]', '[data-op-snell-window-3d-cue]'] },
+    { name: 'lens', bucket: { mode: 'lenses', lensShow3D: true, lensType: 'converging', lensFocal: 12, lensDo: 7 }, canvas: 'canvas[data-optics-lens-gl="true"]', ready: '__lens',
+      islands: ['[data-op-lens-3d-screen]', '[data-op-lens-3d-cue]'] },
+    { name: 'mirror', bucket: { mode: 'reflection', reflShow3D: true, reflMirrorType: 'convex', reflFocal: 10, reflDo: 30 }, canvas: 'canvas[data-optics-mirror-gl="true"]', ready: '__mirror',
+      islands: ['[data-op-mirror-3d-screen]', '[data-op-mirror-3d-cue]'] },
+  ];
+
+  for (const v of VIEWS) {
+    test(`${v.name}: readout and cue text reach 4.5:1 in the default, light and dark themes`, async ({ page }) => {
+      await page.setViewportSize({ width: 1100, height: 1000 });
+      await page.goto(`${base}/__harness`);
+      await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+      for (const theme of ['theme-default', 'theme-light', 'theme-dark']) {
+        await page.evaluate((t) => { document.body.className = t; }, theme);
+        await page.addStyleTag({ content: THEME_VARS });
+        await page.evaluate((b) => (window as any).__mount(b), v.bucket);
+        await page.waitForSelector(v.canvas, { timeout: 30000 });
+        await page.waitForFunction((fn) => (window as any)[fn]()?.state === 'ready', v.ready, { timeout: 30000 });
+        await autoPredict(page);
+        const report = await page.evaluate((sels) => {
+          const parse = (c: string) => { const m = c.match(/[\d.]+/g)!.map(Number); return { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? m[3] : 1 }; };
+          const over = (top: any, under: any) => ({ r: top.r * top.a + under.r * (1 - top.a), g: top.g * top.a + under.g * (1 - top.a), b: top.b * top.a + under.b * (1 - top.a), a: 1 });
+          const lum = (c: any) => { const f = (x: number) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+          const ratio = (a: any, b: any) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+          const canvasInk = { r: 8, g: 17, b: 31, a: 1 };   // the scenes' clear colour
+          const out: Array<{ text: string; ratio: number }> = [];
+          let checked = 0;
+          for (const sel of sels) {
+            const island = document.querySelector(sel) as HTMLElement | null;
+            if (!island) { out.push({ text: `missing ${sel}`, ratio: 0 }); continue; }
+            // A readout band sits on its stage's ground; a cue chip sits on the canvas.
+            const stage = island.closest('.opticslab-gl-stage') as HTMLElement | null;
+            const stageBg = stage && island.parentElement === stage ? over(parse(getComputedStyle(stage).backgroundColor), { r: 255, g: 255, b: 255, a: 1 }) : canvasInk;
+            const bg = over(parse(getComputedStyle(island).backgroundColor), stageBg);
+            for (const el of [island, ...Array.from(island.querySelectorAll('*'))] as HTMLElement[]) {
+              const own = Array.from(el.childNodes).some((n) => n.nodeType === 3 && (n.textContent || '').trim());
+              if (!own) continue;
+              checked += 1;
+              out.push({ text: (el.textContent || '').trim().slice(0, 40), ratio: ratio(over(parse(getComputedStyle(el).color), bg), bg) });
+            }
+          }
+          return { checked, worst: out.sort((a, b) => a.ratio - b.ratio).slice(0, 3) };
+        }, v.islands);
+        expect(report.checked, `${theme}: no readout text found`).toBeGreaterThanOrEqual(4);
+        for (const w of report.worst) {
+          expect(w.ratio, `${theme}: "${w.text}" is ${w.ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+        }
+        await page.evaluate(() => (window as any).__destroy());
+      }
+    });
+  }
+});
+
+test.describe('Optics bench diagrams stay readable in the default and dark themes', () => {
+  // Four bench diagrams (mirror, refraction, lens, polarizer) paint the theme's
+  // surface, light in the default theme; two (interference, diffraction) paint
+  // #000 in every theme. Labels were drawn in dark-canvas tints either way, so
+  // on the light ground "screen 20.0 cm" measured 1.00:1 and "convex glass"
+  // 1.08:1, while a translation meant for the light ground turned the black
+  // benches' amber labels brown (2.96:1). The harness never loaded the app's
+  // theme variables, so every diagram rendered dark and none of it showed.
+  const APP_STYLES = readFileSync(join(ROOT, 'app_styles_module.js'), 'utf8');
+  const THEME_VARS = [/:root, \.theme-default \{[^}]*\}/, /@media screen \{ \.theme-dark \{[^}]*\} \}/]
+    .map((re) => { const m = APP_STYLES.match(re); if (!m) throw new Error('theme block not found: ' + re); return m[0]; })
+    .join(' ');
+  const BENCHES: Array<[string, Record<string, unknown>]> = [
+    ['concave mirror', { mode: 'reflection' }], ['convex mirror', { mode: 'reflection', reflMirrorType: 'convex' }],
+    ['refraction', { mode: 'refraction' }], ['total internal reflection', { mode: 'refraction', refrN1: 1.52, refrN2: 1, refrTheta1: 60 }],
+    ['converging lens', { mode: 'lenses' }], ['diverging lens', { mode: 'lenses', lensType: 'diverging' }],
+    ['double slit', { mode: 'interference' }], ['single slit', { mode: 'diffraction' }],
+    ['grating', { mode: 'diffraction', diffMode: 'grating', diffLambda: 633, diffGrating: 600, diffScreenL: 1.0 }],
+    ['polarizers', { mode: 'polarization', polTheta2: 30 }],
+  ];
+
+  for (const theme of ['theme-default', 'theme-dark']) {
+    test(`every diagram label reaches 4.5:1 on its ground (${theme})`, async ({ page }) => {
+      await page.setViewportSize({ width: 1100, height: 1400 });
+      await page.goto(`${base}/__harness`);
+      await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+      await page.addStyleTag({ content: THEME_VARS });
+      await page.evaluate((t) => { document.body.className = t; }, theme);
+      const failures: string[] = [];
+      let checked = 0;
+      for (const [name, bucket] of BENCHES) {
+        await page.evaluate((b) => (window as any).__mount(b), bucket);
+        await page.waitForSelector('svg.opticslab-core-svg', { timeout: 30000 });
+        await autoPredict(page);
+        const result = await page.evaluate(() => {
+          const parse = (c: string) => { const m = (c.match(/[\d.]+/g) || ['0', '0', '0', '0']).map(Number); return { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? m[3] : 1 }; };
+          const over = (t: any, u: any) => ({ r: t.r * t.a + u.r * (1 - t.a), g: t.g * t.a + u.g * (1 - t.a), b: t.b * t.a + u.b * (1 - t.a), a: 1 });
+          const lum = (c: any) => { const f = (x: number) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+          const ratio = (a: any, b: any) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+          const bad: string[] = [];
+          let n = 0;
+          for (const svg of Array.from(document.querySelectorAll('svg.opticslab-core-svg')) as SVGSVGElement[]) {
+            const white = { r: 255, g: 255, b: 255, a: 1 };
+            const ground = over(parse(getComputedStyle(svg).backgroundColor), white);
+            for (const t of Array.from(svg.querySelectorAll('text')) as SVGTextElement[]) {
+              const txt = (t.textContent || '').trim();
+              const cs = getComputedStyle(t);
+              if (!txt || cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) continue;
+              n += 1;
+              const fill = parse(cs.fill); fill.a *= Number(cs.opacity);
+              const r = ratio(over(fill, ground), ground);
+              if (r < 4.5) bad.push(`"${txt.slice(0, 30)}" ${r.toFixed(2)}:1 (${cs.fill} on ${getComputedStyle(svg).backgroundColor})`);
+            }
+          }
+          return { n, bad };
+        });
+        checked += result.n;
+        result.bad.forEach((b) => failures.push(`${name}: ${b}`));
+        await page.evaluate(() => (window as any).__destroy());
+      }
+      expect(checked, 'no diagram labels found').toBeGreaterThanOrEqual(60);
+      expect(failures, `${theme}: low-contrast diagram labels`).toEqual([]);
+    });
+  }
+});
+
+test('Optics step badges keep their numerals readable on every topic accent', async ({ page }) => {
+  // The Predict / Explore / Explain badges drew white 11px numerals on each
+  // topic's bright accent: 2.15:1 on amber, 2.43:1 on cyan, 3.95:1 on purple.
+  // Colours are theme-independent, so one pass covers every theme.
+  await page.setViewportSize({ width: 1100, height: 1000 });
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+  const low: string[] = [];
+  let checked = 0;
+  for (const mode of ['reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization']) {
+    await page.evaluate((m) => (window as any).__mount({ mode: m }), mode);
+    await page.waitForSelector('.opticslab-flow-number', { timeout: 30000 });
+    const rows = await page.evaluate(() => {
+      const parse = (c: string) => (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+      const lum = (c: number[]) => { const f = (x: number) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+      return Array.from(document.querySelectorAll('.opticslab-flow-number')).map((el) => {
+        const cs = getComputedStyle(el);
+        const a = lum(parse(cs.color)); const b = lum(parse(cs.backgroundColor));
+        return { text: (el.textContent || '').trim(), bg: cs.backgroundColor, ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+      });
+    });
+    for (const r of rows) {
+      checked += 1;
+      if (r.ratio < 4.5) low.push(`${mode} badge "${r.text}": ${r.ratio.toFixed(2)}:1 on ${r.bg}`);
+    }
+    await page.evaluate(() => (window as any).__destroy());
+  }
+  expect(checked, 'no step badges found').toBeGreaterThanOrEqual(18);
+  expect(low).toEqual([]);
+});
+
+test('Optics eye: Auto-prescribe gives lenses that actually correct the eye', async ({ page }) => {
+  // Glasses used 1/d′ = 1/d + P instead of − P, so the prescribed −3.5 D
+  // lenses halved a myope's far point instead of sending it to infinity.
+  await page.setViewportSize({ width: 1100, height: 1200 });
+  for (const [condition, sign] of [['myopia', '−'], ['hyperopia', '+']] as const) {
+    await mountUi(page, { mode: 'phenomena', phenoSub: 'eye', phenoEyeCondition: condition, phenoEyeGlasses: false });
+    await page.getByRole('button', { name: /Auto-prescribe corrective lens/ }).click();
+    const bucket = await page.evaluate(() => (window as any).__bucket());
+    expect(bucket.phenoEyeGlasses).toBe(true);
+    expect(Math.sign(bucket.phenoEyeGlassesD), `${condition} lens sign`).toBe(sign === '−' ? -1 : 1);
+    const svgText = await page.locator('svg').filter({ hasText: 'Far point' }).first().textContent();
+    expect(svgText, `${condition}: corrected far point`).toMatch(/Far point: ~∞/);
+    const near = Number((svgText!.match(/Near point: ~([0-9]+) cm/) || [])[1]);
+    expect(near, `${condition}: corrected near point`).toBeGreaterThan(5);
+    expect(near).toBeLessThan(25);
+    await page.evaluate(() => (window as any).__destroy());
+  }
+});
+
+test.describe('Optics reference pages and calculators stay readable in every theme', () => {
+  // The calculators, the visual lab and six reference pages were built on
+  // translucent navy cards. In the default theme the light translations darkened
+  // their text but not the cards: 3,205 of 3,802 text runs in the calculators and
+  // visual lab alone measured under 4.5:1. They now render as dark panels there.
+  // HTML text only: SVG labels sit on drawn shapes an ancestor walk cannot see.
+  const APP_STYLES = readFileSync(join(ROOT, 'app_styles_module.js'), 'utf8');
+  const THEME_VARS = [/:root, \.theme-default \{[^}]*\}/, /@media screen \{ \.theme-dark \{[^}]*\} \}/]
+    .map((re) => { const m = APP_STYLES.match(re); if (!m) throw new Error('theme block not found: ' + re); return m[0]; })
+    .join(' ');
+  const SRC_TEXT = readFileSync(join(ROOT, 'stem_lab/stem_tool_optics.js'), 'utf8');
+  const VIZ: Record<string, unknown> = { mode: 'viz' };
+  [...new Set([...SRC_TEXT.matchAll(/upd[(]"(vizShow[A-Za-z0-9]+)"/g)].map((m) => m[1]))].forEach((k) => { VIZ[k] = true; });
+  const PAGES: Array<[string, Record<string, unknown>]> = [
+    ...['photon', 'em', 'brewster', 'tir', 'fiber', 'lensmaker', 'grating', 'arcoat', 'doppler', 'telescope', 'dof', 'color', 'eye', 'polartri']
+      .map((s): [string, Record<string, unknown>] => ['calculator ' + s, { mode: 'calcs', calcSubTool: s }]),
+    ['visual lab, every tool open', VIZ],
+    ...['worked', 'reference', 'deep', 'scientists', 'instruments', 'careers', 'history', 'quiz']
+      .map((m): [string, Record<string, unknown>] => [m, { mode: m }]),
+  ];
+  // Known exception: the colour mixer's pure-red preset chip IS the colour it
+  // names; neither dark (4.46:1) nor white (4.00:1) ink reaches 4.5 on #ff0000.
+  const ALLOWED = new Set(['Red@rgb(255, 0, 0)']);
+
+  for (const theme of ['theme-default', 'theme-dark']) {
+    test(`text reaches 4.5:1 on its card (${theme})`, async ({ page }) => {
+      test.setTimeout(300_000);
+      await page.setViewportSize({ width: 1100, height: 1400 });
+      await page.goto(`${base}/__harness`);
+      await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+      await page.addStyleTag({ content: THEME_VARS });
+      await page.evaluate((t) => {
+        document.body.className = t;
+        (window as any).__isDark = t === 'theme-dark';
+        const bg = t === 'theme-dark' ? '#0f172a' : '#ffffff';
+        document.body.style.background = bg; document.documentElement.style.background = bg;
+      }, theme);
+      const failures: string[] = [];
+      let checked = 0;
+      for (const [name, bucket] of PAGES) {
+        await page.evaluate((b) => (window as any).__mount(b), bucket);
+        await page.waitForSelector('[data-opticslab-tool="true"]');
+        await page.waitForTimeout(150);
+        const rows = await page.evaluate(() => {
+          const cols = (s: string) => (s.match(/rgba?[(][^)]*[)]/g) || []).map((c) => { const m = (c.match(/[0-9.]+/g) || []).map(Number); return { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? m[3] : 1 }; });
+          const parse = (c: string) => cols(c)[0] || { r: 0, g: 0, b: 0, a: 0 };
+          const over = (t: any, u: any) => ({ r: t.r * t.a + u.r * (1 - t.a), g: t.g * t.a + u.g * (1 - t.a), b: t.b * t.a + u.b * (1 - t.a), a: 1 });
+          const lum = (c: any) => { const f = (x: number) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+          const ratio = (a: any, b: any) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+          const page0 = parse(getComputedStyle(document.body).backgroundColor);
+          const groundOf = (el: Element) => {
+            const chain: Element[] = [];
+            for (let e: Element | null = el; e; e = e.parentElement) chain.unshift(e);
+            let g: any = { r: page0.r, g: page0.g, b: page0.b, a: 1 };
+            for (const e of chain) {
+              const cs = getComputedStyle(e);
+              const c = parse(cs.backgroundColor);
+              if (c.a > 0) g = over(c, g);
+              const stops = cs.backgroundImage && cs.backgroundImage !== 'none' ? cols(cs.backgroundImage) : [];
+              if (stops.length) { const avg = stops.reduce((acc, x) => { const o = over(x, g); return { r: acc.r + o.r / stops.length, g: acc.g + o.g / stops.length, b: acc.b + o.b / stops.length }; }, { r: 0, g: 0, b: 0 }); g = { ...avg, a: 1 }; }
+            }
+            return g;
+          };
+          const out: Array<{ text: string; ratio: number; fg: string; bg: string }> = [];
+          for (const el of Array.from(document.querySelectorAll('[data-opticslab-tool="true"] *')) as Element[]) {
+            if (el instanceof SVGElement) continue;
+            const own = Array.from(el.childNodes).filter((c) => c.nodeType === 3).map((c) => c.textContent || '').join('').trim();
+            if (!own || !/[A-Za-z0-9]/.test(own)) continue;
+            const cs = getComputedStyle(el);
+            if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+            const box = el.getBoundingClientRect(); if (box.width === 0 || box.height === 0) continue;
+            let op = 1; for (let e: Element | null = el; e; e = e.parentElement) op *= Number(getComputedStyle(e).opacity);
+            const fg = parse(cs.color); fg.a *= op;
+            const g = groundOf(el);
+            out.push({ text: own.slice(0, 40), ratio: ratio(over(fg, g), g), fg: cs.color, bg: 'rgb(' + [g.r, g.g, g.b].map(Math.round).join(', ') + ')' });
+          }
+          return out;
+        });
+        checked += rows.length;
+        for (const r of rows) {
+          if (r.ratio >= 4.5 || ALLOWED.has(r.text + '@' + r.bg)) continue;
+          failures.push(`${name}: "${r.text}" ${r.ratio.toFixed(2)}:1 (${r.fg} on ${r.bg})`);
+        }
+        await page.evaluate(() => (window as any).__destroy());
+      }
+      expect(checked, 'text runs found').toBeGreaterThan(4000);
+      expect(failures.slice(0, 40), `${theme}: ${failures.length} low-contrast text runs`).toEqual([]);
+    });
+  }
+
+  test('the topic heading uses the topic ink on the light card', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.addStyleTag({ content: THEME_VARS });
+    await page.evaluate(() => { document.body.className = 'theme-default'; document.body.style.background = '#fff'; });
+    for (const [mode, ink] of [['reflection', 'rgb(3, 105, 161)'], ['interference', 'rgb(146, 64, 14)'], ['polarization', 'rgb(4, 120, 87)']]) {
+      await page.evaluate((m) => (window as any).__mount({ mode: m }), mode);
+      await page.waitForSelector('.opticslab-topic-title');
+      expect(await page.evaluate(() => getComputedStyle(document.querySelector('.opticslab-topic-title') as Element).color), mode).toBe(ink);
+      await page.evaluate(() => (window as any).__destroy());
+    }
+  });
+});
+
+test('a disposed 3D renderer cannot throw into, or fail, the next scene', async ({ page }) => {
+  // dispose() calls forceContextLoss(), and Chrome fires 'webglcontextlost' AFTER
+  // the scene state is nulled: "Cannot set properties of null (setting
+  // 'contextLost')" logged dozens of times per e2e run, and a remount that beat
+  // the event had its NEW scene marked failed.
+  await mount(page, { mode: 'polarization' });
+  for (let i = 0; i < 3; i += 1) {
+    await page.evaluate(() => (window as any).__destroy());
+    await page.evaluate(() => (window as any).__mount({ mode: 'polarization' }));
+    await page.waitForFunction(() => (window as any).__gl()?.state === 'ready', null, { timeout: 30000 });
+  }
+  await page.waitForTimeout(1500);
+  const errors: string[] = await page.evaluate(() => (window as any).__events.errors);
+  expect(errors.filter((e) => /contextLost/.test(e))).toEqual([]);
+  expect(await page.evaluate(() => (window as any).__gl()?.state)).toBe('ready');
 });
