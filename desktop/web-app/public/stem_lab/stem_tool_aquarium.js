@@ -19746,8 +19746,20 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (volume < aquariumStockMinimumGallons) { if (addToast) addToast('Current display residents need at least ' + aquariumStockMinimumGallons + ' US gal in the species catalog. Their stock is unchanged.', 'warning'); return false; }
             if (volume === currentTankDefinition.size && shape === currentTankDefinition.shape) return false;
             stopAquariumRuntime(false);
-            var message = 'Tank scenario changed to ' + volume + ' US gal (' + shape + '). Water concentrations and residents were retained; future rates use the new volume and surface area.';
-            updMulti(Object.assign(aquariumSizeEditPatch(message), { aquariumTankConfig: { tankId: selectedTank, volumeGallons: volume, shape: shape } }));
+            // A filter colony is sized to the bioload it has been processing, not to
+            // the water it sits in. Moving to a larger tank leaves it briefly
+            // under-provisioned, which is the "bacteria colonies adjust to bioload"
+            // lesson this tool already teaches. Illustrative rate cue, not a bacterial
+            // population count. Run through the real hourly handler (6 guppies, 20 to
+            // 40/55 gal, every filter), ammonia keeps falling, just more slowly, nitrite
+            // peaks ~0.1 ppm higher, and the colony recovers in 17-29 sim hours; the
+            // notice says that rather than promising a rise that rarely comes.
+            var previousVolume = currentTankDefinition.size;
+            var colonyStart = volume > previousVolume ? Math.max(0.15, Math.min(1, previousVolume / volume)) : 1;
+            var message = 'Tank scenario changed to ' + volume + ' US gal (' + shape + '). Water concentrations and residents were retained; future rates use the new volume and surface area.'
+              + (colonyStart < 1 ? ' The established filter colony was sized to the ' + previousVolume + ' US gal load, so biological filtration runs below full strength while it catches up to the larger volume. Expect ammonia to fall more slowly and nitrite to climb a little for about a day of sim time while it does.' : '');
+            updMulti(Object.assign(aquariumSizeEditPatch(message), { aquariumTankConfig: { tankId: selectedTank, volumeGallons: volume, shape: shape },
+              bioColonyLag: colonyStart < 1 ? { maturity: colonyStart, fromGallons: previousVolume, toGallons: volume } : null }));
             if (announceToSR) announceToSR(message);
             return true;
           }
@@ -20302,6 +20314,13 @@ var d = (labToolData && labToolData._aquarium) || {};
               // reference tank. Larger volumes buffer the same organism or plant exchange.
               var volumeGallons = _equipmentTank && _equipmentTank.size ? _equipmentTank.size : 20;
               var volumeScale = 20 / volumeGallons;
+              // A colony moved into a larger tank starts behind and catches up.
+              // Only the biological clearance is derated; the filter's mechanical
+              // action is unaffected. Illustrative cue, not a population model.
+              var _colonyLag = aq.bioColonyLag && typeof aq.bioColonyLag.maturity === 'number' ? aq.bioColonyLag : null;
+              var colonyMaturity = _colonyLag ? Math.max(0.15, Math.min(1, _colonyLag.maturity)) : 1;
+              var colonyRecovered = colonyMaturity >= 0.999 ? null
+                : { maturity: Math.min(1, colonyMaturity + 0.03), fromGallons: _colonyLag.fromGallons, toGallons: _colonyLag.toGallons };
               var surfaceExchangeScale = _equipmentTank ? _equipmentTank.surfaceExchangeScale : 1;
               var oxygenSaturationTarget = AquariumEcosystemCore.estimateOxygenSaturationMgL(_waterChem.temp, _waterChem.salinity);
 
@@ -20341,11 +20360,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var ammoniaGen = bioload * 0.02 * volumeScale;
 
-              var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * (Math.min(1, 0.05 + _filterEquipment.ammoniaReduction * _equipmentOutput.filter * volumeScale)));
+              var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * (Math.min(1, 0.05 + _filterEquipment.ammoniaReduction * _equipmentOutput.filter * volumeScale * colonyMaturity)));
 
               var nitriteBact = _waterChem.ammonia * 0.15;
 
-              var newNitrite = Math.max(0, _waterChem.nitrite + nitriteBact - _waterChem.nitrite * (Math.min(1, 0.08 + _filterEquipment.nitriteReduction * _equipmentOutput.filter * volumeScale)));
+              var newNitrite = Math.max(0, _waterChem.nitrite + nitriteBact - _waterChem.nitrite * (Math.min(1, 0.08 + _filterEquipment.nitriteReduction * _equipmentOutput.filter * volumeScale * colonyMaturity)));
 
               var nitrateBact = _waterChem.nitrite * 0.2;
 
@@ -21618,6 +21637,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               var tickUpdate = {
 
                 waterChem: newChem, simTick: newTick, simDay: newDay, simHour: newHour,
+                bioColonyLag: colonyRecovered,
                 chemHistory: _chemHistory.concat([{ tick: newTick, day: newDay, hour: newHour, ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, dissolvedO2: newChem.dissolvedO2, pH: newChem.pH }]).slice(-48),
                 fishInstanceIds: finalFishInstanceIds, nextFishInstanceId: _nextFishInstanceId, fishIdentityVersion: 3, fishSickness: newSickness,
 

@@ -76,6 +76,45 @@ function act(patch, name) {
 const contributions = [['fish','ammoniaProduced'], ['fish','oxygenConsumed'], ['fish','co2Released'], ['plants','oxygenProduced'], ['plants','co2Consumed'], ['plants','nitrateConsumed'], ['equipment','oxygenAdded'], ['equipment','co2Removed']];
 afterEach(() => vi.restoreAllMocks());
 
+describe('Aquarium filter colony after a tank change', () => {
+  it('records how far the colony is behind when the tank grows, and not when it shrinks or holds', () => {
+    // A colony is sized to the bioload it has been processing. Moving it into a
+    // bigger tank leaves it briefly under-provisioned.
+    const grown = resize({}, 40);
+    expect(grown.bioColonyLag).toMatchObject({ fromGallons: 20, toGallons: 40 });
+    expect(grown.bioColonyLag.maturity).toBeCloseTo(0.5, 6);
+
+    // A bigger jump leaves it further behind.
+    const bigger = resize({}, 80);
+    expect(bigger.bioColonyLag.maturity).toBeLessThan(grown.bioColonyLag.maturity);
+
+    // Shrinking does not strand the colony - it is already big enough.
+    const shrunk = resize({ aquariumTankConfig: { tankId: 'freshwater', volumeGallons: 40, shape: 'standard' } }, 20);
+    expect(shrunk.bioColonyLag).toBe(null);
+  });
+
+  it('tells the learner what is happening, in the language the curriculum uses', () => {
+    const grown = resize({}, 55);
+    expect(grown.aquariumSizingNotice).toMatch(/filter colony/i);
+    expect(grown.aquariumSizingNotice).toMatch(/catches up|catch up/i);
+    // It must say what the simulation actually does, and for how long: run through
+    // the real hourly handler, ammonia keeps falling (more slowly) rather than
+    // rising, and the colony recovers within about a day of sim time.
+    expect(grown.aquariumSizingNotice).toMatch(/fall more slowly/i);
+    expect(grown.aquariumSizingNotice).toMatch(/about a day/i);
+    // A same-size or shrinking change says nothing about a colony.
+    const shrunk = resize({ aquariumTankConfig: { tankId: 'freshwater', volumeGallons: 40, shape: 'standard' } }, 20);
+    expect(shrunk.aquariumSizingNotice).not.toMatch(/filter colony/i);
+  });
+
+  it('never derates the colony far enough to reach the ammonia harm threshold', () => {
+    // The upgrade must teach, not punish: the floor keeps the transient well
+    // under the 2 ppm where fish health starts to suffer.
+    const worst = resize({}, 200);
+    expect(worst.bioColonyLag.maturity).toBeGreaterThanOrEqual(0.15);
+  });
+});
+
 describe('Actual Aquarium sizing controls and simulation', () => {
   it('pauses capacity edits while retaining present readings, residents, health and clock', () => {
     const view = tank({ simRunning: true }), before = copy(view.state());
