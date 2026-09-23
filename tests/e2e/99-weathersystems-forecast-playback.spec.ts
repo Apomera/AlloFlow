@@ -89,4 +89,47 @@ test.describe('Weather Systems — forecast playback in 3D', () => {
     expect(await liveContexts(page), 'no live 3D context at the end').toBeGreaterThan(0);
     expect(errors.filter((m) => !/ResizeObserver loop/.test(m)), 'page errors during playback').toEqual([]);
   });
+
+  // The controls narrate the hour just played. An arrival names the station, its change
+  // over that hour and the wind's turn, is announced (and only arrivals are), and pulses
+  // the station in 3D. The expected hour and numbers come from the kernel in the page.
+  test('narrates the front reaching a station, and only arrivals are announced', async ({ page }) => {
+    test.setTimeout(240000);
+    await harness.mount(page, { weatherSystems: { tab: 'immersive', scenario: 'coldFront' } }, undefined, { expectCanvas: false });
+    await page.waitForFunction(() => !!document.querySelector('[data-weather-forecast-controls]'), null, { timeout: 60000 });
+    const plan = await page.evaluate(() => {
+      const K = (window as any).WeatherSystemsKernel;
+      const state = K.resolvedState((window as any).__toolData.weatherSystems);
+      for (let h = 1; h <= 24; h += 1) {
+        const n = K.forecastNarration(state, h);
+        if (n.kind === 'arrival') {
+          const a = n.arrivals[0];
+          return { hour: h, id: a.id, name: a.name, change: Math.abs(a.tempChange), colder: a.tempChange < 0, from: K.cardinal(a.windFrom), to: K.cardinal(a.windTo), ids: n.arrivals.map((x: any) => x.id).join(',') };
+        }
+      }
+      return null;
+    });
+    expect(plan, 'the cold front must reach a station within the day').not.toBeNull();
+    const slider = page.getByRole('slider', { name: 'Forecast model hour' });
+    const narration = page.locator('[data-weather-forecast-narration]');
+    const announced = page.locator('[data-weather-forecast-arrival]');
+
+    // The hour before: it names the station the front is heading for; nothing announced.
+    await slider.fill(String(plan!.hour - 1));
+    await expect.poll(() => hourOf(page)).toBe(plan!.hour - 1);
+    await expect(narration).toHaveAttribute('data-weather-forecast-narration', 'ahead');
+    await expect(narration).toContainText('heading for ' + plan!.name);
+    await expect(announced).toHaveText('');
+
+    // The arrival hour: narrated with the kernel's numbers, announced, pulsed in 3D.
+    await slider.fill(String(plan!.hour));
+    await expect.poll(() => hourOf(page)).toBe(plan!.hour);
+    await expect(narration).toHaveAttribute('data-weather-forecast-narration', 'arrival');
+    const detail = `${plan!.name}: ${plan!.change}° ${plan!.colder ? 'colder' : 'warmer'} in an hour, wind ${plan!.from} → ${plan!.to}.`;
+    await expect(narration).toContainText('the front reached ' + plan!.name);
+    await expect(narration).toContainText(detail);
+    await expect(announced).toContainText(detail);
+    await expect(announced).toHaveAttribute('aria-live', 'polite');
+    await expect(page.locator('[data-weather-immersive-canvas]')).toHaveAttribute('data-weather-front-arrivals', plan!.ids, { timeout: 30000 });
+  });
 });

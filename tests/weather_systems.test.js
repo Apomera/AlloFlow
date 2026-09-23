@@ -2330,8 +2330,70 @@ describe('Weather Systems 2D map scene rendering', () => {
     const ctx = paint({ scenario: 'coldFront', simHour: 6 }, { dark: false });
     const labels = ctx.calls.filter(([name]) => name === 'fillText').map(([, args]) => String(args[0]));
     ['West Ridge', 'Central School', 'Harbor Point', 'North Valley'].forEach((name) => {
-      expect(labels.some((label) => label.indexOf(name) === 0 && /-?\d+°$/.test(label))).toBe(true);
+      expect(labels.some((label) => label.indexOf(name) === 0 && /-?\d+(?:\.\d)?°(?: {2}· {2}(?:snow|mixed|rain))?$/.test(label))).toBe(true);
     });
+  });
+
+  it('names what is falling at each station, as the kernel types it', () => {
+    const kernel = window.WeatherSystemsKernel;
+    // Winter storm T+12: three stations are snow-cold and the coast is mixed, while the
+    // regional (sea-level) reading alone says rain.
+    const state = kernel.resolvedState({ scenario: 'winterStorm', simHour: 12 });
+    const ctx = paint({ scenario: 'winterStorm', simHour: 12 }, { dark: true });
+    const labels = ctx.calls.filter(([name]) => name === 'fillText').map(([, args]) => String(args[0]));
+    const kinds = new Set();
+    kernel.stations.forEach((st) => {
+      const type = kernel.stationObservation(state, st).precipType;
+      kinds.add(type);
+      const label = labels.find((text) => text.indexOf(st.name) === 0);
+      expect(label, st.name).toBeTruthy();
+      expect(label, st.name).toMatch(new RegExp('·\\s+' + type + '$'));
+    });
+    expect(kernel.projectConditions(state, 12).precipType).toBe('rain');
+    expect([...kinds].sort()).toEqual(['mixed', 'snow']);
+  });
+
+  it('draws an outflow boundary dashed and a stalled front as stationary, from the shared plan', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const record = (overrides) => {
+      const canvas = fakeCanvas();
+      const ctx = canvas.getContext('2d');
+      const dashes = [], fills = [];
+      ctx.setLineDash = (pattern) => { dashes.push(pattern.join(',')); };
+      const fill = ctx.fill;
+      ctx.fill = (...args) => { fills.push(ctx.fillStyle); fill(...args); };
+      const state = kernel.resolvedState(overrides);
+      kernel.drawWeatherScene(canvas, state, kernel.scenarios.filter((item) => item.id === state.scenario)[0], 'central', 1200, true, false);
+      return { dashes, red: fills.filter((c) => c === '#ef4444').length };
+    };
+    // The storm's outflow is a dashed line (it drew cold-front triangles before).
+    expect(record({ scenario: 'summerStorm', simHour: 3 }).dashes).toContain('10,7');
+    expect(record({ scenario: 'coldFront', simHour: 3 }).dashes.filter((d) => d !== '')).toEqual([]);
+    // Speed 0 turns the cold front stationary: red half-circles join its blue triangles.
+    expect(record({ scenario: 'coldFront', simHour: 3, frontSpeed: 0 }).red).toBeGreaterThan(record({ scenario: 'coldFront', simHour: 3 }).red);
+  });
+
+  it('draws each cloud\'s precipitation as the ground under it, not the regional type', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const strokesFor = (overrides) => {
+      const canvas = fakeCanvas();
+      const ctx = canvas.getContext('2d');
+      const seen = [];
+      const record = ctx.stroke;
+      ctx.stroke = (...args) => { seen.push(ctx.strokeStyle + '@' + ctx.lineWidth); record(...args); };
+      const state = kernel.resolvedState(overrides);
+      kernel.drawWeatherScene(canvas, state, kernel.scenarios.filter((item) => item.id === state.scenario)[0], 'central', 1200, true, false);
+      return { rain: seen.filter((s) => s === '#38bdf8@1.7').length, snow: seen.filter((s) => s === '#f8fafc@3').length };
+    };
+    // Winter storm T+12: the regional reading says rain, every station under the clouds is
+    // snow or mixed, so the map must draw snow and no rain streaks.
+    const storm = strokesFor({ scenario: 'winterStorm', simHour: 12 });
+    expect(storm.snow).toBeGreaterThan(0);
+    expect(storm.rain).toBe(0);
+    // A warm rain case still draws rain, so the counts above are not a broken recorder.
+    const warm = strokesFor({ scenario: 'warmFront', simHour: 6 });
+    expect(warm.rain).toBeGreaterThan(0);
+    expect(warm.snow).toBe(0);
   });
 
   it('derives appearance cues from the model so the sliders visibly change the map', () => {
@@ -2814,7 +2876,7 @@ describe('Weather Systems immersive 3D scene', () => {
     // The 44x34 plane ended inside the camera frustum.
     expect(text).toContain('new THREE.PlaneGeometry(72, 58, profile.terrainX, profile.terrainY)');
     // Particles stay under the cloud deck instead of reaching y=11 as "stars".
-    expect(text).toContain("particlePositions[particle * 3 + 1] = 0.4 + ((particle * 83) % 70) / 10");
+    expect(text).toContain("positions[particle * 3 + 1] = 0.4 + ((particle * 83) % 70) / 10");
   });
 });
 

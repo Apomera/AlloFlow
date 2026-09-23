@@ -277,6 +277,15 @@
     };
   }
 
+  // Rain, mixed or snow from a surface temperature. projectConditions applies these to the
+  // region; stations and both scenes apply the same numbers where they are.
+  var SNOW_MAX_C = -1;
+  var RAIN_MIN_C = 2;
+  var PRECIP_TYPE_MIN_POTENTIAL = 28;
+  function precipTypeForTemp(tempC) {
+    return tempC <= SNOW_MAX_C ? 'snow' : tempC < RAIN_MIN_C ? 'mixed' : 'rain';
+  }
+
   function projectConditions(state, hours) {
     var scenario = scenarioById(state.scenario);
     var h = clamp(hours, 0, 24);
@@ -329,11 +338,9 @@
     var cloudCover = clamp(humidity * 0.72 + forcing * 34 + lift * 0.22 - 24, 0, 100);
     var precipPotential = clamp((humidity - 55) * 1.45 + forcing * 52 + state.instability * 0.28 + state.terrain * 0.12 - spread * 2, 0, 100);
     var precipType = 'none';
-    if (precipPotential >= 28) {
+    if (precipPotential >= PRECIP_TYPE_MIN_POTENTIAL) {
       if (scenario.id === 'summerStorm' || (state.instability > 72 && temp > 15)) precipType = 'storms';
-      else if (temp <= -1) precipType = 'snow';
-      else if (temp < 2) precipType = 'mixed';
-      else precipType = 'rain';
+      else precipType = precipTypeForTemp(temp);
     }
     return {
       hour: h,
@@ -354,13 +361,21 @@
   // stationObservation and predictionOutcome so the prediction's explanation can never
   // drift from the model it explains.
   var FRONT_TEMP_STEP = { cold: -6, outflow: -3.5, warm: 4.5, occluded: -3 };
+  // The sea keeps the coast milder than the regional air: warmer while that air is at or
+  // below MARINE_SWITCH_C, cooler once it is above. Shared with predictionOutcome.
+  var MARINE_OFFSET_C = 2;
+  var MARINE_SWITCH_C = 12;
+  function marineOffset(station, regionalTemp) {
+    if (station.id !== 'coast') return 0;
+    return regionalTemp > MARINE_SWITCH_C ? -MARINE_OFFSET_C : MARINE_OFFSET_C;
+  }
   function stationObservation(state, station) {
     var base = projectConditions(state, state.simHour);
     var scenario = scenarioById(state.scenario);
     var elevationCool = station.elevation / 1000 * 6.5;
     var marine = station.id === 'coast' ? 1 : 0;
     var xShift = (station.x - 0.5) * 5;
-    var temperature = base.temperature - elevationCool - xShift + marine * (base.temperature > 12 ? -2 : 2);
+    var temperature = base.temperature - elevationCool - xShift + marineOffset(station, base.temperature);
     var humidity = clamp(base.humidity + marine * 8 + station.y * 4, 5, 100);
     var localPressure = base.pressure;
     var localWindDir = base.windDir + Math.round((station.x - 0.5) * 18);
@@ -396,6 +411,7 @@
     }
 
     humidity = clamp(humidity, 5, 100);
+    var stationPotential = clamp(Math.round(base.precipPotential + marine * 4 + station.y * 4 + precipOffset), 0, 100);
     return {
       id: station.id,
       name: station.name,
@@ -411,8 +427,82 @@
       windSpeed: Math.max(1, Math.round(base.windSpeed + station.x * 4 - station.y * 2)),
       windDir: (Math.round(localWindDir) + 360) % 360,
       cloudCover: clamp(Math.round(base.cloudCover + marine * 8 + station.y * 3 + cloudOffset), 0, 100),
-      precipPotential: clamp(Math.round(base.precipPotential + marine * 4 + station.y * 4 + precipOffset), 0, 100)
+      precipPotential: stationPotential,
+      precipType: stationPrecipType(base.precipType, stationPotential, round(temperature, 1))
     };
+  }
+
+  // A station's own type: none when the region or the station is below the model's
+  // threshold, storms when the region is convective, otherwise rain / mixed / snow from the
+  // temperature the station DISPLAYS (so a label reading -1.0 is snow, as the rule says).
+  function stationPrecipType(regionalType, potential, tempC) {
+    if (regionalType === 'none' || potential < PRECIP_TYPE_MIN_POTENTIAL) return 'none';
+    if (regionalType === 'storms') return 'storms';
+    return precipTypeForTemp(tempC);
+  }
+
+  // Between stations the scenes still choose rain, mixed or snow. Inverse-distance
+  // weighting of that hour's station readings, the simplest objective analysis: at a
+  // station it returns that station's own reading, so nothing beside a -3 C label rains.
+  function surfaceTempAt(observations, fx, fy) {
+    var num = 0, den = 0;
+    for (var i = 0; i < observations.length; i += 1) {
+      var o = observations[i];
+      var dx = fx - o.x, dy = fy - o.y, d2 = dx * dx + dy * dy;
+      if (d2 < 1e-9) return o.temperature;
+      num += o.temperature / d2;
+      den += 1 / d2;
+    }
+    return den ? num / den : NaN;
+  }
+  function surfacePrecipTypeAt(observations, regionalType, fx, fy) {
+    if (regionalType === 'none' || regionalType === 'storms') return regionalType;
+    return precipTypeForTemp(surfaceTempAt(observations, fx, fy));
+  }
+  // Where the ground crosses a temperature: marching squares over the same analysis the
+  // precipitation types use, in model fractions (0-1 across and down the study area).
+  // Each segment is [x1, y1, x2, y2], the level interpolated along the cell edges; a
+  // saddle cell is resolved by its centre value.
+  function isothermSegments(observations, level, cols, rows) {
+    var nx = cols || 32, ny = rows || 24;
+    var grid = [];
+    for (var gj = 0; gj <= ny; gj += 1) {
+      var row = [];
+      for (var gi = 0; gi <= nx; gi += 1) row.push(surfaceTempAt(observations, gi / nx, gj / ny));
+      grid.push(row);
+    }
+    var cross = function (x1, y1, t1, x2, y2, t2) { var f = (level - t1) / (t2 - t1); return [x1 + (x2 - x1) * f, y1 + (y2 - y1) * f]; };
+    var segments = [];
+    for (var j = 0; j < ny; j += 1) {
+      for (var i = 0; i < nx; i += 1) {
+        var x0 = i / nx, x1 = (i + 1) / nx, y0 = j / ny, y1 = (j + 1) / ny;
+        var a = grid[j][i], b = grid[j][i + 1], c = grid[j + 1][i + 1], d = grid[j + 1][i];
+        var pts = [];
+        if ((a < level) !== (b < level)) pts.push(cross(x0, y0, a, x1, y0, b));
+        if ((b < level) !== (c < level)) pts.push(cross(x1, y0, b, x1, y1, c));
+        if ((c < level) !== (d < level)) pts.push(cross(x1, y1, c, x0, y1, d));
+        if ((d < level) !== (a < level)) pts.push(cross(x0, y1, d, x0, y0, a));
+        if (pts.length === 2) segments.push([pts[0][0], pts[0][1], pts[1][0], pts[1][1]]);
+        else if (pts.length === 4) {
+          var centreBelow = (a + b + c + d) / 4 < level;
+          if (centreBelow === (a < level)) {
+            segments.push([pts[0][0], pts[0][1], pts[1][0], pts[1][1]]);
+            segments.push([pts[2][0], pts[2][1], pts[3][0], pts[3][1]]);
+          } else {
+            segments.push([pts[0][0], pts[0][1], pts[3][0], pts[3][1]]);
+            segments.push([pts[1][0], pts[1][1], pts[2][0], pts[2][1]]);
+          }
+        }
+      }
+    }
+    return segments;
+  }
+
+  // Stations grouped by what is falling on them, for the scene's text alternative.
+  function stationPrecipGroups(observations) {
+    return ['snow', 'mixed', 'rain', 'storms', 'none'].map(function (type) {
+      return { type: type, names: observations.filter(function (o) { return o.precipType === type; }).map(function (o) { return o.name; }) };
+    }).filter(function (group) { return group.names.length > 0; });
   }
 
   function stationNetworkAnalysis(state) {
@@ -473,8 +563,10 @@
   var PREDICTION_SAME_BAND_C = 1.5;
   function predictionOutcome(state, station, hour) {
     var end = clamp(hour == null ? 12 : Number(hour), 1, 24);
-    var start = stationObservation(Object.assign({}, state, { simHour: 0 }), station);
-    var finish = stationObservation(Object.assign({}, state, { simHour: end }), station);
+    var startState = Object.assign({}, state, { simHour: 0 });
+    var finishState = Object.assign({}, state, { simHour: end });
+    var start = stationObservation(startState, station);
+    var finish = stationObservation(finishState, station);
     var delta = round(finish.temperature - start.temperature, 1);
     var scenario = scenarioById(state.scenario);
     var frontType = scenario.frontType;
@@ -484,8 +576,22 @@
     var crossed = !behindAtStart && behindAtEnd;
     // The SAME table stationObservation applies, so the explanation cannot drift from it.
     var frontStep = crossed ? (FRONT_TEMP_STEP[frontType] || 0) : 0;
+    var otherChange = round(delta - frontStep, 1);
+    // What is left after the front: the regional air itself (the stage's "Regional air"
+    // reading) plus, at the coast, the sea's offset if that air crossed MARINE_SWITCH_C.
+    var seaChange = marineOffset(station, projectConditions(finishState, end).temperature) - marineOffset(station, projectConditions(startState, 0).temperature);
     var direction = delta >= PREDICTION_SAME_BAND_C ? 'warmer' : delta <= -PREDICTION_SAME_BAND_C ? 'colder' : 'same';
+    // The other signs of the passage, from the same window the station time series uses.
+    var passageSeries = crossed ? stationTimeSeries(state, station, end, 1) : null;
     return {
+      evidence: passageSeries ? {
+        fromHour: passageSeries.beforeHour,
+        toHour: passageSeries.afterHour,
+        dewPoint: passageSeries.deltas.dewPoint,
+        pressure: passageSeries.deltas.pressure,
+        windFrom: passageSeries.before.windDir,
+        windTo: passageSeries.after.windDir
+      } : null,
       station: station.id,
       stationName: station.name,
       hour: end,
@@ -498,8 +604,57 @@
       alreadyBehindFront: behindAtStart,
       passageHour: crossed ? frontPassageHour(state, station) : null,
       frontStep: frontStep,
-      otherChange: round(delta - frontStep, 1)
+      otherChange: otherChange,
+      // frontStep + regionalChange + seaChange === delta, to the tenth.
+      regionalChange: round(otherChange - seaChange, 1),
+      seaChange: seaChange
     };
+  }
+
+  // The prediction card's live trace: station and regional air, hour by hour, up to the
+  // hour played and never past it, and the front's arrival only once the station is
+  // actually behind it (the same test stationObservation applies, not the rounded hour).
+  function predictionTrace(state, station, hour, playedTo) {
+    var end = clamp(hour == null ? 12 : Number(hour), 1, 24);
+    var upTo = clamp(Math.floor(Number(playedTo) || 0), 0, end);
+    var points = [];
+    for (var h = 0; h <= upTo; h += 1) {
+      var at = Object.assign({}, state, { simHour: h });
+      points.push({ hour: h, station: stationObservation(at, station).temperature, regional: projectConditions(at, h).temperature });
+    }
+    var outcome = predictionOutcome(state, station, end);
+    var frontX = 0.28 + clamp((upTo * state.frontSpeed) / 500, 0, 0.55);
+    var arrived = outcome.frontCrossed && station.x < frontX;
+    return { hour: end, playedTo: upTo, points: points, frontArrivedAt: arrived ? outcome.passageHour : null };
+  }
+
+  // One line for the forecast controls. An arrival is a station that was ahead of the
+  // front at the previous hour and is behind it now (the test stationObservation applies);
+  // otherwise the next station the front will reach, and about when.
+  function forecastNarration(state, hour) {
+    var h = clamp(Math.floor(Number(hour) || 0), 0, 24);
+    var scenario = scenarioById(state.scenario);
+    if (scenario.frontType === 'none') return { kind: 'noFront', hour: h };
+    if (!(state.frontSpeed > 0)) return { kind: 'stalled', hour: h };
+    var at = function (hr, st) { return stationObservation(Object.assign({}, state, { simHour: hr }), st); };
+    var arrivals = [], ahead = [];
+    STATIONS.forEach(function (st) {
+      var now = at(h, st);
+      var before = h > 0 ? at(h - 1, st) : null;
+      if (now.airMass === 'behind' && before && before.airMass !== 'behind') {
+        arrivals.push({ id: st.id, name: st.name, tempChange: round(now.temperature - before.temperature, 1), windFrom: before.windDir, windTo: now.windDir });
+      } else if (now.airMass !== 'behind') {
+        ahead.push({ id: st.id, name: st.name, arrivesAbout: round((st.x - 0.28) * 500 / state.frontSpeed, 1) });
+      }
+    });
+    if (arrivals.length) {
+      // Detail the station with the biggest change; name the rest.
+      arrivals.sort(function (a, b) { return Math.abs(b.tempChange) - Math.abs(a.tempChange); });
+      return { kind: 'arrival', hour: h, arrivals: arrivals };
+    }
+    if (!ahead.length) return { kind: 'passed', hour: h };
+    ahead.sort(function (a, b) { return a.arrivesAbout - b.arrivesAbout; });
+    return { kind: ahead[0].arrivesAbout <= 24 ? 'ahead' : 'beyond', hour: h, next: ahead[0] };
   }
 
   function stationTimeSeries(state, station, endHour, step) {
@@ -740,6 +895,37 @@
     return 0.28 + clamp((state.simHour * state.frontSpeed) / 500, 0, 0.55);
   }
 
+  // How a weather map draws this front. Moving fronts move toward +x (the position above
+  // only grows with time) and carry their symbols on that side. With speed 0 a cold or warm
+  // front is stationary: triangles point to the warm side, half-circles to the cold side.
+  // The warm side comes from the model's own step: behind the front (the -x side) the air
+  // is colder when FRONT_TEMP_STEP is negative, so the warm air is ahead (+x).
+  function frontSymbolPlan(frontType, frontSpeed) {
+    if (!frontType || frontType === 'none') return { kind: 'none' };
+    if (frontType === 'outflow') return { kind: 'outflow', dashed: true };
+    var stationary = !(frontSpeed > 0) && (frontType === 'cold' || frontType === 'warm');
+    return { kind: stationary ? 'stationary' : frontType, dashed: false, warmSide: (FRONT_TEMP_STEP[frontType] || 0) < 0 ? 1 : -1 };
+  }
+  // The symbol's shapes in scene units (x across the front, z along it).
+  function frontMapSymbol(frontType, frontSpeed, groundX, zMin, zMax) {
+    var plan = frontSymbolPlan(frontType, frontSpeed);
+    var out = { kind: plan.kind, line: [], triangles: [], halfCircles: [] };
+    if (plan.kind === 'none') return out;
+    for (var z = zMin, piece = 0; z < zMax - 1e-6; z += 0.5, piece += 1) {
+      if (plan.dashed && piece % 3 === 2) continue;
+      out.line.push([groundX, z, groundX, Math.min(zMax, z + 0.5)]);
+    }
+    if (plan.kind === 'outflow') return out;
+    for (var i = 0, zc = zMin + 1.3; zc <= zMax - 0.8; i += 1, zc += 2.6) {
+      var round, dir;
+      if (plan.kind === 'stationary') { round = i % 2 === 1; dir = round ? -plan.warmSide : plan.warmSide; }
+      else { round = plan.kind === 'warm' || (plan.kind === 'occluded' && i % 2 === 0); dir = 1; }
+      if (round) out.halfCircles.push({ x: groundX, z: zc, r: 0.7, dir: dir });
+      else out.triangles.push([[groundX, zc - 0.7], [groundX + 1.3 * dir, zc], [groundX, zc + 0.7]]);
+    }
+    return out;
+  }
+
   function immersiveFrontX(state) {
     return (frontPositionFraction(state) - 0.5) * 32;
   }
@@ -845,9 +1031,9 @@ var IMMERSIVE_TOUR_STEPS = [
 var IMMERSIVE_FEATURE_GLOSSARY = {
   conceptual: [
     { id: 'airMasses', category: 'Atmosphere', label: 'Air masses', icon: '\u25D0', focus: 'system', camera: 'overview', tone: 'sky', definition: 'Large bodies of air with relatively similar temperature and moisture characteristics.', earlyDefinition: 'Big areas of air that are warmer, cooler, wetter, or drier than nearby air.', lookFor: 'The blue cooler-air volume and orange warmer-air volume.', why: 'Contrasting air masses create boundaries where temperature, humidity, pressure, and wind can change quickly.', question: 'Which air mass is denser, and where would you expect it to move?', overlay: { top: '31%', left: '7%' } },
-    { id: 'frontBoundary', category: 'Atmosphere', label: 'Front boundary', icon: '\u2571', focus: 'front', camera: 'front', tone: 'amber', definition: 'The three-dimensional transition zone where two air masses meet; it is a zone, not an infinitely thin wall.', earlyDefinition: 'The meeting place between two different kinds of air.', lookFor: 'The sloped boundary separating the blue and orange air masses.', why: 'Air can be forced upward along a front, cooling toward saturation and supporting clouds or precipitation.', question: 'Where does the model show air rising along the boundary?', overlay: { top: '39%', left: '43%' } },
+    { id: 'frontBoundary', category: 'Atmosphere', label: 'Front boundary', icon: '\u2571', focus: 'front', camera: 'front', tone: 'amber', definition: 'The three-dimensional transition zone where two air masses meet; it is a zone, not an infinitely thin wall.', earlyDefinition: 'The meeting place between two different kinds of air.', lookFor: 'The sloped boundary between the blue and orange air. The weather-map symbol marks where it meets the ground, pointing the way it moves.', why: 'Air can be forced upward along a front, cooling toward saturation and supporting clouds or precipitation.', question: 'Where does the model show air rising along the boundary?', overlay: { top: '39%', left: '43%' } },
     { id: 'cloudLayer', category: 'Moisture', label: 'Cloud layer', icon: '\u2601', focus: 'moisture', camera: 'overview', tone: 'slate', definition: 'A visible representation of regions where modeled air is near saturation and condensed water droplets or ice crystals may occur.', earlyDefinition: 'A place where cooling air has enough moisture for tiny water drops or ice crystals to form.', lookFor: 'Layered cloud forms above or near the frontal lifting zone.', why: 'Cloud location can reveal where moist air is rising and cooling, but cloud graphics are simplified rather than observed cloud boundaries.', question: 'How do cloud placement, humidity, and lift connect?', overlay: { top: '17%', left: '54%' } },
-    { id: 'precipitation', category: 'Moisture', label: 'Precipitation particles', icon: '\u22EE', focus: 'moisture', camera: 'overview', tone: 'violet', definition: 'Animated teaching particles representing rain, snow, or mixed precipitation where the model supports moisture and lift.', earlyDefinition: 'Moving particles that show where rain or snow may be falling in the teaching model.', lookFor: 'Particles falling beneath cloud regions; density changes with the selected conditions.', why: 'Particle density communicates relative precipitation activity, not measured drop count, radar reflectivity, or an exact footprint.', question: 'What evidence besides particles would you need before claiming precipitation is occurring?', overlay: { top: '48%', left: '64%' } },
+    { id: 'precipitation', category: 'Moisture', label: 'Precipitation particles', icon: '\u22EE', focus: 'moisture', camera: 'overview', tone: 'violet', definition: 'Animated teaching particles representing rain, snow, or mixed precipitation where the model supports moisture and lift.', earlyDefinition: 'Moving particles that show where rain or snow may be falling in the teaching model.', lookFor: 'Particles falling beneath cloud regions: streaks are rain, small lavender pellets are mixed rain and snow, soft flakes are snow, each set by how cold the ground is below. Density changes with the selected conditions.', why: 'Particle density communicates relative precipitation activity, not measured drop count, radar reflectivity, or an exact footprint.', question: 'What evidence besides particles would you need before claiming precipitation is occurring?', overlay: { top: '48%', left: '64%' } },
     { id: 'windVectors', category: 'Motion', label: 'Wind vectors', icon: '\u2197', focus: 'system', camera: 'overview', tone: 'cyan', definition: 'Arrows that show which way the air is moving (downwind of the reported wind direction); behind a front they turn to the post-frontal wind, and their length scales with speed.', earlyDefinition: 'Arrows showing which way the air is moving and how fast it moves.', lookFor: 'Repeated arrows across the scene; behind the front they point a different way than ahead of it.', why: 'Wind transports heat and moisture and helps identify convergence, frontal motion, and exposure.', question: 'Does the wind cross the front, run along it, or change across it?', overlay: { top: '63%', left: '24%' } },
     { id: 'stationMarkers', category: 'Evidence', label: 'Surface stations', icon: '\u25C9', focus: 'stations', camera: 'surface', tone: 'emerald', definition: 'Ground-based observation markers that connect the visual model to measurable temperature, dew point, pressure, wind, and cloud evidence.', earlyDefinition: 'Places on the ground where weather measurements are collected.', lookFor: 'Markers positioned at the surface with nearby wind indicators.', why: 'Meteorologists test patterns in maps and models against timestamped observations.', question: 'Which station measurement would best test your current explanation?', overlay: { top: '73%', left: '55%' } },
     { id: 'terrainBase', category: 'Surface', label: 'Terrain and land-water base', icon: '\u25B2', focus: 'system', camera: 'surface', tone: 'emerald', definition: 'A conceptual surface showing elevation and land-water contrasts that can influence airflow, heating, moisture, and precipitation.', earlyDefinition: 'The land and water surface that can change how air moves and warms or cools.', lookFor: 'Ridges, low areas, coast or water, and the ground beneath the atmosphere.', why: 'Terrain can redirect or lift air, while land and water heat and cool at different rates.', question: 'Where could the surface strengthen, weaken, or redirect the weather pattern?', overlay: { top: '81%', left: '18%' } }
@@ -1987,9 +2173,15 @@ var GEOGRAPHY_PROFILES = {
   // Station pills (2D map and 3D scene) print the reading at the one-decimal precision of
   // every panel and the prediction card. Math.round showed -2.5 as -2 and 2.5 as 3, so a
   // label and the card beside it disagreed.
-  function stationLabelText(name, temperature) {
+  function stationLabelText(name, temperature, precipWord) {
     var value = temperature == null || temperature === '' ? NaN : Number(temperature);
-    return name + '  ' + (isFinite(value) ? String(round(value, 1)) : '--') + '\u00B0';
+    return name + '  ' + (isFinite(value) ? String(round(value, 1)) : '--') + '\u00B0' + (precipWord ? '  \u00B7  ' + precipWord : '');
+  }
+  // The word a station label adds for what is falling there; storms and none add nothing.
+  function stationPrecipWord(type) {
+    return type === 'snow' ? __alloT('stem.weathersystems.precip_word_snow', 'snow')
+      : type === 'mixed' ? __alloT('stem.weathersystems.precip_word_mixed', 'mixed')
+        : type === 'rain' ? __alloT('stem.weathersystems.precip_word_rain', 'rain') : '';
   }
 
   window.WeatherSystemsKernel = {
@@ -1997,14 +2189,29 @@ var GEOGRAPHY_PROFILES = {
     stationTempStops: STATION_TEMP_STOPS,
     stationTempColor: stationTempColor,
     stationLabelText: stationLabelText,
+    precipTypeForTemp: precipTypeForTemp,
+    snowMaxC: SNOW_MAX_C,
+    rainMinC: RAIN_MIN_C,
+    surfaceTempAt: surfaceTempAt,
+    surfacePrecipTypeAt: surfacePrecipTypeAt,
+    stationPrecipGroups: stationPrecipGroups,
+    isothermSegments: isothermSegments,
+    frontSymbolPlan: frontSymbolPlan,
+    frontMapSymbol: frontMapSymbol,
+    frontPositionFraction: frontPositionFraction,
+    cardinal: cardinal,
     dewPointC: dewPointC,
     projectConditions: projectConditions,
     stationObservation: stationObservation,
     stationNetworkAnalysis: stationNetworkAnalysis,
     frontPassageHour: frontPassageHour,
     predictionOutcome: predictionOutcome,
+    predictionTrace: predictionTrace,
+    forecastNarration: forecastNarration,
     stations: STATIONS,
     predictionSameBandC: PREDICTION_SAME_BAND_C,
+    marineOffsetC: MARINE_OFFSET_C,
+    marineSwitchC: MARINE_SWITCH_C,
     stationTimeSeries: stationTimeSeries,
     expectedForecast: expectedForecast,
     ensembleForecast: ensembleForecast,
@@ -2577,28 +2784,36 @@ var GEOGRAPHY_PROFILES = {
       g.shadowColor = mixColor(color, '#ffffff', 0.25, 0.8);
       g.shadowBlur = 12;
     }
+    // The same plan the 3D ground symbol uses (frontSymbolPlan).
+    var symbolPlan = frontSymbolPlan(scenario.frontType, state.frontSpeed);
     g.strokeStyle = color;
     g.lineWidth = 4;
     g.lineJoin = 'round';
     g.lineCap = 'round';
+    if (symbolPlan.dashed && g.setLineDash) g.setLineDash([10, 7]);
     g.beginPath();
     for (var s = 0; s < points.length; s += 1) {
       if (s === 0) g.moveTo(points[s].x, points[s].y); else g.lineTo(points[s].x, points[s].y);
     }
     g.stroke();
+    if (symbolPlan.dashed && g.setLineDash) g.setLineDash([]);
     g.shadowColor = 'transparent';
     g.shadowBlur = 0;
-    for (var j = 1; j < 12; j += 2) {
+    var halfDisc = function (sx, sy, dir) { g.beginPath(); g.arc(sx + 7 * dir, sy, 7, dir > 0 ? -Math.PI / 2 : Math.PI / 2, dir > 0 ? Math.PI / 2 : Math.PI * 1.5); g.fill(); };
+    var triangle = function (sx, sy, dir) { g.beginPath(); g.moveTo(sx, sy - 7); g.lineTo(sx + 14 * dir, sy); g.lineTo(sx, sy + 7); g.closePath(); g.fill(); };
+    for (var j = 1; j < 12 && !symbolPlan.dashed; j += 2) {
       var sy = points[j].y;
       var sx = points[j].x;
       g.fillStyle = color;
-      if (scenario.frontType === 'warm') {
-        g.beginPath(); g.arc(sx + 7, sy, 7, -Math.PI / 2, Math.PI / 2); g.fill();
-      } else if (scenario.frontType === 'occluded') {
-        if (j % 4 === 1) { g.beginPath(); g.arc(sx + 7, sy, 7, -Math.PI / 2, Math.PI / 2); g.fill(); }
-        else { g.beginPath(); g.moveTo(sx, sy - 7); g.lineTo(sx + 14, sy); g.lineTo(sx, sy + 7); g.closePath(); g.fill(); }
+      if (symbolPlan.kind === 'stationary') {
+        if (j % 4 === 1) { g.fillStyle = '#2563eb'; triangle(sx, sy, symbolPlan.warmSide); }
+        else { g.fillStyle = '#ef4444'; halfDisc(sx, sy, -symbolPlan.warmSide); }
+      } else if (symbolPlan.kind === 'warm') {
+        halfDisc(sx, sy, 1);
+      } else if (symbolPlan.kind === 'occluded') {
+        if (j % 4 === 1) halfDisc(sx, sy, 1); else triangle(sx, sy, 1);
       } else {
-        g.beginPath(); g.moveTo(sx, sy - 7); g.lineTo(sx + 14, sy); g.lineTo(sx, sy + 7); g.closePath(); g.fill();
+        triangle(sx, sy, 1);
       }
     }
     // Label the boundary on a solid chip so it stays readable over any sky or terrain colour.
@@ -2759,6 +2974,8 @@ var GEOGRAPHY_PROFILES = {
     var W = logicalWidth;
     var H = logicalHeight;
     var current = projectConditions(state, state.simHour);
+    // Each cloud's precipitation takes the type of the ground under it, from the stations.
+    var mapObservations = STATIONS.map(function (item) { return stationObservation(state, item); });
 
     // The scene reads the model rather than the scenario name: cloud cover, precipitation
     // potential, and temperature slide the palette, so moving a slider is visible on the map.
@@ -2973,10 +3190,11 @@ var GEOGRAPHY_PROFILES = {
       var cy = 95 + (c % 3) * 47 + Math.sin(c * 2.2) * 10;
       var storm = current.precipPotential > 65 && (c % 2 === 0);
       var cloudScale = 0.58 + (c % 3) * 0.13;
+      var cloudPrecipType = surfacePrecipTypeAt(mapObservations, current.precipType, clamp((cx + precipSkew * 2.2) / W, 0, 1), 332 / H);
       // A translucent shaft connects each raining cloud to the ground beneath it.
       if (!contrast && current.precipPotential > 40) {
         var shaftTop = cy + 18 * cloudScale;
-        var shaftRgb = current.precipType === 'snow' ? '248,250,252' : current.precipType === 'mixed' ? '196,181,253' : '56,189,248';
+        var shaftRgb = cloudPrecipType === 'snow' ? '248,250,252' : cloudPrecipType === 'mixed' ? '196,181,253' : '56,189,248';
         var shaft = g.createLinearGradient(0, shaftTop, 0, 332);
         shaft.addColorStop(0, 'rgba(' + shaftRgb + ',0)');
         shaft.addColorStop(0.18, 'rgba(' + shaftRgb + ',' + (0.0016 * current.precipPotential).toFixed(3) + ')');
@@ -2998,8 +3216,8 @@ var GEOGRAPHY_PROFILES = {
       }
       if (current.precipPotential > 28) {
         g.save();
-        g.strokeStyle = current.precipType === 'snow' ? '#f8fafc' : current.precipType === 'mixed' ? '#c4b5fd' : '#38bdf8';
-        g.lineWidth = current.precipType === 'snow' ? 3 : 1.7;
+        g.strokeStyle = cloudPrecipType === 'snow' ? '#f8fafc' : cloudPrecipType === 'mixed' ? '#c4b5fd' : '#38bdf8';
+        g.lineWidth = cloudPrecipType === 'snow' ? 3 : 1.7;
         g.lineCap = 'round';
         var drops = Math.round(current.precipPotential / 18);
         for (var r = 0; r < drops; r += 1) {
@@ -3007,7 +3225,8 @@ var GEOGRAPHY_PROFILES = {
           var rx = cx - 34 + r * 15 + fall * precipSkew * 0.03;
           var ry = cy + 24 + fall;
           g.beginPath();
-          if (current.precipType === 'snow') { g.arc(rx + Math.sin(time / 420 + r) * 5, ry, 2.2, 0, Math.PI * 2); }
+          if (cloudPrecipType === 'snow') { g.arc(rx + Math.sin(time / 420 + r) * 5, ry, 2.2, 0, Math.PI * 2); }
+          else if (cloudPrecipType === 'mixed') { g.arc(rx, ry + (r % 2) * 5, 1.4, 0, Math.PI * 2); }
           else { g.moveTo(rx, ry); g.lineTo(rx - 4 - precipSkew * 0.28, ry + 12 + state.windSpeed * 0.05); }
           g.stroke();
         }
@@ -3126,7 +3345,7 @@ var GEOGRAPHY_PROFILES = {
       g.beginPath(); g.arc(x, y, chosen ? 3.4 : 2.4, 0, Math.PI * 2); g.fill();
       // The pill carries the current temperature so the map itself shows the air-mass contrast.
       g.font = '600 12px system-ui';
-      var label = stationLabelText(station.name, reading.temperature);
+      var label = stationLabelText(station.name, reading.temperature, stationPrecipWord(reading.precipType));
       var labelWidth = g.measureText(label).width + 18;
       roundedRect(g, x - labelWidth / 2, y + 14, labelWidth, 24, 8);
       g.fillStyle = dark ? 'rgba(15,23,42,.9)' : 'rgba(248,250,252,.92)'; g.fill();
@@ -3205,6 +3424,8 @@ var GEOGRAPHY_PROFILES = {
       var immersiveCanvasRef = React.useRef(null);
       var immersiveRuntimeRef = React.useRef(null);
       var immersiveCameraMemoryRef = React.useRef(null);
+      // The renderer (and the old scene to retire) handed from one rebuild to the next.
+      var immersiveRendererCarryRef = React.useRef(null);
       var immersiveStageRef = React.useRef(null);
       var immersiveCalloutRef = React.useRef(null);
       // Fullscreen is tracked from the document and the host helper's marker attribute, not
@@ -4617,13 +4838,34 @@ function openImmersiveTourStep(stepId) {
           : { position: presetView.position, target: presetView.target };
         camera.position.set(cameraStart.position[0], cameraStart.position[1], cameraStart.position[2]);
         camera.lookAt(cameraStart.target[0], cameraStart.target[1], cameraStart.target[2]);
-        var renderer;
-        try {
-          renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: quality !== 'performance', alpha: false, powerPreference: 'high-performance', logarithmicDepthBuffer: quality === 'high' });
-        } catch (error) {
-          update({ immersiveRenderError: 'WebGL could not start. The Canvas 2D map remains available.' });
-          return undefined;
+        // One renderer per canvas across rebuilds (every played hour rebuilds the scene). A new
+        // renderer, or disposing the old materials first, threw away every compiled shader
+        // program: 9.6 s of an 11.2 s hour change on a software GPU, profiled.
+        var carried = immersiveRendererCarryRef.current;
+        immersiveRendererCarryRef.current = null;
+        var renderer = null;
+        var pendingRetire = null;
+        if (carried) {
+          carried.claimed = true;
+          var carriedGl = carried.renderer.getContext && carried.renderer.getContext();
+          if (carried.canvas === canvas && carried.quality === quality && carriedGl && !carriedGl.isContextLost()) {
+            renderer = carried.renderer;
+            pendingRetire = carried.retire;
+          } else {
+            carried.retire();
+            carried.renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(carried.renderer);
+          }
         }
+        if (!renderer) {
+          try {
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: quality !== 'performance', alpha: false, powerPreference: 'high-performance', logarithmicDepthBuffer: quality === 'high' });
+          } catch (error) {
+            update({ immersiveRenderError: 'WebGL could not start. The Canvas 2D map remains available.' });
+            return undefined;
+          }
+        }
+        // Read by the playback performance test (renderer reuse, GPU memory).
+        canvas.__weatherRenderer = renderer;
         // A context lost AFTER init used to leave the immersive view black with no
         // message. preventDefault is required or the context can never be restored;
         // then reuse the SAME state the creation-failure catch above sets, which raises
@@ -4854,6 +5096,109 @@ var geographyGroup = new THREE.Group();
           face.add(new THREE.LineSegments(new THREE.EdgesGeometry(face.geometry), new THREE.LineBasicMaterial({ color: frontEdgeColor, transparent: true, opacity: hasFrontalBoundary ? 0.78 : 0.2 })));
           frontPlane.add(face);
         });
+        // Where a ground tag reads best from the starting camera: on screen in the middle band
+        // (the overlay rows hold the top and bottom), farthest from the station labels and
+        // from tags already placed.
+        camera.updateMatrixWorld();
+        var cameraRight = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+        var cameraUp = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+        // A billboard's rectangle on screen, in NDC, from its world centre and size.
+        var screenBox = function (x, y, z, worldWidth, worldHeight) {
+          var centre = new THREE.Vector3(x, y, z);
+          var c = centre.clone().project(camera);
+          var side = centre.clone().addScaledVector(cameraRight, worldWidth / 2).project(camera);
+          var top = centre.clone().addScaledVector(cameraUp, worldHeight / 2).project(camera);
+          return { x: c.x, y: c.y, z: c.z, hw: Math.abs(side.x - c.x), hh: Math.abs(top.y - c.y) };
+        };
+        // Station labels (about 5 units wide, 1.18 tall) are what tags must not cover.
+        var occupiedScreen = STATIONS.map(function (item) {
+          var sx = (item.x - 0.5) * 32, sz = (item.y - 0.5) * 23;
+          return screenBox(sx, groundHeightAt(sx, sz) + 0.02 + 3.35, sz, 5.2, 1.18);
+        });
+        var clearestTagPosition = function (candidates, tagWidth) {
+          var best = null, bestScore = Infinity, bestBox = null;
+          candidates.forEach(function (c) {
+            var box = screenBox(c[0], c[1], c[2], tagWidth || 4.4, 0.9);
+            // The bottom overlays (prediction card, scene badge) stand taller than the top rows.
+            var onScreen = box.z < 1 && Math.abs(box.x) + box.hw < 0.85 && box.y - box.hh > -0.3 && box.y + box.hh < 0.45;
+            var overlap = 0, gap = Infinity;
+            occupiedScreen.forEach(function (o) {
+              var dx = Math.abs(box.x - o.x) - (box.hw + o.hw), dy = Math.abs(box.y - o.y) - (box.hh + o.hh);
+              if (dx < 0 && dy < 0) overlap += dx * dy;
+              gap = Math.min(gap, Math.max(dx * camera.aspect, dy));
+            });
+            var score = (onScreen ? 0 : 1000) + overlap * 1000 - gap;
+            if (score < bestScore) { bestScore = score; best = c; bestBox = box; }
+          });
+          if (bestBox) occupiedScreen.push(bestBox);
+          return best;
+        };
+        // The weather-map symbol on the ground where the boundary meets it, from the same plan
+        // the 2D map draws. The group sits at y = -0.8, so ground heights are offset by +0.8.
+        var frontGroundX = frontType === 'outflow' ? frontX + 3 : frontX;
+        var frontSymbol = frontMapSymbol(hasFrontalBoundary ? frontType : 'none', state.frontSpeed, frontGroundX, -10.5, 10.5);
+        canvas.setAttribute('data-weather-front-symbol', frontSymbol.kind);
+        if (frontSymbol.kind !== 'none') {
+          var symbolY = function (x, z) { return groundHeightAt(x, z) + 0.09 + 0.8; };
+          var symbolMesh = function (verts, color, opacity, order) {
+            if (!verts.length) return;
+            var geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(verts), 3));
+            var mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity == null ? 1 : opacity, side: THREE.DoubleSide, depthWrite: false, fog: false }));
+            mesh.name = 'Weather-map front symbol';
+            mesh.renderOrder = order == null ? 4 : order;
+            frontPlane.add(mesh);
+          };
+          var pushTri = function (verts, a, b, c) { [a, b, c].forEach(function (p) { verts.push(p[0], symbolY(p[0], p[1]), p[1]); }); };
+          var lineVerts = [], triangleVerts = [], roundVerts = [], outlineVerts = [];
+          // grow > 1 builds the dark outline drawn beneath the coloured shapes.
+          var addLine = function (verts, grow) {
+            frontSymbol.line.forEach(function (piece) {
+              var h = 0.13 * grow;
+              pushTri(verts, [piece[0] - h, piece[1]], [piece[0] + h, piece[1]], [piece[2] + h, piece[3]]);
+              pushTri(verts, [piece[0] - h, piece[1]], [piece[2] + h, piece[3]], [piece[2] - h, piece[3]]);
+            });
+          };
+          var addTriangles = function (verts, grow) {
+            frontSymbol.triangles.forEach(function (t) {
+              var cx = (t[0][0] + t[1][0] + t[2][0]) / 3, cz = (t[0][1] + t[1][1] + t[2][1]) / 3;
+              var g = function (p) { return [cx + (p[0] - cx) * grow, cz + (p[1] - cz) * grow]; };
+              pushTri(verts, g(t[0]), g(t[1]), g(t[2]));
+            });
+          };
+          var addRounds = function (verts, grow) {
+            frontSymbol.halfCircles.forEach(function (c) {
+              var r = c.r * grow, back = (grow - 1) * 0.25 * c.dir;
+              for (var arcStep = 0; arcStep < 10; arcStep += 1) {
+                var a0 = -Math.PI / 2 + arcStep / 10 * Math.PI, a1 = -Math.PI / 2 + (arcStep + 1) / 10 * Math.PI;
+                pushTri(verts, [c.x - back, c.z], [c.x - back + Math.cos(a0) * r * c.dir, c.z + Math.sin(a0) * r], [c.x - back + Math.cos(a1) * r * c.dir, c.z + Math.sin(a1) * r]);
+              }
+            });
+          };
+          addLine(lineVerts, 1); addTriangles(triangleVerts, 1); addRounds(roundVerts, 1);
+          addLine(outlineVerts, 2.1); addTriangles(outlineVerts, 1.3); addRounds(outlineVerts, 1.25);
+          var stationarySymbol = frontSymbol.kind === 'stationary';
+          symbolMesh(outlineVerts, 0x020617, 0.62, 3);
+          symbolMesh(lineVerts, frontColor);
+          symbolMesh(triangleVerts, stationarySymbol ? 0x38bdf8 : frontColor);
+          symbolMesh(roundVerts, stationarySymbol ? 0xef4444 : frontColor);
+          var symbolText = frontSymbol.kind === 'warm' ? __alloT('stem.weathersystems.front_symbol_warm', 'Warm front on a weather map')
+            : frontSymbol.kind === 'occluded' ? __alloT('stem.weathersystems.front_symbol_occluded', 'Occluded front on a weather map')
+              : frontSymbol.kind === 'stationary' ? __alloT('stem.weathersystems.front_symbol_stationary', 'Stationary front on a weather map')
+                : frontSymbol.kind === 'outflow' ? __alloT('stem.weathersystems.front_symbol_outflow', 'Outflow boundary on a weather map')
+                  : __alloT('stem.weathersystems.front_symbol_cold', 'Cold front on a weather map');
+          var symbolLabel = makeLabelTexture(symbolText, false);
+          var symbolCandidates = [];
+          for (var tagZ = -9; tagZ <= 9; tagZ += 1) symbolCandidates.push([frontGroundX + 1.6, groundHeightAt(frontGroundX + 1.6, tagZ) + 1.0, tagZ]);
+          var symbolAt = clearestTagPosition(symbolCandidates, symbolLabel ? 3.2 * symbolLabel.image.width / 256 : 4.4);
+          if (symbolLabel && symbolAt) {
+            var symbolTag = new THREE.Sprite(new THREE.SpriteMaterial({ map: symbolLabel, transparent: true, depthTest: false, depthWrite: false, fog: false }));
+            symbolTag.position.set(symbolAt[0], symbolAt[1] + 0.8, symbolAt[2]);
+            symbolTag.scale.set(3.2 * symbolLabel.image.width / 256, 0.9, 1);
+            symbolTag.renderOrder = 1000;
+            frontPlane.add(symbolTag);
+          }
+        }
         scene.add(frontPlane);
 
         var cloudGroup = new THREE.Group();
@@ -4933,48 +5278,142 @@ var geographyGroup = new THREE.Group();
         }
         scene.add(cloudGroup);
 
+        // Model mode chooses rain, mixed or snow PER PLACE from the station readings; live
+        // data is one location with one weather code, so it keeps a single type. Particles
+        // also appear for "mixed" now: its weather code (2) never reached 51, so a mixed
+        // model hour below 45% potential showed nothing at all.
+        var sceneObservations = live ? null : STATIONS.map(function (item) { return stationObservation(state, item); });
         var precipitationPoints = null;
-        if (precipitation > 0 || weatherCode >= 51) {
+        var precipMix = { snow: 0, mixed: 0, rain: 0 };
+        if (precipitation > 0 || weatherCode >= 51 || (!live && model.precipType !== 'none')) {
           var particleCount = Math.min(profile.maxParticles, Math.max(220, Math.round(precipitation * 300 + cloudCover * 8)));
-          var particlePositions = new Float32Array(particleCount * 3);
           // Precipitation falls from the cloud band, not from clear sky: the column spans the
           // band the clouds occupy for this front type instead of the whole study area.
           var precipMin = frontType === 'warm' ? cloudBand.min : cloudBand.min + 0.5;
           var precipSpan = Math.max(3, (frontType === 'warm' ? Math.min(cloudBand.max, frontX + 13) : cloudBand.max) - precipMin);
-          for (var particle = 0; particle < particleCount; particle += 1) {
-            particlePositions[particle * 3] = precipMin + ((particle * 47) % 360) / 360 * precipSpan;
-            // Keep the column under the cloud deck. Filling up to y=11 put points in clear
-            // sky above the clouds, where they read as stars rather than falling precipitation.
-            particlePositions[particle * 3 + 1] = 0.4 + ((particle * 83) % 70) / 10;
-            particlePositions[particle * 3 + 2] = -11 + ((particle * 61) % 220) / 10;
+          // A grid over the column is classified once; each particle belongs to one type and
+          // falls over cells of that type.
+          var PRECIP_COLS = 24, PRECIP_ROWS = 16, PRECIP_Z0 = -11, PRECIP_ZSPAN = 22;
+          var precipCellAt = function (x, z) {
+            var col = Math.floor((x - precipMin) / precipSpan * PRECIP_COLS);
+            var row = Math.floor((z - PRECIP_Z0) / PRECIP_ZSPAN * PRECIP_ROWS);
+            return col < 0 || col >= PRECIP_COLS || row < 0 || row >= PRECIP_ROWS ? -1 : row * PRECIP_COLS + col;
+          };
+          var precipCellTypes = [];
+          for (var cellIndex = 0; cellIndex < PRECIP_COLS * PRECIP_ROWS; cellIndex += 1) {
+            var cellType = !sceneObservations ? (snowing ? 'snow' : 'rain')
+              : surfacePrecipTypeAt(sceneObservations, model.precipType,
+                (precipMin + ((cellIndex % PRECIP_COLS) + 0.5) / PRECIP_COLS * precipSpan) / 32 + 0.5,
+                (PRECIP_Z0 + (Math.floor(cellIndex / PRECIP_COLS) + 0.5) / PRECIP_ROWS * PRECIP_ZSPAN) / 23 + 0.5);
+            precipCellTypes.push(cellType === 'snow' || cellType === 'mixed' ? cellType : 'rain');
           }
-          var particleGeo = new THREE.BufferGeometry();
-          particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-          // Rain reads as streaks and snow as soft flakes; bare 0.075-unit points read as static.
-          var precipTexture = null;
-          if (snowing) {
-            precipTexture = makeSoftTexture(64, [[0, 'rgba(255,255,255,1)'], [0.5, 'rgba(255,255,255,0.7)'], [1, 'rgba(255,255,255,0)']]);
-          } else {
-            var streakCanvas = document.createElement('canvas');
-            streakCanvas.width = 32; streakCanvas.height = 64;
-            var streak = streakCanvas.getContext('2d');
-            if (streak) {
-              var streakGradient = streak.createLinearGradient(0, 0, 0, 64);
-              streakGradient.addColorStop(0, 'rgba(255,255,255,0)'); streakGradient.addColorStop(0.35, 'rgba(255,255,255,0.9)'); streakGradient.addColorStop(1, 'rgba(255,255,255,0)');
-              streak.fillStyle = streakGradient; streak.fillRect(13, 0, 6, 64);
-              precipTexture = new THREE.CanvasTexture(streakCanvas);
-              precipTexture.center.set(0.5, 0.5);
-              precipTexture.rotation = clamp(Math.cos(flowRadians) * windSpeed * 0.01, -0.5, 0.5);
-              textureCache.push(precipTexture);
-            }
+          // The cell holding a station falls as that station reads, whatever the weighting
+          // gives at the cell's centre.
+          (sceneObservations || []).forEach(function (o) {
+            var at = precipCellAt((o.x - 0.5) * 32, (o.y - 0.5) * 23);
+            if (at >= 0 && (o.precipType === 'snow' || o.precipType === 'mixed' || o.precipType === 'rain')) precipCellTypes[at] = o.precipType;
+          });
+          var cellsByType = { snow: [], mixed: [], rain: [] };
+          precipCellTypes.forEach(function (type, index) { cellsByType[type].push(index); });
+          var softTexture = makeSoftTexture(64, [[0, 'rgba(255,255,255,1)'], [0.5, 'rgba(255,255,255,0.7)'], [1, 'rgba(255,255,255,0)']]);
+          // Rain reads as streaks; bare 0.075-unit points read as static.
+          var streakTexture = null;
+          var streakCanvas = document.createElement('canvas');
+          streakCanvas.width = 32; streakCanvas.height = 64;
+          var streak = streakCanvas.getContext('2d');
+          if (streak) {
+            var streakGradient = streak.createLinearGradient(0, 0, 0, 64);
+            streakGradient.addColorStop(0, 'rgba(255,255,255,0)'); streakGradient.addColorStop(0.35, 'rgba(255,255,255,0.9)'); streakGradient.addColorStop(1, 'rgba(255,255,255,0)');
+            streak.fillStyle = streakGradient; streak.fillRect(13, 0, 6, 64);
+            streakTexture = new THREE.CanvasTexture(streakCanvas);
+            streakTexture.center.set(0.5, 0.5);
+            streakTexture.rotation = clamp(Math.cos(flowRadians) * windSpeed * 0.01, -0.5, 0.5);
+            textureCache.push(streakTexture);
           }
-          var particleMat = new THREE.PointsMaterial({ color: snowing ? 0xf8fafc : 0xbae6fd, size: snowing ? 0.34 : 0.7, map: precipTexture, transparent: true, opacity: snowing ? 0.9 : 0.6, depthWrite: false, alphaTest: 0.02 });
-          precipitationPoints = new THREE.Points(particleGeo, particleMat);
+          // Snow drifts as soft flakes, mixed falls as small lavender pellets (the 2D map's
+          // mixed colour) faster than flakes, rain as fast streaks.
+          var precipLook = {
+            snow: { color: 0xf8fafc, size: 0.34, opacity: 0.9, fall: 1.4, map: softTexture },
+            mixed: { color: 0xc4b5fd, size: 0.24, opacity: 0.95, fall: 4.2, map: softTexture },
+            rain: { color: 0xbae6fd, size: 0.7, opacity: 0.6, fall: 7.5, map: streakTexture }
+          };
+          var presentTypes = ['snow', 'mixed', 'rain'].filter(function (type) { return cellsByType[type].length > 0; });
+          var given = 0;
+          presentTypes.forEach(function (type) { precipMix[type] = Math.floor(particleCount * cellsByType[type].length / precipCellTypes.length); given += precipMix[type]; });
+          precipMix[presentTypes.slice().sort(function (a, b) { return cellsByType[b].length - cellsByType[a].length; })[0]] += particleCount - given;
+          precipitationPoints = new THREE.Group();
+          precipitationPoints.name = 'Precipitation';
           precipitationPoints.userData.weatherFeatureId = 'precipitation';
           precipitationPoints.userData.bandMin = precipMin;
           precipitationPoints.userData.bandSpan = precipSpan;
+          precipitationPoints.userData.cellAt = precipCellAt;
+          precipitationPoints.userData.cellTypes = precipCellTypes;
+          presentTypes.forEach(function (type) {
+            var cells = cellsByType[type];
+            var count = precipMix[type];
+            if (!count) return;
+            var positions = new Float32Array(count * 3);
+            for (var particle = 0; particle < count; particle += 1) {
+              var cell = cells[(particle * 7919) % cells.length];
+              positions[particle * 3] = precipMin + ((cell % PRECIP_COLS) + ((particle * 47) % 97) / 97) / PRECIP_COLS * precipSpan;
+              // Keep the column under the cloud deck. Filling up to y=11 put points in clear
+              // sky above the clouds, where they read as stars rather than falling precipitation.
+              positions[particle * 3 + 1] = 0.4 + ((particle * 83) % 70) / 10;
+              positions[particle * 3 + 2] = PRECIP_Z0 + (Math.floor(cell / PRECIP_COLS) + ((particle * 61) % 89) / 89) / PRECIP_ROWS * PRECIP_ZSPAN;
+            }
+            var geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            var look = precipLook[type];
+            var points = new THREE.Points(geometry, new THREE.PointsMaterial({ color: look.color, size: look.size, map: look.map, transparent: true, opacity: look.opacity, depthWrite: false, alphaTest: 0.02 }));
+            points.name = 'Precipitation (' + type + ')';
+            points.userData = { precipType: type, fall: look.fall, cells: cells, respawn: 0 };
+            precipitationPoints.add(points);
+          });
+          // The rain/snow line: where the same analysis crosses the thresholds, drawn on the
+          // ground and named. A child of the precipitation group, so it shows, hides and
+          // explains with the precipitation it bounds.
+          var precipLines = { snow: 0, rain: 0 };
+          if (sceneObservations && model.precipType !== 'storms') {
+            [{ key: 'snow', level: SNOW_MAX_C, color: 0xf8fafc, text: __alloFill(__alloT('stem.weathersystems.precip_line_snow', 'Snow line {value1}\u00B0C'), { value1: SNOW_MAX_C }) },
+             { key: 'rain', level: RAIN_MIN_C, color: 0x7dd3fc, text: __alloFill(__alloT('stem.weathersystems.precip_line_rain', 'Rain line {value1}\u00B0C'), { value1: RAIN_MIN_C }) }].forEach(function (line) {
+              var segments = isothermSegments(sceneObservations, line.level, 32, 24);
+              precipLines[line.key] = segments.length;
+              if (!segments.length) return;
+              var ribbon = new Float32Array(segments.length * 18);
+              var half = 0.09;
+              var tagCandidates = [];
+              segments.forEach(function (seg, index) {
+                var ax = (seg[0] - 0.5) * 32, az = (seg[1] - 0.5) * 23, bx = (seg[2] - 0.5) * 32, bz = (seg[3] - 0.5) * 23;
+                var len = Math.max(1e-6, Math.hypot(bx - ax, bz - az));
+                var px = -(bz - az) / len * half, pz = (bx - ax) / len * half;
+                var ay = groundHeightAt(ax, az) + 0.07, by = groundHeightAt(bx, bz) + 0.07;
+                var quad = [ax + px, ay, az + pz, ax - px, ay, az - pz, bx + px, by, bz + pz, bx + px, by, bz + pz, ax - px, ay, az - pz, bx - px, by, bz - pz];
+                for (var q = 0; q < 18; q += 1) ribbon[index * 18 + q] = quad[q];
+                tagCandidates.push([(ax + bx) / 2, (ay + by) / 2 + 0.9, (az + bz) / 2]);
+              });
+              var ribbonGeometry = new THREE.BufferGeometry();
+              ribbonGeometry.setAttribute('position', new THREE.BufferAttribute(ribbon, 3));
+              var ribbonMesh = new THREE.Mesh(ribbonGeometry, new THREE.MeshBasicMaterial({ color: line.color, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
+              ribbonMesh.name = line.text;
+              ribbonMesh.renderOrder = 3;
+              precipitationPoints.add(ribbonMesh);
+              var lineLabel = makeLabelTexture(line.text, false);
+              var nearest = clearestTagPosition(tagCandidates, lineLabel ? 3.2 * lineLabel.image.width / 256 : 4.4);
+              if (lineLabel && nearest) {
+                var tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: lineLabel, transparent: true, depthTest: false, depthWrite: false, fog: false }));
+                tag.position.set(nearest[0], nearest[1], nearest[2]);
+                tag.scale.set(3.2 * lineLabel.image.width / 256, 0.9, 1);
+                tag.renderOrder = 1000;
+                precipitationPoints.add(tag);
+              }
+            });
+          }
+          canvas.setAttribute('data-weather-precip-lines', 'snow:' + precipLines.snow + ' rain:' + precipLines.rain);
           scene.add(precipitationPoints);
+        } else {
+          canvas.setAttribute('data-weather-precip-lines', 'snow:0 rain:0');
         }
+        canvas.setAttribute('data-weather-precip-mix', 'snow:' + precipMix.snow + ' mixed:' + precipMix.mixed + ' rain:' + precipMix.rain);
 
         var windGroup = new THREE.Group();
         windGroup.name = 'Wind vectors';
@@ -5012,6 +5451,12 @@ var geographyGroup = new THREE.Group();
         var stationsGroup = new THREE.Group();
         stationsGroup.name = 'Observation stations';
         stationsGroup.userData.weatherFeatureId = 'stationMarkers';
+        // Stations the front reached in the hour just played get a pulse ring (the controls
+        // narrate the same arrivals).
+        var sceneStory = live ? null : forecastNarration(state, state.simHour);
+        var arrivalIds = sceneStory && sceneStory.kind === 'arrival' ? sceneStory.arrivals.map(function (a) { return a.id; }) : [];
+        canvas.setAttribute('data-weather-front-arrivals', arrivalIds.join(','));
+        var arrivalPulses = [];
         STATIONS.forEach(function (stationItem, stationIndex) {
           var selected = stationItem.id === selectedStation;
           var stationX = (stationItem.x - 0.5) * 32;
@@ -5054,7 +5499,7 @@ var geographyGroup = new THREE.Group();
           }
           // The station's own reading rides above its marker, so the 3D view carries the same
           // ground truth the 2D map pills do instead of four anonymous cones.
-          var labelTexture = makeLabelTexture(stationLabelText(stationItem.name, reading.temperature), selected);
+          var labelTexture = makeLabelTexture(stationLabelText(stationItem.name, reading.temperature, live ? '' : stationPrecipWord(reading.precipType)), selected);
           if (labelTexture) {
             var label = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTexture, transparent: true, depthTest: false, depthWrite: false, fog: false }));
             label.position.y = 3.35;
@@ -5063,6 +5508,25 @@ var geographyGroup = new THREE.Group();
             label.scale.set(4.2 * labelTexture.image.width / 256, 1.18, 1);
             label.renderOrder = 1001;
             stationGroup.add(label);
+          }
+          if (arrivalIds.indexOf(stationItem.id) !== -1) {
+            var pulseMaterial = new THREE.MeshBasicMaterial({ color: frontColor, transparent: true, opacity: reduceMotion ? 0.7 : 0.9, side: THREE.DoubleSide, depthWrite: false, fog: false });
+            var pulse = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.45, 48), pulseMaterial);
+            pulse.rotation.x = -Math.PI / 2;
+            // At the highest ground under its largest reach (1.45 x 3.2), so a slope never
+            // buries half of it.
+            var pulseTop = 0;
+            for (var pa = 0; pa < 16; pa += 1) {
+              for (var pr = 1; pr <= 4.7; pr += 1.2) {
+                pulseTop = Math.max(pulseTop, groundHeightAt(stationX + Math.cos(pa / 16 * Math.PI * 2) * pr, stationZ + Math.sin(pa / 16 * Math.PI * 2) * pr) - stationBaseY);
+              }
+            }
+            pulse.position.y = pulseTop + 0.15;
+            pulse.renderOrder = 5;
+            // Reduced motion: one still ring, drawn at the size the pulse would reach.
+            if (reduceMotion) pulse.scale.setScalar(2);
+            stationGroup.add(pulse);
+            arrivalPulses.push(pulse);
           }
           if (selected && quality !== 'performance') {
             var beacon = new THREE.PointLight(0xfbbf24, 0.85, 6, 2);
@@ -5448,6 +5912,15 @@ var geographyGroup = new THREE.Group();
           var delta = Math.min(0.05, clock.getDelta());
           var sceneSeconds = clock.elapsedTime;
           if (!reduceMotion) {
+            // Arrival rings expand and fade, three times, then stay gone.
+            for (var ap = 0; ap < arrivalPulses.length; ap += 1) {
+              var cycle = sceneSeconds / 1.4;
+              var phase = cycle - Math.floor(cycle);
+              var ring = arrivalPulses[ap];
+              ring.visible = cycle < 3;
+              ring.scale.setScalar(1 + phase * 2.2);
+              ring.material.opacity = 0.9 * (1 - phase);
+            }
             cloudGroup.children.forEach(function (cluster) {
               if (cluster.userData.drift == null) return;
               cluster.position.x += cluster.userData.drift * delta * 1000;
@@ -5455,19 +5928,38 @@ var geographyGroup = new THREE.Group();
               if (cluster.position.x < cluster.userData.bandMin) cluster.position.x = cluster.userData.bandMax;
             });
             if (precipitationPoints) {
-              var attrs = precipitationPoints.geometry.attributes.position;
-              var fallSpeed = snowing ? 1.4 : 7.5;
               var driftX = Math.cos(flowRadians) * windSpeed * 0.018 * delta;
               var bandMin = precipitationPoints.userData.bandMin;
               var bandSpanValue = precipitationPoints.userData.bandSpan;
-              for (var p = 0; p < attrs.count; p += 1) {
-                var py = attrs.getY(p) - delta * fallSpeed;
-                var px = attrs.getX(p) + driftX;
-                if (px > bandMin + bandSpanValue) px = bandMin; else if (px < bandMin) px = bandMin + bandSpanValue;
-                attrs.setX(p, px);
-                attrs.setY(p, py < -0.6 ? 7.4 : py);
+              var cellAt = precipitationPoints.userData.cellAt;
+              var cellTypes = precipitationPoints.userData.cellTypes;
+              for (var pc = 0; pc < precipitationPoints.children.length; pc += 1) {
+                var typed = precipitationPoints.children[pc];
+                if (!typed.isPoints) continue;
+                var own = typed.userData;
+                var attrs = typed.geometry.attributes.position;
+                for (var p = 0; p < attrs.count; p += 1) {
+                  var py = attrs.getY(p) - delta * own.fall;
+                  var px = attrs.getX(p) + driftX;
+                  if (px > bandMin + bandSpanValue) px = bandMin; else if (px < bandMin) px = bandMin + bandSpanValue;
+                  if (py < -0.6) {
+                    py = 7.4;
+                    // Landed: fall again from here only over ground of this type, else over
+                    // ground that is. Mid-air drift across the line is left alone: wind
+                    // carries flakes a little way past it.
+                    var here = cellAt(px, attrs.getZ(p));
+                    if (here < 0 || cellTypes[here] !== own.precipType) {
+                      own.respawn = (own.respawn + 1) % own.cells.length;
+                      var landCell = own.cells[(own.respawn * 7919) % own.cells.length];
+                      px = bandMin + ((landCell % PRECIP_COLS) + ((p * 47) % 97) / 97) / PRECIP_COLS * bandSpanValue;
+                      attrs.setZ(p, PRECIP_Z0 + (Math.floor(landCell / PRECIP_COLS) + ((p * 61) % 89) / 89) / PRECIP_ROWS * PRECIP_ZSPAN);
+                    }
+                  }
+                  attrs.setX(p, px);
+                  attrs.setY(p, py);
+                }
+                attrs.needsUpdate = true;
               }
-              attrs.needsUpdate = true;
             }
             if (lightning) {
               if (sceneSeconds >= nextFlashAt) {
@@ -5504,6 +5996,14 @@ var geographyGroup = new THREE.Group();
           }
           placeFeatureCallout();
           renderer.render(scene, camera);
+          // First frame: compile everything in the new scene (hidden layers too), so it holds
+          // the programs, then retire the old scene without releasing them.
+          if (pendingRetire) {
+            renderer.compile(scene, camera);
+            var retireNow = pendingRetire;
+            pendingRetire = null;
+            retireNow();
+          }
         });
         function resizeImmersiveScene() {
           var nextWidth = Math.max(320, canvas.clientWidth || 960);
@@ -5539,18 +6039,45 @@ var geographyGroup = new THREE.Group();
             position: [camera.position.x, camera.position.y, camera.position.z],
             target: controls ? [controls.target.x, controls.target.y, controls.target.z] : cameraStart.target.slice()
           };
-          textureCache.forEach(function (texture) { if (texture && texture.dispose) texture.dispose(); });
           var session = renderer.xr && renderer.xr.getSession ? renderer.xr.getSession() : null;
           if (session && session.end) { try { session.end(); } catch (e) { } }
           if (controls && controls.dispose) controls.dispose();
-          scene.traverse(function (object) {
-            if (object.geometry && object.geometry.dispose) object.geometry.dispose();
-            if (object.material) {
-              var materials = Array.isArray(object.material) ? object.material : [object.material];
-              materials.forEach(function (material) { if (material && material.dispose) material.dispose(); });
-            }
-          });
-          renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
+          // This scene's GPU objects are retired by the NEXT build once its own objects hold
+          // the compiled programs (chaining any older scene it never got to retire).
+          var retireScene = function () {
+            if (pendingRetire) { var older = pendingRetire; pendingRetire = null; older(); }
+            textureCache.forEach(function (texture) { if (texture && texture.dispose) texture.dispose(); });
+            scene.traverse(function (object) {
+              if (object.geometry && object.geometry.dispose) object.geometry.dispose();
+              // A shadow-casting light owns render targets (two for VSM) that nothing else frees.
+              if (object.isLight && object.shadow) {
+                if (object.shadow.map && object.shadow.map.dispose) object.shadow.map.dispose();
+                if (object.shadow.mapPass && object.shadow.mapPass.dispose) object.shadow.mapPass.dispose();
+              }
+              if (object.material) {
+                var materials = Array.isArray(object.material) ? object.material : [object.material];
+                materials.forEach(function (material) {
+                  if (!material) return;
+                  // Textures outside textureCache were freed only by renderer.dispose(), which
+                  // no longer runs every hour: free every map a material carries.
+                  ['map', 'alphaMap', 'emissiveMap', 'normalMap', 'bumpMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'lightMap', 'envMap'].forEach(function (key) {
+                    if (material[key] && material[key].dispose) material[key].dispose();
+                  });
+                  if (material.dispose) material.dispose();
+                });
+              }
+            });
+          };
+          var carry = { renderer: renderer, canvas: canvas, quality: quality, retire: retireScene, claimed: false };
+          immersiveRendererCarryRef.current = carry;
+          // React runs the next build in this same task. If none claimed the renderer by the
+          // next one, this was a real teardown (tab change, unmount): everything goes.
+          window.setTimeout(function () {
+            if (carry.claimed) return;
+            if (immersiveRendererCarryRef.current === carry) immersiveRendererCarryRef.current = null;
+            retireScene();
+            renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
+          }, 0);
           immersiveRuntimeRef.current = null;
         };
       }, [d.tab, d.immersiveSceneMode, dataRoot._threeLoaded, d.immersiveDataSource, d.immersiveQuality, d.liveWeather && d.liveWeather.observedAt, d.liveWeatherTimelineIndex, state.scenario, state.simHour, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.terrain, d.immersiveGeography, selectedStation]);
@@ -9288,7 +9815,17 @@ var geographyGroup = new THREE.Group();
         var windDir = useLive ? live.windDir : model.windDir;
         var windSpeed = useLive ? live.windSpeed : model.windSpeed;
         var sceneLabel = useLive ? live.label : scenario.name + ' teaching model';
-        var sceneCondition = useLive ? live.condition : (model.precipType === 'none' ? (model.cloudCover >= 65 ? 'Cloudy model conditions' : 'Quiet model conditions') : model.precipType + ' model conditions');
+        // Says what is falling WHERE, from the same station types the scene draws.
+        var scenePrecipGroups = !useLive && (model.precipType === 'snow' || model.precipType === 'mixed' || model.precipType === 'rain')
+          ? stationPrecipGroups(STATIONS.map(function (item) { return stationObservation(state, item); })) : null;
+        var precipGroupText = function (group) {
+          var names = group.names.join(', ');
+          return group.type === 'snow' ? __alloFill(__alloT('stem.weathersystems.precip_group_snow', 'Snow at {value1}'), { value1: names })
+            : group.type === 'mixed' ? __alloFill(__alloT('stem.weathersystems.precip_group_mixed', 'Mixed rain and snow at {value1}'), { value1: names })
+              : group.type === 'rain' ? __alloFill(__alloT('stem.weathersystems.precip_group_rain', 'Rain at {value1}'), { value1: names })
+                : __alloFill(__alloT('stem.weathersystems.precip_group_none', 'Nothing falling at {value1}'), { value1: names });
+        };
+        var sceneCondition = useLive ? live.condition : scenePrecipGroups ? scenePrecipGroups.map(precipGroupText).join('. ') : (model.precipType === 'none' ? (model.cloudCover >= 65 ? 'Cloudy model conditions' : 'Quiet model conditions') : model.precipType + ' model conditions');
         var values = useLive ? [
           ['Temperature', live.temperature + '\u00B0C'], ['Humidity', live.humidity + '%'], ['Cloud cover', live.cloudCover + '%'],
           ['Pressure', live.pressure + ' hPa'], ['Wind', cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h'], ['Geography', geographyProfile(d.immersiveGeography, state.scenario).label], ['Visibility', live.visibility != null ? Math.round(live.visibility / 100) / 10 + ' km' : 'Not reported']
@@ -9491,6 +10028,23 @@ var geographyGroup = new THREE.Group();
         // station with the hour, but the 3D view had no way to change the hour; this reuses
         // the existing playback timer and advance(), so nothing new runs underneath.
         var forecastHour = state.simHour;
+        // What the front did this hour, or what it will do next, from the kernel.
+        var forecastStory = forecastNarration(state, forecastHour);
+        var forecastStoryText = (function () {
+          var hourTag = 'T+' + forecastStory.hour + ': ';
+          if (forecastStory.kind === 'noFront') return hourTag + __alloT('stem.weathersystems.narrate_no_front', 'no front in this scenario; watch the regional air through the day.');
+          if (forecastStory.kind === 'stalled') return hourTag + __alloT('stem.weathersystems.narrate_stalled', 'the front is not moving (speed 0), so it is a stationary front.');
+          if (forecastStory.kind === 'passed') return hourTag + __alloT('stem.weathersystems.narrate_passed', 'the front has passed every station.');
+          if (forecastStory.kind === 'ahead') return hourTag + __alloFill(__alloT('stem.weathersystems.narrate_ahead', 'the front is heading for {value1}; it arrives about T+{value2}.'), { value1: forecastStory.next.name, value2: forecastStory.next.arrivesAbout });
+          if (forecastStory.kind === 'beyond') return hourTag + __alloFill(__alloT('stem.weathersystems.narrate_beyond', 'at this speed the front will not reach {value1} within 24 hours.'), { value1: forecastStory.next.name });
+          var lead = forecastStory.arrivals[0];
+          var names = forecastStory.arrivals.map(function (a) { return a.name; }).join(', ');
+          return hourTag + __alloFill(__alloT('stem.weathersystems.narrate_arrival', 'the front reached {value1}.'), { value1: names }) + ' '
+            + __alloFill(lead.tempChange < 0
+              ? __alloT('stem.weathersystems.narrate_arrival_colder', '{value1}: {value2}\u00B0 colder in an hour, wind {value3} \u2192 {value4}.')
+              : __alloT('stem.weathersystems.narrate_arrival_warmer', '{value1}: {value2}\u00B0 warmer in an hour, wind {value3} \u2192 {value4}.'),
+              { value1: lead.name, value2: Math.abs(lead.tempChange), value3: cardinal(lead.windFrom), value4: cardinal(lead.windTo) });
+        })();
         var forecastButtonClass = 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[0.6875rem] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:opacity-40 ';
         var forecastTimeControl = !geographicMode && !useLive && h('div', {
           className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-2xl backdrop-blur-md',
@@ -9539,18 +10093,26 @@ var geographyGroup = new THREE.Group();
             className: forecastButtonClass + 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10'
           }, '\u21BA'),
           forecastHour === 0 && !d.playing && h('span', { className: 'px-2 text-[0.6875rem] font-bold text-slate-300' },
-            __alloT('stem.weathersystems.forecast_hint', 'Press play and watch the front cross the stations.'))
+            __alloT('stem.weathersystems.forecast_hint', 'Press play and watch the front cross the stations.')),
+          (forecastHour > 0 || d.playing) && h('span', { className: 'px-2 text-[0.6875rem] font-bold leading-snug text-slate-200', style: { maxWidth: '26rem' }, 'data-weather-forecast-narration': forecastStory.kind }, forecastStoryText),
+          // Arrivals only: a line that changed every played hour would be read every hour.
+          h('span', { className: 'sr-only', role: 'status', 'aria-live': 'polite', 'data-weather-forecast-arrival': true }, forecastStory.kind === 'arrival' ? forecastStoryText : '')
         );
         // Key for the station halos, drawn from the kernel's own stops so it cannot drift
         // from the scene. Shown wherever the halos are (the conceptual 3D view).
         var stationTempMin = STATION_TEMP_STOPS[0][0];
         var stationTempMax = STATION_TEMP_STOPS[STATION_TEMP_STOPS.length - 1][0];
+        // While rain, mixed or snow is falling the key also gives the rule that picks it, from
+        // the kernel's thresholds.
+        var showPrecipKey = !!scenePrecipGroups;
         var stationTempKey = !geographicMode && h('div', {
-          className: 'pointer-events-none flex items-center gap-2 rounded-xl border border-white/15 bg-slate-950/85 px-3 py-2 shadow-2xl backdrop-blur-md',
+          className: 'pointer-events-none flex flex-col items-start gap-1 rounded-xl border border-white/15 bg-slate-950/85 px-3 py-2 shadow-2xl backdrop-blur-md',
           role: 'img',
-          'aria-label': __alloT('stem.weathersystems.station_temp_key_aria', 'Station halo colour key, like a thermal camera: dark violet is cold, bright yellow is hot.'),
+          'aria-label': __alloT('stem.weathersystems.station_temp_key_aria', 'Station halo colour key, like a thermal camera: dark violet is cold, bright yellow is hot.')
+            + (showPrecipKey ? ' ' + __alloFill(__alloT('stem.weathersystems.precip_key_aria', 'Snow falls where it is {value1}\u00B0C or colder, mixed rain and snow below {value2}\u00B0C, and rain at {value2}\u00B0C or warmer.'), { value1: SNOW_MAX_C, value2: RAIN_MIN_C }) : ''),
           'data-weather-station-temp-key': true
         },
+          h('div', { className: 'flex items-center gap-2' },
           h('span', { className: 'text-[0.6875rem] font-bold uppercase tracking-wide text-slate-400' }, __alloT('stem.weathersystems.station_temp_key', 'Station temp')),
           h('span', { className: 'text-[0.6875rem] font-black tabular-nums text-violet-200' }, stationTempMin + '\u00B0'),
           h('span', {
@@ -9565,7 +10127,11 @@ var geographyGroup = new THREE.Group();
               return samples.join(', ');
             })() + ')' }
           }),
-          h('span', { className: 'text-[0.6875rem] font-black tabular-nums text-amber-200' }, stationTempMax + '\u00B0C')
+          h('span', { className: 'text-[0.6875rem] font-black tabular-nums text-amber-200' }, stationTempMax + '\u00B0C')),
+          showPrecipKey && h('div', { className: 'flex flex-wrap items-center gap-2 text-[0.625rem] font-bold', 'data-weather-precip-key': true },
+            h('span', { style: { color: '#f8fafc' } }, '\u2744 ' + __alloFill(__alloT('stem.weathersystems.precip_key_snow', 'Snow \u2264 {value1}\u00B0'), { value1: SNOW_MAX_C })),
+            h('span', { style: { color: '#c4b5fd' } }, '\u25C6 ' + __alloFill(__alloT('stem.weathersystems.precip_key_mixed', 'Mixed < {value1}\u00B0'), { value1: RAIN_MIN_C })),
+            h('span', { style: { color: '#7dd3fc' } }, '\u2571 ' + __alloFill(__alloT('stem.weathersystems.precip_key_rain', 'Rain \u2265 {value1}\u00B0'), { value1: RAIN_MIN_C })))
         );
         // Predict, then play. The answer and the explanation both come from the kernel's
         // predictionOutcome, so they are derived from the model the student watches.
@@ -9573,6 +10139,7 @@ var geographyGroup = new THREE.Group();
         var predictionRecord = d.immersivePrediction && d.immersivePrediction.scenario === state.scenario && d.immersivePrediction.station ? d.immersivePrediction : null;
         var predictionStation = predictionRecord ? (STATIONS.filter(function (item) { return item.id === predictionRecord.station; })[0] || station) : station;
         var predictionTally = d.immersivePredictionTally && typeof d.immersivePredictionTally === 'object' ? d.immersivePredictionTally : { correct: 0, total: 0 };
+        var predictionCollapsed = !!d.immersivePredictionCollapsed;
         var predictionRevealed = !!predictionRecord && state.simHour >= predictionHour;
         var predictionResult = predictionRevealed ? predictionOutcome(state, predictionStation, predictionHour) : null;
         var predictionCorrect = !!(predictionResult && predictionResult.direction === predictionRecord.choice);
@@ -9591,20 +10158,27 @@ var geographyGroup = new THREE.Group();
         var signedDegrees = function (value) { var n = Math.round(Number(value) * 10) / 10; return (n > 0 ? '+' : '') + n; };
         var predictionWhy = '';
         if (predictionResult) {
-          var rest = signedDegrees(predictionResult.otherChange);
+          var frontClause;
           if (predictionResult.frontType === 'none') {
-            predictionWhy = __alloFill(__alloT('stem.weathersystems.predict_why_none', 'There is no front in this scenario. The change ({value1}\u00B0) came from the air mass and the station\u2019s own setting.'), { value1: rest });
+            frontClause = __alloT('stem.weathersystems.predict_why_none', 'There is no front in this scenario.');
           } else if (predictionResult.alreadyBehindFront) {
-            predictionWhy = __alloFill(__alloT('stem.weathersystems.predict_why_already', 'It was already behind the front at T+0, so the change ({value1}\u00B0) came from the air mass and the station\u2019s own setting.'), { value1: rest });
+            frontClause = __alloT('stem.weathersystems.predict_why_already', 'It was already behind the front at T+0.');
           } else if (!predictionResult.frontCrossed) {
-            predictionWhy = __alloFill(__alloT('stem.weathersystems.predict_why_not_yet', 'The front had not reached it by T+{value1}, so the change ({value2}\u00B0) came from the air mass and the station\u2019s own setting.'), { value1: predictionHour, value2: rest });
+            frontClause = __alloFill(__alloT('stem.weathersystems.predict_why_not_yet', 'The front had not reached it by T+{value1}.'), { value1: predictionHour });
           } else {
             var stepSize = Math.abs(Math.round(predictionResult.frontStep * 10) / 10);
-            predictionWhy = (predictionResult.frontStep < 0
+            frontClause = predictionResult.frontStep < 0
               ? __alloFill(__alloT('stem.weathersystems.predict_why_front_colder', 'The front reached it at about T+{value1}, bringing air {value2}\u00B0 colder.'), { value1: predictionResult.passageHour, value2: stepSize })
-              : __alloFill(__alloT('stem.weathersystems.predict_why_front_warmer', 'The front reached it at about T+{value1}, bringing air {value2}\u00B0 warmer.'), { value1: predictionResult.passageHour, value2: stepSize }))
-              + ' ' + __alloFill(__alloT('stem.weathersystems.predict_why_rest', 'The rest of the change ({value1}\u00B0) came from the air mass and the station\u2019s own setting.'), { value1: rest });
+              : __alloFill(__alloT('stem.weathersystems.predict_why_front_warmer', 'The front reached it at about T+{value1}, bringing air {value2}\u00B0 warmer.'), { value1: predictionResult.passageHour, value2: stepSize });
           }
+          // Whatever the front did not do is the regional air (the "Regional air" reading at
+          // the top), plus the sea's offset at the coast when that air crossed its switch.
+          var restClause = predictionResult.seaChange
+            ? __alloFill(__alloT('stem.weathersystems.predict_why_sea', 'The region\u2019s air itself changed {value1}\u00B0 (the Regional air reading at the top), and the sea accounts for {value2}\u00B0: it keeps this coast {value3}\u00B0 warmer than the regional air while that air is {value4}\u00B0C or colder, and {value3}\u00B0 cooler once it is warmer.'), { value1: signedDegrees(predictionResult.regionalChange), value2: signedDegrees(predictionResult.seaChange), value3: MARINE_OFFSET_C, value4: MARINE_SWITCH_C })
+            : predictionResult.frontCrossed
+              ? __alloFill(__alloT('stem.weathersystems.predict_why_rest', 'The rest of the change ({value1}\u00B0) is the region\u2019s air itself changing: the Regional air reading at the top shows it.'), { value1: signedDegrees(predictionResult.otherChange) })
+              : __alloFill(__alloT('stem.weathersystems.predict_why_all', 'All of the change ({value1}\u00B0) is the region\u2019s air itself changing: the Regional air reading at the top shows it.'), { value1: signedDegrees(predictionResult.otherChange) });
+          predictionWhy = frontClause + ' ' + restClause;
         }
         var predictionResultText = predictionResult
           ? (predictionCorrect
@@ -9621,41 +10195,101 @@ var geographyGroup = new THREE.Group();
             selectedStation: next.id, simHour: 0, playing: false, timeAdvanced: false
           });
         };
+        // Drawn from the kernel's trace up to the hour played; the y-range grows from the
+        // points already drawn (at least 6 C tall), so the axis cannot hint at the ending.
+        var predictionTraceData = predictionRecord && state.simHour >= 1 ? predictionTrace(state, predictionStation, predictionHour, state.simHour) : null;
+        var predictionTraceChart = null;
+        if (predictionTraceData && predictionTraceData.points.length > 1) {
+          var tracePts = predictionTraceData.points;
+          var traceLo = Infinity, traceHi = -Infinity;
+          tracePts.forEach(function (p) { traceLo = Math.min(traceLo, p.station, p.regional); traceHi = Math.max(traceHi, p.station, p.regional); });
+          if (traceHi - traceLo < 6) { var traceMid = (traceHi + traceLo) / 2; traceLo = traceMid - 3; traceHi = traceMid + 3; }
+          var traceW = 360, traceH = 78, tracePadL = 6, tracePadR = 46, tracePadT = 12, tracePadB = 16;
+          var traceX = function (hr) { return tracePadL + hr / predictionHour * (traceW - tracePadL - tracePadR); };
+          var traceY = function (t) { return tracePadT + (traceHi - t) / (traceHi - traceLo) * (traceH - tracePadT - tracePadB); };
+          var tracePath = function (field) { return tracePts.map(function (p) { return traceX(p.hour).toFixed(1) + ',' + traceY(p[field]).toFixed(1); }).join(' '); };
+          var traceLast = tracePts[tracePts.length - 1];
+          var traceFirst = tracePts[0];
+          var regionalLabel = __alloT('stem.weathersystems.hud_regional_air', 'Regional air');
+          var traceAria = __alloFill(__alloT('stem.weathersystems.predict_trace_aria', '{value1}: {value2}\u00B0 at T+0, {value3}\u00B0 at T+{value4}. Regional air: {value5}\u00B0 to {value6}\u00B0.'), { value1: predictionStation.name, value2: traceFirst.station, value3: traceLast.station, value4: traceLast.hour, value5: traceFirst.regional, value6: traceLast.regional })
+            + (predictionTraceData.frontArrivedAt != null ? ' ' + __alloFill(__alloT('stem.weathersystems.predict_trace_front_aria', 'The front reached it at about T+{value1}.'), { value1: predictionTraceData.frontArrivedAt }) : '');
+          predictionTraceChart = h('div', { className: 'mt-2', 'data-weather-prediction-trace': predictionTraceData.playedTo },
+            h('div', { className: 'flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[0.625rem] font-bold text-slate-300', 'aria-hidden': true },
+              h('span', { className: 'flex items-center gap-1' }, h('span', { style: { display: 'inline-block', width: '14px', height: '3px', borderRadius: '2px', background: '#fbbf24' } }), predictionStation.name),
+              h('span', { className: 'flex items-center gap-1' }, h('span', { style: { display: 'inline-block', width: '14px', height: '0', borderTop: '2px dashed #cbd5e1' } }), regionalLabel)),
+            h('svg', { viewBox: '0 0 ' + traceW + ' ' + traceH, width: '100%', height: traceH, role: 'img', 'aria-label': traceAria, style: { display: 'block', maxWidth: traceW + 'px' } },
+              [0, 6, 12].map(function (tick) {
+                return h('g', { key: 'tick' + tick },
+                  h('line', { x1: traceX(tick), x2: traceX(tick), y1: tracePadT, y2: traceH - tracePadB, stroke: 'rgba(148,163,184,0.25)', strokeWidth: 1 }),
+                  h('text', { x: traceX(tick), y: traceH - 4, textAnchor: tick === 0 ? 'start' : tick === predictionHour ? 'end' : 'middle', fill: '#94a3b8', fontSize: 9, fontWeight: 700 }, 'T+' + tick));
+              }),
+              predictionTraceData.frontArrivedAt != null && h('g', { 'data-weather-trace-front': predictionTraceData.frontArrivedAt },
+                h('line', { x1: traceX(predictionTraceData.frontArrivedAt), x2: traceX(predictionTraceData.frontArrivedAt), y1: tracePadT - 2, y2: traceH - tracePadB, stroke: '#67e8f9', strokeWidth: 1.5, strokeDasharray: '3 2' }),
+                h('text', { x: traceX(predictionTraceData.frontArrivedAt) + (predictionTraceData.frontArrivedAt > predictionHour * 0.7 ? -3 : 3), y: tracePadT - 3, textAnchor: predictionTraceData.frontArrivedAt > predictionHour * 0.7 ? 'end' : 'start', fill: '#67e8f9', fontSize: 9, fontWeight: 800 }, __alloT('stem.weathersystems.predict_trace_front', 'front'))),
+              h('polyline', { points: tracePath('regional'), fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '4 3', strokeLinejoin: 'round' }),
+              h('polyline', { points: tracePath('station'), fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+              h('circle', { cx: traceX(traceLast.hour), cy: traceY(traceLast.station), r: 3.5, fill: '#fbbf24' }),
+              h('circle', { cx: traceX(traceLast.hour), cy: traceY(traceLast.regional), r: 2.5, fill: '#cbd5e1' }),
+              // End values, pushed apart when the two lines end close together.
+              (function () {
+                var ys = traceY(traceLast.station), yr = traceY(traceLast.regional);
+                if (Math.abs(ys - yr) < 11) { var mid = (ys + yr) / 2; var up = traceLast.station >= traceLast.regional; ys = mid + (up ? -5.5 : 5.5); yr = mid + (up ? 5.5 : -5.5); }
+                var labelX = traceX(traceLast.hour) + 6;
+                return h('g', null,
+                  h('text', { x: labelX, y: ys + 3.5, fill: '#fde68a', fontSize: 10, fontWeight: 800, 'data-weather-trace-station-value': traceLast.station }, traceLast.station + '\u00B0'),
+                  h('text', { x: labelX, y: yr + 3.5, fill: '#e2e8f0', fontSize: 9, fontWeight: 700 }, traceLast.regional + '\u00B0'));
+              })()));
+        }
         var predictionChoiceClass = 'min-h-11 rounded-lg border border-violet-300/60 bg-violet-300/15 px-3 py-2 text-[0.6875rem] font-black text-violet-50 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200';
         var predictionCard = !geographicMode && !useLive && h('div', {
           // Inline max-width: the host ships PREBUILT Tailwind, and an arbitrary width class
           // this tool introduces was never compiled, so the card grew to its text (~700px).
           style: { maxWidth: '400px' },
-          className: 'pointer-events-auto rounded-xl border border-violet-300/40 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md',
+          className: 'pointer-events-auto relative rounded-xl border border-violet-300/40 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md',
           role: 'group',
           'aria-label': __alloT('stem.weathersystems.predict_group', 'Predict, then play the forecast'),
-          'data-weather-prediction': predictionRevealed ? 'revealed' : predictionRecord ? 'made' : 'open'
+          'data-weather-prediction': predictionRevealed ? 'revealed' : predictionRecord ? 'made' : 'open',
+          'data-weather-prediction-collapsed': predictionCollapsed ? 'true' : 'false'
         },
-          !predictionRecord && state.simHour < predictionHour && h('p', { className: 'text-xs font-black leading-snug text-white' },
+          // Folds the card to its first line so the scene behind it can be seen.
+          h('button', {
+            type: 'button', 'aria-expanded': !predictionCollapsed, 'data-weather-prediction-toggle': true,
+            'aria-label': predictionCollapsed ? __alloT('stem.weathersystems.predict_show_aria', 'Show the prediction details') : __alloT('stem.weathersystems.predict_hide_aria', 'Hide the prediction details'),
+            onClick: function () { update({ immersivePredictionCollapsed: !predictionCollapsed }); },
+            className: 'absolute right-2 top-2 min-h-8 min-w-8 rounded-lg border border-white/20 px-2 text-[0.625rem] font-black text-slate-200 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200'
+          }, predictionCollapsed ? __alloT('stem.weathersystems.predict_show', 'Show') : __alloT('stem.weathersystems.predict_hide', 'Hide')),
+          !predictionRecord && state.simHour < predictionHour && h('p', { className: 'pr-14 text-xs font-black leading-snug text-white' },
             __alloFill(__alloT('stem.weathersystems.predict_question', 'Predict first: by T+{value1}, will {value2} be warmer, colder, or about the same?'), { value1: predictionHour, value2: predictionStation.name })),
-          !predictionRecord && state.simHour < predictionHour && h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+          !predictionRecord && state.simHour < predictionHour && !predictionCollapsed && h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
             ['warmer', 'colder', 'same'].map(function (dir) {
               return h('button', {
                 key: dir, type: 'button', 'data-weather-predict-choice': dir, className: predictionChoiceClass,
                 onClick: function () { update({ immersivePrediction: { scenario: state.scenario, station: predictionStation.id, choice: dir }, selectedStation: predictionStation.id }); }
               }, predictionWord(dir));
             })),
-          !predictionRecord && state.simHour >= predictionHour && h('p', { className: 'text-[0.6875rem] font-bold text-slate-300' },
+          !predictionRecord && state.simHour >= predictionHour && h('p', { className: 'pr-14 text-[0.6875rem] font-bold text-slate-300' },
             __alloT('stem.weathersystems.predict_rewind', 'Return to T+0 to make a prediction before you play.')),
-          predictionRecord && !predictionRevealed && h('p', { className: 'text-xs font-black leading-snug text-white' },
+          predictionRecord && !predictionRevealed && h('p', { className: 'pr-14 text-xs font-black leading-snug text-white' },
             __alloFill(__alloT('stem.weathersystems.predict_made', 'Your prediction for {value1}: {value2}. Play the forecast to T+{value3} to check.'), { value1: predictionStation.name, value2: predictionInlineWord(predictionRecord.choice), value3: predictionHour })),
-          predictionRecord && !predictionRevealed && h('button', {
+          // Always present, so the result is announced the moment it appears.
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-weather-prediction-result': predictionResult ? (predictionCorrect ? 'correct' : 'wrong') : '' },
+            predictionResult && h('p', { className: 'pr-14 text-xs font-black ' + (predictionCorrect ? 'text-emerald-300' : 'text-amber-300') }, predictionResultText),
+            predictionResult && !predictionCollapsed && h('p', { className: 'mt-1 text-[0.6875rem] font-bold tabular-nums text-white' },
+              __alloFill(__alloT('stem.weathersystems.predict_numbers', '{value1}: {value2}\u00B0 at T+0, {value3}\u00B0 at T+{value4}.'), { value1: predictionResult.stationName, value2: predictionResult.startTemp, value3: predictionResult.endTemp, value4: predictionResult.hour })),
+            predictionResult && !predictionCollapsed && h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-300' }, predictionWhy),
+            predictionResult && predictionResult.evidence && !predictionCollapsed && h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-cyan-100', 'data-weather-prediction-evidence': true },
+              __alloFill(__alloT('stem.weathersystems.predict_evidence', 'As the front passed (T+{value1} to T+{value2}): dew point {value3}\u00B0, pressure {value4} hPa, wind {value5} \u2192 {value6}.'), {
+                value1: predictionResult.evidence.fromHour, value2: predictionResult.evidence.toHour,
+                value3: signedDegrees(predictionResult.evidence.dewPoint), value4: signedDegrees(predictionResult.evidence.pressure),
+                value5: cardinal(predictionResult.evidence.windFrom), value6: cardinal(predictionResult.evidence.windTo)
+              }))
+          ),
+          !predictionCollapsed && predictionTraceChart,
+          predictionRecord && !predictionRevealed && !predictionCollapsed && h('button', {
             type: 'button', className: 'mt-2 ' + predictionChoiceClass,
             onClick: function () { update({ immersivePrediction: null }); }
           }, __alloT('stem.weathersystems.predict_change', 'Change prediction')),
-          // Always present, so the result is announced the moment it appears.
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-weather-prediction-result': predictionResult ? (predictionCorrect ? 'correct' : 'wrong') : '' },
-            predictionResult && h('p', { className: 'text-xs font-black ' + (predictionCorrect ? 'text-emerald-300' : 'text-amber-300') }, predictionResultText),
-            predictionResult && h('p', { className: 'mt-1 text-[0.6875rem] font-bold tabular-nums text-white' },
-              __alloFill(__alloT('stem.weathersystems.predict_numbers', '{value1}: {value2}\u00B0 at T+0, {value3}\u00B0 at T+{value4}.'), { value1: predictionResult.stationName, value2: predictionResult.startTemp, value3: predictionResult.endTemp, value4: predictionResult.hour })),
-            predictionResult && h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-300' }, predictionWhy)
-          ),
-          predictionResult && h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+          predictionResult && !predictionCollapsed && h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
             h('button', { type: 'button', className: predictionChoiceClass, onClick: nextPredictionStation }, __alloT('stem.weathersystems.predict_try_another', 'Try another station')),
             predictionTally.total > 0 && h('span', { className: 'text-[0.6875rem] font-bold text-slate-400' },
               __alloFill(__alloT('stem.weathersystems.predict_tally', 'Right so far: {value1} of {value2}'), { value1: predictionTally.correct, value2: predictionTally.total }))
@@ -9881,11 +10515,13 @@ var geographyGroup = new THREE.Group();
                     'data-weather-scene-hud': true,
                     'data-weather-scene-instruments': true,
                     role: 'group',
-                    'aria-label': (useLive ? timelineSelectionLabel : 'Teaching model hour ' + state.simHour) + '. Temperature ' + (useLive ? live.temperature : model.temperature) + ' degrees Celsius. Pressure ' + (useLive ? live.pressure : model.pressure) + ' hectopascals. Wind ' + cardinal(windDir) + ' ' + windSpeed + ' kilometers per hour.'
+                    'aria-label': (useLive ? timelineSelectionLabel : 'Teaching model hour ' + state.simHour) + '. ' + (useLive ? 'Temperature ' : __alloT('stem.weathersystems.hud_regional_air_aria', 'Regional air temperature') + ' ') + (useLive ? live.temperature : model.temperature) + ' degrees Celsius. Pressure ' + (useLive ? live.pressure : model.pressure) + ' hectopascals. Wind ' + cardinal(windDir) + ' ' + windSpeed + ' kilometers per hour.'
                   },
                     [
                       [useLive ? timelineInstrumentLabel : 'Model hour', timelineInstrumentTime],
-                      ['Temperature', (useLive ? live.temperature : model.temperature) + '\u00B0C'],
+                      // The model value is the region's sea-level air; each station differs by
+                      // height, position, the sea and the front (see the station labels).
+                      [useLive ? 'Temperature' : __alloT('stem.weathersystems.hud_regional_air', 'Regional air'), (useLive ? live.temperature : model.temperature) + '\u00B0C'],
                       ['Pressure', (useLive ? live.pressure : model.pressure) + ' hPa'],
                       ['Wind', cardinal(windDir) + ' ' + windSpeed + ' km/h']
                     ].map(function (metric, index) {

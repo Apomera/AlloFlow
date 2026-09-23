@@ -397,3 +397,376 @@ describe('station label text (map pills and 3D labels)', () => {
     expect(src.split('stationLabelText(').length - 1).toBeGreaterThanOrEqual(3);
   });
 });
+
+// The stage's "Regional air" reading is projectConditions' sea-level air. The prediction
+// card says whatever the front did not do "is the region's air itself changing: the
+// Regional air reading at the top shows it", and names the sea at the coast. These pin
+// that both claims are what the model does, not what the copy hopes.
+describe('prediction explanation: front, regional air, sea', () => {
+  const cases = [];
+  for (const sc of K.scenarios) for (const st of K.stations) for (const hour of [6, 12, 18, 24]) {
+    const s = K.resolvedState({ scenario: sc.id });
+    cases.push({ tag: sc.id + '/' + st.id + '@' + hour, s, st, hour, o: K.predictionOutcome(s, st, hour) });
+  }
+  const regional = (s, hour) => K.projectConditions(Object.assign({}, s, { simHour: hour }), hour).temperature;
+
+  it('splits the change into front + regional air + sea, summing exactly', () => {
+    for (const c of cases) {
+      expect(c.o.frontStep + c.o.regionalChange + c.o.seaChange, c.tag).toBeCloseTo(c.o.delta, 9);
+    }
+  });
+
+  it('the regional part is the change in the Regional air reading', () => {
+    for (const c of cases) {
+      const shown = regional(c.s, c.hour) - regional(c.s, 0);
+      // Station readings and the reading at the top are each rounded to 0.1 C.
+      expect(Math.abs(c.o.regionalChange - shown), c.tag + ' regional ' + c.o.regionalChange + ' vs shown ' + shown).toBeLessThanOrEqual(0.15);
+    }
+  });
+
+  it('names the sea only at the coast, only when the regional air crossed the switch', () => {
+    const sw = K.marineSwitchC;
+    let seaCases = 0;
+    for (const c of cases) {
+      const crossed = (regional(c.s, 0) > sw) !== (regional(c.s, c.hour) > sw);
+      const expected = c.st.id === 'coast' && crossed ? (regional(c.s, c.hour) > sw ? -2 : 2) * K.marineOffsetC : 0;
+      expect(c.o.seaChange, c.tag).toBe(expected);
+      if (c.o.seaChange) seaCases += 1;
+    }
+    // Without a case the sea sentence would never render, and nothing here would test it.
+    expect(seaCases).toBeGreaterThan(0);
+  });
+
+  it('the constants the card quotes are the ones the observation applies', () => {
+    const coast = K.stations.filter((st) => st.id === 'coast')[0];
+    const inland = Object.assign({}, coast, { id: 'coast-inland-twin' });
+    for (const temp of [-5, 11, 12, 13, 25]) {
+      const s = K.resolvedState({ scenario: 'fair', temp, simHour: 0 });
+      const air = regional(s, 0);
+      const diff = K.stationObservation(s, coast).temperature - K.stationObservation(s, inland).temperature;
+      expect(diff, 'regional ' + air).toBeCloseTo(air > K.marineSwitchC ? -K.marineOffsetC : K.marineOffsetC, 9);
+    }
+  });
+});
+
+// The card's live trace draws while the forecast plays. It must never show an hour the
+// student has not played (it would give the answer away), must end on the same numbers
+// the verdict prints, and may mark the front only once the station is behind it.
+describe('predictionTrace (the live trace in the prediction card)', () => {
+  const combos = [];
+  for (const sc of K.scenarios) for (const st of K.stations) combos.push({ tag: sc.id + '/' + st.id, s: K.resolvedState({ scenario: sc.id }), st });
+  // A rounding boundary: at front speed 24.75 Central School's passage is 4.04 h, shown
+  // as T+4.0, but the station is not behind the front until hour 5. No default scenario
+  // lands on one, so a marker keyed to the ROUNDED hour passed without this.
+  combos.push({ tag: 'coldFront@24.75/central', s: K.resolvedState({ scenario: 'coldFront', frontSpeed: 24.75 }), st: K.stations.filter((st) => st.id === 'central')[0] });
+
+  it('never includes an hour past the one played', () => {
+    for (const c of combos) for (const played of [0, 1, 4.6, 11, 12, 18]) {
+      const t = K.predictionTrace(c.s, c.st, 12, played);
+      const last = Math.min(Math.floor(played), 12);
+      expect(t.points.map((p) => p.hour), c.tag + ' played ' + played).toEqual(Array.from({ length: last + 1 }, (_, i) => i));
+    }
+  });
+
+  it('starts and ends on the numbers the verdict prints', () => {
+    for (const c of combos) {
+      const o = K.predictionOutcome(c.s, c.st, 12);
+      const t = K.predictionTrace(c.s, c.st, 12, 12);
+      expect(t.points[0].station, c.tag).toBe(o.startTemp);
+      expect(t.points[12].station, c.tag).toBe(o.endTemp);
+      const regional = (h) => K.projectConditions(Object.assign({}, c.s, { simHour: h }), h).temperature;
+      expect(t.points[12].regional - t.points[0].regional, c.tag).toBeCloseTo(regional(12) - regional(0), 9);
+    }
+  });
+
+  it('marks the front only once the station is behind it, and never if it began behind', () => {
+    let marked = 0, unmarkedBefore = 0;
+    for (const c of combos) {
+      const startBehind = K.stationObservation(Object.assign({}, c.s, { simHour: 0 }), c.st).airMass === 'behind';
+      for (let played = 0; played <= 12; played += 1) {
+        const t = K.predictionTrace(c.s, c.st, 12, played);
+        const behind = K.stationObservation(Object.assign({}, c.s, { simHour: played }), c.st).airMass === 'behind';
+        const shouldMark = behind && !startBehind;
+        expect(t.frontArrivedAt != null, c.tag + ' played ' + played).toBe(shouldMark);
+        if (shouldMark) { marked += 1; expect(t.frontArrivedAt).toBeLessThanOrEqual(played); }
+        else if (!startBehind && K.predictionOutcome(c.s, c.st, 12).frontCrossed) unmarkedBefore += 1;
+      }
+    }
+    // Both halves must occur, or the test proves nothing about the timing.
+    expect(marked).toBeGreaterThan(0);
+    expect(unmarkedBefore).toBeGreaterThan(0);
+  });
+});
+
+// Precipitation type follows the ground. The scenes used to take ONE type from the
+// regional (sea-level) reading: the winter storm rained over the whole 3D scene while three
+// stations read -1.5 to -3 C, below the model's own snow threshold. These pin that every
+// type shown comes from the same thresholds, applied where the ground is that cold.
+describe('precipitation type by place (stations and between them)', () => {
+  const states = [];
+  for (const sc of K.scenarios) for (const temp of [null, -6, -1, 0.5, 2, 9]) for (const hour of [0, 3, 6, 9, 12, 18]) {
+    states.push({ tag: sc.id + ' temp ' + temp + ' @' + hour, s: K.resolvedState(temp == null ? { scenario: sc.id, simHour: hour } : { scenario: sc.id, temp, simHour: hour }), hour });
+  }
+  const obsOf = (s) => K.stations.map((st) => K.stationObservation(s, st));
+
+  it('the region and the stations use the same thresholds', () => {
+    for (const c of states) {
+      const regional = K.projectConditions(c.s, c.hour);
+      if (regional.precipType !== 'none' && regional.precipType !== 'storms') {
+        expect(regional.precipType, c.tag).toBe(K.precipTypeForTemp(regional.temperature));
+      }
+      for (const o of obsOf(c.s)) {
+        const expected = regional.precipType === 'none' || o.precipPotential < 28 ? 'none'
+          : regional.precipType === 'storms' ? 'storms' : K.precipTypeForTemp(o.temperature);
+        expect(o.precipType, c.tag + ' ' + o.id).toBe(expected);
+      }
+    }
+    expect(K.precipTypeForTemp(K.snowMaxC)).toBe('snow');
+    expect(K.precipTypeForTemp(K.snowMaxC + 0.1)).toBe('mixed');
+    expect(K.precipTypeForTemp(K.rainMinC - 0.1)).toBe('mixed');
+    expect(K.precipTypeForTemp(K.rainMinC)).toBe('rain');
+  });
+
+  it('between stations: exactly the reading at a station, never outside the readings between', () => {
+    for (const c of states) {
+      const obs = obsOf(c.s);
+      for (const o of obs) expect(K.surfaceTempAt(obs, o.x, o.y), c.tag + ' ' + o.id).toBe(o.temperature);
+      // Just beside a station the analysis stays close to it. A plain average of the
+      // stations passes every other check here and paints ONE type over the whole scene.
+      for (const o of obs) expect(Math.abs(K.surfaceTempAt(obs, o.x + 0.01, o.y) - o.temperature), c.tag + ' near ' + o.id).toBeLessThan(0.25);
+      const lo = Math.min(...obs.map((o) => o.temperature)), hi = Math.max(...obs.map((o) => o.temperature));
+      for (let fx = 0; fx <= 1; fx += 0.1) for (let fy = 0; fy <= 1; fy += 0.25) {
+        const t = K.surfaceTempAt(obs, fx, fy);
+        expect(t, c.tag).toBeGreaterThanOrEqual(lo - 1e-9);
+        expect(t, c.tag).toBeLessThanOrEqual(hi + 1e-9);
+      }
+    }
+  });
+
+  it('the type at a station is that station\'s type', () => {
+    for (const c of states) {
+      const regional = K.projectConditions(c.s, c.hour).precipType;
+      const obs = obsOf(c.s);
+      for (const o of obs) {
+        if (o.precipType === 'none') continue;
+        expect(K.surfacePrecipTypeAt(obs, regional, o.x, o.y), c.tag + ' ' + o.id).toBe(o.precipType);
+      }
+    }
+  });
+
+  it('the winter storm snows inland while the regional reading alone says rain', () => {
+    const s = K.resolvedState({ scenario: 'winterStorm', simHour: 12 });
+    expect(K.projectConditions(s, 12).precipType).toBe('rain');
+    const types = obsOf(s).map((o) => o.id + ':' + o.precipType).sort();
+    expect(types).toEqual(['central:snow', 'coast:mixed', 'north:snow', 'west:snow']);
+  });
+
+  it('groups every station exactly once, for the scene\'s text alternative', () => {
+    for (const c of states) {
+      const obs = obsOf(c.s);
+      const groups = K.stationPrecipGroups(obs);
+      const named = groups.flatMap((g) => g.names).sort();
+      expect(named, c.tag).toEqual(obs.map((o) => o.name).sort());
+      for (const g of groups) for (const name of g.names) expect(obs.find((o) => o.name === name).precipType).toBe(g.type);
+    }
+  });
+});
+
+// The rain/snow line drawn on the 3D ground: where the station analysis crosses the snow
+// and rain thresholds. It must sit ON the level, SEPARATE the types (any path from a
+// snow-cold station to a warmer one crosses it), and be absent when nothing crosses.
+describe('isothermSegments (the rain/snow line)', () => {
+  const states = [];
+  for (const sc of K.scenarios) for (const temp of [null, -6, -1, 0.5, 2, 9]) for (const hour of [0, 3, 6, 9, 12, 18]) {
+    states.push({ tag: sc.id + ' temp ' + temp + ' @' + hour, s: K.resolvedState(temp == null ? { scenario: sc.id, simHour: hour } : { scenario: sc.id, temp, simHour: hour }) });
+  }
+  const obsOf = (s) => K.stations.map((st) => K.stationObservation(s, st));
+  const side = (ax, ay, bx, by, cx, cy) => Math.sign((bx - ax) * (cy - ay) - (by - ay) * (cx - ax));
+  const crosses = (p, q, g) => side(p.x, p.y, q.x, q.y, g[0], g[1]) !== side(p.x, p.y, q.x, q.y, g[2], g[3])
+    && side(g[0], g[1], g[2], g[3], p.x, p.y) !== side(g[0], g[1], g[2], g[3], q.x, q.y);
+
+  it('every point of the line is on the level (within 0.1 C)', () => {
+    let checked = 0;
+    for (const c of states) {
+      const obs = obsOf(c.s);
+      for (const level of [K.snowMaxC, K.rainMinC]) for (const g of K.isothermSegments(obs, level)) {
+        for (const [x, y] of [[g[0], g[1]], [g[2], g[3]]]) { expect(Math.abs(K.surfaceTempAt(obs, x, y) - level), c.tag).toBeLessThan(0.1); checked += 1; }
+      }
+    }
+    expect(checked).toBeGreaterThan(100);
+  });
+
+  it('separates the types: a path from a colder station to a warmer one crosses it', () => {
+    let pairs = 0;
+    for (const c of states) {
+      const obs = obsOf(c.s);
+      for (const level of [K.snowMaxC, K.rainMinC]) {
+        const segments = K.isothermSegments(obs, level);
+        for (const p of obs) for (const q of obs) {
+          // Clear of the level by 0.3 C, so the grid can resolve the crossing between them.
+          if (!(p.temperature <= level - 0.3 && q.temperature >= level + 0.3)) continue;
+          pairs += 1;
+          expect(segments.some((g) => crosses(p, q, g)), c.tag + ' ' + p.id + ' -> ' + q.id + ' at ' + level).toBe(true);
+        }
+      }
+    }
+    expect(pairs).toBeGreaterThan(10);
+  });
+
+  it('is absent when every station is on one side, present in the winter storm', () => {
+    const warm = obsOf(K.resolvedState({ scenario: 'coldFront', simHour: 3 }));
+    expect(K.isothermSegments(warm, K.snowMaxC)).toEqual([]);
+    const storm = obsOf(K.resolvedState({ scenario: 'winterStorm', simHour: 12 }));
+    expect(K.isothermSegments(storm, K.snowMaxC).length).toBeGreaterThan(0);
+    expect(K.isothermSegments(storm, K.rainMinC)).toEqual([]);
+  });
+});
+
+// The weather-map front symbol (3D ground line and 2D map, one plan). Each rule is
+// derived from the model, not restated: the side a moving front's symbols sit on is the
+// way the model moves it, and a stationary front's warm side is where its stations read
+// warmer.
+describe('frontMapSymbol (fronts as a weather map draws them)', () => {
+  const span = [-10.5, 10.5];
+  const shapes = (type, speed) => K.frontMapSymbol(type, speed, 0, span[0], span[1]);
+
+  it('a moving front carries its symbols on the side the model moves it toward, pointing that way', () => {
+    for (const sc of K.scenarios.filter((s) => s.frontType === 'cold' || s.frontType === 'warm' || s.frontType === 'occluded')) {
+      const s = K.resolvedState({ scenario: sc.id });
+      const motion = Math.sign(K.frontPositionFraction(Object.assign({}, s, { simHour: 6 })) - K.frontPositionFraction(Object.assign({}, s, { simHour: 0 })));
+      expect(motion, sc.id).not.toBe(0);
+      const m = shapes(sc.frontType, s.frontSpeed);
+      expect(m.kind).toBe(sc.frontType);
+      for (const t of m.triangles) expect(Math.sign(t[1][0]), sc.id).toBe(motion);
+      for (const c of m.halfCircles) expect(c.dir, sc.id).toBe(motion);
+    }
+  });
+
+  it('cold = triangles, warm = half-circles, occluded = both alternating, outflow = dashed with none', () => {
+    const cold = shapes('cold', 30), warm = shapes('warm', 30), occ = shapes('occluded', 30), out = shapes('outflow', 12);
+    expect(cold.triangles.length).toBeGreaterThan(0); expect(cold.halfCircles).toEqual([]);
+    expect(warm.halfCircles.length).toBeGreaterThan(0); expect(warm.triangles).toEqual([]);
+    expect(occ.triangles.length).toBeGreaterThan(0); expect(occ.halfCircles.length).toBeGreaterThan(0);
+    const occZ = [...occ.triangles.map((t) => [t[1][1], 't']), ...occ.halfCircles.map((c) => [c.z, 'h'])].sort((a, b) => a[0] - b[0]).map((p) => p[1]).join('');
+    expect(occZ).toMatch(/^(ht)+h?$/);
+    expect(out.triangles).toEqual([]); expect(out.halfCircles).toEqual([]);
+    const drawn = out.line.reduce((sum, p) => sum + (p[3] - p[1]), 0);
+    expect(drawn).toBeLessThan((span[1] - span[0]) * 0.8);
+    expect(drawn).toBeGreaterThan((span[1] - span[0]) * 0.4);
+    expect(shapes('none', 10)).toEqual({ kind: 'none', line: [], triangles: [], halfCircles: [] });
+  });
+
+  it('with speed 0 a cold or warm front is stationary: triangles toward the warm side, half-circles toward the cold', () => {
+    for (const type of ['cold', 'warm']) {
+      const sc = K.scenarios.filter((s) => s.frontType === type)[0];
+      const s = K.resolvedState({ scenario: sc.id, frontSpeed: 0, simHour: 6 });
+      // Two otherwise identical inland stations either side of the stalled front.
+      const at = K.frontPositionFraction(s);
+      const probe = (x) => K.stationObservation(s, { id: 'probe-' + x, name: 'Probe', x, y: 0.5, elevation: 0 }).temperature;
+      const warmSide = Math.sign(probe(at + 0.08) - probe(at - 0.08));
+      expect(warmSide, type).not.toBe(0);
+      const m = shapes(type, 0);
+      expect(m.kind, type).toBe('stationary');
+      expect(m.triangles.length).toBeGreaterThan(0);
+      expect(m.halfCircles.length).toBeGreaterThan(0);
+      for (const t of m.triangles) expect(Math.sign(t[1][0]), type + ' triangle').toBe(warmSide);
+      for (const c of m.halfCircles) expect(c.dir, type + ' half-circle').toBe(-warmSide);
+    }
+  });
+});
+
+// The verdict's other signs of a front passage (dew point, pressure, wind), shown only when
+// the front crossed the station, from the station time series' window around the passage.
+describe('prediction evidence: the other signs of the passage', () => {
+  it('appears exactly when the front crossed, from the station time series window', () => {
+    let crossedCases = 0;
+    for (const sc of K.scenarios) for (const st of K.stations) for (const hour of [6, 12, 18]) {
+      const s = K.resolvedState({ scenario: sc.id });
+      const o = K.predictionOutcome(s, st, hour);
+      const tag = sc.id + '/' + st.id + '@' + hour;
+      if (!o.frontCrossed) { expect(o.evidence, tag).toBeNull(); continue; }
+      crossedCases += 1;
+      const ts = K.stationTimeSeries(s, st, hour, 1);
+      expect(o.evidence, tag).toEqual({ fromHour: ts.beforeHour, toHour: ts.afterHour, dewPoint: ts.deltas.dewPoint, pressure: ts.deltas.pressure, windFrom: ts.before.windDir, windTo: ts.after.windDir });
+      expect(o.evidence.fromHour, tag).toBeLessThanOrEqual(o.passageHour);
+      expect(o.evidence.toHour, tag).toBeGreaterThanOrEqual(Math.min(o.passageHour, hour));
+    }
+    expect(crossedCases).toBeGreaterThan(5);
+  });
+
+  it('shows the textbook cold-front signs: dew point falls, pressure rises, the wind veers to the northwest', () => {
+    const s = K.resolvedState({ scenario: 'coldFront' });
+    const o = K.predictionOutcome(s, K.stations.filter((st) => st.id === 'central')[0], 12);
+    expect(o.frontCrossed).toBe(true);
+    expect(o.evidence.dewPoint).toBeLessThan(0);
+    expect(o.evidence.pressure).toBeGreaterThan(0);
+    expect(K.cardinal(o.evidence.windTo)).toMatch(/^(W|WNW|NW|NNW)$/);
+  });
+});
+
+// Playback narration. Every station the front reaches within the day is reported once, in
+// the hour whose interval contains its passage time (from the front-position formula, not
+// from the narration's own test); between arrivals it names the next station.
+describe('forecastNarration (what the front did this hour)', () => {
+  const moving = K.scenarios.filter((sc) => sc.frontType !== 'none');
+
+  it('reports each arrival once, in the hour that contains the passage time', () => {
+    let arrivalsSeen = 0;
+    for (const sc of moving) {
+      const s = K.resolvedState({ scenario: sc.id });
+      const reported = {};
+      for (let h = 0; h <= 24; h += 1) {
+        const n = K.forecastNarration(s, h);
+        if (n.kind === 'arrival') for (const a of n.arrivals) { expect(reported[a.id], sc.id + ' ' + a.id + ' twice').toBeUndefined(); reported[a.id] = h; }
+      }
+      for (const st of K.stations) {
+        const passage = (st.x - 0.28) * 500 / s.frontSpeed;
+        if (!(passage > 0 && passage <= 24)) { expect(reported[st.id], sc.id + ' ' + st.id).toBeUndefined(); continue; }
+        const h = reported[st.id];
+        expect(h, sc.id + ' ' + st.id + ' never reported').toBeDefined();
+        expect(passage, sc.id + ' ' + st.id).toBeGreaterThan(h - 1 - 1e-9);
+        expect(passage, sc.id + ' ' + st.id).toBeLessThanOrEqual(h + 1e-9);
+        arrivalsSeen += 1;
+      }
+    }
+    expect(arrivalsSeen).toBeGreaterThan(8);
+  });
+
+  it('an arrival carries the station\'s own change over that hour', () => {
+    const s = K.resolvedState({ scenario: 'coldFront' });
+    for (let h = 1; h <= 12; h += 1) {
+      const n = K.forecastNarration(s, h);
+      if (n.kind !== 'arrival') continue;
+      for (const a of n.arrivals) {
+        const st = K.stations.filter((item) => item.id === a.id)[0];
+        const now = K.stationObservation(Object.assign({}, s, { simHour: h }), st);
+        const before = K.stationObservation(Object.assign({}, s, { simHour: h - 1 }), st);
+        expect(a.tempChange).toBeCloseTo(now.temperature - before.temperature, 9);
+        expect(a.windFrom).toBe(before.windDir);
+        expect(a.windTo).toBe(now.windDir);
+      }
+    }
+  });
+
+  it('between arrivals it names the soonest station still ahead', () => {
+    for (const sc of moving) {
+      const s = K.resolvedState({ scenario: sc.id });
+      for (let h = 0; h <= 24; h += 1) {
+        const n = K.forecastNarration(s, h);
+        if (n.kind !== 'ahead') continue;
+        const aheadNow = K.stations.filter((st) => K.stationObservation(Object.assign({}, s, { simHour: h }), st).airMass !== 'behind');
+        const soonest = Math.min(...aheadNow.map((st) => (st.x - 0.28) * 500 / s.frontSpeed));
+        expect(n.next.arrivesAbout, sc.id + '@' + h).toBeCloseTo(soonest, 1);
+        expect(n.next.arrivesAbout, sc.id + '@' + h).toBeGreaterThanOrEqual(h - 0.05);
+      }
+    }
+  });
+
+  it('no front, a stalled front and a front too slow for the day each say so', () => {
+    expect(K.forecastNarration(K.resolvedState({ scenario: 'fair' }), 6).kind).toBe('noFront');
+    expect(K.forecastNarration(K.resolvedState({ scenario: 'coldFront', frontSpeed: 0 }), 6).kind).toBe('stalled');
+    const slow = K.forecastNarration(K.resolvedState({ scenario: 'coldFront', frontSpeed: 4 }), 5);
+    expect(slow.kind).toBe('beyond');
+    expect(slow.next.arrivesAbout).toBeGreaterThan(24);
+  });
+});
