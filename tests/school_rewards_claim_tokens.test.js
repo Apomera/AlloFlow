@@ -72,7 +72,8 @@ describe('claiming', () => {
     h.setActive(STUDENT);
     const first = h.call('claimSchoolRewardsToken', { tokenId: token.id });
     const again = h.call('claimSchoolRewardsToken', { tokenId: token.id });
-    expect(again).toEqual(first);
+    expect(again).toEqual({ ...first, replayed: true });
+    expect(first.replayed).toBeUndefined();
     expect(claimLedger(h)).toHaveLength(1);
     expect(balanceOf(h, STUDENT)).toBe(20);
   });
@@ -184,6 +185,53 @@ describe('crash recovery', () => {
   });
 });
 
+describe('idempotent minting', () => {
+  it('a retried mint with the same key returns the same sheet instead of a second set of live codes', () => {
+    const h = harness(); setup(h);
+    const first = mint(h, { idempotencyKey: 'claimmint_0123456789ab' });
+    const again = mint(h, { idempotencyKey: 'claimmint_0123456789ab' });
+    expect(again).toMatchObject({ ok: true, batchId: first.batchId, replayed: true });
+    expect(again.tokens.map(t => t.id)).toEqual(first.tokens.map(t => t.id));
+    expect(claimRows(h)).toHaveLength(3);
+    expect(h.rows('Audit').filter(r => r[1] === 'CLAIM_TOKENS_MINTED')).toHaveLength(1);
+    // A new key is a new sheet; no key keeps the old behaviour.
+    expect(mint(h, { idempotencyKey: 'claimmint_ba9876543210' }).batchId).not.toBe(first.batchId);
+    expect(mint(h).batchId).not.toBe(first.batchId);
+    expect(claimRows(h)).toHaveLength(9);
+  });
+
+  it('refuses to reuse a key for different codes or for another staff member', () => {
+    const h = harness(); setup(h);
+    h.setActive(ADMIN); h.call('adminUpsertRewardsMember', { email: 'other.teacher@' + DOMAIN, displayName: 'Other', role: 'staff' });
+    mint(h, { idempotencyKey: 'claimmint_0123456789ab' });
+    expect(() => mint(h, { idempotencyKey: 'claimmint_0123456789ab', points: 25 })).toThrow(/already used for a different code sheet/);
+    expect(() => mint(h, { idempotencyKey: 'claimmint_0123456789ab', count: 4 })).toThrow(/already used for a different code sheet/);
+    h.setActive('other.teacher@' + DOMAIN);
+    expect(() => h.call('mintSchoolRewardsClaimTokens', { count: 3, points: 20, categoryId: seededCategory(h).id, reason: 'Read 20 minutes at home', idempotencyKey: 'claimmint_0123456789ab' })).toThrow(/already used for a different code sheet/);
+    expect(() => mint(h, { idempotencyKey: 'bad key!' })).toThrow(/safety key/);
+    expect(claimRows(h)).toHaveLength(3);
+  });
+
+  it('writes a 200-code sheet and cancels it with a bounded number of sheet calls', () => {
+    const h = harness(); setup(h);
+    h.resetRangeReads();
+    const batch = mint(h, { count: 200 });
+    const mintCalls = h.rangeReads('ClaimTokens');
+    expect(claimRows(h)).toHaveLength(200);
+    expect(new Set(claimRows(h).map(r => r.id)).size).toBe(200);
+    h.setActive(STUDENT); h.call('claimSchoolRewardsToken', { tokenId: batch.tokens[7].id });
+    h.setActive(STAFF); h.resetRangeReads();
+    expect(h.call('voidSchoolRewardsClaimBatch', { batchId: batch.batchId }).voided).toBe(199);
+    const voidCalls = h.rangeReads('ClaimTokens');
+    expect(mintCalls).toBeLessThan(10);
+    expect(voidCalls).toBeLessThan(10);
+    const statuses = claimRows(h).map(r => r.status);
+    expect(statuses.filter(v => v === 'void')).toHaveLength(199);
+    expect(statuses[7]).toBe('used');
+    expect(claimRows(h)[7]).toMatchObject({ claimedBy: expect.any(String), ledgerId: expect.any(String) });
+  });
+});
+
 describe('batches', () => {
   const OTHER = 'other.teacher@' + DOMAIN;
   function otherStaff(h) { h.setActive(ADMIN); h.call('adminUpsertRewardsMember', { email: OTHER, displayName: 'Other', role: 'staff' }); }
@@ -284,12 +332,13 @@ describe('claim entry link', () => {
     context.currentActor_ = () => ({ role });
     return event => context.doGet(event).content;
   }
-  it('forwards only a well-formed token id, only to a student, and nothing else from the query', () => {
+  it('forwards only a well-formed token id, to any signed-in role, and nothing else from the query', () => {
     const student = entry('student');
     expect(student({ parameter: { claim: 'abcdef12-3456-7890-abcd-ef1234567890' } })).toBe('{"claimToken":"abcdef12-3456-7890-abcd-ef1234567890"}');
     for (const bad of ['short', 'has space 12345', '<script>alert(1)</script>', 'x'.repeat(81), '', undefined]) expect(student({ parameter: { claim: bad } })).toBe('{"claimToken":""}');
     expect(student({ parameter: { claim: 'abcdef12-3456-7890-abcd-ef1234567890', points: '999', studentId: 'PRIVATE' } })).not.toMatch(/999|PRIVATE/);
-    for (const role of ['admin', 'staff', 'cashier']) expect(entry(role)({ parameter: { claim: 'abcdef12-3456-7890-abcd-ef1234567890' } })).toBe('{"claimToken":""}');
+    // Staff land on the same link when testing a printed coupon; the portal explains it and only a student can redeem.
+    for (const role of ['admin', 'staff', 'cashier']) expect(entry(role)({ parameter: { claim: 'abcdef12-3456-7890-abcd-ef1234567890' } })).toBe('{"claimToken":"abcdef12-3456-7890-abcd-ef1234567890"}');
     expect(index).toContain('data-school-rewards-claim="<?= claimToken ?>"');
     expect(index).not.toContain('<?!= claimToken');
   });

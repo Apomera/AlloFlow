@@ -193,3 +193,36 @@ part this note gets for free.
 
 (Also for the record: a loose `.gs` grep matches minified JS like
 `.gs=function` in every `--help-*.html`. Those are not Apps Script.)
+
+---
+
+## 10. Implementation status (2026-09-23)
+
+Built on this design (schema v7): `ClaimTokens`, `migrateSchoolRewardsRepositoryV7`,
+`mintSchoolRewardsClaimTokens`, `claimSchoolRewardsToken` (journal kind `claim`,
+key `claim:<token>`), `listSchoolRewardsClaimBatches`, `voidSchoolRewardsClaimBatch`,
+integrity checks for tokens against their ledger rows, and the portal pieces:
+student result card, staff mint form, recent code sheets, printable coupons with
+optional background art.
+
+How the section 6 traps were handled:
+
+1. **No modal anywhere in the claim path.** The claim runs on page load and
+   reports on a dashboard card.
+2. **Busy lock.** The portal retries a busy claim four times with backoff
+   (1.5, 3, 5, 8 s). It matches the message as well as the code, since only the
+   message is certain to survive `google.script.run`.
+
+Decided along the way:
+
+- **The QR encoder is embedded in `Portal.html`**
+  (`dev-tools/embed_school_rewards_qr.cjs`), not loaded from the CDN, because the
+  portal runs with admin and staff permissions.
+- **Minting is idempotent per form submission**, so a lost response cannot put a
+  second set of live codes on paper.
+- **A repeat claim by the same student is flagged `replayed`.** Staff opening a
+  link are told it is a student code.
+
+Still open (section 8): bearer tokens only (no pre-assigned codes); staff-only
+minting (no automated source); **no default expiry**. The form accepts one and
+coupons print it, but a sheet without one stays live until it is cancelled.

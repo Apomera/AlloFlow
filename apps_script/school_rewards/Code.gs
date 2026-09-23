@@ -71,7 +71,7 @@ function doGet(e) {
     // query value to the page. All recognition actions remain authenticated RPCs.
     template.initialView = e && e.parameter && e.parameter.view === 'recognition' && ['admin', 'staff'].indexOf(actor.role) >= 0 ? 'recognition' : '';
     var claimParam = String(e && e.parameter && e.parameter.claim || '');
-    template.claimToken = actor.role === 'student' && /^[A-Za-z0-9_-]{8,80}$/.test(claimParam) ? claimParam : '';
+    template.claimToken = /^[A-Za-z0-9_-]{8,80}$/.test(claimParam) ? claimParam : '';
     return template.evaluate().setTitle('AlloFlow School Rewards');
   } catch (err) {
     return HtmlService.createHtmlOutput('<!doctype html><meta charset="utf-8"><title>Access unavailable</title><main style="font:16px system-ui;max-width:680px;margin:64px auto;padding:24px"><h1>Access unavailable</h1><p>School Rewards could not verify an authorized managed Google Education account.</p><p>Ask the school administrator to check the domain-only deployment and your membership.</p></main>');
@@ -196,16 +196,29 @@ function mintSchoolRewardsClaimTokens(request) {
   var actor = requireRole_(['admin', 'staff']); request = object_(request);
   var count = integer_(request.count, 1, SR_MAX_CLAIM_BATCH, 'Code count'), points = integer_(request.points, 1, SR_MAX_POINTS, 'Points');
   var reason = text_(request.reason, 180, ''), categoryId = id_(request.categoryId, 'category'), expiresAt = iso_(request.expiresAt);
+  var key = request.idempotencyKey == null || request.idempotencyKey === '' ? '' : idemKey_(request.idempotencyKey);
   if (!reason) throw srError_('bad_award', 'Describe what a student does to earn this code.');
   return locked_(function() {
-    var book = book_(); requireClaimTokensReady_(book); requireCategory_(book, categoryId);
-    var at = now_(), batchId = uuid_(), tokens = [];
+    var book = book_(); requireClaimTokensReady_(book);
+    var batchId = key ? operationEntityId_('claim_batch', key) : uuid_();
+    if (key) {
+      var existing = claimTokens_(book).filter(function(token) { return token.batchId === batchId; });
+      if (existing.length) {
+        var first = existing[0];
+        if (existing.length !== count || first.points !== points || first.categoryId !== categoryId || first.reason !== reason || first.expiresAt !== expiresAt || first.createdByEmail !== actor.email) throw srError_('idempotency_conflict', 'This request was already used for a different code sheet. Refresh and create the codes again.');
+        return { ok: true, batchId: batchId, claimUrlBase: claimUrlBase_(), tokens: existing.map(publicClaimToken_), replayed: true };
+      }
+    }
+    requireCategory_(book, categoryId);
+    var at = now_(), tokens = [], rows = [];
     if (expiresAt && new Date(expiresAt).getTime() <= new Date(at).getTime()) throw srError_('bad_date', 'The expiry must be in the future.');
     for (var i = 0; i < count; i++) {
       var token = { id: uuid_(), points: points, categoryId: categoryId, reason: reason, batchId: batchId, status: 'unused', claimedByStudentId: '', claimedAt: '', expiresAt: expiresAt, ledgerId: '', createdByEmail: actor.email, createdAt: at };
-      sheet_(book, 'ClaimTokens').appendRow(safeRow_([token.id, token.points, token.categoryId, token.reason, token.batchId, token.status, '', '', token.expiresAt, '', token.createdByEmail, token.createdAt]));
+      rows.push(safeRow_([token.id, token.points, token.categoryId, token.reason, token.batchId, token.status, '', '', token.expiresAt, '', token.createdByEmail, token.createdAt]));
       tokens.push(publicClaimToken_(token));
     }
+    var tokenSheet = sheet_(book, 'ClaimTokens');
+    tokenSheet.getRange(tokenSheet.getLastRow() + 1, 1, rows.length, 12).setValues(rows);
     appendAudit_({ event: 'CLAIM_TOKENS_MINTED', type: 'claim_batch', id: batchId, summary: count + ' claim code(s) minted for ' + points + ' points each' }, actor);
     return { ok: true, batchId: batchId, claimUrlBase: claimUrlBase_(), tokens: tokens };
   });
@@ -238,10 +251,12 @@ function voidSchoolRewardsClaimBatch(request) {
   var batchId = id_(request.batchId, 'claim batch');
   return locked_(function() {
     var book = book_(); requireClaimTokensReady_(book);
-    var voided = 0, tokens = claimTokens_(book).filter(function(token) { return token.batchId === batchId; });
+    var tokenSheet = sheet_(book, 'ClaimTokens'), all = claimTokens_(book), voided = 0, first = -1, last = -1;
+    var tokens = all.filter(function(token) { return token.batchId === batchId; });
     if (!tokens.length) throw srError_('not_found', 'That code batch could not be found.');
     if (actor.role !== 'admin' && tokens.some(function(token) { return token.createdByEmail !== actor.email; })) throw srError_('denied', 'Only the staff member who printed a code batch, or an administrator, can cancel it.');
-    tokens.forEach(function(token) { if (token.status === 'unused') { token.status = 'void'; upsertClaimTokenRow_(book, token); voided++; } });
+    all.forEach(function(token, index) { if (token.batchId === batchId && token.status === 'unused') { token.status = 'void'; voided++; if (first < 0) first = index; last = index; } });
+    if (voided) tokenSheet.getRange(first + 2, 6, last - first + 1, 1).setValues(all.slice(first, last + 1).map(function(token) { return [token.status]; }));
     if (voided) appendAudit_({ event: 'CLAIM_TOKENS_VOIDED', type: 'claim_batch', id: batchId, summary: voided + ' unused claim code(s) voided' }, actor);
     return { ok: true, batchId: batchId, voided: voided };
   });
@@ -259,7 +274,7 @@ function claimSchoolRewardsToken(request) {
     var state;
     try { state = loadCoreOperation_(book, key, operation, 'claim'); }
     catch (err) { if (err && err.code === 'idempotency_conflict') return { ok: false, state: 'already_redeemed' }; throw err; }
-    if (state && state.result) return state.result;
+    if (state && state.result) return Object.assign({}, state.result, { replayed: true });
     if (!state) {
       if (token.status === 'used') return { ok: false, state: 'already_redeemed' };
       if (token.status === 'void') return { ok: false, state: 'void' };

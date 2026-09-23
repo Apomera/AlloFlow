@@ -1088,7 +1088,6 @@
     "checkout_stays_closed_until_an_administrator_opens_a_shopp_10rrapf": "La caja permanece cerrada hasta que un administrador abra un periodo de compras. Después, un cajero completa cada compra en la caja.",
     "purchase_complete_1_for_2_points_3_now_has_4_points_availa_1jew1qt": "Compra completada: {1} por {2} puntos. {3} ahora tiene {4} puntos disponibles. El recibo está debajo del catálogo.",
     "points_added_to_your_balance_3i154c": "Puntos añadidos a tu saldo",
-    "new_balance_j0a5oh": "Nuevo saldo",
     "checking_your_code_1m973bd": "Comprobando tu código…",
     "this_code_has_already_been_used_p1hxz5": "Este código ya se ha usado.",
     "this_code_has_expired_l00ra7": "Este código ha caducado.",
@@ -1113,7 +1112,6 @@
     "print_coupons_yn2t2b": "Imprimir cupones",
     "preparing_coupons_zt8cnm": "Preparando cupones…",
     "coupons_are_ready_to_print_d10cx9": "Los cupones están listos para imprimir.",
-    "qr_images_could_not_be_loaded_the_coupons_print_with_the_l_aqlxi3": "No se pudieron cargar las imágenes QR. Los cupones se imprimen con el texto del enlace.",
     "open_the_link_above_with_your_school_account_6pxfbr": "Abre el enlace de arriba con tu cuenta escolar.",
     "rewards_1yop2uj": "Recompensas",
     "scan_with_your_school_account_to_add_these_points_1o87500": "Escanea con tu cuenta escolar para sumar estos puntos.",
@@ -1147,7 +1145,13 @@
     "coupon_background_removed_1pr3atp": "Fondo del cupón quitado.",
     "background_saved_on_this_device_only_z48r2x": "Fondo guardado solo en este dispositivo.",
     "background_in_use_until_this_page_is_closed_ejefne": "Fondo en uso hasta que cierres la página.",
-    "each_coupon_prints_its_own_link_here_1pzt37w": "Cada cupón imprime aquí su propio enlace."
+    "each_coupon_prints_its_own_link_here_1pzt37w": "Cada cupón imprime aquí su propio enlace.",
+    "some_qr_codes_could_not_be_drawn_those_coupons_print_the_l_fwjdl6": "No se pudieron dibujar algunos códigos QR. Esos cupones imprimen el texto del enlace.",
+    "this_code_is_already_in_your_balance_amnyo6": "Este código ya está en tu saldo.",
+    "this_is_a_student_claim_code_1le19q6": "Este es un código de canje para estudiantes.",
+    "students_add_it_by_opening_the_link_while_signed_in_to_the_o3d642": "Los estudiantes lo añaden al abrir el enlace con la sesión iniciada en su propia cuenta escolar. No se añadió nada a ningún saldo.",
+    "many_students_are_adding_codes_right_now_trying_again_18bf80e": "Muchos estudiantes están añadiendo códigos ahora mismo. Intentándolo de nuevo…",
+    "valid_until_1cdalsl": "Válido hasta"
   },
   "patterns": {
     "1_available_16n661b": "{1} disponibles",

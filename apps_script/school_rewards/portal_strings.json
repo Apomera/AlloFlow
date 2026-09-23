@@ -1088,7 +1088,6 @@
     "purchase_complete_1_for_2_points_3_now_has_4_points_availa_1jew1qt": "Purchase complete: {1} for {2} points. {3} now has {4} points available. The receipt is below the catalog.",
     "purchases_are_completed_at_the_register_by_a_cashier_or_ad_91j09e": "Purchases are completed at the register by a cashier or administrator. This view is browse-only.",
     "points_added_to_your_balance_3i154c": "Points added to your balance",
-    "new_balance_j0a5oh": "New balance",
     "checking_your_code_1m973bd": "Checking your code…",
     "this_code_has_already_been_used_p1hxz5": "This code has already been used.",
     "this_code_has_expired_l00ra7": "This code has expired.",
@@ -1113,7 +1112,6 @@
     "print_coupons_yn2t2b": "Print coupons",
     "preparing_coupons_zt8cnm": "Preparing coupons…",
     "coupons_are_ready_to_print_d10cx9": "Coupons are ready to print.",
-    "qr_images_could_not_be_loaded_the_coupons_print_with_the_l_aqlxi3": "QR images could not be loaded. The coupons print with the link text instead.",
     "open_the_link_above_with_your_school_account_6pxfbr": "Open the link above with your school account.",
     "rewards_1yop2uj": "Rewards",
     "scan_with_your_school_account_to_add_these_points_1o87500": "Scan with your school account to add these points.",
@@ -1147,7 +1145,13 @@
     "coupon_background_removed_1pr3atp": "Coupon background removed.",
     "background_saved_on_this_device_only_z48r2x": "Background saved on this device only.",
     "background_in_use_until_this_page_is_closed_ejefne": "Background in use until this page is closed.",
-    "each_coupon_prints_its_own_link_here_1pzt37w": "Each coupon prints its own link here."
+    "each_coupon_prints_its_own_link_here_1pzt37w": "Each coupon prints its own link here.",
+    "some_qr_codes_could_not_be_drawn_those_coupons_print_the_l_fwjdl6": "Some QR codes could not be drawn. Those coupons print the link text instead.",
+    "this_code_is_already_in_your_balance_amnyo6": "This code is already in your balance.",
+    "this_is_a_student_claim_code_1le19q6": "This is a student claim code.",
+    "students_add_it_by_opening_the_link_while_signed_in_to_the_o3d642": "Students add it by opening the link while signed in to their own school account. Nothing was added to any balance.",
+    "many_students_are_adding_codes_right_now_trying_again_18bf80e": "Many students are adding codes right now. Trying again…",
+    "valid_until_1cdalsl": "Valid until"
   },
   "patterns": {
     "1_available_16n661b": {
