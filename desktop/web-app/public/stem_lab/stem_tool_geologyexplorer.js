@@ -445,14 +445,40 @@
   // host cell, so it shows only once digging opens a face beside it, and a strike that takes
   // that voxel collects it. Each is placed only in the rock where it really forms. ──
   var SPECIMENS = {
-    skarnGarnet:  { scene: 'crust', host: 'marble', touching: 'intrusion', chance: 0.5, shape: 'gem', color: 0x9b1b30, icon: '💎', name: 'Garnet crystal (skarn)',
+    skarnGarnet:  { scene: 'crust', host: 'marble', touching: 'intrusion', chance: 0.5, shape: 'gem', color: 0x9b1b30, icon: '💎', name: 'Garnet crystal (skarn)', hint: 'In the marble where it touches the granite',
       tells: 'Hot fluids from the granite carried silica and iron into the limestone next to it. They reacted with the limestone’s calcium and grew garnet. This thin zone, called skarn, sits between the granite and the marble, so the crystal marks where magma met limestone.' },
-    quartzVein:   { scene: 'crust', host: 'intrusion', chance: 0.3, shape: 'prism', color: 0xf8fafc, icon: '🔷', name: 'Quartz vein crystal',
+    quartzVein:   { scene: 'crust', host: 'intrusion', chance: 0.3, shape: 'prism', color: 0xf8fafc, icon: '🔷', name: 'Quartz vein crystal', hint: 'Inside the granite pluton',
       tells: 'Late in the granite’s cooling, hot water carrying dissolved silica flowed through cracks that opened as the granite cooled and shrank, and left quartz behind. A vein is younger than the rock it cuts.' },
-    schistGarnet: { scene: 'collision', host: 'schist', chance: 0.4, shape: 'gem', color: 0x7f1d1d, icon: '💎', name: 'Garnet in schist',
+    schistGarnet: { scene: 'collision', host: 'schist', chance: 0.4, shape: 'gem', color: 0x7f1d1d, icon: '💎', name: 'Garnet in schist', hint: 'In the schist, about 15 km down',
       tells: 'Buried about 15 km deep as the plates collided, this rock (once mud) was heated and squeezed. Without melting, new garnet crystals grew inside it. This is regional metamorphism across the whole mountain belt, not a bake from one nearby magma body.' },
-    summitFossil: { scene: 'collision', host: 'summitLimestone', chance: 0.35, shape: 'fossil', color: 0xefe7d6, icon: '🐚', name: 'Marine fossils on the summit',
-      tells: 'Hundreds of millions of years ago, crinoids, trilobites and shelled animals lived on a shallow sea floor, and their broken pieces became part of this limestone. Over millions of years, the collision slowly pushed it up to the peaks.' }
+    summitFossil: { scene: 'collision', host: 'summitLimestone', chance: 0.35, shape: 'fossil', color: 0xefe7d6, icon: '🐚', name: 'Marine fossils on the summit', hint: 'In the limestone on the highest peaks',
+      tells: 'Hundreds of millions of years ago, crinoids, trilobites and shelled animals lived on a shallow sea floor, and their broken pieces became part of this limestone. Over millions of years, the collision slowly pushed it up to the peaks.' },
+    amethystPoint: { scene: 'geode', host: 'amethyst', chance: 0.4, salt: 1, shape: 'prism', color: 0x8b5cf6, icon: '🟣', name: 'Amethyst point', hint: 'In the purple crystal lining',
+      tells: 'Amethyst is quartz coloured purple by traces of iron and natural radiation. It grew slowly, point inward, from mineral-rich water filling the hollow.' },
+    agateSlice:   { scene: 'geode', host: 'agate', chance: 0.4, salt: 2, shape: 'fossil', color: 0xb45309, icon: '🟠', name: 'Agate slice', hint: 'In the banded layer behind the crystals',
+      tells: 'Agate is chalcedony, quartz with crystals too small to see. Silica-rich water filled the hollow and hardened in bands from the wall inward. Scientists still debate whether each band means new water or all formed at once.' },
+    diamond:      { scene: 'deepEarth', host: 'upperMantle', chance: 0.18, salt: 3, shape: 'gem', color: 0xe0f2fe, icon: '💠', name: 'Diamond', hint: 'Deep in the upper mantle',
+      tells: 'Most diamonds formed 150–200 km down in the mantle under the oldest continents, where heat and huge pressure pack carbon atoms into a tight crystal. Rare, fast kimberlite eruptions, none in recorded history, carried a few to the surface.' },
+    mantleOlivine: { scene: 'deepEarth', host: 'upperMantle', chance: 0.22, salt: 4, shape: 'gem', color: 0x65a30d, icon: '🟢', name: 'Olivine (peridotite)', hint: 'Anywhere in the upper mantle',
+      tells: 'Most of the upper mantle is peridotite, a rock made mostly of green olivine. It is solid rock, even though it is very hot, because the pressure is so high. Yet over millions of years it flows slowly, like very stiff putty.' },
+    bridgmanite:  { scene: 'deepEarth', host: 'lowerMantle', chance: 0.25, salt: 5, shape: 'gem', color: 0x94a3b8, icon: '🔘', name: 'Bridgmanite', hint: 'In the lower mantle',
+      tells: 'Bridgmanite is Earth’s most common mineral: most of the lower mantle is made of it. It forms only under crushing lower-mantle pressure, so we know it from lab experiments and tiny grains in a shocked meteorite.' },
+    eclogiteGarnet: { scene: 'subduction', host: 'slab', chance: 0.3, salt: 6, shape: 'gem', color: 0xb91c1c, icon: '💎', name: 'Eclogite garnet', hint: 'In the sinking ocean plate, deep down',
+      tells: 'As the ocean plate sinks, heat and pressure change the basalt in its crust, without melting, into eclogite, a rock of red garnet and green pyroxene. Eclogite is denser than the mantle around it, which helps pull the slab down.' },
+    wedgeOlivine: { scene: 'subduction', host: 'wedge', chance: 0.3, salt: 7, shape: 'gem', color: 0x65a30d, icon: '🟢', name: 'Olivine from the wedge', hint: 'In the mantle wedge above the slab',
+      tells: 'The mantle wedge is peridotite, mostly green olivine. Water released from the sinking slab lowers its melting point, so a small part of it melts and feeds the volcanoes.' },
+    pumice:       { scene: 'subduction', host: 'arcVolcano', chance: 0.6, salt: 8, shape: 'fossil', color: 0xe7e5e4, icon: '🌋', name: 'Pumice', hint: 'In the arc volcano',
+      tells: 'Pumice is volcanic glass full of gas bubbles: frozen froth from sticky, gas-rich magma blasted out of an explosive volcano. The gas is mostly water, much of it from the sinking plate. Some pumice floats.' },
+    sulfideChimney: { scene: 'ridge', host: 'vent', chance: 1, salt: 9, shape: 'nugget', color: 0xca8a04, icon: '✨', name: 'Sulfide chimney piece', hint: 'At the hydrothermal vent',
+      tells: 'Seawater seeps down through cracks, is heated by magma, and dissolves metals from the rock. When this water, as hot as 400°C, gushes into cold seawater, sulfide minerals such as pyrite (fool’s gold) crystallise, building chimneys and black “smoke”.' },
+    basaltRecord: { scene: 'ridge', host: ['basaltN', 'basaltR'], chance: 0.2, salt: 10, shape: 'nugget', color: 0x334155, icon: '🧲', name: 'Basalt sample (magnetic record)', hint: 'In the striped pillow basalt',
+      tells: 'As the lava cooled, tiny iron-rich grains such as magnetite recorded the direction of Earth’s magnetic field, like a magnetic snapshot. The field sometimes flips, so rock on both sides of the ridge forms matching stripes: strong evidence the sea floor spreads.' },
+    oozeMicrofossils: { scene: 'ridge', host: 'sediment', chance: 0.4, salt: 11, shape: 'fossil', color: 0xf5f5f4, icon: '🔬', name: 'Plankton microfossils (ooze)', hint: 'In the sea-floor mud, far from the ridge',
+      tells: 'Much deep-sea mud, called ooze, is made of tiny shells of dead plankton that sank, piling up a centimetre or less every thousand years. It is thickest far from the ridge because older sea floor has had longer to collect it.' },
+    islandOlivine: { scene: 'hotspot', host: ['activeVolcano', 'oldIsland'], chance: 0.3, salt: 12, shape: 'gem', color: 0x84cc16, icon: '🟢', name: 'Olivine crystals', hint: 'In the volcanic islands',
+      tells: 'Hawaiian-style basalt often holds green olivine crystals that grew in the magma before it erupted — the same mineral as the mantle’s peridotite. Waves can wash them into rare green-sand beaches.' },
+    reefCoral:    { scene: 'hotspot', host: 'seamount', chance: 0.5, salt: 13, shape: 'fossil', color: 0xfafaf9, icon: '🐚', name: 'Fossil reef coral', hint: 'On top of the drowned seamount',
+      tells: 'Reef-building corals grow only in warm, shallow, sunlit water. A fossil reef on a seamount far below the surface shows the island sank: as the plate carried it away from the hotspot, the plate cooled, shrank and sank lower.' }
   };
   var FOSSIL_LOOK = { sandstone: 0x3b3326, shale: 0x3f3f46, limestone: 0xf1e9d8 };   // carbonised plant · dark trilobite · pale shell
   var SPECIMEN_NEIGHBOURS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
@@ -462,12 +488,19 @@
       return { kind: 'fossil-' + key, key: key, crustFossil: true, shape: 'fossil', color: FOSSIL_LOOK[key] || 0xe7dcc6, icon: fossil.icon, name: fossil.name, tells: fossil.tells };
     }
     for (var id in SPECIMENS) {
-      var s = SPECIMENS[id];
-      if (s.scene !== sceneId || s.host !== key || digNoise(x * 7 + 1, y * 13 + 2, z * 5 + 3) >= s.chance) continue;
+      var s = SPECIMENS[id], salt = s.salt || 0;                // each kind rolls its own dice, so two finds can share a host rock
+      if (s.scene !== sceneId || [].concat(s.host).indexOf(key) < 0 || digNoise(x * 7 + 1 + salt * 31, y * 13 + 2, z * 5 + 3 + salt * 17) >= s.chance) continue;
       if (s.touching && !(keyAt && SPECIMEN_NEIGHBOURS.some(function (d) { return keyAt(x + d[0], y + d[1], z + d[2]) === s.touching; }))) continue;   // skarn grows only at the contact
       return { kind: id, key: key, shape: s.shape, color: s.color, icon: s.icon, name: s.name, tells: s.tells };
     }
     return null;
+  }
+  // Every find a scene hides, with where to look: the collection panel lists found and still-hidden ones.
+  function sceneSpecimenCatalog(sceneId) {
+    var out = [];
+    if (sceneId === 'crust') Object.keys(SED_FOSSIL).forEach(function (key) { var f = FOSSILS[key]; out.push({ kind: 'fossil-' + key, icon: f.icon, name: f.name, hint: 'In the ' + ROCKS[key].name.toLowerCase() + ' layer' }); });
+    Object.keys(SPECIMENS).forEach(function (id) { var sp = SPECIMENS[id]; if (sp.scene === sceneId) out.push({ kind: id, icon: sp.icon, name: sp.name, hint: sp.hint }); });
+    return out;
   }
   // One of the 8 inner small voxels of a cell (never on its outer faces), so nothing shows
   // until the explorer has dug into the cell.
@@ -480,6 +513,9 @@
     instanced3d.instanceColor.setUsage(T.DynamicDrawUsage);
     return instanced3d;
   }
+  // How dark it is for an eye this far below the untouched ground: none at the surface, full
+  // after a couple of voxels down. PURE, tested.
+  function undergroundDarkness(depthBelowGround, voxel) { var d = (Number(depthBelowGround) - voxel * 0.2) / (voxel * 2.2); return d > 0 ? (d < 1 ? d : 1) : 0; }
   function fpExplorerMode(sceneId) { return sceneId === 'deepEarth' ? 'fly' : 'mine'; }
   // Gameplay properties are deliberately keyed by the material's physical state,
   // not by its colour. Water can be entered and swum through; molten cells are a
@@ -1276,7 +1312,7 @@
     basalt: 'You’re on fresh basalt — lava that erupted and froze fast.'
   };
   var FP_BLURB_GEODE = {
-    limestone: 'You’re in the limestone host — the rock the cavity grew inside.',
+    hostBasalt: 'You’re in the basalt host — the old lava flow the gas bubble was trapped in.',
     chalcedony: 'You’re on the cavity wall — the first silica to precipitate.',
     agate: 'You’re in agate banding — each band is one growth pulse.',
     quartz: 'You’re among quartz that grew INTO open space — room = big crystals.',
@@ -1449,7 +1485,7 @@
     crust:     { title: 'Test yourself — relative dating', items: QUIZ },
     geode: { title: 'Test yourself — crystal caverns', items: [
       { q: 'Why are geode crystals so LARGE?', opts: ['They were squeezed by pressure', 'They grew very fast in hot fluid', 'They grew slowly with open space'], correct: 2, why: 'Slow growth plus room to grow makes big crystals — the same rule that makes granite coarse.' },
-      { q: 'What made the original hollow?', opts: ['Trapped steam blasting a hole open', 'Acidic groundwater dissolving limestone', 'Molten rock burned a cavity'], correct: 1, why: 'Karst: slightly acidic water dissolves limestone, leaving voids that minerals later line.' },
+      { q: 'What made the original hollow?', opts: ['Acidic groundwater dissolving limestone', 'A gas bubble trapped in cooling lava', 'An earthquake cracking the rock open'], correct: 1, why: 'Gas trapped as the lava cooled left a round hole (a vesicle). Much later, mineral-rich groundwater seeped in and lined it.' },
       { q: 'Amethyst’s purple colour comes from…', opts: ['Trace iron plus natural irradiation', 'Copper salts left by hot fluids', 'Purple dye from ancient plants'], correct: 0, why: 'Iron impurities in quartz, altered by natural radiation, give amethyst its purple.' },
       { q: 'Which formed FIRST?', opts: ['Both grew at the same time', 'The agate rind on the wall', 'The quartz crystal points inside'], correct: 1, why: 'The rind precipitated on the void wall first; crystals then grew INWARD into the space.' }
     ] },
@@ -1496,7 +1532,7 @@
     ],
     geode: [
       { id: 'geode-crystal-size', misconception: 'Large crystals must have grown quickly.', remedy: 'Large crystals need time and open space. Slow growth lets atoms arrange into larger crystal faces.' },
-      { id: 'geode-cavity', misconception: 'The hollow was made by an explosion.', remedy: 'Acidic groundwater can dissolve limestone and leave a cavity. Later mineral-rich water lines that open space.' },
+      { id: 'geode-cavity', misconception: 'The hollow was dissolved out of limestone, like a cave.', remedy: 'This hollow began as a gas bubble trapped in cooling lava. Much later, mineral-rich groundwater seeped in and lined the open space.' },
       { id: 'geode-color', misconception: 'Amethyst purple comes from copper.', remedy: 'Trace iron in quartz plus natural irradiation produces the purple color.' },
       { id: 'geode-sequence', misconception: 'Crystal points formed before the wall rind.', remedy: 'The rind precipitated on the cavity wall first. Quartz and amethyst then grew inward into the open space.' }
     ],
@@ -1563,8 +1599,8 @@
         'They grew very fast in hot fluid': 'Fast growth makes many tiny crystals crowding each other. Large faces need slow growth.'
       },
       {
-        'Trapped steam blasting a hole open': 'A blast would shatter the rock around it. This cavity wall is smooth and chemically etched.',
-        'Molten rock burned a cavity': 'There is no igneous rock anywhere around this cavity. The host is limestone, dissolved by water.'
+        'Acidic groundwater dissolving limestone': 'That is how limestone caves form, and they grow calcite. This hollow sits in basalt: it began as a gas bubble in lava.',
+        'An earthquake cracking the rock open': 'A crack is thin and flat. This hollow is round, like the gas bubbles frozen into lava.'
       },
       {
         'Copper salts left by hot fluids': 'Copper minerals are typically green or blue, as in malachite and turquoise, not purple.',
@@ -1698,12 +1734,13 @@
     return { tempC: Math.round(15 + depthKm * 25), presMPa: Math.round(depthKm * 27), state: 'solid' };
   }
 
-  // Crystal Cavern (geode): acidic groundwater dissolved a karst VOID in limestone;
-  // mineral-rich water then precipitated a chalcedony/agate rind and grew quartz +
-  // amethyst crystals INWARD into the open space (slow growth + room = big crystals —
-  // the same rule the granite teaches). Amethyst purple = trace iron + irradiation.
+  // Crystal Cavern (geode): a gas bubble (vesicle) trapped in an old lava flow; much later
+  // silica-rich groundwater lined it with a chalcedony/agate rind and grew quartz + amethyst
+  // INWARD into the open space (slow growth + room = big crystals — the rule the granite
+  // teaches). Amethyst purple = trace iron + irradiation. (Karst caves in limestone grow
+  // calcite, not amethyst: the host is basalt, as in the Brazilian and Uruguayan geodes.)
   var GEODE_ROCKS = {
-    limestone:  ROCKS.limestone,
+    hostBasalt: { name: 'Basalt host (old lava flow)', type: 'Igneous (extrusive)', color: 0x4b4f58, formation: 'An old lava flow. As it cooled, gas bubbles were trapped inside and left round holes; this geode grew in one of them.', minerals: 'Plagioclase, pyroxene', age: 'Older than every mineral that later grew inside the hole.' },
     chalcedony: { name: 'Chalcedony rind', type: 'Mineral (silica)', color: 0x8fb0a8, formation: 'Microcrystalline silica lining the cavity wall — the first layer to precipitate from mineral-rich water.', minerals: 'Cryptocrystalline quartz', age: 'Grew inward from the wall over millennia.' },
     agate:      { name: 'Agate banding',   type: 'Mineral (silica)', color: 0xc98a5a, formation: 'Concentric bands deposited as mineral-rich water pulsed through — each band is one growth episode.', minerals: 'Banded chalcedony', age: 'Oldest band at the wall, youngest toward the centre.' },
     quartz:     { name: 'Quartz crystal',  type: 'Mineral',          color: 0xd9d6ea, formation: 'Clear quartz that grew slowly into the OPEN cavity — slow growth + space = big euhedral crystals.', minerals: 'SiO₂', age: '10³–10⁶ years to grow.' },
@@ -1718,7 +1755,7 @@
     if (r < Rc - lining) return 'void';                                   // hollow interior (skipped)
     if (r < Rc) return ((x * 7 + y * 5 + z * 3) % 5 === 0) ? 'quartz' : 'amethyst';   // crystal lining (inward)
     if (r < Rc + rind) return (Math.round(r) % 2 === 0) ? 'agate' : 'chalcedony';     // banded rind
-    return 'limestone';                                                  // host rock
+    return 'hostBasalt';                                                 // host rock: the lava flow
   }
 
   // Deep-Earth structure — a radial slice to the centre. SCHEMATIC / not to scale, with
@@ -1958,10 +1995,10 @@
     },
     geode: {
       id: 'geode', label: '💎 Crystal cavern', gen: geodeKeyAt, palette: GEODE_ROCKS,
-      order: ['limestone', 'chalcedony', 'agate', 'quartz', 'amethyst'], voxelKeys: ['limestone', 'chalcedony', 'agate', 'quartz', 'amethyst'],
+      order: ['hostBasalt', 'chalcedony', 'agate', 'quartz', 'amethyst'], voxelKeys: ['hostBasalt', 'chalcedony', 'agate', 'quartz', 'amethyst'],
       geotherm: crustGeotherm, kmPerWorldH: 0.002,
       features: {},
-      blurb: 'Acidic groundwater dissolved a VOID in limestone (karst); mineral-rich water then precipitated a chalcedony/agate rind and grew quartz & amethyst crystals INWARD into the open space. Slow growth + room = big crystals — the same rule that makes granite coarse. Amethyst’s purple = trace iron + natural irradiation. Geodes take 10³–10⁶ years.'
+      blurb: 'Gas trapped in cooling lava left a round hole (a vesicle) in the basalt. Much later, silica-rich groundwater seeped in, laid down a chalcedony/agate rind and grew quartz & amethyst crystals INWARD into the open space. Slow growth + room = big crystals — the same rule that makes granite coarse. Amethyst’s purple = trace iron + natural irradiation. Geodes take 10³–10⁶ years.'
     },
     deepEarth: {
       id: 'deepEarth', label: '🌍 Deep Earth', gen: deepEarthKeyAt, palette: DEEPEARTH_ROCKS,
@@ -2013,7 +2050,7 @@
     ],
     geode: [
       { id: 'growth', label: 'Follow crystal growth', targets: ['chalcedony', 'agate', 'quartz'], reward: 140, brief: 'Follow the mineral lining inward through three growth stages.' },
-      { id: 'host', label: 'Cavity to host rock', targets: ['amethyst', 'quartz', 'limestone'], reward: 140, brief: 'Work outward from the youngest crystal tips to the older host rock.' }
+      { id: 'host', label: 'Cavity to host rock', targets: ['amethyst', 'quartz', 'hostBasalt'], reward: 140, brief: 'Work outward from the youngest crystal tips to the older host rock.' }
     ],
     deepEarth: [
       { id: 'mantle', label: 'Cross the solid mantle', targets: ['crust', 'upperMantle', 'lowerMantle'], reward: 150, brief: 'Build a virtual transect from the crust through both solid mantle layers.' },
@@ -2129,7 +2166,7 @@
   }
 
   var GEODE_MEASUREMENTS = {
-    limestone: { zone: 'Host rock outside the cavity', order: 'Predates the mineral lining' },
+    hostBasalt: { zone: 'Host rock outside the cavity', order: 'Predates the mineral lining' },
     chalcedony: { zone: 'Cavity wall rind', order: 'First mineral lining' },
     agate: { zone: 'Banded lining', order: 'Repeated growth pulses' },
     quartz: { zone: 'Open-space crystal zone', order: 'Later inward growth' },
@@ -2309,7 +2346,7 @@
       eyebrow: 'Mineral-growth fieldwork',
       subtitle: 'Trace how groundwater builds a crystal cavern from the wall inward.',
       question: 'Why do different minerals appear in a geode’s layers?',
-      notice: ['Groundwater dissolves a cavity.', 'Bands grow in pulses from the wall.', 'Open space lets crystals grow large.'],
+      notice: ['A gas bubble in lava leaves a round hole.', 'Bands grow in pulses from the wall.', 'Open space lets crystals grow large.'],
       evidencePrompt: 'Follow the growth sequence and explain why the largest crystals formed last.',
       checklist: [
         { id: 'layers', label: 'Identify rind, bands, and crystals', check: function (c) { return c.hasKeys(['chalcedony', 'agate', 'quartz']); } },
@@ -2317,7 +2354,7 @@
         { id: 'quiz', label: 'Answer one crystal question', check: function (c) { return !!c.quizAnswered; } }
       ],
       signal: { title: 'Crystal growth sequence', prompt: 'Reveal each layer in the order it formed.', steps: [
-        { key: 'chalcedony', label: '1 · Wall rind', body: 'Microcrystalline silica precipitates first on the limestone cavity wall.' },
+        { key: 'chalcedony', label: '1 · Wall rind', body: 'Microcrystalline silica precipitates first on the cavity wall in the basalt.' },
         { key: 'agate', label: '2 · Banded pulses', body: 'Mineral-rich water arrives in pulses, leaving concentric agate bands.' },
         { key: 'quartz', label: '3 · Open-space crystals', body: 'Clear quartz and amethyst grow inward; slow growth plus room makes large points.' }
       ] }
@@ -2817,7 +2854,7 @@
 
   var SCENE_ORIENTATION = {
     crust: { scale: '~10.8 km deep', direction: 'Surface → depth', read: 'Read the layers from top to bottom. Deeper sedimentary layers are generally older; a cutting feature is younger.' },
-    geode: { scale: '~2 m specimen span (schematic)', direction: 'Cavity wall → center', read: 'Read mineral growth inward from the limestone wall. The open center is not empty by accident; it records space for crystals to grow.' },
+    geode: { scale: '~2 m specimen span (schematic)', direction: 'Cavity wall → center', read: 'Read mineral growth inward from the basalt wall. The open center is not empty by accident; it records space for crystals to grow.' },
     deepEarth: { scale: 'Earth radius 6,371 km', direction: 'Surface → center', read: 'This is a radial slice, not a flat stack. Use the shells and seismic signal to infer state.' },
     subduction: { scale: '~200 km depth range (schematic)', direction: 'Left plate → trench → right arc', read: 'Follow the cold slab downward. Water leaves the slab, fluxes the wedge, and the melt rises toward the arc.' },
     ridge: { scale: '~30 km depth range (schematic)', direction: 'Ridge axis → older flanks', read: 'The axis is youngest. Read outward for older crust, thicker sediment, and mirrored magnetic history.' },
@@ -2827,7 +2864,7 @@
   var SCENE_SCHEMATICS = {
     geode: {
       title: 'Crystal cavern 2D evidence map',
-      description: 'Concentric mineral zones record growth from the limestone cavity wall toward crystal tips and open space.'
+      description: 'Concentric mineral zones record growth from the basalt cavity wall toward crystal tips and open space.'
     },
     deepEarth: {
       title: 'Deep Earth 2D evidence map',
@@ -2934,7 +2971,7 @@
       { key: 'rim', label: 'The contact rim is baked', detail: 'Heat from the pluton changes nearby limestone and shale without melting them.' }
     ] },
     geode: { title: 'Crystal-growth order', prompt: 'Arrange the events from the first cavity-forming step to the crystals that grew last.', items: [
-      { key: 'cavity', label: 'Groundwater dissolves a cavity', detail: 'Slightly acidic water leaves an open space in the limestone host.' },
+      { key: 'cavity', label: 'A gas bubble leaves a hole', detail: 'Gas trapped as the lava cooled left a round hole in the basalt.' },
       { key: 'chalcedony', label: 'A wall rind precipitates', detail: 'Microcrystalline silica lines the cavity wall first.' },
       { key: 'agate', label: 'Mineral-rich pulses leave bands', detail: 'Repeated water pulses deposit concentric agate bands.' },
       { key: 'quartz', label: 'Open-space crystals grow inward', detail: 'Quartz and amethyst use the remaining room to form large points.' }
@@ -3172,8 +3209,8 @@
       }
     }
     ensureControls();
-    scene.add(new THREE.AmbientLight(0xffffff, 0.28));
-    scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x6b5640, 0.38)); // sky-blue from above, warm ground-bounce below → dimensional shading
+    var ambientLight3d = new THREE.AmbientLight(0xffffff, 0.28); scene.add(ambientLight3d);
+    var hemiLight3d = new THREE.HemisphereLight(0xbcd4ff, 0x6b5640, 0.38); scene.add(hemiLight3d); // sky-blue from above, warm ground-bounce below → dimensional shading
     var keyL = new THREE.DirectionalLight(0xfff1d0, 0.66); keyL.position.set(12, 20, 14);
     keyL.castShadow = geologyHighDetail3d;
     if (keyL.shadow && keyL.shadow.camera) {
@@ -3185,6 +3222,12 @@
     }
     scene.add(keyL);
     var fillL = new THREE.DirectionalLight(0x90b4ff, 0.23); fillL.position.set(-14, 6, -10); scene.add(fillL);
+    // Headlamp: below ground the daylight fades and the explorer's own lamp lights the rock
+    // ahead. It stays in the scene at zero power on the surface: adding or removing a light
+    // would recompile every material in the middle of a dig.
+    var headlamp3d = new THREE.SpotLight(0xffe7c2, 0, WORLD.h * 0.9, 0.62, 0.55, 1.6);
+    scene.add(headlamp3d); scene.add(headlamp3d.target);
+    var underground3d = 0, fogBaseColor3d = new THREE.Color(0x0a1322), fogCaveColor3d = new THREE.Color(0x05070a);
     var geologyHeatLightConfig3d = {
       crust: { color: 0xff5522, intensity: 1.8, flicker: 0.38 },
       geode: { color: 0x8b5cf6, intensity: 0.72, flicker: 0.08 },
@@ -3243,6 +3286,15 @@
       var spRecord = { cell: spCell, g: [spCell.x * DIG_SUB + spLocal[0], spCell.y * DIG_SUB + spLocal[1], spCell.z * DIG_SUB + spLocal[2]], info: spInfo, taken: false };
       specimens3d.push(spRecord); specimenByG3d[spRecord.g.join(',')] = spRecord; specimenByCell3d[spCell.id] = spRecord;
     }
+    // Ground level of every column of the untouched block (first cell that is neither sky nor
+    // water). How far the explorer's eye is below it sets how dark it is underground.
+    var columnTop3d = new Float32Array(NX * NZ).fill(NaN);
+    for (var colX3d = 0; colX3d < NX; colX3d++) for (var colZ3d = 0; colZ3d < NZ; colZ3d++) {
+      for (var colY3d = 0; colY3d < NY; colY3d++) {
+        var colCell3d = cellAt(colX3d, colY3d, colZ3d);
+        if (colCell3d && colCell3d.key !== 'void' && !FP_FLUID_MATERIALS[colCell3d.key]) { columnTop3d[colX3d + NX * colZ3d] = ((NY - 1) / 2 - colY3d) * VOXEL + VOXEL * 0.5; break; }
+      }
+    }
     function worldPos(v) { return [(v.x - (NX - 1) / 2) * VOXEL, ((NY - 1) / 2 - v.y) * VOXEL, (v.z - (NZ - 1) / 2) * VOXEL]; }
 
     var geo = new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL);
@@ -3284,12 +3336,13 @@
     mesh.castShadow = geologyHighDetail3d;
     mesh.receiveShadow = geologyHighDetail3d;
     scene.add(mesh); scene.add(subMesh3d);
-    // Exposed specimens: a garnet gem, a tapered six-sided quartz crystal, a flat fossil.
-    var specimenGeos3d = { gem: new THREE.DodecahedronGeometry(0.5, 0), prism: new THREE.CylinderGeometry(0.16, 0.3, 1, 6), fossil: new THREE.SphereGeometry(0.5, 12, 8) };
+    // Exposed specimens: a gem, a tapered six-sided crystal, a flat fossil or slice, a metallic nugget.
+    var specimenGeos3d = { gem: new THREE.DodecahedronGeometry(0.5, 0), prism: new THREE.CylinderGeometry(0.16, 0.3, 1, 6), fossil: new THREE.SphereGeometry(0.5, 12, 8), nugget: new THREE.IcosahedronGeometry(0.5, 0) };
     var specimenMats3d = {
       gem: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.18, metalness: 0.08, emissive: 0x2a0409, flatShading: true }),
       prism: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.12, metalness: 0.02, transparent: true, opacity: 0.9, flatShading: true }),
-      fossil: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, metalness: 0 })
+      fossil: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, metalness: 0 }),
+      nugget: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.38, metalness: 0.55, flatShading: true })
     };
     var specimenMeshes3d = {}, specimenDummy3d = new THREE.Object3D(), specimenColor3d = new THREE.Color();
     Object.keys(specimenGeos3d).forEach(function (shape3d) {
@@ -3300,7 +3353,7 @@
     });
     var SPECIMEN_FACES3d = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
     function rebuildSpecimens3d() {
-      var counts3d = { gem: 0, prism: 0, fossil: 0 };
+      var counts3d = { gem: 0, prism: 0, fossil: 0, nugget: 0 };
       for (var si = 0; si < specimens3d.length; si++) {
         var sp = specimens3d[si], g = sp.g;
         if (sp.taken || !damaged[sp.cell.id] || !subSolidG(g[0], g[1], g[2])) continue;
@@ -6263,6 +6316,7 @@
         dir.x * k, -dir.y * k, dir.z * k, Math.min(FP_REACH, propNear), fpTargetSolid);
       var v = hit ? cellAt((hit.g[0] / DIG_SUB) | 0, (hit.g[1] / DIG_SUB) | 0, (hit.g[2] / DIG_SUB) | 0) : null;
       var aimedSpecimen = v ? specimenByG3d[hit.g.join(',')] : null;   // the first rock the ray meets is exposed by definition
+      if (aimedSpecimen && !aimedSpecimen.taken && !aimedSpecimen.sighted) { aimedSpecimen.sighted = true; if (opts.onSpecimenSighted) opts.onSpecimenSighted({ kind: aimedSpecimen.info.kind, name: aimedSpecimen.info.name, icon: aimedSpecimen.info.icon }); }
       fp.target = v || null; fp.targetHit = v ? hit : null; fpUpdateTargetLabel(v, aimedSpecimen && !aimedSpecimen.taken ? aimedSpecimen : null);
       if (v) {
         var plan = fpStrikePlan(hit, v, fp.tool);
@@ -7547,6 +7601,29 @@ function updateCoreRig3d(dt3d) {
     eng.resize = function () { if (!eng.disposed) resize(); };
 
     var t = 0, raf = null, fpLastFrameAt = 0;
+    // Eyes adjust over about a second: the deeper the walker's eye below the untouched ground of
+    // its column, the dimmer the daylight and the brighter the headlamp; the fog closes in.
+    function updateUnderground3d(dt3d) {
+      var goal3d = 0;
+      if (fp.active && fp.mode === 'mine' && !fp.intro) {
+        var eyeCol3d = fpWorldToVoxel(camera.position.x, 0, camera.position.z), top3d = columnTop3d[eyeCol3d.x + NX * eyeCol3d.z];
+        if (top3d === top3d) goal3d = undergroundDarkness(top3d - camera.position.y, VOXEL);
+      }
+      if (Math.abs(goal3d - underground3d) < 0.002 && underground3d === 0) return;
+      underground3d += (goal3d - underground3d) * (1 - Math.exp(-3 * Math.max(0, dt3d || 0.016)));
+      if (Math.abs(goal3d - underground3d) < 0.002) underground3d = goal3d;
+      var lit3d = 1 - 0.72 * underground3d;
+      ambientLight3d.intensity = 0.28 * lit3d; hemiLight3d.intensity = 0.38 * lit3d; keyL.intensity = 0.66 * lit3d; fillL.intensity = 0.23 * lit3d;
+      headlamp3d.intensity = 1.5 * underground3d;
+      if (underground3d > 0) {
+        var lampFwd3d = fpForward(fp.yaw, fp.pitch);
+        headlamp3d.position.copy(camera.position);
+        headlamp3d.target.position.set(camera.position.x + lampFwd3d.x, camera.position.y + lampFwd3d.y, camera.position.z + lampFwd3d.z);
+        headlamp3d.target.updateMatrixWorld();
+      }
+      scene.fog.near = 30 + (VOXEL * 1.5 - 30) * underground3d; scene.fog.far = 70 + (VOXEL * 12 - 70) * underground3d;
+      scene.fog.color.copy(fogBaseColor3d).lerp(fogCaveColor3d, underground3d);
+    }
     function loop() {
       if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016;
       var fpFrameAt = (window.performance && performance.now) ? performance.now() : 0;
@@ -7594,6 +7671,7 @@ function updateCoreRig3d(dt3d) {
       try { updateEruption(); } catch (e) {}
       if (!controls) ensureControls();   // OrbitControls may load a moment after the engine starts
       if (fp.active) { try { applyFP(fpDt); fpUpdateMining(fpDt); fpUpdateDrill(fpDt); fpUpdatePlayerStatus(); } catch (e) {} } else if (controls) controls.update();
+      try { updateUnderground3d(fpDt); } catch (e) {}
       if (landingMarker3d.visible) {                          // gentle scale breath on the pad (no opacity pulse; still under reduced motion)
         var landingPulse3d = reducedMotion3d ? 1 : 1 + 0.07 * Math.sin(t * 2.6);
         landingMarker3d.scale.set(landingPulse3d, landingPulse3d, 1);
@@ -7695,7 +7773,7 @@ function updateCoreRig3d(dt3d) {
     };
     eng.setFocusLens = function (b) { focusLens = !!b; if (focusLens) { excavate = false; undoPreviewRequested = false; } hoverBox.visible = false; rebuild(); fpReseatIfUnsupported('lens'); };
     eng.setScienceStage = function (n) { geologyScienceStage3d = Math.max(0, Math.min(2, Math.round(Number(n) || 0))); rebuild(); return geologyScienceStage3d; };
-    eng.getVisualState = function () { return { coreRigDeployed: coreRigState3d.deployed, coreRigStage: coreRigState3d.stage, coreRigSampleCount: coreRigState3d.samples.length, surveyActive: surveyBox.visible, focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, subVoxels: subMesh3d.count, damagedCells: Object.keys(damaged).length, debris: debris3d.length, sliceZ: sliceZ, excavate: excavate, excavatedCount: undoableCount(), redoCount: excavationRedo.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
+    eng.getVisualState = function () { return { coreRigDeployed: coreRigState3d.deployed, coreRigStage: coreRigState3d.stage, coreRigSampleCount: coreRigState3d.samples.length, surveyActive: surveyBox.visible, focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, underground: +underground3d.toFixed(3), headlamp: +headlamp3d.intensity.toFixed(3), subVoxels: subMesh3d.count, damagedCells: Object.keys(damaged).length, debris: debris3d.length, sliceZ: sliceZ, excavate: excavate, excavatedCount: undoableCount(), redoCount: excavationRedo.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); fpReseatIfUnsupported('history'); };
     eng.reset = function () {
       removed = {}; damaged = {}; excavationHistory = []; excavationRedo = []; debris3d.length = 0; specimens3d.forEach(function (sp) { sp.taken = false; }); fpCancelMining(); undoPreviewRequested = false; undoPreviewKey = null; surveyBox.visible = false; surveyVoxelKey = null; sliceZ = 0;
@@ -7810,7 +7888,7 @@ function updateCoreRig3d(dt3d) {
   try {
     window.__alloGeologyPure = {
       rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, collisionKeyAt: collisionKeyAt, collisionTopo: collisionTopo, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount, aoCountGrid: aoCountGrid, digSound: geoDigSound,
-      DIG_SUB: DIG_SUB, digStrike: digStrike, digMaskHex: digMaskHex, digMaskFromHex: digMaskFromHex, digCellState: digCellState, digCrater: digCrater, digShaft: digShaft, specimenForCell: specimenForCell, specimenSubOf: specimenSubOf, specimenKinds: function () { return Object.keys(SPECIMENS); }, withInstanceColors3d: withInstanceColors3d, digRayMarch: digRayMarch, digEntryStates: digEntryStates, digReplay: digReplay, digFoldHistory: digFoldHistory,
+      DIG_SUB: DIG_SUB, digStrike: digStrike, digMaskHex: digMaskHex, digMaskFromHex: digMaskFromHex, digCellState: digCellState, digCrater: digCrater, digShaft: digShaft, undergroundDarkness: undergroundDarkness, sceneSpecimenCatalog: sceneSpecimenCatalog, specimenForCell: specimenForCell, specimenSubOf: specimenSubOf, specimenKinds: function () { return Object.keys(SPECIMENS); }, withInstanceColors3d: withInstanceColors3d, digRayMarch: digRayMarch, digEntryStates: digEntryStates, digReplay: digReplay, digFoldHistory: digFoldHistory,
       sfx: { strike: geoSfxStrike, chip: geoSfxChip, crumble: geoSfxCrumble, denied: geoSfxDenied, drill: geoSfxDrill, setMuted: function (m) { geoSfxMuted = !!m; }, reset: function () { geoSfxDrill(false); geoSfxCtx = null; geoSfxNoiseBuf = null; }, drillVoice: function () { return geoDrillVoice; } },
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, collisionGeotherm: collisionGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpPropSurfaceY: fpPropSurfaceY, capPointSize3d: capPointSize3d, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
@@ -7866,6 +7944,7 @@ function updateCoreRig3d(dt3d) {
       // ── hooks (all unconditional) ──
       var frx = React.useState(false); var fieldRunExpanded = frx[0], setFieldRunExpanded = frx[1];   // first-person Field Run card starts compact
       var fkv = React.useState(true); var fpKeysVisible = fkv[0], setFpKeysVisible = fkv[1];          // key legend shows briefly on entry, then folds away
+      var fsl = React.useState([]); var fpShaftLog = fsl[0], setFpShaftLog = fsl[1];                 // layers this descent has passed through, top to bottom
       var containerRef = React.useRef(null);
       var fsRef = React.useRef(null);
       var fsToggleRef = React.useRef(null);
@@ -8686,6 +8765,7 @@ function updateCoreRig3d(dt3d) {
             onSelect: function (facts) { selectRock(facts); },
             onUncover: function (k) { uncoverFossil(k); },
             onSpecimen: function (found) { collectSpecimen(scene, found); },
+            onSpecimenSighted: function (seen) { announce(tf('stem.geology.sr.specimen_sighted', '{name} shows in the rock at your reticle. Dig it free.', { name: seen.name })); },
             onFlash: function (m) { addToast(m, 'info'); },
             onLayerMilestone: function (here, n) { awardLayerMilestone(SCENE.id, here, n); },
             onExcavateChange: function (count, state) {
@@ -8722,7 +8802,15 @@ function updateCoreRig3d(dt3d) {
             onFpHome: function () { finishFieldRun(scene); },
             onFpBail: function (info) { setFpOn(false); announce(t('stem.geology.sr.fp_no_ground', 'No solid ground is visible to land on. Reset the cutaway or the focus lens, then drop in again.')); },
             onFpLanding: function (report) { setFpLanding(report); },
-            onFpProbe: function (p) { if (!p) return; setFpHud(p); var nw = (window.performance && performance.now) ? performance.now() : Date.now(); if (nw - fpAnnAtRef.current > 1200) { fpAnnAtRef.current = nw; announce(fpAnnounceText(p)); } },   // HUD every layer change; SR debounced so fast flight can't flood it
+            onFpProbe: function (p) {
+              if (!p) return;
+              setFpShaftLog(function (log) {                   // only going deeper adds a layer: the log reads like a core of your own dig
+                var last = log[log.length - 1];
+                if ((last && !(p.depthKm > last.depthKm)) || log.some(function (entry) { return entry.key === p.key; })) return log;
+                var material = (SCENE.palette && SCENE.palette[p.key]) || ROCKS[p.key] || {};
+                return log.concat([{ key: p.key, name: p.layerName, depthKm: p.depthKm, color: material.color }]).slice(-6);
+              });
+              setFpHud(p); var nw = (window.performance && performance.now) ? performance.now() : Date.now(); if (nw - fpAnnAtRef.current > 1200) { fpAnnAtRef.current = nw; announce(fpAnnounceText(p)); } },   // HUD every layer change; SR debounced so fast flight can't flood it
             onContextLost: function () { setWebglError(true); setDigCount(0); setRedoCount(0); try { if (mountedEngine) mountedEngine.dispose(); if (window[ENGINE_KEY] === mountedEngine) window[ENGINE_KEY] = null; } catch (e) {} }
           });
           window[ENGINE_KEY] = mountedEngine;
@@ -8762,7 +8850,7 @@ function updateCoreRig3d(dt3d) {
             ? 'Mine mode on. W A S D or arrow keys walk, Space jumps, Shift sprints, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, R deploys the directional core rig, G surveys a Field Run target, Z undoes, Y redoes, and H returns home. Escape exits.'
             : 'Deep Earth flight on. W A S D or arrow keys fly, Q and E move up and down, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, Enter excavates instantly, Z undoes, Y redoes, and H returns home. Escape exits.';
           announce(t('stem.geology.fp_on', fpInstructions));
-          setFpKeysVisible(true);
+          setFpKeysVisible(true); setFpShaftLog([]);
           var keysTimer = setTimeout(function () { setFpKeysVisible(false); }, 12000);   // legend folds into a Keys button so the view stays clear
           return function () { clearTimeout(keysTimer); };
         } else {
@@ -9803,14 +9891,14 @@ function updateCoreRig3d(dt3d) {
       }
       function geodeSchematicDiagram(v) {
         return [
-          v.mark('circle', 'limestone', { key: 'host', cx: 180, cy: 92, r: 78, fill: v.color('limestone') }),
+          v.mark('circle', 'hostBasalt', { key: 'host', cx: 180, cy: 92, r: 78, fill: v.color('hostBasalt') }),
           v.mark('circle', 'chalcedony', { key: 'rind', cx: 180, cy: 92, r: 64, fill: v.color('chalcedony') }),
           v.mark('circle', 'agate', { key: 'bands', cx: 180, cy: 92, r: 52, fill: v.color('agate') }),
           v.mark('circle', 'quartz', { key: 'quartz', cx: 180, cy: 92, r: 39, fill: v.color('quartz') }),
           v.mark('circle', 'amethyst', { key: 'amethyst', cx: 180, cy: 92, r: 27, fill: v.color('amethyst') }),
           v.h('circle', { key: 'open', cx: 180, cy: 92, r: 11, fill: v.bg, stroke: v.edge, strokeWidth: 1.25 }),
           v.line('host-leader', 36, 28, 112, 43),
-          v.text('Host limestone', 10, 24, 'start'),
+          v.text('Host basalt', 10, 24, 'start'),
           v.line('rind-leader', 56, 69, 117, 72),
           v.text('Wall rind', 10, 67, 'start'),
           v.line('bands-leader', 244, 61, 326, 48),
@@ -10279,7 +10367,7 @@ function updateCoreRig3d(dt3d) {
                 h('span', { key: 'eyebrow', className: 'block text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, '📓 Specimen journal'),
                 h('span', { key: 'world', className: 'mt-0.5 block truncate text-[11px] font-extrabold ' + ink }, SCENE.label)
               ]),
-              h('span', { key: 'count', className: 'shrink-0 text-right text-[10px] font-bold ' + (progress.complete ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, progress.found + '/' + progress.total + (fieldJournalOpen ? ' ▲' : ' ▼'))
+              h('span', { key: 'count', className: 'shrink-0 text-right text-[10px] font-bold ' + (progress.complete ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, (sceneFindsFound ? '💎 ' + sceneFindsFound + '/' + sceneFindCatalog.length + ' · ' : '') + progress.found + '/' + progress.total + (fieldJournalOpen ? ' ▲' : ' ▼'))
             ])
           ]),
           h('div', { key: 'progress', className: 'mx-3 mb-2 h-1.5 overflow-hidden rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200'), role: 'progressbar', 'aria-label': tf('stem.geology.a11y.specimen_journal_completion_for', 'Specimen journal completion for {label}', { label: SCENE.label }), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress.percent },
@@ -10289,6 +10377,20 @@ function updateCoreRig3d(dt3d) {
               h('p', { key: 'copy', className: 'max-w-sm text-[10.5px] leading-relaxed ' + muted }, 'Mine a material in first person to log it. Logged cards reveal their category and can refocus the 3D model.'),
               h('span', { key: 'all', className: 'rounded-full border px-2 py-1 text-[10px] font-bold ' + (isDark ? 'border-slate-600 text-slate-300' : 'border-slate-300 text-slate-600'), 'data-geology-journal-total': totalProgress.found + '/' + totalProgress.total }, totalProgress.found + '/' + totalProgress.total + ' across worlds')
             ]),
+            sceneFindCatalog.length ? h('section', { key: 'finds', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-amber-500/40 bg-amber-950/20' : 'border-amber-200 bg-amber-50'), role: 'region', 'aria-label': t('stem.geology.a11y.finds_in_the_rock', 'Finds in the rock'), 'data-geology-finds': SCENE.id }, [
+              h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
+                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '💎 Finds in the rock'),
+                h('span', { key: 'count', className: 'text-[10px] font-bold ' + muted }, sceneFindsFound + '/' + sceneFindCatalog.length + ' found')
+              ]),
+              h('p', { key: 'how', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, 'Each one hides inside the rock where it really forms. Dig in first person; it shows in the wall before you dig it free.'),
+              h('ul', { key: 'list', className: 'mt-1.5 grid gap-1 sm:grid-cols-2' }, sceneFindCatalog.map(function (item) {
+                var count = sceneFinds[item.kind] || 0;
+                return h('li', { key: item.kind, 'data-geology-find': item.kind, 'data-found': count ? 'true' : 'false', className: 'rounded-md border px-2 py-1 text-[10.5px] ' + (isDark ? 'border-slate-600 bg-slate-900/40' : 'border-slate-200 bg-white') }, [
+                  h('span', { key: 'name', className: 'block font-bold ' + ink }, (count ? item.icon : '❔') + ' ' + (count ? item.name : 'Not found yet') + (count > 1 ? ' ×' + count : '')),
+                  h('span', { key: 'hint', className: 'block leading-snug ' + muted }, (count ? 'Found. ' : 'Look: ') + item.hint)
+                ]);
+              }))
+            ]) : null,
             h('section', { key: 'assignments', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-violet-500/40 bg-violet-950/20' : 'border-violet-200 bg-violet-50'), role: 'region', 'aria-label': t('stem.geology.a11y.field_assignments', 'Field assignments'), 'data-geology-assignment-board': SCENE.id }, [
               h('div', { key: 'assignment-head', className: 'flex items-center justify-between gap-2' }, [
                 h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, '🧭 Field assignments'),
@@ -11304,7 +11406,7 @@ function updateCoreRig3d(dt3d) {
               calloutLines.slice(0, 2).map(function (line, i) { return h('div', { key: 'cl-' + i, className: 'mt-0.5' }, line); }),
               calloutBust ? h('div', { className: 'mt-1 text-[10.5px] font-semibold leading-snug ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '💡 ' + calloutBust) : null);
           })() : null,
-          (fpOn && !rigDeployed) ? h('div', { 'data-geology-first-person-mode': fpWalkScene ? 'mine' : 'fly', className: 'absolute left-2 top-12 z-10 rounded-full border px-2 py-1 text-[10px] font-extrabold ' + (fpWalkScene ? 'border-amber-300/70 bg-amber-950/80 text-amber-100' : 'border-sky-300/70 bg-sky-950/80 text-sky-100'), 'aria-hidden': 'true' }, (fpWalkScene ? '⛏ Mine mode' : '🛰 Deep Earth flight') + ' · ' + digCount + ' dug') : null,
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-first-person-mode': fpWalkScene ? 'mine' : 'fly', className: 'absolute left-2 top-12 z-10 rounded-full border px-2 py-1 text-[10px] font-extrabold ' + (fpWalkScene ? 'border-amber-300/70 bg-amber-950/80 text-amber-100' : 'border-sky-300/70 bg-sky-950/80 text-sky-100'), 'aria-hidden': 'true' }, (fpWalkScene ? '⛏ Mine mode' : '🛰 Deep Earth flight') + ' · ' + digCount + ' dug' + (sceneFindCatalog.length ? ' · 💎 ' + sceneFindsFound + '/' + sceneFindCatalog.length : '')) : null,
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-player-status': 'true', 'data-state': fpWalkScene ? 'grounded' : 'flight', className: 'pointer-events-none absolute left-2 top-20 z-10 rounded-full border border-emerald-300/60 bg-slate-950/80 px-2 py-1 text-[10px] font-bold text-emerald-200 shadow-lg', 'aria-hidden': 'true' }, fpWalkScene ? 'Finding safe ground…' : 'Free flight') : null,
           fieldRunPanel(),
           coreRigConsole(),
@@ -11359,10 +11461,25 @@ function updateCoreRig3d(dt3d) {
               (fpHud.state && fpHud.state !== 'solid') ? h('span', { key: 'fp-state-label', className: muted }, t('stem.geology.state', 'State')) : null,
               (fpHud.state && fpHud.state !== 'solid') ? h('span', { key: 'fp-state-value', className: 'font-semibold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, fpHud.state) : null),
             fpHud.blurb ? h('div', { className: 'mt-1 text-[10.5px] leading-snug' }, fpHud.blurb) : null,
-            fpHud.bust ? h('div', { className: 'mt-1 text-[10.5px] leading-snug font-semibold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '⚠ ' + fpHud.bust) : null) : null);
+            fpHud.bust ? h('div', { className: 'mt-1 text-[10.5px] leading-snug font-semibold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '⚠ ' + fpHud.bust) : null,
+            fpShaftLog.length > 1 ? h('div', { 'data-geology-shaft-log': fpShaftLog.length, className: 'mt-1.5 border-t pt-1 ' + (isDark ? 'border-slate-600' : 'border-slate-200') }, [
+              h('div', { key: 'title', className: 'text-[10px] font-extrabold ' + muted }, scene === 'deepEarth' ? 'Shells you have passed, outside in' : 'Your dig, top to bottom'),
+              fpShaftLog.map(function (entry) {
+                return h('div', { key: entry.key, className: 'flex items-center gap-1.5 text-[10.5px]' }, [
+                  h('span', { key: 'swatch', 'aria-hidden': 'true', style: { display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#' + ((entry.color || 0x94a3b8) >>> 0).toString(16).padStart(6, '0') } }),
+                  h('span', { key: 'name', className: 'font-semibold' }, entry.name),
+                  h('span', { key: 'depth', className: muted }, '≈ ' + entry.depthKm + ' km')
+                ]);
+              }),
+              scene === 'crust' && fpShaftLog.filter(function (entry) { return SED_FOSSIL[entry.key]; }).length >= 2
+                ? h('div', { key: 'lesson', className: 'mt-0.5 text-[10px] leading-snug font-semibold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, 'Deeper layers formed first: you are digging back in time (superposition).')
+                : (scene === 'deepEarth' && fpShaftLog.length >= 3 ? h('div', { key: 'lesson', className: 'mt-0.5 text-[10px] leading-snug font-semibold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, 'Each shell inward is hotter and under more pressure.') : null)
+            ]) : null) : null);
       }
 
       var btn = 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-2 rounded-lg border ';
+      var sceneFindCatalog = sceneSpecimenCatalog(scene), sceneFinds = (d.specimensFound && d.specimensFound[scene]) || {};
+      var sceneFindsFound = sceneFindCatalog.filter(function (item) { return (sceneFinds[item.kind] || 0) > 0; }).length;
       var btnIdle = isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100';
       var sceneMission = missionForScene();
       var sceneContext = missionContext();

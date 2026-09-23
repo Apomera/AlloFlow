@@ -96,17 +96,17 @@ describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
     expect(P.crustGeotherm(10, 'magma').tempC).toBe('≈ 1000+');
   });
 
-  it('geode generator carves a hollow void, lines it with crystal, and hosts it in limestone', () => {
+  it('geode generator carves a hollow void, lines it with crystal, and hosts it in basalt (a gas bubble in lava)', () => {
     P.setScene('geode'); P.setGrid('standard');
     const g = P.grid();
     const cx = Math.round((g.NX - 1) / 2), cy = Math.round((g.NY - 1) / 2), cz = Math.round((g.NZ - 1) / 2);
     expect(P.geodeKeyAt(cx, cy, cz)).toBe('void');                 // hollow centre
     const corner = P.geodeKeyAt(0, 0, 0);
-    expect(corner).toBe('limestone');                              // host rock at the edges
+    expect(corner).toBe('hostBasalt');                             // host rock at the edges: the old lava flow
     // some crystal/rind exists between the void and the host
     const keys = {};
     for (let x = 0; x < g.NX; x++) for (let y = 0; y < g.NY; y++) for (let z = 0; z < g.NZ; z++) keys[P.geodeKeyAt(x, y, z)] = 1;
-    expect(keys.void && keys.limestone && (keys.amethyst || keys.quartz) && (keys.agate || keys.chalcedony)).toBeTruthy();
+    expect(keys.void && keys.hostBasalt && (keys.amethyst || keys.quartz) && (keys.agate || keys.chalcedony)).toBeTruthy();
     P.setScene('crust');
   });
 
@@ -251,7 +251,7 @@ describe('Geology Explorer — first-person explorer (grounded mining + Deep Ear
   it('every voxel layer in every scene has a you-are-here blurb', () => {
     const KEYS = {
       crust: ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'intrusion', 'marble', 'hornfels', 'magma'],
-      geode: ['limestone', 'chalcedony', 'agate', 'quartz', 'amethyst'],
+      geode: ['hostBasalt', 'chalcedony', 'agate', 'quartz', 'amethyst'],
       deepEarth: ['crust', 'upperMantle', 'lowerMantle', 'outerCore', 'innerCore'],
     };
     Object.keys(KEYS).forEach((sid) => KEYS[sid].forEach((k) => {

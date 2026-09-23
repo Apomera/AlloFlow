@@ -293,51 +293,71 @@ describe('sub-voxel digging', () => {
 });
 
 describe('specimens hidden in the rock', () => {
-  const HOSTS = { skarnGarnet: 'marble', quartzVein: 'intrusion', schistGarnet: 'schist', summitFossil: 'summitLimestone' };
+  // Hand-written from the geology (not read back from the tool): where each find really forms.
+  const HOSTS = {
+    skarnGarnet: ['marble'], quartzVein: ['intrusion'], schistGarnet: ['schist'], summitFossil: ['summitLimestone'],
+    amethystPoint: ['amethyst'], agateSlice: ['agate'],
+    diamond: ['upperMantle'], mantleOlivine: ['upperMantle'], bridgmanite: ['lowerMantle'],
+    eclogiteGarnet: ['slab'], wedgeOlivine: ['wedge'], pumice: ['arcVolcano'],
+    sulfideChimney: ['vent'], basaltRecord: ['basaltN', 'basaltR'], oozeMicrofossils: ['sediment'],
+    islandOlivine: ['activeVolcano', 'oldIsland'], reefCoral: ['seamount']
+  };
+  const SCENE_OF = {
+    skarnGarnet: 'crust', quartzVein: 'crust', schistGarnet: 'collision', summitFossil: 'collision', amethystPoint: 'geode', agateSlice: 'geode',
+    diamond: 'deepEarth', mantleOlivine: 'deepEarth', bridgmanite: 'deepEarth', eclogiteGarnet: 'subduction', wedgeOlivine: 'subduction', pumice: 'subduction',
+    sulfideChimney: 'ridge', basaltRecord: 'ridge', oozeMicrofossils: 'ridge', islandOlivine: 'hotspot', reefCoral: 'hotspot'
+  };
+  const GEN = { crust: 'rockKeyAt', geode: 'geodeKeyAt', deepEarth: 'deepEarthKeyAt', subduction: 'subductionKeyAt', ridge: 'ridgeKeyAt', hotspot: 'hotspotKeyAt', collision: 'collisionKeyAt' };
+  const SCENES = Object.keys(GEN), scanned = new Map();
   function scan(sceneId, res) {
+    const memo = scanned.get(sceneId + '@' + res); if (memo) return memo;
     P.setScene(sceneId); P.setGrid(res);
-    const g = P.grid(), gen = sceneId === 'crust' ? P.rockKeyAt : P.collisionKeyAt, found = [];
+    const g = P.grid(), gen = P[GEN[sceneId]], found = [];
     const keyAt = (a, b, c) => (a < 0 || b < 0 || c < 0 || a >= g.NX || b >= g.NY || c >= g.NZ) ? null : gen(a, b, c);
     for (let y = 0; y < g.NY; y++) for (let x = 0; x < g.NX; x++) for (let z = 0; z < g.NZ; z++) {
       const key = gen(x, y, z), s = P.specimenForCell(sceneId, key, x, y, z, keyAt);
-      if (s) found.push({ key, x, y, z, s, keyAt });
+      if (s) found.push({ key, x, y, z, s, neighbours: [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].map(([dx, dy, dz]) => keyAt(x + dx, y + dy, z + dz)) });
     }
+    scanned.set(sceneId + '@' + res, found);
+    P.setScene('crust'); P.setGrid('standard');
     return found;
   }
+  const at = (sceneId, kind) => scan(sceneId, 'standard').find(({ s }) => s.kind === kind).s;
 
   it('skarn garnet grows only where the marble touches the granite', () => {
     ['low', 'standard', 'high'].forEach((res) => {
       const skarn = scan('crust', res).filter(({ s }) => s.kind === 'skarnGarnet');
       expect(skarn.length, res).toBeGreaterThan(0);
-      skarn.forEach(({ x, y, z, keyAt }) => {
-        const touches = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].some(([dx, dy, dz]) => keyAt(x + dx, y + dy, z + dz) === 'intrusion');
+      skarn.forEach(({ x, y, z, neighbours }) => {
+        const touches = neighbours.includes('intrusion');
         expect(touches, `${res} ${x},${y},${z}`).toBe(true);
       });
     });
-  });
+  }, 60000);
 
-  it('each specimen forms only in its own host rock, in every detail level, and every kind is findable', () => {
-    ['low', 'standard', 'high'].forEach((res) => {
-      const crust = scan('crust', res), collision = scan('collision', res);
-      [...crust, ...collision].forEach(({ key, s }) => {
-        if (s.crustFossil) { expect(['sandstone', 'shale', 'limestone'], res).toContain(key); expect(s.kind).toBe('fossil-' + key); }
-        else expect(key, `${res} ${s.kind}`).toBe(HOSTS[s.kind]);
-      });
-      const kinds = new Set([...crust, ...collision].map(({ s }) => s.kind));
-      ['fossil-sandstone', 'fossil-shale', 'fossil-limestone', 'skarnGarnet', 'quartzVein', 'schistGarnet', 'summitFossil'].forEach((k) => {
-        expect(kinds.has(k), `${res}: ${k}`).toBe(true);
-      });
-    });
+  it('in every scene and detail level, each find sits only in its own host rock, and every kind is findable', () => {
     expect(P.specimenKinds().sort()).toEqual(Object.keys(HOSTS).sort());
-  });
-
-  it('no other scene hides anything (their rock does not hold these)', () => {
-    ['geode', 'deepEarth', 'subduction', 'ridge', 'hotspot'].forEach((id) => {
-      ['marble', 'intrusion', 'schist', 'summitLimestone', 'sandstone', 'shale', 'limestone'].forEach((key) => {
-        for (let x = 0; x < 6; x++) expect(P.specimenForCell(id, key, x, 3, x)).toBeNull();
+    ['low', 'standard', 'high'].forEach((res) => {
+      SCENES.forEach((sceneId) => {
+        const found = scan(sceneId, res), kinds = new Set(found.map(({ s }) => s.kind));
+        found.forEach(({ key, s }) => {
+          if (s.crustFossil) { expect(sceneId).toBe('crust'); expect(['sandstone', 'shale', 'limestone']).toContain(key); expect(s.kind).toBe('fossil-' + key); }
+          else { expect(SCENE_OF[s.kind], `${res} ${sceneId} ${s.kind}`).toBe(sceneId); expect(HOSTS[s.kind], `${res} ${s.kind}`).toContain(key); }
+        });
+        const expected = Object.keys(SCENE_OF).filter((k) => SCENE_OF[k] === sceneId).concat(sceneId === 'crust' ? ['fossil-sandstone', 'fossil-shale', 'fossil-limestone'] : []);
+        expected.forEach((k) => expect(kinds.has(k), `${res} ${sceneId}: ${k}`).toBe(true));
       });
     });
-  });
+  }, 120000);
+
+  it('the collection panel lists exactly what each scene hides, each with a place to look', () => {
+    SCENES.forEach((sceneId) => {
+      const catalog = P.sceneSpecimenCatalog(sceneId), hidden = new Set(scan(sceneId, 'standard').map(({ s }) => s.kind));
+      expect(catalog.length, sceneId).toBeGreaterThanOrEqual(2);
+      expect(new Set(catalog.map((c) => c.kind))).toEqual(hidden);
+      catalog.forEach((c) => { expect(c.hint, c.kind).toBeTruthy(); expect(c.name, c.kind).toBeTruthy(); });
+    });
+  }, 60000);
 
   it('a specimen sits in an inner small voxel, so it cannot show before the cell is dug into', () => {
     for (let x = 0; x < 22; x++) for (let z = 0; z < 22; z += 3) for (let y = 0; y < 19; y += 2) {
@@ -345,28 +365,59 @@ describe('specimens hidden in the rock', () => {
       l.forEach((c) => { expect(c).toBeGreaterThanOrEqual(1); expect(c).toBeLessThanOrEqual(P.DIG_SUB - 2); });
       expect(P.specimenSubOf(x, y, z)).toEqual(l);
     }
-  });
+  }, 60000);
 
-  it('the finds teach where they formed: contact for skarn garnet, regional for schist garnet', () => {
-    P.setScene('crust'); P.setGrid('standard');
-    const crust = scan('crust', 'standard'), collision = scan('collision', 'standard');
-    const skarn = crust.find(({ s }) => s.kind === 'skarnGarnet').s, vein = crust.find(({ s }) => s.kind === 'quartzVein').s;
-    const schist = collision.find(({ s }) => s.kind === 'schistGarnet').s, summit = collision.find(({ s }) => s.kind === 'summitFossil').s;
-    expect(skarn.tells).toMatch(/skarn/i); expect(skarn.tells).toMatch(/granite/i); expect(skarn.tells).toMatch(/limestone/i);
-    expect(schist.tells).toMatch(/regional metamorphism/i); expect(schist.tells).toMatch(/without melting/i);
-    expect(vein.tells).toMatch(/younger than the rock it cuts/i);
-    expect(summit.tells).toMatch(/sea floor/i); expect(summit.tells).toMatch(/millions of years/i);
-  });
+  it('the finds teach where they formed (and avoid the misconceptions the science review flagged)', () => {
+    expect(at('crust', 'skarnGarnet').tells).toMatch(/skarn/i);
+    expect(at('crust', 'quartzVein').tells).toMatch(/younger than the rock it cuts/i);
+    expect(at('collision', 'schistGarnet').tells).toMatch(/regional metamorphism/i); expect(at('collision', 'schistGarnet').tells).toMatch(/without melting/i);
+    expect(at('collision', 'summitFossil').tells).toMatch(/millions of years/i);
+    expect(at('deepEarth', 'mantleOlivine').tells).toMatch(/solid rock/i);        // the mantle is not molten…
+    expect(at('deepEarth', 'mantleOlivine').tells).toMatch(/flows slowly/i);      // …yet it flows (convection)
+    expect(at('deepEarth', 'diamond').tells).toMatch(/kimberlite/i);
+    expect(at('deepEarth', 'bridgmanite').tells).toMatch(/most common mineral/i);
+    expect(at('subduction', 'eclogiteGarnet').tells).toMatch(/without melting/i);  // the slab does not melt
+    expect(at('subduction', 'wedgeOlivine').tells).toMatch(/wedge/i);
+    expect(at('ridge', 'sulfideChimney').tells).toMatch(/seawater seeps down/i);   // the water is seawater, not magma
+    const record = at('ridge', 'basaltRecord');
+    expect(record.name).toMatch(/basalt sample/i);
+    expect(record.tells).not.toMatch(/lined up/i);                                  // grains do not swing like compass needles
+    expect(record.tells).toMatch(/recorded/i);
+    expect(at('hotspot', 'reefCoral').tells).toMatch(/reef-building/i);             // deep-sea corals exist
+  }, 60000);
 
   it('ripple marks are never presented as a fossil', () => {
-    const sand = scan('crust', 'standard').find(({ s }) => s.kind === 'fossil-sandstone').s;
+    const sand = at('crust', 'fossil-sandstone');
     expect(sand.name).not.toMatch(/ripple/i);
     expect(sand.tells).toMatch(/ripple marks[^.]*not fossils/i);
+  });
+
+  it('the crystal cavern is a gas bubble in old lava, not a dissolved limestone cave', () => {
+    P.setScene('geode'); P.setGrid('standard');
+    expect(P.geodeKeyAt(0, 0, 0)).toBe('hostBasalt');
+    const q = P.quizBanks().geode.items.find((item) => /original hollow/.test(item.q));
+    expect(q.opts[q.correct]).toMatch(/gas bubble trapped in cooling lava/i);
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).not.toMatch(/dissolved a VOID in limestone/);
+    expect(src).not.toMatch(/Groundwater dissolves a cavity/);
+  });
+});
+
+describe('underground light', () => {
+  it('daylight holds at the surface and fades to full dark a couple of voxels down', () => {
+    const V = 1;
+    expect(P.undergroundDarkness(0, V)).toBe(0);
+    expect(P.undergroundDarkness(0.2, V)).toBe(0);
+    expect(P.undergroundDarkness(-3, V)).toBe(0);                                   // above the ground (on a peak or the volcano)
+    expect(P.undergroundDarkness(1.3, V)).toBeGreaterThan(0.4); expect(P.undergroundDarkness(1.3, V)).toBeLessThan(0.6);
+    expect(P.undergroundDarkness(2.4, V)).toBeCloseTo(1, 9); expect(P.undergroundDarkness(9, V)).toBe(1);
+    let last = -1; for (let d = 0; d <= 3; d += 0.1) { const v = P.undergroundDarkness(d, V); expect(v).toBeGreaterThanOrEqual(last); last = v; }
+    expect(P.undergroundDarkness(1.3 * 0.64, 0.64)).toBeCloseTo(P.undergroundDarkness(1.3, 1), 9);   // same feel at every detail level
   });
 });
 
 describe('mirror', () => {
   it('keeps both app mirrors identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
-  });
+  }, 60000);
 });
