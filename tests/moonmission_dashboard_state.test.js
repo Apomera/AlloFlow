@@ -14,7 +14,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
-const FILE = 'stem_lab/stem_tool_moonmission.js';
+// Overridable so a mutation can run against a COPY; other sessions edit this file.
+const FILE = process.env.MM_SOURCE || 'stem_lab/stem_tool_moonmission.js';
 const ID = 'moonMission';
 
 function render(state) {
@@ -39,9 +40,55 @@ describe('Moon Mission dashboard state', () => {
     expect(h1).toContain('Pause clock');
     expect(h1).not.toContain('\\u23F8');
 
+    // A toggle keeps one name and aria-pressed carries the state (it used to read
+    // "Play animation" when paused, on top of aria-pressed="true").
     const paused = render({ missionPhase: 1, animPaused: true });
-    expect(paused).toContain('Play animation');
+    expect(paused).toContain('Pause animation');
+    expect(paused).not.toContain('Play animation');
     expect(paused).toMatch(/data-moonmission-anim-toggle="true"[^>]*aria-pressed="true"|aria-pressed="true"[^>]*data-moonmission-anim-toggle="true"/);
+  });
+
+  it('header controls are named by what they show, keep that name when toggled, and are 44px tall', () => {
+    // Each was a 10px underlined word ~15px tall, and each had an aria-label that did
+    // not contain its visible text ("Sound on" was "Mute all mission sound"), which
+    // voice control cannot match (WCAG 2.5.3).
+    const doc = (state) => { const d = document.createElement('div'); d.innerHTML = render(state); return d; };
+    const pick = (d, attr) => d.querySelector('button[' + attr + '="true"]');
+    for (const [attr, text] of [['data-moonmission-anim-toggle', 'Pause animation'], ['data-moonmission-sound-toggle', 'Mute sound']]) {
+      const off = pick(doc({ missionPhase: 1, missionStartTime: 1000 }), attr);
+      const on = pick(doc({ missionPhase: 1, missionStartTime: 1000, animPaused: true, soundOff: true }), attr);
+      for (const [btn, pressed] of [[off, 'false'], [on, 'true']]) {
+        expect(btn, attr).toBeTruthy();
+        expect(btn.getAttribute('aria-pressed'), attr).toBe(pressed);
+        expect(btn.hasAttribute('aria-label'), attr + ' overrides its visible text').toBe(false);
+        expect(btn.textContent, attr).toContain(text);
+        expect(btn.className, attr).toContain('min-h-[44px]');
+      }
+    }
+    const clock = Array.from(doc({ missionPhase: 1, missionStartTime: 1000 }).querySelectorAll('button')).find((b) => /Pause clock/.test(b.textContent));
+    expect(clock, 'clock button').toBeTruthy();
+    expect(clock.hasAttribute('aria-label'), 'clock overrides its visible text').toBe(false);
+    expect(clock.className).toContain('min-h-[44px]');
+    const back = doc({ missionPhase: 1 }).querySelector('button[aria-label="Back to STEAM Lab"]');
+    expect(back && back.className).toContain('min-h-[44px]');
+    expect(back.className).toContain('min-w-[44px]');
+  });
+
+  it('the rocket-equation lab has touch-sized controls', () => {
+    // Its sliders were 16px tall, its buttons ~20px and its checkbox 12px: under the
+    // 24px WCAG 2.5.8 floor, on the one hands-on activity in the debrief.
+    const d = document.createElement('div');
+    d.innerHTML = render({ missionPhase: 10, lunarSamples: [] });
+    const sliders = Array.from(d.querySelectorAll('input[type="range"][id^="dv-"]'));
+    expect(sliders.length).toBe(3);
+    sliders.forEach((el) => expect(el.className, el.id).toContain('h-11'));
+    const lab = sliders[0].closest('details') || d;
+    const buttons = Array.from(lab.querySelectorAll('button'));
+    expect(buttons.length).toBeGreaterThanOrEqual(3);
+    buttons.forEach((b) => expect(b.className, b.textContent).toContain('min-h-[44px]'));
+    const box = lab.querySelector('input[type="checkbox"]');
+    expect(box.className).toContain('w-6 h-6');
+    expect(box.closest('label').className).toContain('min-h-[44px]');
   });
 
   it('phase 10 reads as Mission Complete, not as phase 11 of a 10-phase mission', () => {

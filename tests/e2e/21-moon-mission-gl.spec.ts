@@ -637,13 +637,21 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     });
     const nodes = () => page.evaluate(() => (window as any).__audio.nodes);
 
+    // Proceed to Orbit now waits for the ascent to reach orbit (it used to let a student
+    // skip the launch), which takes ~30 s on a loaded machine. Wait for it rather than
+    // seed a pause: the paused shortcut first created the audio context AT the click and
+    // read zero nodes in a full-suite run, so keep the flow this test was proven on.
+    test.setTimeout(300_000);
+    const proceed = page.getByRole('button', { name: /Proceed to Orbit/i });
+
     // Leg 1 — sound on: advancing a phase must actually create audio nodes.
     await instrument();
     await harness.mount(page, { moonMission: { missionPhase: 1 } }, undefined, { expectCanvas: false });
     const soundBtn = page.locator('[data-moonmission-sound-toggle="true"]');
     await expect(soundBtn).toHaveAttribute('aria-pressed', 'false');
+    await expect(proceed).toBeEnabled({ timeout: 120_000 });
     await page.evaluate(() => (window as any).__audio.nodes = 0);
-    await page.getByRole('button', { name: /Proceed to Earth orbit/i }).click();
+    await proceed.click();
     await page.waitForTimeout(1200);
     const loud = await nodes();
     expect(loud, 'the tool made no sound at all, so the muted check below would be vacuous').toBeGreaterThan(0);
@@ -653,9 +661,10 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     await instrument();
     await harness.mount(page, { moonMission: { missionPhase: 1, soundOff: true } }, undefined, { expectCanvas: false });
     await expect(soundBtn).toHaveAttribute('aria-pressed', 'true');
-    await expect(soundBtn).toContainText('Sound off');
+    await expect(soundBtn).toContainText('Mute sound');   // one name; aria-pressed carries the state
+    await expect(proceed).toBeEnabled({ timeout: 120_000 });
     await page.evaluate(() => (window as any).__audio.nodes = 0);
-    await page.getByRole('button', { name: /Proceed to Earth orbit/i }).click();
+    await proceed.click();
     await page.waitForTimeout(1200);
     expect(await nodes(), 'muted, but audio nodes were still created').toBe(0);
 

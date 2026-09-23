@@ -14,7 +14,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { loadTool, makeCtx, newStore, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
-const FILE = 'stem_lab/stem_tool_moonmission.js';
+// Overridable so a mutation can run against a COPY; other sessions edit this file.
+const FILE = process.env.MM_SOURCE || 'stem_lab/stem_tool_moonmission.js';
 const ID = 'moonMission';
 
 function mount(state) {
@@ -40,7 +41,8 @@ function textOf(node) {
   return textOf(node.props && node.props.children);
 }
 function find(app, re) {
-  const hit = buttons(app.tree()).filter((p) => re.test(String(p['aria-label'] || '')) || re.test(textOf(p.children)));
+  // Phase buttons are named by their text; the longer line is their title.
+  const hit = buttons(app.tree()).filter((p) => re.test(String(p['aria-label'] || p.title || '')) || re.test(textOf(p.children)));
   if (hit.length !== 1) throw new Error('expected one button for ' + re + ', found ' + hit.length);
   return hit[0];
 }
@@ -68,8 +70,34 @@ describe('Moon Mission proceed gates', () => {
     expect(find(app, /Proceed to Earth orbit/i).disabled).toBe(true);
   });
 
+  it('the launch cannot be skipped: Proceed to Orbit waits for orbit', () => {
+    // It was live from T-5: a click on the pad logged "Launch successful! Reached
+    // Earth orbit" and paid 20 XP with the Saturn V still standing.
+    for (const launchStatus of [undefined, 'countdown', 'stage1', 'stage2', 'stage3']) {
+      const app = mount({ missionPhase: 1, launchStatus, animPaused: false, missionXP: 0, missionLog: [] });
+      const btn = find(app, /Proceed to Earth orbit/i);
+      expect(btn.disabled, `disabled at ${launchStatus || 'mount'}`).toBe(true);
+      btn.onClick();
+      expect(app.mm().missionPhase, `handler refuses at ${launchStatus || 'mount'}`).toBe(1);
+      expect(app.mm().missionXP).toBe(0);
+    }
+    const orbit = mount({ missionPhase: 1, launchStatus: 'orbit', animPaused: false, missionXP: 0, missionLog: [] });
+    expect(find(orbit, /Proceed to Earth orbit/i).disabled, 'enabled once in orbit').toBe(false);
+  });
+
+  it('a paused (or reduced-motion) student is never stranded on the pad', () => {
+    // Pausing freezes the ascent, so waiting for orbit would be a dead end.
+    const app = mount({ missionPhase: 1, launchStatus: 'countdown', animPaused: true, missionXP: 0, missionLog: [] });
+    const btn = find(app, /Proceed to Earth orbit/i);
+    expect(btn.disabled).toBe(false);
+    btn.onClick();
+    expect(app.mm().missionPhase).toBe(2);
+  });
+
   it('a double click pays once and advances once', () => {
-    const app = mount({ missionPhase: 1, missionXP: 0, missionLog: [] });
+    // In orbit: the button now waits for the ascent, so orbit is the only moment a
+    // double click can happen.
+    const app = mount({ missionPhase: 1, launchStatus: 'orbit', missionXP: 0, missionLog: [] });
     const btn = find(app, /Proceed to Earth orbit/i);
     btn.onClick();
     btn.onClick();
