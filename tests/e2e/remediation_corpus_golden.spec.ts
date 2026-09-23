@@ -16,6 +16,12 @@
 // PDF (OpenAction + page /AA + embedded file), extraction on real committed fixtures,
 // and a full fixAndVerifyPdf run producing a tagged PDF that re-parses with the core
 // tagged-output invariants.
+//
+// HOST DECLARATION (2026-09-22): every audit and run passes extraRequestPacing: false. The scripted
+// model has no provider quota; undeclared, the Canvas default gave the 25-page audit a rolling
+// budget of 5 call starts per 180s, so it idled one full window (3.1 min in CI of a 5 min budget),
+// one extra slice call from a second window and a timeout. That is how the fault-injection golden
+// broke. Pacing changes timing only; the gate is covered by the pacing unit suites.
 
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
@@ -160,7 +166,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
       const w = window as any;
       const pdfLibBefore = !!w.PDFLib;
       w.__calls.length = 0;
-      const audit = await w.__pipeline.runPdfAccessibilityAudit(bigB64, { skipUiUpdates: true, skipCache: true, fileName: 'big-fixture.pdf' });
+      const audit = await w.__pipeline.runPdfAccessibilityAudit(bigB64, { skipUiUpdates: true, skipCache: true, fileName: 'big-fixture.pdf', extraRequestPacing: false });
       return {
         pdfLibBefore,
         pdfLibAfter: !!(w.PDFLib && w.PDFLib.PDFDocument),
@@ -168,8 +174,11 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
         score: audit && audit.score,
         activeContent: audit && audit.activeContent,
         summary: String((audit && audit.summary) || ''),
+        wait: (w.__pipeline.geminiThrottleInfo() || {}).wait || {},
       };
     }, fixtures!.bigB64);
+    expect(out.wait.extraRequestPacing).toBe(false);  // host declaration held (see header)
+    expect(out.wait.pacingMs).toBe(0);
     expect(out.pdfLibBefore).toBe(false);            // the page really started pdf-lib-free
     expect(out.pdfLibAfter).toBe(true);              // ensurePdfLibLoaded pulled it in
     expect(out.visionCalls.length).toBeGreaterThanOrEqual(2); // sliced fan-out, not one doomed call
@@ -232,8 +241,8 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
   test('real committed fixtures audit end-to-end (multi-column sample + scrambled)', async () => {
     const out = await page.evaluate(async (fx: any) => {
       const w = window as any;
-      const a1 = await w.__pipeline.runPdfAccessibilityAudit(fx.sample, { skipUiUpdates: true, skipCache: true, fileName: 'multi-column-sample.pdf' });
-      const a2 = await w.__pipeline.runPdfAccessibilityAudit(fx.scrambled, { skipUiUpdates: true, skipCache: true, fileName: 'multi-column-scrambled.pdf' });
+      const a1 = await w.__pipeline.runPdfAccessibilityAudit(fx.sample, { skipUiUpdates: true, skipCache: true, fileName: 'multi-column-sample.pdf', extraRequestPacing: false });
+      const a2 = await w.__pipeline.runPdfAccessibilityAudit(fx.scrambled, { skipUiUpdates: true, skipCache: true, fileName: 'multi-column-scrambled.pdf', extraRequestPacing: false });
       return {
         s1: a1 && a1.score, hasText1: a1 && a1.hasSearchableText, pc1: a1 && a1.pageCount,
         s2: a2 && a2.score, ac1: a1 && a1.activeContent, ac2: a2 && a2.activeContent,
@@ -250,7 +259,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
   test('full fixAndVerifyPdf run on the clean text doc → result fields + tagged output invariants', async () => {
     const out = await page.evaluate(async (textB64: string) => {
       const w = window as any;
-      const audit = await w.__pipeline.runPdfAccessibilityAudit(textB64, { skipUiUpdates: true, skipCache: true, fileName: 'text-fixture.pdf' });
+      const audit = await w.__pipeline.runPdfAccessibilityAudit(textB64, { skipUiUpdates: true, skipCache: true, fileName: 'text-fixture.pdf', extraRequestPacing: false });
       const result = await w.__pipeline.fixAndVerifyPdf({
         // Production callers always stamp the run's ownership epoch (2026-08-03 fail-closed guard).
         documentEpoch: 1,
@@ -261,6 +270,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
         autoFixPasses: 1,
         polishPasses: 0,
         onProgress: () => {},
+        extraRequestPacing: false,
       });
       if (!result || !result.accessibleHtml) return { error: 'no accessibleHtml', keys: result ? Object.keys(result) : [] };
       const toBytes = (b64: string) => Uint8Array.from(atob(b64), (c: string) => c.charCodeAt(0));
@@ -357,7 +367,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
       const w = window as any;
       w.__jsonRefusal = true;
       try {
-        const audit = await w.__pipeline.runPdfAccessibilityAudit(textB64, { skipUiUpdates: true, skipCache: true, fileName: 'text-fixture-refusal.pdf' });
+        const audit = await w.__pipeline.runPdfAccessibilityAudit(textB64, { skipUiUpdates: true, skipCache: true, fileName: 'text-fixture-refusal.pdf', extraRequestPacing: false });
         const result = await w.__pipeline.fixAndVerifyPdf({
           documentEpoch: 1,
           base64: textB64,
@@ -367,6 +377,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
           autoFixPasses: 1,
           polishPasses: 0,
           onProgress: () => {},
+          extraRequestPacing: false,
         });
         return { html: result && result.accessibleHtml ? String(result.accessibleHtml) : '' };
       } finally {
