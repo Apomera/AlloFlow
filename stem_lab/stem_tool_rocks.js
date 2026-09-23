@@ -1521,7 +1521,7 @@
     schist: 'Overlapping silvery mica flakes, all lying the same way so they flash together as you tilt it, and often a red garnet crystal.',
     phyllite: 'A silky, satin sheen with crinkled ridges, but the mica crystals are still too small to see one by one.'
   };
-  function rkHandLensSvg(h, rock, T) {
+    function rkHandLensSvg(h, rock, T, anon) {
     T = T || function (k, fb) { return fb; };
     var st = RK_LENS_STYLE[rock.id] || { s: 'fine' };
     var cols = (rock.grainColors && rock.grainColors.length) ? rock.grainColors : ['#a8a29e', '#78716c'];
@@ -1740,7 +1740,9 @@
     ];
     return h('svg', {
       viewBox: '0 0 240 240', width: '100%', role: 'img', 'data-rk-lens': st.s,
-      'aria-label': T('stem.rocks.lens_aria', 'The rock through a 10x hand lens, about 15 mm across: ') + T('stem.rocks.lens_note_' + rock.id, RK_LENS_NOTE[rock.id] || ''),
+            'aria-label': anon
+        ? T('stem.rocks.lens_aria_anon', 'The unknown specimen through a 10x hand lens, about 15 mm across.')
+        : T('stem.rocks.lens_aria', 'The rock through a 10x hand lens, about 15 mm across: ') + T('stem.rocks.lens_note_' + rock.id, RK_LENS_NOTE[rock.id] || ''),
       style: { display: 'block', maxWidth: 260 }
     }, kids);
   }
@@ -1854,6 +1856,150 @@
       for (var st2 = 0; st2 < 3; st2++) kids.push(h('path', { key: 'steam' + st2, d: 'M' + (30 + st2 * 22) + ' 52 q -8 -12 0 -22 q 8 -10 0 -22', fill: 'none', stroke: '#cbd5e1', strokeWidth: 3, strokeLinecap: 'round' }));
     }
     return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', 'aria-hidden': true, focusable: 'false', 'data-carb-env': envId, style: { display: 'block', borderRadius: 10 } }, kids);
+  }
+
+  // ══ The rock identification key ══
+  // The Visual ID drill tests recognition; nothing in the tool taught the
+  // method a geologist uses on a rock they have never seen: observe, test,
+  // and follow a key. Each node asks about something a student can actually
+  // see or test (the specimen, the hand lens, acid, a steel nail, water), and
+  // each option leads to another node or to a rock id. A couple of rocks are
+  // reachable two ways on purpose (limestone by its shells or by its fizz,
+  // tuff as volcanic or as fragments), because real observers disagree about
+  // which feature strikes them first and a good key forgives that.
+  // opts: [option id, English label, next node id OR rock id]
+  var RK_KEY = {
+    start: { q: 'Look at the whole specimen and through the hand lens. Which describes it best?', opts: [
+      ['layers', 'It has layers, bands or flat sheets', 'layer'],
+      ['glassy', 'It is glassy, or full of gas holes', 'volc'],
+      ['pieces', 'It is made of pieces or grains stuck together', 'clast'],
+      ['crystals', 'It is a mass of interlocking crystals you can see', 'xtal'],
+      ['fine', 'It is fine all through: no layers and no grains you can see', 'fine'],
+      ['black', 'It is black, light for its size, and blackens your fingers', 'coal']] },
+    layer: { q: 'Look closely at the layers or bands.', opts: [
+      ['bands', 'Coarse crystals sorted into light and dark bands', 'gneiss'],
+      ['mica', 'Sparkly mica flakes you can see, all lying one way', 'schist'],
+      ['satin', 'A silky, satin sheen, but no flakes you can see', 'phyllite'],
+      ['sheets', 'Dull, and it splits into thin sheets', 'sheets'],
+      ['wavy', 'Wavy layers with small holes, and it fizzes in acid', 'travertine']] },
+    sheets: { q: 'Scratch it with a steel nail, and tap it.', opts: [
+      ['hard', 'The nail barely marks it, it rings when tapped, and the sheets are flat and even', 'slate'],
+      ['soft', 'The nail scratches it easily and it crumbles into flakes', 'shale']] },
+    volc: { q: 'Glassy, or full of holes?', opts: [
+      ['glass', 'Smooth glass that breaks with curved, sharp edges', 'obsidian'],
+      ['froth', 'So full of bubbles that it floats on water', 'pumice'],
+      ['ash', 'Fine ash with bits of glass and pumice pressed together', 'tuff']] },
+    clast: { q: 'Look at the pieces through the hand lens. What are they like?', opts: [
+      ['big', 'Pieces bigger than a pea (over 2 mm)', 'big'],
+      ['sand', 'Sand grains you can see; it feels like sandpaper', 'sandstone'],
+      ['shells', 'Shell pieces and fossil fragments, and it fizzes in acid', 'limestone'],
+      ['ash', 'Sharp bits of volcanic glass and pumice in ash', 'tuff']] },
+    big: { q: 'Look at the edges of the big pieces.', opts: [
+      ['rounded', 'Rounded, smooth pebbles', 'conglom'],
+      ['angular', 'Sharp corners and flat broken faces', 'breccia']] },
+    xtal: { q: 'Put a drop of dilute acid on it.', opts: [
+      ['fizz', 'It fizzes', 'marble'],
+      ['nofizz', 'No fizz', 'xtal2']] },
+    xtal2: { q: 'Look at the colours of the crystals.', opts: [
+      ['glassy', 'Almost all one glassy, sugary mineral, and it scratches glass', 'quartzite'],
+      ['pink', 'Pink or white crystals, glassy grey quartz and a few black flecks', 'granite'],
+      ['saltpepper', 'About half black and half white, like salt and pepper', 'diorite'],
+      ['dark', 'Mostly dark green to black crystals', 'gabbro']] },
+    fine: { q: 'Put a drop of dilute acid on it.', opts: [
+      ['fizz', 'It fizzes', 'finefizz'],
+      ['nofizz', 'No fizz', 'fine2']] },
+    finefizz: { q: 'How does it feel?', opts: [
+      ['powder', 'Soft and powdery; it leaves white marks on your fingers', 'chalk'],
+      ['hard', 'Harder, and there are bits of shell in it', 'limestone']] },
+    fine2: { q: 'What colour is it, and what can you see in it?', opts: [
+      ['dark', 'Dark grey to black and heavy, perhaps with small gas holes', 'basalt'],
+      ['grey', 'Mid grey with a few small white crystals scattered in it', 'andesite'],
+      ['pale', 'Pale pink or light grey, often with faint flow bands', 'rhyolite'],
+      ['gritty', 'Grey-brown: no grains to see, but it feels gritty and does not split', 'siltstone']] }
+  };
+  var RK_KEY_ROCKS_FIZZ = { limestone: 1, chalk: 1, travertine: 1, marble: 1 };
+  function rkKeyIsNode(id) { return Object.prototype.hasOwnProperty.call(RK_KEY, id); }
+  // Every rock the key can still reach from a node: the candidates left.
+  function rkKeyLeaves(nodeId) {
+    var out = [];
+    (function walk(n) {
+      RK_KEY[n].opts.forEach(function (o) {
+        if (rkKeyIsNode(o[2])) walk(o[2]);
+        else if (out.indexOf(o[2]) === -1) out.push(o[2]);
+      });
+    })(nodeId);
+    return out;
+  }
+  // Every route from the start to a rock, as [[node, option], ...].
+  function rkKeyPaths(rockId) {
+    var paths = [];
+    (function walk(n, acc) {
+      RK_KEY[n].opts.forEach(function (o) {
+        var next = acc.concat([[n, o[0]]]);
+        if (rkKeyIsNode(o[2])) walk(o[2], next);
+        else if (o[2] === rockId) paths.push(next);
+      });
+    })('start', []);
+    return paths;
+  }
+  // Where a route left every correct route to the target, or null if it did not.
+  function rkKeyDivergence(path, target) {
+    var good = rkKeyPaths(target);
+    for (var i = 0; i < path.length; i++) {
+      var stillOn = good.filter(function (g) { return g[i] && g[i][0] === path[i][0] && g[i][1] === path[i][1]; });
+      if (!stillOn.length) {
+        var fits = good.filter(function (g) { return g[i] && g[i][0] === path[i][0]; }).map(function (g) { return g[i][1]; });
+        return { step: i, node: path[i][0], chose: path[i][1], fits: fits };
+      }
+      good = stillOn;
+    }
+    return null;
+  }
+  // The results of the simple tests the key asks for, from the rock data.
+  function rkKeyTest(rock, test) {
+    if (!rock) return null;
+    if (test === 'acid') return RK_KEY_ROCKS_FIZZ[rock.id] ? 'fizz' : 'nofizz';
+    if (test === 'nail') return rock.hardness < 5 ? 'scratch' : rock.hardness < 6 ? 'barely' : 'noscratch';
+    if (test === 'water') return rock.id === 'pumice' ? 'float' : 'sink';
+    return null;
+  }
+  // The whole key as a map: start at the left, rocks at the right. Leaves
+  // are drawn in walk order so each branch's rocks sit together.
+  function rkKeyMapSvg(h, rockLabel, path, T) {
+    T = T || function (k, fb) { return fb; };
+    var rows = [], nodes = {}, edges = [];
+    (function walk(n, depth) {
+      var ys = [];
+      RK_KEY[n].opts.forEach(function (o) {
+        if (rkKeyIsNode(o[2])) { ys.push(walk(o[2], depth + 1)); edges.push([n, o[0], o[2], false]); }
+        else { rows.push({ rock: o[2], parent: n, opt: o[0], depth: depth + 1 }); ys.push(rows.length - 1); edges.push([n, o[0], 'leaf' + (rows.length - 1), true]); }
+      });
+      var y = ys.reduce(function (a, b) { return a + b; }, 0) / ys.length;
+      nodes[n] = { depth: depth, y: y };
+      return y;
+    })('start', 0);
+    var rowH = 15, colW = 70, x0 = 12, W = x0 + colW * 4 + 118, H = rows.length * rowH + 12;
+    var pos = function (id) {
+      if (id.indexOf('leaf') === 0) { var r = rows[Number(id.slice(4))]; return [x0 + colW * r.depth, 8 + Number(id.slice(4)) * rowH]; }
+      return [x0 + colW * nodes[id].depth, 8 + nodes[id].y * rowH];
+    };
+    var onPath = {};
+    (path || []).forEach(function (p) { onPath[p[0] + '|' + p[1]] = true; });
+    var kids = [];
+    edges.forEach(function (e, i) {
+      var a = pos(e[0]), b = pos(e[2]), hot = onPath[e[0] + '|' + e[1]];
+      kids.push(h('path', { key: 'e' + i, d: 'M' + a[0] + ' ' + a[1].toFixed(1) + ' C ' + (a[0] + colW / 2) + ' ' + a[1].toFixed(1) + ' ' + (b[0] - colW / 2) + ' ' + b[1].toFixed(1) + ' ' + b[0] + ' ' + b[1].toFixed(1), fill: 'none', stroke: hot ? '#b45309' : '#cbd5e1', strokeWidth: hot ? 2.6 : 1.2, 'data-key-edge-hot': hot ? '1' : undefined }));
+    });
+    Object.keys(nodes).forEach(function (n) {
+      var p = pos(n), hot = n === 'start' || (path || []).some(function (q) { return q[0] === n; });
+      kids.push(h('circle', { key: 'n' + n, cx: p[0], cy: p[1].toFixed(1), r: 5, fill: hot ? '#b45309' : '#ffffff', stroke: '#475569', strokeWidth: 1.4 }));
+    });
+    rows.forEach(function (r, i) {
+      var p = pos('leaf' + i), hot = onPath[r.parent + '|' + r.opt];
+      kids.push(h('circle', { key: 'l' + i, cx: p[0], cy: p[1], r: 3.2, fill: hot ? '#b45309' : '#64748b' }));
+      kids.push(h('text', { key: 't' + i, x: p[0] + 7, y: p[1] + 3.5, fontSize: 10, fontWeight: hot ? 800 : 600, fill: hot ? '#92400e' : '#334155' }, rockLabel(r.rock)));
+    });
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': T('stem.rocks.key_map_aria', 'The whole identification key: questions on the left, rocks on the right. Your route is highlighted.'), 'data-key-map-rows': rows.length, style: { display: 'block', maxWidth: 520 } }, kids);
   }
 
   // ══ Sedimentary journey: what transport does to a grain ══
@@ -4312,6 +4458,19 @@ const d = labToolData.rocks || {};
             var info = rkStreakChoiceInfo('powder-' + String(m.streak).toLowerCase().replace(/ /g, '-'));
             return info.id !== 'unknown' ? __alloT('stem.rocks.wb_streak_choice_' + info.id, info.label) : m.streak;
           };
+                    // A rock joins the collection the first time it is IDENTIFIED (drill,
+          // key or Mystery), not merely opened; the value records how.
+          const rkCollect = function (id, via) {
+            setLabToolData(function (prev) {
+              var r = Object.assign({}, (prev && prev.rocks) || {});
+              var col = (r.collection && typeof r.collection === 'object' && !Array.isArray(r.collection)) ? Object.assign({}, r.collection) : {};
+              if (col[id]) return prev;
+              col[id] = via;
+              r.collection = col;
+              return Object.assign({}, prev, { rocks: r });
+            });
+          };
+          const rkCollection = (d.collection && typeof d.collection === 'object' && !Array.isArray(d.collection)) ? d.collection : {};
           const rkCrystalName = function (str) {
             var parts = String(str || '').split(/[()]/).map(function (p) { return p.trim(); }).filter(Boolean);
             var names = parts.map(function (p) {
@@ -6098,6 +6257,47 @@ const d = labToolData.rocks || {};
 
               ),
 
+              // ── The collection cabinet ──
+              // A rock earns its place by being IDENTIFIED (drill, key or
+              // Mystery Rock), so the cabinet is a record of skill, not of
+              // clicking. One shelf per family, in the catalogue's order.
+              (function () {
+                var have = ROCKS.filter(function (r) { return rkCollection[r.id]; }).length;
+                var VIA = { drill: __alloT('stem.rocks.cab_via_drill', 'Visual ID drill'), key: __alloT('stem.rocks.cab_via_key', 'identification key'), mystery: __alloT('stem.rocks.mystery_rock', 'Mystery Rock') };
+                return React.createElement("section", { className: "mb-3 rounded-xl border-2 p-3", style: { borderColor: '#92400e', background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)' }, "aria-labelledby": "rk-cabinet-title", "data-rk-cabinet": have },
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-1" },
+                    React.createElement("span", { "aria-hidden": true }, "🗄️"),
+                    React.createElement("h4", { id: "rk-cabinet-title", className: "font-black text-sm text-amber-900" }, __alloT('stem.rocks.cab_title', "Your rock collection")),
+                    React.createElement("span", { className: "ml-auto text-[0.6875rem] font-black text-amber-900" }, have + ' / ' + ROCKS.length)),
+                  React.createElement("p", { className: "text-[0.6875rem] text-amber-900 mb-2 leading-snug" },
+                    __alloT('stem.rocks.cab_hint', "A rock joins your collection when you identify it: in the Visual ID drill, with the identification key, or in Mystery Rock.")),
+                  ['igneous', 'sedimentary', 'metamorphic'].map(function (fam) {
+                    var shelf = ROCKS.filter(function (r) { return r.type === fam; });
+                    var got = shelf.filter(function (r) { return rkCollection[r.id]; }).length;
+                    var full = got === shelf.length;
+                    return React.createElement("div", { key: fam, className: "mb-1.5", "data-rk-shelf": fam, "data-rk-shelf-full": full ? '1' : '0' },
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide mb-0.5", style: { color: ROCK_TYPES[fam].ink } },
+                        ROCK_TYPES[fam].label + ' · ' + got + ' / ' + shelf.length + (full ? ' · ✓ ' + __alloT('stem.rocks.cab_full', 'shelf complete') : '')),
+                      React.createElement("div", { className: "flex flex-wrap gap-1 rounded-lg px-1.5 pt-1.5 pb-2", style: { background: 'rgba(255,255,255,0.55)', borderBottom: '5px solid #92400e', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.12)' } },
+                        shelf.map(function (r) {
+                          var how = rkCollection[r.id];
+                          return how
+                            ? React.createElement("button", {
+                                key: r.id, type: "button", "data-rk-slot": r.id, "data-rk-slot-via": how,
+                                title: r.label + ' · ' + (VIA[how] || how),
+                                "aria-label": r.label + ', ' + __alloT('stem.rocks.cab_collected_via', 'collected with the ') + (VIA[how] || how) + '. ' + __alloT('stem.rocks.cab_open', 'Open its card.'),
+                                onClick: function () { updMulti({ selectedRock: r.id, selectedMineral: null, selectedType: (d.selectedType && d.selectedType !== r.type) ? null : d.selectedType }); sfxRockClick(); },
+                                className: "flex flex-col items-center rounded-md bg-white border border-amber-300 px-0.5 py-0.5 hover:border-amber-600", style: { width: 58 }
+                              }, React.createElement("span", { "aria-hidden": true }, rkRockSwatch(React.createElement, r, 32)),
+                                React.createElement("span", { className: "text-[0.5625rem] font-bold text-slate-800 leading-tight text-center truncate w-full" }, r.label))
+                            : React.createElement("span", {
+                                key: r.id, "data-rk-slot": r.id, "data-rk-slot-via": "none", role: "img",
+                                "aria-label": __alloT('stem.rocks.cab_empty', 'An empty slot: a rock you have not identified yet.'),
+                                className: "flex items-center justify-center rounded-md border-2 border-dashed border-amber-300 text-amber-800 font-black", style: { width: 58, height: 50 }
+                              }, "?");
+                        })));
+                  }));
+              })(),
               // Rock grid
 
               React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-3" },
@@ -6169,7 +6369,9 @@ const d = labToolData.rocks || {};
                       options: opts.map(function (o) { return o.id; }),
                       answered: false,
                       chosen: null,
-                      score: (vid && vid.score) || 0,
+                                            score: (vid && vid.score) || 0,
+                      streak: (vid && vid.streak) || 0,
+                      best: (vid && vid.best) || 0,
                       asked: ((vid && vid.asked) || 0) + 1
                     }
                   });
@@ -6190,11 +6392,19 @@ const d = labToolData.rocks || {};
                     var r = Object.assign({}, (prev && prev.rocks) || {});
                     var cur = r.visualId;
                     if (!cur || cur.answered) return prev;
+                                        var hit = rockId === cur.rockId;
+                    var streak = hit ? (cur.streak || 0) + 1 : 0;
                     r.visualId = Object.assign({}, cur, {
                       answered: true,
                       chosen: rockId,
-                      score: (cur.score || 0) + (rockId === cur.rockId ? 1 : 0)
+                      score: (cur.score || 0) + (hit ? 1 : 0),
+                      streak: streak,
+                      best: Math.max(cur.best || 0, streak)
                     });
+                    if (hit) {
+                      var col = (r.collection && typeof r.collection === 'object' && !Array.isArray(r.collection)) ? Object.assign({}, r.collection) : {};
+                      if (!col[cur.rockId]) { col[cur.rockId] = 'drill'; r.collection = col; }
+                    }
                     return Object.assign({}, prev, { rocks: r });
                   });
                   if (correct) {
@@ -6216,8 +6426,10 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                     React.createElement("span", { className: "text-base", "aria-hidden": true }, "🔎"),
                     React.createElement("h4", { className: "font-bold text-sm text-sky-900" }, __alloT('stem.rocks.visual_id_title', "Visual ID drill")),
-                    vid && vid.asked > 0 && React.createElement("span", { className: "ml-auto text-[0.6875rem] font-bold text-sky-900" },
-                      (vid.score || 0) + " / " + (vid.answered ? vid.asked : Math.max(0, vid.asked - 1)) + " " + __alloT('stem.rocks.visual_id_correct', "correct"))
+                                        vid && vid.asked > 0 && React.createElement("span", { className: "ml-auto text-[0.6875rem] font-bold text-sky-900", "data-rk-drill-streak": vid.streak || 0 },
+                      (vid.score || 0) + " / " + (vid.answered ? vid.asked : Math.max(0, vid.asked - 1)) + " " + __alloT('stem.rocks.visual_id_correct', "correct") +
+                      ((vid.streak || 0) > 1 ? ' · 🔥 ' + __alloT('stem.rocks.drill_streak', 'streak ') + vid.streak : '') +
+                      ((vid.best || 0) > 1 ? ' · ' + __alloT('stem.rocks.drill_best', 'best ') + vid.best : ''))
                   ),
 
                   !vid && React.createElement("div", null,
@@ -6300,13 +6512,184 @@ const d = labToolData.rocks || {};
                           React.createElement("span", { className: "font-black text-slate-900" }, __alloT('stem.rocks.drill_watch_for', 'Look-alike to watch for: ') + watchRock.label + '. '),
                           rkLookAlike(vid.rockId, watchRock.id)) : null;
                       })(),
-                      React.createElement("button", {
-                        type: "button",
-                        onClick: startVisualId,
-                        className: "mt-2 px-3 py-1 bg-sky-800 hover:bg-sky-900 text-white font-bold text-[0.6875rem] rounded-lg transition-colors active:scale-[0.97]"
-                      }, "↻ " + __alloT('stem.rocks.visual_id_next', "Next specimen"))
+                                            React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
+                        React.createElement("button", {
+                          type: "button",
+                          onClick: startVisualId,
+                          className: "px-3 py-1 bg-sky-800 hover:bg-sky-900 text-white font-bold text-[0.6875rem] rounded-lg transition-colors active:scale-[0.97]"
+                        }, "↻ " + __alloT('stem.rocks.visual_id_next', "Next specimen")),
+                        // A wrong pick is where the method helps most: key the
+                        // same specimen out step by step.
+                        vid.chosen !== vid.rockId && React.createElement("button", {
+                          type: "button", "data-rk-drill-to-key": vid.rockId,
+                          onClick: function () {
+                            upd('rkKey', { target: vid.rockId, path: [], tests: {}, scored: false, from: 'drill' });
+                            try { var el = document.getElementById('rk-key-panel'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+                          },
+                          className: "px-3 py-1 bg-white border border-amber-400 text-amber-900 hover:bg-amber-50 font-bold text-[0.6875rem] rounded-lg"
+                        }, "🗝️ " + __alloT('stem.rocks.drill_key_it', "Key this specimen out, step by step")))
                     )
                   )
+                );
+              })(),
+              // ── Rock identification key ──
+              (function () {
+                var kz = (d.rkKey && typeof d.rkKey === 'object' && !Array.isArray(d.rkKey)) ? d.rkKey : {};
+                var target = (typeof kz.target === 'string' && ROCKS.some(function (r) { return r.id === kz.target; })) ? kz.target : null;
+                var targetRock = target ? ROCKS.find(function (r) { return r.id === target; }) : null;
+                var tests = (kz.tests && typeof kz.tests === 'object' && !Array.isArray(kz.tests)) ? kz.tests : {};
+                // Replay the saved route so a malformed or stale save can only
+                // shorten it, never point at a node that does not exist.
+                var path = [], node = 'start', leaf = null;
+                (Array.isArray(kz.path) ? kz.path : []).some(function (step) {
+                  if (leaf || !Array.isArray(step) || step[0] !== node) return true;
+                  var opt = RK_KEY[node].opts.filter(function (o) { return o[0] === step[1]; })[0];
+                  if (!opt) return true;
+                  path.push([node, opt[0]]);
+                  if (rkKeyIsNode(opt[2])) node = opt[2]; else leaf = opt[2];
+                  return false;
+                });
+                var stats = (kz.stats && typeof kz.stats === 'object') ? kz.stats : { tries: 0, right: 0 };
+                var rockLabel = function (id) { var r = ROCKS.find(function (x) { return x.id === id; }); return r ? r.label : id; };
+                var q = function (n) { return __alloT('stem.rocks.key_q_' + n, RK_KEY[n].q); };
+                var optLabel = function (n, oid) { var o = RK_KEY[n].opts.filter(function (x) { return x[0] === oid; })[0]; return o ? __alloT('stem.rocks.key_opt_' + n + '_' + oid, o[1]) : oid; };
+                var setKey = function (patch) { upd('rkKey', Object.assign({ target: target, path: path, tests: tests, scored: !!kz.scored, stats: stats }, patch)); };
+                var startUnknown = function () {
+                  var pool = ROCKS.filter(function (r) { return r.id !== target; });
+                  var pickR = pool[Math.floor(Math.random() * pool.length)];
+                  setKey({ target: pickR.id, path: [], tests: {}, scored: false, from: 'key' });
+                  sfxRockClick();
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.key_sr_new', 'A new unknown specimen is on the bench. ') + q('start'));
+                };
+                var choose = function (o) {
+                  var np = path.concat([[node, o[0]]]);
+                  var reached = rkKeyIsNode(o[2]) ? null : o[2];
+                  var patch = { path: np };
+                  sfxRockClick();
+                  if (reached && target && !kz.scored) {
+                    var right = reached === target;
+                    patch.scored = true;
+                    patch.stats = { tries: (stats.tries || 0) + 1, right: (stats.right || 0) + (right ? 1 : 0) };
+                    if (right) {
+                      rkCollect(target, 'key');
+                      sfxRockCorrect();
+                      if (typeof awardStemXP === 'function') awardStemXP(8, 'Keyed out a rock');
+                    } else sfxRockCrack();
+                  }
+                  setKey(patch);
+                  if (typeof announceToSR === 'function') {
+                    announceToSR(reached
+                      ? __alloT('stem.rocks.key_sr_reached', 'The key leads to ') + rockLabel(reached) + '.'
+                      : q(o[2]));
+                  }
+                };
+                var candidates = leaf ? [leaf] : rkKeyLeaves(node);
+                var div = (leaf && target && leaf !== target) ? rkKeyDivergence(path, target) : null;
+                // The test that settles the step the route went wrong at.
+                var HINT_TEST = { xtal: 'acid', fine: 'acid', finefizz: 'acid', sheets: 'nail', volc: 'water' };
+                var testBtn = function (tid, icon, label) {
+                  var done = !!tests[tid];
+                  var res = done && targetRock ? rkKeyTest(targetRock, tid) : null;
+                  var RES = {
+                    fizz: __alloT('stem.rocks.key_res_fizz', 'It fizzes.'), nofizz: __alloT('stem.rocks.key_res_nofizz', 'No fizz.'),
+                    scratch: __alloT('stem.rocks.key_res_scratch', 'The nail scratches it easily.'), barely: __alloT('stem.rocks.key_res_barely', 'The nail barely marks it.'),
+                    noscratch: __alloT('stem.rocks.key_res_noscratch', 'The nail cannot scratch it: it leaves a metal streak instead.'),
+                    float: __alloT('stem.rocks.key_res_float', 'It floats!'), sink: __alloT('stem.rocks.key_res_sink', 'It sinks.')
+                  };
+                  return React.createElement("div", { key: tid, className: "rounded-lg border border-slate-200 bg-white px-2 py-1.5", "data-rk-key-test": tid, "data-rk-key-test-result": res || undefined },
+                    React.createElement("button", {
+                      type: "button", disabled: done, "aria-pressed": done,
+                      onClick: function () { var t2 = Object.assign({}, tests); t2[tid] = true; setKey({ tests: t2 }); sfxRockClick(); if (typeof announceToSR === 'function' && targetRock) announceToSR(RES[rkKeyTest(targetRock, tid)]); },
+                      className: "text-[0.6875rem] font-black " + (done ? "text-slate-500" : "text-sky-900 underline decoration-sky-400 hover:text-sky-700")
+                    }, icon + ' ' + label),
+                    res && React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-900 mt-0.5" }, RES[res]));
+                };
+                return React.createElement("div", { id: "rk-key-panel", className: "mt-3 rounded-xl border-2 border-amber-300 bg-amber-50/70 p-3", role: "region", "aria-label": __alloT('stem.rocks.key_region', "Rock identification key"), "data-rk-key": target ? 'unknown' : 'explore', "data-rk-key-node": leaf ? 'leaf' : node },
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-base", "aria-hidden": true }, "🗝️"),
+                    React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, __alloT('stem.rocks.key_title', "Rock identification key")),
+                    (stats.tries || 0) > 0 && React.createElement("span", { className: "ml-auto text-[0.6875rem] font-bold text-amber-900", "data-rk-key-stats": (stats.right || 0) + '/' + (stats.tries || 0) },
+                      __alloT('stem.rocks.key_stats', 'Keyed correctly: ') + (stats.right || 0) + ' / ' + (stats.tries || 0))),
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2 leading-snug" },
+                    __alloT('stem.rocks.key_intro', "This is how a geologist names a rock they have never seen: one observation at a time. Each answer rules rocks out until one is left.")),
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
+                    React.createElement("button", { type: "button", onClick: startUnknown, "data-rk-key-start": "unknown",
+                      className: "px-3 py-1.5 min-h-[36px] rounded-lg text-[0.6875rem] font-black bg-amber-700 text-white hover:bg-amber-800" }, "🎲 " + __alloT('stem.rocks.key_start_unknown', "Key out a mystery specimen")),
+                    React.createElement("button", { type: "button", onClick: function () { setKey({ target: null, path: [], tests: {}, scored: false }); sfxRockClick(); }, "data-rk-key-start": "explore",
+                      className: "px-3 py-1.5 min-h-[36px] rounded-lg text-[0.6875rem] font-black border border-amber-400 bg-white text-amber-900 hover:bg-amber-100" }, "🧭 " + __alloT('stem.rocks.key_start_explore', "Explore the key")),
+                    React.createElement("button", { type: "button", "aria-pressed": !!d.rkKeyMap, onClick: function () { upd('rkKeyMap', !d.rkKeyMap); },
+                      className: "px-3 py-1.5 min-h-[36px] rounded-lg text-[0.6875rem] font-black border border-slate-300 bg-white text-slate-800 hover:bg-slate-50" }, (d.rkKeyMap ? '▾ ' : '▸ ') + __alloT('stem.rocks.key_show_map', "Show the whole key"))),
+                  React.createElement("div", { className: "flex flex-wrap gap-3 items-start" },
+                    // The specimen and the tests, when keying an unknown.
+                    targetRock && React.createElement("div", { className: "rounded-xl border border-slate-300 bg-white p-2", style: { flex: '0 1 250px', minWidth: 200 }, "data-rk-key-specimen": "1" },
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600 mb-1" }, __alloT('stem.rocks.key_unknown', "Unknown specimen")),
+                      React.createElement("div", { className: "flex justify-center", "aria-hidden": true }, rkRockSwatch(React.createElement, targetRock, 110)),
+                      React.createElement("div", { className: "grid grid-cols-2 gap-1.5 mt-2" },
+                        testBtn('lens', '🔍', __alloT('stem.rocks.key_test_lens', 'Hand lens')),
+                        testBtn('acid', '🧪', __alloT('stem.rocks.key_test_acid', 'Acid drop')),
+                        testBtn('nail', '🔩', __alloT('stem.rocks.key_test_nail', 'Steel nail')),
+                        testBtn('water', '💧', __alloT('stem.rocks.key_test_water', 'Water'))),
+                      tests.lens && React.createElement("div", { className: "mt-2 flex justify-center" }, React.createElement("div", { style: { width: 190 } }, rkHandLensSvg(React.createElement, targetRock, __alloT, true)))),
+                    // The key.
+                    React.createElement("div", { className: "min-w-0", style: { flex: '1 1 300px' } },
+                      path.length > 0 && React.createElement("ol", { className: "flex flex-wrap items-center gap-1 mb-2", "aria-label": __alloT('stem.rocks.key_route_aria', "Your route so far") },
+                        path.map(function (st, i) {
+                          return React.createElement("li", { key: i, className: "text-[0.625rem] font-bold rounded-full border border-amber-300 bg-white px-2 py-0.5 text-amber-900" }, (i + 1) + '. ' + optLabel(st[0], st[1]));
+                        })),
+                      !leaf && React.createElement("div", { className: "rounded-xl border border-amber-300 bg-white p-3" },
+                        React.createElement("p", { className: "text-xs font-black text-slate-900 mb-2" }, __alloT('stem.rocks.key_step', 'Step ') + (path.length + 1) + ': ' + q(node)),
+                        React.createElement("div", { className: "grid gap-1.5" },
+                          RK_KEY[node].opts.map(function (o) {
+                            return React.createElement("button", {
+                              key: o[0], type: "button", "data-rk-key-opt": node + ':' + o[0],
+                              onClick: function () { choose(o); },
+                              className: "rounded-lg border-2 border-slate-200 bg-slate-50 hover:border-amber-500 hover:bg-amber-50 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-900", style: { textAlign: 'left' }
+                            }, optLabel(node, o[0]));
+                          })),
+                        path.length > 0 && React.createElement("button", { type: "button", onClick: function () { setKey({ path: path.slice(0, -1) }); },
+                          className: "mt-2 text-[0.6875rem] font-bold text-slate-700 underline hover:text-slate-900" }, "↩ " + __alloT('stem.rocks.key_back', "Back one step"))),
+                      // Candidates still possible: the narrowing, made visible.
+                      !leaf && React.createElement("div", { className: "mt-2", "data-rk-key-candidates": candidates.length },
+                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600 mb-1" },
+                          candidates.length + __alloT('stem.rocks.key_candidates', ' rocks still possible')),
+                        React.createElement("div", { className: "flex flex-wrap gap-1" },
+                          candidates.map(function (id) {
+                            var r = ROCKS.find(function (x) { return x.id === id; });
+                                                        // Pictures once the list is short enough to compare; names
+                            // before that, when 24 swatches would only be clutter.
+                            return r ? React.createElement("span", { key: id, title: r.label, className: "inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-1 py-0.5 text-[0.625rem] font-bold text-slate-700" },
+                              candidates.length <= 8 ? React.createElement("span", { "aria-hidden": true }, rkRockSwatch(React.createElement, r, 18)) : null, r.label) : null;
+                          }))),
+                      // The end of the route.
+                      leaf && React.createElement("div", { className: "rounded-xl border-2 p-3 " + (!target ? "border-sky-300 bg-white" : leaf === target ? "border-emerald-500 bg-emerald-50" : "border-rose-400 bg-rose-50"), "data-rk-key-result": !target ? 'explore' : leaf === target ? 'right' : 'wrong' },
+                        React.createElement("div", { className: "flex items-center gap-2" },
+                          React.createElement("span", { "aria-hidden": true }, rkRockSwatch(React.createElement, ROCKS.find(function (x) { return x.id === leaf; }), 40)),
+                          React.createElement("p", { className: "text-sm font-black " + (!target ? "text-sky-900" : leaf === target ? "text-emerald-900" : "text-rose-900") },
+                            !target ? __alloT('stem.rocks.key_leads_to', 'The key leads to ') + rockLabel(leaf) + '.'
+                              : leaf === target ? '✅ ' + __alloT('stem.rocks.key_right', 'You keyed it out: ') + rockLabel(leaf)
+                              : '❌ ' + __alloT('stem.rocks.key_wrong_a', 'The key led to ') + rockLabel(leaf) + __alloT('stem.rocks.key_wrong_b', ', but this specimen is ') + rockLabel(target) + '.')),
+                        target && leaf === target && React.createElement("p", { className: "text-[0.6875rem] font-bold text-emerald-900 mt-1" }, "🗄️ " + __alloT('stem.rocks.key_collected', "It is in your collection.")),
+                        div && React.createElement("div", { className: "mt-2 rounded-lg bg-white border border-rose-200 p-2", "data-rk-key-diverged": div.node },
+                          React.createElement("p", { className: "text-xs text-slate-900 leading-snug" },
+                            React.createElement("span", { className: "font-black" }, __alloT('stem.rocks.key_div_step', 'Your route went off at step ') + (div.step + 1) + ': '), q(div.node)),
+                          React.createElement("p", { className: "text-xs text-slate-800 leading-snug mt-1" },
+                            __alloT('stem.rocks.key_div_chose', 'You chose: ') + '“' + optLabel(div.node, div.chose) + '”. ' +
+                            __alloT('stem.rocks.key_div_fits', 'For this specimen: ') + div.fits.map(function (f) { return '“' + optLabel(div.node, f) + '”'; }).join(__alloT('stem.rocks.key_or', ' or ')) + '.'),
+                          React.createElement("p", { className: "text-[0.6875rem] text-slate-700 leading-snug mt-1" },
+                            HINT_TEST[div.node] === 'acid' ? __alloT('stem.rocks.key_div_hint_acid', 'The acid test settles this step.')
+                              : HINT_TEST[div.node] === 'nail' ? __alloT('stem.rocks.key_div_hint_nail', 'The steel nail settles this step.')
+                              : HINT_TEST[div.node] === 'water' ? __alloT('stem.rocks.key_div_hint_water', 'Dropping it in water settles this step.')
+                              : __alloT('stem.rocks.key_div_hint_lens', 'Look again through the hand lens: this step is about what you can see.')),
+                          React.createElement("button", { type: "button", "data-rk-key-retry": div.step, onClick: function () { setKey({ path: path.slice(0, div.step) }); },
+                            className: "mt-1.5 px-2.5 py-1 rounded-lg text-[0.6875rem] font-black bg-rose-700 text-white hover:bg-rose-800" }, "↩ " + __alloT('stem.rocks.key_retry', "Go back to that step"))),
+                        React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
+                          React.createElement("button", { type: "button", onClick: function () { updMulti({ selectedRock: leaf, selectedMineral: null }); sfxRockClick(); },
+                            className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-black border border-slate-300 bg-white text-slate-900 hover:bg-slate-50" }, __alloT('stem.rocks.key_open_card', "Open its card: ") + rockLabel(target || leaf)),
+                          target ? React.createElement("button", { type: "button", onClick: startUnknown, className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-black bg-amber-700 text-white hover:bg-amber-800" }, "🎲 " + __alloT('stem.rocks.key_another', "Key another specimen"))
+                            : React.createElement("button", { type: "button", onClick: function () { setKey({ path: [] }); }, className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-black border border-amber-400 bg-white text-amber-900 hover:bg-amber-100" }, "↺ " + __alloT('stem.rocks.key_restart', "Start again"))))
+                    )
+                  ),
+                  d.rkKeyMap && React.createElement("div", { className: "mt-3 rounded-xl border border-slate-200 bg-white p-2 overflow-x-auto", "data-rk-key-map": "1" }, rkKeyMapSvg(React.createElement, rockLabel, path, __alloT))
                 );
               })(),
               // Selected rock detail card
@@ -8070,7 +8453,8 @@ const d = labToolData.rocks || {};
 
                   sfxRockCorrect();
 
-                  upd("mystery", Object.assign({}, myst, { solved: true, lastGuess: rockId }));
+                                    upd("mystery", Object.assign({}, myst, { solved: true, lastGuess: rockId }));
+                  rkCollect(myst.rockId, 'mystery');
 
                   if (typeof awardStemXP === 'function') awardStemXP(15, 'Mystery rock solved!');
 
