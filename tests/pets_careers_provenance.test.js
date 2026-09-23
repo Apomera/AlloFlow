@@ -124,7 +124,47 @@ describe('the numbers are framed as national and perishable', () => {
 
   it('still names the vintage of what is shown', () => {
     const html = careersView();
-    expect(html).toMatch(/2024/);
-    expect(html).toMatch(/2022.{0,3}2032/);
+    expect(html).toMatch(/May 2025/);
+    expect(html).toMatch(/2025.{0,3}2035/);
+  });
+});
+
+// 2026-09-23: the vet card said "~$110,000 median (2024 BLS)", which matches no
+// BLS release, and vet tech "~$38,000" (the May 2022 figure), under an intro
+// naming "2024" and a 2022-2032 outlook. A figure and its stated vintage must
+// come from the same release, and every BLS card must agree with the intro.
+describe('the BLS cards and the intro cite one vintage', () => {
+  it('stamps each BLS-sourced card with the release the intro names', () => {
+    const intro = careersView().match(/BLS OEWS (May \d{4}) medians and the (\d{4})\D{1,3}(\d{4}) outlook/);
+    expect(intro, 'intro no longer names its release').not.toBeNull();
+    for (const id of ['vet', 'vetTech']) {
+      const c = CAREERS.find((x) => x.id === id);
+      expect(c.salary, `${id} salary`).toContain(`(BLS, ${intro[1]})`);
+      expect(c.growth, `${id} outlook`).toMatch(new RegExp(`${intro[2]}\\D{1,3}${intro[3]}`));
+    }
+  });
+});
+
+// The vet card named "Dr. Rebecca Hodshon (UMaine pre-vet advising)", a person
+// no search could find, and the vet-tech card listed Northern Maine CC (no
+// program found) while omitting UMA Bangor (AVMA-accredited since 2002).
+describe('Maine routes name programs, not unverifiable people', () => {
+  it('gives the behaviorist count the ABS directory supports', () => {
+    // The directory listed 89 CAABs + ACAABs (2026-09-23); "~70 CAABs in North
+    // America" was not a count anyone published.
+    const caab = CAREERS.find((x) => x.id === 'caab');
+    expect(caab.growth).not.toMatch(/~70/);
+    expect(caab.growth).toMatch(/directory lists fewer than 100 CAABs and ACAABs/);
+  });
+
+  it('names no individual as a contact', () => {
+    for (const c of CAREERS) expect(c.where, `${c.id}.where`).not.toMatch(/\b(?:Dr|Prof)\.\s/);
+  });
+
+  it('lists the AVMA-accredited Maine vet-tech programs', () => {
+    const where = CAREERS.find((x) => x.id === 'vetTech').where;
+    expect(where).toMatch(/University of Maine at Augusta/);
+    expect(where).toMatch(/York County Community College/);
+    expect(where).not.toMatch(/Northern Maine/);
   });
 });

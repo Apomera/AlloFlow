@@ -72,7 +72,9 @@ test.describe('Pet Lab illustrated reference and responsive diagrams', () => {
     await expect(page.locator('.petslab-body-pose--compact svg[role="img"]')).toHaveCount(27);
     await expect(page.locator('.petslab-body-pose--compact title')).toHaveCount(27);
     await expect(page.locator('.petslab-body-pose--compact desc')).toHaveCount(27);
-    await expect(page.locator('.petslab-body-pose--compact .petslab-body-cues')).toHaveCount(0);
+    // Since ca07a6a91 (09-03) the reference gallery passes withCues, so each
+    // compact card is an annotated diagram with its numbered cue list.
+    await expect(page.locator('.petslab-body-pose--compact .petslab-body-cues')).toHaveCount(27);
 
     await setWidth(page, 390);
     const columns = await page.locator('.petslab-body-reference-grid').first().evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
@@ -95,7 +97,9 @@ test.describe('Pet Lab illustrated reference and responsive diagrams', () => {
     await expect(panel.locator('.petslab-diagram-canvas--bodylang .petslab-diagram-responsive-art'))
       .toHaveCount(1);
     await expect(panel.locator('.petslab-diagram-wide')).toBeVisible();
-    await expect(panel).toContainText('Reading the WHOLE body');
+    // fadeda957 (08-31) replaced the "Reading the WHOLE body" caption with one
+    // that does not promise a countdown to a bite.
+    await expect(panel).toContainText('use the whole body and context');
 
     await expect.poll(() => page.evaluate(() => (
       (window as any).__alloflowPetsLab?.diagramView

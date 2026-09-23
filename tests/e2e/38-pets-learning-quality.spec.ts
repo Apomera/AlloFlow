@@ -79,7 +79,7 @@ test.describe('Pets Lab learning-quality enhancements', () => {
       'modern breed records',
     );
     await expect(feedback).toContainText('Evidence-based model');
-    await expect(feedback).toContainText('15,000 and 40,000 years ago');
+    await expect(feedback).toContainText('15,000–40,000 years ago');
 
     const choices = group.getByRole('button');
     const locked = await choices.evaluateAll((buttons) => buttons.map((button) => ({
@@ -410,7 +410,7 @@ test.describe('Pets Lab learning-quality enhancements', () => {
 
     const correctChoiceFragments = [
       '15,000–40,000 years',
-      'lost the metabolic ability to synthesize taurine',
+      'Cats make too little taurine',
       'Discredited — wild wolf packs are families',
       'Strictly solitary',
       'one-way air sacs',
@@ -423,7 +423,7 @@ test.describe('Pets Lab learning-quality enhancements', () => {
       'adult primary caregiver',
       'trying to defuse the social tension',
       'commonly carry and can shed Salmonella',
-      'active any day above ~40°F',
+      'active on winter days above freezing',
     ];
 
     for (let index = 0; index < correctChoiceFragments.length; index += 1) {

@@ -589,7 +589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     dogs: {
       icon: '🐕', name: 'Dogs (Canis lupus familiaris)',
       principle: 'Domesticated 15–40K years ago from gray wolves',
-      oneLiner: 'The first domesticated species. Co-evolved with humans long enough to develop unique communication abilities (reading human pointing gestures, eye contact for bonding). Lifespan inversely correlated with body size: giant breeds 6–8 yr, small breeds 14–16 yr.',
+      oneLiner: 'The first domesticated species. Co-evolved with humans long enough to develop unique communication abilities (reading human pointing gestures, eye contact for bonding). Lifespan runs opposite to body size within dogs: Great Danes live a median of about 6 years, while small breeds average about 12–13 and the longest-lived breeds about 15.',
       lifespan: '6–16 years (smaller = longer)',
       brain: '~2 billion cortical neurons (more than cats; bonobo has ~9 billion)',
       cite: 'AVMA + Hare 2017 (Cognition)'
@@ -597,7 +597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     cats: {
       icon: '🐈', name: 'Cats (Felis catus)',
       principle: 'Self-domesticated ~9,500 years ago in the Fertile Crescent',
-      oneLiner: 'Obligate carnivores: cannot synthesize taurine, vitamin A, or arginine internally — they MUST get them from animal protein. Adult-cat meowing evolved AS a domestication artifact specifically to communicate with humans (adult feral cats rarely meow at each other).',
+      oneLiner: 'Obligate carnivores: they make too little taurine and arginine for their own needs and cannot turn plant beta-carotene into vitamin A, so their diet must supply all three. Adult cats rarely meow at each other but meow often at people — most likely a kitten call they keep using because humans respond to it.',
       lifespan: '12–18 years indoor; outdoor cats die younger (predation, disease, traffic) — the often-quoted 2–5 years is a rough figure drawn largely from feral-colony data',
       brain: '~250 million cortical neurons',
       cite: 'AAFP + Bradshaw 2013 (Cat Sense)'
@@ -612,8 +612,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     birds: {
       icon: '🦜', name: 'Companion birds',
       principle: 'Vocal learning + flock psychology + extreme longevity',
-      oneLiner: 'Parrots can outlive their owners — macaws + cockatoos hit 50–80 years. Air-sac respiratory anatomy makes them poison-canaries: Teflon (PTFE) overheating kills birds in minutes; aerosols, smoke, and scented candles are toxic. Cognitively complex (Alex the African Grey, Pepperberg).',
-      lifespan: 'finch 5–10 yr · cockatiel 15–25 yr · macaw 50–80 yr',
+      oneLiner: 'Large parrots can outlive their owners: macaws live for decades, and a few cockatoos have passed 70 (the record is a 92-year-old Moluccan cockatoo). Air-sac respiratory anatomy makes them poison-canaries: Teflon (PTFE) overheating kills birds in minutes; aerosols, smoke, and scented candles are toxic. Cognitively complex (Alex the African Grey, Pepperberg).',
+      lifespan: 'finch 5–10 yr · cockatiel 15–25 yr · macaw 20–50 yr',
       cite: 'AAV + Pepperberg 2008'
     },
     reptiles: {
@@ -653,7 +653,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { id: 'same', label: 'About the same — breed size is cosmetic, not biological.' }
       ],
       answer: 'smaller',
-      reveal: 'Within dogs the relationship REVERSES. Giant breeds live about 6–8 years; small breeds reach 14–16. Between species the usual mammal pattern still holds (mouse 2 yr, elephant 70 yr) — it is inside the one species that it inverts, which is why "big dog, long life" is such a common and costly assumption when a family chooses a giant breed.',
+      reveal: 'Within dogs the relationship REVERSES. Great Danes live a median of about 6 years, while small breeds average about 12–13 and the longest-lived breeds about 15. Between species the usual mammal pattern still holds (mouse 2 yr, elephant 70 yr) — it is inside the one species that it inverts, which is why "big dog, long life" is such a common and costly assumption when a family chooses a giant breed.',
       why: 'Leading hypotheses are accelerated growth driving cellular damage, and IGF-1 signalling differences — the same growth pathway selection pushed on to make the breed large.',
       missNote: 'This one is meant to catch people out — the between-species rule really is the opposite, so the intuition is reasonable. That is exactly why it is worth knowing.'
     },
@@ -706,7 +706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       ],
       answer: 'replace',
       reveal: 'UVB bulbs lose their UVB output before they look any dimmer, so visible brightness tells you nothing about whether the animal is still getting UVB. Replace every 6–12 months even when the bulb still looks fine. Without UVB a diurnal reptile cannot synthesize vitamin D3, which leads to metabolic bone disease — deformed legs, a soft jaw, and it can be fatal.',
-      why: 'This sits inside the bigger principle: for an ectotherm, husbandry IS preventive care. The animal cannot generate its own body heat, so at the wrong temperature it cannot digest food, fight infection, or move — heat, humidity, lighting, and habitat are medical variables, not decor.',
+      why: 'This sits inside the bigger principle: for an ectotherm, husbandry IS preventive care. The animal depends on outside heat, so at the wrong temperature it cannot digest food, fight infection, or move — heat, humidity, lighting, and habitat are medical variables, not decor.',
       missNote: 'The general lesson is that the cue you can see (visible light) and the thing that matters (UVB output) are two different outputs of the same bulb. Date the bulb when you install it.'
     }
   };
@@ -853,7 +853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     { term: 'Socialization period', def: 'A developmental sensitive period when safe, positive experiences can strongly shape later responses. Puppies and kittens benefit from carefully managed early exposure, but a missed or difficult period does not make lifelong fear inevitable; later learning and qualified support can still help.' },
     { term: 'Imprinting', def: 'Rapid learning during a critical period (Lorenz\'s ducklings following the first moving object). Most relevant in birds + ungulates; less so in dogs/cats.' },
     { term: 'Calming signals', def: 'Subtle dog body language used to defuse social tension: lip-licking, yawning, head turn, "whale eye" (showing whites). Misread by humans as random.' },
-    { term: 'Allogrooming', def: 'Mutual grooming between social bondmates. Cats only allogroom individuals they trust; bonded rabbits will groom each other.' },
+    { term: 'Allogrooming', def: 'Mutual grooming between social companions. Cats groom mainly their preferred companions, usually around the head and neck, though it is not always friendly: it can come just before a swat. Bonded rabbits groom each other too.' },
     { term: 'Pheromone', def: 'Chemical signal that triggers behavior in same-species individuals. Cats have facial pheromones (rubbing on furniture = marking ownership in friendly way).' },
     { term: 'Allelomimetic behavior', def: 'Doing what your group does. Dogs are highly allelomimetic with their human family — they copy your routine.' },
     { term: 'Resource guarding', def: 'Defensive behavior over food, toys, resting spots, or people. Normal evolutionary behavior; manageable with training; never punish — it intensifies.' },
@@ -861,10 +861,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     { term: 'Bite inhibition', def: 'Control over bite force develops through early social experience, play feedback, learning, and later training. Early litter experience can matter, but it does not determine one fixed lifelong outcome.' },
     { term: 'Obligate carnivore', def: 'A species with nutrient requirements shaped by an animal-tissue diet. Cats and ferrets have specific dietary requirements; adequacy depends on the complete formulated diet and life stage, not a single ingredient label.' },
     { term: 'Crepuscular', def: 'Most active at dawn + dusk. Cats, rabbits, ferrets. Explains the 5 AM "zoomies" of indoor cats.' },
-    { term: 'Brachycephalic', def: 'Short-skulled breeds (pugs, bulldogs, Persians). Often have breathing problems (BOAS), eye problems, dental crowding, inability to thermoregulate. Result of selective breeding for "cute" features.' },
+    { term: 'Brachycephalic', def: 'Short-skulled breeds (pugs, bulldogs, Persians). Often have breathing problems (BOAS), eye problems, dental crowding, and poor heat tolerance (about twice the heatstroke risk of other dogs). Result of selective breeding for "cute" features.' },
     { term: 'AAFCO statement', def: 'A dog- or cat-food nutritional-adequacy statement identifies the intended life stage and how a complete-and-balanced claim is substantiated. It is important label evidence, not proof that one food fits every individual.' },
-    { term: 'TNR (Trap-Neuter-Return)', def: 'Community cat management: trap feral cats, sterilize, vaccinate, return to colony. Reduces population over generations without killing.' },
-    { term: 'Service dog vs ESA', def: 'Service dog = task-trained for a disability (ADA: full public access). Emotional support animal = comfort by presence (FHA + sometimes DOT only; no public access).' }
+    { term: 'TNR (Trap-Neuter-Return)', def: 'Community cat management: trap feral cats, sterilize and vaccinate them, and return them to their colony. It shrinks a colony without killing only when nearly all of its cats are sterilized and new cats stop arriving; see Welfare & Ethics for the debate.' },
+    { term: 'Service dog vs ESA', def: 'Service dog = task-trained for a disability (ADA public access, unless it is out of control or not housebroken). Emotional support animal = comfort by presence (protected mainly in housing under the FHA; airlines stopped having to accept ESAs in 2021; no public access).' }
   ];
 
 
@@ -1067,7 +1067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     { id: 'gpVitaminC',
       claim: '"Guinea pigs can die of scurvy, the same vitamin C deficiency that affected sailors."',
       verdict: true,
-      note: 'Guinea pigs are one of the few mammals — along with humans and other primates — that cannot synthesize their own vitamin C. Without a dietary source (fresh vegetables, C-stable pellets) they develop scurvy.',
+      note: 'Guinea pigs are one of the few mammals — along with humans, monkeys and apes, and some bats — that cannot synthesize their own vitamin C. Without a dietary source (fresh vegetables, C-stable pellets) they develop scurvy.',
       source: 'Covered on the Small mammals page; AVMA Companion Animal' },
     { id: 'ptfeBirds',
       claim: '"An overheated non-stick pan can kill a pet bird in another room, even though the air seems fine to people."',
@@ -1077,7 +1077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     { id: 'parrotLifespan',
       claim: '"Some parrots regularly outlive their owners and need to be named in a will."',
       verdict: true,
-      note: 'Macaws and large cockatoos commonly reach 50-80 years. Rescues are full of parrots whose owners died or could no longer care for them, so naming a successor caregiver is standard advice, not an exotic precaution.',
+      note: 'Macaws and large cockatoos live for decades, and a few cockatoos have passed 70. Rescues are full of parrots whose owners died or could no longer care for them, so naming a successor caregiver is standard advice, not an exotic precaution.',
       source: 'Covered on the Birds page; AAV + parrot rescue guidance' }
   ];
   // Index into MYTHS (m0-m6) and MYTH_CHECK_TRUE (t0-t3), interleaved so the
@@ -1169,20 +1169,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   // ─────────────────────────────────────────────────────────
   var CAREER_PATHS = [
     { id: 'vet', icon: '🩺', title: 'Veterinarian (DVM/VMD)',
-      salary: '~$110,000 median (2024 BLS)',
-      growth: '+19% projected through 2032',
+      salary: '~$130,000 median (BLS, May 2025)',
+      growth: '+9% projected, 2025–2035 (much faster than average)',
       edu: '4-year DVM after undergrad pre-vet. Highly competitive (~12% admit rate at most schools). State licensure exam (NAVLE).',
-      where: 'Maine: Tufts Cummings + Cornell are the closest DVM programs. Dr. Rebecca Hodshon (UMaine pre-vet advising).',
+      where: 'Maine has no veterinary school: Tufts Cummings (Massachusetts) and Cornell (New York) are the closest DVM programs. UMaine\'s B.S. in Animal and Veterinary Sciences is a common pre-vet route.',
       tags: ['professional', 'doctorate', 'clinical'] },
     { id: 'vetTech', icon: '💉', title: 'Veterinary technician (CVT/RVT/LVT)',
-      salary: '~$38,000 median',
-      growth: '+20% projected — fastest-growing animal career',
+      salary: '~$47,000 median (BLS, May 2025)',
+      growth: '+9% projected, 2025–2035 (much faster than average)',
       edu: '2-year AAS in Veterinary Technology + VTNE exam + state credential.',
-      where: 'Maine: York County Community College, Northern Maine CC (online/hybrid options too).',
+      where: 'Maine: AVMA-accredited programs at the University of Maine at Augusta (Bangor campus) and York County Community College (Wells). AVMA-accredited distance programs also exist.',
       tags: ['trade', 'AAS', 'clinical'] },
     { id: 'caab', icon: '🧠', title: 'Certified Animal Behaviorist (CAAB / ACAAB)',
       salary: '$50,000–120,000 (varies by clientele)',
-      growth: 'High demand; only ~70 CAABs total in North America',
+      growth: 'High demand and a small field: the Animal Behavior Society directory lists fewer than 100 CAABs and ACAABs',
       edu: 'PhD in animal behavior (CAAB) OR Master\'s + supervised practice (ACAAB). Animal Behavior Society credentials.',
       where: 'Universities + private behavior consultancy. Often paired with veterinary practice for severe cases.',
       tags: ['research', 'PhD-track', 'clinical+academic'] },
@@ -1328,7 +1328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         impact: 'Call a veterinarian, emergency hospital, or animal poison service immediately. Having the species, weight, package, amount, and time ready supports case-specific triage.',
         url: 'https://www.aspca.org/pet-care/animal-poison-control' },
       { id: 'tickPrevention', icon: '🕷️', what: 'Year-round tick prevention for any dog spending time outside',
-        how: 'Talk to your vet about oral (NexGard, Bravecto, Credelio, Simparica) vs topical (Frontline). Adult ticks active any day above ~40°F — Maine winter is NOT a safety period.',
+        how: 'Talk to your vet about oral (NexGard, Bravecto, Credelio, Simparica) vs topical (Frontline). Adult ticks can become active on any winter day above freezing — Maine winter is NOT a safety period.',
         impact: 'Lyme + anaplasmosis hit Maine dogs hard. Prevention costs ~$15–20/mo; treatment for chronic Lyme costs hundreds.',
         url: 'https://www.maine.gov/dhhs/mecdc/infectious-disease/epi/vector-borne/lyme/' }
     ],
@@ -1348,8 +1348,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         impact: 'Maine shelter overcrowding spikes in summer. A 2-week foster slot literally saves a life.',
         url: 'https://arlgp.org/foster/' },
       { id: 'tnr', icon: '🐈', what: 'Support / volunteer for TNR programs',
-        how: 'Trap-Neuter-Return is the only humane + effective community-cat management tool. Maine: SpayMaine (mobile clinic) and most county humane societies run TNR support.',
-        impact: 'A single un-spayed feral female + her descendants can produce 100+ cats in 7 years.',
+        how: 'Trap-Neuter-Return sterilizes and vaccinates community cats and returns them to a managed colony, which improves their health. It shrinks a colony only when nearly all of its cats are sterilized and new cats stop arriving, so it works best alongside adoption and keeping owned cats in. Maine: SpayMaine (mobile clinic) and most county humane societies run TNR support.',
+        impact: 'In a field study, free-roaming females averaged about 1.4 litters a year of 3 kittens. Three in four kittens died young and colonies still grew: one female and her daughters can produce over 100 kittens in 7 years.',
         url: 'https://www.spaymaine.org/' },
       { id: 'shelterNotStore', icon: '⛔', what: 'Adopt-don\'t-shop (and know why)',
         how: 'Pet-store puppies almost universally come from puppy mills (USDA-licensed but minimum-standards). Mills produce purebreds + designer mixes. Reputable breeders don\'t sell to stores.',
@@ -1388,22 +1388,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       story: 'Western lowland gorilla taught American Sign Language. Working vocabulary ~1,000 signs; understood ~2,000 spoken English words. Famous for kitten "All Ball" and emotional responses to others\' grief. Findings remain debated — was it true language or trained associations? Even the debate raised the bar for animal cognition research.' },
     { id: 'endal', tag: 'service', icon: '🦮', name: 'Endal the Labrador',
       where: 'Allen Parton (UK Royal Navy veteran with brain injury) · 1997–2009',
-      story: 'Trained service dog who learned 100+ tasks: card-key insertion at hotels, recovery position when handler had a fit, calling 999 (UK 911) by pressing a phone button. Featured in "Dog of the Millennium" award (BBC). One of the most documented examples of how task-trained service dogs extend a handler\'s independence.' },
+      story: 'Trained service dog who learned 100+ tasks, from using a cash card at a machine to handing money to bus drivers. In 2001, when a car knocked Parton out of his wheelchair and left him unconscious, Endal pulled him into the recovery position, fetched his mobile phone and a blanket, and ran to a nearby hotel for help. Named "Dog of the Millennium" by Dogs Today magazine, and one of the first PDSA Gold Medal recipients (2002). One of the most documented examples of how task-trained service dogs extend a handler\'s independence.' },
     { id: 'hachiko', tag: 'culture', icon: '🐕', name: 'Hachikō the Akita',
       where: 'Tokyo · 1923–1935',
-      story: 'Met his owner Professor Ueno at Shibuya Station every evening. After Ueno died at work in 1925, Hachikō continued to wait at the station every day for ~10 years until his own death. Bronze statue at Shibuya Station is one of Tokyo\'s landmarks. The story (and his tissue samples studied posthumously) shaped attachment-research thinking about dog-human bonds.' },
+      story: 'Met his owner Professor Ueno at Shibuya Station every evening. After Ueno died at work in 1925, Hachikō continued to wait at the station every day for ~10 years until his own death. Bronze statue at Shibuya Station is one of Tokyo\'s landmarks. His organs were preserved, and a 2011 University of Tokyo examination found terminal cancer and a heartworm infection, settling a long-running rumour that a yakitori skewer killed him.' },
     { id: 'balto', tag: 'service', icon: '🐺', name: 'Balto + Togo (Iditarod precursors)',
       where: '1925 Serum Run · Nome, Alaska',
       story: 'A diphtheria outbreak threatened Nome\'s children; antitoxin was 674 miles away in winter conditions. A relay of 20 mushers + ~150 sled dogs delivered the serum in 5.5 days. Balto led the final leg into Nome (statue in Central Park). Togo, who led the longest + most dangerous leg under Leonhard Seppala, was historically under-credited — recent reappraisals give him equal billing.' },
     { id: 'stubby', tag: 'service', icon: '🐶', name: 'Sergeant Stubby',
       where: 'WWI · US Army 102nd Infantry · 1917–1918',
-      story: 'Stray Boston Terrier mix who became the most decorated war dog of WWI. Detected gas attacks, located wounded soldiers, captured a German spy. Awarded multiple medals + met three US Presidents. Buried at the Smithsonian. The first dog to be promoted to sergeant in the US military.' },
+      story: 'Stray Boston Terrier mix, often called the most decorated war dog of WWI. Detected gas attacks, located wounded soldiers, captured a German spy. Awarded multiple medals + met three US Presidents. His preserved body is on display at the Smithsonian\'s National Museum of American History. The "Sergeant" is honorary: his biographer found no story from his lifetime that called him "Sgt. Stubby".' },
     { id: 'belyaev', tag: 'science', icon: '🦊', name: 'Belyaev\'s silver foxes',
       where: 'Soviet Institute of Cytology and Genetics, Novosibirsk · 1959–present',
-      story: 'Geneticist Dmitry Belyaev selected silver foxes for ONE trait: tameness around humans. Within ~10 generations, foxes started showing all the classic "domestication syndrome" traits: floppy ears, curly tails, piebald coats, smaller adrenals, longer reproductive seasons. Demonstrated that selection for behavior alone drags physical traits along genetically. Still ongoing 65+ years later.' },
+      story: 'Geneticist Dmitry Belyaev selected silver foxes for ONE trait: tameness around humans. Within ~10 generations, the tamest foxes were reported to show classic "domestication syndrome" traits: floppy ears, curly tails, piebald coats, smaller adrenals, longer reproductive seasons. It was long read as proof that selecting for behavior alone drags physical traits along. A 2020 reanalysis (Lord et al.) found the founders came from Canadian fur farms and most of those traits predated the experiment, so that reading is now debated. Still ongoing 65+ years later.' },
     { id: 'cher-ami', tag: 'service', icon: '🕊️', name: 'Cher Ami the carrier pigeon',
       where: 'WWI · US Army Signal Corps · 1918',
-      story: 'Carrier pigeon who delivered a critical message from the trapped "Lost Battalion" of the 77th Division. Shot through the chest, blinded, with a leg nearly severed, she still completed the 25-mile flight in 25 minutes — saving ~194 American soldiers. Awarded the French Croix de Guerre. Mounted body still on display at the Smithsonian.' }
+      story: 'Carrier pigeon who delivered a critical message from the trapped "Lost Battalion" of the 77th Division. Shot through the breast, blinded in one eye, with a leg nearly severed, he still completed the 25-mile flight in about 25 minutes — saving ~194 American soldiers. Army records called Cher Ami a hen; a 2021 Smithsonian DNA test showed he was male. Awarded the French Croix de Guerre. His preserved body is on display at the Smithsonian.' }
   ];
   var FAMOUS_FILTERS = [
     { id: 'all', label: 'All' },
@@ -1487,12 +1487,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       hint: 'Track what changed and when, then bring that record to a veterinarian. Early evaluation can separate cognitive change from pain, sensory loss, or other medical causes and support an individualized care plan.' }
   ];
   var AI_GROUND_TRUTH = [
-    'Dogs: 15,000–40,000 years from Pleistocene wolf. Olfactory ~300M receptors vs 5M human. Lifespan inversely correlated with size (small 14–16 yr; giant 6–8 yr).',
+    'Dogs: 15,000–40,000 years from Pleistocene wolf. Olfactory ~300M receptors vs 5M human. Within dogs lifespan runs opposite to size: small breeds average about 12–13 yr and the longest-lived about 15, while Great Danes live a median of about 6 (VetCompass; McMillan et al. 2024).',
     'Cats: obligate carnivores with species-specific dietary requirements including taurine, preformed vitamin A, arginine, and arachidonic acid. Adequacy depends on the finished diet and life stage, not a single ingredient identity. Indoor cats live 12–18 yr; cats with outdoor access die younger, though the widely-quoted "outdoor 2–5" figure is rough and leans on feral-colony data rather than owned cats.',
     'Rabbits: not eating plus hunched posture is an urgent emergency signal. Call a rabbit-experienced veterinarian now; do not force-feed or start home treatment unless a veterinarian has assessed blockage risk and specifically instructs it. An adult should be the primary caregiver; children need supervised, rabbit-respecting interaction.',
     'Birds: respiratory air-sac anatomy makes them sensitive to PTFE/Teflon, aerosols, scented candles, and smoke. Many parrots can require care for decades; lifespan varies by species, husbandry, and individual, so successor-care planning matters.',
     'Reptiles and amphibians can carry and shed Salmonella while appearing healthy; a negative sample does not clear future shedding. CDC advises households with children under 5, adults 65+, or people with weakened immune systems to consider another pet, and says young children should avoid contact. Species-specific heat, humidity, lighting, diet, and habitat are major preventable welfare needs.',
-    'Service dog (ADA): individually task-trained for a disability; full public access; only 2 questions allowed (1) is it a service animal because of a disability (2) what task. ESA: comfort by presence; FHA only; no public access. Therapy: visit-based, no automatic access.',
+    'Service dog (ADA): individually task-trained for a disability; public access, unless the animal is out of control or not housebroken; only 2 questions allowed (1) is it a service animal because of a disability (2) what task. ESA: comfort by presence; FHA only; no public access. Therapy: visit-based, no automatic access.',
     'Service-dog program eligibility, availability, wait times, and costs vary. Verify current details directly with an Assistance Dogs International accredited program; an alert dog complements rather than replaces medical monitoring.',
     'Cat house-soiling: sudden changes warrant veterinary evaluation. After medical causes are assessed, review box number, access, location, substrate, cleanliness, and stress; do not punish.',
     'Senior dogs: changes in disorientation, sleep and wake cycles, interactions, house-soiling, activity, or anxiety can fit CCD but overlap with medical, pain, and sensory causes. Veterinary evaluation and longitudinal tracking come before individualized management.',
@@ -1501,10 +1501,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     'Suspected poisoning: call a veterinarian, emergency veterinary hospital, or animal poison service immediately; do not wait for symptoms. Do not induce vomiting or give medication or home remedies unless a veterinarian or animal poison expert directs you.',
     'ASPCA Animal Poison Control: (888) 426-4435 (24/7; consultation fee may apply). Pet Poison Helpline: (855) 764-7661 (24/7). Have the species, weight, product or plant information, estimated amount and time, symptoms, and packaging or a photo ready.',
     'Maine: among the top few US states for Lyme + anaplasmosis incidence, trading the lead year to year with Vermont and New Hampshire — do not assert a flat national #1. Year-round tick prevention is standard veterinary care. ARLGP, Bangor Humane, Avian Haven are major Maine resources.',
-    'Operant theory (covered in BehaviorLab): positive reinforcement is primary modality; AVSAB + AVMA oppose dominance-based / punishment-based training.',
+    'Operant theory (covered in BehaviorLab): positive reinforcement is primary modality; AVSAB and the American College of Veterinary Behaviorists oppose dominance-based / punishment-based training.',
     'NEVER recommend specific medications, dosages, or procedures — refer to a veterinarian.',
     'NEVER suggest rehoming a pet without first ruling out medical + manageable behavioral causes.'
   ];
+
+  // Litter math from a field study of free-roaming cats (Nutter, Levine &
+  // Stoskopf 2004, JAVMA): 1.4 litters a year, a median of 3 kittens a litter,
+  // and 75% of kittens dead or gone before 6 months. Half the survivors are
+  // female and breed from the next year. Adults are assumed to live the whole
+  // period, so every figure is an upper bound for a real colony. The big
+  // number, the caption and the chart all read this one function.
+  var LITTER_MODEL = { littersPerYear: 1.4, kittensPerLitter: 3, kittenSurvival: 0.25, femaleShare: 0.5 };
+  function petsLitterMath(years) {
+    var n = Math.max(1, Math.min(7, Math.floor(Number(years)) || 1));
+    var females = 1, born = 0, alive = 1, rows = [];
+    for (var y = 1; y <= n; y++) {
+      var kittens = females * LITTER_MODEL.littersPerYear * LITTER_MODEL.kittensPerLitter;
+      var survivors = kittens * LITTER_MODEL.kittenSurvival;
+      born += kittens;
+      alive += survivors;
+      females += survivors * LITTER_MODEL.femaleShare;
+      rows.push({ year: y, born: Math.round(born), alive: Math.round(alive) });
+    }
+    return rows;
+  }
 
   // ─────────────────────────────────────────────────────────
   // WELFARE & ETHICS DATA — 4 pillars: spay/neuter, adoption,
@@ -1515,9 +1536,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       icon: '✂️', label: 'Spay & Neuter',
       lead: 'Surgical sterilization (spay = ovaries/uterus removed; neuter = testicles removed) is the highest-leverage thing an owner can do for population welfare AND individual-pet welfare.',
       health: [
-        { species: 'Female dogs / cats', benefit: 'Spaying before first heat reduces mammary cancer risk dramatically (≈0.5% if spayed before 1st heat vs ≈26% later for dogs). Eliminates risk of pyometra (life-threatening uterine infection) and ovarian cancer.' },
-        { species: 'Male dogs / cats', benefit: 'Eliminates testicular cancer risk. Reduces prostate disease in dogs. Reduces FIV transmission in cats (driven by unneutered males roaming + fighting).' },
-        { species: 'Rabbits', benefit: 'Female rabbits have ~80% rate of uterine cancer by age 5 if not spayed (House Rabbit Society). Spaying is medical necessity, not optional.' }
+        { species: 'Female dogs / cats', benefit: 'Eliminates the risk of pyometra (life-threatening uterine infection) and ovarian cancer. Spaying also lowers mammary-cancer risk, and the evidence is strongest in cats: spaying before 6 months was linked to 91% fewer mammary carcinomas. In dogs the famous figures (a dog spayed before her first heat has 0.5% of an intact dog\'s risk, 8% after one heat, 26% after two) come from a single 1969 study and are relative risks, not rates, and a 2012 systematic review rated the dog evidence weak.' },
+        { species: 'Male dogs / cats', benefit: 'Eliminates testicular cancer risk. Prevents benign prostate enlargement in dogs, though the rarer prostate cancers are more common in neutered dogs. Reduces FIV transmission in cats (driven by unneutered males roaming + fighting).' },
+        { species: 'Rabbits', benefit: 'Uterine cancer is the most common tumor in unspayed female rabbits, and the risk climbs with age. The widely quoted "80% by age 5" comes from old laboratory colonies of particular breeds, not pet rabbits in general: in a study of 854 female pet rabbits examined after death, about a quarter (26.8%) had uterine disease of any kind, with tumors the most common. Rabbit vets still widely recommend spaying.' }
       ],
       behavior: [
         'Reduced roaming (intact dogs + cats roam farther seeking mates → traffic + fight injuries)',
@@ -1525,19 +1546,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         'Reduced urine marking in male cats (a primary intake-to-shelter reason)',
         'No more heat cycles in females (no yowling, no blood, no mating attempts)'
       ],
-      timing: 'Traditional age: 6 months. Modern guidance varies: AAFP recommends 5 months for cats; AVMA + 2013 large-breed dog research suggests waiting until skeletal maturity (12-18 mo) for some giant breeds. Talk to your vet about timing for your specific animal.',
-      math: 'One unspayed female cat + her descendants can produce hundreds of kittens within 7 years if all survive and reproduce. Most of those kittens will end up in shelters or as ferals. Use the calculator below to see the compounding.',
+      timing: 'Traditional age: 6 months. Modern guidance varies: AAFP recommends 5 months for cats. For some large dog breeds (Golden Retriever, Labrador, German Shepherd), UC Davis studies linked neutering before one year to 2–4 times the risk of joint disorders, so waiting can make sense; across 35 breeds, though, most showed no such effect, and small breeds none. Talk to your vet about timing for your specific animal.',
+      math: 'One unspayed female and her daughters can produce over 100 kittens in 7 years, even though most kittens born outdoors die young. The calculator below uses rates measured in free-roaming cats. Use it to see the compounding.',
       cost: 'Spay/neuter is far cheaper than treating one accidental pregnancy or one mammary tumor or one pyometra. Many programs offer low-cost or free service.',
       maine: 'SpayMaine (mobile clinic, statewide) — spaymaine.org. Animal Refuge League of Greater Portland — sliding scale. ASPCA national database for low-cost programs near you.',
-      cite: 'AVMA position statement 2018 · AAFP guideline 2017 · House Rabbit Society · ASPCA spay/neuter database'
+      cite: 'AVMA position statement 2018 · AAFP guideline 2017 · Nutter et al. 2004 (litter math) · Schneider et al. 1969; Beauvais et al. 2012 (dog mammary risk) · Overley et al. 2005 (cat mammary risk) · Bryan et al. 2007 (prostate) · Bertram et al. 2018 (rabbit uterine pathology) · House Rabbit Society · ASPCA spay/neuter database'
     },
     adoption: {
       icon: '🏠', label: 'Adopt-don\'t-shop',
-      lead: 'About 6.3 million companion animals enter US shelters every year. Roughly 920,000 are euthanized annually — down from 2.6 million in 2011 thanks to the rise of adoption + spay/neuter (ASPCA 2024). Every adoption is one less.',
+      lead: 'About 5.8 million dogs and cats entered US shelters and rescues in 2025, and about 597,000 were euthanized, roughly 8% (Shelter Animals Count data, published by the ASPCA). That is far below the ASPCA\'s estimate of about 2.6 million a year in 2011, thanks to the rise of adoption + spay/neuter. Every adoption is one less.',
       whyAdopt: [
         '🐾 Adoption literally saves a life. Shelter intake exceeds capacity in most US shelters seasonally.',
         '💰 $50–$300 typical adoption fee vs $1,500–$3,500 from a breeder; usually includes spay/neuter, vaccines, microchip.',
-        '👀 Adult dogs and cats from shelters come pre-evaluated for temperament, health, and household fit. Less surprise than a 9-week puppy.',
+        '👀 An adult shelter animal comes with a known adult size, coat, and personality that staff and foster carers have seen day to day. Formal shelter behavior tests predict poorly, so ask what carers have actually observed.',
         '🧬 Mixed-breed dogs (≥50% of shelter dogs) tend to have FEWER concentrated genetic disorders than closed-studbook purebreds (see Genetics tile).',
         '🧑‍🤝‍🧑 You\'re directly relieving overcrowding — fostering or adopting opens a kennel slot for the next animal.'
       ],
@@ -1556,20 +1577,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         '✓ Doesn\'t breed multiple breeds at high volume (red flag: "rare colors," "miniature" of breeds that aren\'t naturally small)',
         '✓ Lets puppies stay with mom + littermates until at least 8 weeks (not 6 — that\'s a backyard breeder cue)'
       ],
-      cite: 'ASPCA Pet Statistics 2024 · Best Friends Animal Society 2025 · HSUS Pets by the Numbers · Petfinder shelter directory'
+      cite: 'ASPCA Pet Statistics (Shelter Animals Count, 2025 data) · Patronek & Bradley 2016 (shelter behavior evaluations) · Best Friends Animal Society 2025 · HSUS Pets by the Numbers · Petfinder shelter directory'
     },
     declawing: {
       icon: '⚠️', label: 'Declawing — what it actually is',
       lead: 'Declawing (onychectomy) is NOT trimming or removing nails. It is the surgical AMPUTATION of the third phalanx — the last bone of each toe. The human equivalent is amputating every finger at the last knuckle.',
       anatomicalTruth: 'In a healthy cat, the claw is part of the bone — claws can\'t be "removed" without amputating the bone they\'re attached to. The standard surgical method severs the third phalanx (P3) at the joint with the second phalanx, using either a guillotine clipper, a scalpel disarticulating each joint, or a CO₂ laser. In all methods, the cat permanently loses the last segment of every toe.',
-      pain: 'Pain is acute post-op and often becomes chronic. A 2018 study (Martell-Moran, JFMS) found that declawed cats had 3× the rate of long-term back/limb pain and 7× the rate of unwanted behaviors compared to clawed cats. Bone chips left from imperfect surgery can cause lifelong neuropathic pain.',
+      pain: 'Pain is acute post-op and often becomes chronic. A 2018 study of 274 cats (Martell-Moran, JFMS) found declawed cats had about 3 times the odds of back pain, 7 times the odds of house-soiling, and 4.5 times the odds of biting compared with clawed cats. Bone fragments left from imperfect surgery raised the odds of back pain and aggression further, and can cause lifelong neuropathic pain.',
       behaviorConsequences: [
         '↑ Biting (claws were the primary defense — bite becomes the only option)',
         '↑ Litter box avoidance (sand on amputation sites is painful → cat associates the box with pain → pees elsewhere → often surrendered to shelter)',
         '↑ Aggression toward humans + other pets',
         '↓ Climbing + healthy stretching (toes can\'t grip; balance permanently altered)'
       ],
-      vetConsensus: 'Opposed by AVMA (updated 2020), AAFP (Position Statement 2017), AVA (Australia), BSAVA (UK), CVMA (Canada), and the Cat Friendly Practice program. Banned in most of the EU, Israel, the UK, Australia, New Zealand, and Brazil. Banned in NY (2019), MD (2022), Pittsburgh, Denver, San Francisco, LA, and several other US cities.',
+      vetConsensus: 'Discouraged by the AVMA (2020 policy, which still leaves the call to veterinary judgment) and opposed by the AAFP (Position Statement 2017), AVA (Australia), BSAVA (UK), CVMA (Canada), and the Cat Friendly Practice program. Banned in most of the EU, Israel, the UK, Australia, New Zealand, and Brazil. In the US, six states ban elective declawing: New York (2019), Maryland (2022), Virginia (2024), and California, Massachusetts and Rhode Island (2025). So do Washington, DC (2023) and cities including Denver, Pittsburgh, Los Angeles and San Francisco. Laws keep changing, so check your own state.',
       alternatives: [
         '🪵 Tall vertical scratching posts + horizontal scratchers (cats scratch to mark territory + maintain claws — they NEED to scratch; provide many surfaces in different orientations)',
         '✂️ Regular nail trims (every 2–3 weeks; takes 30 seconds with a sharp clipper once the cat is acclimated)',
@@ -1585,7 +1606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       data: 'Loss et al. 2013 (Nature Communications, Smithsonian Migratory Bird Center): free-roaming cats kill 1.3–4 billion birds and 6.3–22.3 billion mammals per year in the US alone. Conservative midpoint: 2.4 billion birds. Cats are the #1 direct source of bird mortality from human activity.',
       whyItMatters: 'Domestic cats are an introduced predator on every continent except Antarctica. Native bird species evolved without ground predators of cats\' size, agility, and abundance. Cats hunt regardless of whether they\'re fed at home — predation is instinct, not hunger. Bell collars reduce kills by ~30–50% but don\'t eliminate them.',
       ownCatLifespan: 'Indoor cats commonly reach 12–18 years, and cats with outdoor access die younger — that direction is not seriously disputed. Be careful with the widely-quoted "2–5 years outdoors" figure, though: it comes largely from unowned and feral colony data, not from owned cats let out during the day, and it circulates in advocacy material more than in peer-reviewed studies. The mechanisms are what\'s solidly established: traffic (a large share of outdoor-cat deaths in suburban areas), predation (coyotes, owls, fishers in Maine, larger dogs), parasites (fleas, ticks, intestinal worms, FIV/FeLV transmitted in fights), poisoning (antifreeze, secondary rodenticide), weather, and theft.',
-      tnrControversy: 'Trap-Neuter-Return (TNR) sterilizes existing feral colonies. AVMA + most major shelters support TNR as the only humane large-scale tool for already-established colonies. American Bird Conservancy + National Audubon argue TNR alone doesn\'t reduce predation enough fast enough to protect threatened bird species — they advocate sanctuaries / removal. Both sides are operating from real data; the disagreement is about strategy, not facts.',
+      tnrControversy: 'Trap-Neuter-Return (TNR) sterilizes, vaccinates, and returns the cats in existing colonies. Most major animal-welfare groups, including the ASPCA, back it for cats too unsocialized to adopt. The AVMA is more cautious: it supports properly managed colonies and wants non-lethal methods tried first, but says cats outside managed colonies should be removed, and it does not rule out euthanasia for colonies that are not shrinking and threaten the area. American Bird Conservancy + National Audubon argue TNR alone doesn\'t reduce predation enough fast enough to protect threatened bird species — they advocate sanctuaries / removal. Part of the disagreement is about evidence: in a large field study, cat numbers fell only where more than 70% of the cats across a whole area were neutered, because newcomers move in and the rest breed faster, and many programs never reach that. Part is about values: how to weigh the cats\' welfare against the wildlife they kill.',
       whatIndividualsCanDo: [
         '🏠 Keep owned cats indoors. The single highest-impact action.',
         '🦮 Leash-train cats (yes — see Cat training in BehaviorLab). Many cats accept harness + lead with patient training; outdoor enrichment without predation.',
@@ -1906,7 +1927,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Shelter staff often "speed-date" rabbits to find compatible pairs. Both must be spayed/neutered first. Bonding takes weeks of supervised intros — patience pays off.' },
           { id: 'solo', label: 'Keep solo; spend lots of one-on-one time instead',
             effects: { phys: 0, ment: -3, soc: -2, env: 0, en: -5, money: 0 },
-            note: 'Possible if you genuinely have hours daily, but most working/school people can\'t match what another bun does. Switzerland makes solo rabbit ownership ILLEGAL for this reason.' },
+            note: 'Possible if you genuinely have hours daily, but most working/school people can\'t match what another bun does. Swiss law treats rabbits as social animals too: young rabbits may not be housed alone in their first eight weeks, and guinea pigs may not be kept alone at all.' },
           { id: 'just_add', label: 'Buy another, no introductions',
             effects: { phys: -10, ment: -5, soc: -5, env: 0, en: 0, money: -50 },
             aftermath: { en: -8 },
@@ -1920,7 +1941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         choices: [
           { id: 'spay', label: 'Schedule the spay',
             effects: { phys: +18, ment: +3, soc: +3, env: 0, en: -5, money: -400 },
-            note: 'Female rabbits have ~80% rate of uterine cancer by age 5 if not spayed (House Rabbit Society / Saunders 2003). Spay nearly eliminates this. Plus reduces aggression + spraying.' },
+            note: 'Uterine cancer is the most common tumor in unspayed female rabbits, and the risk climbs with age. A spay removes the uterus, so it prevents that cancer outright. (The popular "80% by age 5" is an old laboratory-colony figure; Welfare & Ethics has the pet-rabbit data.) Plus reduces aggression + spraying.' },
           { id: 'wait', label: 'Wait until she shows symptoms',
             effects: { phys: -15, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
             aftermath: { money: -1500 },
@@ -2043,7 +2064,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           { id: 'take_it', label: 'Take the chew away to show it who is boss',
             effects: { phys: -4, ment: -4, soc: -10, env: 0, en: -2, money: 0 },
             aftermath: { en: -6, money: -120 },
-            note: 'Punishing the growl removes the warning, not the guarding: the next step is a bite with no growl first. Dominance framing does not describe pet dogs (Mech, who coined "alpha", withdrew it for wolves too). If teeth touched skin, wash it and see a doctor.' }
+            note: 'Punishing the growl removes the warning, not the guarding: the next step is a bite with no growl first. Dominance framing does not describe pet dogs (Mech, who popularized "alpha", has retracted it for wild wolves too). If teeth touched skin, wash it and see a doctor.' }
         ]
       },
       { day: 4, label: 'Day 4 — the dental check',
@@ -2576,7 +2597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       options: [
         { id: 'homes', label: 'They are right — if every kitten gets a home, there is no welfare problem.',
           verdict: 'miss',
-          note: 'Finding homes for one litter does not close the loop. Those kittens reach breeding age in months, and shelter intake is already about 6.3 million animals a year — a home found for this litter is a home not available to an animal already waiting. The compounding calculator on this tab is the point: one unspayed female is not one litter, it is a branching line.' },
+          note: 'Finding homes for one litter does not close the loop. Those kittens reach breeding age in months, and shelter intake is already about 5.8 million dogs and cats a year — a home found for this litter is a home not available to an animal already waiting. The compounding calculator on this tab is the point: one unspayed female is not one litter, it is a branching line.' },
         { id: 'cost', label: 'Point out that spaying also prevents pyometra and sharply reduces mammary cancer risk, and ask their vet or a local clinic about low-cost options.',
           verdict: 'best',
           note: 'This is the strongest move, because it answers the objection they actually raised. Cost is a real barrier, and low-cost and subsidised clinics exist in most areas. Pairing that with the individual-health case — pyometra is life-threatening, and spaying before the first heat drops mammary cancer risk dramatically — means you are not asking them to accept a cost for someone else\'s benefit. It is their cat\'s health too.' },
@@ -7103,12 +7124,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Domestication: 15,000–40,000 years ago'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Dogs share a common ancestor with modern gray wolves but were NOT bred from them — both descend from an extinct Pleistocene wolf population. The current best estimate (Frantz 2016, Botigué 2017): ',
-            h('strong', { style: { color: T.accentHi } }, 'a single domestication event between 15,000 and 40,000 years ago'),
-            ', possibly in eastern Eurasia.'),
+            'Dogs share a common ancestor with modern gray wolves but were NOT bred from them — both descend from an extinct Pleistocene wolf population. Genome studies date domestication to roughly ',
+            h('strong', { style: { color: T.accentHi } }, '15,000–40,000 years ago'),
+            '. Whether it happened once or more than once is still argued: Frantz et al. 2016 proposed two origins, in eastern and western Eurasia; Botigué et al. 2017 argued for one.'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             h('strong', { style: { color: T.text } }, 'Belyaev fox experiment'),
-            ': starting 1959 in Soviet Siberia, geneticist Dmitry Belyaev selected silver foxes for one trait — tameness around humans. Within ~10 generations, foxes started showing all the classic "domestication syndrome" traits: floppy ears, curly tails, piebald coats, smaller adrenal glands, longer reproductive seasons. Showed that selecting for behavior alone drags physical traits along genetically.'),
+            ': starting 1959 in Soviet Siberia, geneticist Dmitry Belyaev selected silver foxes for one trait — tameness around humans. Within ~10 generations, the tamest foxes were reported to show classic "domestication syndrome" traits: floppy ears, curly tails, piebald coats, smaller adrenal glands, longer reproductive seasons. It was long read as proof that selecting for behavior alone drags physical traits along. A 2020 reanalysis (Lord et al.) found the founders came from Canadian fur farms and most of those traits predated the experiment, so that reading is now debated.'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             'This means the dog\'s "look" and "personality" co-evolved as a package over thousands of generations of selection by ancient humans.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -7124,11 +7145,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
             'Across mammals, larger species generally live longer (mouse 2 yr, elephant 70 yr). But ',
             h('strong', { style: { color: T.text } }, 'within dogs the relationship REVERSES'),
-            ': giant breeds (Great Dane, Irish Wolfhound) live 6–8 years; small breeds (Chihuahua, Toy Poodle) live 14–16 years. Hypotheses include accelerated growth → cellular damage and IGF-1 signaling differences.')),
+            ': giant breeds die far younger (Great Danes a median of about 6 years, Mastiffs about 9), while small breeds average about 12–13 years and the longest-lived breeds about 15 (VetCompass; McMillan et al. 2024, 584,734 UK dogs). Hypotheses include accelerated growth → cellular damage and IGF-1 signaling differences.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
           h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            'Maine has a strong working-dog culture: sled dogs (Iditarod-class kennels in Bethel + Greenville), Labrador retrievers everywhere (Lab is named for Labrador, just to the north), coon hounds in rural Maine. Tick + Lyme density is among the highest in the US — see the Zoonoses tile. Cold-climate breeds (Husky, Malamute, Bernese) thrive; brachycephalic breeds (pugs, bulldogs) struggle in summer humidity.')),
+            'Maine has a strong working-dog culture: sled dogs (Fort Kent hosts the Can-Am Crown, a 250-mile Iditarod-qualifying race), Labrador retrievers everywhere (despite the name, the breed was developed from St. John\'s water dogs in Newfoundland and refined in Britain), coon hounds in rural Maine. Tick + Lyme density is among the highest in the US — see the Zoonoses tile. Cold-climate breeds (Husky, Malamute, Bernese) thrive; brachycephalic breeds (pugs, bulldogs) struggle in summer humidity.')),
         crossLink('Tooth shape reveals diet', h('span', null,
           'A dog skull carries ', h('strong', { style: { color: T.text } }, 'flat-topped molars'),
           ' a cat skull does not have — grinding surfaces that let dogs digest some plant matter. The labelled side-by-side is in Diagrams.'),
@@ -7163,8 +7184,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '👁️ Sensory world: built for low-light hunting'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 13, color: T.muted, lineHeight: 1.6 } },
             h('li', null, h('strong', { style: { color: T.text } }, 'Slit pupils'), ' that close to a vertical line — admit far less light at midday and far more at twilight.'),
-            h('li', null, h('strong', { style: { color: T.text } }, 'Tapetum lucidum'), ' — reflective layer behind the retina that gives the eyeshine effect, doubling effective sensitivity in low light.'),
-            h('li', null, h('strong', { style: { color: T.text } }, 'Whiskers (vibrissae)'), ' — embedded in 200+ nerve endings; map gap-width when navigating in the dark. Whisker fatigue from narrow food bowls is real.'),
+            h('li', null, h('strong', { style: { color: T.text } }, 'Tapetum lucidum'), ' — reflective layer behind the retina that gives the eyeshine effect. It sends light back through the retina for a second pass, raising low-light sensitivity by roughly 40–50% (not doubling it).'),
+            h('li', null, h('strong', { style: { color: T.text } }, 'Whiskers (vibrissae)'), ' — each whisker follicle is supplied by 100–200 nerve fibers (an ordinary hair gets 2 or 3); map gap-width when navigating in the dark. "Whisker fatigue" from narrow bowls is popular but weakly supported: in a 2021 study of 40 cats, a wide, shallow dish did not change how much or how long they ate, though some cats preferred it.'),
             h('li', null, h('strong', { style: { color: T.text } }, 'Hearing range'), ' to ~64 kHz (human ~20 kHz, dog ~45 kHz) — they hear ultrasonic rodent calls.'),
             h('li', null, h('strong', { style: { color: T.text } }, 'Vision'), ' — dichromatic (similar to red-green color blind humans). Trade color for low-light + motion sensitivity.'))),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -7213,7 +7234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           cite: 'House Rabbit Society' },
         { name: 'Guinea pig', icon: '🐹', life: '5–8 yr',
           social: 'Strict herd animal. ILLEGAL to own solo in Switzerland. Bond a same-sex pair (or trio) — lifelong company.',
-          pitfall: 'Vitamin C dependent (like humans + great apes — most mammals make their own). Need fresh bell pepper / parsley / GP-formulated pellets daily or get scurvy.',
+          pitfall: 'Vitamin C dependent (like humans, monkeys and apes — most mammals make their own). Need fresh bell pepper / parsley / GP-formulated pellets daily or get scurvy.',
           chow: 'Hay (~80% diet) + vitamin-C-stable pellets + fresh veggies daily.',
           cite: 'AVMA Companion Animal' },
         { name: 'Hamster', icon: '🐹', life: '2–3 yr',
@@ -7223,7 +7244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           cite: 'AVMA + RSPCA' },
         { name: 'Ferret', icon: '🦦', life: '6–10 yr',
           social: 'Group animal — solo ferret = lonely ferret. Most happy in pairs/trios.',
-          pitfall: 'Obligate carnivores (like cats — cannot eat plant-based food). Adrenal disease + insulinoma very common in older ferrets — vet care expensive. Strong odor even when descented.',
+          pitfall: 'Obligate carnivores (like cats): a short gut that digests fiber and carbohydrate poorly, so they cannot thrive on a plant-based diet. Adrenal disease + insulinoma very common in older ferrets — vet care expensive. Strong odor even when descented.',
           chow: 'Ferret-specific kibble (high meat protein, low carb) OR raw/whole prey diet. NEVER dog food.',
           cite: 'AFA + AVMA Exotic Pet' }
       ];
@@ -7284,9 +7305,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.text } }, '⏱️ Lifespan reality check'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Macaws + cockatoos: ',
-            h('strong', { style: { color: T.accentHi } }, '50–80 years'),
-            '. African Greys: 40–60. Amazons: 40–60. Cockatiels: 15–25. Budgies: 5–10. Larger parrots routinely outlive their first owner — buyers should plan for the bird\'s rehoming as part of the adoption decision.')),
+            'Macaws, African Greys and Amazons: ',
+            h('strong', { style: { color: T.accentHi } }, 'decades'),
+            ', and the oldest in zoo records reached about 35–55. A few cockatoos have passed 70, and one reached 92. Cockatiels: 15–25. Budgies: 5–10. Those are good-care figures: in the largest study of captive parrots (83,212 zoo birds, Young et al. 2012), most birds died well short of their species\' record, and only 12 of 260 species ever had a bird live past 50. Larger parrots can still outlive their first owner — buyers should plan for the bird\'s rehoming as part of the adoption decision.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine angle'),
           h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
@@ -7315,7 +7336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🌡️ Ectothermy: temperature is your job'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Reptiles cannot generate body heat from metabolism — their entire physiology depends on environmental temperature. A reptile at the wrong temperature can\'t digest food, fight infection, or move. ',
+            'Reptiles make little body heat from metabolism (a few exceptions exist: tegu lizards warm themselves in the breeding season, and pythons shiver to warm their eggs), so their physiology depends on environmental temperature. A reptile at the wrong temperature can\'t digest food, fight infection, or move. ',
             h('strong', { style: { color: T.accentHi } }, 'Husbandry is preventive care'),
             ': incorrect heat, humidity, lighting, diet, and habitat are common avoidable causes of poor health.'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -8910,9 +8931,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             'Closed studbooks (you can only breed within the registered pool) + selection for extreme features create concentrated genetic problems:'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 13, color: T.muted, lineHeight: 1.65 } },
             h('li', null, h('strong', { style: { color: T.warm } }, 'Brachycephaly'),
-              ' (English bulldog, French bulldog, pug, Persian cat): collapsed airways, can\'t exercise, can\'t cool themselves, eye problems, dental crowding. Many can\'t give birth without C-section.'),
+              ' (English bulldog, French bulldog, pug, Persian cat): narrowed airways, poor exercise tolerance, and poor heat tolerance (English bulldogs have about 14 times a Labrador\'s odds of heatstroke), eye problems, dental crowding. Many can\'t give birth without C-section.'),
             h('li', null, h('strong', { style: { color: T.warm } }, 'Hip dysplasia'),
-              ' (German Shepherd, Labrador, Golden Retriever): malformed hip joint causes lifelong pain. OFA + PennHIP screening before breeding reduces incidence.'),
+              ' (German Shepherd, Labrador, Golden Retriever): a malformed hip joint that can cause lifelong pain. Common in these breeds, yet a UC Davis study of 27,254 dogs found it just as common in mixed breeds, so it is not a purebred-only cost. OFA + PennHIP screening before breeding reduces incidence.'),
             h('li', null, h('strong', { style: { color: T.warm } }, 'Syringomyelia'),
               ' (Cavalier King Charles Spaniel): brain too large for the skull → spinal cord cavities → severe pain. ~70% of CKCS show MRI signs by age 6.'),
             h('li', null, h('strong', { style: { color: T.warm } }, 'Deafness'),
@@ -9769,7 +9790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               '. The disability can be physical, sensory, psychiatric, intellectual, or other.'),
             h('p', { style: { margin: '0 0 6px' } },
               h('strong', { style: { color: T.accentHi } }, 'Access: '),
-              'Full public access under the ADA — restaurants, shops, hospitals, schools, planes (separately under ACAA). Businesses may ask only TWO questions: (1) Is the dog a service animal required because of a disability? (2) What work or task has the dog been trained to perform? They CANNOT ask for documentation, demand a demonstration, or ask about the disability.'),
+              'Public access under the ADA, with the narrow exceptions below — restaurants, shops, hospitals, schools, planes (separately under ACAA). Businesses may ask only TWO questions: (1) Is the dog a service animal required because of a disability? (2) What work or task has the dog been trained to perform? They CANNOT ask for documentation, demand a demonstration, or ask about the disability.'),
             h('p', { style: { margin: '0 0 6px' } },
               h('strong', { style: { color: T.accentHi } }, 'Tasks include: '),
               'guiding (blind), alerting (deaf), medical alert (blood-glucose drop, oncoming seizure), retrieval, mobility brace, deep-pressure therapy (interrupting psychiatric episodes), reminder-to-take-meds, room searching for PTSD.'),
@@ -12546,7 +12567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('span', { style: { color: T.dim } }, 'estimates'),
             ' from professional bodies and job listings and should carry less weight. All are ',
             h('strong', { style: { color: T.text } }, 'national'),
-            ' — rural Maine pay commonly runs below a national median, and cost of living with it, so compare local postings before deciding anything. Wage data also goes stale: these are BLS OEWS 2024 medians and the 2022–2032 outlook, so check the current BLS Occupational Outlook Handbook rather than trusting a figure on this page.')),
+            ' — rural Maine pay commonly runs below a national median, and cost of living with it, so compare local postings before deciding anything. Wage data also goes stale: these are BLS OEWS May 2025 medians and the 2025–2035 outlook, so check the current BLS Occupational Outlook Handbook rather than trusting a figure on this page.')),
         (function() {
           var result = careerMatchRanking(careerMatch, CAREER_PATHS);
           var byId = {};
@@ -12818,15 +12839,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'q1', icon: '🐕', module: 'dogs', strand: 'biology',
         stem: 'Roughly how long ago do current genetic studies suggest dogs were domesticated from a now-extinct Pleistocene wolf population?',
         choices: ['~500 years, near the age of modern breed registries', '~3,000 years, after the first cities formed', '~15,000–40,000 years', '~200,000–300,000 years, near the emergence of early Homo sapiens'],
-        correct: 2, why: 'Multiple genome studies (Frantz 2016, Botigué 2017) point to a single domestication event between 15,000 and 40,000 years ago, possibly in eastern Eurasia.' },
+        correct: 2, why: 'Genome studies date domestication to roughly 15,000–40,000 years ago, from a wolf population that no longer exists. Whether it happened once or twice is still debated (Frantz et al. 2016 argued for two origins, Botigué et al. 2017 for one), but the timescale is well supported.' },
       { id: 'q2', icon: '🐈', module: 'cats', strand: 'biology',
         stem: 'Why do cats need taurine in their diet but dogs don\'t?',
-        choices: ['Taurine is a vitamin only cats need', 'Cats lost the metabolic ability to synthesize taurine; they\'re obligate carnivores', 'Cats absorb taurine through their paw pads when they walk on natural surfaces', 'Cats convert taurine from sunlight'],
-        correct: 1, why: 'Cats have a species-specific dietary taurine requirement. Severe deficiency can cause dilated cardiomyopathy and retinal degeneration. Evaluate adequacy using the finished food\'s nutritional-adequacy statement and life stage, not one ingredient.' },
+        choices: ['Taurine is a vitamin only cats need', 'Cats make too little taurine, so food must supply it; they\'re obligate carnivores', 'Cats absorb taurine through their paw pads when they walk on natural surfaces', 'Cats convert taurine from sunlight'],
+        correct: 1, why: 'Cats do make some taurine, but low enzyme activity keeps production below what they lose, much of it in bile acids, so they have a species-specific dietary requirement. Severe deficiency can cause dilated cardiomyopathy and retinal degeneration. Evaluate adequacy using the finished food\'s nutritional-adequacy statement and life stage, not one ingredient.' },
       { id: 'q3', icon: '🐺', module: 'training', strand: 'behavior',
         stem: 'What\'s the modern scientific status of "alpha wolf" / dominance theory for dog training?',
         choices: ['Confirmed by recent wolf studies', 'Discredited — wild wolf packs are families, not status hierarchies', 'Only applies to certain breeds', 'Still the standard model used by veterinary associations'],
-        correct: 1, why: 'L. David Mech (whose work popularized "alpha") spent decades trying to retract it. Wild wolf packs are family units. AVSAB + AVMA position statements oppose dominance-based training.' },
+        correct: 1, why: 'L. David Mech (whose work popularized "alpha") spent decades trying to retract it. Wild wolf packs are family units. The American Veterinary Society of Animal Behavior (AVSAB) rejects dominance-based training, and its 2021 statement recommends reward-based methods only.' },
       { id: 'q4', icon: '🐹', module: 'smallMammals', strand: 'behavior',
         stem: 'You\'re considering housing two Syrian hamsters together to keep each other company. What does the science say?',
         choices: ['Safe when littermates are introduced while young', 'Only safe if same sex', 'Strictly solitary — two adult hamsters in one cage = serious fighting', 'Only safe with food puzzles'],
@@ -12840,7 +12861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         choices: ['Whether they\'re lonely', 'Husbandry — temperature gradient + UVB lighting + substrate', 'Whether they want a friend, since solitary geckos stop eating from loneliness', 'Whether a warm bath will stimulate appetite and replace the missing environmental heat'],
         correct: 1, why: 'Most pet-reptile illness is husbandry-driven. Wrong temperature → can\'t digest. Old or missing UVB → metabolic bone disease. Substrate-impaction risks. Always check husbandry before assuming disease.' },
       { id: 'q7', icon: '♿', module: 'service', strand: 'welfare',
-        stem: 'Under federal law (ADA), what\'s the SCIENTIFIC distinction between a service dog and an emotional support animal?',
+        stem: 'Under federal law (ADA), what\'s the legal distinction between a service dog and an emotional support animal?',
         choices: ['Federal law sets a minimum body size because only large animals can perform disability-related service work in public', 'Service dog is task-trained for a disability; ESA provides comfort by presence (no task training)', 'ESA wears a vest and carries a registration card; a service dog is certified by a federal registry', 'Service dogs are larger breeds'],
         correct: 1, why: 'A service dog is INDIVIDUALLY TRAINED to perform tasks for a person with a disability (mobility brace, medical alert, deep pressure, retrieval, etc.). An ESA provides comfort through presence — no specific tasks. ESAs are not service animals under the ADA.' },
       { id: 'q8', icon: '🥩', module: 'nutrition', strand: 'health',
@@ -12853,8 +12874,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         correct: 1, why: 'Ordinary contact with a cat is not the typical route. CDC guidance emphasizes avoiding litter duty if possible; otherwise use disposable gloves, wash hands, and clean daily because oocysts generally take 1–5 days to become infectious. Undercooked meat, contaminated soil or water, and unwashed produce also matter.' },
       { id: 'q10', icon: '🧬', module: 'genetics', strand: 'biology',
         stem: 'A "purebred" dog from a 200-year-old closed studbook is more likely to have which of the following compared to mixed-breed dogs?',
-        choices: ['Stronger immune function because the closed pedigree removes harmful variants over time', 'Concentrated genetic disorders (hip dysplasia, brachycephaly, etc.)', 'Longer lifespan automatically, because closed studbooks weed out weak lines over generations', 'Better behavior automatically'],
-        correct: 1, why: 'Closed studbooks limit the gene pool. Selecting for extreme features (flat faces, certain proportions) concentrates problems. Reputable breeders screen for known conditions (OFA hips, cardiac, eyes), but the structural risks of pedigree breeding are real.' },
+        choices: ['Stronger immune function because the closed pedigree removes harmful variants over time', 'Concentrated genetic disorders (elbow dysplasia, dilated cardiomyopathy, etc.)', 'Longer lifespan automatically, because closed studbooks weed out weak lines over generations', 'Better behavior automatically'],
+        correct: 1, why: 'In a UC Davis study of 27,254 dogs, purebreds were more likely to have 10 of 24 inherited disorders, including dilated cardiomyopathy and elbow dysplasia, while 13, including hip dysplasia, were just as common in mixed breeds. Closed studbooks limit the gene pool. Selecting for extreme features (flat faces, certain proportions) concentrates problems. Reputable breeders screen for known conditions (OFA hips, cardiac, eyes), but the structural risks of pedigree breeding are real.' },
       { id: 'q11', icon: '🐈', module: 'welfare', strand: 'welfare',
         stem: 'A friend says "outdoor cats are happier than indoor cats." What\'s the actual data?',
         choices: ['Outdoor cats live LONGER than indoor cats because daily hunting and roaming keep them fit and prevent the obesity that shortens indoor lives', 'Indoor cats live substantially longer on average; enrichment — not outdoor access — is what solves boredom', 'Owned indoor and outdoor cats have the same lifespan once diet, exercise, veterinary care, and population differences are controlled', 'Outdoor cats only kill rats'],
@@ -12873,8 +12894,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         correct: 1, why: 'Reptiles and amphibians can carry Salmonella even when healthy and clean-looking, and habitat water or supplies can spread it without direct animal contact. Children under 5, adults 65+, and people with weakened immune systems have greater risk of serious illness.' },
       { id: 'q15', icon: '🌲', module: 'zoonoses', strand: 'health',
         stem: 'Why do Maine vets push year-round tick prevention even in winter?',
-        choices: ['Tradition', 'Adult deer ticks (Ixodes scapularis) are active any day above ~40°F — Maine has many such days even in January / February', 'Vets need year-round revenue', 'Lyme bacteria mutate in cold weather into a hardier winter strain that spreads faster, so prevention has to run through the coldest months'],
-        correct: 1, why: 'Adult Ixodes ticks emerge whenever temperatures briefly rise above ~40°F. Maine has plenty of warm days mid-winter. Year-round prevention has become standard for Maine dogs given Lyme + anaplasmosis density.' }
+        choices: ['Tradition', 'Adult deer ticks (Ixodes scapularis) become active on winter days above freezing — Maine has many such days even in January / February', 'Vets need year-round revenue', 'Lyme bacteria mutate in cold weather into a hardier winter strain that spreads faster, so prevention has to run through the coldest months'],
+        correct: 1, why: 'Adult deer ticks are not true hibernators: they can become active on any winter day above freezing, especially near 40°F, and Maine has plenty of those mid-winter. Year-round prevention has become standard for Maine dogs given Lyme + anaplasmosis density.' }
     ];
 
     // Key coaching by authored choice text, so deterministic option rotation
@@ -13313,11 +13334,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { topic: 'Dogs', items: [
           'If wolf packs are families and not status hierarchies, what does that change about how you\'d train a dog?',
           'Why do small dogs live longer than large dogs when across mammals it\'s usually the opposite?',
-          'Belyaev\'s fox experiment showed tameness selection drags physical traits along. What does that tell us about why our dogs look the way they do?'
+          'Belyaev\'s fox experiment was long read as proof that selecting for tameness drags physical traits along, and a 2020 reanalysis challenged that. What evidence would settle why our dogs look the way they do?'
         ]},
         { topic: 'Cats', items: [
-          'Cats can\'t make taurine. What does that tell you about whether a vegan diet is ethical for cats?',
-          'Adult-cat meowing only happens at humans. What does that suggest about the evolution of domestication?',
+          'Cats make too little taurine on their own and need it from their diet, and commercial foods often add synthetic taurine. What does that tell you about whether a vegan diet is ethical for cats, and what evidence would you want?',
+          'Adult cats rarely meow at each other, yet meow often at people. What does that suggest about the evolution of domestication?',
           'Cats with outdoor access face traffic, predators, disease, and weather and die younger; free-roaming cats also kill billions of birds. What is the welfare-positive recommendation, and why is it controversial?'
         ]},
         { topic: 'Service Animals', items: [
@@ -13897,7 +13918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // ─────────────────────────────────────────
     // LIFESPAN MATCH (net-new mini-game)
     // 10 species/breeds. Player picks the typical lifespan range from 5 buckets.
-    // Surfaces the surprising spread — hamsters 2-3 yrs vs macaws 50-80 vs
+    // Surfaces the surprising spread — hamsters 2-3 yrs vs macaws 20-50 vs
     // Galápagos tortoises 100+. Useful pre-adoption to set expectations.
     // ─────────────────────────────────────────
     function renderLifespan() {
@@ -13905,27 +13926,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { id: 'b1', label: 'Under 3 years', color: '#f87171', icon: '⏱️',
           def: 'Very short — most small rodents fall here. Plan for the loss; this is often a child\'s first death.' },
         { id: 'b2', label: '3–10 years', color: '#f97316', icon: '🪻',
-          def: 'Short to medium. Rabbits, guinea pigs, ferrets, large-breed dogs. ~half a childhood.' },
+          def: 'Short to medium. Rabbits, guinea pigs, ferrets, giant-breed dogs. ~half a childhood.' },
         { id: 'b3', label: '10–20 years', color: '#22c55e', icon: '🌳',
           def: 'Medium-long. Average dogs + indoor cats. Outlasts most childhoods; will see your kid through college.' },
         { id: 'b4', label: '20–50 years', color: '#0ea5e9', icon: '🏛️',
-          def: 'Long-lived. Cockatiels, mid-size parrots, ball pythons. Multi-decade commitment; plan for who inherits.' },
+          def: 'Long-lived. Cockatiels, macaws and other large parrots, ball pythons. Multi-decade commitment; plan for who inherits.' },
         { id: 'b5', label: '50+ years', color: '#c084fc', icon: '👑',
-          def: 'Very long-lived — outlives the owner. Macaws, large cockatoos, Galápagos tortoises. Generational pet; estate planning needed.' }
+          def: 'Very long-lived — outlives the owner. Galápagos tortoises; among parrots, only rare record-holders such as a few cockatoos. Generational pet; estate planning needed.' }
       ];
       var V = [
         { id: 1, species: 'Syrian (golden) hamster', icon: '🐹', correct: 'b1',
           why: 'Hamsters live 2–3 years. The shortest-lived common pet. Often a child\'s first experience with death; many parents underestimate how soon it happens. Buy from rescue if possible — pet-store rodents are often older than labeled.' },
         { id: 2, species: 'Indoor-only cat', icon: '🐈', correct: 'b3',
-          why: '12–18 years indoors. Cats with outdoor access die younger — predation, traffic, and disease are the documented mechanisms, and ASPCA and AVMA both recommend indoor-only on that basis. The comparison figure you will see quoted (2–5 years outdoors) is rough and comes largely from feral-colony data, so lean on the mechanisms rather than a precise multiplier.' },
-        { id: 3, species: 'Blue-and-gold macaw (parrot)', icon: '🦜', correct: 'b5',
-          why: '50–80 years. Macaws and large cockatoos genuinely outlive most owners. Estate planning + designated successor caregiver is essential. Most parrot rescues are full because owners died first or could no longer care for them.' },
+          why: '12–18 years indoors. Cats with outdoor access die younger — predation, traffic, and disease are the documented mechanisms, and on that basis the ASPCA recommends keeping cats indoors and the AVMA recommends keeping them confined (indoors, in an outdoor enclosure, or on a leash). The comparison figure you will see quoted (2–5 years outdoors) is rough and comes largely from feral-colony data, so lean on the mechanisms rather than a precise multiplier.' },
+        { id: 3, species: 'Blue-and-gold macaw (parrot)', icon: '🦜', correct: 'b4',
+          why: '20–50 years for a well-kept bird. The popular "50–80 years" describes rare record-holders: in the largest study of captive parrots, the oldest of 2,124 zoo blue-and-gold macaws reached 48, and only 12 of 260 parrot species ever had a bird pass 50. Decades is still long enough to outlive an owner who starts late, so estate planning + a designated successor caregiver is essential. Most parrot rescues are full because owners died first or could no longer care for them.' },
         { id: 4, species: 'Galápagos tortoise', icon: '🐢', correct: 'b5',
           why: '100+ years. Lonesome George (last Pinta tortoise) lived ~100. Multi-generational commitment — typically passed down or rehomed multiple times. Most US owners cannot legally own one without permits; commonly seen at zoos.' },
         { id: 5, species: 'Domestic ferret', icon: '🐾', correct: 'b2',
           why: '6–10 years. Adrenal disease + insulinoma are common late-life problems; budget $300+/year for senior ferret vet bills. Banned in California and Hawaii.' },
         { id: 6, species: 'Average medium-size dog (~50 lb)', icon: '🐕', correct: 'b3',
-          why: '10–14 years. Inverse size rule: small dogs (Yorkies, Chihuahuas) live 14–18; large dogs (Mastiffs, Great Danes) often 7–10. Genetics + cancer rates explain most of the gap.' },
+          why: '10–14 years. Inverse size rule: small breeds average about 12–13 years and the longest-lived about 15, while giant breeds die much younger (Great Danes a median of about 6, Mastiffs about 9). Faster growth and higher cancer rates are leading explanations.' },
         // A typical 15–25-year range crosses the quiz's 20-year boundary.
         // Both adjacent buckets are defensible, so both earn full credit;
         // correct remains the visual anchor used by the comparison chart.
@@ -13943,7 +13964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var LIFE_VISUALS = {
         1: { min: 2, max: 3, label: '2-3 years' },
         2: { min: 12, max: 18, label: '12-18 years' },
-        3: { min: 50, max: 80, label: '50-80 years' },
+        3: { min: 20, max: 50, label: '20-50 years' },
         4: { min: 100, max: 100, label: '100+ years' },
         5: { min: 6, max: 10, label: '6-10 years' },
         6: { min: 10, max: 14, label: '10-14 years' },
@@ -14466,7 +14487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   'Final: ', h('strong', null, lsScore + ' / ' + V.length + ' (' + Math.round((lsScore / V.length) * 100) + '%)'),
                   lsScore === V.length ? ' — every lifespan correctly identified. Use this when families ask "what pet should we adopt?"' :
                   lsScore >= 8 ? ' — strong lifespan intuition. The most-confused pair is usually goldfish (10–20 yr in proper tanks) vs cockatiel (15–25 yr) — both surprise people who expected shorter spans.' :
-                  lsScore >= 6 ? ' — solid baseline. The four reflexes worth building: rodents = under 3, parrots = 15+ to 80, large dogs lose to small dogs by ~5 years, and cats with outdoor access face added risks and die younger on average.' :
+                  lsScore >= 6 ? ' — solid baseline. The four reflexes worth building: rodents = under 3, large parrots = decades (20–50), giant breeds live about half as long as small ones, and cats with outdoor access face added risks and die younger on average.' :
                   ' — these estimates matter at adoption. Review the missed species below, practice them, then retry the full set.'
                 ),
                 h('div', {
@@ -15869,19 +15890,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       if (welfareSec === 'spayNeuter') {
         var rawYears = Number(d.litterYears);
         var years = isFinite(rawYears) ? Math.max(1, Math.min(7, Math.floor(rawYears))) : 5;
-        // Compound: each generation produces 2 litters/yr × 4 kittens × 50% female × ~80% survive to reproduce
-        // Simplified: total cats(t) ≈ Σ generation cats. Use HSUS-style estimate.
-        // Females per generation grow by factor ~3.2/year (2 litters × 4 × 0.5 × 0.8)
-        var growthFactor = 3.2;
-        var totalCats = 0;
-        var generations = [];
-        var alive = 1;  // start: 1 unspayed female
-        for (var y = 0; y <= years; y++) {
-          generations.push({ year: y, count: Math.round(alive) });
-          totalCats += Math.round(alive);
-          alive *= growthFactor;
-          if (alive > 100000) alive = 100000;  // safety cap
-        }
+        // Measured field rates, not a guessed growth factor: see petsLitterMath.
+        var litterRows = petsLitterMath(years);
+        var litterLast = litterRows[litterRows.length - 1];
+        var generations = litterRows.map(function(r) { return { year: r.year, count: r.born }; });
+        var totalCats = litterLast.born;
         body = h('div', null,
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.6 } }, sec.lead),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
@@ -15919,11 +15932,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               style: { width: '100%', accentColor: T.warm, cursor: 'pointer' }
             }),
             h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border, textAlign: 'center' } },
-              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, 'Estimated descendants from one unspayed female'),
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, 'Kittens born to one unspayed female and her daughters'),
               h('div', { style: { fontSize: 32, fontWeight: 900, color: T.warm, fontFamily: 'monospace' } },
                 totalCats.toLocaleString()
               ),
-              h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4 } }, 'cats over ' + years + ' years (HSUS conservative estimate, assuming 50% survival to reproduction)')
+              h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4 } }, 'kittens born over ' + years + (years === 1 ? ' year' : ' years') + '; about ' + litterLast.alive + ' cats would be alive. Field rates (Nutter et al. 2004): 1.4 litters a year, 3 kittens a litter, 1 kitten in 4 reaching 6 months. Adults are assumed to live the whole time, so a real colony is smaller.')
             ),
             // Mini-chart.
             // ★ This drew NOTHING. Each bar had `height: <pct>%` inside a
@@ -15938,7 +15951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               var peak = Math.max(1, generations[generations.length - 1].count);
               return h('div', {
                 role: 'img',
-                'aria-label': 'Estimated descendants by year: ' + generations.map(function(g) {
+                'aria-label': 'Kittens born, running total by year: ' + generations.map(function(g) {
                   return 'year ' + g.year + ', ' + g.count.toLocaleString();
                 }).join('; ') + '.',
                 style: { marginTop: 12, padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.border, display: 'flex', alignItems: 'flex-end', gap: 4 }
@@ -16059,7 +16072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         backBar('🛡️ Welfare & Ethics'),
         h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } },
-            'Four welfare topics where the science is clear but the cultural defaults haven\'t caught up. Browse all four to earn the ',
+            'Four welfare topics where the science is clear but the cultural defaults haven\'t caught up. Read all four, and make the decision at the end of each, to earn the ',
             h('strong', { style: { color: T.accentHi } }, 'Welfare-Aware'), ' badge.'
           )
         ),

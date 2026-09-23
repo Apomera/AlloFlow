@@ -30,7 +30,7 @@ const TOXIC_CORRECT = [
 const LIFESPAN_CORRECT = [
   'Under 3 years',
   '10–20 years',
-  '50+ years',
+  '20–50 years',
   '50+ years',
   '3–10 years',
   '10–20 years',

@@ -176,7 +176,8 @@ test.describe('Pet Lab phone-width core', () => {
 
     const widget = page.locator('.petslab-care-tradeoff');
     await expect(widget).toBeVisible();
-    await expect(widget.locator('input[type=range]')).toHaveCount(5);
+    // Five care domains plus the weekly-hours budget added in c1089bcff (09-14).
+    await expect(widget.locator('input[type=range]')).toHaveCount(6);
     const analysis = widget.locator('.petslab-tradeoff-analysis');
     await expect(analysis).not.toHaveJSProperty('open', true);
     await expect(widget.locator('.petslab-tradeoff-dashboard')).not.toBeVisible();
@@ -206,9 +207,12 @@ test.describe('Pet Lab phone-width core', () => {
       };
     });
     expect(result.width).toBeLessThanOrEqual(320);
-    expect(result.widgetHeight).toBeLessThan(1300);
+    // Was 1300. Measured 2026-09-23 at 320px: the weekly-hours panel added in
+    // c1089bcff (09-14) is 198px, and the widget was ~1290 before it, so the
+    // budget grows by that panel plus a little headroom, not by guesswork.
+    expect(result.widgetHeight).toBeLessThan(1550);
     expect(result.buttonBoxes.every((box) => box.height >= 43)).toBe(true);
-    expect(result.rangeBoxes).toHaveLength(5);
+    expect(result.rangeBoxes).toHaveLength(6); // five domains + weekly hours, all visible
     expect(result.rangeBoxes.every((box) => box.height >= 43)).toBe(true);
     expect(result.checkboxBoxes.every((box) => box.width >= 23 && box.height >= 23)).toBe(true);
     expect(result.serious).toEqual([]);
@@ -221,14 +225,17 @@ test.describe('Pet Lab phone-width core', () => {
     await expect(page.locator('.petslab-care-tradeoff')).toHaveCount(0);
     const catalog = page.locator('.petslab-catalog');
     await catalog.locator('summary').click();
-    const dogsTile = page.locator('[data-pets-module-id=dogs]');
-    await dogsTile.click();
+    // Dogs was this test's self-review module until c1089bcff (09-14) gave every
+    // species page a predict-then-check activity; the Glossary is still
+    // completed by self-review, as in 39-pets-minigame-completion.
+    const glossaryTile = page.locator('[data-pets-module-id=glossary]');
+    await glossaryTile.click();
     await expect(page.locator('.petslab-view-title')).toBeFocused();
     await page.getByRole('button', { name: 'I reviewed this module' }).click();
     await expect(page.getByText('✓ Complete', { exact: true })).toBeVisible();
     await expect(page.locator('.petslab-view-title')).toBeFocused();
     await page.getByRole('button', { name: 'Back to Pets Lab menu' }).click();
-    await expect(dogsTile).toBeFocused();
+    await expect(glossaryTile).toBeFocused();
     await expect(page.locator('.petslab-command-stat').filter({ hasText: 'Completed' })).toContainText('1 / 26');
 
     const catsTile = page.locator('[data-pets-module-id=cats]');
@@ -246,12 +253,14 @@ test.describe('Pet Lab phone-width core', () => {
     await harness.mount(page, {
       petsLab: {
         view: 'menu',
+        // A self-review module: since c1089bcff (09-14) a legacy reason on the
+        // Dogs ACTIVITY module normalizes to "Activity completed" instead.
         modulesVisited: {
-          dogs: '2026-08-25T12:00:00.000Z',
+          glossary: '2026-08-25T12:00:00.000Z',
           cats: '2026-08-25T12:05:00.000Z',
         },
         modulesCompleted: {
-          dogs: { completed: '2026-08-25T12:10:00.000Z', reason: 'Read species evidence' },
+          glossary: { completed: '2026-08-25T12:10:00.000Z', reason: 'Read species evidence' },
         },
       },
     }, undefined, { expectCanvas: false });
@@ -260,7 +269,7 @@ test.describe('Pet Lab phone-width core', () => {
     await filters.getByRole('button', { name: 'Completed', exact: true }).click();
     await expect(page.locator('.petslab-menu-result-count')).toHaveText('1 found');
     await expect(page.locator('.petslab-filtered-grid [data-pets-module-id]')).toHaveCount(1);
-    await expect(page.locator('[data-pets-module-id=dogs]')).toContainText('Reviewed by learner');
+    await expect(page.locator('[data-pets-module-id=glossary]')).toContainText('Reviewed by learner');
     await expect(page.locator('[data-pets-module-id=cats]')).toHaveCount(0);
 
     await filters.getByRole('button', { name: 'All modules', exact: true }).click();
@@ -417,7 +426,7 @@ test.describe('Pet Lab phone-width core', () => {
 
     await page.getByRole('button', { name: /15,000.*40,000 years/ }).click();
     await page.getByRole('button', { name: /Next question/ }).click();
-    await page.getByRole('button', { name: /lost the metabolic ability to synthesize taurine/ }).click();
+    await page.getByRole('button', { name: /Cats make too little taurine/ }).click();
     await page.getByRole('button', { name: /See results/ }).click();
 
     await expect(page.getByText('Every retried question is now correct')).toBeVisible();
@@ -579,13 +588,30 @@ test.describe('Pet Lab phone-width core', () => {
     await expect(spay).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByRole('tabpanel')).toHaveAttribute('id', 'pets-welfare-panel-spayNeuter');
 
-    await expect.poll(async () => page.evaluate(() => {
+    // Since 94f4b6b38 (09-14) browsing is not enough: each topic ends in a
+    // decision, and the badge needs all four. The intro must say so, or a
+    // student who browses all four is left wondering where the badge went.
+    await expect(page.getByText(/make the decision at the end of each/)).toBeVisible();
+    const progress = () => page.evaluate(() => {
       const pets = (window as any).__toolData.petsLab;
       return {
         visited: Object.keys(pets.welfareVisited || {}).sort(),
         badge: pets.badges?.pets_welfare_aware?.label || null,
       };
-    })).toEqual({
+    });
+    await expect.poll(progress).toEqual({
+      visited: ['adoption', 'declawing', 'outdoorCats', 'spayNeuter'],
+      badge: null,
+    });
+
+    for (const tab of [spay, adoption, declawing, outdoor]) {
+      await tab.click();
+      await expect(tab).toHaveAttribute('aria-selected', 'true');
+      await page.locator('.petslab-welfare-apply-option').first().click();
+      await expect(page.locator('.petslab-welfare-apply-feedback')).toBeVisible();
+    }
+    await expect(page.locator('.petslab-welfare-apply-progress')).toHaveText('Decided 4 of 4 topics');
+    await expect.poll(progress).toEqual({
       visited: ['adoption', 'declawing', 'outdoorCats', 'spayNeuter'],
       badge: 'Welfare-Aware',
     });
