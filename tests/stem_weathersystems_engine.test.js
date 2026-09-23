@@ -245,3 +245,155 @@ describe('deployment copies', () => {
     expect(publicSrc()).toBe(src);
   });
 });
+
+// Station halos in the immersive 3D view colour each station by temperature so a front's
+// passage reads as colour sweeping across the map during forecast playback. The scene
+// and its on-screen key both read these stops, so they are pinned here.
+describe('station temperature halo scale', () => {
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+
+  it('lands exactly on every stop and runs cold to hot in ascending order', () => {
+    const stops = K.stationTempStops;
+    expect(stops.length).toBeGreaterThanOrEqual(4);
+    for (let i = 1; i < stops.length; i += 1) expect(stops[i][0], 'stops must ascend').toBeGreaterThan(stops[i - 1][0]);
+    for (const [t, colour] of stops) expect(K.stationTempColor(t)).toBe(colour);
+    const [cr, , cb] = rgb(K.stationTempColor(stops[0][0]));
+    const [hr, , hb] = rgb(K.stationTempColor(stops[stops.length - 1][0]));
+    expect(cb, 'the coldest end must read cool (blue over red)').toBeGreaterThan(cr);
+    expect(hr, 'the hottest end must read warm (red over blue)').toBeGreaterThan(hb);
+  });
+
+  // The scale is chosen so the ORDER survives without colour vision: relative luminance
+  // must never fall as temperature rises, anywhere, including between stops (an equal
+  // magenta/rose pair once flattened it).
+  it('gets lighter as it gets hotter, so the order reads without colour vision', () => {
+    const lum = (hex) => {
+      const lin = rgb(hex).map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
+      return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+    };
+    let prev = -1;
+    for (let t = -12; t <= 36; t += 0.5) {
+      const L = lum(K.stationTempColor(t));
+      expect(L, 'luminance fell at ' + t + ' C').toBeGreaterThanOrEqual(prev - 1e-9);
+      prev = L;
+    }
+    const stops = K.stationTempStops;
+    expect(lum(stops[stops.length - 1][1]) / lum(stops[0][1]), 'hot end must be far lighter than cold').toBeGreaterThan(5);
+  });
+
+  // Station halos sit on this tool's teal/green terrain; a cyan-green band vanished into
+  // it. No stop may be green-dominant.
+  it("never uses the terrain's green/teal hues", () => {
+    for (let t = -12; t <= 36; t += 1) {
+      const [r, g, b] = rgb(K.stationTempColor(t));
+      expect(g > r && g > b, 'green-dominant at ' + t + ' C: ' + K.stationTempColor(t)).toBe(false);
+    }
+  });
+
+  it('is continuous — one degree never jumps the colour', () => {
+    for (let t = -12; t < 36; t += 1) {
+      const a = rgb(K.stationTempColor(t)), b = rgb(K.stationTempColor(t + 1));
+      const jump = Math.max(...a.map((v, i) => Math.abs(v - b[i])));
+      expect(jump, t + '->' + (t + 1)).toBeLessThanOrEqual(40);
+    }
+  });
+
+  it('clamps beyond the scale instead of inventing colours', () => {
+    const stops = K.stationTempStops;
+    expect(K.stationTempColor(-60)).toBe(stops[0][1]);
+    expect(K.stationTempColor(60)).toBe(stops[stops.length - 1][1]);
+  });
+
+  it('a missing reading is neutral, not "cold"', () => {
+    for (const bad of [NaN, undefined, null, 'n/a']) {
+      const colour = K.stationTempColor(bad);
+      expect(colour, String(bad)).not.toBe(K.stationTempStops[0][1]);
+      const [r, g, b] = rgb(colour);
+      expect(Math.max(r, g, b) - Math.min(r, g, b), 'neutral grey, not a temperature hue').toBeLessThan(40);
+    }
+  });
+});
+
+// Predict-then-play in the immersive view: the answer and its explanation come from
+// predictionOutcome, never from text written per scenario. These pin that the
+// explanation can never contradict the numbers, and that the question is fair.
+describe('predictionOutcome (predict, then play)', () => {
+  const stationsSrc = src.slice(src.indexOf('  var STATIONS = [') + '  var STATIONS = '.length);
+  // eslint-disable-next-line no-new-func
+  const STATIONS = new Function('return ' + stationsSrc.slice(0, stationsSrc.indexOf('];') + 1))();
+  const cases = [];
+  for (const sc of K.scenarios) for (const st of STATIONS) for (const hour of [6, 12, 18, 24]) {
+    cases.push({ sc: sc.id, st, hour, o: K.predictionOutcome(K.resolvedState({ scenario: sc.id }), st, hour) });
+  }
+
+  it('splits the change into parts that sum to it exactly', () => {
+    for (const c of cases) {
+      expect(c.o.frontStep + c.o.otherChange, c.sc + '/' + c.st.id + '@' + c.hour).toBeCloseTo(c.o.delta, 9);
+    }
+  });
+
+  it('names the direction the numbers actually moved', () => {
+    const band = K.predictionSameBandC;
+    for (const c of cases) {
+      const expected = c.o.delta >= band ? 'warmer' : c.o.delta <= -band ? 'colder' : 'same';
+      expect(c.o.direction, c.sc + '/' + c.st.id + '@' + c.hour).toBe(expected);
+      expect(c.o.endTemp - c.o.startTemp).toBeCloseTo(c.o.delta, 1);
+    }
+  });
+
+  it('says the front crossed only when the model has it passing inside the window', () => {
+    for (const c of cases) {
+      const passage = K.frontPassageHour(K.resolvedState({ scenario: c.sc }), c.st);
+      const tag = c.sc + '/' + c.st.id + '@' + c.hour;
+      if (passage == null) { expect(c.o.frontCrossed, tag).toBe(false); expect(c.o.frontStep, tag).toBe(0); continue; }
+      if (c.o.alreadyBehindFront) { expect(c.o.frontCrossed, tag).toBe(false); continue; }
+      expect(c.o.frontCrossed, tag).toBe(passage <= c.hour);
+      if (!c.o.frontCrossed) expect(c.o.frontStep, tag).toBe(0);
+    }
+  });
+
+  it('is a fair question: every answer is right somewhere at T+12', () => {
+    const seen = new Set(cases.filter((c) => c.hour === 12).map((c) => c.o.direction));
+    expect([...seen].sort()).toEqual(['colder', 'same', 'warmer']);
+  });
+
+  it('includes a case where the front and the rest of the change pull opposite ways', () => {
+    expect(cases.some((c) => c.o.frontCrossed && c.o.frontStep * c.o.otherChange < 0)).toBe(true);
+  });
+});
+
+// The 2D map pills and the 3D station labels print a reading beside the prediction card,
+// which quotes the same numbers. They rounded to whole degrees (Math.round: -2.5 -> -2,
+// 2.5 -> 3) while the card printed -2.5, so a label contradicted the card next to it.
+describe('station label text (map pills and 3D labels)', () => {
+  it('prints the reading at one decimal, like every panel and the prediction card', () => {
+    expect(K.stationLabelText('Central School', -2.5)).toBe('Central School  -2.5°');
+    expect(K.stationLabelText('Harbor Point', 2.5)).toBe('Harbor Point  2.5°');
+    expect(K.stationLabelText('West Ridge', 7)).toBe('West Ridge  7°');
+  });
+
+  it('matches the prediction card for every station in every scenario', () => {
+    let fractional = 0;
+    for (const sc of K.scenarios) for (const st of K.stations) {
+      const s = K.resolvedState({ scenario: sc.id });
+      const reading = K.stationObservation(Object.assign({}, s, { simHour: 0 }), st);
+      const o = K.predictionOutcome(s, st, 12);
+      expect(K.stationLabelText(st.name, reading.temperature), sc.id + '/' + st.id).toBe(st.name + '  ' + o.startTemp + '°');
+      if (!Number.isInteger(reading.temperature)) fractional += 1;
+    }
+    // Without fractional readings the rounding bug could not show, and this would pass anyway.
+    expect(fractional).toBeGreaterThan(0);
+  });
+
+  it('never prints a missing reading as a number, nor a negative zero', () => {
+    expect(K.stationLabelText('X', null)).toBe('X  --°');
+    expect(K.stationLabelText('X', '')).toBe('X  --°');
+    expect(K.stationLabelText('X', NaN)).toBe('X  --°');
+    expect(K.stationLabelText('X', -0.04)).toBe('X  0°');
+  });
+
+  it('is the only way the scene labels a station', () => {
+    expect(src).not.toMatch(/Math\.round\(reading\.temperature\)/);
+    expect(src.split('stationLabelText(').length - 1).toBeGreaterThanOrEqual(3);
+  });
+});

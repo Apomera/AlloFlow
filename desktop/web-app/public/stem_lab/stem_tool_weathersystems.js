@@ -12,6 +12,8 @@
     try { v = (__alloWeatherCtx && typeof __alloWeatherCtx.t === "function") ? __alloWeatherCtx.t(k, fb) : null; } catch (e) { v = null; }
     return (v == null) ? (fb != null ? fb : k) : v;
   };
+  // Fills {value1}-style placeholders, so a translation can reorder them.
+  var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
   'use strict';
 
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
@@ -348,6 +350,10 @@
     };
   }
 
+  // Temperature step a station takes once a front has passed it. Shared by
+  // stationObservation and predictionOutcome so the prediction's explanation can never
+  // drift from the model it explains.
+  var FRONT_TEMP_STEP = { cold: -6, outflow: -3.5, warm: 4.5, occluded: -3 };
   function stationObservation(state, station) {
     var base = projectConditions(state, state.simHour);
     var scenario = scenarioById(state.scenario);
@@ -365,21 +371,21 @@
     var behindFront = station.x < frontX;
 
     if (behindFront && (scenario.frontType === 'cold' || scenario.frontType === 'outflow')) {
-      temperature -= scenario.frontType === 'outflow' ? 3.5 : 6;
+      temperature += FRONT_TEMP_STEP[scenario.frontType];
       humidity -= scenario.frontType === 'outflow' ? 5 : 13;
       localPressure += scenario.frontType === 'outflow' ? 1.5 : 4;
       localWindDir = 300;
       cloudOffset -= 18;
       precipOffset -= 16;
     } else if (behindFront && scenario.frontType === 'warm') {
-      temperature += 4.5;
+      temperature += FRONT_TEMP_STEP.warm;
       humidity += 5;
       localPressure += 1.5;
       localWindDir = 205;
       cloudOffset -= 8;
       precipOffset -= 6;
     } else if (behindFront && scenario.frontType === 'occluded') {
-      temperature -= 3;
+      temperature += FRONT_TEMP_STEP.occluded;
       humidity -= 7;
       localPressure += 3;
       localWindDir = 305;
@@ -456,6 +462,44 @@
     var scenario = scenarioById(state.scenario);
     if (!station || scenario.frontType === 'none' || state.frontSpeed <= 0) return null;
     return round(clamp(((station.x - 0.28) * 500) / state.frontSpeed, 0, 24), 1);
+  }
+
+  // Predict-then-play: what the model says happens at a station between T+0 and `hour`,
+  // with the change split into the front's step and everything else so an explanation
+  // can never contradict the numbers (frontStep + otherChange === delta, exactly).
+  // +/-1.5 C over the window counts as "about the same". At +/-1 the winter storm's
+  // stations sat EXACTLY on the line (+1.0 C) and "about the same" was never correct in
+  // any scenario; at 1.5 all three answers occur and a one-degree drift is not "warmer".
+  var PREDICTION_SAME_BAND_C = 1.5;
+  function predictionOutcome(state, station, hour) {
+    var end = clamp(hour == null ? 12 : Number(hour), 1, 24);
+    var start = stationObservation(Object.assign({}, state, { simHour: 0 }), station);
+    var finish = stationObservation(Object.assign({}, state, { simHour: end }), station);
+    var delta = round(finish.temperature - start.temperature, 1);
+    var scenario = scenarioById(state.scenario);
+    var frontType = scenario.frontType;
+    var frontAt = function (h) { return 0.28 + clamp((h * state.frontSpeed) / 500, 0, 0.55); };
+    var behindAtStart = frontType !== 'none' && station.x < frontAt(0);
+    var behindAtEnd = frontType !== 'none' && station.x < frontAt(end);
+    var crossed = !behindAtStart && behindAtEnd;
+    // The SAME table stationObservation applies, so the explanation cannot drift from it.
+    var frontStep = crossed ? (FRONT_TEMP_STEP[frontType] || 0) : 0;
+    var direction = delta >= PREDICTION_SAME_BAND_C ? 'warmer' : delta <= -PREDICTION_SAME_BAND_C ? 'colder' : 'same';
+    return {
+      station: station.id,
+      stationName: station.name,
+      hour: end,
+      startTemp: round(start.temperature, 1),
+      endTemp: round(finish.temperature, 1),
+      delta: delta,
+      direction: direction,
+      frontType: frontType,
+      frontCrossed: crossed,
+      alreadyBehindFront: behindAtStart,
+      passageHour: crossed ? frontPassageHour(state, station) : null,
+      frontStep: frontStep,
+      otherChange: round(delta - frontStep, 1)
+    };
   }
 
   function stationTimeSeries(state, station, endHour, step) {
@@ -1904,13 +1948,63 @@ var GEOGRAPHY_PROFILES = {
     };
   }
 
+  // One fixed temperature scale for the station halos AND their key, so a colour means
+  // the same thing in every scenario and the key can never drift from the scene. A
+  // thermal-camera ("ironbow") scale: it never passes through the terrain's green/teal
+  // (a cyan-green cold end vanished into the ground), and its lightness rises with
+  // temperature, so the order still reads without colour vision.
+  var STATION_TEMP_STOPS = [[-10, '#3730a3'], [0, '#6d28d9'], [8, '#a21caf'], [16, '#e11d48'], [24, '#f97316'], [34, '#facc15']];
+  function stationTempColor(tempC) {
+    // A missing reading is NOT cold; colouring it blue (or 0 C cyan, which is what
+    // Number(null) gives) would tell a student it was. Check before converting.
+    if (tempC == null || tempC === '') return '#94a3b8';
+    var t = Number(tempC);
+    if (!isFinite(t)) return '#94a3b8';
+    var stops = STATION_TEMP_STOPS;
+    if (t <= stops[0][0]) return stops[0][1];
+    if (t >= stops[stops.length - 1][0]) return stops[stops.length - 1][1];
+    for (var i = 1; i < stops.length; i += 1) {
+      if (t <= stops[i][0]) {
+        var a = stops[i - 1], b = stops[i];
+        var f = (t - a[0]) / (b[0] - a[0]);
+        var ca = parseInt(a[1].slice(1), 16), cb = parseInt(b[1].slice(1), 16);
+        // Mix in linear light, where luminance is linear, so brightness can only rise
+        // between ordered stops (mixing in sRGB dipped it just above 0 C).
+        var toLinear = function (v) { var c = v / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+        var toSrgb = function (c) { var v = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055; return Math.max(0, Math.min(255, Math.round(v * 255))); };
+        var mix = function (shift) {
+          var la = toLinear((ca >> shift) & 255), lb = toLinear((cb >> shift) & 255);
+          return toSrgb(la + (lb - la) * f);
+        };
+        var hex = ((mix(16) << 16) | (mix(8) << 8) | mix(0)).toString(16);
+        while (hex.length < 6) hex = '0' + hex;
+        return '#' + hex;
+      }
+    }
+    return stops[stops.length - 1][1];
+  }
+
+  // Station pills (2D map and 3D scene) print the reading at the one-decimal precision of
+  // every panel and the prediction card. Math.round showed -2.5 as -2 and 2.5 as 3, so a
+  // label and the card beside it disagreed.
+  function stationLabelText(name, temperature) {
+    var value = temperature == null || temperature === '' ? NaN : Number(temperature);
+    return name + '  ' + (isFinite(value) ? String(round(value, 1)) : '--') + '\u00B0';
+  }
+
   window.WeatherSystemsKernel = {
     scenarios: SCENARIOS,
+    stationTempStops: STATION_TEMP_STOPS,
+    stationTempColor: stationTempColor,
+    stationLabelText: stationLabelText,
     dewPointC: dewPointC,
     projectConditions: projectConditions,
     stationObservation: stationObservation,
     stationNetworkAnalysis: stationNetworkAnalysis,
     frontPassageHour: frontPassageHour,
+    predictionOutcome: predictionOutcome,
+    stations: STATIONS,
+    predictionSameBandC: PREDICTION_SAME_BAND_C,
     stationTimeSeries: stationTimeSeries,
     expectedForecast: expectedForecast,
     ensembleForecast: ensembleForecast,
@@ -3032,7 +3126,7 @@ var GEOGRAPHY_PROFILES = {
       g.beginPath(); g.arc(x, y, chosen ? 3.4 : 2.4, 0, Math.PI * 2); g.fill();
       // The pill carries the current temperature so the map itself shows the air-mass contrast.
       g.font = '600 12px system-ui';
-      var label = station.name + '  ' + Math.round(reading.temperature) + '°';
+      var label = stationLabelText(station.name, reading.temperature);
       var labelWidth = g.measureText(label).width + 18;
       roundedRect(g, x - labelWidth / 2, y + 14, labelWidth, 24, 8);
       g.fillStyle = dark ? 'rgba(15,23,42,.9)' : 'rgba(248,250,252,.92)'; g.fill();
@@ -4421,21 +4515,76 @@ function openImmersiveTourStep(stepId) {
           textureCache.push(texture);
           return texture;
         }
+        // A cloud puff with shape and light, in one of three lobe layouts so neighbouring
+        // puffs do not repeat the same silhouette. The sprite colour still tints it, so
+        // fair-weather white and storm slate both keep working.
+        function makeCloudTexture(size, variant) {
+          var textureCanvas = document.createElement('canvas');
+          textureCanvas.width = size; textureCanvas.height = size;
+          var context = textureCanvas.getContext('2d');
+          if (!context) return null;
+          var layouts = [
+            [[0.5, 0.62, 0.34], [0.32, 0.58, 0.24], [0.68, 0.57, 0.25], [0.44, 0.40, 0.22], [0.60, 0.42, 0.19]],
+            [[0.5, 0.63, 0.33], [0.28, 0.60, 0.22], [0.72, 0.61, 0.21], [0.38, 0.43, 0.20], [0.57, 0.36, 0.23], [0.74, 0.46, 0.15]],
+            [[0.5, 0.61, 0.35], [0.34, 0.56, 0.23], [0.66, 0.54, 0.24], [0.50, 0.38, 0.24], [0.30, 0.44, 0.15]]
+          ];
+          var lobes = layouts[variant % layouts.length];
+          // Lobes: soft white discs, drawn additively into alpha so overlaps stay soft.
+          lobes.forEach(function (lobe) {
+            var cx = lobe[0] * size, cy = lobe[1] * size, r = lobe[2] * size;
+            var lobeGradient = context.createRadialGradient(cx, cy, 0, cx, cy, r);
+            lobeGradient.addColorStop(0, 'rgba(255,255,255,0.95)');
+            lobeGradient.addColorStop(0.55, 'rgba(255,255,255,0.72)');
+            lobeGradient.addColorStop(1, 'rgba(255,255,255,0)');
+            context.fillStyle = lobeGradient;
+            context.fillRect(0, 0, size, size);
+          });
+          // Flatter base: erode alpha along the bottom so the underside reads level.
+          context.globalCompositeOperation = 'destination-out';
+          var baseCut = context.createLinearGradient(0, size * 0.66, 0, size * 0.9);
+          baseCut.addColorStop(0, 'rgba(0,0,0,0)');
+          baseCut.addColorStop(1, 'rgba(0,0,0,0.9)');
+          context.fillStyle = baseCut;
+          context.fillRect(0, 0, size, size);
+          // Top-lit shading, applied only where the puff already exists (source-atop).
+          context.globalCompositeOperation = 'source-atop';
+          var shade = context.createLinearGradient(0, size * 0.22, 0, size * 0.86);
+          shade.addColorStop(0, 'rgba(255,255,255,0)');
+          shade.addColorStop(0.5, 'rgba(176,190,212,0.28)');
+          shade.addColorStop(1, 'rgba(104,120,148,0.66)');
+          context.fillStyle = shade;
+          context.fillRect(0, 0, size, size);
+          // Faint warm light on the upper left, where the sun sits for the default view.
+          var glow = context.createRadialGradient(size * 0.34, size * 0.3, 0, size * 0.34, size * 0.3, size * 0.42);
+          glow.addColorStop(0, 'rgba(255,247,226,0.42)');
+          glow.addColorStop(1, 'rgba(255,247,226,0)');
+          context.fillStyle = glow;
+          context.fillRect(0, 0, size, size);
+          context.globalCompositeOperation = 'source-over';
+          var texture = new THREE.CanvasTexture(textureCanvas);
+          textureCache.push(texture);
+          return texture;
+        }
         function makeLabelTexture(text, accent) {
           var textureCanvas = document.createElement('canvas');
           textureCanvas.width = 256; textureCanvas.height = 72;
           var context = textureCanvas.getContext('2d');
           if (!context) return null;
           context.font = '700 30px system-ui, sans-serif';
-          var textWidth = Math.min(244, context.measureText(text).width + 36);
-          var left = (256 - textWidth) / 2;
+          // Widen the canvas for long labels instead of squeezing the glyphs (fillText's
+          // maxWidth did). Resizing a canvas resets its context, so set the font again.
+          var textWidth = Math.ceil(context.measureText(text).width) + 36;
+          if (textWidth > 244) { textureCanvas.width = textWidth + 12; context.font = '700 30px system-ui, sans-serif'; }
+          var canvasWidth = textureCanvas.width;
+          textWidth = Math.min(canvasWidth - 12, textWidth);
+          var left = (canvasWidth - textWidth) / 2;
           context.fillStyle = accent ? 'rgba(120,53,15,0.94)' : 'rgba(2,6,23,0.86)';
           roundedRect(context, left, 8, textWidth, 56, 18); context.fill();
           context.strokeStyle = accent ? '#fbbf24' : 'rgba(186,230,253,0.7)'; context.lineWidth = 3;
           roundedRect(context, left, 8, textWidth, 56, 18); context.stroke();
           context.fillStyle = accent ? '#fde68a' : '#f8fafc';
           context.textAlign = 'center'; context.textBaseline = 'middle';
-          context.fillText(text, 128, 37, textWidth - 24);
+          context.fillText(text, canvasWidth / 2, 37, textWidth - 24);
           var texture = new THREE.CanvasTexture(textureCanvas);
           textureCache.push(texture);
           return texture;
@@ -4495,7 +4644,9 @@ function openImmersiveTourStep(stepId) {
         if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
         else if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
         if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = stormy ? 0.92 : 1.08;
+        // Fair weather was 1.08, which on top of the fair light rig blew the terrain out
+        // toward white (measured saturation 0.148 vs 0.235 under storm light).
+        renderer.toneMappingExposure = stormy ? 0.92 : 1.0;
         renderer.shadowMap.enabled = profile.shadows;
         renderer.shadowMap.type = THREE.VSMShadowMap || THREE.PCFSoftShadowMap;
         renderer.sortObjects = true;
@@ -4523,9 +4674,11 @@ function openImmersiveTourStep(stepId) {
         );
         scene.add(sky);
 
-        var hemisphere = new THREE.HemisphereLight(stormy ? 0x94a3b8 : 0xbae6fd, 0x183c32, stormy ? 0.72 : 0.96);
+        // Fair sky + sun used to reach ~2.7x on upward-facing ground and clip it to pale
+        // mint; these keep the clear-day brightness without washing out the terrain.
+        var hemisphere = new THREE.HemisphereLight(stormy ? 0x94a3b8 : 0xbae6fd, 0x183c32, stormy ? 0.72 : 0.8);
         scene.add(hemisphere);
-        var sun = new THREE.DirectionalLight(stormy ? 0xc7d2fe : 0xfff7d6, stormy ? 1.0 : 1.75);
+        var sun = new THREE.DirectionalLight(stormy ? 0xc7d2fe : 0xfff7d6, stormy ? 1.0 : 1.4);
         // Low in the north-west so it stands in the overview's sky; a stormy sky keeps the higher,
         // flatter light of a cloud deck.
         sun.position.set(stormy ? -14 : -26, stormy ? 24 : 18, stormy ? 12 : -30);
@@ -4559,14 +4712,21 @@ function openImmersiveTourStep(stepId) {
         // the world against the sky. Widened past the visible cone; the fog closes the rest.
         var groundGeo = new THREE.PlaneGeometry(72, 58, profile.terrainX, profile.terrainY);
         var positions = groundGeo.attributes.position;
-        for (var vertex = 0; vertex < positions.count; vertex += 1) {
-          var vx = positions.getX(vertex); var vy = positions.getY(vertex);
-var ridgeLift = geography.ridge * 2.15 * Math.exp(-Math.pow((vx + 13) / 5.2, 2));
+        // Terrain height in the ground plane's own coordinates. Factored out so the stations
+        // and their halos can sit ON the ground instead of at a fixed height, which left them
+        // floating up to 0.9 above low ground and buried under high ground.
+        function terrainElevation(vx, vy) {
+          var ridgeLift = geography.ridge * 2.15 * Math.exp(-Math.pow((vx + 13) / 5.2, 2));
           var riverCut = geography.river * 0.62 * Math.exp(-Math.pow(vy - Math.sin(vx * 0.28) * 3.1, 2) / 7);
           var coastalShelf = geography.coast * Math.max(0, vx - 10) * 0.08;
           var urbanGrade = geography.urban * 0.24 * Math.exp(-(Math.pow(vx - 2, 2) + Math.pow(vy - 2, 2)) / 58);
-          var elevation = Math.sin(vx * 0.28) * 0.45 + Math.cos(vy * 0.34) * 0.34 + Math.max(0, vx + 8) * state.terrain * 0.0022 * geography.terrainBoost + ridgeLift + urbanGrade - riverCut - coastalShelf;
-          positions.setZ(vertex, elevation);
+          return Math.sin(vx * 0.28) * 0.45 + Math.cos(vy * 0.34) * 0.34 + Math.max(0, vx + 8) * state.terrain * 0.0022 * geography.terrainBoost + ridgeLift + urbanGrade - riverCut - coastalShelf;
+        }
+        // World-space ground height at (x, z): the plane is laid flat by a -90deg turn about
+        // X and dropped 0.8, so world (x, z) is plane (vx = x, vy = -z).
+        function groundHeightAt(x, z) { return -0.8 + terrainElevation(x, -z); }
+        for (var vertex = 0; vertex < positions.count; vertex += 1) {
+          positions.setZ(vertex, terrainElevation(positions.getX(vertex), positions.getY(vertex)));
         }
         positions.needsUpdate = true;
         groundGeo.computeVertexNormals();
@@ -4699,7 +4859,12 @@ var geographyGroup = new THREE.Group();
         var cloudGroup = new THREE.Group();
         cloudGroup.userData.weatherFeatureId = 'cloudLayer';
         // Soft billboards instead of stacked shaded spheres, which read as a row of balloons.
-        var cloudTexture = makeSoftTexture(128, [[0, 'rgba(255,255,255,1)'], [0.38, 'rgba(255,255,255,0.82)'], [0.7, 'rgba(255,255,255,0.28)'], [1, 'rgba(255,255,255,0)']]);
+        // Three shaped, top-lit variants (see makeCloudTexture). The old single texture was
+        // radially symmetric, so every puff was the same round smudge.
+        var cloudTextureSize = quality === 'performance' ? 128 : 256;
+        var cloudTextures = [0, 1, 2].map(function (variant) { return makeCloudTexture(cloudTextureSize, variant); });
+        var cloudTexture = cloudTextures[0];
+        var puffSerial = 0;
         var cloudCount = Math.max(2, Math.min(profile.maxClouds, Math.round(cloudCover / 7)));
         // Where cloud forms depends on the front: a cold front builds a narrow convective band at
         // the boundary, a warm front spreads layered cloud far ahead of it and higher with
@@ -4719,7 +4884,8 @@ var geographyGroup = new THREE.Group();
         var lowCloudColor = new THREE.Color(stormy ? 0x64748b : 0xdbe4ee);
         var highCloudColor = new THREE.Color(stormy ? 0xcbd5e1 : 0xffffff);
         function addPuff(cluster, x, y, z, size, tone, opacity) {
-          var puff = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTexture, color: new THREE.Color().copy(lowCloudColor).lerp(highCloudColor, tone), transparent: true, opacity: opacity, depthWrite: false }));
+          var puffMap = cloudTextures[puffSerial++ % cloudTextures.length] || cloudTexture;
+          var puff = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffMap, color: new THREE.Color().copy(lowCloudColor).lerp(highCloudColor, tone), transparent: true, opacity: opacity, depthWrite: false }));
           puff.position.set(x, y, z);
           puff.scale.set(size * 1.35, size, 1);
           cluster.add(puff);
@@ -4840,6 +5006,9 @@ var geographyGroup = new THREE.Group();
         }
         scene.add(windGroup);
 
+        // A solid core with a soft edge: the first version faded out so fast it read as a
+        // faint glow at the base of each marker.
+        var stationHaloTexture = makeSoftTexture(128, [[0, 'rgba(255,255,255,1)'], [0.58, 'rgba(255,255,255,0.88)'], [0.82, 'rgba(255,255,255,0.38)'], [1, 'rgba(255,255,255,0)']]);
         var stationsGroup = new THREE.Group();
         stationsGroup.name = 'Observation stations';
         stationsGroup.userData.weatherFeatureId = 'stationMarkers';
@@ -4849,7 +5018,10 @@ var geographyGroup = new THREE.Group();
           var stationZ = (stationItem.y - 0.5) * 23;
           var reading = stationObservation(state, stationItem);
           var stationGroup = new THREE.Group();
-          stationGroup.position.set(stationX, 0.1, stationZ);
+          // On the ground under the station, not at a fixed 0.1 (which floated West Ridge 0.9
+          // above the terrain and buried Harbor Point).
+          var stationBaseY = groundHeightAt(stationX, stationZ) + 0.02;
+          stationGroup.position.set(stationX, stationBaseY, stationZ);
           stationGroup.userData.station = stationItem.name;
           var marker = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.4, 1.7, 12), new THREE.MeshStandardMaterial({ color: selected ? 0xfbbf24 : 0xf8fafc, emissive: selected ? 0x92400e : 0x0f172a, emissiveIntensity: selected ? 0.72 : 0.16, roughness: 0.35, metalness: 0.42 }));
           marker.castShadow = profile.shadows;
@@ -4860,15 +5032,35 @@ var geographyGroup = new THREE.Group();
           stationGroup.add(mast);
           var stationRing = new THREE.Mesh(new THREE.RingGeometry(selected ? 0.62 : 0.45, selected ? 0.78 : 0.56, 28), new THREE.MeshBasicMaterial({ color: selected ? 0xfbbf24 : 0xbae6fd, transparent: true, opacity: selected ? 0.92 : 0.5, side: THREE.DoubleSide, depthWrite: false }));
           stationRing.rotation.x = -Math.PI / 2;
-          stationRing.position.y = -0.04;
+          stationRing.position.y = 0.03;
           stationGroup.add(stationRing);
+          // Temperature halo: a soft ground disc on the fixed station scale, so the front's
+          // passage during forecast playback reads as colour sweeping station to station.
+          if (stationHaloTexture) {
+            // Subdivided and draped over the terrain: a flat disc floated over low ground and
+            // sank into slopes. Local (hx, hy, hz) turns into world (x + hx, base + hz, z - hy).
+            var haloGeo = new THREE.PlaneGeometry(4.6, 4.6, 12, 12);
+            var haloPositions = haloGeo.attributes.position;
+            for (var hv = 0; hv < haloPositions.count; hv += 1) {
+              var hx = haloPositions.getX(hv), hy = haloPositions.getY(hv);
+              haloPositions.setZ(hv, groundHeightAt(stationX + hx, stationZ - hy) - stationBaseY + 0.05);
+            }
+            haloPositions.needsUpdate = true;
+            var halo = new THREE.Mesh(haloGeo, new THREE.MeshBasicMaterial({ map: stationHaloTexture, color: new THREE.Color(stationTempColor(reading.temperature)), transparent: true, opacity: 0.82, depthWrite: false, side: THREE.DoubleSide }));
+            halo.rotation.x = -Math.PI / 2;
+            halo.renderOrder = 2;
+            halo.userData.stationTemperature = reading.temperature;
+            stationGroup.add(halo);
+          }
           // The station's own reading rides above its marker, so the 3D view carries the same
           // ground truth the 2D map pills do instead of four anonymous cones.
-          var labelTexture = makeLabelTexture(stationItem.name + '  ' + Math.round(reading.temperature) + '\u00B0', selected);
+          var labelTexture = makeLabelTexture(stationLabelText(stationItem.name, reading.temperature), selected);
           if (labelTexture) {
             var label = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTexture, transparent: true, depthTest: false, depthWrite: false, fog: false }));
             label.position.y = 3.35;
-            label.scale.set(4.2, 1.18, 1);
+            // The canvas grows with the text, so the sprite keeps its aspect instead of
+            // stretching a wider canvas into the old 256-px slot.
+            label.scale.set(4.2 * labelTexture.image.width / 256, 1.18, 1);
             label.renderOrder = 1001;
             stationGroup.add(label);
           }
@@ -4889,7 +5081,7 @@ var geographyGroup = new THREE.Group();
           cloudLayer: new THREE.Vector3(cloudBand.min + bandSpan * 0.5, cloudBand.base + cloudBand.rise * 0.5 + 2.2, -2),
           precipitation: new THREE.Vector3(cloudBand.min + bandSpan * 0.5, 2.4, 5),
           windVectors: new THREE.Vector3(-10, 2.4, 6),
-          stationMarkers: new THREE.Vector3((station.x - 0.5) * 32, 3.9, (station.y - 0.5) * 23),
+          stationMarkers: new THREE.Vector3((station.x - 0.5) * 32, groundHeightAt((station.x - 0.5) * 32, (station.y - 0.5) * 23) + 0.02 + 3.8, (station.y - 0.5) * 23),
           terrainBase: new THREE.Vector3(-6, -0.4, 9)
         };
 
@@ -5209,20 +5401,45 @@ var geographyGroup = new THREE.Group();
           cloudGroup.add(bolt); cloudGroup.add(flashLight);
           lightning = { bolt: bolt, light: flashLight };
         }
-        var calloutLastKey = '';
         var projected = new THREE.Vector3();
+        // The overlay rows at the stage's top and bottom grow and wrap (spotlight badge,
+        // prediction card), so the callout stays in the band between them, re-measured a few
+        // times a second rather than every frame.
+        var calloutBand = { top: 8, bottom: 92 };
+        var calloutBandWait = 0;
+        function measureCalloutBand(callout) {
+          var stageEl = callout.parentNode;
+          if (!stageEl || !stageEl.getBoundingClientRect) return;
+          var stageBox = stageEl.getBoundingClientRect();
+          if (!stageBox.height) return;
+          var half = callout.offsetHeight / 2 + 8;
+          var topRow = stageEl.querySelector('[data-weather-stage-overlays="conceptual"]');
+          var topPx = topRow ? topRow.getBoundingClientRect().bottom - stageBox.top + half : 0;
+          var bottomPx = stageBox.height;
+          Array.prototype.forEach.call(stageEl.querySelectorAll('[data-weather-stage-overlays="conceptual-bottom"], [data-weather-stage-timeline]'), function (row) {
+            bottomPx = Math.min(bottomPx, row.getBoundingClientRect().top - stageBox.top - half);
+          });
+          var top = Math.max(8, topPx / stageBox.height * 100);
+          var bottom = Math.min(92, bottomPx / stageBox.height * 100);
+          // No room between them: clear the top rows only. The callout ignores the pointer,
+          // so the bottom cards stay clickable beneath it.
+          calloutBand = bottom > top ? { top: top, bottom: bottom } : { top: Math.min(top, 92), bottom: 92 };
+        }
         function placeFeatureCallout() {
           var callout = immersiveCalloutRef.current;
           if (!callout) return;
-          var anchor = featureAnchorById[selectedVisualFeatureId];
+          if (calloutBandWait <= 0) { measureCalloutBand(callout); calloutBandWait = 12; } else { calloutBandWait -= 1; }
+          // Follow the feature the callout DESCRIBES: before anything is picked in 3D it shows
+          // the default while the scene has no selection, and sat at a fixed spot.
+          var anchor = featureAnchorById[callout.getAttribute('data-weather-feature-callout') || selectedVisualFeatureId];
           if (!anchor) { callout.style.visibility = ''; return; }
           projected.copy(anchor).project(camera);
           if (projected.z > 1 || Math.abs(projected.x) > 1.2 || Math.abs(projected.y) > 1.2) { callout.style.visibility = 'hidden'; return; }
           var left = Math.round(clamp((projected.x + 1) / 2 * 100, 4, 96) * 10) / 10;
-          var top = Math.round(clamp((1 - projected.y) / 2 * 100, 8, 92) * 10) / 10;
-          var key = left + ':' + top;
-          if (key === calloutLastKey) return;
-          calloutLastKey = key;
+          var top = Math.round(clamp((1 - projected.y) / 2 * 100, calloutBand.top, calloutBand.bottom) * 10) / 10;
+          // Compare with the element, not a cached key: React rewrites top/left when the
+          // feature changes, and a callout hidden off-screen must come back.
+          if (callout.style.left === left + '%' && callout.style.top === top + '%' && callout.style.visibility === '') return;
           callout.style.visibility = '';
           callout.style.left = left + '%';
           callout.style.top = top + '%';
@@ -9270,6 +9487,180 @@ var geographyGroup = new THREE.Group();
         var defaultGeographicFieldStep = geographicAnalysisLensId === 'context' ? 'orient' : geographicAnalysisLensId === 'site' ? 'site' : 'terrain';
         var geographicFieldStep = geographicInvestigationStep(d.geographicInvestigationStep || defaultGeographicFieldStep);
         var tourSource = useLive ? (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'selected forecast hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'selected earlier hour' : 'live observation') : 'teaching model';
+        // Forecast time in the 3D view. The model moves the front and changes every
+        // station with the hour, but the 3D view had no way to change the hour; this reuses
+        // the existing playback timer and advance(), so nothing new runs underneath.
+        var forecastHour = state.simHour;
+        var forecastButtonClass = 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[0.6875rem] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:opacity-40 ';
+        var forecastTimeControl = !geographicMode && !useLive && h('div', {
+          className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-2xl backdrop-blur-md',
+          role: 'group',
+          'aria-label': __alloT('stem.weathersystems.forecast_controls', 'Forecast time controls'),
+          'data-weather-forecast-controls': true
+        },
+          h('button', {
+            type: 'button',
+            onClick: function () { update({ playing: !d.playing }); },
+            'aria-pressed': !!d.playing,
+            'aria-label': d.playing
+              ? __alloT('stem.weathersystems.forecast_pause_aria', 'Pause the forecast')
+              : __alloT('stem.weathersystems.forecast_play_aria', 'Play the forecast forward one model hour at a time'),
+            'data-weather-forecast-play': d.playing ? 'playing' : 'paused',
+            className: forecastButtonClass + (d.playing ? 'border-amber-300 bg-amber-300 text-amber-950 shadow-lg' : 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg')
+          }, d.playing
+            ? __alloT('stem.weathersystems.forecast_pause', '\u23F8 Pause')
+            : __alloT('stem.weathersystems.forecast_play', '\u25B6 Play forecast')),
+          h('button', {
+            type: 'button',
+            onClick: function () { update({ playing: false }); advance(1); },
+            disabled: forecastHour >= 24,
+            'aria-label': __alloT('stem.weathersystems.forecast_step_aria', 'Advance the model one hour'),
+            className: forecastButtonClass + 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10'
+          }, '+1 h'),
+          h('input', {
+            type: 'range', min: 0, max: 24, step: 1, value: forecastHour,
+            onChange: function (event) {
+              var hour = clamp(Number(event.target.value), 0, 24);
+              update({ simHour: hour, playing: false, timeAdvanced: hour > 0 });
+            },
+            'aria-label': __alloT('stem.weathersystems.forecast_hour_slider', 'Forecast model hour'),
+            'aria-valuetext': 'T+' + forecastHour + ' h',
+            'data-weather-forecast-hour': forecastHour,
+            style: { accentColor: '#67e8f9' },
+            className: 'mx-1 h-11 w-28 cursor-pointer sm:w-36'
+          }),
+          // Inline min-width (the arbitrary class was never compiled into the host CSS), so
+          // the group does not change width as T+9 becomes T+10 during playback.
+          h('span', { style: { minWidth: '3.25rem' }, className: 'text-center text-xs font-black tabular-nums text-white', 'aria-hidden': true }, 'T+' + forecastHour + ' h'),
+          forecastHour > 0 && h('button', {
+            type: 'button',
+            onClick: function () { update({ simHour: 0, playing: false, timeAdvanced: false }); },
+            'aria-label': __alloT('stem.weathersystems.forecast_reset_aria', 'Return to model hour zero'),
+            className: forecastButtonClass + 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10'
+          }, '\u21BA'),
+          forecastHour === 0 && !d.playing && h('span', { className: 'px-2 text-[0.6875rem] font-bold text-slate-300' },
+            __alloT('stem.weathersystems.forecast_hint', 'Press play and watch the front cross the stations.'))
+        );
+        // Key for the station halos, drawn from the kernel's own stops so it cannot drift
+        // from the scene. Shown wherever the halos are (the conceptual 3D view).
+        var stationTempMin = STATION_TEMP_STOPS[0][0];
+        var stationTempMax = STATION_TEMP_STOPS[STATION_TEMP_STOPS.length - 1][0];
+        var stationTempKey = !geographicMode && h('div', {
+          className: 'pointer-events-none flex items-center gap-2 rounded-xl border border-white/15 bg-slate-950/85 px-3 py-2 shadow-2xl backdrop-blur-md',
+          role: 'img',
+          'aria-label': __alloT('stem.weathersystems.station_temp_key_aria', 'Station halo colour key, like a thermal camera: dark violet is cold, bright yellow is hot.'),
+          'data-weather-station-temp-key': true
+        },
+          h('span', { className: 'text-[0.6875rem] font-bold uppercase tracking-wide text-slate-400' }, __alloT('stem.weathersystems.station_temp_key', 'Station temp')),
+          h('span', { className: 'text-[0.6875rem] font-black tabular-nums text-violet-200' }, stationTempMin + '\u00B0'),
+          h('span', {
+            className: 'h-2.5 w-24 rounded-full sm:w-32',
+            // Sampled from the kernel every 2 C, so the key matches the halos exactly (a CSS
+            // gradient over the raw stops would blend in sRGB and drift between them).
+            style: { background: 'linear-gradient(to right, ' + (function () {
+              var samples = [];
+              for (var st = stationTempMin; st <= stationTempMax; st += 2) {
+                samples.push(stationTempColor(st) + ' ' + Math.round((st - stationTempMin) / (stationTempMax - stationTempMin) * 100) + '%');
+              }
+              return samples.join(', ');
+            })() + ')' }
+          }),
+          h('span', { className: 'text-[0.6875rem] font-black tabular-nums text-amber-200' }, stationTempMax + '\u00B0C')
+        );
+        // Predict, then play. The answer and the explanation both come from the kernel's
+        // predictionOutcome, so they are derived from the model the student watches.
+        var predictionHour = 12;
+        var predictionRecord = d.immersivePrediction && d.immersivePrediction.scenario === state.scenario && d.immersivePrediction.station ? d.immersivePrediction : null;
+        var predictionStation = predictionRecord ? (STATIONS.filter(function (item) { return item.id === predictionRecord.station; })[0] || station) : station;
+        var predictionTally = d.immersivePredictionTally && typeof d.immersivePredictionTally === 'object' ? d.immersivePredictionTally : { correct: 0, total: 0 };
+        var predictionRevealed = !!predictionRecord && state.simHour >= predictionHour;
+        var predictionResult = predictionRevealed ? predictionOutcome(state, predictionStation, predictionHour) : null;
+        var predictionCorrect = !!(predictionResult && predictionResult.direction === predictionRecord.choice);
+        var predictionWord = function (dir) {
+          return dir === 'warmer' ? __alloT('stem.weathersystems.predict_warmer', 'Warmer')
+            : dir === 'colder' ? __alloT('stem.weathersystems.predict_colder', 'Colder')
+              : __alloT('stem.weathersystems.predict_same', 'About the same');
+        };
+        // Mid-sentence forms get their own keys: lowercasing a translated button label in
+        // code is a decision translators cannot override, and wrong in some languages.
+        var predictionInlineWord = function (dir) {
+          return dir === 'warmer' ? __alloT('stem.weathersystems.predict_inline_warmer', 'warmer')
+            : dir === 'colder' ? __alloT('stem.weathersystems.predict_inline_colder', 'colder')
+              : __alloT('stem.weathersystems.predict_inline_same', 'about the same');
+        };
+        var signedDegrees = function (value) { var n = Math.round(Number(value) * 10) / 10; return (n > 0 ? '+' : '') + n; };
+        var predictionWhy = '';
+        if (predictionResult) {
+          var rest = signedDegrees(predictionResult.otherChange);
+          if (predictionResult.frontType === 'none') {
+            predictionWhy = __alloFill(__alloT('stem.weathersystems.predict_why_none', 'There is no front in this scenario. The change ({value1}\u00B0) came from the air mass and the station\u2019s own setting.'), { value1: rest });
+          } else if (predictionResult.alreadyBehindFront) {
+            predictionWhy = __alloFill(__alloT('stem.weathersystems.predict_why_already', 'It was already behind the front at T+0, so the change ({value1}\u00B0) came from the air mass and the station\u2019s own setting.'), { value1: rest });
+          } else if (!predictionResult.frontCrossed) {
+            predictionWhy = __alloFill(__alloT('stem.weathersystems.predict_why_not_yet', 'The front had not reached it by T+{value1}, so the change ({value2}\u00B0) came from the air mass and the station\u2019s own setting.'), { value1: predictionHour, value2: rest });
+          } else {
+            var stepSize = Math.abs(Math.round(predictionResult.frontStep * 10) / 10);
+            predictionWhy = (predictionResult.frontStep < 0
+              ? __alloFill(__alloT('stem.weathersystems.predict_why_front_colder', 'The front reached it at about T+{value1}, bringing air {value2}\u00B0 colder.'), { value1: predictionResult.passageHour, value2: stepSize })
+              : __alloFill(__alloT('stem.weathersystems.predict_why_front_warmer', 'The front reached it at about T+{value1}, bringing air {value2}\u00B0 warmer.'), { value1: predictionResult.passageHour, value2: stepSize }))
+              + ' ' + __alloFill(__alloT('stem.weathersystems.predict_why_rest', 'The rest of the change ({value1}\u00B0) came from the air mass and the station\u2019s own setting.'), { value1: rest });
+          }
+        }
+        var predictionResultText = predictionResult
+          ? (predictionCorrect
+              ? __alloFill(__alloT('stem.weathersystems.predict_correct', '\u2713 Correct: {value1}.'), { value1: predictionInlineWord(predictionResult.direction) })
+              : __alloFill(__alloT('stem.weathersystems.predict_wrong', '\u2717 Not this time. You said {value1}; the model shows {value2}.'), { value1: predictionInlineWord(predictionRecord.choice), value2: predictionInlineWord(predictionResult.direction) }))
+          : '';
+        var nextPredictionStation = function () {
+          var at = 0;
+          for (var si = 0; si < STATIONS.length; si += 1) if (STATIONS[si].id === predictionStation.id) at = si;
+          var next = STATIONS[(at + 1) % STATIONS.length];
+          update({
+            immersivePrediction: null,
+            immersivePredictionTally: { correct: predictionTally.correct + (predictionCorrect ? 1 : 0), total: predictionTally.total + (predictionResult ? 1 : 0) },
+            selectedStation: next.id, simHour: 0, playing: false, timeAdvanced: false
+          });
+        };
+        var predictionChoiceClass = 'min-h-11 rounded-lg border border-violet-300/60 bg-violet-300/15 px-3 py-2 text-[0.6875rem] font-black text-violet-50 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200';
+        var predictionCard = !geographicMode && !useLive && h('div', {
+          // Inline max-width: the host ships PREBUILT Tailwind, and an arbitrary width class
+          // this tool introduces was never compiled, so the card grew to its text (~700px).
+          style: { maxWidth: '400px' },
+          className: 'pointer-events-auto rounded-xl border border-violet-300/40 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md',
+          role: 'group',
+          'aria-label': __alloT('stem.weathersystems.predict_group', 'Predict, then play the forecast'),
+          'data-weather-prediction': predictionRevealed ? 'revealed' : predictionRecord ? 'made' : 'open'
+        },
+          !predictionRecord && state.simHour < predictionHour && h('p', { className: 'text-xs font-black leading-snug text-white' },
+            __alloFill(__alloT('stem.weathersystems.predict_question', 'Predict first: by T+{value1}, will {value2} be warmer, colder, or about the same?'), { value1: predictionHour, value2: predictionStation.name })),
+          !predictionRecord && state.simHour < predictionHour && h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+            ['warmer', 'colder', 'same'].map(function (dir) {
+              return h('button', {
+                key: dir, type: 'button', 'data-weather-predict-choice': dir, className: predictionChoiceClass,
+                onClick: function () { update({ immersivePrediction: { scenario: state.scenario, station: predictionStation.id, choice: dir }, selectedStation: predictionStation.id }); }
+              }, predictionWord(dir));
+            })),
+          !predictionRecord && state.simHour >= predictionHour && h('p', { className: 'text-[0.6875rem] font-bold text-slate-300' },
+            __alloT('stem.weathersystems.predict_rewind', 'Return to T+0 to make a prediction before you play.')),
+          predictionRecord && !predictionRevealed && h('p', { className: 'text-xs font-black leading-snug text-white' },
+            __alloFill(__alloT('stem.weathersystems.predict_made', 'Your prediction for {value1}: {value2}. Play the forecast to T+{value3} to check.'), { value1: predictionStation.name, value2: predictionInlineWord(predictionRecord.choice), value3: predictionHour })),
+          predictionRecord && !predictionRevealed && h('button', {
+            type: 'button', className: 'mt-2 ' + predictionChoiceClass,
+            onClick: function () { update({ immersivePrediction: null }); }
+          }, __alloT('stem.weathersystems.predict_change', 'Change prediction')),
+          // Always present, so the result is announced the moment it appears.
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-weather-prediction-result': predictionResult ? (predictionCorrect ? 'correct' : 'wrong') : '' },
+            predictionResult && h('p', { className: 'text-xs font-black ' + (predictionCorrect ? 'text-emerald-300' : 'text-amber-300') }, predictionResultText),
+            predictionResult && h('p', { className: 'mt-1 text-[0.6875rem] font-bold tabular-nums text-white' },
+              __alloFill(__alloT('stem.weathersystems.predict_numbers', '{value1}: {value2}\u00B0 at T+0, {value3}\u00B0 at T+{value4}.'), { value1: predictionResult.stationName, value2: predictionResult.startTemp, value3: predictionResult.endTemp, value4: predictionResult.hour })),
+            predictionResult && h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-300' }, predictionWhy)
+          ),
+          predictionResult && h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+            h('button', { type: 'button', className: predictionChoiceClass, onClick: nextPredictionStation }, __alloT('stem.weathersystems.predict_try_another', 'Try another station')),
+            predictionTally.total > 0 && h('span', { className: 'text-[0.6875rem] font-bold text-slate-400' },
+              __alloFill(__alloT('stem.weathersystems.predict_tally', 'Right so far: {value1} of {value2}'), { value1: predictionTally.correct, value2: predictionTally.total }))
+          )
+        );
         var focusSpotlightBadge = !geographicMode && immersiveFocusSpotlight && h('div', { className: 'pointer-events-none w-[min(320px,100%)] rounded-2xl border px-3 py-2 text-center shadow-2xl backdrop-blur-md ' + (immersiveStageMode ? 'hidden xl:block ' : '') + focusSpotlightTheme.badge, 'data-weather-focus-spotlight-badge': immersiveFocus, role: 'status', 'aria-live': 'polite', 'aria-label': 'Visual spotlight: ' + focusDetail.label + '. ' + focusDetail.detail },
                   h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[0.18em] ' + focusSpotlightTheme.eyebrow }, 'Visual spotlight'),
                   h('p', { className: 'mt-0.5 flex items-center justify-center gap-1.5 text-xs font-black text-white' }, h('span', { className: 'h-2 w-2 rounded-full shadow-[0_0_12px_currentColor]', style: { backgroundColor: focusSpotlightTheme.color }, 'aria-hidden': true }), focusDetail.label),
@@ -9411,7 +9802,7 @@ var geographyGroup = new THREE.Group();
               )
             ),
             h('div', { className: 'grid gap-4 p-3 sm:p-5 ' + (immersiveStageMode ? 'xl:grid-cols-1' : 'xl:grid-cols-[minmax(0,1fr)_380px]'), 'data-weather-immersive-layout': immersiveStageMode ? 'stage' : 'control-rail' },
-              h('div', { ref: immersiveStageRef, 'data-weather-immersive-stage': immersiveFullscreen ? 'fullscreen' : 'inline', className: 'relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.08)] md:min-h-[600px] xl:min-h-[680px]' + (immersiveFullscreen ? ' h-full' : '') },
+              h('div', { ref: immersiveStageRef, 'data-weather-immersive-stage': immersiveFullscreen ? 'fullscreen' : 'inline', className: 'relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.08)] md:min-h-[600px] xl:min-h-[680px]' + (immersiveFullscreen ? ' h-full' : ' self-start xl:sticky xl:top-4') },
                 h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: immersiveFullscreen ? 'block h-full min-h-[500px] w-full' : 'block h-[min(78vh,780px)] min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-describedby': !geographicMode ? 'weather-conceptual-3d-instructions' : undefined, 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Click or tap a scene object to explain it. Drag to orbit; scroll or pinch to zoom.' }),
                 immersiveStageMode && useLive && liveTimeline.length > 1 && h('div', { className: 'pointer-events-auto absolute bottom-3 left-3 right-3 z-30 rounded-2xl border border-violet-300/35 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-timeline': true, role: 'region', 'aria-labelledby': 'weather-stage-timeline-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
@@ -9508,7 +9899,7 @@ var geographyGroup = new THREE.Group();
                     })
                   )
                   ),
-                  h('div', { className: 'flex w-full flex-wrap items-start gap-2' }, stageLegendPill, stageLegendPanel, focusSpotlightBadge, comparisonLegendPanel, hoverInspectorPanel),
+                  h('div', { className: 'flex w-full flex-wrap items-start gap-2' }, forecastTimeControl, stationTempKey, stageLegendPill, stageLegendPanel, focusSpotlightBadge, comparisonLegendPanel, hoverInspectorPanel),
                   presenterPanel
                 ),
                 !geographicMode && !engineReady && !engineError && h('div', { className: 'absolute inset-0 z-20 flex items-center justify-center bg-slate-950/90 text-center' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading the 3D atmosphere engine...'), h('p', { className: 'mt-1 text-xs text-slate-400' }, 'The Canvas 2D map remains available if WebGL cannot load.'))),
@@ -9517,8 +9908,12 @@ var geographyGroup = new THREE.Group();
                 geographicMode && d.geographicMapError && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, 'Geographic view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, d.geographicMapError), h('div', { className: 'mt-4 flex flex-wrap items-center justify-center gap-2' },
                   h('button', { type: 'button', onClick: function () { update({ geographicMapError: '', geographicMapAttempt: (d.geographicMapAttempt || 0) + 1 }); }, className: 'min-h-11 rounded-lg bg-emerald-300 px-4 py-2 text-sm font-black text-emerald-950' }, 'Retry loading'),
                   h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead')))),
-                !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-end justify-between gap-2' },
-                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, useLive ? timelineSelectionLabel + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
+                !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-end justify-between gap-2', 'data-weather-stage-overlays': 'conceptual-bottom' },
+                  // The prediction card stacks above the scene badge in this row, so flex
+                  // layout keeps it clear of the badge instead of covering its buttons.
+                  h('div', { className: 'flex max-w-full flex-col items-start gap-2' },
+                    predictionCard,
+                    h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, useLive ? timelineSelectionLabel + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel))),
                   h('div', { id: 'weather-conceptual-3d-instructions', className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[0.6875rem] text-slate-300 backdrop-blur-sm', 'data-weather-object-picking-hint': true }, 'Click or tap an object to explain | Drag to orbit | Scroll or pinch to zoom'),
 h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4 py-3 text-left shadow-2xl backdrop-blur-md', 'data-weather-tour-overlay': true },
                     h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[0.18em] text-cyan-300' }, '3D investigation step ' + (tourStep.index + 1) + ' of ' + tourStep.total),
