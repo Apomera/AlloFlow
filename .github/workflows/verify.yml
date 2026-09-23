@@ -264,34 +264,55 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
-      - name: Install Playwright chromium
+      - id: browsers
+        name: Install Playwright chromium
         run: npx playwright install chromium
+      # Each golden below is an independent suite, so each runs whenever setup succeeded. A plain
+      # step runs only if every earlier step passed: from 2026-09-15 a fault-injection timeout
+      # SKIPPED the remediation corpus (the only real-bytes fixAndVerifyPdf run here) in every
+      # run. `!cancelled()` keeps later goldens running after one fails; the job still fails.
       - name: Tag-tree golden master (createTaggedPdf structure invariants + round-trip)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/pdf_tag_tree_golden.spec.ts
       - name: PdfValidator discrimination (the on-export self-check isn't vacuous)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/pdf_validator_golden.spec.ts
       - name: Validator parity (in-app rules vs declaration gate)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/validator_parity_golden.spec.ts
       - name: Multi-page cross-page MCR linkage
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/multipage_golden.spec.ts
       - name: AI-path contracts (scripted Gemini — plan/surgical/rewrite guards)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/ai_path_golden.spec.ts
       - name: Install pinned EPUBCheck vendor assets
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: node desktop/mcp/fetch_epubcheck.cjs
       - name: MCP auto-continue closed-loop refinement
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
+        # Logging only (~12 KB per test): each test takes 6.2 min here against a 7 min timeout
+        # but under 1 min locally, and without the driver's gate lines the log cannot say why.
+        env:
+          ALLOFLOW_MCP_VERBOSE: '1'
         run: npx playwright test tests/e2e/mcp_auto_continue_golden.spec.ts --workers=1
       - name: STEM golden (Formula role, Headers/IDTree, image-intel honesty)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/stem_golden.spec.ts
       - name: Typeset-then-tag golden (Office-input tagged PDFs)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/typeset_tagged_golden.spec.ts
       - name: Transcript-format golden (audio/video as first-class input)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/transcript_golden.spec.ts
       # PROMOTED TO BLOCKING 2026-07-10 (ChatGPT-review CI item): the two strongest
       # whole-pipeline behavioral suites ran only locally. Both are scripted-Gemini
       # (zero AI network) + the same about:blank/CDN pdf-lib pattern as this job.
       - name: Fault-injection goldens (scheduled model failures → honest degraded results)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/remediation_fault_injection_golden.spec.ts
       - name: Remediation corpus (real bytes end-to-end + tagged structural-invariant sweep)
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
         run: npx playwright test tests/e2e/remediation_corpus_golden.spec.ts
 
   verapdf:
@@ -306,13 +327,12 @@ jobs:
     # absent (i.e. always, in CI) — so CI was effectively self-grading. This makes the
     # ground-truth gate actually run on every push.
     #
-    # NON-BLOCKING for its first landings (continue-on-error) because the veraPDF installer
-    # can't be exercised on the dev machine — the install + launcher resolution has to be proven
-    # on a real GitHub runner first. PROMOTE TO BLOCKING by deleting `continue-on-error: true`
-    # once a green run confirms the installer lands the launcher (the job already fails loudly,
-    # not silently, if veraPDF is missing or produces no artifact pairs — so a green run is real).
+    # PROMOTED TO BLOCKING 2026-09-22. It landed with continue-on-error until the installer and
+    # launcher were proven on a real GitHub runner: green in 12 consecutive runs (2026-09-17..22),
+    # and the same --gate passed locally on freshly generated pairs (veraPDF 1.30.2, 0 introduced).
+    # The job fails loudly, not silently, if veraPDF is missing or produces no artifact pairs, so
+    # a green run is real.
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
