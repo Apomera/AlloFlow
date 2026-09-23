@@ -6,7 +6,8 @@ memory aid, and a challenge) plus one commitment the student carries into other 
 off later in the week. This guide is one page per week: the shape of the 40 minutes, what students
 do in the Hub, what the commitment is, what counts as HOWL evidence, and what tends to go wrong.
 
-Written 2026-09-13 from the six packs in `allopacks/crew_*_grade6_8`. If you are new to the words
+Written 2026-09-13 from the first six packs in `allopacks/crew_*_grade6_8`; weeks 7 to 12 added
+2026-09-22 from the other six. If you are new to the words
 Crew, HOWL, or EL Education, read `docs/EL_CREW_PRIMER.md` first; it is one page.
 
 ## The twelve weeks at a glance
@@ -33,9 +34,10 @@ persevere to produce high quality work."
 ## Before week 1: how the packs work
 
 **Loading a pack.** Each week is one file. Open AlloFlow, open the History panel, and use Load
-Project to open the week's `.allopack.json`. Once the packs are published to the Community Catalog
-you will find them there under SEL / Character with the tag `crew`. Loading a pack puts nine
-resources in the History panel and one Crew station under SEL Stations.
+Project (under More) to open the week's `.allopack.json`. Once the packs are published to the Community Catalog
+you will find them there under SEL / Character with the tag `crew`. Loading a pack puts ten
+resources in the History panel (directions, reading, glossary, chart, sort, quiz, sentence frames,
+FAQ, memory aid, and challenge) and one Crew station under SEL Stations.
 
 **Students do not need AI.** Portland students use AlloFlow without a Gemini key. Every resource in
 these packs and every linked Hub tool works without one. Where a tool has an AI feature (Growth
@@ -52,6 +54,25 @@ complete"), or passes on for now. The station stays active until the student exi
 still there on Thursday. Students can find it again under SEL Stations in the History panel. The
 record is a practice record, not a grade, and the station says so on screen. Saving the project
 keeps it.
+
+**Known problems as of September 22, 2026, and what to do.** Fixes have been requested; check with
+the AlloFlow team before PD, and skip this paragraph once they ship.
+
+- *A tool link opens the Hub but not the tool.* After about 20 seconds the Crew station starts and
+  a message says the tool "is not available in this SEL Hub". It is available: in the station box
+  at the top of the Hub, click **Open activity for this step**, and the tool opens in a second or
+  two.
+- *A link opens AlloFlow again in a new tab.* That happens when a link is clicked while the app is
+  still loading (a small "left" counter shows in the bottom corner). Close the new tab, wait for
+  the counter to go away, and click the link again.
+- *Hub work does not come back from a saved project.* A student's HOWL Tracker check-ins and goals
+  and their Goal Setter goals are not restored when the saved project is loaded the next week, so
+  week 10's "open your week-4 goal" and week 12's "pull evidence from your check-ins" find nothing.
+  Until this is fixed, have students also write the week-4 goal and each week-6 rating with its
+  evidence in their notebook. The Crew station records are not affected.
+- *After the browser is reopened, the directions show a block of code and no goals.* Load the
+  week's pack file again (History panel, More, Load Project). The directions and goals come back,
+  with the ticks the student had already earned.
 
 **What "HOWL evidence" means here.** Each week's commitment is one observable behavior from the
 HOWL's own language on the grading guide. The evidence is the student's account of a specific
@@ -294,20 +315,274 @@ check-in's rubric reveal shows what a 3 and a 4 look like in practice.
 ## After week 6
 
 The station records and the HOWL Tracker check-ins are the launch's paper trail. Each is a
-practice record the student owns, kept on the device and in the project file. Before the
-trimester's HOWL grades, a Crew leader can ask each student to open the HOWL Tracker's History and
-read one check-in aloud with its evidence. That is the conversation the grading guide's statements
-were written for.
+practice record the student owns, kept on the device and in the project file. Weeks 7 to 12 use the
+same shape and build on it: week 10 reopens the week-4 system and the September HOWL Tracker goal,
+and week 12 turns the whole trail into the student-led conference story.
 
-Weeks 7 to 12 exist as packs (`allopacks/crew_perspective`, `crew_upstander`, `crew_attention`,
-`crew_halfway`, `crew_teamwork`, `crew_story`) and follow the same shape. Their pages in this guide
-are the next writing task; until then, each pack's directions resource is the run sheet, and the
-table above gives the tool and the commitment. Week 10 reopens the week-4 system and the September
-HOWL Tracker goal; week 12 is the student-led conference rehearsal and closes the trimester.
+---
+
+## Week 7: Two Sides of One Story
+
+**HOWL: Respect.** "I am a respectful member of the King community." The behavior is working
+cooperatively with others. Most Crew conflicts start with a story one person wrote about another
+in half a second; this week the Crew practices asking before deciding.
+
+**The 40 minutes**
+
+| Minutes | What happens | Resource |
+| --- | --- | --- |
+| 0 to 10 | Read. The story your brain writes about what someone did, the fact under it, and the gap: we explain other people by who they are and ourselves by the situation. | Two Sides of One Story |
+| 10 to 17 | Twelve words, then the Word Scramble. | Glossary, Word Scramble |
+| 17 to 25 | Chart open, sort the cards (fact, story, or open question), quiz. Question 2 is about Dev and Priya; the short answer asks for a story that is not about you and one question that would find out. | Story or Fact?, What Do You Actually Know?, Ask Before You Decide (quiz) |
+| 25 to 33 | Hub: Perspective Lens, one Viewpoint Swap on a fictional moment. Then Peer Support Coach: pick two open questions you could ask a friend. | Perspective Lens (station starts), Peer Support Coach |
+| 33 to 38 | Frames: take one moment apart into the fact, the story, and the question. Memory aid. | Sentence Frames, Remember Notice, Hold, Ask |
+| 38 to 40 | Launch the challenge and say the commitment aloud. | Explore Challenge: The Other Side of the Table |
+
+**In the Hub.** The link opens Perspective Lens; its page title reads Perspective-Taking Lab, and it
+opens on Case studies. Viewpoint Swap is the third tab. Students tell one fictional moment (Dev
+and Priya works) from the other person's side, using only what they actually know. Peer Support
+Coach opens on its four listening skills with Open Questions first; its own next step asks for two
+open questions and one try on a fictional situation. The station's five active minutes are counted
+in Perspective Lens.
+
+**The commitment.** Before you decide what someone meant, ask one question first, and bring back
+what you found out.
+
+**What counts as evidence.** "On Wednesday my lab partner took the scale without asking. My story
+was that she thinks I am slow. I asked, 'Do you need the scale first?' Her group was timing
+something, and I had it back in two minutes." A fact, a story, a question, and what came back. Not
+evidence: "I was more understanding this week."
+
+**Watch for.** "Is it nosy to ask why people did things?" The FAQ separates an open question about
+the moment ("everything okay this morning?") from an accusation with a question mark on it. "What
+if they say nothing, but something is obviously wrong?" Then the student has done their part; "Okay.
+I am around if you want to talk" leaves the door open. "What if my story was right?" Sometimes it
+is, and then there is a real problem that can be worked on. The challenge asks for the question to
+be asked in person or by voice, not in a group chat, and for no real names in the Crew share.
+
+**If you only have 15 minutes.** Chart, one Viewpoint Swap, the commitment.
+
+---
+
+## Week 8: Small Moves, Not Big Speeches
+
+**HOWL: Respect.** The behavior is being a respectful member of the community where community is
+actually made: the lunch table, the group chat, the hallway. An upstander makes one small move,
+about the size of a sentence.
+
+**The 40 minutes**
+
+| Minutes | What happens | Resource |
+| --- | --- | --- |
+| 0 to 10 | Read. The ring of watchers and the bystander effect, why a small move works better than a big speech, and when a situation is bigger than a move. | Small Moves, Not Big Speeches |
+| 10 to 17 | Twelve words, then Matching. | Glossary, Matching |
+| 17 to 25 | Chart, sort (small move, big speech, or get an adult), quiz. Question 3 is Jae's move at the lunch table; question 5 is when to get an adult. | Bystander or Upstander?, Small Move, Big Speech, or Get an Adult?, Small Moves (quiz) |
+| 25 to 33 | Hub: Upstander Training, read the courage ladder in Upstander Moves and pick the two smallest moves you could actually make. Then Peer Support Coach for the words to use afterwards with the person who was left out. | Upstander Training (station starts), Peer Support Coach |
+| 33 to 38 | Frames: your two moves and when you would use them. Memory aid. | Sentence Frames, Remember Notice, Move, Check |
+| 38 to 40 | Launch the challenge; say the commitment. | Design Challenge: Our Crew's Invite Signal |
+
+**In the Hub.** The link opens Upstander Training (its page title reads Upstander Workshop) on Three
+Roles, which frames a role as what is happening in a situation, not who someone is, and tells
+students they can skip any reflection. The courage ladder is on the Upstander Moves tab, second in
+the row; the tool's own next step says the same thing the pack does. Peer Support Coach has the
+words for afterwards: an open question, an affirmation.
+
+**The commitment.** Make one small move when someone is left out or talked over, and bring back
+what happened.
+
+**What counts as evidence.** "At lunch on Tuesday Sam kept getting cut off. I said, 'Wait, Sam, what
+was the end of that?' He finished the story." The moment, the move, what happened. Not evidence: "I
+stood up for people."
+
+**Watch for.** "Is getting an adult tattling?" No, and the FAQ says so: when someone is hurt,
+threatened, or targeted again and again, getting an adult is the correct size of response. The
+sort's "get an adult" cards (the same locker three days in a row, a photo shared without consent,
+a threat after school) are there so students practice that line; if a student recognizes a real
+situation in them, follow your school's reporting process, not the Crew plan. "What if I froze and
+did nothing?" The afterwards move still counts. The design challenge needs the whole Crew to agree
+the words for two moves; leave time for that vote, or open next week with it.
+
+**If you only have 15 minutes.** Chart, the courage ladder in Upstander Training, the commitment.
+
+---
+
+## Week 9: Where Your Attention Goes
+
+**HOWL: Responsibility.** "I take responsibility for my success as a learner." The behavior is
+participating fully and mindfully. Phones are built to pull attention on purpose; this week each
+student sets one boundary ahead of time, so where their attention goes is their choice.
+
+**The 40 minutes**
+
+| Minutes | What happens | Resource |
+| --- | --- | --- |
+| 0 to 10 | Read. Design pulls (badges, buzzes, streaks, autoplay), the hidden cost of a silent phone on the desk, and a boundary versus a ban. | Where Your Attention Goes |
+| 10 to 17 | Twelve words, then the Word Scramble. | Glossary, Word Scramble |
+| 17 to 25 | Chart, sort (boundary, ban, or bait), quiz. Question 3 is about what Nadia lost without ever taking her phone out. | Pulled or Chosen?, Boundary, Ban, or Bait?, Pulled on Purpose (quiz) |
+| 25 to 33 | Hub: Digital Wellbeing Studio, the Self-Check answered honestly, then one habit from the Toolkit. Executive Function's Focus tab for one move in the class where attention drifts most. | Digital Wellbeing Studio (station starts), Executive Function |
+| 33 to 38 | Frames: your boundary and what it beats. Memory aid. | Sentence Frames, Remember Out of Sight, Not Just Out of Hand |
+| 38 to 40 | Launch the three-day attention log; say the commitment. | Investigate Challenge: Where Did It Go? |
+
+**In the Hub.** Digital Wellbeing Studio opens on Self-Check: twelve questions on a four-point
+scale, one at a time. Toolkit is the next tab. The other tabs (Cyberbullying, What's Real?, AI
+Companions, When You're Struggling) are there if a student wants them; this week needs only the
+first two. In Executive Function, Focus is the sixth tab in the row.
+
+**The commitment.** Keep your phone in your bag, not your pocket, for one class every day, and notice
+the first time you reach for it.
+
+**What counts as evidence.** "Phone in the bag for science every day. Monday I reached for my pocket
+four minutes in; by Thursday I did not reach at all. Wednesday it was in my hoodie by mistake and I
+checked it twice." A class, a count, a slip. Not evidence: "I used my phone less."
+
+**Watch for.** "My family needs to reach me during the day." The FAQ: most phones can let one or two
+contacts through while everything else is quiet; the boundary is on the pulls, not on the family.
+"Is this a phone ban in disguise?" No: a ban is someone else removing the phone, and a boundary is
+the student's own line, chosen ahead of time. If a class already collects phones, pick a different
+class for the commitment, because that one is a ban. Tally marks in the challenge stay private;
+only the counts are shared.
+
+**If you only have 15 minutes.** Chart, the Digital Wellbeing Self-Check, the commitment.
+
+---
+
+## Week 10: The Halfway Check
+
+**HOWL: Responsibility.** The behaviors are arriving prepared and completing assignments
+thoughtfully and on time, in November as well as September. The week reopens the week-4 system
+and the September HOWL Tracker goal, keeps what worked, and changes one part.
+
+**The 40 minutes**
+
+| Minutes | What happens | Resource |
+| --- | --- | --- |
+| 0 to 10 | Read. Why halfway matters, Marcus and the puppy, and the three review questions: what did I say I would do, what happened by the count, and what is the one change. | The Halfway Check |
+| 10 to 17 | Twelve words, then Matching. | Glossary, Matching |
+| 17 to 25 | Chart, sort (keep, fix, or wish), quiz. Question 3 is why Marcus's launch check stopped. | Three Review Questions, Keep, Fix, or Wish?, Count, Not Feeling (quiz) |
+| 25 to 33 | Hub: Goal Setter, open the week-4 goal and answer the three questions against it. HOWL Tracker's History for the Responsibility trend. Executive Function if one part of the system needs rebuilding. | Goal Setter (station starts), HOWL Tracker, Executive Function |
+| 33 to 38 | Frames: the review in three answers and one change. Memory aid. | Sentence Frames, Remember Said, Happened, Change |
+| 38 to 40 | Launch the challenge; say the commitment. | Decide Challenge: One Thing, Not Everything |
+
+**In the Hub.** Goal Setter opens on Goals; "No goals yet" means the goal did not come back with the
+project, not that the student never wrote one (see "Known problems" under Before week 1), so use
+the notebook copy. Answer the three questions against the goal as written. HOWL Tracker's History
+tab is a trend chart of the weekly check-in ratings with the past check-ins under it. The Tracker
+counts time in quarters, not trimesters, and files a student's work under the quarter the Tracker
+was started in. A Tracker started fresh in November reads "Q2 (Nov-Jan)" and its History says "No
+check-ins yet this quarter". Read "quarter" as "this stretch of the trimester". Executive
+Function's Start, Hold and Plan tabs rebuild a launch check or a capture spot.
+
+**The commitment.** Make the one change from your review, run it for five days, and count the
+mornings you had everything.
+
+**What counts as evidence.** "My launch check stopped in week 6 because I have practice on Tuesdays
+and Thursdays. I moved it to the bus ride home. This week: five mornings of five." The part, the
+reason, the change, a count. Not evidence: "I got organized again."
+
+**Watch for.** "My whole system fell apart. Is one change enough?" The FAQ: find the part that fell
+first and fix that one. "I did not keep a count." Then start one today; "not enough to know" is an
+honest finding. "Is it embarrassing that my goal was a wish?" Almost everyone's September goal is a
+wish by November; opening it makes it a goal again. Watch for students who rebuild everything; the
+rubric's top row is one change and a line on what stays. Goal Setter shows a streak badge. A
+student fresh from week 9 may point out that a streak is a pull; that is the week-9 lesson working.
+
+**If you only have 15 minutes.** The three review questions against the week-4 goal, the commitment.
+
+---
+
+## Week 11: Your Part of the Whole
+
+**HOWL: Perseverance.** "I persevere to produce high quality work." In a group, that means a part
+with your name on it, finished at your own quality, and an early ask when your part depends on
+someone else. A part with no name on it is a hope.
+
+**The 40 minutes**
+
+| Minutes | What happens | Resource |
+| --- | --- | --- |
+| 0 to 10 | Read. The group-work trap, social loafing, the what, where, and by when sentence, and Lena asking early for Omar's data. | Your Part of the Whole |
+| 10 to 17 | Twelve words, then the Word Scramble. | Glossary, Word Scramble |
+| 17 to 25 | Chart, sort (named part, hope, or ask early), quiz. Question 3 is Lena and Omar's notebook. | What, Where, By When, Named Part or Hope?, Parts and Wholes (quiz) |
+| 25 to 33 | Hub: Teamwork Builder, look at Roles, then write a Communication Plan for a real group this trimester. Then DEAR MAN for the ask to a teammate whose part you are waiting on. | Teamwork Builder (station starts), DEAR MAN |
+| 33 to 38 | Frames: your part of the whole for one real group. Memory aid. | Sentence Frames, Remember What, Where, By When |
+| 38 to 40 | Launch the challenge; say the commitment. | Propose Challenge: A Parts List for Our Group |
+
+**In the Hub.** Teamwork Builder opens on Roles (nine team roles, with "That's Me" to pick yours);
+Communication Plan is the fourth tab, and the tool's own next step matches the pack: who does what,
+where, and by when. DEAR MAN is familiar from week 5: one sentence for the ask, who you are asking,
+then the seven steps and Rehearse.
+
+**The commitment.** In one real group task, say your part of the whole out loud (what, where, by
+when) and finish it before the deadline.
+
+**What counts as evidence.** "Social studies poster: I said 'the map and its key, on the poster file,
+by Wednesday.' I needed the population numbers from Ava, so I asked her Monday. The map was done
+Wednesday." What, where, by when, and the ask. Not evidence: "I did my share."
+
+**Watch for.** "What if I end up doing everything?" The FAQ: students may help, and may say calmly
+which parts were theirs; a parts list with names is fair to everyone. "Is asking a teammate for their
+part nagging?" Asking early, once, with a date, is planning. The week lands best when a real
+expedition product is due, so check with colleagues; a student with no group task this week can use
+any partner assignment. Tell colleagues to expect named parts and early asks.
+
+**If you only have 15 minutes.** Chart, the Communication Plan in Teamwork Builder, the commitment.
+
+---
+
+## Week 12: The Story of Your Trimester
+
+**HOWL: Perseverance.** The behaviors are self-assessing with targets and rubrics, and learning from
+feedback. The week closes the trimester: each student builds a two-minute story (one level, one
+piece of evidence, and one gap for each HOWL) and rehearses it for the student-led conference.
+
+**The 40 minutes**
+
+| Minutes | What happens | Resource |
+| --- | --- | --- |
+| 0 to 10 | Read. Twelve weeks as evidence, the student-led conference, Zoe and Malik both claiming a 3, and why adjectives are claims. | The Story of Your Trimester |
+| 10 to 17 | Twelve words, then Matching. | Glossary, Matching |
+| 17 to 25 | Chart, sort (claim, evidence, or gap), quiz. Question 3 asks why Malik's story is the believable one. | Claim or Evidence?, Adjective or Evidence?, What Makes It Believable? (quiz) |
+| 25 to 33 | Hub: HOWL Tracker, History and SLC rehearsal: one piece of evidence per HOWL from the check-ins and station records. Strengths Finder for words more specific than "good." | HOWL Tracker (station starts), Strengths Finder |
+| 33 to 38 | Frames: the three-HOWL story with one gap. Memory aid. | Sentence Frames, Remember Level, Evidence, Gap |
+| 38 to 40 | Pair up and time the two minutes; say the commitment. | Explore Challenge: Two Minutes, Three HOWLs |
+
+**In the Hub.** HOWL Tracker's SLC rehearsal tab is a seven-step practice for presenting HOWL growth
+at a student-led conference, starting with an opening line to whoever is there; each step is a box
+to fill, and the print view puts them together as a script. History has the check-ins to pull
+evidence from. On Home, check the HOWL set is King's three (Respect, Responsibility, Perseverance),
+not the four-HOWL EL default, so the steps name the right habits. Strengths Finder opens on Discover:
+students pick the character strengths that feel like theirs, and its next step asks for one real
+moment from this trimester for each.
+
+**The commitment.** Rehearse your two-minute trimester story with a partner, and take one piece of
+their feedback into the version you use at the conference.
+
+**What counts as evidence.** "I told my story to Jordan. It ran three minutes because my Respect part
+was all adjectives. I swapped them for the lunch-table move from week 8 and it came in at two." Said
+aloud, timed, feedback taken, one thing changed. Not evidence: "I practiced my story."
+
+**Watch for.** "What if I do not have evidence for a HOWL?" The FAQ: "I do not have a moment I can
+point to for this one, and that is my gap" is itself evidence of self-assessment. "Do I have to talk
+about the gap in front of my family?" Yes; a gap with a plan attached is not a confession, it is next
+trimester. Students who missed weeks have fewer records; one real moment per HOWL is enough, and the
+sort cards show what one looks like. A student who rates lower than you would: the FAQ calls a 2
+with a real story that the teacher answers with "I saw a 3, here is why" the best kind of conference.
+
+**If you only have 15 minutes.** The frames for one HOWL, the partner rehearsal, the commitment.
+
+---
+
+## After week 12
+
+What a student brings to the conference is the trail from twelve weeks: the HOWL Tracker check-ins,
+the Crew station records, and the story card from the week-12 challenge. Each is a practice record
+the student owns, kept on the device and in the project file. Before the trimester's HOWL grades, a
+Crew leader can ask each student to open the HOWL Tracker's History and read one check-in aloud with
+its evidence. That is the conversation the grading guide's statements were written for.
 
 ## Sources
 
 - King Middle School, Student and Family Handbook, "Grading Guide" (the three HOWL statements and behaviors): <https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide>
 - King Middle School, "Expeditionary Learning Model": <https://king.portlandschools.org/about/learning-models>
 - EL Education, Crew: <https://www.eleducation.org/crew>
-- The six packs: `allopacks/crew_norms_grade6_8`, `crew_repair`, `crew_zones`, `crew_system`, `crew_ask`, `crew_feedback` (all `_grade6_8.allopack.json`), and the primer `docs/EL_CREW_PRIMER.md`.
+- The twelve packs: `allopacks/crew_norms_grade6_8`, `crew_repair`, `crew_zones`, `crew_system`, `crew_ask`, `crew_feedback`, `crew_perspective`, `crew_upstander`, `crew_attention`, `crew_halfway`, `crew_teamwork`, `crew_story` (all `_grade6_8.allopack.json`), and the primer `docs/EL_CREW_PRIMER.md`.
