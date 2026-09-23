@@ -7952,6 +7952,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     if (!canvas._aqLossBound) {
       canvas._aqLossBound = true;
       canvas.addEventListener('webglcontextlost', function (ev) {
+        // releaseGl force-loses a canvas after teardown removes it; that is a
+        // normal exit, not a failure. A real loss happens on a canvas still on the page.
+        if (!canvas.isConnected) return;
         ev.preventDefault();
         console.warn('[Aquaculture] WebGL context lost — offering the 2D fallback and retry');
         if (opts && typeof opts.onContextLost === 'function') opts.onContextLost();

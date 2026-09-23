@@ -5622,6 +5622,9 @@ window.StemLab = window.StemLab || {
           if (!cnv._geoLossBound) {
             cnv._geoLossBound = true;
             cnv.addEventListener('webglcontextlost', function (ev) {
+              // releaseGl force-loses a canvas after teardown removes it; that is a
+              // normal exit, not a failure. A real loss happens on a canvas still on the page.
+              if (!cnv.isConnected) return;
               ev.preventDefault();
               console.warn('[GeoSandbox] WebGL context lost — offering the recovery panel');
               // Drop the dead scene so the retry rebuilds instead of reusing it.

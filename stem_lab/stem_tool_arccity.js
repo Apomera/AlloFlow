@@ -1835,6 +1835,9 @@
         if (!canvas._arcLossBound) {
           canvas._arcLossBound = true;
           canvas.addEventListener('webglcontextlost', function (ev) {
+            // releaseGl force-loses a canvas after teardown removes it; that is a
+            // normal exit, not a failure. A real loss happens on a canvas still on the page.
+            if (!canvas.isConnected) return;
             ev.preventDefault();
             console.warn('[ArcCity] WebGL context lost — falling back to the tactical view');
             setStatus('unavailable');
@@ -2648,6 +2651,9 @@
         if (!canvas._arcPlayLossBound) {
           canvas._arcPlayLossBound = true;
           canvas.addEventListener('webglcontextlost', function (ev) {
+            // releaseGl force-loses a canvas after teardown removes it; that is a
+            // normal exit, not a failure. A real loss happens on a canvas still on the page.
+            if (!canvas.isConnected) return;
             ev.preventDefault();
             console.warn('[ArcCity play] WebGL context lost — falling back to the tactical view');
             setStatus('unavailable');
