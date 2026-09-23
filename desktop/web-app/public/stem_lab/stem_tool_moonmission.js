@@ -3404,8 +3404,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H)) { W = nw; H = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); if (d3) d3.resize(nw, nh); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   // ── Real time, from the hand-over ──
-                  // The old game started at 15 km and integrated altitude 31x faster than
-                  // speed (alt += vVel * 0.5 per 1/60 s step), so "down 3 m/s" had nothing
+                  // The old game started at 15 km and integrated altitude with a different
+                  // time step from speed (alt += vVel * 0.5 per 1/60 s step), so "down 3 m/s" had nothing
                   // to do with how fast the ground came up: 100 m at 3 m/s was followed by
                   // touchdown 1.1 s later. Now the whole approach runs at real speed.
                   var alt = MM_DESCENT.handoverAlt;
