@@ -98,7 +98,8 @@
     "about 2.6 times"
   ],
   "stem_tool_moonmission.js": [
-    "2.5x slower"
+    "2.5x slower",
+    "about 11 times"
   ],
   "stem_tool_nuclearlab.js": [
     "about 21 orders of magnitude"
@@ -113,10 +114,15 @@
   "stem_tool_optics.js": [
     "100x larger",
     "43x larger",
-    "8x more"
+    "8x more",
+    "about 100 times",
+    "about 15 times",
+    "about 23 times"
   ],
   "stem_tool_pets.js": [
     "40x larger",
+    "about 14 times",
+    "about 3 times",
     "about 60 times"
   ],
   "stem_tool_platetectonics.js": [
