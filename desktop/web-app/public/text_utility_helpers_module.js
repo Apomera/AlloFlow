@@ -104,7 +104,7 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
     )
   );
 };
-const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps) => {
+const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps, instanceKey) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
   try {
     if (window._DEBUG_PHASE_M) console.log("[PhaseM] highlightGlossaryTerms fired");
@@ -151,7 +151,7 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
     if (termMap.has(lowerPart)) {
       const item = termMap.get(lowerPart);
       if (isCloze) {
-        const uniqueId = `cloze-${i}-${item.term}-${text.length}`;
+        const uniqueId = instanceKey != null && instanceKey !== "" ? `cloze-${instanceKey}-${i}-${item.term}` : `cloze-${i}-${item.term}-${text.length}`;
         const _translated = (() => {
           if (leveledTextLanguage === "English") return "";
           const tr = item.translations && item.translations[leveledTextLanguage];

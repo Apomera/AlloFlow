@@ -65,7 +65,8 @@ function famannNextId() {
   return "fa_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
 }
 function famannToday() {
-  return (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const d = /* @__PURE__ */ new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function famannLangByTag(tag) {
   return FAMANN_LANGS.find((l) => l.tag === tag) || null;
@@ -441,6 +442,7 @@ function FamilyAnnouncementsPanel(props) {
   window.AlloModules.FamilyAnnouncements = {
     FamilyAnnouncementsPanel: FamilyAnnouncementsPanel,
     _testing: {
+      famannToday: famannToday,
       famannPrompt: famannPrompt,
       famannCleanTranslation: famannCleanTranslation,
       famannPacketHtml: famannPacketHtml,

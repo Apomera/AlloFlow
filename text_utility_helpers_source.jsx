@@ -124,7 +124,7 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
   );
 };
 
-const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps) => {
+const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps, instanceKey) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms, repairGeneratedText, getReadableContent, generateHelpfulHint } = deps;
   try { if (window._DEBUG_PHASE_M) console.log("[PhaseM] highlightGlossaryTerms fired"); } catch(_) {}
       if (!glossary || glossary.length === 0 || !text) return text;
@@ -183,7 +183,9 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
           if (termMap.has(lowerPart)) {
               const item = termMap.get(lowerPart);
               if (isCloze) {
-                  const uniqueId = `cloze-${i}-${item.term}-${text.length}`;
+                  // With a key from the caller the id is unique per place; without one it is
+                  // the old part-index/text-length id, which repeats for every bolded term.
+                  const uniqueId = instanceKey != null && instanceKey !== '' ? `cloze-${instanceKey}-${i}-${item.term}` : `cloze-${i}-${item.term}-${text.length}`;
                   // The bank may offer the term in the passage's language while
                   // the glossary's canonical term is English. Accept EITHER, or
                   // dragging the correct chip is rejected: the bank showed

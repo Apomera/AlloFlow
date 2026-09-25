@@ -440,6 +440,11 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
             delete cleaned.syncNotice;
         }
     }
+    // Adapted word help is anchored to the adapted text itself, so it is restored
+    // whether or not the reading has a captured original.
+    if (item.adaptedReadingSupports && readingContract?.validateAdaptedReadingSupports && cleaned && typeof cleaned === 'object') {
+        cleaned.adaptedReadingSupports = readingContract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports);
+    }
     // The shared Firestore sanitizer must stay conservative because session
     // documents have a strict size ceiling. Mailbox/P2P packs are already
     // chunked, so restore the instructional image fields after sanitization.
@@ -473,7 +478,8 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
         // safePackImageSource budget as the others, so a large scene is dropped
         // on the byte cap rather than blowing up the pack.
         for (const key of ['image', 'imageUrl', 'sceneImage']) {
-            if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = safePackImageSource(source[key]);
+            // A word-support picture is an object, restored validated above; nulling it here dropped it.
+            if (Object.prototype.hasOwnProperty.call(source, key) && !(source[key] && typeof source[key] === 'object')) target[key] = safePackImageSource(source[key]);
         }
         if (Array.isArray(source.optionImageUrls) && Array.isArray(target.optionImageUrls)) {
             target.optionImageUrls = source.optionImageUrls.map(safePackImageSource);

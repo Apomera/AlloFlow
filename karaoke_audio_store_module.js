@@ -78,7 +78,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   // fixed at the callTTS layer instead (kokoro speak() returns the COMPLETE
   // clip regardless of length), so no cap belongs here.
   function splitSentences(text) {
-    var raw = String(text || '').replace(/<[^>]*>/g, '');
+    var raw = String(text || '').replace(/<\/?[a-zA-Z][^<>]*>/g, '');
     if (!raw.trim()) return [];
     try {
       var PH = window.AlloModules && window.AlloModules.PureHelpers;

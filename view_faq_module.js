@@ -370,7 +370,7 @@ function FaqView(props) {
     title: t('common.stop')
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-xs uppercase px-1"
-  }, label('common.stop', 'Stop'))))), /*#__PURE__*/React.createElement("div", {
+  }, label('common.stop', 'Stop'))))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4",
     "data-help-key": "faq_goal_panel"
   }, /*#__PURE__*/React.createElement("p", {
@@ -411,15 +411,23 @@ function FaqView(props) {
   // Show all / Hide all controls (only when not editing — teacher needs everything visible to edit)
   !isEditingFaq && generatedContent?.data?.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: expandAll,
-    className: "px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors",
-    "aria-label": t("a11y.show_all_faq")
-  }, "▾ ", label('faq.show_all', 'Show all')), /*#__PURE__*/React.createElement("button", {
+  }, generatedContent.data.every(function (_, i) {
+    return expandedSet.has(i);
+  }) ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-faq-toggle-all": true,
     onClick: collapseAll,
-    className: "px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors",
-    "aria-label": t("a11y.hide_all_faq")
-  }, "▸ ", label('faq.hide_all', 'Hide all')), /*#__PURE__*/React.createElement("span", {
+    className: "px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "▸ "), label('faq.hide_all', 'Hide all')) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-faq-toggle-all": true,
+    onClick: expandAll,
+    className: "px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "▾ "), label('faq.show_all', 'Show all')), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-500 italic ml-1"
   }, label('faq.disclosure_tip', 'Use the arrow to reveal an answer. Select a sentence to hear it aloud.'))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"

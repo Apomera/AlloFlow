@@ -21,7 +21,9 @@
 
   function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function SimplifiedReadingRoleControl(props) {
-  const [open, setOpen] = React.useState(!!props.isTeacherMode);
+  // Collapsed to its one-line summary unless it needs the teacher: no role
+  // chosen yet, or the original was not captured.
+  const [open, setOpen] = React.useState(!!props.isTeacherMode && (!props.role || props.role === 'unspecified' || !!props.missingOriginal));
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState('');
   const summaryRef = React.useRef(null);
@@ -34,7 +36,8 @@ function SimplifiedReadingRoleControl(props) {
     if (props.disabled) return;
     try {
       if (props.onSave(role) === false) {
-        setError('The choice could not be saved. Please try again.');
+        setError(simplifiedText('simplified.role_the_choice_could_not_be_saved', 'The choice could not be saved. Please try again.'));
+        setOpen(true);
         return;
       }
       setPending(false);
@@ -42,9 +45,17 @@ function SimplifiedReadingRoleControl(props) {
       setOpen(false);
       if (summaryRef.current) summaryRef.current.focus();
     } catch (_) {
-      setError('The choice could not be saved. Please try again.');
+      setError(simplifiedText('simplified.role_the_choice_could_not_be_saved', 'The choice could not be saved. Please try again.'));
+      setOpen(true);
     }
   };
+  // Students get one plain sentence. The form and role names, and notes such
+  // as "Original not captured... before sharing", are for the teacher.
+  if (!props.isTeacherMode) return /*#__PURE__*/React.createElement("p", {
+    "data-instructional-role": props.role,
+    "data-student-role-note": true,
+    className: "my-3 text-sm text-slate-700"
+  }, props.studentLabel || props.formLabel);
   return /*#__PURE__*/React.createElement("details", {
     "data-instructional-role": props.role,
     open: open,
@@ -62,9 +73,9 @@ function SimplifiedReadingRoleControl(props) {
     className: "mt-3 flex flex-wrap items-center gap-3"
   }, /*#__PURE__*/React.createElement("label", {
     className: "inline-flex flex-wrap items-center gap-2"
-  }, "Use in this lesson", /*#__PURE__*/React.createElement("select", {
+  }, simplifiedText('simplified.role_use_in_this_lesson', 'Use in this lesson'), /*#__PURE__*/React.createElement("select", {
     ref: selectRef,
-    "aria-label": "Use in this lesson",
+    "aria-label": simplifiedText('simplified.role_use_in_this_lesson', 'Use in this lesson'),
     value: pending ? 'primary' : props.role,
     disabled: props.disabled,
     onChange: event => {
@@ -75,25 +86,25 @@ function SimplifiedReadingRoleControl(props) {
     className: "min-h-11 max-w-full rounded-lg border border-slate-300 bg-white px-2"
   }, /*#__PURE__*/React.createElement("option", {
     value: "primary"
-  }, "Main reading"), /*#__PURE__*/React.createElement("option", {
+  }, simplifiedText('simplified.role_main_reading', 'Main reading')), /*#__PURE__*/React.createElement("option", {
     value: "supplemental"
-  }, "Supporting reading"), /*#__PURE__*/React.createElement("option", {
+  }, simplifiedText('simplified.role_supporting_reading', 'Supporting reading')), /*#__PURE__*/React.createElement("option", {
     value: "unspecified"
-  }, "Not designated"))), props.role === 'primary' && props.needsAuthorization && !pending && /*#__PURE__*/React.createElement("button", {
+  }, simplifiedText('simplified.role_not_designated', 'Not designated')))), props.role === 'primary' && props.needsAuthorization && !pending && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: props.disabled,
     onClick: () => setPending(true),
     className: "min-h-11 rounded-lg border border-amber-400 px-3"
-  }, "Review main-reading choice"), props.onSelectSource && /*#__PURE__*/React.createElement("button", {
+  }, simplifiedText('simplified.role_review_main_reading_choice', 'Review main-reading choice')), props.onSelectSource && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: props.disabled || pending,
     onClick: props.onSelectSource,
     className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900"
-  }, "Use for activities")), pending && props.isTeacherMode && /*#__PURE__*/React.createElement("div", {
+  }, simplifiedText('simplified.role_use_for_activities', 'Use for activities'))), pending && props.isTeacherMode && /*#__PURE__*/React.createElement("div", {
     role: "group",
-    "aria-label": "Confirm main reading",
+    "aria-label": simplifiedText('simplified.role_confirm_main_reading', 'Confirm main reading'),
     className: "mt-3 rounded-lg border border-amber-400 bg-amber-50 p-3 text-amber-950"
-  }, /*#__PURE__*/React.createElement("p", null, "Use this adapted text as the main reading? Confirm that replacing the original fits the student’s documented plan, instructional target, assessment conditions, and local policy."), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("p", null, simplifiedText('simplified.role_use_this_adapted_text_as_the', 'Use this adapted text as the main reading? The grade-level original would no longer be the main text students read, which matters most when they are working toward literacy standards in ELA, science, or history. Confirm that replacing the original fits the student’s documented plan, instructional target, assessment conditions, and local policy.')), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     ref: confirmRef,
@@ -101,7 +112,7 @@ function SimplifiedReadingRoleControl(props) {
     disabled: props.disabled,
     onClick: () => save('primary'),
     className: "min-h-11 rounded-lg border border-amber-700 bg-white px-3 font-semibold"
-  }, "Confirm main reading"), /*#__PURE__*/React.createElement("button", {
+  }, simplifiedText('simplified.role_confirm_main_reading', 'Confirm main reading')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: props.disabled,
     onClick: () => {
@@ -110,15 +121,15 @@ function SimplifiedReadingRoleControl(props) {
       if (selectRef.current) selectRef.current.focus();
     },
     className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3"
-  }, "Cancel"))), error && /*#__PURE__*/React.createElement("p", {
+  }, simplifiedText('common.cancel', 'Cancel')))), error && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     className: "mt-2 text-red-800"
   }, error), props.showCompanionNote && /*#__PURE__*/React.createElement("p", {
     className: "mt-2"
-  }, "Adapted companions help preview ideas and build context for reading the original."), props.missingOriginal && /*#__PURE__*/React.createElement("p", {
+  }, simplifiedText('simplified.role_adapted_companions_help_preview_ideas_an', 'Adapted companions can activate background knowledge, build context, preview key concepts, and scaffold students toward the original.')), props.missingOriginal && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mt-2 text-amber-900"
-  }, "Original not captured. Check the matching source before sharing."));
+  }, simplifiedText('simplified.role_original_not_captured_check_the_matching', 'Original not captured. Check the matching source before sharing.')));
 }
 // A model field the prompt declares as text is not guaranteed to BE text, and React throws
 // "Objects are not valid as a React child" on anything else - costing the whole panel rather
@@ -878,7 +889,7 @@ async function regenerateSimplifiedWithRigor(deps) {
         } : {})
       };
       if (!conservation.valid) {
-        var citationError = new Error('Rigor regeneration changed or could not verify source citations.');
+        var citationError = new Error(simplifiedText('simplified.rigor_rigor_regeneration_changed_or_could_not', 'Rigor regeneration changed or could not verify source citations.'));
         citationError.code = 'citation-conservation-failed';
         citationError.details = conservation;
         throw citationError;
@@ -937,7 +948,7 @@ async function regenerateSimplifiedWithRigor(deps) {
   } catch (error) {
     if (error?.code === 'citation-conservation-failed') {
       warnLog('[CitationConservation] Rigor regeneration rejected; original resource retained.', error.details || error);
-      addToast('The rigor rewrite could not preserve and verify every source citation, so the original citation-safe version was retained.', 'warning');
+      addToast(simplifiedText('simplified.rigor_citations_kept', 'The rigor rewrite could not preserve and verify every source citation, so the original citation-safe version was retained.', undefined, t), 'warning');
       return;
     }
     warnLog('Unhandled error:', error);
@@ -989,9 +1000,49 @@ function simplifiedLanguageTag(language) {
     swahili: 'sw',
     somali: 'so',
     haitian: 'ht',
-    'haitian creole': 'ht'
+    'haitian creole': 'ht',
+    // The rest of the app's language list, so screen readers pick the right voice.
+    dutch: 'nl',
+    malayalam: 'ml',
+    kannada: 'kn',
+    esperanto: 'eo',
+    greek: 'el',
+    latin: 'la',
+    nepali: 'ne',
+    mandarin: 'zh',
+    cantonese: 'yue',
+    tagalog: 'tl',
+    filipino: 'fil',
+    farsi: 'fa',
+    pashto: 'ps',
+    dari: 'fa-AF',
+    hausa: 'ha',
+    yoruba: 'yo',
+    igbo: 'ig',
+    amharic: 'am',
+    tigrinya: 'ti',
+    lingala: 'ln',
+    kinyarwanda: 'rw',
+    kirundi: 'rn',
+    acholi: 'ach',
+    karen: 'ksw',
+    hmong: 'hmn',
+    mongolian: 'mn',
+    'maay maay': 'ymm',
+    marshallese: 'mh',
+    'spanish (latin america)': 'es-419',
+    'spanish (castilian)': 'es-ES',
+    'french (canadian)': 'fr-CA',
+    'portuguese (brazil)': 'pt-BR',
+    'portuguese (angola)': 'pt-AO',
+    'chinese (simplified)': 'zh-Hans',
+    'chinese (traditional)': 'zh-Hant',
+    'chin (hakha)': 'cnh',
+    'chin (falam)': 'cfm'
   };
-  if (names[value.toLowerCase()]) return names[value.toLowerCase()];
+  var name = value.toLowerCase().replace(/\s+/g, ' '),
+    base = name.replace(/\s*\(.*\)$/, '');
+  if (names[name] || names[base]) return names[name] || names[base];
   if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(value)) return undefined;
   try {
     return Intl.getCanonicalLocales(value)[0];
@@ -1025,6 +1076,17 @@ function simplifiedWordSegments(text, language) {
 function simplifiedPlainInline(text) {
   return String(text || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\*\*|__|~~|`/g, '').replace(/\*([^*]+)\*/g, '$1');
 }
+// Named as in formatInteractiveText (phase_n): "Source 1, opens in a new tab",
+// not "superscript one". The superscript digits and brackets are char codes.
+function simplifiedLinkLabel(label) {
+  var value = String(label || '').trim(),
+    digits = [0x2070, 0xB9, 0xB2, 0xB3, 0x2074, 0x2075, 0x2076, 0x2077, 0x2078, 0x2079].map(code => String.fromCharCode(code));
+  var inner = value.length > 2 && value.charCodeAt(0) === 0x207D && value.charCodeAt(value.length - 1) === 0x207E ? value.slice(1, -1).split('').map(ch => digits.indexOf(ch)) : null;
+  var name = inner && inner.every(d => d >= 0) ? simplifiedText('common.source_number', 'Source {number}', {
+    number: inner.join('')
+  }) : value;
+  return name + ', ' + simplifiedText('common.opens_new_tab', 'opens in a new tab');
+}
 function simplifiedInline(text, leaf, sourceOffset) {
   // Optional source offsets keep glosses anchored to the stored Markdown.
   var cursor = sourceOffset || 0,
@@ -1047,6 +1109,7 @@ function simplifiedInline(text, leaf, sourceOffset) {
       return /^(https?:\/\/|mailto:|#|\/)/i.test(link[2]) ? /*#__PURE__*/React.createElement("a", {
         key: index,
         href: link[2],
+        "aria-label": simplifiedLinkLabel(link[1]),
         target: "_blank",
         rel: "noopener noreferrer",
         className: "underline decoration-2 underline-offset-2 rounded focus-visible:ring-2 focus-visible:ring-indigo-600",
@@ -1062,7 +1125,8 @@ function simplifiedInline(text, leaf, sourceOffset) {
 }
 function simplifiedExactBlocks(raw, formatted) {
   var chunks = String(raw || '').split(/(\r\n|\r|\n)/),
-    cursor = 0;
+    cursor = 0,
+    skipBlank = false;
   var blocks = [];
   for (var i = 0; i < chunks.length; i += 2) {
     var line = chunks[i],
@@ -1078,14 +1142,49 @@ function simplifiedExactBlocks(raw, formatted) {
       lineIndex: i
     };
     cursor += line.length + separator.length;
+    // A heading marker with no text ("#") showed as a lone "#"; it is hidden
+    // with its line break, and with the blank line after it when one comes
+    // before it, so no extra gap is left. Offsets are unchanged.
+    if (formatted && /^[ \t]{0,3}#{1,6}[ \t]*$/.test(line)) {
+      Object.assign(block, {
+        type: 'hidden',
+        text: '',
+        textStart: block.end
+      });
+      blocks.push(block);
+      var previous = blocks[blocks.length - 2];
+      if (previous && !previous.raw && i + 2 < chunks.length && chunks[i + 2] === '') skipBlank = true;
+      continue;
+    }
+    if (skipBlank) {
+      skipBlank = false;
+      if (!line) {
+        Object.assign(block, {
+          type: 'hidden'
+        });
+        blocks.push(block);
+        continue;
+      }
+    }
     var heading = formatted && line.match(/^([ \t]{0,3})(#{1,6})[ \t]+(.+)$/);
-    var item = formatted && line.match(/^([ \t]*)([-+*]|\d+[.)])[ \t]+(.+)$/);
+    var htmlHeading = formatted && !heading && line.match(/^([ \t]*<h([1-6])[^>]*>)(.*?)<\/h\2>[ \t]*$/i);
+    var rule = formatted && /^[ \t]{0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/.test(line);
+    var item = formatted && !rule && line.match(/^([ \t]*)([-+*]|\d+[.)])[ \t]+(.+)$/);
     var quote = formatted && line.match(/^([ \t]*>[ \t]?)(.*)$/);
     if (heading) Object.assign(block, {
       type: 'heading',
       level: heading[2].length,
       text: heading[3],
       textStart: block.end - heading[3].length
+    });else if (htmlHeading) Object.assign(block, {
+      type: 'heading',
+      level: Number(htmlHeading[2]),
+      text: htmlHeading[3],
+      textStart: block.start + htmlHeading[1].length
+    });else if (rule) Object.assign(block, {
+      type: 'rule',
+      text: '',
+      textStart: block.end
     });else if (item) Object.assign(block, {
       type: 'li',
       indent: item[1].replace(/\t/g, '    ').length,
@@ -1102,8 +1201,90 @@ function simplifiedExactBlocks(raw, formatted) {
   }
   return blocks;
 }
+// As in renderFormattedText, a passage's top heading is h2 (the page owns h1)
+// and deeper headings keep their order. Font size still follows the source level.
+function simplifiedHeadingLevels(text) {
+  return String(text || '').split('\n').map(line => line.match(/^\s{0,3}(#{1,6})\s+\S/) || line.match(/^\s*<h([1-6])[^>]*>.*?<\/h[1-6]>\s*$/i)).filter(Boolean).map(match => /^#/.test(match[1]) ? match[1].length : Number(match[1]));
+}
+function simplifiedHeadingTag(level, levels) {
+  return 'h' + Math.max(2, Math.min(6, level + 2 - (levels.length ? Math.min.apply(null, levels) : level)));
+}
+// Immersive words come from the whole text, including table cells, references
+// and the translation divider, which are not sentences. Matching by running
+// character count let one table push every later highlight onto the wrong
+// sentence, so each word is matched to the sentence text it spells (-1: none).
+function alignImmersiveWords(words, sentences, clean) {
+  var norm = value => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+  var targets = (sentences || []).map(sentence => norm(clean ? clean(sentence) : sentence));
+  var list = Array.isArray(words) ? words : [];
+  var assigned = list.map(() => -1),
+    ends = [],
+    idx = 0,
+    pos = 0;
+  // Whole lines that are never read: table rows, the divider, chart code.
+  var skip = [],
+    lineStart = 0;
+  list.concat([{
+    pos: 'newline'
+  }]).forEach(function (word, i) {
+    if (word && word.pos !== 'newline') return;
+    var line = list.slice(lineStart, i).map(w => w && w.text || '').join('');
+    if (/^\s*(?:\||\[\[CHART:|-{3}\s*ENGLISH TRANSLATION\s*-{3}\s*$)/i.test(line)) for (var s = lineStart; s < i; s++) skip[s] = true;
+    lineStart = i + 1;
+  });
+  var skipEmpty = () => {
+    while (idx < targets.length && !targets[idx]) idx++;
+  };
+  skipEmpty();
+  list.forEach(function (word, i) {
+    var token = word && word.pos !== 'newline' && !skip[i] ? norm(word.text) : '';
+    if (!token || idx >= targets.length) return;
+    var at = targets[idx].indexOf(token, pos);
+    if (at === -1 || at - pos > (pos ? 24 : 0)) {
+      at = -1;
+      for (var k = idx + 1; k < Math.min(targets.length, idx + 4) && at === -1; k++) if (targets[k].indexOf(token) === 0) {
+        idx = k;
+        at = 0;
+      }
+      if (at === -1) return;
+    }
+    pos = at + token.length;
+    assigned[i] = idx;
+    if (pos >= targets[idx].length) {
+      ends[i] = true;
+      idx++;
+      pos = 0;
+      skipEmpty();
+    }
+  });
+  // Spaces and marks inside a sentence go with it; after its last word only the
+  // marks touching that word ("hot.") do, and the rest go with the next word.
+  var previous = -1,
+    afterSpace = false;
+  list.forEach(function (word, i) {
+    if (word && word.pos !== 'newline' && norm(word.text)) {
+      previous = i;
+      afterSpace = false;
+      return;
+    }
+    if (!word || word.pos === 'newline') {
+      afterSpace = true;
+      return;
+    }
+    if (/^\s+$/.test(word.text || '')) afterSpace = true;
+    if (previous >= 0 && (!ends[previous] || !afterSpace)) {
+      assigned[i] = assigned[previous];
+      return;
+    }
+    for (var n = i + 1; n < list.length; n++) if (list[n] && list[n].pos !== 'newline' && norm(list[n].text)) {
+      assigned[i] = assigned[n];
+      break;
+    }
+  });
+  return assigned;
+}
 function simplifiedComparisonPlainText(raw) {
-  return simplifiedExactBlocks(raw, true).map(block => simplifiedPlainInline(block.text) + block.separator).join('');
+  return simplifiedExactBlocks(raw, true).map(block => block.type === 'hidden' ? '' : simplifiedPlainInline(block.text) + block.separator).join('');
 }
 function simplifiedParagraphBlocks(text) {
   var lines = String(text || '').split('\n');
@@ -1118,6 +1299,19 @@ function simplifiedParagraphBlocks(text) {
   };
   for (var i = 0; i < lines.length; i += 1) {
     var line = lines[i];
+    if (/^\s{0,3}#{1,6}\s*$/.test(line)) {
+      flush();
+      continue;
+    }
+    if (/^\s{0,3}([-*])(?:\s*\1){2,}\s*$/.test(line)) {
+      flush();
+      output.push({
+        type: 'rule',
+        raw: line,
+        text: ''
+      });
+      continue;
+    }
     var heading = line.match(/^\s{0,3}(#{1,6})\s+(.+)$/) || line.match(/^\s*<h([1-6])[^>]*>(.*?)<\/h[1-6]>\s*$/i);
     var item = line.match(/^(\s*)([-+*]|\d+[.)])\s+(.+)$/);
     if (heading) {
@@ -1404,19 +1598,74 @@ function findReadingGlossOccurrences(text, query) {
       start,
       end,
       quote: source.slice(start, end),
-      context: source.slice(Math.max(0, start - 35), Math.min(source.length, end + 45)).replace(/\s+/g, ' ').trim()
+      context: readingGlossContext(source, start, end).text
     });
   }
   return finish(false);
+}
+
+// The sentence around a word support, for the editor. It was a fixed window
+// of 35 characters before and 45 after, which cut words in half ("ike a
+// giant wheel ... into differe"). A long sentence is trimmed at word
+// boundaries and marked with an ellipsis. Display only: offsets are unused.
+function readingGlossContext(text, start, end, maxChars) {
+  const source = String(text || ''),
+    limit = maxChars || 240;
+  const head = source.slice(0, start),
+    tail = source.slice(end);
+  const boundaryBefore = /[.!?]["'”’)\]]*\s+|\n/g;
+  let from = 0;
+  for (let found = boundaryBefore.exec(head); found; found = boundaryBefore.exec(head)) from = found.index + found[0].length;
+  const next = tail.match(/[.!?]["'”’)\]]*(?=\s|$)|\n/);
+  let to = next ? end + next.index + (next[0] === '\n' ? 0 : next[0].length) : source.length;
+  let before = source.slice(from, start),
+    after = source.slice(end, to),
+    clippedBefore = false,
+    clippedAfter = false;
+  const room = Math.max(40, Math.floor((limit - (end - start)) / 2));
+  if (before.length + (end - start) + after.length > limit) {
+    if (before.length > room) {
+      before = before.slice(before.length - room);
+      before = before.slice(Math.max(0, before.search(/\s/) + 1));
+      clippedBefore = true;
+    }
+    if (after.length > room) {
+      after = after.slice(0, room);
+      after = after.slice(0, Math.max(0, after.search(/\s\S*$/)));
+      clippedAfter = true;
+    }
+  }
+  const tidy = value => value.replace(/^[ \t]*(?:#{1,6}|>|[-+*]|\d+[.)])[ \t]+/gm, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*\*|__|~~|`/g, '').replace(/\s+/g, ' ');
+  const parts = {
+    before: (clippedBefore ? '…' : '') + tidy(before).replace(/^\s+/, ''),
+    quote: source.slice(start, end),
+    after: tidy(after).replace(/\s+$/, '') + (clippedAfter ? '…' : '')
+  };
+  parts.text = parts.before + parts.quote + parts.after;
+  return parts;
+}
+// Interface text. Parts outside SimplifiedView get no t prop, so they use the
+// host's window.__alloT; the English fallback shows until a key is translated.
+function simplifiedText(key, fallback, params, translate) {
+  var value;
+  try {
+    value = (translate || typeof window !== 'undefined' && window.__alloT || (() => undefined))(key, params);
+  } catch (_) {}
+  var text = typeof value === 'string' && value && value !== key ? value : fallback;
+  return params ? String(text).replace(/\{(\w+)\}/g, (match, name) => params[name] != null ? String(params[name]) : match) : text;
 }
 function ReadingGlossEditor({
   item,
   supports,
   request,
   onUpdate,
-  disabled
+  disabled,
+  adapted,
+  snapshot: adaptedSnapshot
 }) {
-  const snapshot = getInstructionalContextApi()?.getSourceSnapshot?.(item);
+  // An adapted text's word help anchors to the adapted passage, never the original.
+  const snapshot = adapted ? adaptedSnapshot : getInstructionalContextApi()?.getSourceSnapshot?.(item);
+  const passageName = adapted ? 'adapted text' : 'original';
   const sourceText = snapshot?.text || '';
   const sourceKey = String(item?.id || '') + ':' + (snapshot?.fingerprint || '');
   const [open, setOpen] = React.useState(false);
@@ -1441,11 +1690,22 @@ function ReadingGlossEditor({
     start: value.start,
     text: value.text,
     priority: value.priority,
-    pinned: value.pinned
+    pinned: value.pinned,
+    image: value.image ? value.image.src.length + ':' + value.image.alt : ''
   }) : '';
+  const [pickingPicture, setPickingPicture] = React.useState(false);
+  // Removing, choosing or cancelling a picture removes the focused button; land on the picture button instead.
+  const pictureButtonRef = React.useRef(null),
+    refocusPicture = React.useRef(false);
+  React.useEffect(() => {
+    if (refocusPicture.current && pictureButtonRef.current) {
+      refocusPicture.current = false;
+      pictureButtonRef.current.focus();
+    }
+  });
   const dirty = !!draft && signature(draft) !== baseline;
   const sameAnchor = (left, right) => !!left && !!right && left.start === right.start && left.end === right.end && left.quote === right.quote;
-  const contextFor = entry => sourceText.slice(Math.max(0, entry.start - 35), Math.min(sourceText.length, entry.end + 45)).replace(/\s+/g, ' ').trim();
+  const contextFor = entry => readingGlossContext(sourceText, entry.start, entry.end).text;
   const anchorFor = entry => ({
     start: entry.start,
     end: entry.end,
@@ -1457,6 +1717,7 @@ function ReadingGlossEditor({
     setNotice('');
     setError('');
     setPendingAction(null);
+    setPickingPicture(false);
   };
   const clearDraft = () => replaceDraft(null);
   const applyEdit = entry => {
@@ -1467,7 +1728,8 @@ function ReadingGlossEditor({
       start: String(entry.start),
       text: entry.definition || entry.explanation || entry.text || '',
       priority: entry.priority || 'helpful',
-      pinned: entry.pinned === true
+      pinned: entry.pinned === true,
+      image: entry.image || null
     };
     value.originalTextLength = value.text.length;
     setOpen(true);
@@ -1482,7 +1744,7 @@ function ReadingGlossEditor({
     try {
       const result = await onUpdate(item, action);
       if (sourceKeyRef.current !== key) return null;
-      if (!result) throw new Error('The reading changed. Reopen its word supports and try again.');
+      if (!result) throw new Error(simplifiedText('simplified.gloss_the_reading_changed_reopen_its_word', 'The reading changed. Reopen its word supports and try again.'));
       setNotice(success);
       return result;
     } catch (failure) {
@@ -1523,7 +1785,7 @@ function ReadingGlossEditor({
       const current = entries.find(entry => sameAnchor(entry, action.entry));
       if (!current) {
         setNotice('');
-        setError('This word support is no longer available. Review the current supports before removing it.');
+        setError(simplifiedText('simplified.gloss_this_word_support_is_no_longer', 'This word support is no longer available. Review the current supports before removing it.'));
         return;
       }
       const saved = await mutate({
@@ -1562,6 +1824,7 @@ function ReadingGlossEditor({
     setNotice('');
     setError('');
     setBusy(false);
+    setPickingPicture(false);
   }, [sourceKey]);
   React.useEffect(() => {
     if (!request || request.ownerId !== item?.id) return;
@@ -1595,11 +1858,11 @@ function ReadingGlossEditor({
     setNotice('');
     setError('');
     if (!selected || !draft?.text.trim()) {
-      setError('Choose the exact word or phrase and enter its explanation.');
+      setError(simplifiedText('simplified.gloss_choose_the_exact_word_or_phrase', 'Choose the exact word or phrase and enter its explanation.'));
       return;
     }
     if (draft.text.trim().length > 2400) {
-      setError('Shorten this explanation to 2,400 characters or fewer before saving.');
+      setError(simplifiedText('simplified.gloss_shorten_this_explanation_to_2_400', 'Shorten this explanation to 2,400 characters or fewer before saving.'));
       return;
     }
     // IDs can change during a refresh. The exact source occurrence owns the
@@ -1615,12 +1878,19 @@ function ReadingGlossEditor({
       ...anchorFor(selected),
       text: draft.text.trim(),
       priority: draft.priority,
-      pinned: draft.pinned
+      pinned: draft.pinned,
+      image: draft.image || null
     };
     const saved = await mutate({
       type: 'upsert',
       annotation
     }, 'Word support saved. Your wording will be kept when suggestions are refreshed.');
+    // A reading's pictures share one budget: say so if this picture did not fit.
+    const savedSupports = saved && (Array.isArray(saved.annotations) ? saved : saved.readingSupports);
+    if (savedSupports && draft.image && !(savedSupports.annotations || []).some(entry => entry.id === id && entry.image)) {
+      setNotice('');
+      setError(simplifiedText('simplified.gloss_the_explanation_was_saved_but_its', 'The explanation was saved, but its picture did not fit: this reading already has as many pictures as it can hold. Remove another picture first.'));
+    }
     if (saved) {
       const next = {
         ...draft,
@@ -1652,7 +1922,12 @@ function ReadingGlossEditor({
   };
   const occurrenceLabel = entry => {
     const quote = entry.quote.length > 80 ? entry.quote.slice(0, 80) + '…' : entry.quote;
-    return quote + ', text position ' + (entry.start + 1) + '–' + entry.end + ': ' + contextFor(entry);
+    return simplifiedText('simplified.gloss_occurrence', '{word}, text position {start}–{end}: {context}', {
+      word: quote,
+      start: entry.start + 1,
+      end: entry.end,
+      context: contextFor(entry)
+    });
   };
   return /*#__PURE__*/React.createElement("section", {
     "data-reading-gloss-editor": true,
@@ -1667,12 +1942,12 @@ function ReadingGlossEditor({
       type: 'close'
     }) : setOpen(true),
     className: "min-h-11 rounded-lg px-2 text-left font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, "Review word supports ", entries.length ? '(' + entries.length + ')' : ''), open && /*#__PURE__*/React.createElement("div", {
+  }, simplifiedText('simplified.gloss_review_word_supports', 'Review word supports'), ' ', entries.length ? '(' + entries.length + ')' : ''), open && /*#__PURE__*/React.createElement("div", {
     id: panelId,
     className: "mt-2 space-y-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm leading-relaxed text-slate-600"
-  }, "Add or adjust explanations beside the original words. Teacher edits and removed supports are kept when AI suggestions are refreshed."), /*#__PURE__*/React.createElement("button", {
+  }, adapted ? simplifiedText('simplified.gloss_add_or_adjust_explanations_for_words', 'Add or adjust explanations for words in the adapted text.') : simplifiedText('simplified.gloss_add_or_adjust_explanations_beside_the', 'Add or adjust explanations beside the original words.'), ' ', simplifiedText('simplified.gloss_teacher_edits_and_removed_supports_are', 'Teacher edits and removed supports are kept when AI suggestions are refreshed.')), /*#__PURE__*/React.createElement("button", {
     ref: addRef,
     type: "button",
     disabled: disabled || busy || !!pendingAction,
@@ -1680,7 +1955,7 @@ function ReadingGlossEditor({
       type: 'add'
     }),
     className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50"
-  }, "Add a word or phrase"), pendingAction && /*#__PURE__*/React.createElement("div", {
+  }, simplifiedText('simplified.gloss_add_a_word_or_phrase', 'Add a word or phrase')), pendingAction && /*#__PURE__*/React.createElement("div", {
     role: "alertdialog",
     "aria-labelledby": panelId + '-discard-title',
     "aria-describedby": panelId + '-discard-description',
@@ -1694,16 +1969,16 @@ function ReadingGlossEditor({
   }, /*#__PURE__*/React.createElement("p", {
     id: panelId + '-discard-title',
     className: "font-bold"
-  }, "Discard unsaved word support changes?"), /*#__PURE__*/React.createElement("p", {
+  }, simplifiedText('simplified.gloss_discard_unsaved_word_support_changes', 'Discard unsaved word support changes?')), /*#__PURE__*/React.createElement("p", {
     id: panelId + '-discard-description'
-  }, "Your explanation has not been saved. Keep editing to preserve this draft, or discard it to continue."), /*#__PURE__*/React.createElement("div", {
+  }, simplifiedText('simplified.gloss_your_explanation_has_not_been_saved', 'Your explanation has not been saved. Keep editing to preserve this draft, or discard it to continue.')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     ref: keepRef,
     type: "button",
     className: "min-h-11 rounded border border-indigo-300 px-3",
     onClick: () => setPendingAction(null)
-  }, "Keep editing"), /*#__PURE__*/React.createElement("button", {
+  }, simplifiedText('simplified.gloss_keep_editing', 'Keep editing')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "min-h-11 rounded border border-amber-700 px-3",
     onClick: () => {
@@ -1712,14 +1987,16 @@ function ReadingGlossEditor({
       setBaseline('');
       performAction(action);
     }
-  }, "Discard changes"))), draft && /*#__PURE__*/React.createElement("fieldset", {
+  }, simplifiedText('simplified.gloss_discard_changes', 'Discard changes')))), draft && /*#__PURE__*/React.createElement("fieldset", {
     disabled: disabled || busy || !!pendingAction,
     "data-gloss-draft": true,
-    "aria-label": draft.anchor ? 'Edit word support' : 'Add word support',
+    "aria-label": draft.anchor ? simplifiedText('simplified.gloss_edit_word_support', 'Edit word support') : simplifiedText('simplified.gloss_add_word_support', 'Add word support'),
     className: "space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3"
   }, /*#__PURE__*/React.createElement("label", {
     className: "block font-semibold"
-  }, "Word or phrase from the original", /*#__PURE__*/React.createElement("input", {
+  }, simplifiedText('simplified.gloss_word_from', 'Word or phrase from the {passage}', {
+    passage: passageName
+  }), /*#__PURE__*/React.createElement("input", {
     ref: termRef,
     type: "text",
     maxLength: draft.anchor ? undefined : 160,
@@ -1732,7 +2009,7 @@ function ReadingGlossEditor({
     className: "mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"
   })), !draft.anchor && matches.length > 1 && /*#__PURE__*/React.createElement("label", {
     className: "block font-semibold"
-  }, "Which occurrence?", /*#__PURE__*/React.createElement("select", {
+  }, simplifiedText('simplified.gloss_which_occurrence', 'Which occurrence?'), /*#__PURE__*/React.createElement("select", {
     value: draft.start,
     onChange: event => updateDraft({
       start: event.target.value
@@ -1740,35 +2017,57 @@ function ReadingGlossEditor({
     className: "mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "Choose the word in context"), matches.map((match, index) => /*#__PURE__*/React.createElement("option", {
+  }, simplifiedText('simplified.gloss_choose_the_word_in_context', 'Choose the word in context')), matches.map((match, index) => /*#__PURE__*/React.createElement("option", {
     key: match.start,
     value: String(match.start)
-  }, index + 1, ". Text position ", match.start + 1, "–", match.end, ": ", match.context)))), matches.truncated && /*#__PURE__*/React.createElement("p", {
+  }, simplifiedText('simplified.gloss_occurrence_option', '{number}. Text position {start}–{end}: {context}', {
+    number: index + 1,
+    start: match.start + 1,
+    end: match.end,
+    context: match.context
+  }))))), matches.truncated && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-amber-900"
-  }, "Showing the first 200 matching occurrences. Use a longer phrase to find a later occurrence."), !!draft.query.trim() && !matches.length && /*#__PURE__*/React.createElement("p", {
+  }, simplifiedText('simplified.gloss_showing_the_first_200_matching_occurrenc', 'Showing the first 200 matching occurrences. Use a longer phrase to find a later occurrence.')), !!draft.query.trim() && !matches.length && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-amber-900"
-  }, "No exact whole-word or phrase match. Copy the word or phrase as it appears in the original."), selected && /*#__PURE__*/React.createElement("p", {
-    className: "break-words text-slate-600"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-semibold"
-  }, "In context: "), selected.context), /*#__PURE__*/React.createElement("label", {
+  }, simplifiedText('simplified.gloss_no_exact_match', 'No exact whole-word or phrase match. Copy the word or phrase as it appears in the {passage}.', {
+    passage: passageName
+  })), selected && (() => {
+    const parts = readingGlossContext(sourceText, selected.start, selected.end);
+    return /*#__PURE__*/React.createElement("p", {
+      "data-gloss-context": true,
+      className: "break-words text-slate-600"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold"
+    }, simplifiedText('simplified.gloss_in_the_text', 'In the text:'), ' '), parts.before, /*#__PURE__*/React.createElement("mark", {
+      className: "rounded bg-yellow-100 px-0.5 font-semibold text-slate-900"
+    }, parts.quote), parts.after);
+  })(), /*#__PURE__*/React.createElement("label", {
     className: "block font-semibold"
-  }, "Explanation", /*#__PURE__*/React.createElement("textarea", {
+  }, simplifiedText('simplified.gloss_explanation', 'Explanation'), /*#__PURE__*/React.createElement("span", {
+    id: panelId + '-explain-hint',
+    className: "block text-xs font-normal text-slate-600"
+  }, simplifiedText('simplified.gloss_what_the_word_means_in_this', 'What the word means in this sentence, in a few words.'), ' ', adapted ? simplifiedText('simplified.gloss_students_see_it_in_the_word', 'Students see it in the word-help list after the passage.') : simplifiedText('simplified.gloss_students_see_it_in_brackets_after', 'Students see it in brackets after the word.')), /*#__PURE__*/React.createElement("textarea", {
     ref: definitionRef,
     rows: 3,
+    "aria-describedby": panelId + '-explain-hint',
+    placeholder: simplifiedText('simplified.gloss_e_g_turning_around_and_around', 'e.g. turning around and around'),
     maxLength: Math.max(2400, draft.originalTextLength || 0),
     value: draft.text,
     onChange: event => updateDraft({
       text: event.target.value
     }),
     className: "mt-1 w-full min-w-0 rounded border border-slate-400 bg-white p-2 font-normal"
-  })), draft.text.length > 2400 && /*#__PURE__*/React.createElement("p", {
+  })), /^\s*in (?:the )?(?:context|text)\s*:/i.test(draft.text) && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "data-gloss-context-warning": true,
     className: "text-amber-900"
-  }, "This saved explanation is longer than the current limit. Shorten it to 2,400 characters or fewer to save an edit."), /*#__PURE__*/React.createElement("label", {
+  }, simplifiedText('simplified.gloss_this_looks_like_the_sentence_around', 'This looks like the sentence around the word. Write what the word means here instead; the sentence already appears in the reading.')), draft.text.length > 2400 && /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-900"
+  }, simplifiedText('simplified.gloss_this_saved_explanation_is_longer_than', 'This saved explanation is longer than the current limit. Shorten it to 2,400 characters or fewer to save an edit.')), /*#__PURE__*/React.createElement("label", {
     className: "block font-semibold"
-  }, "Importance", /*#__PURE__*/React.createElement("select", {
+  }, simplifiedText('simplified.gloss_importance', 'Importance'), /*#__PURE__*/React.createElement("select", {
     value: draft.priority,
     onChange: event => updateDraft({
       priority: event.target.value
@@ -1776,9 +2075,9 @@ function ReadingGlossEditor({
     className: "mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"
   }, /*#__PURE__*/React.createElement("option", {
     value: "essential"
-  }, "Essential to understanding this passage"), /*#__PURE__*/React.createElement("option", {
+  }, simplifiedText('simplified.gloss_essential_to_understanding_this_passage', 'Essential to understanding this passage')), /*#__PURE__*/React.createElement("option", {
     value: "helpful"
-  }, "Helpful extra explanation"))), /*#__PURE__*/React.createElement("label", {
+  }, simplifiedText('simplified.gloss_helpful_extra_explanation', 'Helpful extra explanation')))), !adapted && /*#__PURE__*/React.createElement("label", {
     className: "flex min-h-11 items-center gap-2"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
@@ -1786,40 +2085,120 @@ function ReadingGlossEditor({
     onChange: event => updateDraft({
       pinned: event.target.checked
     })
-  }), "Always show in lighter view"), /*#__PURE__*/React.createElement("div", {
+  }), simplifiedText('simplified.gloss_always_show_in_lighter_view', 'Always show in lighter view')), /*#__PURE__*/React.createElement("div", {
+    "data-gloss-picture": true,
+    className: "space-y-2 rounded-lg border border-indigo-100 bg-white p-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold"
+  }, simplifiedText('simplified.gloss_picture_optional', 'Picture (optional)'), /*#__PURE__*/React.createElement("span", {
+    className: "block text-xs font-normal text-slate-600"
+  }, adapted ? simplifiedText('simplified.gloss_a_symbol_or_photo_shown_beside', 'A symbol or photo shown beside the word in the word-help list.') : simplifiedText('simplified.gloss_a_symbol_or_photo_shown_beside_2', 'A symbol or photo shown beside the word, in the reader and in student packs.'), ' ', simplifiedText('simplified.gloss_live_sessions_carry_no_pictures_so', 'Live sessions carry no pictures, so students there see the explanation on its own.'))), draft.image && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: draft.image.src,
+    alt: draft.image.alt || '',
+    className: "h-16 w-16 rounded border border-slate-200 bg-white object-contain"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "min-w-0 flex-1 break-words text-xs text-slate-700"
+  }, draft.image.alt, draft.image.attribution && window.AlloModules?.AltText ? ' · ' + window.AlloModules.AltText.openImageCreditLine(draft.image.attribution) : ''), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      refocusPicture.current = true;
+      updateDraft({
+        image: null
+      });
+    },
+    className: "min-h-11 rounded-lg border border-slate-300 px-3"
+  }, simplifiedText('simplified.gloss_remove_picture', 'Remove picture'))), !pickingPicture && /*#__PURE__*/React.createElement("button", {
+    ref: pictureButtonRef,
+    type: "button",
+    onClick: () => setPickingPicture(true),
+    className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900"
+  }, draft.image ? simplifiedText('simplified.gloss_choose_a_different_picture', 'Choose a different picture') : simplifiedText('simplified.gloss_choose_a_picture', 'Choose a picture')), pickingPicture && (window.AlloModules?.ClassroomImagePicker && window.AlloModules?.AltText ? /*#__PURE__*/React.createElement(React.Fragment, null, React.createElement(window.AlloModules.ClassroomImagePicker, {
+    idPrefix: panelId + '-picture',
+    initialQuery: draft.query,
+    language: snapshot?.language,
+    sources: ['symbols', 'photos'],
+    onChoose: async choice => {
+      const A = window.AlloModules.AltText,
+        contract = getInstructionalContextApi();
+      try {
+        const src = await A.shrinkImageDataUrl(choice.dataUrl, 200, {
+          kind: choice.source === 'mulberry' ? 'symbol' : 'photo'
+        });
+        const budget = contract?.readingSupportPictureBudget ? contract.readingSupportPictureBudget(supports) : {
+          remaining: Infinity,
+          perPicture: Infinity
+        };
+        const replacing = entries.find(entry => draft.anchor && sameAnchor(entry, draft.anchor))?.image?.src?.length || 0;
+        if (src.length > budget.perPicture || src.length > budget.remaining + replacing) {
+          setError(simplifiedText('simplified.gloss_this_reading_has_no_room_for', 'This reading has no room for another picture. Pictures share a small budget so the lesson stays light to save and share. Remove a picture from another word first.'));
+          return;
+        }
+        updateDraft({
+          image: {
+            src,
+            alt: choice.alt || '',
+            altSource: choice.altSource || 'author',
+            source: choice.source,
+            attribution: choice.attribution || null
+          }
+        });
+        refocusPicture.current = true;
+        setPickingPicture(false);
+      } catch (_) {
+        setError(simplifiedText('simplified.gloss_that_picture_could_not_be_added', 'That picture could not be added. Try another one.'));
+      }
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      refocusPicture.current = true;
+      setPickingPicture(false);
+    },
+    className: "min-h-11 rounded-lg border border-slate-300 px-3"
+  }, simplifiedText('common.cancel', 'Cancel'))) : /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "text-slate-700"
+  }, simplifiedText('simplified.gloss_picture_search_is_still_loading_try', 'Picture search is still loading. Try again in a moment.')))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: disabled || busy || !selected || !draft.text.trim(),
     onClick: save,
     className: "min-h-11 rounded-lg bg-indigo-700 px-3 text-white disabled:opacity-50"
-  }, busy ? 'Saving…' : 'Save word support'), /*#__PURE__*/React.createElement("button", {
+  }, busy ? simplifiedText('common.saving', 'Saving…') : simplifiedText('simplified.gloss_save_word_support', 'Save word support')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: busy,
     onClick: () => requestAction({
       type: 'finish'
     }),
     className: "min-h-11 rounded-lg border border-slate-300 px-3"
-  }, "Done editing"))), error && /*#__PURE__*/React.createElement("p", {
+  }, simplifiedText('simplified.gloss_done_editing', 'Done editing')))), error && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     className: "rounded bg-red-50 p-2 text-red-900"
-  }, error), notice && /*#__PURE__*/React.createElement("p", {
+  }, error), /*#__PURE__*/React.createElement("p", {
     role: "status",
-    className: "rounded bg-indigo-50 p-2 text-indigo-900"
+    "data-gloss-notice": true,
+    className: notice ? 'rounded bg-indigo-50 p-2 text-indigo-900' : 'sr-only'
   }, notice), !entries.length && !draft && /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600"
-  }, "No word supports yet. Add your own explanation or generate suggestions."), /*#__PURE__*/React.createElement("ul", {
+  }, simplifiedText('simplified.gloss_no_word_supports_yet_add_your', 'No word supports yet. Add your own explanation or generate suggestions.')), /*#__PURE__*/React.createElement("ul", {
     className: "space-y-2"
   }, entries.map(entry => /*#__PURE__*/React.createElement("li", {
     key: entry.id,
     className: "rounded-lg border border-slate-200 p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "break-words"
-  }, /*#__PURE__*/React.createElement("strong", null, entry.quote), " — ", entry.definition || entry.explanation || entry.text), /*#__PURE__*/React.createElement("p", {
+  }, entry.image && /*#__PURE__*/React.createElement("img", {
+    src: entry.image.src,
+    alt: entry.image.alt || '',
+    className: "mr-2 inline-block h-10 w-10 rounded bg-white object-contain align-middle"
+  }), /*#__PURE__*/React.createElement("strong", null, entry.quote), " — ", entry.definition || entry.explanation || entry.text), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 break-words text-xs text-slate-600"
   }, occurrenceLabel(entry)), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs text-slate-600"
-  }, entry.origin === 'educator' ? 'Teacher edited' : 'Suggested', entry.priority === 'essential' ? ' · Essential' : ''), /*#__PURE__*/React.createElement("div", {
+  }, entry.origin === 'educator' ? simplifiedText('simplified.gloss_teacher_edited', 'Teacher edited') : simplifiedText('simplified.gloss_suggested', 'Suggested'), entry.priority === 'essential' ? ' · ' + simplifiedText('simplified.gloss_essential', 'Essential') : ''), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     ref: element => {
@@ -1827,32 +2206,438 @@ function ReadingGlossEditor({
     },
     type: "button",
     disabled: disabled || busy || !!pendingAction,
-    "aria-label": 'Edit gloss for ' + occurrenceLabel(entry),
+    "aria-label": simplifiedText('simplified.gloss_edit_for', 'Edit gloss for {item}', {
+      item: occurrenceLabel(entry)
+    }),
     onClick: () => requestAction({
       type: 'edit',
       entry
     }),
     className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900"
-  }, "Edit"), /*#__PURE__*/React.createElement("button", {
+  }, simplifiedText('common.edit', 'Edit')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: disabled || busy || !!pendingAction,
-    "aria-label": 'Remove gloss for ' + occurrenceLabel(entry),
+    "aria-label": simplifiedText('simplified.gloss_remove_for', 'Remove gloss for {item}', {
+      item: occurrenceLabel(entry)
+    }),
     onClick: () => requestAction({
       type: 'remove',
       entry
     }),
     className: "min-h-11 rounded-lg border border-slate-300 px-3"
-  }, "Remove"), /*#__PURE__*/React.createElement("label", {
+  }, simplifiedText('common.remove', 'Remove')), !adapted && /*#__PURE__*/React.createElement("label", {
     className: "flex min-h-11 items-center gap-2"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
-    "aria-label": 'Always show gloss for ' + occurrenceLabel(entry) + ' in lighter view',
+    "aria-label": simplifiedText('simplified.gloss_pin_for', 'Always show in lighter view: {item}', {
+      item: occurrenceLabel(entry)
+    }),
     checked: entry.pinned === true,
     disabled: disabled || busy || !!pendingAction,
     onChange: event => pin(entry, event.target.checked)
-  }), "Always show in lighter view")))))));
+  }), simplifiedText('simplified.gloss_always_show_in_lighter_view', 'Always show in lighter view'))))))));
+}
+
+// Where each word-help word sits in the passage ON SCREEN. The reader renders
+// the adapted text sentence by sentence (markup stripped), so offsets into the
+// stored passage do not carry over; the n-th whole-word occurrence does. Returns
+// [{ entry, start, end }] as offsets into shownText; words not found are left out.
+function locateWordHelp(passageText, entries, shownText) {
+  const wordChar = /[\p{L}\p{M}\p{N}]/u;
+  const wholeWordStarts = (text, quote) => {
+    const starts = [];
+    if (!quote) return starts;
+    const edge = getInstructionalContextApi()?.isWordEdge;
+    for (let at = text.indexOf(quote); at !== -1; at = text.indexOf(quote, at + 1)) {
+      const end = at + quote.length;
+      if (edge) {
+        if (edge(text, at) && edge(text, end)) starts.push(at);
+        continue;
+      }
+      if (at > 0 && wordChar.test(text.charAt(at - 1)) || end < text.length && wordChar.test(text.charAt(end))) continue;
+      starts.push(at);
+    }
+    return starts;
+  };
+  const found = [];
+  // Link and image addresses and chart data never show on screen: blank them
+  // (keeping every offset) so they are not counted as occurrences.
+  const stored = String(passageText || '').replace(/\]\([^)\s]*\)/g, match => ' '.repeat(match.length)).replace(/\[\[CHART:[\s\S]*?\]\]/g, match => ' '.repeat(match.length));
+  (entries || []).forEach(entry => {
+    const nth = wholeWordStarts(stored, entry.quote).indexOf(entry.start);
+    const shown = wholeWordStarts(String(shownText || ''), entry.quote);
+    const start = shown[Math.max(0, nth)];
+    if (nth === -1 || start === undefined) return;
+    found.push({
+      entry,
+      start,
+      end: start + entry.quote.length
+    });
+  });
+  return found;
+}
+// The passage's visible text, as [text node, offset] segments, skipping any part
+// in another language (the English half of a bilingual text).
+function readingTextSegments(container, language) {
+  const segments = [];
+  let text = '';
+  if (!container || typeof document === 'undefined') return {
+    text,
+    segments
+  };
+  const tagged = !!container.querySelector('[data-reading-language]');
+  const wanted = String(language || '').trim().toLowerCase();
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  // Text in different blocks or table cells never runs together on screen.
+  const blockOf = element => element.closest('p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, dt, dd, pre, figcaption, div');
+  let lastBlock = null;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const owner = node.parentElement;
+    if (!owner || owner.closest('button, [aria-hidden="true"], [data-adapted-word-help], [data-reading-chart], [role="status"], [role="alert"], script, style')) continue;
+    if (tagged && wanted) {
+      const own = owner.closest('[data-reading-language]');
+      if (own && String(own.getAttribute('data-reading-language') || '').trim().toLowerCase() !== wanted) continue;
+    }
+    const block = blockOf(owner);
+    if (segments.length && block !== lastBlock) text += '\n';
+    lastBlock = block;
+    segments.push({
+      node,
+      start: text.length
+    });
+    text += node.data;
+  }
+  return {
+    text,
+    segments
+  };
+}
+function ensureWordHelpHighlightStyle() {
+  if (typeof document === 'undefined' || document.getElementById('allo-word-help-highlights')) return;
+  const style = document.createElement('style');
+  style.id = 'allo-word-help-highlights';
+  // currentColor keeps the underline visible in every reading theme.
+  style.textContent = '::highlight(allo-word-help){text-decoration:underline dotted 2px currentColor}::highlight(allo-word-help-focus){background-color:#fde047;color:#111827}';
+  document.head.appendChild(style);
+}
+function rangeForOffsets(segments, start, end) {
+  const at = offset => {
+    for (let i = segments.length - 1; i >= 0; i--) if (segments[i].start <= offset) return {
+      node: segments[i].node,
+      offset: offset - segments[i].start
+    };
+    return null;
+  };
+  const from = at(start),
+    to = at(end);
+  if (!from || !to || typeof document === 'undefined') return null;
+  const range = document.createRange();
+  range.setStart(from.node, Math.min(from.offset, from.node.data.length));
+  range.setEnd(to.node, Math.min(to.offset, to.node.data.length));
+  return range;
+}
+
+// Word help for an ADAPTED text: its own supports (item.adaptedReadingSupports),
+// hidden from students until the teacher shows them, and listed after the
+// passage because the adapted reader does not keep character positions.
+function AdaptedWordHelp({
+  item,
+  teacher,
+  disabled,
+  onUpdate,
+  onGenerate,
+  languageTag,
+  direction,
+  onListen,
+  listening,
+  renderCredits,
+  originalSupports,
+  passageSelector,
+  language,
+  markWords,
+  quiet
+}) {
+  const contract = getInstructionalContextApi();
+  const [busy, setBusy] = React.useState(false);
+  const [notice, setNotice] = React.useState('');
+  // The panel opens by itself when an edit leaves word help stale, and stays open
+  // after Keep or Start again so their result is seen (and focused).
+  const staleNow = !!(contract?.isAdaptedReading?.(item) && contract.validateAdaptedReadingSupports && contract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports).status === 'stale');
+  const [panelOpen, setPanelOpen] = React.useState(staleNow);
+  React.useEffect(() => {
+    if (staleNow) setPanelOpen(true);
+  }, [staleNow]);
+  const noticeRef = React.useRef(null),
+    focusNotice = React.useRef(false);
+  React.useEffect(() => {
+    if (focusNotice.current && noticeRef.current) {
+      focusNotice.current = false;
+      noticeRef.current.focus();
+    }
+  });
+  // Words that have help, as they appear in the passage on screen (a CSS
+  // highlight marks them, so the passage's own markup is never touched).
+  const listRef = React.useRef(null),
+    spotTimer = React.useRef(null);
+  const [spotNotice, setSpotNotice] = React.useState('');
+  // No marks where the passage on screen is not this word help's text (the
+  // English side of a bilingual text in Both) - markWords is false there.
+  const passageOnScreen = () => {
+    const section = listRef.current;
+    if (!section || markWords === false) return null;
+    const surface = section.closest('[data-adapted-reader]') || section.ownerDocument;
+    return surface && surface.querySelector(passageSelector || '[data-reading-passage]') || null;
+  };
+  const wordHelpOnScreen = onlyId => {
+    const container = passageOnScreen();
+    if (!container || !contract?.validateAdaptedReadingSupports) return [];
+    const shownHelp = contract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports);
+    const passage = contract.getAdaptedSupportSnapshot(item, item.adaptedReadingSupports);
+    if (!shownHelp.shown || !passage) return [];
+    const {
+      text,
+      segments
+    } = readingTextSegments(container, language);
+    const wanted = onlyId ? shownHelp.annotations.filter(entry => entry.id === onlyId) : shownHelp.annotations;
+    return locateWordHelp(passage.text, wanted, text).map(hit => ({
+      ...hit,
+      range: rangeForOffsets(segments, hit.start, hit.end)
+    })).filter(hit => hit.range);
+  };
+  // Re-read the passage only when the text, the word help or where it is shown
+  // changed, or the passage was redrawn (a mark's text node left the page); the
+  // reader re-renders on every read-aloud word, and the marks stay valid then.
+  const marksRef = React.useRef(null);
+  React.useEffect(() => {
+    const registry = typeof CSS !== 'undefined' && CSS.highlights;
+    if (!registry || typeof Highlight !== 'function') return;
+    // The text on screen can change in place (Fill in the blanks back to Read)
+    // while old text nodes stay on the page, so compare the text itself too.
+    const container = passageOnScreen();
+    const shownText = container ? container.textContent : '';
+    const last = marksRef.current;
+    if (last && last.data === item.data && last.supports === item.adaptedReadingSupports && last.shownText === shownText && last.where === passageSelector + '|' + language && last.ranges.every(range => range.startContainer.isConnected && range.endContainer.isConnected)) return;
+    const ranges = container ? wordHelpOnScreen().map(hit => hit.range) : [];
+    marksRef.current = {
+      data: item.data,
+      supports: item.adaptedReadingSupports,
+      shownText,
+      where: passageSelector + '|' + language,
+      ranges
+    };
+    if (!ranges.length) {
+      registry.delete('allo-word-help');
+      return;
+    }
+    ensureWordHelpHighlightStyle();
+    registry.set('allo-word-help', new Highlight(...ranges));
+  });
+  React.useEffect(() => () => {
+    if (spotTimer.current) clearTimeout(spotTimer.current);
+    if (typeof CSS !== 'undefined' && CSS.highlights) {
+      CSS.highlights.delete('allo-word-help');
+      CSS.highlights.delete('allo-word-help-focus');
+    }
+  }, []);
+  const showInText = entry => {
+    const hit = wordHelpOnScreen(entry.id)[0];
+    if (!hit) {
+      setSpotNotice(simplifiedText('simplified.word_help_not_found_in_text', 'Could not find "{word}" in the passage on screen.', {
+        word: entry.quote
+      }));
+      return;
+    }
+    const target = hit.range.startContainer.parentElement;
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (target && typeof target.scrollIntoView === 'function') target.scrollIntoView({
+      block: 'center',
+      behavior: reduceMotion ? 'auto' : 'smooth'
+    });
+    const registry = typeof CSS !== 'undefined' && CSS.highlights;
+    if (registry && typeof Highlight === 'function') {
+      ensureWordHelpHighlightStyle();
+      registry.set('allo-word-help-focus', new Highlight(hit.range));
+      if (spotTimer.current) clearTimeout(spotTimer.current);
+      spotTimer.current = setTimeout(() => registry.delete('allo-word-help-focus'), 4000);
+    }
+    setSpotNotice(simplifiedText('simplified.word_help_highlighted_in_text', '"{word}" is highlighted in the passage.', {
+      word: entry.quote
+    }));
+  };
+  if (!contract?.isAdaptedReading?.(item) || !contract.validateAdaptedReadingSupports) return null;
+  const stored = item.adaptedReadingSupports;
+  const help = contract.validateAdaptedReadingSupports(item, stored);
+  const entries = help.annotations || [];
+  const stale = help.status === 'stale';
+  const snapshot = stale ? null : contract.getAdaptedSupportSnapshot(item, stored);
+  // After an edit, how many explanations are for words still in the passage.
+  const staleCount = stale && Array.isArray(stored?.annotations) ? stored.annotations.length : 0;
+  let keepable = 0;
+  if (staleCount && contract.rebaseAdaptedReadingSupports) {
+    try {
+      keepable = contract.rebaseAdaptedReadingSupports(item, stored).annotations.length;
+    } catch (_) {}
+  }
+  // The original's explanations for words this adapted text kept.
+  const fromOriginal = teacher && !stale && Array.isArray(originalSupports?.annotations) ? originalSupports.annotations : [];
+  let importable = 0;
+  if (fromOriginal.length && contract.importOriginalSupportsIntoAdapted) {
+    try {
+      importable = contract.importOriginalSupportsIntoAdapted(item, stored, fromOriginal).annotations.length - entries.length;
+    } catch (_) {}
+  }
+  const idBase = 'adapted-word-help-' + String(item.id || 'current').replace(/[^a-z0-9_-]/gi, '-');
+  const explanation = entry => entry.definition || entry.explanation || entry.text || '';
+  const run = async (work, message) => {
+    if (busy || disabled) return;
+    setBusy(true);
+    setNotice('');
+    try {
+      setNotice(message(await work()));
+    } catch (error) {
+      setNotice(error?.message || simplifiedText('simplified.word_help_could_not_be_saved', 'Word help could not be saved. The adapted text is unchanged.'));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const list = !quiet && help.shown && entries.length > 0 && /*#__PURE__*/React.createElement("section", {
+    ref: listRef,
+    "data-adapted-word-help": true,
+    "aria-labelledby": idBase + '-title',
+    className: "mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-slate-900"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2"
+  }, /*#__PURE__*/React.createElement("h3", {
+    id: idBase + '-title',
+    className: "text-lg font-bold text-indigo-950"
+  }, simplifiedText('simplified.word_help_word_help', 'Word help')), onListen && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => onListen(entries.map(entry => entry.quote + '. ' + explanation(entry)).join('. ')),
+    className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-indigo-900"
+  }, listening ? simplifiedText('simplified.word_help_stop_word_help', 'Stop word help') : simplifiedText('simplified.word_help_listen_to_word_help', 'Listen to word help'))), /*#__PURE__*/React.createElement("ul", {
+    className: "mt-2 space-y-2",
+    lang: languageTag,
+    dir: direction
+  }, entries.map(entry => /*#__PURE__*/React.createElement("li", {
+    key: entry.id,
+    "data-adapted-word-help-entry": true,
+    className: "flex items-start gap-3 break-words text-base leading-relaxed"
+  }, entry.image && /*#__PURE__*/React.createElement("img", {
+    src: entry.image.src,
+    alt: entry.image.alt || '',
+    className: "h-14 w-14 shrink-0 rounded bg-white object-contain"
+  }), /*#__PURE__*/React.createElement("span", {
+    "data-adapted-word-help-text": true,
+    className: "min-w-0 flex-1"
+  }, /*#__PURE__*/React.createElement("strong", null, entry.quote), ": ", explanation(entry)), markWords !== false && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-adapted-word-help-spot": true,
+    onClick: () => showInText(entry),
+    "aria-label": simplifiedText('simplified.word_help_show_word_in_text', 'Show in text: {word}', {
+      word: entry.quote
+    }),
+    className: "min-h-11 shrink-0 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, simplifiedText('simplified.word_help_show_in_text', 'Show in text'))))), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "data-adapted-word-help-spot-notice": true,
+    className: spotNotice ? 'mt-2 text-sm text-indigo-900' : 'sr-only'
+  }, spotNotice), renderCredits ? renderCredits(entries) : null);
+  // Collapsed unless stale, so an optional tool does not crowd every adapted text.
+  const panel = teacher && /*#__PURE__*/React.createElement("details", {
+    "data-adapted-word-help-teacher": true,
+    open: panelOpen,
+    onToggle: event => setPanelOpen(event.currentTarget.open),
+    className: "my-4 space-y-3 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "min-h-11 cursor-pointer rounded-lg px-2 py-2 font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, simplifiedText('simplified.word_help_word_help_for_this_adapted_text', 'Word help for this adapted text'), entries.length ? ' (' + simplifiedText(help.shown ? 'simplified.word_help_count_shown' : 'simplified.word_help_count_hidden', help.shown ? '{count}, shown to students' : '{count}, hidden from students', {
+    count: entries.length
+  }) + ')' : ''), /*#__PURE__*/React.createElement("p", {
+    className: "leading-relaxed text-slate-600"
+  }, simplifiedText('simplified.word_help_optional_explanations_for_words_in_this', 'Optional explanations for words in this adapted text. Students see them as a list after the passage only when you show it. The original\'s word supports are kept separately.')), stale && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "space-y-2 rounded-lg border border-amber-400 bg-amber-50 p-2 text-amber-900"
+  }, /*#__PURE__*/React.createElement("p", null, simplifiedText('simplified.word_help_this_adapted_text_was_edited_after', 'This adapted text was edited after its word help was made, so that word help is hidden. Keep the explanations whose words are still in the text, start again with an empty list, or suggest word help for the current text.')), keepable > 0 && /*#__PURE__*/React.createElement("p", {
+    "data-adapted-word-help-keepable": true
+  }, simplifiedText('simplified.word_help_still_matching', '{kept} of {total} explanations are for words that are still in the text.', {
+    kept: keepable,
+    total: staleCount
+  })), onUpdate && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, keepable > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-adapted-word-help-rebase": true,
+    disabled: disabled || busy,
+    onClick: () => run(() => onUpdate(item, {
+      type: 'rebase'
+    }), result => (focusNotice.current = true) && simplifiedText('simplified.word_help_kept_check_fit', 'Kept the explanations that still match ({count}). Students will not see them until you check each one and show word help again.', {
+      count: result?.annotations?.length || 0
+    })),
+    className: "min-h-11 rounded-lg bg-amber-800 px-3 font-semibold text-white disabled:opacity-50"
+  }, simplifiedText('simplified.word_help_keep_matching', 'Keep the {count} that still match', {
+    count: keepable
+  })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-adapted-word-help-clear": true,
+    disabled: disabled || busy,
+    onClick: () => run(() => onUpdate(item, {
+      type: 'clear'
+    }), () => (focusNotice.current = true) && simplifiedText('simplified.word_help_cleared', 'Word help cleared. Add explanations for the current adapted text.')),
+    className: "min-h-11 rounded-lg border border-amber-700 px-3 disabled:opacity-50"
+  }, simplifiedText('simplified.word_help_start_again', 'Start again')))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-3"
+  }, onUpdate && /*#__PURE__*/React.createElement("label", {
+    className: "flex min-h-11 items-center gap-2"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    "data-adapted-word-help-show": true,
+    checked: help.shown,
+    disabled: disabled || busy || stale || !entries.length && !help.shown,
+    onChange: event => {
+      const shown = event.target.checked;
+      run(() => onUpdate(item, {
+        type: 'show',
+        shown
+      }), result => result?.shown ? simplifiedText('simplified.word_help_students_now_see_this_word_help', 'Students now see this word help after the passage.') : simplifiedText('simplified.word_help_word_help_is_hidden_from_students', 'Word help is hidden from students.'));
+    }
+  }), simplifiedText('simplified.word_help_show_word_help_to_students', 'Show word help to students')), onGenerate && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-adapted-word-help-generate": true,
+    disabled: disabled || busy,
+    onClick: () => run(() => onGenerate(item), result => result?.status === 'unavailable' ? simplifiedText('simplified.word_help_word_help_could_not_be_suggested', 'Word help could not be suggested. The adapted text is unchanged.') : result?.status === 'partial' ? simplifiedText('simplified.word_help_some_words_could_not_be_supported', 'Some words could not be supported. Review the suggestions before showing them.') : simplifiedText('simplified.word_help_suggested_word_help_is_ready_review', 'Suggested word help is ready. Review it, then show it to students.')),
+    className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50"
+  }, busy ? simplifiedText('simplified.word_help_working', 'Working…') : entries.length ? simplifiedText('simplified.word_help_refresh_suggested_word_help', 'Refresh suggested word help') : simplifiedText('simplified.word_help_suggest_word_help', 'Suggest word help')), onUpdate && importable > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-adapted-word-help-import": true,
+    disabled: disabled || busy,
+    onClick: () => run(() => onUpdate(item, {
+      type: 'import',
+      annotations: fromOriginal
+    }), result => (focusNotice.current = true) && simplifiedText('simplified.word_help_added_from_original', 'Added explanations from the original ({count}). Students will not see word help until you check them and show it again.', {
+      count: Math.max(0, (result?.annotations?.length || 0) - entries.length)
+    })),
+    className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50"
+  }, simplifiedText('simplified.word_help_use_from_original', 'Reuse explanations from the original ({count})', {
+    count: importable
+  }))), /*#__PURE__*/React.createElement("p", {
+    ref: noticeRef,
+    tabIndex: -1,
+    role: "status",
+    "data-word-help-notice": true,
+    className: notice ? 'rounded bg-indigo-50 p-2 text-indigo-900' : 'sr-only'
+  }, notice), snapshot && onUpdate && /*#__PURE__*/React.createElement(ReadingGlossEditor, {
+    item: item,
+    supports: help,
+    snapshot: snapshot,
+    adapted: true,
+    onUpdate: onUpdate,
+    disabled: disabled || busy
+  }));
+  if (!list && !panel) return null;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, list, panel);
 }
 function SimplifiedView(props) {
+  var viewText = (key, fallback, params) => simplifiedText(key, fallback, params, props.t);
   // State reads
   var t = props.t;
   var simplifiedAudioEditLabel = t('common.edit') || '';
@@ -1952,6 +2737,49 @@ function SimplifiedView(props) {
   var isCustomReviseOpen = isTeacherMode && props.isCustomReviseOpen;
   var customReviseInstruction = props.customReviseInstruction;
   var latestGlossary = props.latestGlossary;
+  // Fill in the blanks makes blanks from glossary terms. With none it showed
+  // the passage without blanks under "Fill in the missing words".
+  var hasClozeTerms = Array.isArray(latestGlossary) && latestGlossary.some(function (item) {
+    return item && item.term && item.isSelected !== false;
+  });
+  // "Complete" means every blank on the page is solved. The host's check
+  // counted a term after one of its blanks and waited on terms that never
+  // appear in the passage, so it could not fire.
+  // Read-aloud in Fill in the blanks says "blank" for each term, so listening
+  // stays available without reading the answers out.
+  var maskClozeTerms = function (text) {
+    var blank = t('simplified.cloze_blank_spoken');
+    blank = blank && blank !== 'simplified.cloze_blank_spoken' ? blank : 'blank';
+    var language = props.leveledTextLanguage,
+      terms = [];
+    (latestGlossary || []).forEach(function (item) {
+      if (!item || !item.term || item.isSelected === false) return;
+      terms.push(String(item.term));
+      var translated = item.translations && language && item.translations[language];
+      if (translated) terms.push(String(translated).split(':')[0].trim());
+    });
+    terms = terms.filter(Boolean).sort(function (a, b) {
+      return b.length - a.length;
+    });
+    if (!terms.length) return text;
+    var escaped = terms.map(function (term) {
+      return term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    });
+    var pattern = new RegExp('(^|[^\\p{L}\\p{N}])(' + escaped.join('|') + ')(?=$|[^\\p{L}\\p{N}])', 'giu');
+    return String(text).replace(pattern, function (_match, lead) {
+      return lead + blank;
+    });
+  };
+  var clozeBodyRef = React.useRef(null);
+  var [clozeAllSolved, setClozeAllSolved] = React.useState(false);
+  React.useEffect(function () {
+    var root = clozeBodyRef.current;
+    var blanks = props.interactionMode === 'cloze' && root ? root.querySelectorAll('[data-cloze-blank]') : [];
+    var done = blanks.length > 0 && Array.prototype.every.call(blanks, function (node) {
+      return node.getAttribute('data-cloze-solved') === 'true';
+    });
+    if (done !== clozeAllSolved) setClozeAllSolved(done);
+  });
   var history = props.history;
   var complexityLevel = props.complexityLevel;
   var saveOriginalOnAdjust = props.saveOriginalOnAdjust;
@@ -2099,10 +2927,18 @@ function SimplifiedView(props) {
     try {
       if (typeof splitReferencesFromBody === 'function') split = splitReferencesFromBody(fullText) || split;
     } catch (_) {}
-    var normalizedBody = String(split.body || '').replace(/\r\n?/g, '\n').replace(/^[ \t]*<h([1-6])[^>]*>(.*?)<\/h[1-6]>[ \t]*$/gmi, (_match, level, text) => '#'.repeat(Number(level)) + ' ' + text).replace(/^[ \t]*(\*{1,2})([^*\n]+?)\1[ \t]*$/gm, function (_match, _stars, inner) {
+    var normalizedBody = String(split.body || '').replace(/\r\n?/g, '\n').replace(/^[ \t]*<h([1-6])[^>]*>(.*?)<\/h[1-6]>[ \t]*$/gmi, (_match, level, text) => '#'.repeat(Number(level)) + ' ' + text).replace(/^[ \t]*(\*\*)([^*\n]+?)\1[ \t]*$/gm, function (_match, _stars, inner) {
+      // Only a bold line is a label heading. An italic line is a poem line or a
+      // caption ("*Figure 2*"), and became a section heading.
       if (/[.!?。！？؟:：]$/.test(inner.trim())) return _match;
       return '## ' + inner.trim();
     });
+    // A chart directive gets its own paragraph, so it is drawn as a chart and
+    // never read aloud; it was shown and spoken as raw JSON.
+    normalizedBody = normalizedBody.replace(/\[\[CHART:([\s\S]*?)\]\]/g, (_m, body) => '\n\n[[CHART: ' + body.replace(/\s*\n\s*/g, ' ').trim() + ']]\n\n');
+    // A table gets its own paragraph too. Read-aloud skips table paragraphs, so a
+    // line written directly above one ("Look at this:") was never read or clickable.
+    normalizedBody = normalizedBody.replace(/^([ \t]*[^|\s][^\n]*)\n(?=[ \t]*\|)/gm, '$1\n\n').replace(/^([ \t]*\|[^\n]*)\n(?=[ \t]*[^|\s])/gm, '$1\n\n');
     return {
       body: normalizedBody,
       references: String(split.references || '')
@@ -2113,6 +2949,9 @@ function SimplifiedView(props) {
     references: ''
   } : buildSimplifiedContentParts(generatedContent && generatedContent.data);
   var simplifiedDisplayBody = simplifiedContentParts.body;
+  // Immersive words are used only for the text they were built from; an edit
+  // copies the item, so the overlays kept reading the old words.
+  var immersiveFresh = Array.isArray(generatedContent?.immersiveData) && (generatedContent.immersiveSource == null || generatedContent.immersiveSource === String(generatedContent.data || ''));
   function openReadingReflection() {
     if (!props.onReadReflect) return;
     props.onReadReflect({
@@ -2347,7 +3186,7 @@ function SimplifiedView(props) {
   };
   var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error, identityOptions) {
     if (error && error.name === 'NotAllowedError') {
-      setEditAudioNotice('Audio playback was blocked. Press Play again.');
+      setEditAudioNotice(viewText('simplified.audio_audio_playback_was_blocked_press_play', 'Audio playback was blocked. Press Play again.'));
       return;
     }
     updateEditAudioPlaybackIssue(sentence, {
@@ -2754,6 +3593,19 @@ function SimplifiedView(props) {
     };
     return makeEntries(sourceList, sourceLanguage || leveledTextLanguage || 'English', 'source').concat(makeEntries(targetList, 'English', 'target'));
   };
+  // The sentences Immersive highlights and the chunk reader counts: the list
+  // playback speaks (phase_k handleSpeak), with every table paragraph skipped.
+  // Computed once per text: the read-along sweep re-renders every animation frame.
+  var immersiveSentences = React.useMemo(function () {
+    if (!isImmersiveReaderActive) return [];
+    var isTable = p => p.trim().startsWith('|') || p.includes('\n|');
+    var sideBySide = getSideBySideContent(simplifiedReadAloudText);
+    var paragraphs = sideBySide ? [...(sideBySide.source || []), ...(sideBySide.target || [])] : simplifiedReadAloudText.split(/\n{2,}/);
+    return paragraphs.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
+  }, [isImmersiveReaderActive, simplifiedReadAloudText]);
+  var immersiveSentenceOfWord = React.useMemo(function () {
+    return isImmersiveReaderActive && Array.isArray(generatedContent?.immersiveData) ? alignImmersiveWords(generatedContent.immersiveData, immersiveSentences, cleanSentenceForAudio) : [];
+  }, [isImmersiveReaderActive, generatedContent?.immersiveData, immersiveSentences]);
   var getReadAloudSentencesForText = function (rawText) {
     return getReadAloudSentenceEntriesForText(rawText).map(function (entry) {
       return entry.text;
@@ -2762,19 +3614,17 @@ function SimplifiedView(props) {
   var karaokeReaderSentences = React.useMemo(function () {
     return getReadAloudSentencesForText(simplifiedReadAloudText);
   }, [generatedContent && generatedContent.data]);
+  // Announcing every sentence again, in English, talked over the voice that
+  // was reading it. Say only that read-aloud started.
   var activeReadAloudStatus = React.useMemo(function () {
     if (!isPlaying || playingContentId && playingContentId !== 'simplified-main') return '';
-    var currentIndex = playbackState && Number(playbackState.currentIdx);
-    if (!Number.isInteger(currentIndex) || currentIndex < 0) return '';
-    var stateSentences = playbackState && Array.isArray(playbackState.sentences) ? playbackState.sentences : karaokeReaderSentences;
-    var currentSentence = stateSentences[currentIndex];
-    if (!currentSentence) return '';
-    return 'Reading sentence ' + (currentIndex + 1) + ': ' + String(currentSentence);
-  }, [isPlaying, playingContentId, playbackState && playbackState.currentIdx, playbackState && playbackState.sentences, karaokeReaderSentences]);
+    var label = t('simplified.read_aloud_status');
+    return label && label !== 'simplified.read_aloud_status' ? label : 'Reading aloud';
+  }, [isPlaying, playingContentId]);
   var handlePrepareReadAloudAudio = async function () {
     if (ttsPrepRequestRef.current) return;
     if (typeof window.__alloPrepareReadAloud !== 'function') {
-      setTtsPrepNotice('Audio tools are still loading. Please try again.');
+      setTtsPrepNotice(viewText('simplified.audio_audio_tools_are_still_loading_please', 'Audio tools are still loading. Please try again.'));
       return;
     }
     var entries = getReadAloudSentenceEntriesForText(simplifiedReadAloudText);
@@ -2811,7 +3661,7 @@ function SimplifiedView(props) {
       if (result && result.remaining) {
         setTtsPrepNotice(result.failure && result.failure.reason || result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.');
       } else if (result && result.ok) {
-        setTtsPrepNotice('Read-aloud audio is saved for all sentences.');
+        setTtsPrepNotice(viewText('simplified.audio_read_aloud_audio_is_saved_for', 'Read-aloud audio is saved for all sentences.'));
       }
     } catch (_) {
       if (ownsTtsPreparation(request)) setTtsPrepNotice(request.controller && request.controller.signal.aborted ? 'Audio saving stopped. Save TTS again to finish any missing clips.' : 'Audio could not be saved. Please try again.');
@@ -2829,7 +3679,7 @@ function SimplifiedView(props) {
   var handleRegenerateReadAloudSentence = async function (sentence, key, sentenceNumber, identityOptions) {
     if (!sentence || regenAudioKey) return;
     if (typeof window.__alloRegenerateSentenceAudio !== 'function') {
-      setEditAudioNotice('Sentence audio tools are still loading. Please try again.');
+      setEditAudioNotice(viewText('simplified.audio_sentence_audio_tools_are_still_loading', 'Sentence audio tools are still loading. Please try again.'));
       return;
     }
     var wasSaved = hasStoredReadAloudAudio(sentence, identityOptions);
@@ -2838,7 +3688,7 @@ function SimplifiedView(props) {
     setEditAudioNotice((wasSaved ? 'Regenerating' : 'Generating') + ' sentence ' + sentenceNumber + ' audio...');
     try {
       var url = await window.__alloRegenerateSentenceAudio(sentence, identityOptions || {});
-      if (!url) throw new Error('No audio was returned');
+      if (!url) throw new Error(viewText('simplified.audio_no_audio_was_returned', 'No audio was returned'));
       updateEditAudioPlaybackIssue(sentence, null, identityOptions);
       setAudioStatusTick(function (n) {
         return n + 1;
@@ -2884,7 +3734,7 @@ function SimplifiedView(props) {
     try {
       var url = getStoredReadAloudAudioUrl(sentence, identityOptions);
       if (token !== editAudioPlayTokenRef.current) return;
-      if (!url) throw new Error('No saved audio URL');
+      if (!url) throw new Error(viewText('simplified.audio_no_saved_audio_url', 'No saved audio URL'));
       var audio = new Audio(url);
       audio._alloSentenceKey = key;
       audio.preload = 'auto';
@@ -2946,11 +3796,11 @@ function SimplifiedView(props) {
     }
     if (!sentence || editAudioRecordingKey || editAudioMicRequestKey || editAudioRecordingSaveKey) return;
     if (typeof window.__alloStoreRecordedSentenceAudio !== 'function') {
-      setEditAudioNotice('Recorded-audio storage is still loading. Please try again.');
+      setEditAudioNotice(viewText('simplified.audio_recorded_audio_storage_is_still_loading', 'Recorded-audio storage is still loading. Please try again.'));
       return;
     }
     if (typeof navigator === 'undefined' || !navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function' || typeof window.MediaRecorder === 'undefined') {
-      setEditAudioNotice('Microphone recording is not supported in this browser.');
+      setEditAudioNotice(viewText('simplified.audio_microphone_recording_is_not_supported_in', 'Microphone recording is not supported in this browser.'));
       return;
     }
     stopEditAudioPlayback();
@@ -3021,7 +3871,7 @@ function SimplifiedView(props) {
           var saved = await window.__alloStoreRecordedSentenceAudio(sentence, recordedBlob, 'human-teacher', Object.assign({}, identityOptions || {}, {
             durationMs: durationMs
           }));
-          if (saved === false) throw new Error('Recording was not saved');
+          if (saved === false) throw new Error(viewText('simplified.audio_recording_was_not_saved', 'Recording was not saved'));
           setAudioStatusTick(function (n) {
             return n + 1;
           });
@@ -3065,14 +3915,14 @@ function SimplifiedView(props) {
       if (requestToken === editAudioRecordTokenRef.current) {
         setEditAudioMicRequestKey(null);
         setEditAudioRecordingKey(null);
-        setEditAudioNotice('Microphone access was not available. Check permission and try again.');
+        setEditAudioNotice(viewText('simplified.audio_microphone_access_was_not_available_chec', 'Microphone access was not available. Check permission and try again.'));
       }
     }
   };
   var handleRemoveReadAloudSentence = async function (sentence, key, sentenceNumber, identityOptions) {
     if (!sentence || removeAudioKey) return;
     if (typeof window.__alloRemoveSentenceAudio !== 'function') {
-      setEditAudioNotice('Sentence audio removal is still loading. Please try again.');
+      setEditAudioNotice(viewText('simplified.audio_sentence_audio_removal_is_still_loading', 'Sentence audio removal is still loading. Please try again.'));
       return;
     }
     if (editAudioPlayerRef.current && editAudioPlayerRef.current._alloSentenceKey === key) stopEditAudioPlayback();
@@ -3080,7 +3930,7 @@ function SimplifiedView(props) {
     setEditAudioNotice('Removing saved audio for sentence ' + sentenceNumber + '...');
     try {
       var removed = await window.__alloRemoveSentenceAudio(sentence, identityOptions || {});
-      if (removed === false) throw new Error('Audio was not removed');
+      if (removed === false) throw new Error(viewText('simplified.audio_audio_was_not_removed', 'Audio was not removed'));
       setAudioStatusTick(function (n) {
         return n + 1;
       });
@@ -3159,7 +4009,7 @@ function SimplifiedView(props) {
         if (!recordingUrl) releaseHelpUrl(url);
         return;
       }
-      if (!url) throw new Error('No pronunciation audio');
+      if (!url) throw new Error(viewText('simplified.word_audio_no_pronunciation_audio', 'No pronunciation audio'));
       if (!recordingUrl) current.ownedUrl = url;
       var audio = new Audio(url);
       current.audio = audio;
@@ -3416,7 +4266,7 @@ function SimplifiedView(props) {
       type: "button",
       onClick: copyTtsDiagnostics,
       "aria-label": simplifiedAudioCopiedLabel,
-      title: "Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck.",
+      title: viewText('simplified.audio_copies_a_technical_trace_of_recent', 'Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck.'),
       className: "inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full px-2 py-1 hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
     }, ttsDiagCopied ? '✓ ' + simplifiedAudioCopiedLabel : '🩺 ' + simplifiedAudioDiagnosticsLabel), /*#__PURE__*/React.createElement("label", {
       className: "inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"
@@ -3438,10 +4288,11 @@ function SimplifiedView(props) {
     }, /*#__PURE__*/React.createElement(Mic, {
       size: 14,
       className: "mt-0.5 shrink-0 text-orange-700"
-    }), /*#__PURE__*/React.createElement("p", null, "Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.")), editAudioNotice && /*#__PURE__*/React.createElement("div", {
+    }), /*#__PURE__*/React.createElement("p", null, viewText('simplified.audio_preview_saved_audio_generate_a_new', 'Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.'))), /*#__PURE__*/React.createElement("div", {
       role: "status",
       "aria-live": "polite",
-      className: "mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800"
+      "data-edit-audio-status": true,
+      className: editAudioNotice ? 'mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800' : 'sr-only'
     }, editAudioNotice), /*#__PURE__*/React.createElement("div", {
       className: "space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar"
     }, sentences.map(function (entry, i) {
@@ -3575,6 +4426,11 @@ function SimplifiedView(props) {
   var instructionalRole = instructionalTextProfile.role || 'unspecified';
   var replacementIsEducatorAuthorized = !!(instructionalTextProfile.replacementAuthorization && instructionalTextProfile.replacementAuthorization.authorized === true && instructionalTextProfile.replacementAuthorization.source === 'educator');
   var instructionalFormLabel = protectedOriginal ? verifiedOriginal ? 'Original with supports' : 'Saved source — preservation unverified' : instructionalTextProfile.form === 'original' ? 'Original text' : 'Adapted text';
+  var studentRoleText = function (key, fallback) {
+    var value = t(key);
+    return value && value !== key ? value : fallback;
+  };
+  var instructionalStudentLabel = protectedOriginal ? studentRoleText('simplified.student_role_original', 'This is the original text.') : instructionalRole === 'primary' ? studentRoleText('simplified.student_role_main', 'This is your reading for this lesson.') : studentRoleText('simplified.student_role_companion', 'This is an easier version to help you read the original.');
   var instructionalRoleLabel = instructionalRole === 'primary' ? instructionalTextProfile.form === 'adapted' && !replacementIsEducatorAuthorized ? 'Main reading — needs review' : 'Main reading' : instructionalRole === 'supplemental' ? 'Supporting reading' : 'Not designated';
   var instructionalRoleTone = instructionalRole === 'supplemental' ? 'bg-blue-50 text-blue-900 border-blue-200' : instructionalRole === 'primary' && replacementIsEducatorAuthorized ? 'bg-violet-50 text-violet-900 border-violet-200' : instructionalRole === 'primary' ? 'bg-red-50 text-red-900 border-red-200' : 'bg-amber-50 text-amber-900 border-amber-200';
   var isSupplementalSourceUnlinked = instructionalRole === 'supplemental' && !instructionalTextProfile.sourceArtifactId && !instructionalTextProfile.primaryArtifactId;
@@ -3601,6 +4457,7 @@ function SimplifiedView(props) {
     role: instructionalRole,
     roleLabel: instructionalRoleLabel,
     formLabel: instructionalFormLabel,
+    studentLabel: instructionalStudentLabel,
     needsAuthorization: instructionalTextProfile.form === 'adapted' && !replacementIsEducatorAuthorized,
     isTeacherMode: isTeacherMode,
     disabled: isProcessing,
@@ -3630,6 +4487,26 @@ function SimplifiedView(props) {
     } catch (_) {}
   }
   var readingStartRef = React.useRef(null);
+  // Immersive Reader covers the passage, and its read-along sweep re-renders
+  // this view every animation frame. The hidden passage is reused instead of
+  // rebuilt (about 40 ms a frame for 300 sentences); it rebuilds on close.
+  var hiddenPassageRef = React.useRef(null);
+  // Display (Aa): Immersive Reader, reading theme and width in one panel, so fewer
+  // controls sit above the text. It remembers whether it was left open.
+  var [displayOpen, setDisplayOpenState] = React.useState(function () {
+    try {
+      return localStorage.getItem('alloflow_reader_display_open') === '1';
+    } catch (_) {
+      return false;
+    }
+  });
+  var setDisplayOpen = function (open) {
+    setDisplayOpenState(open);
+    try {
+      localStorage.setItem('alloflow_reader_display_open', open ? '1' : '0');
+    } catch (_) {}
+  };
+  var displayToggleRef = React.useRef(null);
   var focusViewButtonRef = React.useRef(null);
   var wasFocusViewRef = React.useRef(!!isZenMode);
   React.useEffect(function () {
@@ -3827,7 +4704,9 @@ function SimplifiedView(props) {
     if (typeof setRevisionData === 'function') setRevisionData(null);
     if (typeof setPhonicsData === 'function') setPhonicsData(null);
     if (typeof setIsCustomReviseOpen === 'function') setIsCustomReviseOpen(false);
-    if (typeof setIsCompareMode === 'function') setIsCompareMode(false);
+    // Both panes support reading, word meaning, word sounds and explain, so
+    // those keep the comparison; choosing one used to drop the original.
+    if (!['read', 'define', 'phonics', 'explain'].includes(mode) && typeof setIsCompareMode === 'function') setIsCompareMode(false);
     if (isEditingLeveledText && typeof props.handleToggleIsEditingLeveledText === 'function') props.handleToggleIsEditingLeveledText();
     if (typeof setIsFluencyMode === 'function') setIsFluencyMode(mode === 'fluency');
     if (typeof setInteractionMode === 'function') setInteractionMode(mode === 'fluency' ? 'read' : mode);
@@ -3962,7 +4841,7 @@ function SimplifiedView(props) {
       className: "inline-flex min-h-11 items-center gap-2"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
-      "aria-label": "Show changes",
+      "aria-label": viewText('simplified.compare_show_changes', 'Show changes'),
       checked: showComparisonChanges,
       disabled: !!tooLarge || !!mismatch || !sourceText,
       onChange: event => {
@@ -3972,27 +4851,27 @@ function SimplifiedView(props) {
           localStorage.setItem('alloflow_reading_show_changes', next ? 'on' : 'off');
         } catch (_) {}
       }
-    }), "Show changes"), comparisonSupports?.annotations?.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    }), viewText('simplified.compare_show_changes', 'Show changes')), comparisonSupports?.annotations?.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
       className: "inline-flex min-h-11 items-center gap-2"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
-      "aria-label": "Show glosses",
+      "aria-label": viewText('simplified.compare_show_glosses', 'Show glosses'),
       checked: showReadingGlosses,
       disabled: !!showDiff,
       onChange: event => setShowReadingGlosses(event.target.checked)
-    }), "Show glosses"), /*#__PURE__*/React.createElement("label", null, "Gloss density ", /*#__PURE__*/React.createElement("select", {
-      "aria-label": "Gloss density",
+    }), viewText('simplified.compare_show_glosses', 'Show glosses')), /*#__PURE__*/React.createElement("label", null, viewText('simplified.compare_gloss_density', 'Gloss density'), ' ', /*#__PURE__*/React.createElement("select", {
+      "aria-label": viewText('simplified.compare_gloss_density', 'Gloss density'),
       value: glossDensity,
       disabled: !!showDiff,
       onChange: event => setGlossDensity(event.target.value),
       className: "min-h-11 rounded border p-2"
     }, /*#__PURE__*/React.createElement("option", {
       value: "all"
-    }, "All supports"), /*#__PURE__*/React.createElement("option", {
+    }, viewText('simplified.compare_all_supports', 'All supports')), /*#__PURE__*/React.createElement("option", {
       value: "light"
-    }, "Lighter"))), showDiff && /*#__PURE__*/React.createElement("span", {
+    }, viewText('simplified.compare_lighter', 'Lighter')))), showDiff && /*#__PURE__*/React.createElement("span", {
       className: "self-center text-sm text-slate-600"
-    }, "Turn off Show changes to read inline glosses.")), isTeacherMode && /*#__PURE__*/React.createElement("label", {
+    }, viewText('simplified.compare_turn_off_show_changes_to_read', 'Turn off Show changes to read inline glosses.'))), isTeacherMode && /*#__PURE__*/React.createElement("label", {
       className: "min-w-0 flex-1 text-sm font-semibold"
     }, readerText('simplified.compare_source', 'Source version'), /*#__PURE__*/React.createElement("select", {
       value: comparisonSourceId,
@@ -4019,27 +4898,27 @@ function SimplifiedView(props) {
       className: "inline-flex min-h-11 items-center gap-2"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
-      "aria-label": "Link passages",
+      "aria-label": viewText('simplified.compare_link_passages', 'Link passages'),
       checked: linkPassages,
       onChange: event => {
         setLinkPassages(event.target.checked);
         setRelatedPassage(null);
       }
-    }), "Link passages")), linkPassages && /*#__PURE__*/React.createElement("div", {
+    }), viewText('simplified.compare_link_passages', 'Link passages'))), linkPassages && /*#__PURE__*/React.createElement("div", {
       "data-reading-passage-links": true,
       className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4 space-y-3"
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-indigo-950"
-    }, "Choose a passage from the adaptation to look for related wording in the original. A link suggests a place to read; it does not verify the adaptation."), showDiff ? /*#__PURE__*/React.createElement("p", {
+    }, viewText('simplified.compare_choose_a_passage_from_the_adaptation', 'Choose a passage from the adaptation to look for related wording in the original. A link suggests a place to read; it does not verify the adaptation.')), showDiff ? /*#__PURE__*/React.createElement("p", {
       role: "status"
-    }, "Turn off Show changes to link passages.") : !sameLanguage ? /*#__PURE__*/React.createElement("p", {
+    }, viewText('simplified.compare_turn_off_show_changes_to_link', 'Turn off Show changes to link passages.')) : !sameLanguage ? /*#__PURE__*/React.createElement("p", {
       role: "status"
-    }, "Passage links need two versions in the same known language.") : /*#__PURE__*/React.createElement("div", {
+    }, viewText('simplified.compare_passage_links_need_two_versions_in', 'Passage links need two versions in the same known language.')) : /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap items-end gap-3"
     }, /*#__PURE__*/React.createElement("label", {
       className: "min-w-0 flex-1 text-sm font-semibold"
-    }, "Adapted passage", /*#__PURE__*/React.createElement("select", {
-      "aria-label": "Adapted passage",
+    }, viewText('simplified.compare_adapted_passage', 'Adapted passage'), /*#__PURE__*/React.createElement("select", {
+      "aria-label": viewText('simplified.compare_adapted_passage', 'Adapted passage'),
       value: chosenSection?.index || 0,
       onChange: event => {
         setLinkedSection(Number(event.target.value));
@@ -4054,16 +4933,16 @@ function SimplifiedView(props) {
       onClick: showRelatedOriginal,
       disabled: !chosenSection || !sourceText,
       className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-indigo-900 disabled:opacity-50"
-    }, "Show related original")), !showDiff && related && /*#__PURE__*/React.createElement("p", {
+    }, viewText('simplified.compare_show_related_original', 'Show related original'))), !showDiff && related && /*#__PURE__*/React.createElement("p", {
       role: "status",
       "aria-live": "polite"
-    }, related.status === 'matched' ? 'Related wording highlighted in the original. Read the surrounding passage to check meaning.' : related.status === 'ambiguous' ? 'More than one original passage has similar wording. Read the original to choose the right context.' : 'No reliable passage link was found. You can still read both complete versions.')), original.selection === 'original-not-captured' && /*#__PURE__*/React.createElement("p", {
+    }, related.status === 'matched' ? viewText('simplified.compare_related_wording_highlighted_in_the_origi', 'Related wording highlighted in the original. Read the surrounding passage to check meaning.') : related.status === 'ambiguous' ? viewText('simplified.compare_more_than_one_original_passage_has', 'More than one original passage has similar wording. Read the original to choose the right context.') : viewText('simplified.compare_no_reliable_passage_link_was_found', 'No reliable passage link was found. You can still read both complete versions.'))), original.selection === 'original-not-captured' && /*#__PURE__*/React.createElement("p", {
       role: "status",
       className: "rounded bg-amber-50 p-3 text-sm text-amber-900"
     }, readerText('simplified.compare_fallback', 'Original not captured. Open or attach the matching source; another lesson will not be substituted.')), (tooLarge || mismatch) && /*#__PURE__*/React.createElement("p", {
       role: "status",
       className: "rounded bg-indigo-50 p-3 text-sm text-indigo-900"
-    }, mismatch ? readerText('simplified.compare_different_languages', 'These versions use different languages. Read them side by side; word change highlighting is unavailable.') : readerText('simplified.compare_long_text', 'For this long reading, complete versions are shown without word change highlighting.')), /*#__PURE__*/React.createElement("p", {
+    }, mismatch ? readerText('simplified.compare_different_languages', 'These versions use different languages. Read them side by side; word change highlighting is unavailable.') : readerText('simplified.compare_long_text', 'For this long reading, complete versions are shown without word change highlighting.')), isTeacherMode && /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-600"
     }, readerText('simplified.compare_word_count', 'Word counts'), ": ", count(sourceText), " → ", count(targetText), ". ", readerText('simplified.compare_review_hint', 'Check key ideas, terminology, examples, and citations before sharing. Word changes alone do not establish accuracy.')), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -4089,7 +4968,7 @@ function SimplifiedView(props) {
       "data-comparison-karaoke": version.key,
       disabled: !version.text || !KaraokeReaderOverlay,
       className: "min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
-      "aria-label": 'Read ' + (version.key === 'source' ? 'original' : 'adapted') + ' with karaoke',
+      "aria-label": version.key === 'source' ? readerText('simplified.listen_along_original', 'Listen along to the original') : readerText('simplified.listen_along_adapted', 'Listen along to the adapted text'),
       onClick: () => {
         if (typeof stopPlayback === 'function') stopPlayback();
         var entries = getReadAloudSentenceEntriesForText(version.text, version.language || readingLanguage);
@@ -4104,11 +4983,11 @@ function SimplifiedView(props) {
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 16,
       "aria-hidden": "true"
-    }), "Read along"), version.key === 'source' && props.onReadOriginal && original.text && /*#__PURE__*/React.createElement("button", {
+    }), readerText('simplified.listen_along', 'Listen along')), version.key === 'source' && props.onReadOriginal && original.text && /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "min-h-11 rounded border border-indigo-300 px-3 text-indigo-900",
       onClick: () => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)
-    }, "Open original reader")), /*#__PURE__*/React.createElement("div", {
+    }, viewText('simplified.compare_open_original_reader', 'Open original reader'))), /*#__PURE__*/React.createElement("div", {
       "data-compare-version": version.key,
       lang: simplifiedLanguageTag(version.language),
       dir: getContentDirection(version.language),
@@ -4121,14 +5000,26 @@ function SimplifiedView(props) {
       tabIndex: 0,
       role: "region",
       "aria-label": version.title
-    }, renderVersion(version.key, version.text)), version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && /*#__PURE__*/React.createElement(ReadingGlossEditor, {
+    }, renderVersion(version.key, version.text)), version.key === 'source' && !showDiff && renderPictureCredits(comparisonGlosses), version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && /*#__PURE__*/React.createElement(ReadingGlossEditor, {
       key: comparisonSupportOwner.id,
       item: comparisonSupportOwner,
       supports: comparisonSupports,
       request: glossEditorRequest,
       onUpdate: props.onUpdateReadingSupports,
       disabled: isProcessing
-    })))));
+    })))), showReadingGlosses && !showDiff && /*#__PURE__*/React.createElement(AdaptedWordHelp, {
+      key: generatedContent?.id,
+      item: generatedContent,
+      teacher: false,
+      passageSelector: "[data-compare-version=\"adapted\"]",
+      language: targetLanguage,
+      markWords: !(adaptedParts && effectiveLanguage === 'english'),
+      languageTag: simplifiedLanguageTag(readingLanguage),
+      direction: typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined,
+      onListen: text => speakExactPassage(text, 'adapted-word-help', readingLanguage),
+      listening: isExactPassagePlaying('adapted-word-help'),
+      renderCredits: renderPictureCredits
+    }));
   }
   function isExactPassagePlaying(pane) {
     return !!isPlaying && playingContentId === 'reading-' + generatedContent.id + '-' + pane;
@@ -4139,12 +5030,53 @@ function SimplifiedView(props) {
     if (wasPlaying) return;
     if (typeof handleSpeak === 'function') handleSpeak(text, 'reading-' + generatedContent.id + '-' + pane, 0, true, language || readingLanguage);
   }
+  // Credits for pictures shown beside word supports (their licences require it).
+  function renderPictureCredits(annotations) {
+    var pictured = (annotations || []).filter(entry => entry.image && entry.image.attribution);
+    if (!pictured.length) return null;
+    var line = attribution => window.AlloModules?.AltText?.openImageCreditLine ? window.AlloModules.AltText.openImageCreditLine(attribution) : [attribution.set, attribution.author, attribution.license].filter(Boolean).join(' · ');
+    return /*#__PURE__*/React.createElement("div", {
+      "data-reading-picture-credits": true,
+      className: "mt-4 border-t border-slate-200 pt-2 text-xs text-slate-700"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold"
+    }, viewText('simplified.original_picture_credits', 'Picture credits')), /*#__PURE__*/React.createElement("ul", {
+      className: "mt-1 space-y-1"
+    }, pictured.map(entry => /*#__PURE__*/React.createElement("li", {
+      key: entry.id,
+      className: "break-words"
+    }, entry.quote, ": ", line(entry.image.attribution), /^https:\/\//i.test(entry.image.attribution.url || '') && /*#__PURE__*/React.createElement(React.Fragment, null, " · ", /*#__PURE__*/React.createElement("a", {
+      href: entry.image.attribution.url,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "underline"
+    }, viewText('simplified.original_source', 'Source'))), /^https:\/\//i.test(entry.image.attribution.licenseUrl || '') && /*#__PURE__*/React.createElement(React.Fragment, null, " · ", /*#__PURE__*/React.createElement("a", {
+      href: entry.image.attribution.licenseUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "underline"
+    }, viewText('simplified.original_license', 'License')))))));
+  }
   function renderExactPassage(raw, pane, language, annotations, annotationOwner, relatedRange, formatted) {
     var blocks = simplifiedExactBlocks(raw, formatted);
+    var headingLevels = blocks.filter(block => block.type === 'heading').map(block => block.level);
     var renderBlock = function (block) {
       var line = block.raw,
         lineIndex = block.lineIndex,
         lineStart = block.start;
+      if (block.type === 'hidden') return null;
+      // Headings, quotes and dividers end their own line, so the line break after
+      // one is not drawn: it doubled the gap before the next blank line.
+      if (block.type === 'rule') return /*#__PURE__*/React.createElement("hr", {
+        key: lineIndex,
+        "aria-hidden": "true",
+        style: {
+          border: 0,
+          borderTop: '1px solid currentColor',
+          opacity: 0.25,
+          marginBlock: '0.5em'
+        }
+      });
       if (!line) return /*#__PURE__*/React.createElement(React.Fragment, {
         key: lineIndex
       }, block.separator);
@@ -4177,7 +5109,11 @@ function SimplifiedView(props) {
               role: "button",
               tabIndex: wordIndex++ === 0 ? 0 : -1,
               "data-exact-word": "true",
-              "aria-label": (interactionMode === 'phonics' ? 'Word sounds: ' : 'Define: ') + part.text,
+              "aria-label": interactionMode === 'phonics' ? viewText('simplified.original_word_sounds_for', 'Word sounds: {word}', {
+                word: part.text
+              }) : viewText('simplified.original_define_word', 'Define: {word}', {
+                word: part.text
+              }),
               onClick: activate,
               onKeyDown: event => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -4203,10 +5139,19 @@ function SimplifiedView(props) {
             key: entry.id,
             "data-reading-gloss": true,
             className: "mx-1 rounded bg-indigo-50 px-1 text-base text-indigo-900",
-            "aria-label": 'Gloss for ' + entry.quote
-          }, " (", entry.definition || entry.explanation || entry.text, ")", isTeacherMode && annotationOwner && props.onUpdateReadingSupports && /*#__PURE__*/React.createElement("button", {
+            "aria-label": viewText('simplified.original_gloss_for', 'Gloss for {word}', {
+              word: entry.quote
+            })
+          }, entry.image && /*#__PURE__*/React.createElement("img", {
+            src: entry.image.src,
+            alt: entry.image.alt || '',
+            "data-reading-gloss-picture": true,
+            className: "mx-1 inline-block h-12 w-12 rounded bg-white object-contain align-middle"
+          }), " (", entry.definition || entry.explanation || entry.text, ")", isTeacherMode && annotationOwner && props.onUpdateReadingSupports && /*#__PURE__*/React.createElement("button", {
             type: "button",
-            "aria-label": 'Edit explanation for ' + entry.quote,
+            "aria-label": viewText('simplified.original_edit_explanation_for', 'Edit explanation for {word}', {
+              word: entry.quote
+            }),
             disabled: isProcessing,
             onClick: event => {
               event.stopPropagation();
@@ -4217,11 +5162,11 @@ function SimplifiedView(props) {
               }));
             },
             className: "ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-indigo-200 px-2 text-xs font-semibold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
-          }, "Edit"))));
+          }, viewText('common.edit', 'Edit')))));
         });
       };
       var content = formatted ? simplifiedInline(block.text, renderLeaf, block.textStart) : renderLeaf(line, lineStart);
-      var Tag = block.type === 'heading' ? 'h' + block.level : block.type === 'quote' ? 'blockquote' : 'span';
+      var Tag = block.type === 'heading' ? simplifiedHeadingTag(block.level, headingLevels) : block.type === 'quote' ? 'blockquote' : 'span';
       var markdownStyle = block.type === 'heading' ? {
         fontWeight: 750,
         fontSize: block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em',
@@ -4236,7 +5181,7 @@ function SimplifiedView(props) {
         const selected = window.getSelection?.().toString().trim();
         const rect = event.currentTarget.getBoundingClientRect();
         setSelectionMenu({
-          text: selected || line,
+          text: selected || (formatted ? simplifiedPlainInline(block.text) : line),
           language,
           x: rect.left,
           y: rect.bottom
@@ -4266,7 +5211,7 @@ function SimplifiedView(props) {
           if (isLineFocusMode && typeof setFocusedParagraphIndex === 'function') setFocusedParagraphIndex(pane + '-' + lineIndex);
         },
         className: isRelated ? 'bg-indigo-100 outline outline-2 outline-indigo-500 text-slate-950' : isLineFocusMode ? focusedParagraphIndex === pane + '-' + lineIndex || focusedParagraphIndex == null && lineIndex === 0 ? 'bg-yellow-100 text-slate-950' : 'opacity-50' : ''
-      }, content), block.separator);
+      }, content), block.type === 'heading' || block.type === 'quote' ? null : block.separator);
     };
     return formatted ? simplifiedNestLists(blocks, renderBlock) : blocks.map(renderBlock);
   }
@@ -4285,7 +5230,7 @@ function SimplifiedView(props) {
     "data-reading-versions": true,
     className: "my-3 flex flex-wrap items-center gap-2",
     role: "group",
-    "aria-label": "Reading versions"
+    "aria-label": viewText('simplified.reader_reading_versions', 'Reading versions')
   }, props.onReadOriginal && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: !capturedSource && !protectedOriginal,
@@ -4293,29 +5238,29 @@ function SimplifiedView(props) {
     className: `min-h-11 rounded-lg border px-3 disabled:opacity-50 ${protectedOriginal && !isCompareMode ? 'bg-indigo-700 text-white border-indigo-700' : 'border-indigo-300'}`,
     "data-reading-version": "original",
     onClick: () => openOriginalReading(generatedContent, capturedSource?.text, false)
-  }, "Original"), (companion || !protectedOriginal) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+  }, viewText('simplified.reader_original', 'Original')), (companion || !protectedOriginal) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-pressed": !protectedOriginal && !isCompareMode,
     className: `min-h-11 rounded-lg border px-3 ${!protectedOriginal && !isCompareMode ? 'bg-indigo-700 text-white border-indigo-700' : 'border-indigo-300'}`,
     "data-reading-version": "adapted",
     onClick: () => switchReadingVersion(companion || generatedContent, false)
-  }, "Adapted"), /*#__PURE__*/React.createElement("button", {
+  }, viewText('simplified.diff_adapted', 'Adapted')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-pressed": isCompareMode,
     disabled: !capturedSource,
     className: `min-h-11 rounded-lg border px-3 disabled:opacity-50 ${isCompareMode ? 'bg-indigo-700 text-white border-indigo-700' : 'border-indigo-300'}`,
     "data-reading-version": "both",
     onClick: () => switchReadingVersion(companion || generatedContent, true)
-  }, "Both")), returnComparisonItem && /*#__PURE__*/React.createElement("button", {
+  }, viewText('simplified.reader_both', 'Both'))), returnComparisonItem && /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "min-h-11 rounded-lg border border-indigo-300 px-3",
     onClick: () => switchReadingVersion(returnComparisonItem, true)
-  }, "Back to comparison"), protectedOriginal && isTeacherMode && props.onCreateAdaptedCompanion && /*#__PURE__*/React.createElement("button", {
+  }, viewText('simplified.reader_back_to_comparison', 'Back to comparison')), protectedOriginal && isTeacherMode && props.onCreateAdaptedCompanion && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: isProcessing,
     onClick: () => props.onCreateAdaptedCompanion(generatedContent),
     className: "min-h-11 rounded-lg bg-indigo-700 px-3 text-white disabled:opacity-50"
-  }, "Create adapted companion"));
+  }, viewText('simplified.reader_create_adapted_companion', 'Create adapted companion')));
   function renderOriginalReading() {
     return /*#__PURE__*/React.createElement("div", {
       "data-simplified-reading-body": "true",
@@ -4330,21 +5275,21 @@ function SimplifiedView(props) {
       "data-reader-listen": true,
       onClick: () => speakExactPassage(simplifiedReadAloudText, 'original', readingLanguage),
       className: "min-h-11 rounded-lg bg-indigo-700 px-3 text-white"
-    }, isExactPassagePlaying('original') ? 'Stop original' : 'Listen to original'), checkedSupports?.annotations?.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    }, isExactPassagePlaying('original') ? viewText('simplified.original_stop_original', 'Stop original') : viewText('simplified.original_listen_to_original', 'Listen to original')), checkedSupports?.annotations?.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
       className: "inline-flex min-h-11 items-center gap-2"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
       checked: showReadingGlosses,
       onChange: e => setShowReadingGlosses(e.target.checked)
-    }), "Show glosses"), /*#__PURE__*/React.createElement("label", null, "Gloss density ", /*#__PURE__*/React.createElement("select", {
+    }), viewText('simplified.compare_show_glosses', 'Show glosses')), /*#__PURE__*/React.createElement("label", null, viewText('simplified.compare_gloss_density', 'Gloss density'), ' ', /*#__PURE__*/React.createElement("select", {
       value: glossDensity,
       onChange: e => setGlossDensity(e.target.value),
       className: "min-h-11 rounded border p-2"
     }, /*#__PURE__*/React.createElement("option", {
       value: "all"
-    }, "All supports"), /*#__PURE__*/React.createElement("option", {
+    }, viewText('simplified.compare_all_supports', 'All supports')), /*#__PURE__*/React.createElement("option", {
       value: "light"
-    }, "Lighter"))), /*#__PURE__*/React.createElement("button", {
+    }, viewText('simplified.compare_lighter', 'Lighter')))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "min-h-11 rounded border px-3",
       onClick: () => {
@@ -4357,7 +5302,7 @@ function SimplifiedView(props) {
         audio += simplifiedReadAloudText.slice(from);
         speakExactPassage(audio, 'glosses-' + audioGlosses.length, readingLanguage);
       }
-    }, isExactPassagePlaying('glosses-' + audioGlosses.length) ? 'Stop gloss reading' : 'Listen with glosses')), isTeacherMode && props.onGenerateReadingSupports && /*#__PURE__*/React.createElement("button", {
+    }, isExactPassagePlaying('glosses-' + audioGlosses.length) ? viewText('simplified.original_stop_gloss_reading', 'Stop gloss reading') : viewText('simplified.original_listen_with_glosses', 'Listen with glosses'))), isTeacherMode && props.onGenerateReadingSupports && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: glossBusy || !verifiedOriginal,
       className: "min-h-11 rounded border border-indigo-300 px-3 disabled:opacity-50",
@@ -4367,16 +5312,17 @@ function SimplifiedView(props) {
         setGlossNotice('');
         try {
           const result = await props.onGenerateReadingSupports(generatedContent);
-          if (request === currentGlossSourceRef.current) setGlossNotice(result?.status === 'unavailable' ? 'Word supports could not be generated. The original is unchanged.' : result?.status === 'partial' ? 'Some words could not be supported. The original is unchanged.' : 'Word supports are ready.');
+          if (request === currentGlossSourceRef.current) setGlossNotice(result?.status === 'unavailable' ? viewText('simplified.original_word_supports_could_not_be_generated', 'Word supports could not be generated. The original is unchanged.') : result?.status === 'partial' ? viewText('simplified.original_some_words_could_not_be_supported', 'Some words could not be supported. The original is unchanged.') : viewText('simplified.original_word_supports_are_ready', 'Word supports are ready.'));
         } catch (error) {
-          if (request === currentGlossSourceRef.current) setGlossNotice(error?.message || 'Word supports could not be generated. The original is unchanged.');
+          if (request === currentGlossSourceRef.current) setGlossNotice(error?.message || viewText('simplified.original_word_supports_could_not_be_generated', 'Word supports could not be generated. The original is unchanged.'));
         } finally {
           setGlossBusy(false);
         }
       }
-    }, glossBusy ? 'Adding word supports…' : checkedSupports?.annotations?.length ? 'Refresh suggested supports' : 'Add word supports')), glossNotice && /*#__PURE__*/React.createElement("p", {
+    }, glossBusy ? viewText('simplified.original_adding_word_supports', 'Adding word supports…') : checkedSupports?.annotations?.length ? viewText('simplified.original_refresh_suggested_supports', 'Refresh suggested supports') : viewText('simplified.original_add_word_supports', 'Add word supports'))), /*#__PURE__*/React.createElement("p", {
       role: "status",
-      className: "my-3 rounded bg-indigo-50 p-3 text-indigo-900"
+      "data-gloss-status": true,
+      className: glossNotice ? 'my-3 rounded bg-indigo-50 p-3 text-indigo-900' : 'sr-only'
     }, glossNotice), isTeacherMode && verifiedOriginal && props.onUpdateReadingSupports && /*#__PURE__*/React.createElement(ReadingGlossEditor, {
       key: generatedContent.id,
       item: generatedContent,
@@ -4388,7 +5334,7 @@ function SimplifiedView(props) {
       "data-reading-passage": "true",
       "data-original-source": "true",
       role: "region",
-      "aria-label": "Original reading",
+      "aria-label": viewText('simplified.original_original_reading', 'Original reading'),
       tabIndex: -1,
       ref: readingStartRef,
       style: {
@@ -4396,7 +5342,7 @@ function SimplifiedView(props) {
         overflowWrap: 'anywhere'
       },
       className: "text-lg leading-relaxed"
-    }, renderExactPassage(simplifiedReadAloudText, 'original', readingLanguage, activeGlosses, generatedContent)));
+    }, renderExactPassage(simplifiedReadAloudText, 'original', readingLanguage, activeGlosses, generatedContent, null, true)), renderPictureCredits(activeGlosses));
   }
   function renderSimplifiedReading() {
     var parts = getSideBySideContent(simplifiedReadAloudText);
@@ -4416,9 +5362,16 @@ function SimplifiedView(props) {
     var isWordMode = ['define', 'phonics', 'add-glossary'].includes(interactionMode);
     var isSelectionMode = ['explain', 'revise'].includes(interactionMode);
     var sentenceCursor = 0;
+    var renderedSentenceIds = new Set();
     var rendered = languages.map(function (section) {
+      var headingLevels = simplifiedHeadingLevels(section.paragraphs.join('\n'));
       return section.paragraphs.map(function (paragraph, paragraphIndex) {
         var paragraphId = section.key === 'mono' ? paragraphIndex : section.key + '-' + paragraphIndex;
+        if (/^\[\[CHART:/.test(paragraph.trim())) return /*#__PURE__*/React.createElement("div", {
+          key: paragraphId,
+          "data-reading-chart": "true",
+          className: "my-4 max-w-full overflow-x-auto"
+        }, renderFormattedText(paragraph, false));
         if (paragraph.trim().startsWith('|') || paragraph.includes('\n|')) return /*#__PURE__*/React.createElement("div", {
           key: paragraphId,
           "data-reading-table": "true",
@@ -4436,9 +5389,51 @@ function SimplifiedView(props) {
           sentenceCursor += block.sentences.length;
           return block;
         });
+        // Playback numbers the sentences of the whole paragraph (phase_k handleSpeak).
+        // Where the block split differs (a list item's last line running into the
+        // next line), each part takes the number of the spoken sentence it starts
+        // in, so every later click and highlight stays on the same words.
+        var spoken = splitTextToSentences(paragraph);
+        if (spoken.length !== sentenceCursor - startIdx) {
+          var letters = value => String(value || '').replace(/[^\p{L}\p{N}]+/gu, '').length;
+          var spokenStarts = [],
+            letterCount = 0;
+          spoken.forEach(sentence => {
+            spokenStarts.push(letterCount);
+            letterCount += letters(sentence);
+          });
+          letterCount = 0;
+          blocks.forEach(block => {
+            block.indices = block.sentences.map(sentence => {
+              var j = 0;
+              while (j + 1 < spokenStarts.length && spokenStarts[j + 1] <= letterCount) j++;
+              letterCount += letters(sentence);
+              return startIdx + j;
+            });
+          });
+          sentenceCursor = startIdx + spoken.length;
+        }
         var endIdx = sentenceCursor;
         var shouldFocus = isPlaying && playingContentId === 'simplified-main' ? playbackState.currentIdx >= startIdx && playbackState.currentIdx < endIdx : focusedParagraphIndex === paragraphId || focusedParagraphIndex == null && paragraphIndex === 0;
         var wordIndex = 0;
+        var sentenceOrder = 0;
+        // One Tab stop per paragraph; arrow keys, Home and End move within it.
+        var claimRovingStop = function (event, selector) {
+          var group = event.currentTarget.closest('[data-reading-paragraph]');
+          if (group) group.querySelectorAll(selector).forEach(function (node) {
+            node.tabIndex = node === event.currentTarget ? 0 : -1;
+          });
+        };
+        var moveRovingStop = function (event, selector) {
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+          var group = event.currentTarget.closest('[data-reading-paragraph]');
+          if (!group) return;
+          var items = Array.from(group.querySelectorAll(selector));
+          var delta = (event.key === 'ArrowRight' ? 1 : -1) * (group.dir === 'rtl' ? -1 : 1);
+          var next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : Math.max(0, Math.min(items.length - 1, items.indexOf(event.currentTarget) + delta));
+          event.preventDefault();
+          items[next]?.focus();
+        };
         var renderWords = function (text) {
           return simplifiedWordSegments(text, section.label).map(function (part, index) {
             if (!part.word) return /*#__PURE__*/React.createElement(React.Fragment, {
@@ -4461,10 +5456,7 @@ function SimplifiedView(props) {
               title: label,
               onClick: activate,
               onFocus: function (event) {
-                var group = event.currentTarget.closest('[data-reading-paragraph]');
-                if (group) group.querySelectorAll('[data-reading-word]').forEach(function (node) {
-                  node.tabIndex = node === event.currentTarget ? 0 : -1;
-                });
+                claimRovingStop(event, '[data-reading-word]');
               },
               onKeyDown: function (event) {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -4472,34 +5464,47 @@ function SimplifiedView(props) {
                   activate(event);
                   return;
                 }
-                if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-                var group = event.currentTarget.closest('[data-reading-paragraph]');
-                if (!group) return;
-                var words = Array.from(group.querySelectorAll('[data-reading-word]'));
-                var rtl = group.dir === 'rtl';
-                var delta = (event.key === 'ArrowRight' ? 1 : -1) * (rtl ? -1 : 1);
-                var next = event.key === 'Home' ? 0 : event.key === 'End' ? words.length - 1 : Math.max(0, Math.min(words.length - 1, words.indexOf(event.currentTarget) + delta));
-                event.preventDefault();
-                words[next]?.focus();
+                moveRovingStop(event, '[data-reading-word]');
               },
               className: "cursor-help rounded px-0.5 hover:bg-yellow-100 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
             }, part.text);
           });
         };
         var renderBlock = function (block, key) {
-          var Tag = block.type === 'heading' ? 'h' + Math.min(6, block.level) : block.type === 'quote' ? 'blockquote' : block.type === 'li' ? 'span' : 'p';
+          if (block.type === 'rule') return /*#__PURE__*/React.createElement("hr", {
+            key: key,
+            "aria-hidden": "true",
+            style: {
+              border: 0,
+              borderTop: '1px solid currentColor',
+              opacity: 0.25,
+              marginBlock: '1em'
+            }
+          });
+          var Tag = block.type === 'heading' ? simplifiedHeadingTag(block.level, headingLevels) : block.type === 'quote' ? 'blockquote' : block.type === 'li' ? 'span' : 'p';
           var text = block.text === undefined ? block.raw : block.text;
           var content;
-          if (isWordMode || interactionMode === 'revise') content = simplifiedInline(text, isWordMode ? renderWords : value => value);else content = block.sentences.map(function (sentence, index) {
-            var currentGlobalIdx = block.start + index;
+          if (isWordMode) content = simplifiedInline(text, renderWords);else content = block.sentences.map(function (sentence, index) {
+            var currentGlobalIdx = block.indices ? block.indices[index] : block.start + index;
+            var firstPart = !renderedSentenceIds.has(currentGlobalIdx);
+            renderedSentenceIds.add(currentGlobalIdx);
             var cleanText = sentence.replace(/^\s*#{1,6}\s+/, '').replace(/^\s*<\/?h[1-6][^>]*>/gi, '').replace(/<\/h[1-6]>\s*$/i, '').replace(/^\s*(?:[-+*]|\d+[.)])\s+/, '').replace(/^\s*>\s?/, '');
             var active = playingContentId === 'simplified-main' && playbackState.currentIdx === currentGlobalIdx;
             if (interactionMode === 'cloze') return /*#__PURE__*/React.createElement("span", {
               key: index
-            }, formatInteractiveText(cleanText, true, !!isLineFocusMode), " ");
+            }, formatInteractiveText(cleanText, true, !!isLineFocusMode, 's' + currentGlobalIdx + (firstPart ? '' : '.' + key + '.' + index)), " ");
+            // A button's content is hidden from screen readers, so a link inside the
+            // sentence button could not be heard or opened. Links at the end go after
+            // the button; a sentence with a link inside it stays plain text and gets
+            // its own read button, shown when it has focus.
+            var trailingLinks = (cleanText.match(/(?:\s*\[[^\]]*\]\([^)]*\))+\s*$/) || [''])[0];
+            var sentenceText = trailingLinks ? cleanText.slice(0, cleanText.length - trailingLinks.length) : cleanText;
+            var innerLink = /\[[^\]]*\]\([^)]*\)/.test(sentenceText);
             var speakSentence = function (event) {
-              if (event.target.closest('a,button,input,select,textarea')) return;
-              if (window.getSelection && window.getSelection().toString().trim()) return;
+              var control = event.target.closest('a,button,input,select,textarea');
+              if (control && control !== event.currentTarget) return;
+              // A drag-selection is handled on mouseup; a leftover selection must not block Enter.
+              if (event.type === 'click' && window.getSelection && window.getSelection().toString().trim()) return;
               event.stopPropagation();
               if (interactionMode === 'explain') {
                 event.currentTarget.focus();
@@ -4510,25 +5515,80 @@ function SimplifiedView(props) {
                   x: rect.left + rect.width / 2,
                   y: rect.top
                 });
-              } else handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
+              } else if (interactionMode === 'revise') {
+                // Mouse users drag or double-click to choose words. Keyboard and screen
+                // reader activation (detail 0) selects the sentence and opens the same menu.
+                if (event.type === 'click' && event.detail > 0) return;
+                var node = event.currentTarget.closest('[data-reading-sentence]'),
+                  range = document.createRange(),
+                  selection = window.getSelection();
+                var readButton = node.querySelector('[data-sentence-read]');
+                event.currentTarget.focus();
+                range.selectNodeContents(node);
+                if (readButton) range.setEndBefore(readButton);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                handleTextMouseUp({
+                  currentTarget: node.closest('[data-reading-paragraph]')
+                });
+              } else handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx, true, readingLanguage);
             };
-            return /*#__PURE__*/React.createElement("span", {
+            if (trailingLinks && !sentenceText.trim()) return /*#__PURE__*/React.createElement(React.Fragment, {
+              key: index
+            }, formatInteractiveText(cleanText.trim(), false, !!isLineFocusMode), " ");
+            var order = sentenceOrder++;
+            var sentenceAction = interactionMode === 'explain' ? readerText('simplified.explain_mode', 'Explain') : interactionMode === 'revise' ? readerText('simplified.revise_mode', 'Revise') : simplifiedReadSentenceLabel;
+            var sentenceClass = `rounded px-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${interactionMode === 'revise' ? '' : 'cursor-pointer '}${active ? 'bg-yellow-300 text-slate-950' : interactionMode === 'revise' ? '' : 'hover:bg-indigo-100/30'}`;
+            var sentenceTitle = interactionMode === 'explain' || interactionMode === 'revise' ? sentenceAction : t('common.click_read_from_here');
+            var sentenceLabel = sentenceAction + ': ' + simplifiedPlainInline(cleanText);
+            var stopProps = {
+              'data-sentence-stop': true,
+              tabIndex: order === 0 ? 0 : -1,
+              onFocus: function (event) {
+                claimRovingStop(event, '[data-sentence-stop]');
+              }
+            };
+            if (innerLink) return /*#__PURE__*/React.createElement("span", {
               key: index,
-              id: 'sentence-' + currentGlobalIdx,
+              id: firstPart ? 'sentence-' + currentGlobalIdx : undefined,
               "data-reading-sentence": currentGlobalIdx,
-              role: "button",
-              tabIndex: 0,
               "aria-current": active ? 'true' : undefined,
-              "aria-label": (interactionMode === 'explain' ? readerText('simplified.explain_mode', 'Explain') : simplifiedReadSentenceLabel) + ': ' + simplifiedPlainInline(cleanText),
+              onClick: speakSentence,
+              className: sentenceClass,
+              title: sentenceTitle
+            }, formatInteractiveText(cleanText, false, !!isLineFocusMode), /*#__PURE__*/React.createElement("button", _extends({
+              type: "button",
+              "data-sentence-read": true
+            }, stopProps, {
+              "aria-label": sentenceLabel,
+              onClick: speakSentence,
+              onKeyDown: event => moveRovingStop(event, '[data-sentence-stop]'),
+              className: "sr-only focus:not-sr-only focus:ms-1 focus:rounded focus:bg-indigo-700 focus:px-2 focus:py-0.5 focus:text-sm focus:font-bold focus:text-white"
+            }), sentenceAction), " ");
+            var sentenceButton = /*#__PURE__*/React.createElement("span", _extends({
+              key: index,
+              id: firstPart ? 'sentence-' + currentGlobalIdx : undefined,
+              "data-reading-sentence": currentGlobalIdx,
+              role: "button"
+            }, stopProps, {
+              "aria-current": active ? 'true' : undefined,
+              "aria-label": trailingLinks ? sentenceAction + ': ' + simplifiedPlainInline(sentenceText) : sentenceLabel,
               onClick: speakSentence,
               onKeyDown: function (event) {
-                if (event.target !== event.currentTarget || event.key !== 'Enter' && event.key !== ' ') return;
-                event.preventDefault();
-                speakSentence(event);
+                if (event.target !== event.currentTarget) return;
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  speakSentence(event);
+                  return;
+                }
+                moveRovingStop(event, '[data-sentence-stop]');
               },
-              className: `rounded px-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${active ? 'bg-yellow-300 text-slate-950' : 'hover:bg-indigo-100/30'}`,
-              title: interactionMode === 'explain' ? readerText('simplified.explain_mode', 'Explain') : t('common.click_read_from_here')
-            }, formatInteractiveText(cleanText, false, !!isLineFocusMode), " ");
+              className: sentenceClass,
+              title: sentenceTitle
+            }), formatInteractiveText(trailingLinks ? sentenceText : cleanText, false, !!isLineFocusMode), trailingLinks ? null : ' ');
+            return trailingLinks ? /*#__PURE__*/React.createElement(React.Fragment, {
+              key: index
+            }, sentenceButton, formatInteractiveText(trailingLinks.trim(), false, !!isLineFocusMode), " ") : sentenceButton;
           });
           var style = {
             whiteSpace: 'pre-wrap',
@@ -4561,6 +5621,7 @@ function SimplifiedView(props) {
     });
     var sourceDirection = getContentDirection(readingLanguage);
     return /*#__PURE__*/React.createElement("div", {
+      ref: clozeBodyRef,
       "data-simplified-reading-body": "true",
       className: "w-full min-w-0 text-lg font-medium leading-relaxed font-sans",
       style: {
@@ -4574,7 +5635,7 @@ function SimplifiedView(props) {
       "data-reader-listen": true,
       disabled: !simplifiedReadAloudText,
       onClick: () => {
-        if (isPlaying && playingContentId === 'simplified-main' && typeof stopPlayback === 'function') stopPlayback();else handleSpeak(simplifiedReadAloudText, 'simplified-main', 0);
+        if (isPlaying && playingContentId === 'simplified-main' && typeof stopPlayback === 'function') stopPlayback();else handleSpeak(interactionMode === 'cloze' ? maskClozeTerms(simplifiedReadAloudText) : simplifiedReadAloudText, 'simplified-main', 0, false, readingLanguage);
       },
       className: "min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-3 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50"
     }, isPlaying && playingContentId === 'simplified-main' ? /*#__PURE__*/React.createElement(StopCircle, {
@@ -4583,24 +5644,7 @@ function SimplifiedView(props) {
     }) : /*#__PURE__*/React.createElement(Volume2, {
       size: 16,
       "aria-hidden": "true"
-    }), isPlaying && playingContentId === 'simplified-main' ? readerText('common.stop_reading', 'Stop reading aloud') : readerText('simplified.listen_start', 'Listen from the beginning')), /*#__PURE__*/React.createElement("label", {
-      className: "flex items-center gap-2"
-    }, readerText('simplified.reading_width', 'Reading width'), /*#__PURE__*/React.createElement("select", {
-      "aria-label": readerText('simplified.reading_width', 'Reading width'),
-      value: readingColumn,
-      onChange: e => updateReadingColumn(e.target.value),
-      className: "rounded-lg border border-slate-300 bg-white px-2 py-2 text-slate-800"
-    }, /*#__PURE__*/React.createElement("option", {
-      value: 40
-    }, readerText('simplified.width_narrow', 'Narrow')), /*#__PURE__*/React.createElement("option", {
-      value: 56
-    }, readerText('simplified.width_medium', 'Medium')), /*#__PURE__*/React.createElement("option", {
-      value: 72
-    }, readerText('simplified.width_wide', 'Wide')))), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "underline underline-offset-2 rounded px-2 py-2 focus-visible:ring-2 focus-visible:ring-indigo-600",
-      onClick: () => readingStartRef.current?.focus()
-    }, readerText('simplified.skip_passage', 'Skip reading controls')), props.onReadReflect && /*#__PURE__*/React.createElement("button", {
+    }), isPlaying && playingContentId === 'simplified-main' ? readerText('common.stop_reading', 'Stop reading aloud') : readerText('simplified.listen_start', 'Listen from the beginning')), props.onReadReflect && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: openReadingReflection,
       className: "rounded-lg border border-indigo-200 bg-white px-3 py-2 text-indigo-800"
@@ -4647,12 +5691,22 @@ function SimplifiedView(props) {
       dir: i === 1 ? 'ltr' : sourceDirection
     }, i === 1 && /*#__PURE__*/React.createElement("h2", {
       className: "my-6 border-t border-indigo-200 pt-4 text-lg font-bold"
-    }, simplifiedEnglishTranslationLabel), rendered[i]))), /*#__PURE__*/React.createElement(SourceReferencesPanel, {
+    }, simplifiedEnglishTranslationLabel), rendered[i]))), props.onReadOriginal && capturedSource && !protectedOriginal && instructionalRole !== 'primary' && interactionMode !== 'cloze' && /*#__PURE__*/React.createElement("div", {
+      "data-read-original-next": true,
+      className: "mt-6 flex justify-center"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => openOriginalReading(generatedContent, capturedSource.text, true),
+      className: "min-h-11 rounded-lg border-2 border-indigo-700 bg-white px-4 py-2 font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+    }, viewText('simplified.read_original_next', 'Now read the original'), " ", /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "→"))), /*#__PURE__*/React.createElement(SourceReferencesPanel, {
       referencesText: simplifiedReferences
-    }), isProcessing && /*#__PURE__*/React.createElement("p", {
+    }), /*#__PURE__*/React.createElement("p", {
       role: "status",
-      className: "mt-4 text-sm text-indigo-700"
-    }, simplifiedGeneratingMoreLabel));
+      "data-generating-status": true,
+      className: isProcessing ? 'mt-4 text-sm text-indigo-700' : 'sr-only'
+    }, isProcessing ? simplifiedGeneratingMoreLabel : ''));
   }
   return /*#__PURE__*/React.createElement("div", {
     ref: readerSurfaceRef,
@@ -4668,11 +5722,12 @@ function SimplifiedView(props) {
     sentenceLanguages: comparisonKaraoke.languages,
     language: simplifiedLanguageTag(comparisonKaraoke.language),
     getAudioUrl: getComparisonKaraokeAudioUrl
-  }), activeReadAloudStatus && /*#__PURE__*/React.createElement("span", {
+  }), /*#__PURE__*/React.createElement("span", {
     className: "sr-only",
     role: "status",
     "aria-live": "polite",
-    "aria-atomic": "true"
+    "aria-atomic": "true",
+    "data-read-aloud-status": true
   }, activeReadAloudStatus), isImmersiveReaderActive && generatedContent?.immersiveData && /*#__PURE__*/React.createElement("div", {
     ref: immersiveDialogRef,
     role: "dialog",
@@ -4752,22 +5807,18 @@ function SimplifiedView(props) {
         } catch (e) {}
       }
     },
-    totalSentences: (() => {
-      const sbs = getSideBySideContent(simplifiedReadAloudText);
-      const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : simplifiedReadAloudText.split(new RegExp('\\n{2,}'));
-      return ps.flatMap(p => p.trim().startsWith('|') ? [] : splitTextToSentences(p)).length || 1;
-    })()
+    totalSentences: immersiveSentences.length || 1
   }), /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Focus reader encountered an error. Please close and reopen."
   }, /*#__PURE__*/React.createElement(FocusReaderOverlay, {
     language: leveledTextLanguage,
     isOpen: isFocusReaderActive,
     onClose: handleCloseSpeedReader,
-    text: simplifiedDisplayBody.replace(/<[^>]*>/g, '')
+    text: simplifiedDisplayBody.replace(/<\/?[a-zA-Z][^<>]*>/g, '')
   }), /*#__PURE__*/React.createElement(PerspectiveCrawlOverlay, {
     isOpen: isCrawlReaderActive,
     onClose: () => setIsCrawlReaderActive(false),
-    text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
+    text: (immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')
   }), /*#__PURE__*/React.createElement(KaraokeReaderOverlay, {
     isOpen: isKaraokeOverlayActive,
     isTeacher: isTeacherMode,
@@ -4776,7 +5827,7 @@ function SimplifiedView(props) {
     sentenceList: karaokeReaderSentences,
     captureOn: saveTtsAsPlayed,
     onCaptureChange: setSaveTtsAsPlayedEnabled,
-    text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
+    text: (immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')
   })), immersiveSettings.lineFocus && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out motion-reduce:transition-none",
     style: {
@@ -4797,7 +5848,7 @@ function SimplifiedView(props) {
     "data-immersive-passage": true,
     tabIndex: 0,
     role: "region",
-    "aria-label": "Reading passage. When Line Focus is on, use Up and Down arrows to move the reading window.",
+    "aria-label": viewText('simplified.reader_reading_passage_when_line_focus_is', 'Reading passage. When Line Focus is on, use Up and Down arrows to move the reading window.'),
     onKeyDown: e => {
       if (e.target === e.currentTarget && immersiveSettings.lineFocus && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
         e.preventDefault();
@@ -4816,21 +5867,8 @@ function SimplifiedView(props) {
       fontFamily: immersiveSettings.fontFamily || undefined
     }
   }, (() => {
-    const isTable = p => p.trim().startsWith('|') || p.includes('\n|');
-    let sentences = [];
-    const sideBySideData = getSideBySideContent(simplifiedReadAloudText);
-    if (sideBySideData) {
-      const sourceSentences = sideBySideData.source.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
-      const targetSentences = sideBySideData.target.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
-      sentences = [...sourceSentences, ...targetSentences];
-    } else {
-      const paragraphs = simplifiedReadAloudText.split(/\n{2,}/);
-      sentences = paragraphs.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
-    }
-    let currentSentenceIdx = 0;
-    let currentSentenceText = sentences[0] || "";
-    let normalizedSentence = cleanSentenceForAudio(currentSentenceText).replace(/\s+/g, '').toLowerCase();
-    let currentTokenBuffer = "";
+    const sentences = immersiveSentences;
+    const sentenceOfWord = immersiveSentenceOfWord;
     // Typewriter char-offset bookkeeping for the active sentence (mood='typewriter').
     // Resets when we encounter the first token of the active sentence; each token in
     // the active sentence contributes wordData.text.length to the rolling offset.
@@ -4849,23 +5887,8 @@ function SimplifiedView(props) {
           className: "w-full h-4"
         });
       }
-      while (!normalizedSentence && currentSentenceIdx < sentences.length - 1) {
-        currentSentenceIdx++;
-        currentSentenceText = sentences[currentSentenceIdx];
-        normalizedSentence = cleanSentenceForAudio(currentSentenceText).replace(/\s+/g, '').toLowerCase();
-        currentTokenBuffer = "";
-      }
       const tokenStr = wordData.text.replace(/\s+/g, '').toLowerCase();
-      const assignedIdx = currentSentenceIdx;
-      currentTokenBuffer += tokenStr;
-      if (currentTokenBuffer.length >= normalizedSentence.length) {
-        if (currentSentenceIdx < sentences.length - 1) {
-          currentSentenceIdx++;
-          currentSentenceText = sentences[currentSentenceIdx];
-          normalizedSentence = cleanSentenceForAudio(currentSentenceText).replace(/\s+/g, '').toLowerCase();
-          currentTokenBuffer = "";
-        }
-      }
+      const assignedIdx = sentenceOfWord[i];
       const isChunkHighlight = isChunkReaderActive && assignedIdx === chunkReaderIdx;
       const isChunkDimmed = isChunkReaderActive && assignedIdx !== chunkReaderIdx;
       // Track word's char-offset within the active sentence for typewriter mood
@@ -4958,7 +5981,7 @@ function SimplifiedView(props) {
             return;
           }
           if (isChunkReaderActive) {
-            setChunkReaderIdx(assignedIdx);
+            if (assignedIdx >= 0) setChunkReaderIdx(assignedIdx);
           } else {
             // ImmersiveWord is an atomic tap target: speak the word that
             // was tapped through handleSpeak's direct, interactive lane.
@@ -4972,7 +5995,7 @@ function SimplifiedView(props) {
         }
       }));
     });
-  })()))), interactionMode === 'cloze' && isClozeComplete && /*#__PURE__*/React.createElement("div", {
+  })()))), interactionMode === 'cloze' && clozeAllSolved && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 pointer-events-none z-[100] flex items-center justify-center",
     "data-a11y-overlay": "nonmodal-status",
     role: "status",
@@ -4988,10 +6011,26 @@ function SimplifiedView(props) {
     className: "bg-green-50 p-4 rounded-lg border border-green-100 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-green-800"
-  }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('simplified.udl_goal').split(':')[1])), /*#__PURE__*/React.createElement("div", {
+  }, (() => {
+    // Split once at the first colon, ASCII or full-width: the Chinese and
+    // Japanese packs use "：", which left the goal bold with an empty body.
+    const goal = String(t('simplified.udl_goal') || ''),
+      at = goal.search(/[:：]/);
+    return at < 0 ? goal : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("strong", null, goal.slice(0, at + 1)), " ", goal.slice(at + 1).trim());
+  })())), /*#__PURE__*/React.createElement("div", {
     "data-reading-card": true,
     className: `bg-orange-50 border-l-4 border-orange-400 shadow-sm rounded-r-lg relative ${isZenMode ? 'p-3 sm:p-4' : 'p-3 sm:p-6 lg:p-8'}`
-  }, !isZenMode && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-reader-skip": true,
+    className: "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+    onClick: () => {
+      var target = readingStartRef.current || readerSurfaceRef.current?.querySelector('[data-reading-comparison]');
+      if (!target) return;
+      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+      target.focus();
+    }
+  }, readerText('simplified.skip_passage', 'Skip reading controls')), !isZenMode && /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center items-center mb-2 flex-wrap gap-2"
   }, (() => {
     const displayGrade = generatedContent?.config?.grade || gradeLevel;
@@ -5022,14 +6061,16 @@ function SimplifiedView(props) {
     role: "group",
     "aria-label": readerText('simplified.reading_actions', 'Reading tools'),
     className: "flex flex-wrap justify-center w-full min-w-0 bg-white rounded-2xl p-2 border border-indigo-200 shadow-sm gap-2"
-  }, [['read', 'simplified.read_mode', 'Read', Volume2], ['define', 'simplified.word_meaning', 'Word meaning', Search], ['phonics', 'simplified.word_sounds', 'Word sounds', Ear], ...(studentAiFeaturesHidden ? [] : [['explain', 'simplified.explain_mode', 'Explain', HelpCircle]]), ...(isTeacherMode ? [['add-glossary', 'simplified.add_term', 'Add term', Plus], ['revise', 'simplified.revise_mode', 'Revise', Pencil]] : [])].map(([mode, key, fallback, Icon]) => /*#__PURE__*/React.createElement("button", {
+  }, [['read', 'simplified.read_mode', 'Read', Volume2], ['define', 'simplified.word_meaning', 'Word meaning', Search], ['phonics', 'simplified.word_sounds', 'Word sounds', Ear], ...(studentAiFeaturesHidden ? [] : [['explain', 'simplified.explain_mode', 'Explain', HelpCircle]]),
+  // Add term and Revise work on adapted text only; on an original they did nothing.
+  ...(isTeacherMode && !protectedOriginal ? [['add-glossary', 'simplified.add_term', 'Add term', Plus], ['revise', 'simplified.revise_mode', 'Revise', Pencil]] : [])].map(([mode, key, fallback, Icon]) => /*#__PURE__*/React.createElement("button", {
     type: "button",
     key: mode,
     "data-reading-mode": mode,
     "data-help-key": mode === 'add-glossary' ? 'simplified_add_term' : 'simplified_' + mode + '_mode',
     onClick: () => chooseReadingMode(mode),
-    "aria-pressed": interactionMode === mode && !isCompareMode && !isFluencyMode && !isEditingLeveledText,
-    className: 'min-h-11 rounded-xl px-3 py-2 text-sm font-bold inline-flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (interactionMode === mode && !isCompareMode && !isFluencyMode && !isEditingLeveledText ? 'bg-indigo-100 text-indigo-900' : 'text-slate-700 hover:bg-slate-100')
+    "aria-pressed": interactionMode === mode && !isFluencyMode && !isEditingLeveledText,
+    className: 'min-h-11 rounded-xl border-2 px-3 py-2 text-sm font-bold inline-flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + (interactionMode === mode && !isFluencyMode && !isEditingLeveledText ? 'border-indigo-700 bg-indigo-100 text-indigo-900' : 'border-transparent text-slate-700 hover:bg-slate-100')
   }, /*#__PURE__*/React.createElement(Icon, {
     size: 16,
     "aria-hidden": "true"
@@ -5045,16 +6086,7 @@ function SimplifiedView(props) {
   }) : /*#__PURE__*/React.createElement(ChevronDown, {
     size: 14,
     className: "inline ml-1"
-  })), isTeacherMode && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-help-key": "simplified_compare_mode",
-    "aria-pressed": !!isCompareMode,
-    onClick: () => switchReadingVersion(companion || generatedContent, !isCompareMode),
-    className: "min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, /*#__PURE__*/React.createElement(GitCompare, {
-    size: 16,
-    className: "inline mr-1"
-  }), readerText('simplified.compare_mode', 'Compare'))), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", {
     id: "simplified-practice-tools",
     hidden: !practiceOpen,
     style: {
@@ -5067,7 +6099,7 @@ function SimplifiedView(props) {
     "aria-pressed": !!isFluencyMode,
     onClick: () => chooseReadingMode('fluency'),
     className: "min-h-11 rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm font-semibold text-rose-900"
-  }, readerText('simplified.read_along', 'Read along')), !protectedOriginal && !isCompareMode && /*#__PURE__*/React.createElement("button", {
+  }, readerText('simplified.record_my_reading', 'Record my reading')), !protectedOriginal && !isCompareMode && hasClozeTerms && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "simplified_cloze_mode",
     "aria-pressed": interactionMode === 'cloze',
@@ -5081,7 +6113,7 @@ function SimplifiedView(props) {
   }, readerText('simplified.practice_sentences', 'Sentence scramble'))), /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "my-2 text-center text-sm text-slate-700"
-  }, isCompareMode ? readerText('simplified.compare_hint', 'Review the source and adapted versions below.') : isEditingLeveledText ? readerText('simplified.edit_hint', 'Edit the passage below. Choose Read to return to reading.') : isFluencyMode ? readerText('simplified.fluency_hint', 'Use the read-along panel to practice at your own pace.') : interactionMode === 'define' || interactionMode === 'phonics' || interactionMode === 'add-glossary' ? wordHelpHint : interactionMode === 'explain' ? readerText('simplified.explain_hint', 'Choose a sentence for an explanation, or select a longer passage.') : interactionMode === 'revise' ? readerText('simplified.revise_hint', 'Select the words you want to revise.') : interactionMode === 'cloze' ? readerText('simplified.cloze_hint', 'Fill in the missing words. Choose Read to see the complete passage.') : protectedOriginal ? readerText('simplified.original_read_hint', 'Read at your own pace. Use Listen to hear the original.') : readerText('simplified.read_hint', 'Read at your own pace. Choose any sentence to listen from there.')), /*#__PURE__*/React.createElement("div", {
+  }, isCompareMode ? isTeacherMode ? readerText('simplified.compare_hint', 'Review the source and adapted versions below.') : readerText('simplified.compare_hint_student', 'Read the original and the easier version side by side.') : isEditingLeveledText ? readerText('simplified.edit_hint', 'Edit the passage below. Choose Read to return to reading.') : isFluencyMode ? readerText('simplified.fluency_hint', 'Use the read-along panel to practice at your own pace.') : interactionMode === 'define' || interactionMode === 'phonics' || interactionMode === 'add-glossary' ? wordHelpHint : interactionMode === 'explain' ? readerText('simplified.explain_hint', 'Choose a sentence for an explanation, or select a longer passage.') : interactionMode === 'revise' ? readerText('simplified.revise_hint', 'Select the words you want to revise.') : interactionMode === 'cloze' ? readerText('simplified.cloze_hint', 'Fill in the missing words. Choose Read to see the complete passage.') : protectedOriginal ? readerText('simplified.original_read_hint', 'Read at your own pace. Use Listen to hear the original.') : readerText('simplified.read_hint', 'Read at your own pace. Choose any sentence to listen from there.')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center justify-center gap-2"
   }, typeof props.onFocusViewChange === 'function' && /*#__PURE__*/React.createElement("button", {
     ref: focusViewButtonRef,
@@ -5092,6 +6124,63 @@ function SimplifiedView(props) {
     onClick: () => props.onFocusViewChange(!isZenMode),
     className: "min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, isZenMode ? readerText('simplified.exit_focus_view', 'Exit focus view') : readerText('simplified.focus_view', 'Focus view')), /*#__PURE__*/React.createElement("button", {
+    ref: displayToggleRef,
+    type: "button",
+    "data-reader-display": true,
+    "aria-expanded": displayOpen,
+    "aria-controls": "simplified-display-panel",
+    onClick: () => setDisplayOpen(!displayOpen),
+    className: "min-h-11 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "font-serif text-base leading-none"
+  }, "Aa"), viewText('simplified.display_menu', 'Display'), displayOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
+    size: 14,
+    "aria-hidden": "true"
+  }) : /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 14,
+    "aria-hidden": "true"
+  })), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "simplified_teacher_tools",
+    "aria-expanded": !!isTeacherToolbarExpanded,
+    "aria-controls": "simplified-teacher-tools-panel",
+    onClick: handleToggleIsTeacherToolbarExpanded,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`,
+    title: t('simplified.teacher_tools_tooltip')
+  }, /*#__PURE__*/React.createElement(Settings, {
+    size: 14
+  }), /*#__PURE__*/React.createElement("span", null, readerText('simplified.teacher_actions', 'Teacher tools')), isTeacherToolbarExpanded ? /*#__PURE__*/React.createElement(ChevronLeft, {
+    size: 14
+  }) : /*#__PURE__*/React.createElement(ChevronRight, {
+    size: 14
+  })), isTeacherMode && !protectedOriginal && !isZenMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('common.toggle_edit_text'),
+    onClick: handleToggleIsEditingLeveledText,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`,
+    "data-help-key": "simplified_edit"
+  }, isEditingLeveledText ? /*#__PURE__*/React.createElement(CheckCircle2, {
+    size: 14
+  }) : /*#__PURE__*/React.createElement(Pencil, {
+    size: 14
+  }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))), /*#__PURE__*/React.createElement("div", {
+    id: "simplified-display-panel",
+    "data-reader-display-panel": true,
+    role: "group",
+    "aria-label": viewText('simplified.display_menu', 'Display'),
+    hidden: !displayOpen,
+    style: {
+      display: displayOpen ? undefined : 'none'
+    },
+    onKeyDown: event => {
+      if (event.key !== 'Escape') return;
+      event.stopPropagation();
+      setDisplayOpen(false);
+      displayToggleRef.current?.focus();
+    },
+    className: "mt-2 flex w-full flex-wrap items-center justify-center gap-3 rounded-xl border border-indigo-100 bg-white/70 p-3 text-sm"
+  }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": readerText('simplified.immersive_reader', 'Immersive Reader'),
     "data-help-key": "simplified_immersive_reader",
@@ -5139,36 +6228,33 @@ function SimplifiedView(props) {
     value: "rose"
   }, t('header.reading_theme_rose')), /*#__PURE__*/React.createElement("option", {
     value: "dyslexia"
-  }, t('header.reading_theme_easy_read')))), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center mr-2"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.settings'),
-    "data-help-key": "simplified_teacher_tools",
-    "aria-expanded": !!isTeacherToolbarExpanded,
-    "aria-controls": "simplified-teacher-tools-panel",
-    onClick: handleToggleIsTeacherToolbarExpanded,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`,
-    title: t('simplified.teacher_tools_tooltip')
-  }, /*#__PURE__*/React.createElement(Settings, {
-    size: 14
-  }), /*#__PURE__*/React.createElement("span", null, readerText('simplified.teacher_actions', 'Teacher tools')), isTeacherToolbarExpanded ? /*#__PURE__*/React.createElement(ChevronLeft, {
-    size: 14
-  }) : /*#__PURE__*/React.createElement(ChevronRight, {
-    size: 14
-  })), /*#__PURE__*/React.createElement("div", {
+  }, t('header.reading_theme_easy_read')))), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-2"
+  }, readerText('simplified.reading_width', 'Reading width'), /*#__PURE__*/React.createElement("select", {
+    "aria-label": readerText('simplified.reading_width', 'Reading width'),
+    value: readingColumn,
+    onChange: e => updateReadingColumn(e.target.value),
+    className: "rounded-lg border border-slate-300 bg-white px-2 py-2 text-slate-800"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: 40
+  }, readerText('simplified.width_narrow', 'Narrow')), /*#__PURE__*/React.createElement("option", {
+    value: 56
+  }, readerText('simplified.width_medium', 'Medium')), /*#__PURE__*/React.createElement("option", {
+    value: 72
+  }, readerText('simplified.width_wide', 'Wide'))))), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("div", {
     id: "simplified-teacher-tools-panel",
     hidden: !isTeacherToolbarExpanded,
     style: {
       display: isTeacherToolbarExpanded ? undefined : 'none'
     },
-    className: `flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out ${isTeacherToolbarExpanded ? 'flex-wrap max-w-[920px] opacity-100 ml-2' : 'flex-nowrap max-w-0 opacity-0'}`
+    className: "mt-2 w-full rounded-xl border border-indigo-200 bg-white p-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleDuplicateResource,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
     title: t('simplified.tip_duplicate_btn'),
-    "aria-label": t('simplified.tip_duplicate_btn'),
     "data-help-key": "simplified_duplicate"
   }, /*#__PURE__*/React.createElement(Copy, {
     size: 14
@@ -5178,7 +6264,6 @@ function SimplifiedView(props) {
     disabled: isCheckingLevel,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap",
     title: t('simplified.tip_check_level_btn'),
-    "aria-label": t('simplified.tip_check_level_btn'),
     "data-help-key": "simplified_check_level"
   }, isCheckingLevel ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
@@ -5191,7 +6276,6 @@ function SimplifiedView(props) {
     disabled: isCheckingAlignment || !standardsInput,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${!standardsInput ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-600 border-slate-300' : 'bg-white text-indigo-600 hover:bg-indigo-50 border-slate-300'}`,
     title: !standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn'),
-    "aria-label": !standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn'),
     "data-help-key": "simplified_rigor_report"
   }, isCheckingAlignment ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
@@ -5238,32 +6322,298 @@ function SimplifiedView(props) {
       handlePrepareReadAloudAudio();
     },
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
-    title: ttsPrepState.busy ? t('common.stop') || simplifiedAudioStopLabel : t('immersive.prepare_all') || simplifiedAudioSaveLabel,
-    "aria-label": ttsPrepState.busy ? t('common.stop') || simplifiedAudioStopLabel : t('immersive.prepare_all') || simplifiedAudioSaveLabel,
+    title: ttsPrepState.busy ? readerText('simplified.save_audio_stop', 'Stop saving audio') : readerText('simplified.save_audio_tip', 'Save read-aloud audio for every sentence, so it plays without waiting'),
     "data-help-key": "simplified_save_tts"
   }, ttsPrepState.busy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
-  }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✓` : simplifiedAudioSaveLabel))), isTeacherMode && !protectedOriginal && !isZenMode && /*#__PURE__*/React.createElement("button", {
+  }), ttsPrepState.busy ? `${simplifiedAudioStopLabel || viewText('common.stop', 'Stop')} · ${ttsPrepState.done}/${ttsPrepState.total || '...'}` : readerText('simplified.save_audio', 'Save audio'))), /*#__PURE__*/React.createElement("details", {
+    "data-teacher-reading-review": true,
+    className: "my-4 rounded-xl border border-indigo-200 bg-white p-3"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "min-h-11 cursor-pointer py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, readerText('simplified.review_adjust', 'Review & adjust text')), isTeacherMode && !protectedOriginal && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-4 rounded-lg border border-indigo-100 shadow-sm mb-6 mx-1",
+    "data-help-key": "simplified_complexity_slider"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2 text-center"
+  }, generatedContent.type === 'quiz' ? t('simplified.complexity_controls.adjust_difficulty') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.adjust_scaffolding') : generatedContent.type === 'glossary' ? t('simplified.complexity_controls.adjust_definition') : t('simplified.complexity_controls.adjust_relative')), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-slate-600 uppercase w-20 text-right"
+  }, generatedContent.type === 'quiz' ? t('simplified.complexity_controls.easier') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.more_support') : t('simplified.complexity_controls.simpler')), /*#__PURE__*/React.createElement("div", {
+    className: "relative flex-grow h-6 flex items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 transform -translate-x-1/2"
+  }), /*#__PURE__*/React.createElement("input", {
+    "aria-label": readerText('simplified.adjust_complexity', 'Adjust text complexity'),
+    type: "range",
+    min: "1",
+    max: "9",
+    step: "1",
+    value: complexityLevel,
+    onChange: e => setComplexityLevel(parseInt(e.target.value)),
+    "aria-valuetext": complexityLevel < 5 ? readerText('simplified.simpler_setting', 'Simpler') + ' ' + complexityLevel : complexityLevel > 5 ? readerText('simplified.complex_setting', 'More complex') + ' ' + complexityLevel : readerText('simplified.unchanged_setting', 'Current version'),
+    disabled: isProcessing,
+    "aria-busy": isProcessing,
+    className: "w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 z-10 relative"
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-slate-600 uppercase w-20"
+  }, generatedContent.type === 'quiz' ? t('simplified.complexity_controls.harder') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.less_support') : t('simplified.complexity_controls.complex'))), /*#__PURE__*/React.createElement("div", {
+    className: "px-2 sm:px-16"
+  }, /*#__PURE__*/React.createElement(ComplexityGauge, {
+    level: complexityLevel
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600 mb-2"
+  }, readerText('simplified.adjust_hint', 'Choose a change, then apply it. Review the new version before sharing.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.toggle_edit_text'),
-    onClick: handleToggleIsEditingLeveledText,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`,
-    "data-help-key": "simplified_edit"
-  }, isEditingLeveledText ? /*#__PURE__*/React.createElement(CheckCircle2, {
+    "data-apply-complexity": true,
+    onClick: handleComplexityAdjustment,
+    disabled: isProcessing || Number(complexityLevel) === 5,
+    className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+  }, isProcessing ? readerText('simplified.applying_change', 'Updating text…') : readerText('simplified.apply_complexity', 'Apply text change'))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center mt-4 pt-3 border-t border-slate-100"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: `flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full cursor-pointer select-none transition-all border ${saveOriginalOnAdjust ? 'bg-indigo-100 text-indigo-700 border-indigo-200 ring-2 ring-indigo-500 ring-offset-1 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-700'}`,
+    title: t('common.choose_overwrite_version'),
+    "data-help-key": "simplified_overwrite_toggle"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: saveOriginalOnAdjust,
+    onChange: e => setSaveOriginalOnAdjust(e.target.checked),
+    className: "h-4 w-4 accent-indigo-600"
+  }), saveOriginalOnAdjust ? /*#__PURE__*/React.createElement(CheckCircle2, {
+    size: 16
+  }) : /*#__PURE__*/React.createElement(Copy, {
+    size: 16
+  }), /*#__PURE__*/React.createElement("span", null, t('common.keep_original'))))), isTeacherMode && generatedContent.relevel && (() => {
+    const info = generatedContent.relevel || {};
+    const fmt = v => Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '?';
+    const undoRelevel = () => {
+      const restored = {
+        ...generatedContent,
+        data: info.fromText
+      };
+      delete restored.relevel;
+      delete restored.levelCheck;
+      if (info.fromLocalStats) restored.localStats = info.fromLocalStats;else delete restored.localStats;
+      if (info.fromInstructionalText) restored.instructionalText = info.fromInstructionalText;
+      if (info.fromLevelCheck) restored.levelCheck = info.fromLevelCheck;
+      setGeneratedContent(restored);
+      if (typeof setHistory === 'function') setHistory(prev => prev.map(item => item.id === restored.id ? restored : item));
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "data-relevel": "auto",
+      className: "mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold uppercase tracking-wider"
+    }, t('simplified.relevel_label') || 'Re-leveled automatically'), /*#__PURE__*/React.createElement("span", null, info.direction === 'simpler' ? viewText('simplified.relevel_detail_too_complex', 'Measured grade {before} → {after} (target {target}). The measurement and the review agreed the first draft was too complex.', {
+      before: fmt(info.measuredBefore),
+      after: fmt(info.measuredAfter),
+      target: info.targetGrade || ''
+    }) : viewText('simplified.relevel_detail_too_simple', 'Measured grade {before} → {after} (target {target}). The measurement and the review agreed the first draft was too simple.', {
+      before: fmt(info.measuredBefore),
+      after: fmt(info.measuredAfter),
+      target: info.targetGrade || ''
+    })), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: undoRelevel,
+      className: "ml-auto rounded-full border border-indigo-300 bg-white px-2 py-0.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100"
+    }, t('simplified.relevel_undo') || 'Undo re-level'));
+  })(), isTeacherMode && generatedContent.levelCheck && generatedContent.levelCheck.triangulation && generatedContent.levelCheck.triangulation.note && !generatedContent.levelCheck.triangulation.agree && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "data-relevel": "disagreement",
+    className: "mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold uppercase tracking-wider mr-2"
+  }, t('simplified.level_signals_disagree') || 'Two reads, one text'), /*#__PURE__*/React.createElement("span", null, generatedContent.levelCheck.triangulation.note)), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null && (() => {
+    const measured = simplifiedComplexityDisplay.measuredGrade;
+    const targetGrade = simplifiedComplexityDisplay.targetGrade;
+    const status = simplifiedComplexityDisplay.status;
+    const tone = status === 'above-target' ? 'bg-amber-50 border-amber-200 text-amber-900' : status === 'below-target' ? 'bg-blue-50 border-blue-200 text-blue-900' : status === 'within-target' ? 'bg-green-50 border-green-200 text-green-900' : 'bg-slate-50 border-slate-200 text-slate-700';
+    const verdict = status === 'above-target' ? viewText('simplified.level_above_target', 'Above the target range for {grade}', {
+      grade: targetGrade
+    }) : status === 'below-target' ? viewText('simplified.level_below_target', 'Below the target range for {grade}', {
+      grade: targetGrade
+    }) : status === 'within-target' ? viewText('simplified.level_within_target', 'Within the target range for {grade}', {
+      grade: targetGrade
+    }) : '';
+    const rangeNote = simplifiedComplexityDisplay.target && simplifiedComplexityDisplay.target.fkLabel ? ' ' + viewText('simplified.level_shared_range', 'Shared target range: {range}.', {
+      range: simplifiedComplexityDisplay.target.fkLabel
+    }) : '';
+    const stats = generatedContent.localStats || {};
+    return /*#__PURE__*/React.createElement("div", {
+      className: `mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-xs ${tone}`,
+      "data-complexity-status": status
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold uppercase tracking-wider"
+    }, t('simplified.measured_level_label') || 'Measured reading level'), /*#__PURE__*/React.createElement("span", {
+      className: "font-mono font-bold text-sm",
+      title: `${t('analysis.readability.formula') || 'Flesch-Kincaid'}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n${t('analysis.readability.words') || 'Words'}: ${stats.words || '—'}\n${t('analysis.readability.sentences') || 'Sentences'}: ${stats.sentences || '—'}\n${t('analysis.readability.syllables') || 'Syllables'}: ${stats.syllables || '—'}`
+    }, measured), verdict && /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold"
+    }, verdict), /*#__PURE__*/React.createElement("span", {
+      className: "text-[11px] opacity-80"
+    }, viewText('simplified.reader_flesch_kincaid_measured_on_this_passage', 'Flesch-Kincaid, measured on this passage.'), rangeNote, ' ', viewText('simplified.reader_use_check_level_for_a_fuller', 'Use Check Level for a fuller review.')), /*#__PURE__*/React.createElement("label", {
+      className: "ml-auto flex items-center gap-1 text-[11px] font-semibold cursor-pointer",
+      title: viewText('simplified.reader_after_each_adapted_text_run_one', 'After each adapted text, run one model review alongside this measurement and re-level automatically only when both agree the target was missed.')
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: !!autoLevelCheckOn,
+      onChange: e => setAutoLevelCheckOn(e.target.checked),
+      className: "h-3 w-3"
+    }), t('simplified.auto_level_check') || 'Auto-check on generate'));
+  })(), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.status === 'stale' && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
+  }, /*#__PURE__*/React.createElement("strong", null, viewText('simplified.reader_reading_level_measurement_needs_refresh', 'Reading-level measurement needs refresh.')), ' ', viewText('simplified.reader_the_text_changed_after_it_was', 'The text changed after it was measured; use Check Level before relying on a complexity verdict.')), isTeacherMode && generatedContent.levelCheck && /*#__PURE__*/React.createElement("div", {
+    className: "mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-indigo-100 p-2 rounded-full text-indigo-600 mt-1"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 16
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex-grow"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-bold text-indigo-900 text-sm flex items-center justify-between"
+  }, t('simplified.level_analysis_title'), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full"
+  }, generatedContent.levelCheck.confirmedLevel || generatedContent.levelCheck.estimatedLevel)), generatedContent.levelCheck.rubric ? /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 space-y-3 bg-white p-3 rounded-lg border border-indigo-100 shadow-sm"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2"
+  }, t('simplified.complexity_rubric_title')), Object.entries(generatedContent.levelCheck.rubric).map(([key, data]) => {
+    const percent = (data.score + 5) / 10 * 100;
+    const isAligned = Math.abs(data.score) <= 1;
+    const colorClass = isAligned ? 'bg-green-500' : data.score < 0 ? 'bg-blue-400' : 'bg-red-400';
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      className: "space-y-1"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between text-xs"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-slate-700 capitalize"
+    }, key.replace(/([A-Z])/g, ' $1').trim()), /*#__PURE__*/React.createElement("span", {
+      className: `font-mono font-bold ${isAligned ? 'text-green-600' : 'text-slate-600'}`
+    }, data.score > 0 ? '+' : '', data.score)), /*#__PURE__*/React.createElement("div", {
+      className: "relative h-2 bg-slate-100 rounded-full overflow-hidden"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-300 z-10"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: `absolute top-0 bottom-0 rounded-full transition-all duration-500 ${colorClass}`,
+      style: {
+        left: data.score < 0 ? `${percent}%` : '50%',
+        width: `${Math.abs(data.score) * 10}%`
+      }
+    })), /*#__PURE__*/React.createElement("p", {
+      className: "text-[11px] text-slate-600 italic"
+    }, simplifiedAiText(data.reason)));
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between text-[11px] text-slate-600 font-bold uppercase tracking-widest mt-1"
+  }, /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_simple')), /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_aligned')), /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_complex')))) : /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center flex-wrap gap-2 mt-1 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold uppercase tracking-wider text-slate-600"
+  }, t('simplified.level_estimate_label'), ":"), /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-indigo-700 bg-white px-2 py-0.5 rounded text-sm border border-indigo-100 shadow-sm"
+  }, generatedContent.levelCheck.estimatedLevel), /*#__PURE__*/React.createElement("span", {
+    className: `text-xs font-bold px-2 py-0.5 rounded border ${generatedContent.levelCheck.alignment === 'Aligned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`
+  }, generatedContent.levelCheck.alignment)), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700 leading-relaxed mt-2 p-2 bg-indigo-50/50 rounded italic border border-indigo-100/50"
+  }, "\"", generatedContent.levelCheck.nuanceSummary || generatedContent.levelCheck.feedback, "\"")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('common.close_fluency_session'),
+    onClick: () => {
+      const updated = {
+        ...generatedContent
+      };
+      delete updated.levelCheck;
+      setGeneratedContent(updated);
+    },
+    className: "text-slate-600 hover:text-slate-600 p-1"
+  }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  }) : /*#__PURE__*/React.createElement(Pencil, {
+  })))), isTeacherMode && generatedContent.alignmentCheck && /*#__PURE__*/React.createElement("div", {
+    className: "mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-emerald-100 p-2 rounded-full text-emerald-800 mt-1"
+  }, /*#__PURE__*/React.createElement(ShieldCheck, {
+    size: 16
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex-grow"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-bold text-emerald-900 text-sm"
+  }, t('simplified.rigor_check_title')), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center flex-wrap gap-2 mt-1 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold uppercase tracking-wider text-slate-600"
+  }, t('simplified.rigor_status_label'), ":"), /*#__PURE__*/React.createElement("span", {
+    className: `text-xs font-bold px-2 py-0.5 rounded border ${generatedContent.alignmentCheck.status === 'Aligned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-700 border-orange-200'}`
+  }, generatedContent.alignmentCheck.status)), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2 mb-3"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700 leading-relaxed"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-emerald-800"
+  }, t('simplified.rigor_evidence_label'), ":"), " \"", generatedContent.alignmentCheck.evidence, "\""), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700 leading-relaxed"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-emerald-800"
+  }, t('simplified.rigor_analysis_label'), ":"), " ", generatedContent.alignmentCheck.rigorReport), generatedContent.alignmentCheck.missingElements && generatedContent.alignmentCheck.missingElements !== "None" && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-red-700 leading-relaxed bg-red-50 p-2 rounded border border-red-100"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement(AlertCircle, {
+    size: 12
+  }), " ", t('simplified.missing_label'), ":"), " ", generatedContent.alignmentCheck.missingElements)), generatedContent.alignmentCheck.improvement && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-3 rounded border border-emerald-200 mt-2 shadow-sm"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1 flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 12
+  }), " ", t('simplified.suggestion_label')), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-600 italic mb-2"
+  }, "\"", generatedContent.alignmentCheck.improvement, "\""), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('common.regenerate_with_rigor'),
+    onClick: handleRegenerateWithRigor,
+    disabled: isProcessing,
+    "aria-busy": isProcessing,
+    className: "text-xs font-bold bg-emerald-700 text-white px-3 py-1.5 rounded-full hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 12,
+    className: isProcessing ? "animate-spin motion-reduce:animate-none" : ""
+  }), " ", t('simplified.apply_regenerate')))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('common.close_fluency_results'),
+    onClick: () => {
+      const updated = {
+        ...generatedContent
+      };
+      delete updated.alignmentCheck;
+      setGeneratedContent(updated);
+    },
+    className: "text-slate-600 hover:text-slate-600 p-1"
+  }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))), typeof props.onFocusViewChange === 'function' && /*#__PURE__*/React.createElement("p", {
+  })))))), typeof props.onFocusViewChange === 'function' && /*#__PURE__*/React.createElement("p", {
     id: "simplified-focus-view-hint",
     className: "mt-2 text-center text-xs text-slate-600"
-  }, isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')))), ttsPrepNotice && /*#__PURE__*/React.createElement("p", {
+  }, isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')))), /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
-    className: "rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900"
+    "data-tts-prep-status": true,
+    className: ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'
   }, ttsPrepNotice), definitionData && /*#__PURE__*/React.createElement("div", {
     ref: definitionDialogRef,
     role: "dialog",
@@ -5444,7 +6794,6 @@ function SimplifiedView(props) {
     className: "text-teal-700"
   }), " ", t('text_tools.explain')), interactionMode === 'revise' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.generate'),
     onClick: () => handleReviseSelection('simplify'),
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Sparkles, {
@@ -5461,7 +6810,6 @@ function SimplifiedView(props) {
     className: "text-indigo-600"
   }), " ", t('text_tools.custom'))), interactionMode === 'define' && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.search'),
     onClick: handleDefineSelection,
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
@@ -5469,7 +6817,6 @@ function SimplifiedView(props) {
     className: "text-yellow-700"
   }), " ", t('text_tools.define')), interactionMode === 'add-glossary' && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.add'),
     onClick: () => {
       handleQuickAddGlossary(selectionMenu.text, true);
       setSelectionMenu(null);
@@ -5539,268 +6886,7 @@ function SimplifiedView(props) {
     "aria-hidden": "true",
     className: `fixed inset-0 ${_popupBackdropZ} bg-black/5`,
     onClick: closeRevision
-  }), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("details", {
-    "data-teacher-reading-review": true,
-    className: "my-4 rounded-xl border border-indigo-200 bg-white p-3"
-  }, /*#__PURE__*/React.createElement("summary", {
-    className: "min-h-11 cursor-pointer py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, readerText('simplified.review_adjust', 'Review & adjust text')), isTeacherMode && !protectedOriginal && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-4 rounded-lg border border-indigo-100 shadow-sm mb-6 mx-1",
-    "data-help-key": "simplified_complexity_slider"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2 text-center"
-  }, generatedContent.type === 'quiz' ? t('simplified.complexity_controls.adjust_difficulty') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.adjust_scaffolding') : generatedContent.type === 'glossary' ? t('simplified.complexity_controls.adjust_definition') : t('simplified.complexity_controls.adjust_relative')), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold text-slate-600 uppercase w-20 text-right"
-  }, generatedContent.type === 'quiz' ? t('simplified.complexity_controls.easier') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.more_support') : t('simplified.complexity_controls.simpler')), /*#__PURE__*/React.createElement("div", {
-    className: "relative flex-grow h-6 flex items-center"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 transform -translate-x-1/2"
-  }), /*#__PURE__*/React.createElement("input", {
-    "aria-label": readerText('simplified.adjust_complexity', 'Adjust text complexity'),
-    type: "range",
-    min: "1",
-    max: "9",
-    step: "1",
-    value: complexityLevel,
-    onChange: e => setComplexityLevel(parseInt(e.target.value)),
-    "aria-valuetext": complexityLevel < 5 ? readerText('simplified.simpler_setting', 'Simpler') + ' ' + complexityLevel : complexityLevel > 5 ? readerText('simplified.complex_setting', 'More complex') + ' ' + complexityLevel : readerText('simplified.unchanged_setting', 'Current version'),
-    disabled: isProcessing,
-    "aria-busy": isProcessing,
-    className: "w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 z-10 relative"
-  })), /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold text-slate-600 uppercase w-20"
-  }, generatedContent.type === 'quiz' ? t('simplified.complexity_controls.harder') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.less_support') : t('simplified.complexity_controls.complex'))), /*#__PURE__*/React.createElement("div", {
-    className: "px-2 sm:px-16"
-  }, /*#__PURE__*/React.createElement(ComplexityGauge, {
-    level: complexityLevel
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600 mb-2"
-  }, readerText('simplified.adjust_hint', 'Choose a change, then apply it. Review the new version before sharing.')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-apply-complexity": true,
-    onClick: handleComplexityAdjustment,
-    disabled: isProcessing || Number(complexityLevel) === 5,
-    className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
-  }, isProcessing ? readerText('simplified.applying_change', 'Updating text…') : readerText('simplified.apply_complexity', 'Apply text change'))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-center mt-4 pt-3 border-t border-slate-100"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: `flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full cursor-pointer select-none transition-all border ${saveOriginalOnAdjust ? 'bg-indigo-100 text-indigo-700 border-indigo-200 ring-2 ring-indigo-500 ring-offset-1 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-700'}`,
-    title: t('common.choose_overwrite_version'),
-    "data-help-key": "simplified_overwrite_toggle"
-  }, /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.toggle_save_original_on_adjust'),
-    type: "checkbox",
-    checked: saveOriginalOnAdjust,
-    onChange: e => setSaveOriginalOnAdjust(e.target.checked),
-    className: "h-4 w-4 accent-indigo-600"
-  }), saveOriginalOnAdjust ? /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 16
-  }) : /*#__PURE__*/React.createElement(Copy, {
-    size: 16
-  }), /*#__PURE__*/React.createElement("span", null, saveOriginalOnAdjust ? t('common.keep_original') : t('common.overwrite_version'))))), isTeacherMode && generatedContent.relevel && (() => {
-    const info = generatedContent.relevel || {};
-    const fmt = v => Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '?';
-    const undoRelevel = () => {
-      const restored = {
-        ...generatedContent,
-        data: info.fromText
-      };
-      delete restored.relevel;
-      delete restored.levelCheck;
-      if (info.fromLocalStats) restored.localStats = info.fromLocalStats;else delete restored.localStats;
-      if (info.fromInstructionalText) restored.instructionalText = info.fromInstructionalText;
-      if (info.fromLevelCheck) restored.levelCheck = info.fromLevelCheck;
-      setGeneratedContent(restored);
-      if (typeof setHistory === 'function') setHistory(prev => prev.map(item => item.id === restored.id ? restored : item));
-    };
-    return /*#__PURE__*/React.createElement("div", {
-      role: "status",
-      "data-relevel": "auto",
-      className: "mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "font-bold uppercase tracking-wider"
-    }, t('simplified.relevel_label') || 'Re-leveled automatically'), /*#__PURE__*/React.createElement("span", null, `Measured grade ${fmt(info.measuredBefore)} → ${fmt(info.measuredAfter)} (target ${info.targetGrade || ''}). The measurement and the review agreed the first draft was ${info.direction === 'simpler' ? 'too complex' : 'too simple'}.`), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      onClick: undoRelevel,
-      className: "ml-auto rounded-full border border-indigo-300 bg-white px-2 py-0.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100"
-    }, t('simplified.relevel_undo') || 'Undo re-level'));
-  })(), isTeacherMode && generatedContent.levelCheck && generatedContent.levelCheck.triangulation && generatedContent.levelCheck.triangulation.note && !generatedContent.levelCheck.triangulation.agree && /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    "data-relevel": "disagreement",
-    className: "mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-bold uppercase tracking-wider mr-2"
-  }, t('simplified.level_signals_disagree') || 'Two reads, one text'), /*#__PURE__*/React.createElement("span", null, generatedContent.levelCheck.triangulation.note)), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null && (() => {
-    const measured = simplifiedComplexityDisplay.measuredGrade;
-    const targetGrade = simplifiedComplexityDisplay.targetGrade;
-    const status = simplifiedComplexityDisplay.status;
-    const tone = status === 'above-target' ? 'bg-amber-50 border-amber-200 text-amber-900' : status === 'below-target' ? 'bg-blue-50 border-blue-200 text-blue-900' : status === 'within-target' ? 'bg-green-50 border-green-200 text-green-900' : 'bg-slate-50 border-slate-200 text-slate-700';
-    const verdict = status === 'above-target' ? `Above the target range for ${targetGrade}` : status === 'below-target' ? `Below the target range for ${targetGrade}` : status === 'within-target' ? `Within the target range for ${targetGrade}` : '';
-    const rangeNote = simplifiedComplexityDisplay.target && simplifiedComplexityDisplay.target.fkLabel ? ` Shared target range: ${simplifiedComplexityDisplay.target.fkLabel}.` : '';
-    const stats = generatedContent.localStats || {};
-    return /*#__PURE__*/React.createElement("div", {
-      className: `mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-xs ${tone}`,
-      "data-complexity-status": status
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "font-bold uppercase tracking-wider"
-    }, t('simplified.measured_level_label') || 'Measured reading level'), /*#__PURE__*/React.createElement("span", {
-      className: "font-mono font-bold text-sm",
-      title: `${t('analysis.readability.formula') || 'Flesch-Kincaid'}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n${t('analysis.readability.words') || 'Words'}: ${stats.words || '—'}\n${t('analysis.readability.sentences') || 'Sentences'}: ${stats.sentences || '—'}\n${t('analysis.readability.syllables') || 'Syllables'}: ${stats.syllables || '—'}`
-    }, measured), verdict && /*#__PURE__*/React.createElement("span", {
-      className: "font-semibold"
-    }, verdict), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] opacity-80"
-    }, "Flesch-Kincaid, measured on this passage.", rangeNote, " Use Check Level for a fuller review."), /*#__PURE__*/React.createElement("label", {
-      className: "ml-auto flex items-center gap-1 text-[11px] font-semibold cursor-pointer",
-      title: "After each adapted text, run one model review alongside this measurement and re-level automatically only when both agree the target was missed."
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "checkbox",
-      checked: !!autoLevelCheckOn,
-      onChange: e => setAutoLevelCheckOn(e.target.checked),
-      className: "h-3 w-3"
-    }), t('simplified.auto_level_check') || 'Auto-check on generate'));
-  })(), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.status === 'stale' && /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    className: "mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
-  }, /*#__PURE__*/React.createElement("strong", null, "Reading-level measurement needs refresh."), " The text changed after it was measured; use Check Level before relying on a complexity verdict."), isTeacherMode && generatedContent.levelCheck && /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-start gap-3"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-100 p-2 rounded-full text-indigo-600 mt-1"
-  }, /*#__PURE__*/React.createElement(Search, {
-    size: 16
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow"
-  }, /*#__PURE__*/React.createElement("h4", {
-    className: "font-bold text-indigo-900 text-sm flex items-center justify-between"
-  }, t('simplified.level_analysis_title'), /*#__PURE__*/React.createElement("span", {
-    className: "text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full"
-  }, generatedContent.levelCheck.confirmedLevel || generatedContent.levelCheck.estimatedLevel)), generatedContent.levelCheck.rubric ? /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 space-y-3 bg-white p-3 rounded-lg border border-indigo-100 shadow-sm"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2"
-  }, t('simplified.complexity_rubric_title')), Object.entries(generatedContent.levelCheck.rubric).map(([key, data]) => {
-    const percent = (data.score + 5) / 10 * 100;
-    const isAligned = Math.abs(data.score) <= 1;
-    const colorClass = isAligned ? 'bg-green-500' : data.score < 0 ? 'bg-blue-400' : 'bg-red-400';
-    return /*#__PURE__*/React.createElement("div", {
-      key: key,
-      className: "space-y-1"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "flex justify-between text-xs"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "font-bold text-slate-700 capitalize"
-    }, key.replace(/([A-Z])/g, ' $1').trim()), /*#__PURE__*/React.createElement("span", {
-      className: `font-mono font-bold ${isAligned ? 'text-green-600' : 'text-slate-600'}`
-    }, data.score > 0 ? '+' : '', data.score)), /*#__PURE__*/React.createElement("div", {
-      className: "relative h-2 bg-slate-100 rounded-full overflow-hidden"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-300 z-10"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: `absolute top-0 bottom-0 rounded-full transition-all duration-500 ${colorClass}`,
-      style: {
-        left: data.score < 0 ? `${percent}%` : '50%',
-        width: `${Math.abs(data.score) * 10}%`
-      }
-    })), /*#__PURE__*/React.createElement("p", {
-      className: "text-[11px] text-slate-600 italic"
-    }, simplifiedAiText(data.reason)));
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between text-[11px] text-slate-600 font-bold uppercase tracking-widest mt-1"
-  }, /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_simple')), /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_aligned')), /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_complex')))) : /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center flex-wrap gap-2 mt-1 mb-2"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wider text-slate-600"
-  }, t('simplified.level_estimate_label'), ":"), /*#__PURE__*/React.createElement("span", {
-    className: "font-bold text-indigo-700 bg-white px-2 py-0.5 rounded text-sm border border-indigo-100 shadow-sm"
-  }, generatedContent.levelCheck.estimatedLevel), /*#__PURE__*/React.createElement("span", {
-    className: `text-xs font-bold px-2 py-0.5 rounded border ${generatedContent.levelCheck.alignment === 'Aligned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`
-  }, generatedContent.levelCheck.alignment)), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-700 leading-relaxed mt-2 p-2 bg-indigo-50/50 rounded italic border border-indigo-100/50"
-  }, "\"", generatedContent.levelCheck.nuanceSummary || generatedContent.levelCheck.feedback, "\"")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.close_fluency_session'),
-    onClick: () => {
-      const updated = {
-        ...generatedContent
-      };
-      delete updated.levelCheck;
-      setGeneratedContent(updated);
-    },
-    className: "text-slate-600 hover:text-slate-600 p-1"
-  }, /*#__PURE__*/React.createElement(X, {
-    size: 14
-  })))), isTeacherMode && generatedContent.alignmentCheck && /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-start gap-3"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-emerald-100 p-2 rounded-full text-emerald-800 mt-1"
-  }, /*#__PURE__*/React.createElement(ShieldCheck, {
-    size: 16
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow"
-  }, /*#__PURE__*/React.createElement("h4", {
-    className: "font-bold text-emerald-900 text-sm"
-  }, t('simplified.rigor_check_title')), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center flex-wrap gap-2 mt-1 mb-2"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wider text-slate-600"
-  }, t('simplified.rigor_status_label'), ":"), /*#__PURE__*/React.createElement("span", {
-    className: `text-xs font-bold px-2 py-0.5 rounded border ${generatedContent.alignmentCheck.status === 'Aligned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-700 border-orange-200'}`
-  }, generatedContent.alignmentCheck.status)), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-2 mb-3"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-700 leading-relaxed"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-bold text-emerald-800"
-  }, t('simplified.rigor_evidence_label'), ":"), " \"", generatedContent.alignmentCheck.evidence, "\""), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-700 leading-relaxed"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-bold text-emerald-800"
-  }, t('simplified.rigor_analysis_label'), ":"), " ", generatedContent.alignmentCheck.rigorReport), generatedContent.alignmentCheck.missingElements && generatedContent.alignmentCheck.missingElements !== "None" && /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-red-700 leading-relaxed bg-red-50 p-2 rounded border border-red-100"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-bold flex items-center gap-1"
-  }, /*#__PURE__*/React.createElement(AlertCircle, {
-    size: 12
-  }), " ", t('simplified.missing_label'), ":"), " ", generatedContent.alignmentCheck.missingElements)), generatedContent.alignmentCheck.improvement && /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-3 rounded border border-emerald-200 mt-2 shadow-sm"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1 flex items-center gap-1"
-  }, /*#__PURE__*/React.createElement(Sparkles, {
-    size: 12
-  }), " ", t('simplified.suggestion_label')), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-600 italic mb-2"
-  }, "\"", generatedContent.alignmentCheck.improvement, "\""), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.regenerate_with_rigor'),
-    onClick: handleRegenerateWithRigor,
-    disabled: isProcessing,
-    "aria-busy": isProcessing,
-    className: "text-xs font-bold bg-emerald-700 text-white px-3 py-1.5 rounded-full hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-  }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 12,
-    className: isProcessing ? "animate-spin motion-reduce:animate-none" : ""
-  }), " ", t('simplified.apply_regenerate')))), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.close_fluency_results'),
-    onClick: () => {
-      const updated = {
-        ...generatedContent
-      };
-      delete updated.alignmentCheck;
-      setGeneratedContent(updated);
-    },
-    className: "text-slate-600 hover:text-slate-600 p-1"
-  }, /*#__PURE__*/React.createElement(X, {
-    size: 14
-  }))))), instructionalRoleControl, versionControls, isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? /*#__PURE__*/React.createElement("div", {
+  }), instructionalRoleControl, versionControls, isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? /*#__PURE__*/React.createElement("div", {
     className: "w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"
@@ -5868,15 +6954,40 @@ function SimplifiedView(props) {
     className: "w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans",
     spellCheck: "false",
     placeholder: t('simplified.revision.placeholder_edit_text')
-  }), renderEditAudioSentenceTools()) : protectedOriginal ? renderOriginalReading() : renderSimplifiedReading()));
+  }), renderEditAudioSentenceTools()) : protectedOriginal ? renderOriginalReading() : /*#__PURE__*/React.createElement(React.Fragment, null, isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : hiddenPassageRef.current = renderSimplifiedReading(), /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: readingColumn + 'ch',
+      marginInline: 'auto'
+    }
+  }, /*#__PURE__*/React.createElement(AdaptedWordHelp, {
+    key: generatedContent?.id,
+    item: generatedContent,
+    teacher: isTeacherMode,
+    originalSupports: checkedSupports,
+    passageSelector: "[data-reading-passage]",
+    language: readingLanguage,
+    quiet: interactionMode === 'cloze',
+    disabled: isProcessing,
+    onUpdate: props.onUpdateReadingSupports,
+    onGenerate: props.onGenerateReadingSupports,
+    languageTag: simplifiedLanguageTag(readingLanguage),
+    direction: typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined,
+    onListen: text => speakExactPassage(text, 'adapted-word-help', readingLanguage),
+    listening: isExactPassagePlaying('adapted-word-help'),
+    renderCredits: renderPictureCredits
+  })))));
 }
 SimplifiedView.getReadingNavigationSections = getReadingNavigationSections;
 SimplifiedView.findRelatedOriginalPassage = findRelatedOriginalPassage;
 SimplifiedView.ReadingGlossEditor = ReadingGlossEditor;
+SimplifiedView.AdaptedWordHelp = AdaptedWordHelp;
+SimplifiedView.locateWordHelp = locateWordHelp;
+SimplifiedView.readingTextSegments = readingTextSegments;
 SimplifiedView.findGlossOccurrences = findReadingGlossOccurrences;
 SimplifiedView.languageTag = simplifiedLanguageTag;
 SimplifiedView.wordSegments = simplifiedWordSegments;
 SimplifiedView.paragraphBlocks = simplifiedParagraphBlocks;
+SimplifiedView.alignImmersiveWords = alignImmersiveWords;
 SimplifiedView.resolveReferences = resolveSimplifiedReferences;
 SimplifiedView.hasCitationMarkers = simplifiedBodyHasCitationMarkers;
 SimplifiedView.getInstructionalText = getSimplifiedInstructionalText;

@@ -114,6 +114,23 @@ describe('disproCompute — flags and edge cases', () => {
     expect(r.valid).toBe(false);
   });
 
+  it('rejects a group named twice, which would be compared against itself (2026-09-23)', () => {
+    // Before: two "Black" rows read RR 3.33 and 2.97 with no error, while the
+    // combined group's true ratio is 3.86 — both copies understated it.
+    const r = D.disproCompute([
+      { name: 'Black', enrollment: 100, students: 20 },
+      { name: ' black ', enrollment: 50, students: 10 },
+      { name: 'White', enrollment: 850, students: 44 },
+    ]);
+    expect(r.valid).toBe(false);
+    expect(r.errors).toHaveLength(1);
+    expect(r.errors[0].row).toBe(1);
+    expect(r.errors[0].message).toContain('appears more than once');
+    const merged = D.disproCompute([{ name: 'Black', enrollment: 150, students: 30 }, { name: 'White', enrollment: 850, students: 44 }]);
+    expect(merged.valid).toBe(true);
+    expect(merged.rows[0].riskRatio).toBeCloseTo((30 / 150) / (44 / 850), 10);
+  });
+
   it('requires at least two groups to be valid', () => {
     const r = D.disproCompute([{ name: 'Only', enrollment: 100, students: 5 }]);
     expect(r.valid).toBe(false);
@@ -140,12 +157,22 @@ describe('disproParsePaste', () => {
     expect(p.skipped).toContain('garbage line');
   });
 
-  it('treats comma thousands-separators inside tab-separated rows as column splits (known hazard, surfaced as extra columns)', () => {
-    // "1,080" splits on the comma — the parser sees 4 columns and takes the
-    // first three. This test documents the behavior so a future fix is a
-    // deliberate change, not an accident.
-    const p = D.disproParsePaste('All others\t1,080\t44');
-    expect(p.groups[0].enrollment).toBe(1);
+  it('reads comma thousands-separators in spreadsheet (tab) pastes as one number (fixed 2026-09-23)', () => {
+    // Was the documented hazard: "1,080" split on the comma and read as 1, so
+    // "White\t12,001\t40" became a valid-looking row of 12 students with 1.
+    // A line with a tab now splits on tabs only.
+    const p = D.disproParsePaste('All others\t1,080\t44\nWhite\t12,001\t40');
+    expect(p.groups).toEqual([{ name: 'All others', enrollment: 1080, students: 44 }, { name: 'White', enrollment: 12001, students: 40 }]);
+  });
+
+  it('keeps a quoted "1,080" whole in comma CSV and reads semicolon files with comma thousands', () => {
+    const p = D.disproParsePaste('Black,"1,080",44\nHispanic;2,150;96');
+    expect(p.groups).toEqual([{ name: 'Black', enrollment: 1080, students: 44 }, { name: 'Hispanic', enrollment: 2150, students: 96 }]);
+    // Unquoted comma CSV with thousands separators stays ambiguous: it still
+    // splits, and the impossible counts it produces fail validation visibly.
+    const amb = D.disproParsePaste('Asian,1,080,44');
+    expect(amb.groups[0]).toEqual({ name: 'Asian', enrollment: 1, students: 80 });
+    expect(D.disproCompute([...amb.groups, { name: 'B', enrollment: 50, students: 5 }]).valid).toBe(false);
   });
 
   it('returns empty on junk input without throwing', () => {

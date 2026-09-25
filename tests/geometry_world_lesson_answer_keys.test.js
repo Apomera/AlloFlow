@@ -224,6 +224,19 @@ const PAIRS = [
   ['geometryHarbor', '8. Eli - Community Studio#0', () => 6 * 4 + 6 * 2, 'cubic'],
   ['geometryHarbor', '8. Eli - Community Studio#1', () => exposedFaces(box(6, 3, 2)), 'square'],
   ['geometryHarbor', '8. Eli - Community Studio#2', () => { const stepped = box(6, 4, 1).concat(box(6, 2, 1).map(c => ({...c, y: 1}))), s = exposedFaces(stepped), p = exposedFaces(box(6, 3, 2)); return s === p ? 'equal' : (p < s ? 'prism' : 'stepped model') + ':' + Math.abs(s - p); }, null, withBy(['prism', 'stepped model', 'equal'])],
+  // scaleUp: prism A (2,1,2), B = A doubled (2,1,8), C = A tripled (2,1,16); cubes of
+  // edge 1 (16,1,2) and 2 (18,1,2). Pattern Pro#2 is a stated 5-unit box, doubled.
+  ['scaleUp', 'Scale Scout#0', l => flood(l, [2,1,8]).L],
+  ['scaleUp', 'Scale Scout#1', l => flood(l, [2,1,8]).count / flood(l, [2,1,2]).count],
+  ['scaleUp', 'Scale Scout#2', l => flood(l, [2,1,8]).count, 'cubic'],
+  ['scaleUp', 'Surface Sage#0', l => exposedFaces(flood(l, [2,1,2]).cells), 'square'],
+  ['scaleUp', 'Surface Sage#1', l => exposedFaces(flood(l, [2,1,8]).cells), 'square'],
+  ['scaleUp', 'Surface Sage#2', l => exposedFaces(flood(l, [2,1,8]).cells) / exposedFaces(flood(l, [2,1,2]).cells)],
+  ['scaleUp', 'Triple Tester#0', l => flood(l, [2,1,16]).count / flood(l, [2,1,2]).count],
+  ['scaleUp', 'Triple Tester#1', l => flood(l, [2,1,16]).count, 'cubic'],
+  ['scaleUp', 'Triple Tester#2', l => exposedFaces(flood(l, [2,1,16]).cells), 'square'],
+  ['scaleUp', 'Pattern Pro#0', l => flood(l, [18,1,2]).count / flood(l, [16,1,2]).count],
+  ['scaleUp', 'Pattern Pro#2', () => 5 * 2 * 2 * 2, 'cubic'],
 ];
 // Steps with no numeric or world-derived answer (reasoning, self-checks with the
 // verdict printed in the choice, or a question about fluency itself).
@@ -232,6 +245,7 @@ const CONCEPTUAL = [
   'compositeVolume/U-Shape Sage#0', 'compositeVolume/U-Shape Sage#1', 'compositeVolume/Design Challenge#0',
   'fractionVolume/Between Quiz#2', 'fluencyMaze/Finish!#0',
   'geometryHarbor/2. Ada - Garden Area#2', 'geometryHarbor/6. Mira - Makers Pavilion#2',
+  'scaleUp/Pattern Pro#1',
 ];
 
 function steps(lessonKey) {

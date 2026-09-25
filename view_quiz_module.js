@@ -1121,7 +1121,7 @@ function AssessmentTimerBar(p) {
     type: "button",
     onClick: p.onExtend,
     className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
-  }, '+' + p.extensionMinutes + ' minutes'), /*#__PURE__*/React.createElement("button", {
+  }, '+' + p.extensionMinutes + ' minutes'), p.onReview && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: p.onReview,
     className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 text-white"
@@ -8110,6 +8110,7 @@ function QuizViewContent(props) {
   }
   var _smartSkips = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.smartSkips) ? generatedContent.data.smartSkips : [];
   var _pushedExplainer = sessionData && sessionData.quizState && sessionData.quizState.classExplainer;
+  var settingsDrawerOpenState = React.useState(false);
   var dismissedExplainerTsState = React.useState(0);
   var dismissedExplainerTs = dismissedExplainerTsState[0];
   var setDismissedExplainerTs = dismissedExplainerTsState[1];
@@ -8201,13 +8202,15 @@ function QuizViewContent(props) {
       "aria-hidden": "true"
     }, "✨ "), isBulkImproving ? 'Rewriting ' + weakCount + '…' : 'Improve all ' + weakCount);
   }())) : null;
-  var explainerPanel = _aiExplainerEnabled ? /*#__PURE__*/React.createElement("div", {
+  // A learner support, collapsed to its question until wanted. Teachers and
+  // parents see what students see through Preview as student.
+  var explainerPanel = _aiExplainerEnabled && !isTeacherMode && !props.isParentMode ? /*#__PURE__*/React.createElement("details", {
     key: "ai-explainer",
+    "data-quiz-explainer": true,
     className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4 mb-6",
-    role: "region",
     "aria-label": "AI concept explainer"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "flex min-h-11 cursor-pointer items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-lg",
     "aria-hidden": "true"
@@ -8270,6 +8273,44 @@ function QuizViewContent(props) {
     releaseError: feedbackReleaseError,
     live: !!activeSessionCode
   }) : null;
+  // The teacher's settings share one drawer, its button naming what is set.
+  // A quality check that finds problems stays in view: they can be answer-key errors.
+  var settingsDrawerOpen = settingsDrawerOpenState[0];
+  var _deliveryProfileLabel = {
+    flexible: quizCopy('quiz.delivery_flexible', 'Flexible access'),
+    focused: quizCopy('quiz.delivery_focused', 'Focused steps'),
+    'timed-practice': quizCopy('quiz.delivery_timed', 'Timed practice')
+  }[deliverySettings.profile] || quizCopy('quiz.delivery_custom', 'Custom settings');
+  var _feedbackTimingLabel = {
+    immediate: quizCopy('quiz.feedback_immediate', 'Immediate practice feedback'),
+    'after-submit': quizCopy('quiz.feedback_after_submit', 'Feedback after submission'),
+    'teacher-release': quizCopy('quiz.feedback_teacher_release', 'Feedback when you release it')
+  }[deliverySettings.feedbackTiming] || '';
+  var drawerQuality = qualityReviewPanel && assessmentAudit.ready ? qualityReviewPanel : null;
+  var settingsDrawer = drawerQuality || deliverySettingsPanel ? /*#__PURE__*/React.createElement("section", {
+    "data-assessment-settings-drawer": true,
+    className: "rounded-xl border border-slate-300 bg-white"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assessment-settings-toggle": true,
+    "aria-expanded": settingsDrawerOpen,
+    "aria-controls": "assessment-settings-panel",
+    onClick: function () {
+      settingsDrawerOpenState[1](!settingsDrawerOpen);
+    },
+    className: "w-full min-h-11 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-3 text-left focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-bold text-slate-800"
+  }, quizCopy('quiz.settings_drawer', 'Assessment settings')), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-600"
+  }, [_deliveryProfileLabel, _feedbackTimingLabel].filter(Boolean).join(' · '))), /*#__PURE__*/React.createElement("div", {
+    id: "assessment-settings-panel",
+    hidden: !settingsDrawerOpen,
+    style: {
+      display: settingsDrawerOpen ? undefined : 'none'
+    },
+    className: "space-y-3 p-3 pt-0"
+  }, drawerQuality, deliverySettingsPanel)) : null;
   var draftStatusPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? /*#__PURE__*/React.createElement(AssessmentDraftStatus, {
     namespace: draftNamespace
   }) : null;
@@ -8292,10 +8333,7 @@ function QuizViewContent(props) {
     warningMinutes: deliverySettings.warningMinutes,
     extensionMinutes: deliverySettings.extensionMinutes,
     onTogglePause: toggleAssessmentTimer,
-    onExtend: extendAssessmentTimer,
-    onReview: function () {
-      setReviewOpen(true);
-    }
+    onExtend: extendAssessmentTimer
   }), /*#__PURE__*/React.createElement("div", {
     className: 'flex items-center gap-2 flex-wrap pr-20 md:pr-0 ' + (deliverySettings.timeLimitMinutes > 0 ? 'mt-3' : '')
   }, deliverySettings.showProgress && /*#__PURE__*/React.createElement("span", {
@@ -9455,7 +9493,17 @@ function QuizViewContent(props) {
   }
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, boardSetupOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode) && (boardSetup.ready && window.AlloModules?.LessonBoardSetup ? /*#__PURE__*/React.createElement(window.AlloModules.LessonBoardSetup, {
+  }, !isEditingQuiz && Array.isArray(assessmentData.questions) && assessmentData.questions.length > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assessment-skip": true,
+    onClick: function () {
+      var target = document.querySelector('[id^="assessment-question-"]');
+      if (!target) return;
+      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+      target.focus();
+    },
+    className: "sr-only focus:not-sr-only focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white"
+  }, quizCopy('quiz.skip_to_questions', 'Skip to the questions')), boardSetupOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode) && (boardSetup.ready && window.AlloModules?.LessonBoardSetup ? /*#__PURE__*/React.createElement(window.AlloModules.LessonBoardSetup, {
     history: props.history,
     callImagen: props.callImagen,
     callGemini: props.callGemini,
@@ -9529,7 +9577,14 @@ function QuizViewContent(props) {
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setConnectedSetupOpen(false)
-  }, t('common.close')))), classExplainerBanner, isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive && deliverySettings.feedbackTiming === 'teacher-release' && /*#__PURE__*/React.createElement("section", {
+  }, t('common.close')))), !canFacilitateAssessment && !isReviewGame && !escapeRoomState.isActive && /*#__PURE__*/React.createElement("section", {
+    "data-assessment-student-view": true,
+    className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-indigo-950"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-base font-bold"
+  }, quizCopy('quiz.student_view_title', 'Your assessment')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-sm"
+  }, quizCopy('quiz.student_view_help', 'Answer the questions below. You can review your responses before submitting.'))), classExplainerBanner, isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive && deliverySettings.feedbackTiming === 'teacher-release' && /*#__PURE__*/React.createElement("section", {
     "data-assessment-live-feedback-release": true,
     className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-indigo-950"
   }, /*#__PURE__*/React.createElement("h2", {
@@ -9545,14 +9600,7 @@ function QuizViewContent(props) {
   }, feedbackReleased ? 'Feedback released' : feedbackReleaseBusy ? 'Releasing feedback...' : 'Release feedback to students'), feedbackReleaseError && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     className: "mt-2 text-sm text-red-800"
-  }, feedbackReleaseError)), !isPresentationMode && !isReviewGame && /*#__PURE__*/React.createElement(React.Fragment, null, modeBanner, explainerPanel, qualityReviewPanel, deliverySettingsPanel), !canFacilitateAssessment && !isReviewGame && !escapeRoomState.isActive && /*#__PURE__*/React.createElement("section", {
-    "data-assessment-student-view": true,
-    className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-indigo-950"
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "text-base font-bold"
-  }, quizCopy('quiz.student_view_title', 'Your assessment')), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-sm"
-  }, quizCopy('quiz.student_view_help', 'Answer the questions below. You can review your responses before submitting.'))), !canFacilitateAssessment && !isPresentationMode && !isReviewGame && /*#__PURE__*/React.createElement("p", {
+  }, feedbackReleaseError)), !isPresentationMode && !isReviewGame && /*#__PURE__*/React.createElement(React.Fragment, null, modeBanner, explainerPanel, assessmentAudit.ready ? null : qualityReviewPanel, settingsDrawer), !canFacilitateAssessment && !isPresentationMode && !isReviewGame && /*#__PURE__*/React.createElement("p", {
     "data-assessment-feedback-note": true,
     className: "rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800"
   }, deliverySettings.feedbackTiming === 'immediate' ? 'Practice feedback is available as you check responses.' : deliverySettings.feedbackTiming === 'teacher-release' ? 'Answer feedback stays hidden until you submit and your teacher releases it.' : 'Answer feedback stays hidden until you submit the assessment.'), !props._assessmentPreview && draftStatusPanel, learnerAttemptPanel, reviewDialog, canPlayAssessmentGames && /*#__PURE__*/React.createElement("div", {

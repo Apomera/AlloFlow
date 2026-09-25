@@ -354,7 +354,7 @@ function DirectionsResultView({
                 <button
                   type="button"
                   onClick={() => travelTo(nextStation)}
-                  className="min-h-11 flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-sm shadow-sm transition-all"
+                  className="min-h-11 flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm shadow-sm transition-all"
                 >
                   <span aria-hidden="true">{nextStation.icon}</span>
                   <span>{text('mapNextLabel', 'Go here next') + ': ' + (nextStation.title || nextStation.typeLabel).slice(0, 40)}</span>
@@ -392,7 +392,7 @@ function DirectionsResultView({
                     >
                       <span aria-hidden="true">{station.icon}</span>
                       <span>{(station.title || station.typeLabel).slice(0, 30)}</span>
-                      <span className="sr-only">{' — ' + station.typeLabel + (station.visited ? ', ' + text('mapVisitedSr', 'already visited') : '')}</span>
+                      <span className="sr-only">{', ' + station.typeLabel + (station.visited ? ', ' + text('mapVisitedSr', 'already visited') : '')}</span>
                     </button>
                   </li>
                 ))}
@@ -473,7 +473,7 @@ function DirectionsResultView({
                   )}
                   <span className={'text-sm ' + (goal.done ? 'text-emerald-700 line-through decoration-emerald-300' : 'text-slate-700')}>
                     {goal.label}
-                    {goal.kind !== 'manual' && <span className="sr-only">{goal.done ? ' — ' + text('goalDone', 'complete') : ' — ' + text('goalOpen', 'not yet complete')}</span>}
+                    {goal.kind !== 'manual' && <span className="sr-only">{goal.done ? ', ' + text('goalDone', 'complete') : ', ' + text('goalOpen', 'not yet complete')}</span>}
                   </span>
                   {goal.progressText && !goal.done && <span className="text-[11px] text-amber-600 font-bold ml-auto flex-shrink-0">{goal.progressText}</span>}
                   {goal.done && <span className="text-[11px] text-emerald-600 font-bold ml-auto flex-shrink-0" aria-hidden="true">✓</span>}

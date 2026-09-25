@@ -63,7 +63,11 @@ function famannNextId() {
 }
 
 function famannToday() {
-  return new Date().toISOString().slice(0, 10);
+  // The LOCAL calendar date. toISOString() is UTC, which in US time zones is
+  // already tomorrow by late afternoon (5 pm in Portland in summer).
+  // Here evening announcements were dated a day ahead.
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 function famannLangByTag(tag) {

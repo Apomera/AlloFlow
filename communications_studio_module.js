@@ -199,6 +199,9 @@ function csPrintHtml(title, pages, options) {
   ].join("")).join("");
   return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + esc(title || "Communication") + "</title><style>body{font:12pt/1.5 Georgia,serif;color:#000;margin:0}.page{padding:0.75in;page-break-after:always;break-after:page}.page:last-child{page-break-after:auto;break-after:auto}.name{font-size:13pt;margin:0 0 18pt}.blank{display:inline-block;min-width:3.5in;border-bottom:1px solid #000}.label{font-size:9pt;color:#444;margin:0 0 6pt}.lang{font-weight:bold}.note{font-size:9pt;color:#444;margin-top:18pt}</style></head><body>" + body + "</body></html>";
 }
+function csLocalDate(d = /* @__PURE__ */ new Date()) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
 function csGradeLabel(grade) {
   if (grade == null || !Number.isFinite(Number(grade))) return "";
   const g = Number(grade);
@@ -1031,7 +1034,7 @@ ${out.text}`);
     setBusy("drive");
     setDriveLink("");
     try {
-      const name = `${template.label} ${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.html`;
+      const name = `${template.label} ${csLocalDate()}.html`;
       const out = outgoingTranslation();
       const reply = await dd.deliverCall(config, { a: "deliver", name, mime: "text/html", text: csDraftToHtml(template.label, draft, out ? out.text : "", { language: out ? out.language : "", disclosure }), convert: "doc" });
       setDriveLink(reply.url || "");
@@ -1194,6 +1197,7 @@ ${out.text}`);
       csUnknownGridCodenames: csUnknownGridCodenames,
       csFlagSensitive: csFlagSensitive,
       csGradeLabel: csGradeLabel,
+      csLocalDate: csLocalDate,
       csBuildTranslateBatchPrompt: csBuildTranslateBatchPrompt,
       csRowTranslation: csRowTranslation,
       csNumbersIn: csNumbersIn,

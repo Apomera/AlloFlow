@@ -318,7 +318,7 @@ describe('Geometry World display stability controls', function() {
 
 
   it('reveals an accessible layer explorer for measured structures', function() {
-    const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true, measureResult: { count: 12, L: 2, W: 2, H: 3, boundingVolume: 12, totalVolume: 12, shapeCounts: { cube: 12 }, blocks: [{ x: 0, y: 0, z: 0 }], isComplete: true } });
+    const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true, measureResult: { count: 12, L: 2, W: 2, H: 3, boundingVolume: 12, totalVolume: 12, shapeCounts: { cube: 12 }, blocks: [{ x: 0, y: 0, z: 0 }], isComplete: true, fillPercent: 100 } });
     const panel = view.container.querySelector('[data-geometry-layer-explorer=true]');
     expect(panel).toBeTruthy();
     const slider = panel.querySelector('#gw-layer-focus');
@@ -404,7 +404,8 @@ describe('Geometry World display stability controls', function() {
     expect(SOURCE).toContain("touchMode ? 'Touch' : 'Desktop'");
     expect(SOURCE).toContain("className: 'gw-touch-joystick-thumb'");
     expect(SOURCE).toContain("className: 'gw-touch-look-zone'");
-    expect(SOURCE).toContain("className: 'gw-touch-look-panel'");
+    // Look speed is set once, so it lives in settings rather than over the world (2026-09-24).
+    expect(SOURCE).toContain("className: 'gw-settings-look'");
     expect(SOURCE).toContain("className: 'gw-touch-actions'");
     expect(SOURCE).toContain('.gw-touch-controls>.gw-touch-actions');
     expect(SOURCE).not.toContain('.gw-touch-controls > [role="group"]');
@@ -489,15 +490,20 @@ describe('Geometry World touch flight and placement feedback', function() {
     const view = mobileWorld();
     expect(view.container.querySelector('[data-gw-touch-action="down"]')).toBeNull();
     expect(view.container.querySelector('[data-gw-touch-action="up"]').textContent).toBe('Jump');
-    const toggle = view.container.querySelector('.gw-action-bar [aria-label="Toggle fly mode"]');
-    React.act(function() { toggle.dispatchEvent(new Event('click', { bubbles: true })); });
+    // On touch, Fly lives in the More sheet (2026-09-24); choosing it closes the sheet.
+    // Activated as a keyboard would (detail 0): a click right after a touch is dropped on purpose.
+    const flyFromMore = function() {
+      React.act(function() { view.container.querySelector('[data-gw-touch-action="more"]').dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })); });
+      React.act(function() { view.container.querySelector('#gw-touch-more [data-gw-touch-action="fly"]').dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })); });
+    };
+    flyFromMore();
     const down = view.container.querySelector('[data-gw-touch-action="down"]');
     expect(down).toBeTruthy();
     expect(view.toolData.geometryWorld.flyMode).toBe(true);
     expect(view.container.querySelector('[data-gw-touch-action="up"]').textContent).toBe('Up');
     dispatchTouch(down, 'touchstart');
     expect(engine.moveState.flyDown).toBe(true);
-    React.act(function() { toggle.dispatchEvent(new Event('click', { bubbles: true })); });
+    flyFromMore();
     expect(view.container.querySelector('[data-gw-touch-action="down"]')).toBeNull();
     expect(engine.moveState.flyUp).toBe(false);
     expect(engine.moveState.flyDown).toBe(false);
@@ -509,17 +515,40 @@ describe('Geometry World touch flight and placement feedback', function() {
     const actions = view.container.querySelector('[role="group"][aria-label="Touch actions"]');
     expect(actions).toBeTruthy();
     const buttons = Array.from(actions.querySelectorAll('button'));
-    expect(buttons.map(function(button) { return button.textContent; })).toEqual(['Jump', 'Place', 'Break', 'Measure', 'Undo']);
-    expect(buttons.map(function(button) { return button.getAttribute('aria-label'); })).toEqual([
-      'Jump or fly up', 'Place block', 'Break block', 'Measure structure', 'Undo last block action'
-    ]);
+    // Four stay out (2026-09-24): in a lesson Measure and Talk, while building Place and
+    // Break; everything else is in More. This world has no characters, so no Talk.
+    expect(buttons.map(function(button) { return button.textContent; })).toEqual(['Jump', 'Measure', 'More']);
+    expect(buttons.map(function(button) { return button.getAttribute('aria-label'); })).toEqual(['Jump or fly up', 'Measure structure', 'More actions']);
     expect(actions.querySelector('[aria-label="Talk to nearby character"]')).toBeNull();
-    expect(actions.querySelector('[aria-label="Undo last block action"]').disabled).toBe(true);
+    // Unmounting would destroy the shared fake engine, so the building view mounts beside it.
+    const building = mobileWorld({ buildToolsOpenLesson: true });
+    const column = building.container.querySelector('[role="group"][aria-label="Touch actions"]');
+    expect(Array.from(column.querySelectorAll('button')).map(function(button) { return button.textContent; })).toEqual(['Jump', 'Place', 'Break', 'More']);
+  });
+
+  it('More opens everything else, including the ruler, angle and net', function() {
+    const view = mobileWorld();
+    const toggle = view.container.querySelector('[data-gw-touch-action="more"]');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.getAttribute('aria-controls')).toBe('gw-touch-more');
+    expect(view.container.querySelector('#gw-touch-more')).toBeNull();
+    React.act(function() { toggle.click(); });
+    expect(view.container.querySelector('[data-gw-touch-action="more"]').getAttribute('aria-expanded')).toBe('true');
+    const sheet = view.container.querySelector('#gw-touch-more');
+    expect(sheet.getAttribute('role')).toBe('group');
+    expect(sheet.getAttribute('aria-label')).toBe('More actions');
+    expect(Array.from(sheet.querySelectorAll('button')).map(function(button) { return button.textContent; })).toEqual(['Place', 'Break', 'Blocks', 'Ruler', 'Angle', 'Net', 'Match', 'Fly', 'Undo', 'Home', 'Clear', 'Hide']);
+    expect(sheet.querySelector('[data-gw-touch-action="undo"]').disabled).toBe(true);
+    // Blocks swaps the column to building and closes the sheet.
+    React.act(function() { sheet.querySelector('[data-gw-touch-action="blocks"]').click(); });
+    expect(view.container.querySelector('#gw-touch-more')).toBeNull();
+    expect(view.toolData.geometryWorld.buildToolsOpenLesson).toBe(true);
+    expect(view.container.querySelector('.gw-hotbar')).toBeTruthy();
   });
 
   it('announces a placement reason as a polite status and hides it behind a modal', function() {
     const hint = { allowed: false, code: 'occupied', reason: 'This cell already has a block' };
-    const view = mobileWorld({ placementHint: hint });
+    const view = mobileWorld({ placementHint: hint, buildToolsOpenLesson: true });
     const status = view.container.querySelector('.gw-placement-hint');
     expect(status).toBeTruthy();
     expect(status.getAttribute('role')).toBe('status');
@@ -556,7 +585,7 @@ describe('Geometry World touch flight and placement feedback', function() {
   it.each(['touchend', 'touchcancel'])('does not duplicate Place after a long hold ending in %s', function(kind) {
     const engine = window[ENGINE_KEY], actions = [];
     engine.interactAtCrosshair = function(action) { actions.push(action); };
-    const view = mobileWorld();
+    const view = mobileWorld({ buildToolsOpenLesson: true });
     const place = view.container.querySelector('[data-gw-touch-action="place"]');
     dispatchTouch(place, 'touchstart'); expect(actions).toEqual(['place']);
     engine._lastTouchAction.at = Date.now() - 1200;

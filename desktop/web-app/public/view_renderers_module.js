@@ -1184,8 +1184,7 @@ const renderOutlineContentCore = (deps) => {
         onClick: () => _startOrganizerGame("pipeline", () => setIsPipelinePlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
-        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness",
-        "aria-label": t("games.pipeline.title") || "Pipeline Builder"
+        "aria-describedby": organizerLaunchReadiness.ok ? "game-btn-hint" : "game-btn-hint game-btn-readiness"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
@@ -1319,7 +1318,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto py-8" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-8 gap-3" }, /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": t("common.start_game"),
+        "data-venn-interactive-start": true,
         onClick: handleInitializeVenn,
         className: "flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-bold text-sm transition-colors border border-indigo-200 shadow-sm"
       },

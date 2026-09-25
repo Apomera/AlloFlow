@@ -64,16 +64,56 @@ async function prepareGlossaryMulberry(result, signal) {
   ctx.fillText('Mulberry Symbols by Steve Lee | CC BY-SA 4.0 | Converted to PNG', 320, 650);
   ctx.fillText('globalsymbols.com/symbolsets/mulberry', 320, 666);
   ctx.fillText('creativecommons.org/licenses/by-sa/4.0/', 320, 682);
-  return canvas.toDataURL('image/png');
+  const symbol = canvas.toDataURL('image/png');
+  glossaryCreditBands.set(symbol, 688 - 640);
+  return symbol;
 }
-function glossaryImageReplacement(image, attribution = null) {
-  return { image, imageAlt: '', imageAltHash: '', imageAltSource: '', imageDecorative: false,
-    imageSource: attribution ? 'mulberry' : 'author-upload', imageAttribution: attribution };
+// A classroom photo arrives screened, with AI alt text of the photo itself.
+// Credit is drawn in a band under it, as for Mulberry, so it survives exports
+// that copy only the image bytes.
+async function prepareGlossaryPhoto(choice, signal) {
+  const source = typeof choice?.dataUrl === 'string' && /^data:image\/(png|jpeg|gif|webp)[;,]/i.test(choice.dataUrl) ? choice.dataUrl : '';
+  if (!source) throw new Error('This photo has no usable image.');
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    const stop = () => { img.src = ''; cleanup(); reject(new Error('Image replacement canceled.')); };
+    const cleanup = () => { if (signal) signal.removeEventListener('abort', stop); };
+    img.onload = () => { cleanup(); resolve(img); };
+    img.onerror = () => { cleanup(); reject(new Error('The photo could not be opened.')); };
+    if (signal?.aborted) { stop(); return; }
+    if (signal) signal.addEventListener('abort', stop, { once: true });
+    img.src = source;
+  });
+  if (!image.naturalWidth || !image.naturalHeight) throw new Error('The photo could not be opened.');
+  const width = Math.min(960, image.naturalWidth);
+  const height = Math.round(image.naturalHeight * (width / image.naturalWidth));
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('The photo could not be opened.');
+  ctx.font = '13px sans-serif';
+  // The shared credit band keeps the licence and its address on lines of their own.
+  const bandLines = window.AlloModules?.AltText?.creditBandLines;
+  const credit = bandLines ? bandLines(ctx, width, choice.attribution, choice.creditLine) : [String(choice.creditLine || '')];
+  canvas.width = width; canvas.height = height + (credit.length ? 10 + credit.length * 17 : 0);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(image, 0, 0, width, height);
+  ctx.fillStyle = '#334155'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+  credit.forEach((text, i) => ctx.fillText(text, width / 2, height + 20 + i * 17, width - 8));
+  const photo = canvas.toDataURL('image/jpeg', 0.9);
+  glossaryCreditBands.set(photo, canvas.height - height);
+  return photo;
+}
+// The height of the credit band drawn under a prepared picture, by its data URL,
+// read once by replace() so an AI refine can take the band off and redraw it.
+const glossaryCreditBands = new Map();
+function glossaryImageReplacement(image, attribution = null, extra = null) {
+  return Object.assign({ image, imageAlt: '', imageAltHash: '', imageAltSource: '', imageDecorative: false,
+    imageSource: attribution ? 'mulberry' : 'author-upload', imageAttribution: attribution, imageCreditBand: 0 }, extra || {});
 }
 // Capture only image fields: Undo must not roll back term/definition edits.
 function glossaryImageSnapshot(item) {
   const snapshot = {};
-  ['image', 'imageAlt', 'imageAltHash', 'imageAltSource', 'imageDecorative', 'imageSource', 'imageAttribution'].forEach(key => { snapshot[key] = item[key] ?? (key === 'imageDecorative' ? false : key === 'imageAttribution' ? null : ''); });
+  ['image', 'imageAlt', 'imageAltHash', 'imageAltSource', 'imageDecorative', 'imageSource', 'imageAttribution', 'imageCreditBand'].forEach(key => { snapshot[key] = item[key] ?? (key === 'imageDecorative' ? false : key === 'imageAttribution' ? null : ''); });
   return snapshot;
 }
 function glossaryImageDescriptionHash(image) {
@@ -203,7 +243,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     setStatus('Image updated. You can add a description or undo this change.');
     focusDescriptionRef.current = true;
   }
-  async function replace(load, attribution) {
+  async function replace(load, attribution, extraFor) {
     if (!canEdit || typeof beginTask !== 'function' || working) return;
     const before = glossaryImageSnapshot(item);
     const task = beginTask(index);
@@ -214,7 +254,9 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     try {
       const image = await load(task.signal);
       if (!task.isCurrent()) { if (mountedRef.current && task.isOwner()) setError('The term changed while the image loaded. Please try again.'); return; }
-      const saved = task.commit(() => glossaryImageReplacement(image, attribution));
+      const creditBand = glossaryCreditBands.get(image) || 0;
+      glossaryCreditBands.delete(image);
+      const saved = task.commit(() => glossaryImageReplacement(image, attribution, Object.assign({ imageCreditBand: creditBand }, typeof extraFor === 'function' ? extraFor(image) : null)));
       if (mountedRef.current) {
         if (saved) recordReplacement(before, image);
         else setError('The term changed while the image loaded. Please try again.');
@@ -284,6 +326,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
       <div className="my-4 flex flex-wrap gap-2">
         <button type="button" className={buttonClass} disabled={working || !beginTask} aria-describedby={uploadHelpId} onClick={() => inputRef.current?.click()}>{text('glossary.images.upload', 'Upload image')}</button>
         <button type="button" className={buttonClass} disabled={working || !beginTask} aria-pressed={mode === 'mulberry'} onClick={openMulberry}>{text('glossary.images.mulberry', 'Find Mulberry symbol')}</button>
+        <button type="button" className={buttonClass} disabled={working || !beginTask} aria-pressed={mode === 'photos'} onClick={() => { stopSearch(); setError(''); setStatus(''); setMode('photos'); }}>{text('glossary.images.photo', 'Find photo')}</button>
         <button type="button" className={buttonClass} disabled={working || !onGenerate} onClick={generate}>{text('glossary.images.generate', 'Generate image')}</button>
       </div>
       <p id={uploadHelpId} className="mb-4 text-xs text-slate-600">{text('glossary.images.upload_help', 'Upload PNG, JPEG, GIF, WebP, or AVIF images, up to 10 MB.')}</p>
@@ -298,6 +341,17 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
         </div>
         <p className="my-3 text-xs text-slate-700"><a className="underline" href="https://globalsymbols.com/symbolsets/mulberry" target="_blank" rel="noopener noreferrer">Mulberry Symbols by Steve Lee</a> · <a className="underline" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>. Credit is included in saved images.</p>
         <button type="button" className={buttonClass} onClick={() => { stopSearch(); setMode('choices'); setStatus(''); setError(''); }}>{text('glossary.images.back', 'Back to current image')}</button>
+      </section> : mode === 'photos' ? <section aria-label={'Photos for ' + item.term}>
+        {window.AlloModules && window.AlloModules.ClassroomImagePicker
+          ? React.createElement(window.AlloModules.ClassroomImagePicker, {
+            idPrefix: 'glossary-photo-' + index, initialQuery: item.term, sources: ['photos'], t,
+            onChoose: choice => replace(signal => prepareGlossaryPhoto(choice, signal), choice.attribution, image => ({
+              imageSource: 'wikimedia', imageAlt: choice.alt || '', imageAltSource: choice.alt ? 'vision' : '',
+              imageAltHash: choice.alt ? glossaryImageDescriptionHash(image) : '',
+            })),
+          })
+          : <p role="status" className="text-sm text-slate-700">{text('glossary.images.photos_loading', 'Photo search is still loading. Try again in a moment.')}</p>}
+        <button type="button" className={buttonClass + ' mt-3'} onClick={() => { setMode('choices'); setStatus(''); setError(''); }}>{text('glossary.images.back', 'Back to current image')}</button>
       </section> : <div className="space-y-3">
         {item.image ? <><img src={item.image} alt={glossaryCurrentDescription(item)} className="mx-auto max-h-48 max-w-full rounded border border-slate-300 bg-white object-contain" />
           <label className="block text-sm font-semibold">{text('glossary.images.description', 'Image description (alt text, optional)')}<textarea ref={descriptionRef} value={description} onChange={event => setDescription(event.target.value)} disabled={working} aria-describedby={descriptionHelpId} rows={3} maxLength={2000} className="mt-1 w-full rounded border border-slate-400 bg-white p-2 text-sm text-slate-800" /></label>

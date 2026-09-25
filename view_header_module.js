@@ -668,10 +668,6 @@ function HeaderBar(props) {
   const openJoinFromCompactHeader = () => {
     _joinOpenAfterExpandRef.current = true;
     setHeaderCollapsed(false);
-    try {
-      localStorage.setItem("allo_header_collapsed", "false");
-    } catch (_) {
-    }
   };
   return /* @__PURE__ */ React.createElement("header", { "aria-label": t("common.main_application_header"), className: `allo-premium-header ${headerCollapsed ? "px-3 sm:px-5 md:px-6 py-px" : "p-4 md:py-4 md:px-8"} no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === "contrast" ? "bg-black border-b-4 border-yellow-400" : "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white"}` }, /* @__PURE__ */ React.createElement("style", null, `
           .allo-premium-header { border-bottom: 1px solid rgba(255,255,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 12px 32px rgba(2,6,23,.18); }
@@ -799,7 +795,7 @@ function HeaderBar(props) {
       "aria-expanded": isJoinPopoverOpen
     },
     /* @__PURE__ */ React.createElement(WifiOff, { size: 16, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("session.join"))
+    /* @__PURE__ */ React.createElement("span", null, t("session.join"))
   ), !isTeacherMode && (activeSessionCode || _isHomeworkStatus) && /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1597,7 +1593,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(Wifi, { size: 14 }),
     activeSessionCode ? t("header.live_session_code", { code: activeSessionCode }) || `Live: ${activeSessionCode}` : /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("session.start"))
-  )) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center" }, activeSessionCode ? /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 text-white px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm transition-colors ${sessionData ? "bg-green-700 border-green-600" : "bg-yellow-500 border-yellow-400"}` }, sessionData ? /* @__PURE__ */ React.createElement(Wifi, { size: 14, className: "animate-pulse" }) : /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), /* @__PURE__ */ React.createElement("span", null, sessionData ? t("header.synced_session_code", { code: activeSessionCode }) || `Synced: ${activeSessionCode}` : t("header.connecting_session_code", { code: activeSessionCode }) || `Connecting: ${activeSessionCode}`), /* @__PURE__ */ React.createElement(
+  )) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center" }, activeSessionCode ? /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 text-white px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm transition-colors ${sessionData ? "bg-green-700 border-green-600" : "bg-yellow-700 border-yellow-400"}` }, sessionData ? /* @__PURE__ */ React.createElement(Wifi, { size: 14, className: "animate-pulse" }) : /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), /* @__PURE__ */ React.createElement("span", null, sessionData ? t("header.synced_session_code", { code: activeSessionCode }) || `Synced: ${activeSessionCode}` : t("header.connecting_session_code", { code: activeSessionCode }) || `Connecting: ${activeSessionCode}`), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1627,10 +1623,10 @@ function HeaderBar(props) {
       "aria-haspopup": "dialog",
       "aria-expanded": isJoinPopoverOpen
     },
-    /* @__PURE__ */ React.createElement(WifiOff, { size: 14 }),
+    /* @__PURE__ */ React.createElement(WifiOff, { size: 14, "aria-hidden": "true" }),
     " ",
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("session.join"))
-  ), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { ref: _joinPopoverRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-join-session-title", className: "absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 border-b border-slate-200 pb-2" }, /* @__PURE__ */ React.createElement("h2", { id: "header-join-session-title", className: "text-sm font-black text-slate-800" }, t("session.join")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetIsJoinPopoverOpenToFalse, className: "min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2", "aria-label": t("common.close") || "Close join session" }, "\xD7")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-join-host-id", className: "block text-[11px] font-bold text-slate-600 mb-1 uppercase" }, t("session.host_id_optional")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("span", null, t("session.join"))
+  ), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { ref: _joinPopoverRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-join-session-title", className: "absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 border-b border-slate-200 pb-2" }, /* @__PURE__ */ React.createElement("h2", { id: "header-join-session-title", className: "text-sm font-black text-slate-800" }, t("session.join")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetIsJoinPopoverOpenToFalse, className: "min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2", "aria-label": t("common.close") || "Close join session" }, "\xD7")), /* @__PURE__ */ React.createElement("p", { id: "header-join-instructions", className: "text-xs text-slate-600" }, t("session.join_instructions")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-join-host-id", className: "block text-[11px] font-bold text-slate-600 mb-1 uppercase" }, t("session.host_id_optional")), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "header-join-host-id",
@@ -1645,6 +1641,7 @@ function HeaderBar(props) {
     {
       id: "header-join-code",
       "data-autofocus": true,
+      "aria-describedby": "header-join-instructions",
       type: "text",
       value: joinCodeInput,
       onChange: (e) => setJoinCodeInput(e.target.value.toUpperCase()),
@@ -1658,23 +1655,13 @@ function HeaderBar(props) {
     {
       type: "button",
       "aria-label": t("common.continue"),
+      "data-header-join-submit": true,
+      disabled: String(joinCodeInput || "").replace(/[^A-Z0-9]/gi, "").length !== 5,
       onClick: () => joinClassSession(joinCodeInput),
-      className: "bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors"
+      className: "bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     },
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 })
-  ))))), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetIsJoinPopoverOpenToFalse })))), !isTeacherMode && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: handleSetShowSubmitModalToTrue,
-      className: `bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30`,
-      title: t("header.submit_tooltip"),
-      "data-help-key": "header_submit"
-    },
-    /* @__PURE__ */ React.createElement(Send, { size: 14 }),
-    " ",
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.submit_work"))
-  )))))))), showSetupPathMenu && /* @__PURE__ */ React.createElement(
+  ))))), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetIsJoinPopoverOpenToFalse }))))))))))), showSetupPathMenu && /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "fixed inset-0 z-[12000] bg-slate-950/70 backdrop-blur-sm flex items-start justify-end p-4 md:p-8",

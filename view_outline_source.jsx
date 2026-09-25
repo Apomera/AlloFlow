@@ -79,14 +79,15 @@ function OutlineView(props) {
   return (
                   <div className="space-y-6 h-full">
                       <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex flex-col sm:flex-row flex-wrap justify-between items-start gap-4">
-                        <div className="text-sm text-orange-800">
+                        {/* The UDL rationale is the teacher's; a student's first read is the organizer. */}
+                        {isTeacherMode && <div data-organizer-udl-goal className="text-sm text-orange-800">
                             <strong>UDL Goal:</strong> Providing options for perception. This graphic organizer helps students who process information visually or struggle with large blocks of text.
                             <div className="mt-2 flex flex-wrap gap-2">
                                 <span className="inline-block bg-white/50 border border-orange-200 px-2 py-0.5 rounded text-xs font-bold">Level: {gradeLevel}</span>
                                 {leveledTextLanguage !== 'English' && <span className="inline-block bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded text-xs font-bold">{leveledTextLanguage}</span>}
                                 {standardsInput && <span className="inline-block bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1"><CheckCircle size={10}/> {standardsInput}</span>}
                             </div>
-                        </div>
+                        </div>}
                         <div className="flex flex-wrap gap-2">
                             {isTeacherMode && (
 (generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn || isVennPlaying) && <button
@@ -161,7 +162,7 @@ function OutlineView(props) {
                             )}
                             {isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
                                 <button
-                                    aria-label={t('common.toggle_edit_outline')}
+                                    data-outline-edit-text
                                     onClick={handleToggleIsEditingOutline}
                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`}
                                 >
@@ -169,12 +170,13 @@ function OutlineView(props) {
                                     {isEditingOutline ? t('common.done') : t('outline.edit_text')}
                                 </button>
                             )}
-                            {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
+                            {/* Teacher only in the markup, not just hidden by a class. */}
+                            {isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
                             <button
-                                aria-label={t('common.refresh')}
+                                data-outline-regenerate
                                 onClick={() => handleGenerate('outline')}
                                 disabled={isProcessing} aria-busy={isProcessing}
-                                className={`flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${!isTeacherMode ? 'hidden' : ''}`}
+                                className="flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <RefreshCw size={14} className={isProcessing ? "animate-spin motion-reduce:animate-none" : ""} /> {t('common.regenerate')}
                             </button>

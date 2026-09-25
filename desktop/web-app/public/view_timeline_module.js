@@ -210,20 +210,19 @@ function TimelineView(props) {
     "aria-live": "polite",
     "aria-atomic": "true",
     className: "sr-only"
-  }, isRevisingTimeline ? t('timeline.revising') : isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing timeline' : isVerifyingTimeline ? t('timeline.validation.verifying') || 'Verifying timeline accuracy' : Object.values(isGeneratingTimelineImage || {}).some(Boolean) ? t('timeline.visuals.generating') || 'Generating timeline image' : ''), /*#__PURE__*/React.createElement("div", {
+  }, isRevisingTimeline ? t('timeline.revising') : isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing timeline' : isVerifyingTimeline ? t('timeline.validation.verifying') || 'Verifying timeline accuracy' : Object.values(isGeneratingTimelineImage || {}).some(Boolean) ? t('timeline.visuals.generating') || 'Generating timeline image' : ''), (isTeacherMode || isIndependentMode) && /*#__PURE__*/React.createElement("div", {
+    "data-timeline-toolbar": true,
     className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-indigo-800"
   }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('timeline.udl_goal_desc')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.start_game'),
     onClick: handleSetIsTimelineGameToTrue,
     className: "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14
   }), " ", isTeacherMode ? t('timeline.preview_game') : t('timeline.launch_sequencer')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.toggle_edit_timeline'),
     onClick: handleToggleIsEditingTimeline,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingTimeline ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'}`
   }, isEditingTimeline ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -318,7 +317,10 @@ function TimelineView(props) {
     className: "bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md"
   }, /*#__PURE__*/React.createElement("span", {
     className: "opacity-70"
-  }, t('timeline.order_by')), " ", generatedContent?.data.progressionLabel), generatedContent?.data.mode && TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode] && (generatedContent.data.autoDetected ? /*#__PURE__*/React.createElement("button", {
+  }, t('timeline.order_by')), " ", generatedContent?.data.progressionLabel), generatedContent?.data.mode && TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode] && (!isTeacherMode ? /*#__PURE__*/React.createElement("span", {
+    "data-timeline-mode-chip": true,
+    className: "bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm"
+  }, TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label) : generatedContent.data.autoDetected ? /*#__PURE__*/React.createElement("button", {
     onClick: handleLockTimelineMode,
     className: "bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm hover:bg-amber-100 transition-colors",
     title: t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations',
@@ -599,7 +601,6 @@ function TimelineView(props) {
   }, t('timeline.ready_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 mb-8 max-w-md"
   }, t('timeline.ready_desc')), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.start_game'),
     onClick: handleSetIsTimelineGameToTrue,
     className: "px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"
   }, /*#__PURE__*/React.createElement(Gamepad2, {

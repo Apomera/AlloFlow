@@ -30,6 +30,31 @@ describe('Geometry World session report', () => {
   PATHS.forEach((p) => {
     const src = readFileSync(p, 'utf8');
 
+    it(`dates the report and files with the student's own day, not UTC — ${p}`, () => {
+      // toISOString() is UTC: after 5 pm in California it named tomorrow (2026-09-24).
+      expect(src).toContain('sessionLocalDate: geometryLocalDay(new Date()),');
+      expect(src).toContain("<strong>Date:</strong> ' + r.sessionLocalDate + ' &bull;");
+      expect(src).not.toContain('toISOString().slice(0, 10)');
+      expect(src).not.toContain('r.sessionDate.slice(0, 10)');
+      // No file name or stamp is cut from a UTC time.
+      expect(src).not.toMatch(/download = [^;]*toISOString/);
+      expect(src).not.toContain('var stamp = new Date().toISOString');
+    });
+
+    it(`counts what the log holds: worksheets opened and characters made, old keys kept — ${p}`, () => {
+      // 'worksheet_print' is never logged (printing happens in the browser's tab), so the
+      // Worksheets tile always said 0; "Worlds Created" counted characters.
+      expect(src).toContain("worksheetsOpened: log.filter(function(e) { return e.type === 'worksheet_preview'; }).length,");
+      expect(src).toContain("charactersCreated: log.filter(function(e) { return e.type === 'npc_created'; }).length,");
+      expect(src).toContain("eng.logEvent('worksheet_preview'");
+      expect(src).toContain("<div class=\"lbl\">Worksheets opened</div>");
+      expect(src).toContain("<div class=\"lbl\">Characters made</div>");
+      expect(src).not.toContain('Worlds Created');
+      // Earlier exports are compared key by key, so the old keys stay.
+      expect(src).toContain('worksheetsPrinted: log.filter(');
+      expect(src).toContain('worldsCreated: log.filter(');
+    });
+
     it(`measures session duration from real elapsed time — ${p}`, () => {
       expect(src).toContain('var sessionDuration = engine.sessionStart ? (Date.now() - engine.sessionStart) / 1000');
       // The last-event-timestamp form must not be the primary source any more.
@@ -44,7 +69,8 @@ describe('Geometry World session report', () => {
     it(`logs which step an answer belongs to, on both correct and wrong — ${p}`, () => {
       // answer_correct carried `step` but no final-step flag; answer_wrong carried
       // neither, so the log could not say which step a student failed.
-      expect(src).toContain('step: curStep, isFinalStep: !!isLastStep });');
+      // Both events also say whether the answer was chosen or typed (2026-09-24).
+      expect(src).toContain('step: curStep, isFinalStep: !!isLastStep, mode: via });');
       const flagged = src.match(/isFinalStep: !!isLastStep/g) || [];
       expect(flagged.length).toBeGreaterThanOrEqual(2);
     });

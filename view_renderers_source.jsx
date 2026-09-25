@@ -1419,7 +1419,6 @@ const renderOutlineContentCore = (deps) => {
                           disabled={!organizerLaunchReadiness.ok}
                           className="flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                           aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                          aria-label={t('games.pipeline.title') || 'Pipeline Builder'}
                         >
                           <Gamepad2 size={16} /> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                         </button>
@@ -1646,7 +1645,7 @@ const renderOutlineContentCore = (deps) => {
                 <div className="max-w-3xl mx-auto py-8">
                     <div className="flex justify-center mb-8 gap-3">
                          <button
-                             aria-label={t('common.start_game')}
+                            data-venn-interactive-start
                             onClick={handleInitializeVenn}
                             className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-bold text-sm transition-colors border border-indigo-200 shadow-sm"
                         >

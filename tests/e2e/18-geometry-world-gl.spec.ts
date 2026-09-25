@@ -171,6 +171,9 @@ const HARNESS = `<!doctype html>
     if (!en) return false;
     en.camera.position.set(x + 0.5, y + 3.2, z + 3.5);
     en.camera.lookAt(x + 0.5, y + 0.5, z + 0.5);
+    // Raycasts read matrixWorld, which only the next rendered frame refreshes: under load B
+    // and clicks used the camera from BEFORE the aim (a block landed at 3,1,7 for an aim at 2,0,2).
+    en.camera.updateMatrixWorld(true);
     en.euler.setFromQuaternion(en.camera.quaternion);
     return true;
   };
@@ -910,6 +913,91 @@ test.describe('Geometry World — real WebGL', () => {
       });
     }
   });
+  // Room for the world (2026-09-24). Before: walking a lesson, the interface covered 15% of a
+  // Chromebook world and 43% of an upright phone's; a character dialog covered 80-100% of the
+  // centre of the view. Measured here the way a student sees it: points on a grid over the
+  // canvas, covered when they fall under a visible interface box.
+  test('leaves the world visible: little interface in a lesson, the dialog beside the view, U hides it all', async ({ page }) => {
+    test.setTimeout(300_000);
+    const coverage = () => page.evaluate(() => {
+      const wrap = document.getElementById('geoworld-fs-wrap') as HTMLElement;
+      const canvas = Array.from(wrap.querySelectorAll('canvas')).sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
+      const cr = canvas.getBoundingClientRect();
+      const root = document.getElementById('geoworld-fs-workspace') as HTMLElement;
+      const boxes: DOMRect[] = [];
+      const visible = (el: Element) => { const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity) >= 0.05 && r.width > 2 && r.height > 2; };
+      const painted = (s: CSSStyleDeclaration) => { const m = s.backgroundColor.match(/rgba?\(([^)]+)\)/); const a = m ? (m[1].split(',')[3] === undefined ? 1 : Number(m[1].split(',')[3])) : 0; return a > 0.08 || s.backgroundImage !== 'none' || (s.backdropFilter && s.backdropFilter !== 'none') || (parseFloat(s.borderTopWidth) > 0 && s.borderTopStyle !== 'none'); };
+      const collect = (el: Element) => {
+        if (el === canvas) return;
+        if (el.contains(canvas)) { Array.from(el.children).forEach(collect); return; }
+        if (!visible(el)) return;
+        const s = getComputedStyle(el), r = el.getBoundingClientRect();
+        if (s.pointerEvents === 'none' && r.width * r.height > 0.5 * cr.width * cr.height) { Array.from(el.children).forEach(collect); return; }
+        const text = Array.from(el.childNodes).some((n) => n.nodeType === 3 && (n.textContent || '').trim());
+        if (painted(s) || /^(BUTTON|INPUT|SELECT|TEXTAREA|IMG|SVG|LABEL)$/i.test(el.tagName) || text) { boxes.push(r); return; }
+        Array.from(el.children).forEach(collect);
+      };
+      collect(root);
+      const under = (x: number, y: number) => boxes.some((b) => x >= b.left && x < b.right && y >= b.top && y < b.bottom);
+      let total = 0, covered = 0, ct = 0, cc = 0;
+      for (let y = cr.top + 3; y < cr.bottom; y += 6) for (let x = cr.left + 3; x < cr.right; x += 6) {
+        total++; const hit = under(x, y); if (hit) covered++;
+        if (x > cr.left + cr.width * 0.2 && x < cr.left + cr.width * 0.8 && y > cr.top + cr.height * 0.2 && y < cr.top + cr.height * 0.8) { ct++; if (hit) cc++; }
+      }
+      const dialog = document.querySelector('.gw-dialog--npc');
+      const d = dialog ? dialog.getBoundingClientRect() : null;
+      const cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+      return { covered: 100 * covered / total, centre: 100 * cc / ct, dialogOpen: !!dialog, dialogOverCentre: !!d && cx >= d.left && cx < d.right && cy >= d.top && cy < d.bottom };
+    });
+    const startLesson = async () => {
+      await page.evaluate(() => (window as any).__geoWorldEngine.startHomeLesson('volumeExplorer'));
+      await page.waitForFunction(() => !document.querySelector('.gwe-home') && /Volume Explorer/.test(((window as any).__geoWorldEngine._currentLesson || {}).title || ''), null, { timeout: 30000 });
+      await page.waitForTimeout(1500);
+      await page.evaluate(() => { const en = (window as any).__geoWorldEngine; en._entryAnim = null; en.flyMode = true; const c = en.camera; c.position.set(7, 5, -6); c.lookAt(10, 1.5, 6); c.updateMatrixWorld(true); en.euler.setFromQuaternion(c.quaternion); });
+      await page.waitForTimeout(500);
+    };
+    const bucket = { _introShownOnce: true, _mobileDismissed: true, worldActive: true, tutorialDismissed: true };
+
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await mount(page, bucket);
+    await startLesson();
+    const walking = await coverage();
+    expect(walking.covered, 'lesson, Chromebook').toBeLessThan(8);
+    expect(walking.centre, 'centre of the view').toBeLessThan(2);
+
+    await page.evaluate(async () => {
+      const en = (window as any).__geoWorldEngine, wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+      const idx = en.npcs.findIndex((n: any) => n.data && n.data.name === 'Builder Bot'), b = en.npcs[idx].body.position;
+      for (let t = 0; t < 6 && !document.querySelector('.gw-dialog--npc'); t++) {
+        const c = en.camera; c.position.set(b.x, b.y + 0.5, b.z - 2.2); c.lookAt(b.x, b.y + 0.3, b.z); c.updateMatrixWorld(true); en.euler.setFromQuaternion(c.quaternion);
+        await wait(200); (document.getElementById('geoworld-fs-wrap') as HTMLElement).focus();
+        document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE', key: 'e', bubbles: true })); await wait(900);
+      }
+    });
+    const talking = await coverage();
+    expect(talking.dialogOpen).toBe(true);
+    expect(talking.dialogOverCentre, 'the dialog sits beside the view').toBe(false);
+    expect(talking.covered).toBeLessThan(30);
+    await page.click('.gw-dialog-close');
+    await page.waitForTimeout(300);
+
+    await focusWorld(page);
+    await page.keyboard.press('u');
+    await page.waitForTimeout(400);
+    const hidden = await coverage();
+    expect(hidden.covered, 'U leaves only the Show controls button').toBeLessThan(2);
+    await page.keyboard.press('u');
+    await page.waitForTimeout(300);
+    expect((await coverage()).covered).toBeGreaterThan(hidden.covered);
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mountResponsive(page, bucket, true, false);
+    await startLesson();
+    const phone = await coverage();
+    expect(phone.covered, 'lesson, upright phone').toBeLessThan(25);
+  });
+
   test('tears the engine down cleanly on unmount', async ({ page }) => {
     await mount(page, { _introShownOnce: true });
     expect(await page.evaluate(() => !!(window as any).__eng())).toBe(true);

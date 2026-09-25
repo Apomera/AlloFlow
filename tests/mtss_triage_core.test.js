@@ -123,6 +123,13 @@ describe('mtssParsePaste', () => {
     expect(p.skipped).toContain('Code,Score');
     expect(p.skipped).toContain('XX,notanumber');
   });
+
+  it('reads a comma-formatted score from a spreadsheet paste as one number (2026-09-23)', () => {
+    // A Lexile of 1,050 copied from a spreadsheet arrives as "1,050" in a tab
+    // row; splitting on the comma too read it as 1.
+    const p = M.mtssParsePaste('JD\t1,050\nAL,"1,120"\nMR;980');
+    expect(p.rows).toEqual([{ code: 'JD', score: 1050 }, { code: 'AL', score: 1120 }, { code: 'MR', score: 980 }]);
+  });
 });
 
 describe('mtssSiblingCounts', () => {

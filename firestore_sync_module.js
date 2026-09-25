@@ -342,16 +342,34 @@
     return memoryResult.changed ? memoryResult.value : nextItem;
   }
 
+  // Pictures beside word supports (original and adapted readings). The written
+  // supports always stay; only the pictures, which a teacher can choose again.
+  function stripReadingSupportPictures(item) {
+    if (!item || typeof item !== 'object') return item;
+    let next = item;
+    ['readingSupports', 'adaptedReadingSupports'].forEach(key => {
+      const envelope = item[key];
+      if (!envelope || typeof envelope !== 'object' || !Array.isArray(envelope.annotations) || !envelope.annotations.some(entry => entry && entry.image)) return;
+      if (next === item) next = { ...item };
+      next[key] = { ...envelope, annotations: envelope.annotations.map(entry => {
+        if (!entry || !entry.image) return entry;
+        const { image, ...rest } = entry;
+        return rest;
+      }) };
+    });
+    return next;
+  }
+
   function fitArtworkToBudget(items) {
     if (!Array.isArray(items)) return items;
     let size = estimateJsonBytes(items);
     if (size <= CLOUD_ART_BUDGET_BYTES) return items;
     const out = items.slice();
     const droppedIndexes = new Set();
-    const stripPass = (memoryAidMode, stripGenericArtwork) => {
+    const stripPass = (lighten) => {
       // History is appended, so index 0 is the oldest within each priority.
       for (let i = 0; i < out.length && size > CLOUD_ART_BUDGET_BYTES; i++) {
-        const lighter = stripHeavyArtwork(out[i], { memoryAidMode, stripGenericArtwork });
+        const lighter = lighten(out[i]);
         if (lighter === out[i]) continue;
         out[i] = lighter;
         droppedIndexes.add(i);
@@ -359,10 +377,11 @@
       }
     };
     // AI-generated, AI-refined, and legacy/unknown visuals can be recreated.
-    // Remove those (and the existing generic artwork stores) before touching a
-    // learner or teacher's uploaded original.
-    stripPass('regenerable', true);
-    if (size > CLOUD_ART_BUDGET_BYTES) stripPass('uploaded', false);
+    // Remove those (and the existing generic artwork stores), then word-support
+    // pictures, before touching a learner or teacher's uploaded original.
+    stripPass(item => stripHeavyArtwork(item, { memoryAidMode: 'regenerable', stripGenericArtwork: true }));
+    if (size > CLOUD_ART_BUDGET_BYTES) stripPass(stripReadingSupportPictures);
+    if (size > CLOUD_ART_BUDGET_BYTES) stripPass(item => stripHeavyArtwork(item, { memoryAidMode: 'uploaded', stripGenericArtwork: false }));
     if (droppedIndexes.size) {
       try {
         window.__alloLastCloudArtDrop = { items: droppedIndexes.size, bytesAfter: size };
@@ -733,6 +752,7 @@
   window.estimateJsonBytes = estimateJsonBytes;
   window.stripHeavyArtwork = stripHeavyArtwork;
   window.fitArtworkToBudget = fitArtworkToBudget;
+  window.stripReadingSupportPictures = stripReadingSupportPictures;
   window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
   window.normalizePersistedInstructionalText = normalizePersistedInstructionalText;
   window.normalizeReadingPreservation = normalizeReadingPreservation;

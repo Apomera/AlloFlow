@@ -659,9 +659,11 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}');
     expect(SOURCE).toContain("whiteSpace: 'normal'");
     expect(SOURCE).toContain("maxWidth: isMobile ? 'calc(100vw - 168px)'");
-    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block')`);
-    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure')`);
-    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action')`);
+    // Touch actions take their names through touchActionButton's ariaLabel (2026-09-24).
+    expect(SOURCE).toContain("'aria-label': ariaLabel,");
+    expect(SOURCE).toContain(`__alloT('stem.geometryworld.a11y_place_block', 'Place block')`);
+    expect(SOURCE).toContain(`__alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure')`);
+    expect(SOURCE).toContain(`__alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action')`);
     expect(SOURCE).toContain("engine._undoStack && engine._undoStack.length > 0 && el('button'");
     expect(SOURCE).toContain("engine._redoStack && engine._redoStack.length > 0 && el('button'");
     expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode')`);

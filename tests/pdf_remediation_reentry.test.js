@@ -50,7 +50,9 @@ describe('host: result survives close and is re-openable in-session', () => {
     // first in DOM/visual order and the group moves inward on wider Canvas viewports so
     // Gemini's lower-right floating toolbar cannot cover the only dismiss control.
     expect(host).toContain('{(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && !pdfReturnPillDismissed && (');
-    expect(host).toContain("ALLO_PDF_REMEDIATION_CACHE.isLatestDismissed(localStorage)");
+    // Read through safeLocalStorage() since 2026-09-24: a bare localStorage read here crashed the
+    // app at boot when the browser blocks storage (tests/host_render_storage_guarded.test.js).
+    expect(host).toContain("ALLO_PDF_REMEDIATION_CACHE.isLatestDismissed(safeLocalStorage())");
     expect(host).toContain('right-3 sm:right-24');
     const pillStart = host.indexOf('{(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading');
     const pill = host.slice(pillStart, pillStart + 3600);

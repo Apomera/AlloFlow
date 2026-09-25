@@ -84,6 +84,9 @@
     "3x stronger",
     "4x more"
   ],
+  "stem_tool_geometryworld.js": [
+    "about 1.67 times"
+  ],
   "stem_tool_heatlab.js": [
     "about 25 times"
   ],
@@ -113,8 +116,8 @@
   ],
   "stem_tool_optics.js": [
     "100x larger",
+    "2.5x more",
     "43x larger",
-    "8x more",
     "about 100 times",
     "about 15 times",
     "about 23 times"

@@ -3262,12 +3262,20 @@
   // played. Stored as { lastPlayedDate: 'YYYY-MM-DD', current: N,
   // longest: N }. Computed lazily so the streak record updates on
   // first render, not on first move.
+  // Days are LOCAL calendar dates. toISOString() is UTC, so the day rolled
+  // over at 5 pm in Portland: practice at 4 pm Monday then 6 pm Tuesday read
+  // as two days apart and reset the streak. Yesterday is calendar arithmetic,
+  // not now - 24 h, which lands two days back after a 23-hour DST day.
+  function _mfLocalDate(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
   function _mfDailyStreak() {
     try {
-      var today = new Date().toISOString().slice(0, 10);
+      var now = new Date();
+      var today = _mfLocalDate(now);
       var rec = JSON.parse(localStorage.getItem('fluency_maze_daily') || '{}');
       if (rec.lastPlayedDate === today) return rec; // already counted today
-      var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      var yesterday = _mfLocalDate(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
       var newCurrent = rec.lastPlayedDate === yesterday ? (rec.current || 0) + 1 : 1;
       var next = {
         lastPlayedDate: today,
@@ -6213,6 +6221,7 @@
     parseStudentAnswer: parseStudentAnswer, countCorrectDigits: countCorrectDigits,
     findMazePathStep: findMazePathStep, findMazePathDistance: findMazePathDistance, buildChaseRadar: buildChaseRadar, buildMazeBestKey: buildMazeBestKey,
     generateMazeProblem: generateMazeProblem,
+    dailyStreak: _mfDailyStreak, localDate: _mfLocalDate,
   };
   console.log('[CDN] MathFluency + FluencyMaze modules registered');
 })();

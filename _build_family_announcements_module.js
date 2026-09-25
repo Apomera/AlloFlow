@@ -69,6 +69,7 @@ ${compiled}
   window.AlloModules.FamilyAnnouncements = {
     FamilyAnnouncementsPanel: FamilyAnnouncementsPanel,
     _testing: {
+      famannToday: famannToday,
       famannPrompt: famannPrompt,
       famannCleanTranslation: famannCleanTranslation,
       famannPacketHtml: famannPacketHtml,

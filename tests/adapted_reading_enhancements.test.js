@@ -58,7 +58,8 @@ describe('Adapted reading structure and content retention', () => {
   });
   it('changes reading width without changing content', () => {
     const { body } = mount(); const before = body.querySelector('section').textContent;
-    const select = body.querySelector('select'); act(() => { select.value = '40'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    // Reading width lives in the Display (Aa) panel above the passage (2026-09-24).
+    const select = host.querySelector('select[aria-label="Reading width"]'); act(() => { select.value = '40'; select.dispatchEvent(new Event('change', { bubbles: true })); });
     expect(body.style.maxWidth).toContain('40ch'); expect(body.querySelector('section').textContent).toBe(before);
   });
 });
@@ -67,7 +68,9 @@ describe('Adapted reading keyboard and multilingual parity', () => {
     const { handleSpeak } = mount({ isSideBySide, generatedContent: content('Uno.\n\n--- ENGLISH TRANSLATION ---\n\nOne.') });
     const sentences = host.querySelectorAll('[data-reading-sentence]');
     expect(sentences).toHaveLength(2); key(sentences[1], 'Enter');
-    expect(handleSpeak).toHaveBeenCalledWith(expect.any(String), 'simplified-main', 1);
+    // A sentence click restarts from that sentence in the reading's language
+    // (adapted_reader_fixes.test.js).
+    expect(handleSpeak).toHaveBeenCalledWith(expect.any(String), 'simplified-main', 1, true, 'English');
     expect(sentences[1].tabIndex).toBe(0);
   });
   it('uses roving word focus and keyboard glossary activation in stacked bilingual reading', () => {
@@ -162,7 +165,7 @@ describe('Student reading workflow and teacher boundaries', () => {
   it('starts and stops whole-passage listening through shared playback', () => {
     const { props } = mount();
     act(() => host.querySelector('[data-reader-listen]').click());
-    expect(props.handleSpeak).toHaveBeenCalledWith(props.generatedContent.data, 'simplified-main', 0);
+    expect(props.handleSpeak).toHaveBeenCalledWith(props.generatedContent.data, 'simplified-main', 0, false, 'English');
     act(() => root.render(React.createElement(View, { ...props, isPlaying: true, playingContentId: 'simplified-main' })));
     act(() => host.querySelector('[data-reader-listen]').click());
     expect(props.stopPlayback).toHaveBeenCalledTimes(1);

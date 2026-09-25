@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T11:03:11.027Z",
+  "generatedAt": "2026-09-24T23:53:21.587Z",
   "source": {
     "stemToolFileCount": 150,
     "registeredToolCount": 152
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 5,
+    "issueCount": 7,
     "errorCount": 0,
-    "warningCount": 4,
+    "warningCount": 6,
     "noticeCount": 1,
-    "toolsWithIssues": 4,
+    "toolsWithIssues": 5,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 3,
+    "toolsWithWarnings": 4,
     "toolsWithCanvas": 46,
     "shellCoverage": {
       "standardShellTools": 151,
@@ -39,7 +39,7 @@
       "math": {
         "toolCount": 27,
         "errorCount": 0,
-        "warningCount": 2,
+        "warningCount": 4,
         "noticeCount": 0
       },
       "Games": {
@@ -192,21 +192,23 @@
     {
       "code": "no-interactive-controls",
       "severity": "warning",
-      "count": 2,
-      "toolCount": 2,
+      "count": 3,
+      "toolCount": 3,
       "exampleTools": [
         "coasterLab",
-        "geoSandbox"
+        "geoSandbox",
+        "geometryWorld"
       ],
       "recommendation": "Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited."
     },
     {
       "code": "placeholder-render",
       "severity": "warning",
-      "count": 2,
-      "toolCount": 2,
+      "count": 3,
+      "toolCount": 3,
       "exampleTools": [
         "geoSandbox",
+        "geometryWorld",
         "lawNavigator"
       ],
       "recommendation": "The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited."
@@ -293,7 +295,7 @@
         "low vision"
       ],
       "desc": "Point your camera at the world: get a scene description read aloud (built for students who are blind or have low vision), re-read any text in large print, translate signs and handouts into your language, or investigate an object Socratic-style with an AI that asks questions instead of pronouncing answers.",
-      "renderedBytes": 6067,
+      "renderedBytes": 6046,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -988,7 +990,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 145496,
+      "renderedBytes": 142974,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -1001,7 +1003,7 @@
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
-        "svgs": 2,
+        "svgs": 1,
         "images": 0,
         "headings": 128,
         "links": 0,
@@ -1234,7 +1236,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "The intelligence + behavior + camouflage biology of octopuses, squid, cuttlefish, and nautilus. Headline: Hunter Sim — play a cephalopod hunter, pick species + habitat + prey + tactic, run the camouflage minigame, time the strike, learn the real biology behind each species' adaptations.",
-      "renderedBytes": 51652,
+      "renderedBytes": 51662,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -1867,7 +1869,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 71168,
+      "renderedBytes": 71160,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -2571,7 +2573,7 @@
         "crust layers"
       ],
       "desc": "Excavate a 3D crust cross-section, identify rocks, read layers, and find the pluton that cuts through them.",
-      "renderedBytes": 39285,
+      "renderedBytes": 30024,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -2580,13 +2582,13 @@
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 51,
+        "buttons": 40,
         "roleButtons": 0,
-        "fields": 2,
+        "fields": 1,
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 6,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2640,16 +2642,16 @@
         "block builder"
       ],
       "desc": "Explore guided geometry lessons or open a free-build sandbox, measure connected creations, and continue selected builds in Print Lab.",
-      "renderedBytes": 20239,
+      "renderedBytes": 19936,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 1,
+        "buttons": 0,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
@@ -2660,7 +2662,26 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "geometryWorld",
+          "severity": "warning",
+          "code": "placeholder-render",
+          "message": "First screen is still a loading placeholder, so this tool was not really audited.",
+          "renderedBytes": 19936,
+          "reason": "aria-busy",
+          "text": "Geometry World 🧱 💎 🏆 Building your world 🌍 Geometry World Loading the 3D engine and preparing interactive geometry.."
+        },
+        {
+          "toolId": "geometryWorld",
+          "severity": "warning",
+          "code": "no-interactive-controls",
+          "message": "First screen renders no interactive control: builds its scene from window.THREE before rendering controls. Not auditable in jsdom — cover it with the Playwright WebGL battery.",
+          "renderedBytes": 19936,
+          "blocker": "builds its scene from window.THREE before rendering controls.",
+          "text": "Geometry World 🧱 💎 🏆 Building your world 🌍 Geometry World Loading the 3D engine and preparing interactive geometry.."
+        }
+      ]
     },
     {
       "id": "gisStudio",
@@ -3284,7 +3305,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 26460,
+      "renderedBytes": 28313,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -3293,7 +3314,7 @@
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 11,
+        "buttons": 14,
         "roleButtons": 0,
         "fields": 5,
         "canvases": 1,
@@ -3628,7 +3649,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Geometric + wave optics: ray diagrams, Snell's law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization in 3D. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, exam-style quiz, and AI-graded explanations.",
-      "renderedBytes": 22880,
+      "renderedBytes": 23044,
       "settlePasses": 2,
       "auditedAs": "default",
       "standardShell": true,
@@ -3913,7 +3934,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 19339,
+      "renderedBytes": 19342,
       "settlePasses": 2,
       "auditedAs": "default",
       "standardShell": true,
@@ -4100,7 +4121,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 20-species roster from peregrine to harpy.",
-      "renderedBytes": 29760,
+      "renderedBytes": 29755,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -4190,7 +4211,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pseudo-3D driving simulator + US permit test + fuel efficiency physics. Maine state focus.",
-      "renderedBytes": 21910,
+      "renderedBytes": 75647,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -4199,13 +4220,13 @@
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 17,
+        "buttons": 77,
         "roleButtons": 0,
         "fields": 7,
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 2,
+        "headings": 10,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4250,7 +4271,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Earth Science: identify 24 rock specimens and 23 minerals by what you can actually see. Interactive landscape cross-section, textured specimen art, a no-AI Visual ID drill, AI Mystery Rock clues, and the real hand-sample tests — Mohs scratch, streak plate, acid fizz — plus a rotatable 3D view of each mineral’s crystal structure and a weathering-climate investigation.",
-      "renderedBytes": 8099,
+      "renderedBytes": 18357,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -4259,13 +4280,13 @@
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 12,
-        "roleButtons": 0,
+        "buttons": 14,
+        "roleButtons": 9,
         "fields": 0,
         "canvases": 1,
-        "svgs": 0,
+        "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4718,7 +4739,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 56535,
+      "renderedBytes": 56538,
       "settlePasses": 2,
       "auditedAs": "default",
       "standardShell": true,

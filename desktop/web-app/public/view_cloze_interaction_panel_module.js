@@ -1,7 +1,7 @@
 /**
  * AlloFlow ClozeInteractionPanel Module
  * Auto-generated. Source: view_cloze_interaction_panel_source.jsx
- * Source SHA-256: 71234536b61a0fb4
+ * Source SHA-256: 49f178843f02b0a4
  */
 (function() {
   'use strict';
@@ -26,6 +26,7 @@ function ClozeInteractionPanel(props) {
     leveledTextLanguage,
     playSound,
     setClozeCompletedSet,
+    setClozeInstanceSet,
     t,
     wordBankPosition,
     wordBankRef
@@ -58,6 +59,7 @@ function ClozeInteractionPanel(props) {
           "aria-label": t("common.refresh"),
           onClick: () => {
             setClozeCompletedSet(/* @__PURE__ */ new Set());
+            if (typeof setClozeInstanceSet === "function") setClozeInstanceSet(/* @__PURE__ */ new Set());
             playSound("click");
           },
           className: "text-blue-800 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1",

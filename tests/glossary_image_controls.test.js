@@ -3,7 +3,7 @@ import { transformSync } from '@babel/core';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, act } from './helpers/games_live_harness.js';
 import { loadAlloModule } from './setup.js';
-const source = transformSync(readFileSync('glossary_image_controls_source.jsx', 'utf8'), { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
+const source = transformSync(readFileSync(process.env.ALLO_GLOSSARY_CONTROLS_CANDIDATE || 'glossary_image_controls_source.jsx', 'utf8'), { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
 const { GlossaryImageControls, searchGlossaryMulberry, prepareGlossaryMulberry, glossaryImageDescriptionHash } = new Function('React', source + '\nreturn { GlossaryImageControls, searchGlossaryMulberry, prepareGlossaryMulberry, glossaryImageDescriptionHash };')(React);
 const cleanups = [];
 let readers;
@@ -105,6 +105,70 @@ describe('glossary Mulberry search', () => {
     expect(await promise).toBe('data:image/png;base64,portable');
     expect(ctx.fillText.mock.calls.flat().join(' ')).toContain('Mulberry Symbols by Steve Lee | CC BY-SA 4.0');
     expect(ctx.drawImage).toHaveBeenCalled();
+  });
+});
+
+describe('glossary classroom photos', () => {
+  const RealFileReader = globalThis.FileReader;
+  const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+  const pngBlob = () => new Blob([Uint8Array.from(atob(PNG), c => c.charCodeAt(0))], { type: 'image/png' });
+  const commons = { query: { pages: { 7: { pageid: 7, index: 1, title: 'File:Green_leaf.jpg', imageinfo: [{ mime: 'image/jpeg',
+    thumburl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/7.jpg/330px-7.jpg', thumbwidth: 330, thumbheight: 250,
+    descriptionurl: 'https://commons.wikimedia.org/wiki/File:Green_leaf.jpg',
+    extmetadata: { LicenseShortName: { value: 'CC BY-SA 4.0' }, LicenseUrl: { value: 'https://creativecommons.org/licenses/by-sa/4.0' }, Artist: { value: 'Ann' }, ImageDescription: { value: 'A leaf.' }, Categories: { value: 'Leaves' } } }] } } } };
+  beforeAll(() => { loadAlloModule('alt_text_module.js'); });
+  async function waitFor(check) {
+    for (let waited = 0; !check() && waited < 3000; waited += 20) await act(async () => { await new Promise(r => setTimeout(r, 20)); });
+    return check();
+  }
+
+  it('offers photos alongside upload, Mulberry and generation', async () => {
+    const view = mount(true, { onGenerate: vi.fn() });
+    await openDialog(view);
+    expect(view.container.textContent).toContain('Find photo');
+  });
+
+  it('saves a screened photo with its credit drawn in and its AI description kept', async () => {
+    const view = mount();
+    vi.stubGlobal('FileReader', RealFileReader);
+    const fetched = [];
+    vi.stubGlobal('fetch', vi.fn(async (url) => {
+      fetched.push(String(url));
+      return String(url).startsWith('https://commons.wikimedia.org/w/api.php') ? { ok: true, json: async () => commons } : { ok: true, blob: async () => pngBlob() };
+    }));
+    const vision = vi.fn(async () => JSON.stringify([{ index: 1, safe: true, relevant: true, alt: 'A green leaf with visible veins.' }]));
+    const savedVision = window.callGeminiVision; window.callGeminiVision = vision;
+    vi.stubGlobal('Image', class { naturalWidth = 960; naturalHeight = 720; set src(value) { if (value) queueMicrotask(() => this.onload()); } });
+    const ctx = { fillRect: vi.fn(), drawImage: vi.fn(), fillText: vi.fn(), measureText: text => ({ width: String(text).length * 7 }) };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/jpeg;base64,credited');
+    try {
+      await openDialog(view); await clickText(view, 'Find photo');
+      const picker = view.container.querySelector('[data-classroom-image-picker]');
+      expect(picker, 'shared picker').toBeTruthy();
+      expect(picker.querySelector('input[type=search]').value).toBe('Leaf');
+      await act(async () => picker.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(await waitFor(() => view.container.querySelector('button[aria-label="Use photo: A green leaf with visible veins."]'))).toBeTruthy();
+      await act(async () => view.container.querySelector('button[aria-label="Use photo: A green leaf with visible veins."]').click());
+      expect(await waitFor(() => view.state.resource.data[0].image === 'data:image/jpeg;base64,credited')).toBe(true);
+      const saved = view.state.resource.data[0];
+      expect(saved).toMatchObject({ imageSource: 'wikimedia', imageAlt: 'A green leaf with visible veins.', imageAltSource: 'vision', imageDecorative: false });
+      expect(saved.imageAltHash).toBe(glossaryImageDescriptionHash('data:image/jpeg;base64,credited'));
+      expect(saved.imageAttribution).toMatchObject({ set: 'Wikimedia Commons', author: 'Ann', license: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Green_leaf.jpg' });
+      // The drawn credit's height is kept, so an AI refine can take it off and redraw it.
+      expect(saved.imageCreditBand).toBeGreaterThan(0);
+      expect(view.state.history[0].data[0]).toEqual(saved);
+      // Credit is drawn into the saved image, like Mulberry's.
+      // Who made it, then the licence and source on a line of their own.
+      expect(ctx.fillText.mock.calls.map(c => c[0])).toEqual(expect.arrayContaining(['"Green leaf" by Ann', expect.stringContaining('CC BY-SA 4.0, via Wikimedia Commons')]));
+      // The saved copy is the larger rendition, not the screening thumbnail.
+      expect(fetched.some(u => u.includes('/960px-7.jpg'))).toBe(true);
+      // Undo puts the old picture back.
+      await clickText(view, 'Undo');
+      expect(view.state.resource.data[0].image).toBe('old-image');
+    } finally {
+      if (savedVision) window.callGeminiVision = savedVision; else delete window.callGeminiVision;
+    }
   });
 });
 

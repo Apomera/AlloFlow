@@ -117,7 +117,8 @@
     className: "space-y-6 h-full"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex flex-col sm:flex-row flex-wrap justify-between items-start gap-4"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, isTeacherMode && /*#__PURE__*/React.createElement("div", {
+    "data-organizer-udl-goal": true,
     className: "text-sm text-orange-800"
   }, /*#__PURE__*/React.createElement("strong", null, "UDL Goal:"), " Providing options for perception. This graphic organizer helps students who process information visually or struggle with large blocks of text.", /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex flex-wrap gap-2"
@@ -191,19 +192,19 @@
     title: t('concept_map.toolbar.remix_tooltip') || 'Rebuild this organizer yourself in Free Forms — your own words, your own arrangement',
     "aria-label": t('concept_map.toolbar.remix_tooltip') || 'Make it mine in Free Forms'
   }, "🏛️ ", t('concept_map.toolbar.remix') || 'Make it mine'), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.toggle_edit_outline'),
+    "data-outline-edit-text": true,
     onClick: handleToggleIsEditingOutline,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`
   }, isEditingOutline ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingOutline ? t('common.done') : t('outline.edit_text')), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.refresh'),
+  }), isEditingOutline ? t('common.done') : t('outline.edit_text')), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
+    "data-outline-regenerate": true,
     onClick: () => handleGenerate('outline'),
     disabled: isProcessing,
     "aria-busy": isProcessing,
-    className: `flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${!isTeacherMode ? 'hidden' : ''}`
+    className: "flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: isProcessing ? "animate-spin motion-reduce:animate-none" : ""

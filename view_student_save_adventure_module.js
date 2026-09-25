@@ -130,6 +130,9 @@ function StudentSaveAdventurePanel({
   // imply the teacher was supposed to include it. Undefined means an older host
   // that does not send the prop, in which case the section shows as before.
   isAdventureAvailable,
+  // False when there is nothing to save yet (Save did nothing, silently).
+  // Undefined from an older host keeps Save enabled.
+  hasSaveableWork,
   initiateSaveStudentProject,
   isResumingAdventure,
   isSaveActionPulsing,
@@ -172,6 +175,7 @@ function StudentSaveAdventurePanel({
       {
         type: "button",
         "aria-label": t("student.load_file"),
+        "data-help-key": "student_load_file",
         onClick: () => projectFileInputRef.current?.click(),
         className: cx("px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.secondary, styles.focusTeal, styles.focusOffset)
       },
@@ -183,8 +187,10 @@ function StudentSaveAdventurePanel({
       {
         type: "button",
         "aria-label": t("student.save_drive"),
+        "data-help-key": "student_save_work",
+        disabled: hasSaveableWork === false,
         onClick: initiateSaveStudentProject,
-        className: cx("px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryTeal, styles.focusTeal, styles.focusOffset, isSaveActionPulsing ? "student-save-history-pulse shadow-teal-500/50" : "")
+        className: cx("px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryTeal, styles.focusTeal, styles.focusOffset, "disabled:cursor-not-allowed disabled:opacity-50", isSaveActionPulsing ? "student-save-history-pulse shadow-teal-500/50" : "")
       },
       /* @__PURE__ */ React.createElement(Download, { size: 14, "aria-hidden": "true" }),
       " ",
@@ -193,7 +199,7 @@ function StudentSaveAdventurePanel({
       "button",
       {
         type: "button",
-        "aria-label": t("common.export_for_grading"),
+        "data-help-key": "student_submit_work",
         onClick: handleSetShowSubmitModalToTrue,
         className: cx("px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryIndigo, styles.focusIndigo, styles.focusOffset),
         title: t("common.export_for_grading")

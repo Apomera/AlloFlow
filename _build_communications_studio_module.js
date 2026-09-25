@@ -21,7 +21,7 @@ const TMP = path.join(ROOT, '_tmp_communications_studio_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__communicationsStudioExports = { CommunicationsStudioPanel, csScrubPII, csFindLikelyNames, csReadability, csParseGrid, csChunk, csReconcileBatch, csTextStats, csJoinBatch, csBatchTable, csReplaceNames, csReplaceNamesInGrid, csUnknownGridCodenames, csFlagSensitive, csGradeLabel, csBuildTranslateBatchPrompt, csRowTranslation, csNumbersIn, csEvidenceGaps, csRowEvidence, csRowStats, csPrintHtml, csBuildPrompt, csParseBatch, csDraftToHtml, CS_TEMPLATES, CS_TONES, CS_LANGUAGES, CS_FAMILY_TARGET_GRADE, CS_DISCLOSURE, CS_BATCH_SIZE, CS_GRID_MAX };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__communicationsStudioExports = { CommunicationsStudioPanel, csScrubPII, csFindLikelyNames, csReadability, csParseGrid, csChunk, csReconcileBatch, csTextStats, csJoinBatch, csBatchTable, csReplaceNames, csReplaceNamesInGrid, csUnknownGridCodenames, csFlagSensitive, csGradeLabel, csLocalDate, csBuildTranslateBatchPrompt, csRowTranslation, csNumbersIn, csEvidenceGaps, csRowEvidence, csRowStats, csPrintHtml, csBuildPrompt, csParseBatch, csDraftToHtml, CS_TEMPLATES, CS_TONES, CS_LANGUAGES, CS_FAMILY_TARGET_GRADE, CS_DISCLOSURE, CS_BATCH_SIZE, CS_GRID_MAX };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling communications_studio_source.jsx with esbuild...');
@@ -93,6 +93,7 @@ ${compiled}
       csUnknownGridCodenames: csUnknownGridCodenames,
       csFlagSensitive: csFlagSensitive,
       csGradeLabel: csGradeLabel,
+      csLocalDate: csLocalDate,
       csBuildTranslateBatchPrompt: csBuildTranslateBatchPrompt,
       csRowTranslation: csRowTranslation,
       csNumbersIn: csNumbersIn,

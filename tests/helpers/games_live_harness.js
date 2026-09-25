@@ -34,7 +34,8 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 let _loaded = false;
 export function loadGames() {
   if (_loaded) return;
-  const src = readFileSync(resolve(process.cwd(), 'games_module.js'), 'utf8');
+  // ALLO_GAMES_CANDIDATE: a scratch copy for mutation checks.
+  const src = readFileSync(resolve(process.cwd(), process.env.ALLO_GAMES_CANDIDATE || 'games_module.js'), 'utf8');
   // eslint-disable-next-line no-new-func
   new Function(src)();
   _loaded = true;

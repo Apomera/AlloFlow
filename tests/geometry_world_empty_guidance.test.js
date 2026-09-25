@@ -124,7 +124,8 @@ describe('Geometry World first-block guidance', () => {
 
   it.each([false, true])('announces the actual first placement control when opening a sandbox (touch=%s)', touch => {
     const app = mountGuidance({ touch, data: { activeLesson: 'volumeExplorer' } });
-    app.click('.gwe-free-build-launch'); app.click('.gwe-open');
+    // Free Build opens from the core's Menu during a lesson (2026-09-24), through this hook.
+    act(() => app.engine.openFreeBuildLauncher()); app.click('.gwe-open');
     expect(app.engine.loadLesson).toHaveBeenCalledTimes(1);
     const expected = 'Free Build Sandbox opened. Aim at the ground and ' + (touch ? 'tap Place' : 'press B') + ' to add your first block.';
     expect(app.addToast).toHaveBeenCalledWith(expected, 'success'); expect(app.announceToSR).toHaveBeenCalledWith(expected);

@@ -563,7 +563,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('id="hud-science-focus" role="note"');
       expect(source).toContain('id="hud-science-reading"');
       expect(source).toContain("scienceReadingEl.textContent = 'Depth '");
-      expect(source).toContain('oceanScienceZone.lightLevel');
+      expect(source).toContain('solarOceanLightText(oceanNow.lightFrac)');   // light from depth, not the zone's flat level
       expect(source).toContain("scienceReadingEl.textContent = 'Relative altitude '");
       expect(source).toContain('gasScienceZone.windSpeed');
       expect(source).toContain("scienceReadingEl.textContent = 'Elevation '");

@@ -11,7 +11,8 @@ beforeAll(() => {
   window.StemLab = { registerTool: function () {}, isRegistered: function () { return false; } };
   delete window.__alloGeologyPure;
   // eslint-disable-next-line no-new-func
-  new Function(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_geologyexplorer.js'), 'utf8'))();
+  // GEO_TEST_SOURCE lets a mutation/control run load a scratch copy instead of the shared file.
+  new Function(readFileSync(process.env.GEO_TEST_SOURCE || resolve(process.cwd(), 'stem_lab/stem_tool_geologyexplorer.js'), 'utf8'))();
   P = window.__alloGeologyPure;
   if (!P) throw new Error('geology pure hook not exposed (window.__alloGeologyPure)');
 });
@@ -130,12 +131,44 @@ describe('Geology Explorer — Deep Earth scene (radial structure + honest geoth
     const g = P.grid();
     const cx = Math.round((g.NX - 1) / 2), cy = Math.round((g.NY - 1) / 2), cz = Math.round((g.NZ - 1) / 2);
     expect(P.deepEarthKeyAt(cx, cy, cz)).toBe('innerCore');  // centre
-    expect(P.deepEarthKeyAt(0, 0, 0)).toBe('crust');         // surface corner
+    expect(P.deepEarthKeyAt(0, 0, 0)).toBe('void');          // the grid's corner is OUTSIDE a round Earth
+    expect(P.deepEarthKeyAt(cx, 0, cz)).toBe('crust');       // the top of the sphere is crust
     // every shell is reachable somewhere in the grid
     const keys = {};
     for (let x = 0; x < g.NX; x++) for (let y = 0; y < g.NY; y++) for (let z = 0; z < g.NZ; z++) keys[P.deepEarthKeyAt(x, y, z)] = 1;
     ['crust', 'upperMantle', 'lowerMantle', 'outerCore', 'innerCore'].forEach((k) => expect(keys[k]).toBe(1));
     P.setScene('crust');
+  });
+
+  it('models a ROUND Earth at every detail level: solid inside the radius, crust wherever it meets space, shells ordered outward', () => {
+    // It used to fill the whole box with shells measured to the corners: each face showed lower mantle
+    // and crust appeared only at the corners, a cube-shaped planet.
+    const ORDER = ['innerCore', 'outerCore', 'lowerMantle', 'upperMantle', 'crust'];
+    P.setScene('deepEarth');
+    for (const res of ['low', 'standard', 'high']) {
+      P.setGrid(res);
+      const g = P.grid(), cx = (g.NX - 1) / 2, cy = (g.NY - 1) / 2, cz = (g.NZ - 1) / 2, R = Math.min(cx, cy, cz) + 0.5;
+      const at = (x, y, z) => (x < 0 || y < 0 || z < 0 || x >= g.NX || y >= g.NY || z >= g.NZ) ? 'void' : P.deepEarthKeyAt(x, y, z);
+      for (let x = 0; x < g.NX; x++) for (let y = 0; y < g.NY; y++) for (let z = 0; z < g.NZ; z++) {
+        const k = at(x, y, z), r = Math.hypot(x - cx, y - cy, z - cz);
+        expect(k === 'void', res + ' ' + [x, y, z] + ' r=' + r.toFixed(2)).toBe(r > R);
+        if (k === 'void') continue;
+        const touchesSpace = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].some(([a, b, c]) => at(x + a, y + b, z + c) === 'void');
+        if (touchesSpace) expect(k, res + ' surface voxel ' + [x, y, z]).toBe('crust');
+      }
+      // along any ray from the centre the shells only ever move outward
+      for (const [ux, uy, uz] of [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 1, 1], [-1, 0.5, 0.2]]) {
+        const len = Math.hypot(ux, uy, uz); let last = -1;
+        for (let s = 0; s <= R; s += 0.25) {
+          const k = at(Math.round(cx + ux / len * s), Math.round(cy + uy / len * s), Math.round(cz + uz / len * s));
+          if (k === 'void') break;
+          const i = ORDER.indexOf(k);
+          expect(i, res + ' ray ' + [ux, uy, uz] + ' at ' + s).toBeGreaterThanOrEqual(last);
+          last = i;
+        }
+      }
+    }
+    P.setGrid('standard'); P.setScene('crust');
   });
 
   it('uses a NON-linear geotherm — no ~160,000°C extrapolation artifact', () => {

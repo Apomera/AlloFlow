@@ -17,7 +17,7 @@ function ClozeInteractionPanel(props) {
   const {
     activeView, handleBankMouseDown, handleSetInteractionModeToRead,
     interactionMode, latestGlossary, leveledTextLanguage, playSound,
-    setClozeCompletedSet, t, wordBankPosition, wordBankRef,
+    setClozeCompletedSet, setClozeInstanceSet, t, wordBankPosition, wordBankRef,
   } = props;
   const isEnglishPassage = !leveledTextLanguage || leveledTextLanguage === 'English';
   // Kept local: it is a per-student display preference, not lesson content, so
@@ -49,6 +49,8 @@ function ClozeInteractionPanel(props) {
                             aria-label={t('common.refresh')}
                             onClick={() => {
                                 setClozeCompletedSet(new Set());
+                                // The solved blanks live here; clearing only the set above changed nothing.
+                                if (typeof setClozeInstanceSet === 'function') setClozeInstanceSet(new Set());
                                 playSound('click');
                             }}
                             className="text-blue-800 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1"

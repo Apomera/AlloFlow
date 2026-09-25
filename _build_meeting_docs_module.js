@@ -75,6 +75,7 @@ ${compiled}
     MeetingDocsPanel: MeetingDocsPanel,
     // Pure seams exposed for unit tests. Not part of the public contract.
     _testing: {
+      meetdocsDateStamp: meetdocsDateStamp,
       meetdocsMask: meetdocsMask,
       meetdocsUnmask: meetdocsUnmask,
       meetdocsMaskPairs: meetdocsMaskPairs,

@@ -989,7 +989,7 @@ function HistoryPanel(props) {
       /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", null, "Manage local storage and recovery")
     ),
-    /* @__PURE__ */ React.createElement(
+    isTeacherMode && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -1035,7 +1035,7 @@ function HistoryPanel(props) {
       /* @__PURE__ */ React.createElement(Save, { size: 15, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", null, t("history.save_teacher"))
     ),
-    /* @__PURE__ */ React.createElement(
+    isTeacherMode && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -1048,8 +1048,8 @@ function HistoryPanel(props) {
         className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
         "data-help-key": "history_save_student"
       },
-      isTeacherMode ? /* @__PURE__ */ React.createElement(Lock, { size: 15, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, isTeacherMode ? t("history.save_student") : t("history.save_work"))
+      /* @__PURE__ */ React.createElement(Lock, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, t("history.save_student"))
     ),
     /* @__PURE__ */ React.createElement("div", { role: "separator", className: "my-1 h-px bg-slate-200" }),
     /* @__PURE__ */ React.createElement(
@@ -1168,8 +1168,12 @@ function HistoryPanel(props) {
       onKeyDown: (e) => e.key === "Enter" && handleCreateUnit()
     }
   ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_save_unit_btn", onClick: handleCreateUnit, className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800" }, t("common.save")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_cancel_unit_btn", onClick: handleSetIsUnitModalOpenToFalse, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white" }, t("common.cancel"))))), (() => {
-    const stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
-    if (stations.length === 0) return null;
+    let stations = [];
+    try {
+      stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
+    } catch (_) {
+    }
+    if (!Array.isArray(stations) || stations.length === 0) return null;
     return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} STEM Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs text-emerald-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -1200,8 +1204,13 @@ function HistoryPanel(props) {
       )
     ))));
   })(), (() => {
-    const stations = JSON.parse(localStorage.getItem("alloflow_sel_stations") || "[]");
-    if (stations.length === 0) return null;
+    let stations = [];
+    try {
+      stations = JSON.parse(localStorage.getItem("alloflow_sel_stations") || "[]");
+    } catch (_) {
+    }
+    if ((!Array.isArray(stations) || !stations.length) && Array.isArray(window.__alloflowSelStations)) stations = window.__alloflowSelStations;
+    if (!Array.isArray(stations) || stations.length === 0) return null;
     return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} SEL Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-pink-50 px-1.5 py-0.5 text-xs text-pink-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => /* @__PURE__ */ React.createElement(
       "div",
       {

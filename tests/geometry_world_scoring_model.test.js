@@ -121,6 +121,16 @@ describe('main-question-first-attempt scoring', () => {
     expect(r.accuracy).toBe(50);
   });
 
+  it('scores each practice round separately, although rounds reuse names and wording', () => {
+    // A practice round keeps its characters and question wording and changes the
+    // numbers. Keyed without the round number, only a student's first round counted.
+    const round = (seed, ok) => ({ type: ok ? 'answer_correct' : 'answer_wrong',
+      data: { npc: 'Counting Coach', question: 'How many cubes are in the bottom layer of the blue prism?', step: 0, practiceRound: 'practice_' + seed } });
+    const r = score([round(42, true), round(42, true), round(77, false), round(77, true)]);
+    expect(r.questionsScored).toBe(2);
+    expect(r.questionsRightFirstTry).toBe(1);
+  });
+
   it('reports 0% rather than NaN when nothing was attempted', () => {
     // A division-by-zero here would print "NaN%" on a clinical report.
     const r = score([]);

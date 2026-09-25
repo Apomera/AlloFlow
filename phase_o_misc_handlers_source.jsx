@@ -228,7 +228,8 @@ const handleRefineImage = async (deps) => {
                     ...generatedContent?.data,
                     imageUrl: updatedPanels[0]?.imageUrl || generatedContent?.data.imageUrl,
                     visualPlan: updatedPlan,
-                    prompt: `(Edited) ${generatedContent?.data.prompt}`
+                    prompt: `(Edited) ${generatedContent?.data.prompt}`,
+                    ...(generatedContent?.data?.imageAttribution ? { imageAttribution: { ...generatedContent.data.imageAttribution, modified: true } } : {})
                 }
             };
             await _redescribeImageContent(updatedContent, { callGeminiVision, language: leveledTextLanguage });
@@ -237,14 +238,28 @@ const handleRefineImage = async (deps) => {
             setImageRefinementInput('');
             addToast(t('visual_director.all_panels_refined') || `All ${updatedPanels.length} panels edited!`, "success");
         } else {
-            const currentImageBase64 = generatedContent?.data.imageUrl.split(',')[1];
+            // A picked photo or symbol carries its credit drawn in a band at the bottom:
+            // take the band off before the edit and draw a fresh "edited" credit after,
+            // rather than asking the model to redraw someone's credit.
+            const AltText = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AltText;
+            const pickedCredit = generatedContent?.data?.imageAttribution || null;
+            const creditBand = Number(generatedContent?.data?.imageCreditBand) || 0;
+            const redrawCredit = !!(pickedCredit && creditBand > 0 && AltText && AltText.cropImageBottom && AltText.bakeCreditBand);
+            const editSource = redrawCredit ? await AltText.cropImageBottom(generatedContent.data.imageUrl, creditBand) : generatedContent?.data.imageUrl;
+            const currentImageBase64 = editSource.split(',')[1];
             const newImageBase64 = await callGeminiImageEdit(refinementPrompt, currentImageBase64);
+            const editedCredit = pickedCredit ? { ...pickedCredit, modified: true } : null;
+            const recredited = redrawCredit && typeof newImageBase64 === 'string' && /^data:image\//i.test(newImageBase64)
+                ? await AltText.bakeCreditBand(newImageBase64, AltText.openImageCreditLine(editedCredit), { kind: generatedContent.data.imageSource === 'mulberry' ? 'symbol' : 'photo', attribution: editedCredit })
+                : null;
             const updatedContent = {
                 ...generatedContent,
                 data: {
                     ...generatedContent?.data,
-                    imageUrl: newImageBase64,
-                    prompt: `(Edited) ${generatedContent?.data.prompt}`
+                    imageUrl: recredited ? recredited.dataUrl : newImageBase64,
+                    prompt: `(Edited) ${generatedContent?.data.prompt}`,
+                    ...(editedCredit ? { imageAttribution: editedCredit } : {}),
+                    ...(redrawCredit ? { imageCreditBand: recredited ? recredited.bandHeight : 0 } : {})
                 }
             };
             await _redescribeImageContent(updatedContent, { callGeminiVision, language: leveledTextLanguage });

@@ -1395,8 +1395,8 @@ function SimplifiedPanel(props) {
                         </div>
                         </div>
                 </div>
-                <p className="my-3 text-sm text-slate-700">Read the original with supports, or create a companion to preview ideas and build context for reading the original.</p>
-                <button type="button" data-read-original onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing} className={SIDEBAR_PANEL_UI.primaryAction}>Read original with supports</button>
+                <p className="my-3 text-sm text-slate-700">{t('sidebar.read_original_guidance') || 'Read the original with supports first. An adapted companion can activate background knowledge, build context, preview key concepts, and scaffold students toward the original; it does not replace the grade-level text.'}</p>
+                <button type="button" data-read-original onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing} className={SIDEBAR_PANEL_UI.primaryAction}>{t('sidebar.read_original_with_supports') || 'Read original with supports'}</button>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
                 <button type="button"
                     aria-label={t('common.generate')}

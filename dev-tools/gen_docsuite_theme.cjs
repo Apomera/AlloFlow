@@ -75,7 +75,16 @@ const DOCSUITE_FILES = ['view_pdf_audit_source.jsx', 'view_export_preview_source
 // `view_*` filter below for its whole life: MemoryGame had 9 colour tokens with
 // no dark mapping (from-indigo-200, via-indigo-500, ring-yellow-400/40, ...),
 // BingoGame 2, StudentBingoGame 2. Found by L1 during the 2026-08-16 fleet.
-const APPSUITE_EXTRA = ['misc_components_source.jsx', 'games_source.jsx'];
+// 2026-09-23: twelve more, found by resolving every module the <main> region of
+// ANTI renders (AlloModules names, CDNModuleGate keys, JSX tags) to the file
+// that registers it. Word Sounds alone had a feedback tip and a notice bar
+// whose text was remapped light over an unmapped light surface.
+// tests/docsuite_theme_contrast.test.js re-runs that resolution, so a newly
+// rendered module fails the gate instead of joining this list by luck.
+const APPSUITE_EXTRA = ['misc_components_source.jsx', 'games_source.jsx',
+  'adventure_source.jsx', 'allo_provenance_module.js', 'anchor_charts_source.jsx', 'annotation_suite_source.jsx',
+  'applied_challenge_source.jsx', 'math_fluency_module.js', 'memory_aid_source.jsx', 'module_scope_extras_source.jsx',
+  'note_taking_templates_source.jsx', 'studio_response_module.js', 'word_sounds_module.js', 'word_sounds_setup_source.jsx'];
 const SELSUITE_FILES = [
   'sel_hub/sel_tool_civicaction.js',
   'sel_hub/sel_tool_cultureexplorer.js',
@@ -363,6 +372,11 @@ function darkFor(tok) {
       return null;
     }
     case 'from': case 'to': case 'via': {
+      // A translucent WHITE stop (alpha < 60, the dark-mode scanner's
+      // threshold) is a sheen between transparent stops, not a light surface.
+      // Flattening it made the quiz tile shimmer a dark slab sweeping over the
+      // points (via-white/20) and would cover Adventure's score-meter fill.
+      if (fam === 'white' && alpha != null && alpha < 60) return null;
       // Light gradient tints → flatten to a dark panel (version-proof vs
       // guessing at --tw-gradient-* internals across Tailwind releases).
       const v = bgVal();

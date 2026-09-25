@@ -728,9 +728,19 @@ const splitReferencesFromBody = (text) => {
         header.index + header.text.length
     );
     const referencesEnd = delimiter ? delimiter.index : source.length;
-    const references = source.slice(header.index, referencesEnd).trim();
+    let references = source.slice(header.index, referencesEnd).trim();
     const before = source.slice(0, header.index).trim();
-    const after = delimiter ? source.slice(delimiter.index).trim() : '';
+    let after = delimiter ? source.slice(delimiter.index).trim() : '';
+    // A bilingual reading can end each language with its own list ("## Referencias",
+    // then "## References"); the second list stayed in the body and was read aloud.
+    // It is kept only if it names a source the first list does not.
+    const second = after && _findMarkdownLineOutsideFences(after, _REFERENCE_HEADER_LINE_RE);
+    if (second) {
+        const extra = after.slice(second.index).trim();
+        after = after.slice(0, second.index).trim();
+        const known = new Set(parseReferenceItems(references).map(item => item.url).filter(Boolean));
+        if (parseReferenceItems(extra).some(item => item.url && !known.has(item.url))) references += '\n\n' + extra;
+    }
     const body = before && after ? `${before}\n\n${after}` : (before || after);
     return { body, references };
 };

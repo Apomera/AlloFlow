@@ -869,19 +869,20 @@ describe('Geometry World bridge runtime behavior', () => {
 
     try {
       act(() => root.render(React.createElement(Host)));
-      let trigger = host.querySelector('.gwe-free-build-launch');
-      expect(trigger).toBeTruthy();
-      trigger.focus();
-      act(() => trigger.dispatchEvent(new window.MouseEvent('click', { bubbles: true })));
+      // Free Build opens from the core's Menu during a lesson (2026-09-24); the Menu closes as
+      // the launcher opens, so Cancel returns focus to the Menu button (a stand-in here).
+      expect(host.querySelector('.gwe-free-build-launch')).toBeNull();
+      const menu = document.createElement('button'); menu.setAttribute('data-geometry-settings-trigger', 'true'); host.appendChild(menu);
+      let trigger = menu;
+      act(() => engine.openFreeBuildLauncher());
       expect(host.querySelector('[role="dialog"]')).toBeTruthy();
 
       const cancel = [...host.querySelectorAll('button')].find((button) => button.textContent === 'Cancel');
       act(() => cancel.dispatchEvent(new window.MouseEvent('click', { bubbles: true })));
       act(() => vi.runOnlyPendingTimers());
-      trigger = host.querySelector('.gwe-free-build-launch');
       expect(document.activeElement).toBe(trigger);
 
-      act(() => trigger.dispatchEvent(new window.MouseEvent('click', { bubbles: true })));
+      act(() => engine.openFreeBuildLauncher());
       const open = [...host.querySelectorAll('button')].find((button) => button.textContent === 'Open blank sandbox');
       act(() => open.dispatchEvent(new window.MouseEvent('click', { bubbles: true })));
       act(() => vi.runOnlyPendingTimers());

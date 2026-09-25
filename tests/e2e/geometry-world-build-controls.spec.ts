@@ -57,12 +57,29 @@ test('right-click places a block in free-cursor mode', async ({ page }) => {
   expect(after.studentBlocks).toBe(before.studentBlocks + 1);
 });
 
+// This test failed about 1 run in 3 on every version (2026-09-24), two ways: B placed
+// the block where the camera pointed BEFORE the aim, or the new block was not yet in
+// the raycast, so the click hit the ground under it. The engine updates both once per
+// rendered frame, and under load the software renderer takes longer than a fixed
+// 200-300 ms wait. So end the fly-in and hover (they also move the camera), and wait
+// for real frames after each step; the click itself is what this test checks.
+async function settle(page: any) {
+  await page.evaluate(() => { const en = (window as any).__geoWorldEngine; en._entryAnim = null; en.flyMode = true; if (en.velocity) en.velocity.set(0, 0, 0); });
+  await frames(page);
+}
+async function frames(page: any, n = 3) {
+  await page.evaluate((count: number) => new Promise<void>((done) => { let left = count; const tick = () => (--left <= 0 ? done() : requestAnimationFrame(tick)); requestAnimationFrame(tick); }), n);
+}
+
 test('left-click breaks a block in free-cursor mode', async ({ page }) => {
   await boot(page);
+  await settle(page);
   await page.evaluate(() => (window as any).__aimAt(2, 0, 2));
   await page.waitForTimeout(200);
+  await frames(page);
   await page.keyboard.press('KeyB');
   await page.waitForTimeout(300);
+  await frames(page);
   const built = await page.evaluate(() => (window as any).__worldState());
   await page.evaluate(() => {
     const c = document.querySelector('#geoworld-fs-wrap canvas') as HTMLElement;

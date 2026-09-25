@@ -4918,8 +4918,14 @@ const syntaxTokens = (sentence) => {
     return [sentence];
   }
 };
+const SYNTAX_SKIP_LINE = /^\s*(?:#{1,6}(?:\s|$)|\||<\/?(?:h[1-6]|table|tr)\b|(?:[-*_]\s*){3,}$)/i;
+const syntaxProse = (text) => (typeof text === "string" ? text : "").split("--- ENGLISH TRANSLATION ---")[0].replace(/\[\[CHART:[\s\S]*?\]\]/g, "\n").split(/\r?\n/).filter((line) => {
+  if (SYNTAX_SKIP_LINE.test(line)) return false;
+  const label = line.match(/^\s*(\*{1,2}|_{1,2})([^*_\n]+)\1\s*$/);
+  return !(label && !/[.!?。！？؟।]$/.test(label[2].trim()));
+}).map((line) => line.replace(/^\s*(?:>\s?)*(?:(?:[-+*]|\d+[.)])\s+)?/, "").replace(/\[([^\]]*)\]\([^)]*\)/g, (_m, label) => /\p{L}/u.test(label) ? label : "")).join("\n");
 const syntaxSentences = (text) => {
-  const clean = stripGameEmoji(typeof text === "string" ? text : "").replace(/[#*_~`]/g, "");
+  const clean = stripGameEmoji(syntaxProse(text)).replace(/[#*_~`]/g, "");
   let candidates = [];
   for (const line of clean.split(/\n+/).filter((s) => s.trim())) {
     try {
@@ -4930,7 +4936,7 @@ const syntaxSentences = (text) => {
   }
   return [...new Set(candidates.map((s) => s.trim().replace(/\s+/g, " ")))].filter((s) => {
     const words = syntaxTokens(s);
-    return words.length > 3 && s.length < 150 && new Set(words).size > 1;
+    return words.length > 3 && s.length < 150 && new Set(words).size > 1 && !/https?:\/\/|www\./i.test(s);
   });
 };
 const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, onGameComplete }) => {

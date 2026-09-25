@@ -2226,10 +2226,25 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       const text = selection.toString().trim();
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
+      // How many times the selected words appear earlier in the passage, so a
+      // revision changes the place that was selected (_findRevisionTarget).
+      let occurrence = 0;
+      try {
+          const startNode = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
+          const passage = startNode && startNode.closest && startNode.closest('[data-reading-passage], [data-simplified-reading-body]');
+          if (passage) {
+              const before = document.createRange();
+              before.selectNodeContents(passage);
+              before.setEnd(range.startContainer, range.startOffset);
+              const prior = before.toString();
+              for (let at = prior.indexOf(text); at >= 0; at = prior.indexOf(text, at + 1)) occurrence++;
+          }
+      } catch (_) {}
       if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'define' || interactionMode === 'add-glossary') {
           setSelectionMenu({
               x: rect.left + (rect.width / 2),
               y: rect.top,
+              occurrence,
               text: text,
               language: event?.currentTarget?.closest?.('[data-reading-language]')?.dataset?.readingLanguage || generatedContent?.config?.language || leveledTextLanguage
           });
@@ -2312,6 +2327,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           resourceId,
           resourceText,
           original: originalText,
+          occurrence: Number.isInteger(selectionMenu.occurrence) ? selectionMenu.occurrence : 0,
           result: null,
           x: selectionMenu.x,
           y: selectionMenu.y
@@ -2622,6 +2638,27 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           setPhonicsData(null);
       }
   };
+  // Where a revision lands. The selection is rendered text: no Markdown markers,
+  // and the same words can appear more than once. `.replace` took the first
+  // match anywhere (select "the cell" in paragraph 4 and paragraph 1 changed),
+  // failed on a selection crossing bold text, and expanded "$&" / "$$" in the
+  // AI's wording. Matches allow emphasis markers between words, the selected
+  // occurrence is used, and markers around a marked match are kept balanced.
+  const _findRevisionTarget = (text, original, occurrence) => {
+      const words = String(original || '').trim().split(/\s+/).filter(Boolean);
+      if (!words.length) return null;
+      const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(words.map(escape).join('[*_`~]*\\s+[*_`~]*'), 'g');
+      const found = [];
+      for (let m = pattern.exec(text); m; m = pattern.exec(text)) found.push({ start: m.index, end: m.index + m[0].length });
+      if (!found.length) return null;
+      const target = found[Math.min(Math.max(0, Number(occurrence) || 0), found.length - 1)];
+      if (/[*_`~]/.test(text.slice(target.start, target.end))) {
+          while (target.start > 0 && /[*_`~]/.test(text[target.start - 1])) target.start--;
+          while (target.end < text.length && /[*_`~]/.test(text[target.end])) target.end++;
+      }
+      return target;
+  };
   const applyTextRevision = async () => {
       if (!revisionData || !revisionData.result || !generatedContent) return;
       const liveResource = deps.getState().generatedContent;
@@ -2640,7 +2677,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           let notFoundCount = 0;
           revisionData.replacements.forEach(rep => {
               if (newFullText.includes(rep.original)) {
-                  newFullText = newFullText.replace(rep.original, rep.new);
+                  newFullText = newFullText.replace(rep.original, () => rep.new);
                   _appliedEdits.push({ original: rep.original, result: rep.new });
               } else {
                   notFoundCount++;
@@ -2651,13 +2688,13 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                return;
           }
       } else {
-          const after = currentFullText.replace(revisionData.original, revisionData.result);
-          if (after === currentFullText) {
+          const target = _findRevisionTarget(currentFullText, revisionData.original, revisionData.occurrence);
+          if (!target) {
               addToast(t('toasts.text_exact_not_found'), "error");
               return;
           }
-          newFullText = after;
-          _appliedEdits.push({ original: revisionData.original, result: revisionData.result });
+          newFullText = currentFullText.slice(0, target.start) + revisionData.result + currentFullText.slice(target.end);
+          _appliedEdits.push({ original: currentFullText.slice(target.start, target.end), result: revisionData.result });
       }
       handleSimplifiedTextChange(newFullText);
       setRevisionData(null);

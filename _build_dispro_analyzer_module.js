@@ -77,6 +77,7 @@ ${compiled}
     DisproAnalyzerPanel: DisproAnalyzerPanel,
     // Pure seams exposed for unit tests + render smoke. Not public contract.
     _testing: {
+      disproDateStamp: disproDateStamp,
       disproCompute: disproCompute,
       disproParsePaste: disproParsePaste,
       disproResultCsv: disproResultCsv,

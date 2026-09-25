@@ -489,8 +489,11 @@ function udlwalkCsv(rows) {
   return [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r[c])).join(','))].join('\r\n');
 }
 
-function udlwalkDateStamp() {
-  return new Date().toISOString().slice(0, 10);
+function udlwalkDateStamp(d = new Date()) {
+  // The LOCAL calendar date. toISOString() is UTC, which in US time zones is
+  // already tomorrow by late afternoon (5 pm in Portland in summer).
+  // Here a late-day visit was stamped with tomorrow.
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 function udlwalkEscHtml(value) {
@@ -978,7 +981,7 @@ function UdlWalkthroughPanel(props) {
     const session = {
       id: udlwalkNextId('wt'),
       teacherId: draft.teacherId,
-      date: now.toISOString().slice(0, 10),
+      date: udlwalkDateStamp(now),
       startedAt: draft.startedAt,
       durationMin: Math.max(1, Math.round((Date.now() - draft.startedAt) / 60000)),
       context: draft.context,

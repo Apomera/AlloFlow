@@ -833,7 +833,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, onClose, resetCrawl]);
   if (!isOpen) return null;
-  const cleaned = String(text || "").replace(/<[^>]*>/g, "").replace(/\n{3,}/g, "\n\n").trim();
+  const cleaned = String(text || "").replace(/<\/?[a-zA-Z][^<>]*>/g, "").replace(/\n{3,}/g, "\n\n").trim();
   const paragraphs = cleaned.split(/\n{2,}/).filter(Boolean);
   const staticPreview = !isPlaying && translateY === 0;
   const togglePlay = () => {
@@ -1237,7 +1237,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
       setSentences([]);
       return;
     }
-    const cleaned = String(text || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+    const cleaned = String(text || "").replace(/<\/?[a-zA-Z][^<>]*>/g, "").replace(/\s+/g, " ").trim();
     const _KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     if (_KS && typeof _KS.splitSentences === "function") {
       const _shared = _KS.splitSentences(text);

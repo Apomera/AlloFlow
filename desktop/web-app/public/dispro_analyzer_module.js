@@ -59,7 +59,8 @@ function disproNextId() {
   return "da_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
 }
 function disproDateStamp() {
-  return (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const d = /* @__PURE__ */ new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function disproNormalizeAlt(altComparison) {
   if (!altComparison) return null;
@@ -73,6 +74,7 @@ function disproNormalizeAlt(altComparison) {
 function disproCompute(groups, altComparison) {
   const errors = [];
   const clean = [];
+  const seenNames = /* @__PURE__ */ new Set();
   (groups || []).forEach((g, i) => {
     const name = String(g && g.name || "").trim();
     const enrollment = Number(g && g.enrollment);
@@ -94,6 +96,12 @@ function disproCompute(groups, altComparison) {
       errors.push({ row: i, message: '"' + name + '": ' + students + " students with the outcome exceeds enrollment of " + enrollment + ". Counts must be unduplicated students, not incidents." });
       return;
     }
+    const key = name.toLowerCase();
+    if (seenNames.has(key)) {
+      errors.push({ row: i, message: '"' + name + '" appears more than once. Combine its rows into one: each group is compared with all other students, which would include itself.' });
+      return;
+    }
+    seenNames.add(key);
     clean.push({ name, enrollment, students });
   });
   const totals = clean.reduce((acc, g) => ({ enrollment: acc.enrollment + g.enrollment, students: acc.students + g.students }), { enrollment: 0, students: 0 });
@@ -156,13 +164,34 @@ function disproTrendSeries(analyses) {
   });
   return out;
 }
+function disproSplitRow(line) {
+  if (line.indexOf("	") !== -1) return line.split("	");
+  const sep = line.indexOf(";") !== -1 ? ";" : ",";
+  const out = [];
+  let cur = "";
+  let quoted = false;
+  for (const ch of line) {
+    if (ch === '"') {
+      quoted = !quoted;
+      continue;
+    }
+    if (ch === sep && !quoted) {
+      out.push(cur);
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
 function disproParsePaste(text) {
   const groups = [];
   const skipped = [];
   String(text || "").split(/\r?\n/).forEach((line) => {
     const t = line.trim();
     if (!t) return;
-    const parts = t.split(/[\t;,]/).map((p) => p.trim().replace(/^"|"$/g, ""));
+    const parts = disproSplitRow(t).map((p) => p.trim());
     if (parts.length < 3) {
       skipped.push(t);
       return;
@@ -657,6 +686,7 @@ function DisproAnalyzerPanel(props) {
     DisproAnalyzerPanel: DisproAnalyzerPanel,
     // Pure seams exposed for unit tests + render smoke. Not public contract.
     _testing: {
+      disproDateStamp: disproDateStamp,
       disproCompute: disproCompute,
       disproParsePaste: disproParsePaste,
       disproResultCsv: disproResultCsv,

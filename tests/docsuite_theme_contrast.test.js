@@ -89,6 +89,18 @@ describe('generated CSS is live and scoped', () => {
     const sel = readFileSync(resolve(process.cwd(), 'sel_hub/sel_hub_module.js'), 'utf8');
     expect(sel).toContain("className: 'allo-docsuite',");
   });
+  it('a translucent white gradient stop is a sheen, left as authored in dark mode', () => {
+    // Flattening via-white/20 made the quiz review tile shimmer a dark slab
+    // sweeping over the points, and via-white/30 would cover Adventure's
+    // score-meter fill. Surfaces keep their remap.
+    for (const tok of ['via-white/20', 'via-white/30', 'from-white/10', 'to-white/59']) expect(gen.darkFor(tok), tok).toBeNull();
+    for (const tok of ['via-white/60', 'from-white', 'to-white', 'bg-white/20', 'bg-white/85']) expect(gen.darkFor(tok), tok).toBeTruthy();
+    // Each emitted line carries one theme prefix; high contrast still flattens it.
+    const lines = gen.generateCss(process.cwd()).split('\n').filter((l) => l.includes('[class~="via-white/20"]'));
+    expect(lines.filter((l) => l.startsWith('.theme-dark')), 'no dark rule flattens the sheen').toEqual([]);
+    expect(lines.some((l) => l.startsWith('.theme-contrast')), 'high contrast still covers it').toBe(true);
+  });
+
   it('high-traffic utilities are all remapped in dark mode', () => {
     for (const tok of ['bg-white', 'bg-slate-50', 'bg-indigo-50', 'bg-amber-50', 'text-slate-600', 'text-slate-700', 'text-indigo-700', 'text-amber-700', 'border-slate-200']) {
       expect(gen.darkFor(tok), tok).toBeTruthy();
@@ -122,6 +134,41 @@ describe('generated CSS is live and scoped', () => {
       expect(tokens, `${tok} should be in the scanned union`).toContain(tok);
       expect(gen.darkFor(tok), tok).toBeTruthy();
     }
+  });
+
+  it('every module rendered inside <main> is scanned (resolved from ANTI, not listed by hand)', () => {
+    // games_source.jsx and then twelve more (Word Sounds, Adventure, Anchor
+    // Charts, ...) render inside <main class="allo-docsuite"> but were never
+    // scanned, so their own colour tokens had no dark rule. Resolve every
+    // AlloModules name, CDNModuleGate key and JSX tag the <main> region uses to
+    // the file that registers it, and require that file to be scanned.
+    const { readdirSync, existsSync } = require2('node:fs');
+    const start = anti.indexOf('ref={mainContainerRef}');
+    const slice = anti.slice(start, anti.indexOf('</main>', start));
+    const wanted = new Set([
+      ...[...slice.matchAll(/window\.AlloModules\.(\w+)/g)].map((m) => m[1]),
+      ...[...slice.matchAll(/moduleKey="(\w+)/g)].map((m) => m[1]),
+      ...[...slice.matchAll(/<([A-Z]\w+)[\s/>]/g)].map((m) => m[1]),
+    ]);
+    const root = process.cwd();
+    const files = readdirSync(root).filter((f) => /^[a-z].*(_module\.js|_source\.jsx)$/.test(f) && !f.startsWith('app_styles_'));
+    const scanned = new Set(gen.SCOPES.map((s) => s.files(root)).flat());
+    const resolved = new Set();
+    for (const f of files) {
+      const src = readFileSync(resolve(root, f), 'utf8');
+      const registers = new Set();
+      for (const m of src.matchAll(/AlloModules(?:\.(\w+)|\[['"](\w+)['"]\])\s*=\s*(\{[^}]*\})?/g)) {
+        registers.add(m[1] || m[2]);
+        if (m[3]) for (const k of m[3].matchAll(/\b([A-Z]\w+)\b/g)) registers.add(k[1]);
+      }
+      if (![...registers].some((n) => wanted.has(n))) continue;
+      // A module with a source pair is scanned through its source.
+      const src2 = f.replace(/_module\.js$/, '_source.jsx');
+      resolved.add(f.endsWith('_module.js') && existsSync(resolve(root, src2)) ? src2 : f);
+    }
+    expect(resolved.size, 'the resolution found the main-region modules').toBeGreaterThan(30);
+    expect([...resolved]).toEqual(expect.arrayContaining(['view_quiz_source.jsx', 'games_source.jsx', 'word_sounds_module.js']));
+    expect([...resolved].filter((f) => !scanned.has(f)), 'rendered in <main> but not scanned').toEqual([]);
   });
 
   it('opt-in discovery: a className opts in, a comment does not, and the generated stylesheet is excluded', async () => {

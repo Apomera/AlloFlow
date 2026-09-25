@@ -66,12 +66,12 @@ function ConceptSortView(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6 h-full flex flex-col",
     "data-help-key": "concept_sort_panel"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, isTeacherMode && !isIndependentMode && /*#__PURE__*/React.createElement("div", {
+    "data-concept-sort-teacher-bar": true,
     className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-indigo-800"
   }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('concept_sort.udl_goal_desc')), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.filter'),
     onClick: handleSetIsConceptSortGameToTrue,
     "data-help-key": "concept_sort_start_button",
     className: "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
@@ -89,7 +89,6 @@ function ConceptSortView(props) {
   }, t('concept_sort.ready_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 mb-8 max-w-md"
   }, t('concept_sort.ready_desc')), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.start_game'),
     onClick: handleSetIsConceptSortGameToTrue,
     "data-help-key": "concept_sort_start_button",
     className: "px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"

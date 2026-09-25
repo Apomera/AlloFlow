@@ -40399,10 +40399,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return '<section class="section" id="' + _escTxt(item.id) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _alloParsePreviewMarkdown(body) + goalHtml + choiceHtml + '</section>';
       }
       if (item.type === 'simplified') {
+          // Word help as a list. A teacher's picture prints beside its word, with the
+          // credit its licence requires (no <p>, so read-aloud leaves the list alone).
+          const _wordHelpList = annotations => {
+              const creditLine = attribution => window.AlloModules?.AltText?.openImageCreditLine ? window.AlloModules.AltText.openImageCreditLine(attribution) : [attribution.title || attribution.set, attribution.author, attribution.license, attribution.via].filter(Boolean).join(', ');
+              // Addresses are printed in full: a paper copy cannot follow a link.
+              const address = (label, url) => /^https:\/\//i.test(url || '') ? '. ' + label + ': <a href="' + _escTxt(url) + '">' + _escTxt(url) + '</a>' : '';
+              const credits = annotations.filter(annotation => annotation.image && annotation.image.attribution).map(annotation => _escTxt(annotation.quote) + ': ' + _escTxt(creditLine(annotation.image.attribution))
+                  + address('Source', annotation.image.attribution.url) + address('License', annotation.image.attribution.licenseUrl));
+              return '<dl>' + annotations.map(annotation => '<dt>' + (annotation.image ? '<img src="' + _escTxt(annotation.image.src) + '" alt="' + _escTxt(annotation.image.alt || '') + '" width="48" height="48" style="width:48px;height:48px;object-fit:contain;vertical-align:middle;margin-right:8px;">' : '') + _escTxt(annotation.quote) + '</dt><dd>' + _escTxt(annotation.text) + '</dd>').join('') + '</dl>'
+                  + (credits.length ? '<div class="picture-credits" style="font-size:0.8em;color:#475569;">Picture credits: ' + credits.join('; ') + '</div>' : '');
+          };
           if (originalReading) {
               const snapshot = readingContract.getSourceSnapshot(item);
               const supports = readingContract.validateReadingSupports(item, item.readingSupports);
-              const notes = supports.annotations.length ? '<aside class="reading-support-notes" aria-label="Word help"><h3>Word help</h3><p>Explanations for the original text.</p><dl>' + supports.annotations.map(annotation => '<dt>' + _escTxt(annotation.quote) + '</dt><dd>' + _escTxt(annotation.text) + '</dd>').join('') + '</dl></aside>' : '';
+              const notes = supports.annotations.length ? '<aside class="reading-support-notes" aria-label="Word help"><h3>Word help</h3><p>Explanations for the original text.</p>' + _wordHelpList(supports.annotations) + '</aside>' : '';
               const unavailableNotes = supports.status !== 'complete' ? '<p role="note">Some word help could not be matched to this original and is unavailable.</p>' : '';
               // Entity-encode CR so HTML parsing retains even CRLF source strings.
               const sourceText = _escTxt(item.data).replace(/\r/g, '&#13;');
@@ -40432,11 +40443,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
               }
           }
+          // Word help the teacher turned on for this adapted text (never on a cloze sheet, above).
+          const _adaptedHelp = readingContract?.isAdaptedReading?.(item) ? readingContract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
+          const _adaptedHelpHtml = _adaptedHelp && _adaptedHelp.shown && _adaptedHelp.annotations.length ? '<aside class="reading-support-notes" aria-label="Word help"><h3>Word help</h3>' + _wordHelpList(_adaptedHelp.annotations) + '</aside>' : '';
           return `
               <div class="section" id="${item.id}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
                   ${_readingRoleHtml}
                   <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_passageHtml}</div>
+                  ${_adaptedHelpHtml}
               </div>
           `;
       } else if (item.type === 'glossary') {

@@ -1032,6 +1032,8 @@ function HistoryPanel(props) {
                                                     <span>Manage local storage and recovery</span>
                                                 </button>
                                             )}
+                                            {/* Students load and save from the Save panel above the history; teachers have no Save panel. */}
+                                            {isTeacherMode && (
                                             <button
                                                 type="button"
                                                 role="menuitem"
@@ -1045,6 +1047,7 @@ function HistoryPanel(props) {
                                                 <Upload size={15} aria-hidden="true" />
                                                 <span>{t('history.load_project')}</span>
                                             </button>
+                                            )}
                                             <button
                                                 type="button"
                                                 role="menuitem"
@@ -1074,6 +1077,7 @@ function HistoryPanel(props) {
                                                     <span>{t('history.save_teacher')}</span>
                                                 </button>
                                             )}
+                                            {isTeacherMode && (
                                             <button
                                                 type="button"
                                                 role="menuitem"
@@ -1085,9 +1089,10 @@ function HistoryPanel(props) {
                                                 className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? 'ring-2 ring-indigo-200' : ''}`}
                                                 data-help-key="history_save_student"
                                             >
-                                                {isTeacherMode ? <Lock size={15} aria-hidden="true" /> : <Save size={15} aria-hidden="true" />}
-                                                <span>{isTeacherMode ? t('history.save_student') : t('history.save_work')}</span>
+                                                <Lock size={15} aria-hidden="true" />
+                                                <span>{t('history.save_student')}</span>
                                             </button>
+                                            )}
                                             <div role="separator" className="my-1 h-px bg-slate-200" />
                                             <button
                                                 type="button"
@@ -1249,8 +1254,10 @@ function HistoryPanel(props) {
                 </div>
                 {/* ── Saved STEM Stations ── */}
                 {(() => {
-                    const stations = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]');
-                    if (stations.length === 0) return null;
+                    // Read during render: storage that is blocked or holds bad JSON must not take the panel down.
+                    let stations = [];
+                    try { stations = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]'); } catch (_) {}
+                    if (!Array.isArray(stations) || stations.length === 0) return null;
                     /* Reuse component's filteredHistory snapshot; keep nested callbacks consistent throughout this render. */
 
   return (
@@ -1300,8 +1307,11 @@ function HistoryPanel(props) {
                 })()}
                 {/* ── Saved SEL Stations ── */}
                 {(() => {
-                    const stations = JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]');
-                    if (stations.length === 0) return null;
+                    // Same guard; with storage blocked, the stations a loaded project put on the window still show.
+                    let stations = [];
+                    try { stations = JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]'); } catch (_) {}
+                    if ((!Array.isArray(stations) || !stations.length) && Array.isArray(window.__alloflowSelStations)) stations = window.__alloflowSelStations;
+                    if (!Array.isArray(stations) || stations.length === 0) return null;
                     /* Reuse component's filteredHistory snapshot; keep nested callbacks consistent throughout this render. */
 
   return (

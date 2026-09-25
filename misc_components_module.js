@@ -164,6 +164,8 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
     "span",
     {
       className: "inline-block mx-1 relative align-middle",
+      "data-cloze-blank": "true",
+      "data-cloze-solved": status === "success" ? "true" : "false",
       onDrop: handleDrop,
       onDragOver: handleDragOver,
       onDragLeave: handleDragLeave
@@ -857,7 +859,7 @@ const WordSoundsReviewPanel = ({
         onClick: () => runGapFixes(fixable),
         disabled: busy,
         "aria-busy": busy,
-        className: `shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? "bg-white/60 text-amber-800 border-amber-200" : "bg-amber-600 text-white border-amber-600 hover:bg-amber-700"}`
+        className: `shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? "bg-white/60 text-amber-800 border-amber-200" : "bg-amber-700 text-white border-amber-600 hover:bg-amber-700"}`
       },
       busy ? t("word_sounds.fixing") || "Fixing\u2026" : `${t("word_sounds.fix_all") || "Fix all"} (${fixableWords})`
     )), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, gaps.map((g) => /* @__PURE__ */ React.createElement("li", { key: g.key, className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("span", null, g.text), (g.each || g.batch) && /* @__PURE__ */ React.createElement(
@@ -1201,7 +1203,7 @@ const WordSoundsReviewPanel = ({
           title: t("word_sounds.bank_show_spellings") || "Show the letters that spell this sound"
         },
         _isExp ? "\u25B4" : "\u22EF"
-      )), _isExp && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-600 max-w-[220px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-pink-600" }, _ipaLabel), _disp.keyWord ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, " \xB7 as in ", _disp.keyWord) : null, /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 flex flex-wrap gap-1" }, _disp.graphemes.map((g, gi) => /* @__PURE__ */ React.createElement("span", { key: gi, className: "px-1.5 py-0.5 bg-slate-100 rounded font-mono text-slate-700" }, g)))));
+      )), _isExp && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-600 max-w-[220px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-pink-600" }, _ipaLabel), _disp.keyWord ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, " \xB7 as in ", _disp.keyWord) : null, /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 flex flex-wrap gap-1" }, _disp.graphemes.map((g, gi) => /* @__PURE__ */ React.createElement("span", { key: gi, className: "px-1.5 py-0.5 bg-slate-100 rounded font-mono text-slate-700" }, g)))));
     })))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-orange-500 uppercase tracking-wider mb-2 block" }, t("word_sounds.rhyme_options")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {

@@ -375,7 +375,7 @@ function DirectionsResultView({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => travelTo(nextStation),
-    className: "min-h-11 flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-sm shadow-sm transition-all"
+    className: "min-h-11 flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm shadow-sm transition-all"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, nextStation.icon), /*#__PURE__*/React.createElement("span", null, text('mapNextLabel', 'Go here next') + ': ' + (nextStation.title || nextStation.typeLabel).slice(0, 40)), /*#__PURE__*/React.createElement(ArrowRight, {
@@ -410,7 +410,7 @@ function DirectionsResultView({
     "aria-hidden": "true"
   }, station.icon), /*#__PURE__*/React.createElement("span", null, (station.title || station.typeLabel).slice(0, 30)), /*#__PURE__*/React.createElement("span", {
     className: "sr-only"
-  }, ' — ' + station.typeLabel + (station.visited ? ', ' + text('mapVisitedSr', 'already visited') : '')))))))), trustedBodyHtml && /*#__PURE__*/React.createElement("div", {
+  }, ', ' + station.typeLabel + (station.visited ? ', ' + text('mapVisitedSr', 'already visited') : '')))))))), trustedBodyHtml && /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none text-slate-700 mb-4 break-words",
     dangerouslySetInnerHTML: {
       __html: typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' ? window.sanitizeHtml(trustedBodyHtml) : ''
@@ -492,7 +492,7 @@ function DirectionsResultView({
     className: 'text-sm ' + (goal.done ? 'text-emerald-700 line-through decoration-emerald-300' : 'text-slate-700')
   }, goal.label, goal.kind !== 'manual' && /*#__PURE__*/React.createElement("span", {
     className: "sr-only"
-  }, goal.done ? ' — ' + text('goalDone', 'complete') : ' — ' + text('goalOpen', 'not yet complete'))), goal.progressText && !goal.done && /*#__PURE__*/React.createElement("span", {
+  }, goal.done ? ', ' + text('goalDone', 'complete') : ', ' + text('goalOpen', 'not yet complete'))), goal.progressText && !goal.done && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-amber-600 font-bold ml-auto flex-shrink-0"
   }, goal.progressText), goal.done && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-emerald-600 font-bold ml-auto flex-shrink-0",

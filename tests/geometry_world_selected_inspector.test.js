@@ -53,16 +53,16 @@ describe('selected creation takes priority without conflating measurements or pl
     const app=mount({retained:'a',fallback}),hero=app.hero(),before=worldState(app.engine),originalMeasurement=app.state().measureResult;
     expect(hero).toBeTruthy();expect(hero.textContent).toContain('Selected creation');expect(hero.textContent).toContain('Outlined selection');expect(hero.textContent).toContain('Blocks selected');expect(hero.textContent).toContain('Block bounds');expect(hero.textContent).toContain(SCOPE);expect(hero.textContent).not.toContain('Placed');
     expect(Array.from(hero.querySelectorAll('.gwe-metric strong')).map(el=>el.textContent)).toEqual(['2','2×1×1']);expect(hero.querySelectorAll('.gwe-metric')).toHaveLength(2);
-    const tools=app.host.querySelector('.gwe-current-tools');precedes(hero,tools);precedes(app.host.querySelector('[aria-label="Inspect selected creation"]'),tools);precedes(app.host.querySelector('.gwe-print-ready'),tools);precedes(app.host.querySelector('.gwe-connection-check'),tools);
+    expect(app.host.querySelector('.gwe-current-tools')).toBeNull();
     expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select another build');expect(app.state().measureResult).toBe(originalMeasurement);expect(worldState(app.engine)).toEqual(before);
     expect(app.host.querySelector('.gwe-print-dimensions').textContent).toContain('25 × 12.5 × 12.5 mm');
   });
   it.each([{retained:null,fallback:'a'},{retained:null,fallback:'ground'},{retained:'missing',fallback:'a'},{retained:'a',fallback:'b',incomplete:true}])('keeps the default hierarchy and avoids a retained-scope claim for %j',options=>{
     const app=mount(options);expect(app.hero()).toBeNull();expect(app.host.textContent).not.toContain(SCOPE);expect(app.host.textContent).not.toContain('Outlined selection');
-    const summary=app.host.querySelector('[aria-label="Build summary"]');expect(summary.querySelectorAll('.gwe-metric')).toHaveLength(3);expect(summary.textContent).toContain('47Placed');precedes(app.host.querySelector('.gwe-current-tools'),summary);expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select build');
+    const summary=app.host.querySelector('[aria-label="Build summary"]');expect(summary.querySelectorAll('.gwe-metric')).toHaveLength(3);expect(summary.textContent).toContain('47Placed');expect(app.host.querySelector('.gwe-current-tools')).toBeNull();expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select build');
   });
   it('Clear selection restores ordinary building order and controls without editing either creation',()=>{
-    const app=mount(),before=worldState(app.engine);app.click(app.button('Clear selection'));expect(app.engine._builderSelection).toBeNull();expect(app.state().measureResult).toBeNull();expect(app.hero()).toBeNull();expect(app.host.textContent).not.toContain(SCOPE);precedes(app.host.querySelector('.gwe-current-tools'),app.host.querySelector('[aria-label="Build summary"]'));expect(app.host.querySelector('[aria-label="Build summary"]').querySelectorAll('.gwe-metric')).toHaveLength(3);expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select build');expect(worldState(app.engine)).toEqual(before);
+    const app=mount(),before=worldState(app.engine);app.click(app.button('Clear selection'));expect(app.engine._builderSelection).toBeNull();expect(app.state().measureResult).toBeNull();expect(app.hero()).toBeNull();expect(app.host.textContent).not.toContain(SCOPE);expect(app.host.querySelector('.gwe-current-tools')).toBeNull();expect(app.host.querySelector('[aria-label="Build summary"]').querySelectorAll('.gwe-metric')).toHaveLength(3);expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select build');expect(worldState(app.engine)).toEqual(before);
   });
 });
 

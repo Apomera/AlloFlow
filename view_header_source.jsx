@@ -742,9 +742,9 @@ function HeaderBar(props) {
     // Mark the handoff before expanding. The post-commit effect above focuses
     // the connected expanded trigger, then opens on the following render so
     // the shared trap captures a valid element for dismissal restoration.
+    // Not saved: opening Join must not keep the header expanded after a reload.
     _joinOpenAfterExpandRef.current = true;
     setHeaderCollapsed(false);
-    try { localStorage.setItem('allo_header_collapsed', 'false'); } catch (_) {}
   };
 
   return (
@@ -937,7 +937,7 @@ function HeaderBar(props) {
                     aria-expanded={isJoinPopoverOpen}
                   >
                     <WifiOff size={16} aria-hidden="true" />
-                    <span className="hidden lg:inline">{t('session.join')}</span>
+                    <span>{t('session.join')}</span>
                   </button>
                 )}
                 {!isTeacherMode && (activeSessionCode || _isHomeworkStatus) && (
@@ -2010,7 +2010,7 @@ function HeaderBar(props) {
                                                 aria-haspopup="dialog"
                                                 aria-expanded={isJoinPopoverOpen}
                                             >
-                                                <WifiOff size={14} /> <span className="hidden lg:inline">{t('session.join')}</span>
+                                                <WifiOff size={14} aria-hidden="true" /> <span>{t('session.join')}</span>
                                             </button>
                                             {isJoinPopoverOpen && (
                                                 <div ref={_joinPopoverRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-join-session-title" className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 motion-reduce:animate-none">
@@ -2019,6 +2019,7 @@ function HeaderBar(props) {
                                                             <h2 id="header-join-session-title" className="text-sm font-black text-slate-800">{t('session.join')}</h2>
                                                             <button type="button" onClick={handleSetIsJoinPopoverOpenToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close join session'}>&times;</button>
                                                         </div>
+                                                        <p id="header-join-instructions" className="text-xs text-slate-600">{t('session.join_instructions')}</p>
                                                         <div>
                                                             <label htmlFor="header-join-host-id" className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
                                                             <input
@@ -2036,6 +2037,7 @@ function HeaderBar(props) {
                                                                 <input
                                                                     id="header-join-code"
                                                                     data-autofocus
+                                                                    aria-describedby="header-join-instructions"
                                                                     type="text"
                                                                     value={joinCodeInput}
                                                                     onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
@@ -2046,8 +2048,10 @@ function HeaderBar(props) {
                                                                 />
                                                                 <button type="button"
                                                                     aria-label={t('common.continue')}
+                                                                    data-header-join-submit
+                                                                    disabled={String(joinCodeInput || '').replace(/[^A-Z0-9]/gi, '').length !== 5}
                                                                     onClick={() => joinClassSession(joinCodeInput)}
-                                                                    className="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors"
+                                                                    className="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                                 >
                                                                     <ArrowRight size={16}/>
                                                                 </button>
@@ -2064,16 +2068,7 @@ function HeaderBar(props) {
                                 </div>
                             )}
                         </div>
-                        {!isTeacherMode && (
-                            <button type="button"
-                                onClick={handleSetShowSubmitModalToTrue}
-                                className={`bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30`}
-                                title={t('header.submit_tooltip')}
-                                data-help-key="header_submit"
-                            >
-                                <Send size={14} /> <span className="hidden lg:inline">{t('header.submit_work')}</span>
-                            </button>
-                        )}
+                        {/* Students submit from the Save panel beside their history (same modal). */}
                         </div>
                         </div>
                     </div>

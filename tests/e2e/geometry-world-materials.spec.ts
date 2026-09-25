@@ -35,7 +35,8 @@ async function boot(page: any) {
   await page.goto(`${base}/__harness`);
   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.geometryWorld);
   await page.evaluate(() => { (window as any).__alloGeometryWorldPendingBuild = { __e2e: true }; });
-  await page.evaluate(() => (window as any).__mount({ _introShownOnce: true }));
+  // The palette folds into the Blocks button in a lesson (2026-09-24); this spec is about the palette.
+  await page.evaluate(() => (window as any).__mount({ _introShownOnce: true, buildToolsOpenLesson: true }));
   await page.waitForSelector('#geoworld-fs-wrap canvas', { timeout: 30000 });
   await page.waitForFunction(() => !!(window as any).__geoWorldEngine, null, { timeout: 30000 });
   await page.waitForTimeout(900);

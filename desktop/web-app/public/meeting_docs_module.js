@@ -100,7 +100,8 @@ function meetdocsNextId(prefix) {
   return prefix + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
 }
 function meetdocsDateStamp() {
-  return (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const d = /* @__PURE__ */ new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function meetdocsEscapeRe(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -737,6 +738,7 @@ function MeetingDocsPanel(props) {
     MeetingDocsPanel: MeetingDocsPanel,
     // Pure seams exposed for unit tests. Not part of the public contract.
     _testing: {
+      meetdocsDateStamp: meetdocsDateStamp,
       meetdocsMask: meetdocsMask,
       meetdocsUnmask: meetdocsUnmask,
       meetdocsMaskPairs: meetdocsMaskPairs,

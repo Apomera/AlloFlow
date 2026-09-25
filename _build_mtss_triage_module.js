@@ -69,6 +69,7 @@ ${compiled}
   window.AlloModules.MtssTriage = {
     MtssTriagePanel: MtssTriagePanel,
     _testing: {
+      mtssToday: mtssToday,
       mtssParsePaste: mtssParsePaste,
       mtssTierOf: mtssTierOf,
       mtssValidateCuts: mtssValidateCuts,

@@ -200,10 +200,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for galax
   "buttons": 71,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 332,
+  "lengthBucket": 333,
   "paths": 5,
   "selects": 0,
-  "sha": "d5ba55972fcf2b35",
+  "sha": "94ee3c3fc68a1303",
   "svgs": 15,
 }
 `;
@@ -262,13 +262,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for molec
 
 exports[`science-sim + studio render goldens > renders + pins a digest for moonMission [ssr] 1`] = `
 {
-  "buttons": 11,
+  "buttons": 14,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 131,
+  "lengthBucket": 140,
   "paths": 0,
   "selects": 0,
-  "sha": "d2b680bc0253d403",
+  "sha": "f93955845d05216a",
   "svgs": 0,
 }
 `;
@@ -314,14 +314,14 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rockC
 
 exports[`science-sim + studio render goldens > renders + pins a digest for rocks [ssr] 1`] = `
 {
-  "buttons": 12,
+  "buttons": 23,
   "canvases": 1,
   "inputs": 0,
-  "lengthBucket": 39,
-  "paths": 0,
+  "lengthBucket": 90,
+  "paths": 21,
   "selects": 0,
-  "sha": "d75e031efb262e37",
-  "svgs": 0,
+  "sha": "e0f396d9e7797512",
+  "svgs": 1,
 }
 `;
 
@@ -398,7 +398,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for water
   "lengthBucket": 188,
   "paths": 0,
   "selects": 1,
-  "sha": "1a8fafa8d26efe61",
+  "sha": "8250e3c62cc200af",
   "svgs": 0,
 }
 `;

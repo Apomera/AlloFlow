@@ -252,13 +252,14 @@ function FabStack(props) {
                     <span className="text-[10px] font-semibold text-slate-600">{t('simplified.mode_label')}</span>
                   </div>
                   <div className="alloflow-student-tools-grid">
+                    {/* Same as the reader's own toolbar: these tools work in Both, so they keep it open. */}
                     <button
                       data-student-tool="true"
-                      onClick={() => { setInteractionMode('read'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
-                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'read' && !isCompareMode && !isFluencyMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      onClick={() => { setInteractionMode('read'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsFluencyMode(false); }}
+                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'read' && !isFluencyMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                       title={t('simplified.tip_read')}
                       aria-label={t('simplified.read_mode')}
-                      aria-pressed={interactionMode === 'read' && !isCompareMode && !isFluencyMode}
+                      aria-pressed={interactionMode === 'read' && !isFluencyMode}
                       data-help-key="tool_read_mode"
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><Volume2 size={18} /></span>
@@ -266,11 +267,11 @@ function FabStack(props) {
                     </button>
                     <button
                       data-student-tool="true"
-                      onClick={() => { setInteractionMode('define'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); }}
-                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'define' && !isCompareMode ? 'bg-yellow-100 text-yellow-900 ring-2 ring-yellow-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      onClick={() => { setInteractionMode('define'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); }}
+                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'define' ? 'bg-yellow-100 text-yellow-900 ring-2 ring-yellow-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                       title={t('simplified.tip_define')}
                       aria-label={t('simplified.define_mode')}
-                      aria-pressed={interactionMode === 'define' && !isCompareMode}
+                      aria-pressed={interactionMode === 'define'}
                       data-help-key="tool_define_mode"
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><Search size={18} /></span>
@@ -280,11 +281,11 @@ function FabStack(props) {
                     {!studentAiFeaturesHidden && <button
                       data-student-tool="true"
                       data-help-toggle="true"
-                      onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); setIsCompareMode(false); }}
-                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'explain' && !isCompareMode ? 'bg-teal-100 text-teal-900 ring-2 ring-teal-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); }}
+                      className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'explain' ? 'bg-teal-100 text-teal-900 ring-2 ring-teal-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                       title={t('simplified.tip_explain')}
                       aria-label={t('simplified.explain_mode')}
-                      aria-pressed={interactionMode === 'explain' && !isCompareMode}
+                      aria-pressed={interactionMode === 'explain'}
                       data-help-key="tool_explain_mode"
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><HelpCircle size={18} /></span>

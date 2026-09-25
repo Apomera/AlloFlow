@@ -38,7 +38,7 @@ function makeEngine() {
 
 function measurement(overrides) {
   return Object.assign({ count: 12, L: 2, W: 2, H: 3, boundingVolume: 12, totalVolume: 12,
-    shapeCounts: { cube: 12 }, materialCounts: { stone: 12 }, blocks: [{ x: 0, y: 0, z: 0 }], isComplete: true }, overrides);
+    shapeCounts: { cube: 12 }, materialCounts: { stone: 12 }, blocks: [{ x: 0, y: 0, z: 0 }], isComplete: true, fillPercent: 100 }, overrides);
 }
 
 function mountTool(overrides) {
@@ -161,12 +161,20 @@ describe('Geometry World compact measurement inspector', () => {
     expect(slider.getAttribute('aria-valuetext')).toBe('All layers visible'); expect(disclosure(view).open).toBe(true);
   });
 
-  it('keeps all teaching details expanded on desktop', () => {
+  // Changed 2026-09-24 (Aaron approved): the desktop inspector covered a third of the
+  // world with the layer explorer and equivalent views open. It now opens compact on
+  // every screen; the teaching details are one tap away and stay open once opened.
+  it('opens compact on desktop too, with the teaching details one tap away', () => {
     Object.defineProperty(navigator, 'userAgent', { configurable: true, value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' });
     const view = mountTool({ touchMode: false });
-    expect(view.container.querySelector('.gw-measure-card').dataset.measurementCompact).toBe('false');
-    expect(disclosure(view).open).toBe(true);
-    view.patch({ measureResult: measurement(), measureHistory: [{ t: 2000 }] }); expect(disclosure(view).open).toBe(true);
+    const card = view.container.querySelector('.gw-measure-card');
+    expect(card.dataset.measurementCompact).toBe('true');
+    expect(card.dataset.detailsOpen).toBe('false');
+    expect(disclosure(view).open).toBe(false);
+    openDetails(view);
+    expect(view.container.querySelector('.gw-measure-card').dataset.detailsOpen).toBe('true');
+    expect(view.container.querySelector('.gw-layer-explorer')).toBeTruthy();
+    view.patch({ measureResult: measurement(), measureHistory: [{ t: 1000, isComplete: true }] }); expect(disclosure(view).open).toBe(true);
   });
 
   it('does not label fractional block counts as cubic units in an incomplete measurement', () => {

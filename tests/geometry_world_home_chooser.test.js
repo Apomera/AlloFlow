@@ -283,6 +283,36 @@ describe('Geometry World home chooser lifecycle', () => {
     expect(m.container.querySelector('.gwe-home-preview h2').textContent).toBe(select.selectedOptions[0].textContent);
     m.unmount();
   });
+
+  // Explore used to hold only the Garden. Skyline City (2026-09-24) is a second place;
+  // Explore lists every lesson marked explore, and Learn lists none of them.
+  it('Explore offers both places to wander, and Learn offers neither', () => {
+    const m=mountTool(cfg,{worldActive:true});
+    React.act(()=>m.container.querySelector('[data-path="explore"]').click());
+    const place=id=>m.container.querySelector('[data-gwe-place="'+id+'"]');
+    const enter=()=>[...m.container.querySelectorAll('.gwe-home-primary')].find(b=>/^Enter /.test(b.textContent));
+    expect([...m.container.querySelectorAll('[data-gwe-place]')].map(b=>b.getAttribute('data-gwe-place'))).toEqual(['geometryGarden','skylineCity']);
+    expect(m.container.querySelector('.gwe-home-place-picker').getAttribute('aria-label')).toBe('Choose a place');
+    expect([place('geometryGarden').getAttribute('aria-pressed'),place('skylineCity').getAttribute('aria-pressed')]).toEqual(['true','false']);
+    expect(enter().textContent).toBe('Enter Geometry Garden');
+    React.act(()=>place('skylineCity').click());
+    expect(m.bucket().geometryHomeExplore).toBe('skylineCity');
+    expect([place('geometryGarden').getAttribute('aria-pressed'),place('skylineCity').getAttribute('aria-pressed')]).toEqual(['false','true']);
+    expect(place('skylineCity').textContent).toContain('Towers, a bridge and a packing yard');
+    expect(m.container.querySelector('.gwe-home-preview h2').textContent).toContain('Skyline City');
+    expect(enter().textContent).toBe('Enter Skyline City');
+    React.act(()=>enter().click());
+    expect(m.bucket().activeLesson).toBe('skylineCity');
+    m.unmount();
+    window[ENGINE_KEY]=makeFakeEngine(); // unmounting disposes the engine
+    const learn=mountTool(cfg,{worldActive:true});
+    React.act(()=>learn.container.querySelector('[data-path="learn"]').click());
+    const ids=[...learn.container.querySelectorAll('#gwe-home-lesson option')].map(o=>o.value);
+    expect(ids).toContain('scaleUp');
+    expect(ids.filter(id=>id==='geometryGarden'||id==='skylineCity')).toEqual([]);
+    expect(learn.container.querySelector('[data-gwe-place]')).toBeNull();
+    learn.unmount();
+  });
 });
 
 // The chooser lives in the builder enhancement. The shell loads each STEM lab on demand, one script per tile,

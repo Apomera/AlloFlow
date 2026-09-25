@@ -1,17 +1,30 @@
 // Keep the displayed picture, exported picture and accessibility description on one artifact.
-function replaceSingleImage(item, imageUrl) {
+// chosen: a picked symbol or photo - { imageSource, altText, altSource, altHash, imageAttribution }.
+// An upload has no known credit, so any earlier credit is dropped with the old picture.
+function replaceSingleImage(item, imageUrl, chosen) {
   const data = item.data || {};
   const originalImage = data.originalImage || {
     imageUrl: data.imageUrl || '', altText: data.altText || '', altSource: data.altSource || '',
-    altHash: data.altHash || '', decorative: data.decorative === true, imageSource: data.imageSource || ''
+    altHash: data.altHash || '', decorative: data.decorative === true, imageSource: data.imageSource || '',
+    imageAttribution: data.imageAttribution || null, imageCreditBand: Number(data.imageCreditBand) || 0
   };
-  return { ...item, data: { ...data, originalImage, imageUrl, imageSource: 'author-upload',
-    altText: '', altSource: '', altHash: '', decorative: false } };
+  const next = { ...data, originalImage, imageUrl, imageSource: 'author-upload',
+    altText: '', altSource: '', altHash: '', decorative: false };
+  delete next.imageAttribution;
+  delete next.imageCreditBand;
+  // imageCreditBand: the height of the credit drawn under a picked picture (an AI edit redraws it).
+  if (chosen) Object.assign(next, { imageSource: chosen.imageSource || 'author-upload', altText: chosen.altText || '',
+    altSource: chosen.altSource || '', altHash: chosen.altHash || '', imageAttribution: chosen.imageAttribution || null,
+    imageCreditBand: Number(chosen.imageCreditBand) || 0 });
+  return { ...item, data: next };
 }
 function restoreSingleImage(item) {
   const data = item.data || {};
   if (!data.originalImage) return item;
   const next = { ...data, ...data.originalImage };
+  // The original's credit (or none) comes back with it, never a later picture's.
+  if (!data.originalImage.imageAttribution) delete next.imageAttribution;
+  if (!data.originalImage.imageCreditBand) delete next.imageCreditBand;
   delete next.originalImage;
   return { ...item, data: next };
 }
@@ -63,6 +76,47 @@ function ImageView(props) {
     if (typeof props.onUpdateResource === 'function') return props.onUpdateResource(id, patch);
     setGeneratedContent(patch);
     setHistory(items => items.map(patch));
+  };
+  // Picked Mulberry symbols and screened photos replace the picture like an
+  // upload, but keep their description and carry their credit (drawn into the
+  // image too, since downloads copy only the picture).
+  const [findOpen, setFindOpen] = React.useState(false);
+  // The panel belongs to the picture it was opened for: another item closes it,
+  // and a multi-panel visual (which never shows a replaced picture) has none.
+  const multiPanel = !!(generatedContent && generatedContent.data && generatedContent.data.visualPlan && generatedContent.data.visualPlan.panels && generatedContent.data.visualPlan.panels.length > 1);
+  React.useEffect(() => { setFindOpen(false); }, [generatedContent && generatedContent.id]);
+  const latestImageRef = React.useRef(null);
+  latestImageRef.current = generatedContent && generatedContent.data && generatedContent.data.imageUrl;
+  // Choosing or closing removes the focused control; return focus to the Find button that opened the panel.
+  const findOpenerRef = React.useRef(null), refocusFind = React.useRef(false);
+  const toggleFind = (event) => { findOpenerRef.current = event.currentTarget; setFindOpen(open => !open); };
+  const closeFind = () => { refocusFind.current = true; setFindOpen(false); };
+  React.useEffect(() => { if (!findOpen && refocusFind.current) { refocusFind.current = false; if (findOpenerRef.current && findOpenerRef.current.isConnected) findOpenerRef.current.focus(); } }, [findOpen]);
+  const [findBusy, setFindBusy] = React.useState(false);
+  const chooseClassroomImage = async (choice) => {
+    const A = window.AlloModules && window.AlloModules.AltText;
+    const previousImageUrl = generatedContent && generatedContent.data && generatedContent.data.imageUrl;
+    if (!A || !choice || findBusy) return;
+    setFindBusy(true);
+    try {
+      const baked = await A.bakeCreditBand(choice.dataUrl, choice.creditLine, { kind: choice.source === 'mulberry' ? 'symbol' : 'photo', attribution: choice.attribution });
+      const imageUrl = baked.dataUrl;
+      // The picture may have changed while this one was checked (a Regenerate, another item).
+      const applied = latestImageRef.current === previousImageUrl && updateImageResource(item => item.data && item.data.imageUrl === previousImageUrl ? replaceSingleImage(item, imageUrl, {
+        imageSource: choice.source, altText: choice.alt || '', altSource: choice.alt ? choice.altSource : '',
+        altHash: choice.alt ? A.hashImage(imageUrl) : '', imageAttribution: choice.attribution || null, imageCreditBand: baked.bandHeight,
+      }) : item) !== false;
+      if (!applied) {
+        if (typeof addToast === 'function') addToast(t('visuals.picture_changed_meanwhile') || 'The picture changed while this one was being checked, so it was not replaced. Try again.', 'error');
+        return;
+      }
+      closeFind();
+      if (typeof addToast === 'function') addToast(t('visuals.picture_added') || 'Picture updated. Its credit is shown under it and saved in the image.', 'success');
+    } catch (_) {
+      if (typeof addToast === 'function') addToast(t('visuals.picture_add_failed') || 'The picture could not be added. Try another one.', 'error');
+    } finally {
+      setFindBusy(false);
+    }
   };
   const uploadImage = (event) => {
     const file = event.target.files && event.target.files[0];
@@ -152,6 +206,13 @@ function ImageView(props) {
                                       onClick={() => singleImageFileRef.current?.click()}
                                       className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm cursor-pointer"
                                     >📷 {t('visuals.replace_image') || 'Replace'}</button>
+                                    <button
+                                      aria-label={t('visuals.find_picture') || 'Find a symbol or photo'}
+                                      title={t('visuals.find_picture') || 'Find a symbol or photo'}
+                                      aria-expanded={findOpen}
+                                      onClick={toggleFind}
+                                      className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-800 transition-all shadow-sm cursor-pointer"
+                                    >🔎 {t('visuals.find_short') || 'Find'}</button>
                                     {generatedContent?.data?.originalImage && (
                                       <button
                                         aria-label={t('visuals.restore_ai_image') || 'Restore AI image'}
@@ -161,6 +222,12 @@ function ImageView(props) {
                                       >↩️ {t('visuals.restore_original') || 'Restore'}</button>
                                     )}
                                   </div>
+                                )}
+                                {generatedContent?.data?.imageAttribution && window.AlloModules && window.AlloModules.AltText && (
+                                  <p className="mt-1 text-xs text-slate-700" data-image-credit="">
+                                    {window.AlloModules.AltText.openImageCreditLine(generatedContent.data.imageAttribution)}
+                                    {/^https:\/\//i.test(generatedContent.data.imageAttribution.url || '') && <> · <a href={generatedContent.data.imageAttribution.url} target="_blank" rel="noopener noreferrer" className="underline">{t('visuals.image_source_link') || 'Source'}</a></>}
+                                  </p>
                                 )}
                                 {isTeacherMode && window.AlloModules && window.AlloModules.ImageAltField && (() => {
                                     const A = window.AlloModules.AltText;
@@ -231,6 +298,18 @@ function ImageView(props) {
                                 </div>
                             )}
                         </div>
+                        {isTeacherMode && findOpen && !multiPanel && (
+                          <section className="w-full max-w-2xl mb-4" aria-label={t('visuals.find_picture') || 'Find a symbol or photo'}>
+                            {window.AlloModules && window.AlloModules.ClassroomImagePicker
+                              ? React.createElement(window.AlloModules.ClassroomImagePicker, {
+                                idPrefix: 'visual-find-' + (generatedContent?.id || 'single'), language: leveledTextLanguage,
+                                sources: ['symbols', 'photos'], t: t, onChoose: chooseClassroomImage,
+                              })
+                              : <p role="status" className="text-sm text-slate-700">{t('visuals.find_loading') || 'Picture search is still loading. Try again in a moment.'}</p>}
+                            {findBusy && <p role="status" className="mt-2 text-sm text-slate-700">{t('visuals.find_adding') || 'Adding the picture...'}</p>}
+                            <button type="button" onClick={closeFind} className="mt-2 min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{t('common.close') || 'Close'}</button>
+                          </section>
+                        )}
                         <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-400 shadow-sm mb-6" data-help-key="visuals_prompt">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('visuals.prompt_label')}</h4>
                             <p className="text-slate-700 italic bg-slate-50 p-3 rounded border border-slate-100 text-sm">"{generatedContent?.data.prompt}"</p>
@@ -279,6 +358,15 @@ function ImageView(props) {
                               onClick={() => singleImageFileRef.current?.click()}
                               className="flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors font-medium border border-purple-200"
                             ><span style={{fontSize:'1.125rem'}}>📷</span></button>
+                            {!(generatedContent?.data?.visualPlan?.panels?.length > 1) && (
+                            <button
+                              aria-label={t('visuals.find_picture') || 'Find a symbol or photo'}
+                              title={t('visuals.find_picture') || 'Find a symbol or photo'}
+                              aria-expanded={findOpen}
+                              onClick={toggleFind}
+                              className="flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-4 rounded-lg hover:bg-sky-100 transition-colors font-medium border border-sky-300"
+                            ><span style={{fontSize:'1.125rem'}}>🔎</span></button>
+                            )}
                             <button aria-label={t('common.regenerate')} onClick={handleRestoreImage} data-help-key="visuals_regenerate" className="flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600"><RefreshCw size={18} /></button>
                         </div>
                         )}

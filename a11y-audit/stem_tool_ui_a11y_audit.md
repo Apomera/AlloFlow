@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-09-22T11:03:11.027Z
+Generated: 2026-09-24T23:53:21.587Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-09-22T11:03:11.027Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 5 |
+| Total findings | 7 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 4 |
+| Tool-level warnings | 6 |
 | Review notices | 1 |
-| Tools with any finding | 4 |
+| Tools with any finding | 5 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 46 |
 
@@ -25,8 +25,8 @@ Generated: 2026-09-22T11:03:11.027Z
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| warning | `no-interactive-controls` | 2 | 2 | coasterLab, geoSandbox | Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited. |
-| warning | `placeholder-render` | 2 | 2 | geoSandbox, lawNavigator | The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited. |
+| warning | `no-interactive-controls` | 3 | 3 | coasterLab, geoSandbox, geometryWorld | Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited. |
+| warning | `placeholder-render` | 3 | 3 | geoSandbox, geometryWorld, lawNavigator | The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited. |
 | notice | `light-background` | 1 | 1 | fieldJourneys | Confirm light-background tools still pass contrast across light, dark, and high-contrast themes. |
 
 ## Recommended Next Passes
@@ -113,9 +113,9 @@ Generated: 2026-09-22T11:03:11.027Z
 | `gameStudio` Game Design Studio | creativity | standard | 34 | 3 | 0 | 0 | 0 | 0 |  |
 | `geoQuiz` Geography Explorer | geo | standard | 12 | 2 | 0 | 0 | 0 | 0 |  |
 | `geoSandbox` Geometry Sandbox | math | standard | 0 | 0 | 0 | 0 | 2 | 0 | no-interactive-controls x1, placeholder-render x1 |
-| `geologyExplorer` Geology Explorer | geology | standard | 51 | 2 | 0 | 0 | 0 | 0 |  |
+| `geologyExplorer` Geology Explorer | geology | standard | 40 | 1 | 0 | 0 | 0 | 0 |  |
 | `geometryProver` Geometry | math | standard | 17 | 0 | 0 | 0 | 0 | 0 |  |
-| `geometryWorld` Geometry World | math | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
+| `geometryWorld` Geometry World | math | standard | 0 | 0 | 0 | 0 | 2 | 0 | no-interactive-controls x1, placeholder-render x1 |
 | `gisStudio` GIS Studio | geo | standard | 29 | 15 | 0 | 0 | 0 | 0 |  |
 | `graphCalc` Graphing Calculator | math | standard | 27 | 7 | 1 | 0 | 0 | 0 |  |
 | `heatLab` Heat & Thermodynamics Lab | science | standard | 106 | 15 | 5 | 0 | 0 | 0 |  |
@@ -134,7 +134,7 @@ Generated: 2026-09-22T11:03:11.027Z
 | `molecule` Molecule Lab | science | standard | 54 | 1 | 0 | 0 | 0 | 0 |  |
 | `moleculeShelf` Molecule Shelf | chemistry | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
 | `moneyMath` Money Math | math | standard | 24 | 2 | 0 | 0 | 0 | 0 |  |
-| `moonMission` Moon Mission | science | standard | 11 | 5 | 1 | 0 | 0 | 0 |  |
+| `moonMission` Moon Mission | science | standard | 14 | 5 | 1 | 0 | 0 | 0 |  |
 | `multtable` Multiplication Table | math | standard | 23 | 7 | 0 | 0 | 0 | 0 |  |
 | `musicSynth` Music Synthesizer | creative | standard | 98 | 22 | 2 | 0 | 0 | 0 |  |
 | `nuclearLab` Nuclear & Radiation Lab | science | standard | 202 | 20 | 8 | 0 | 0 | 0 |  |
@@ -159,9 +159,9 @@ Generated: 2026-09-22T11:03:11.027Z
 | `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 50 | 1 | 0 | 0 | 0 | 0 |  |
 | `ratioLab` Ratios, Rates & Proportions Lab | math | standard | 11 | 4 | 0 | 0 | 0 | 0 |  |
 | `renewablesLab` Renewables Lab | physics-chemistry | standard | 17 | 0 | 0 | 0 | 0 | 0 |  |
-| `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 17 | 7 | 0 | 0 | 0 | 0 |  |
+| `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 77 | 7 | 0 | 0 | 0 | 0 |  |
 | `rockCycle` Rock Cycle | science | standard | 16 | 1 | 1 | 0 | 0 | 0 |  |
-| `rocks` Rocks & Minerals Explorer | science | standard | 12 | 0 | 1 | 0 | 0 | 0 |  |
+| `rocks` Rocks & Minerals Explorer | science | standard | 14 | 0 | 1 | 0 | 0 | 0 |  |
 | `scaleExplorer` Scale Explorer | science | standard | 81 | 8 | 1 | 0 | 0 | 0 |  |
 | `schoolBehaviorToolkit` School Behavior Toolkit | science | standard | 15 | 0 | 0 | 0 | 0 | 0 |  |
 | `semiconductor` Semiconductor Lab | science | standard | 29 | 9 | 1 | 0 | 0 | 0 |  |

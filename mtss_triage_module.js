@@ -46,7 +46,29 @@ function mtssNextId(prefix) {
   return prefix + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
 }
 function mtssToday() {
-  return (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const d = /* @__PURE__ */ new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function mtssSplitRow(line) {
+  if (line.indexOf("	") !== -1) return line.split("	");
+  const sep = line.indexOf(";") !== -1 ? ";" : ",";
+  const out = [];
+  let cur = "";
+  let quoted = false;
+  for (const ch of line) {
+    if (ch === '"') {
+      quoted = !quoted;
+      continue;
+    }
+    if (ch === sep && !quoted) {
+      out.push(cur);
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
 }
 function mtssParsePaste(text) {
   const rows = [];
@@ -54,7 +76,7 @@ function mtssParsePaste(text) {
   String(text || "").split(/\r?\n/).forEach((line) => {
     const t = line.trim();
     if (!t) return;
-    const parts = t.split(/[\t;,]/).map((p) => p.trim().replace(/^"|"$/g, ""));
+    const parts = mtssSplitRow(t).map((p) => p.trim());
     if (parts.length < 2) {
       skipped.push(t);
       return;
@@ -584,6 +606,7 @@ function MtssTriagePanel(props) {
   window.AlloModules.MtssTriage = {
     MtssTriagePanel: MtssTriagePanel,
     _testing: {
+      mtssToday: mtssToday,
       mtssParsePaste: mtssParsePaste,
       mtssTierOf: mtssTierOf,
       mtssValidateCuts: mtssValidateCuts,

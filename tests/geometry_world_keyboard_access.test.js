@@ -129,7 +129,7 @@ describe('Geometry World world-surface accessibility', () => {
   });
 
   it('uses native shape buttons and resets a newly chosen shape to zero degrees', () => {
-    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, selectedShape: 1, blockRotation: 3 });
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, selectedShape: 1, blockRotation: 3, buildToolsOpenLesson: true });
     const shapes = Array.from(m.container.querySelectorAll('.gw-shape-item'));
     expect(shapes).toHaveLength(4);
     shapes.forEach(button => { expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button'); });
@@ -142,7 +142,7 @@ describe('Geometry World world-surface accessibility', () => {
   }, 20000);
 
   it('keeps keyboard focus on the native rotation button while its angle changes', () => {
-    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, selectedShape: 2, blockRotation: 3 });
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, selectedShape: 2, blockRotation: 3, buildToolsOpenLesson: true });
     const rotate = m.container.querySelector('.gw-shape-rotate');
     expect(rotate.tagName).toBe('BUTTON');
     expect(rotate.getAttribute('aria-keyshortcuts')).toBe('R');
@@ -507,9 +507,11 @@ describe('Geometry World single measurement path', () => {
   });
 
   it('routes the exact Surface and Net reveal through the same estimate gate', () => {
+    // N's body moved into engine.useNetTool (2026-09-24) so buttons reach it too.
+    expect(SOURCE.slice(SOURCE.indexOf("case 'KeyN':"), SOURCE.indexOf("case 'ShiftLeft':", SOURCE.indexOf("case 'KeyN':")))).toContain('engine.useNetTool();');
     const netCase = SOURCE.slice(
-      SOURCE.indexOf("case 'KeyN':"),
-      SOURCE.indexOf("case 'ShiftLeft':", SOURCE.indexOf("case 'KeyN':")),
+      SOURCE.indexOf('engine.useNetTool = function() {'),
+      SOURCE.indexOf('        };\n', SOURCE.indexOf('engine.useNetTool = function() {')),
     );
     expect(netCase).toContain("engine.performMeasurement('surface');");
     expect(netCase).not.toContain('engine.measureStructure(');
@@ -617,18 +619,22 @@ describe('Geometry World application mode is scoped to the 3D surface', () => {
 
 describe('Geometry World mobile action WCAG parity', () => {
   it('gives every touch action native button and keyboard activation semantics', () => {
+    // Jump keeps its own markup, since it also handles press-and-hold.
+    expect(SOURCE).toMatch(/type: 'button', className: 'gw-focusable', 'aria-label': __alloT\('[^']+', 'Jump or fly up'\)/);
+    expect(SOURCE).toContain("onClick: function(ev) { runMobileButtonAction('jump', activateMobileJump, ev); },");
+    // Every other touch action is one native button from one helper (2026-09-24), activated
+    // by click (so Enter and Space work) and by touch.
+    expect(SOURCE).toContain("return el('button', Object.assign({ key: 'touch-' + action, type: 'button', className: 'gw-focusable', 'aria-label': ariaLabel,");
+    expect(SOURCE).toContain('onTouchStart: function(ev) { runMobileButtonAction(action, fn, ev); },');
+    expect(SOURCE).toContain('onClick: function(ev) { runMobileButtonAction(action, fn, ev); } }, extra || {})');
     [
-      ['Jump', 'jump', 'activateMobileJump'],
       ['Place block', 'place', 'placeMobileBlock'],
       ['Break block', 'break', 'breakMobileBlock'],
       ['Measure structure', 'measure', 'measureMobileStructure'],
       ['Talk to nearby character', 'talk', 'talkToNearbyNpc'],
       ['Undo last block action', 'undo', 'undoMobileBlockAction'],
     ].forEach(function(pair) {
-      // The name is now a translated key with the English as its fallback, so
-      // match the fallback rather than a bare literal.
-      expect(SOURCE).toMatch(new RegExp("type: 'button', className: 'gw-focusable', 'aria-label': __alloT\\('[^']+', '" + pair[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-      expect(SOURCE).toContain(`onClick: function(ev) { runMobileButtonAction('${pair[1]}', ${pair[2]}, ev); },`);
+      expect(SOURCE).toMatch(new RegExp("touchActionButton\\('" + pair[1] + "', '[a-z]+', '[A-Za-z ]+', __alloT\\('[^']+', '" + pair[0] + "'\\), (fromMore\\()?" + pair[2]));
     });
     expect(SOURCE).toContain("engine._lastTouchAction = { key: actionKey, at: Date.now() };");
     expect(SOURCE).toContain("Date.now() - lastTouch.at < 700");
@@ -744,9 +750,11 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("id: 'gw-objective-title', className: 'gw-objective-title'");
     expect(SOURCE).toContain("className: 'gw-objective-progress', role: 'progressbar'");
     expect(SOURCE).toContain("'aria-valuenow': Math.min(score, totalQ)");
-    expect(SOURCE).toContain("return el(isDone ? 'div' : 'button'");
-    expect(SOURCE).toContain("type: isDone ? undefined : 'button'");
-    expect(SOURCE).toContain("'aria-label': isDone ? undefined : 'Navigate to objective: ' + objectiveText");
+    // Objectives tick on evidence (2026-09-24): only an open objective that leads
+    // somewhere (a character to visit, or a self-check) is a button, and it says where.
+    expect(SOURCE).toContain("return el(interactive ? 'button' : 'div'");
+    expect(SOURCE).toContain("type: interactive ? 'button' : undefined");
+    expect(SOURCE).toContain("target ? 'Go to ' + target.data.name + ' for: ' + objectiveText");
     expect(SOURCE).toContain("className: 'gw-reset-button gw-focusable'");
     expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_reset_lesson_progress_and_reload_the_world', 'Reset lesson progress and reload the world')`);
     expect(SOURCE).toContain('.gw-collab-roster{top:auto;bottom:150px}');
@@ -936,6 +944,7 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'badges'");
     expect(SOURCE).toContain("el('blockquote', { className: 'gw-journey-quote' }");
     expect(SOURCE).toContain('.gw-completion-dialog{box-sizing:border-box;width:min(460px,calc(100% - 24px))!important;');
-    expect(SOURCE).toContain('.gw-completion-next,.gw-completion-replay{width:100%;min-height:48px}');
+    // The practice-round button (2026-09-24) takes the same full-width phone layout.
+    expect(SOURCE).toContain('.gw-completion-next,.gw-completion-practice,.gw-completion-replay{width:100%;min-height:48px}');
   });
 });

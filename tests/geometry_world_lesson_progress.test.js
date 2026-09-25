@@ -110,7 +110,8 @@ describe('The next-lesson chain', () => {
     saveProgress(lessons.areaSurface, questions(lessons.areaSurface));
     localStorage.setItem(progress.GW_COMPLETED_LESSONS_KEY, JSON.stringify({[progress.geometryProgressKey(lessons.buildChallenge)]: true}));
     expect(j('volumeExplorer').nextKey).toBe('realWorld');
-    expect(j('geometryHarbor')).toMatchObject({nextKey: 'volumeExplorer', allComplete: false});
+    expect(j('geometryHarbor')).toMatchObject({nextKey: 'scaleUp', allComplete: false});
+    expect(j('scaleUp')).toMatchObject({nextKey: 'volumeExplorer', allComplete: false});
     expect(j('ai_generated')).toMatchObject({nextKey: 'volumeExplorer', allComplete: false});
   });
   it('reports all complete only when every lesson in the chain really is', () => {
@@ -155,7 +156,7 @@ describe('Perfect Score is awarded for a whole lesson with no wrong answer', () 
   });
   it('reads the events the answer handler actually logs', () => {
     for (const logged of [
-      "eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep, isFinalStep: !!isLastStep });",
+      "eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, practiceRound: currentLesson.practice ? currentLesson.practice.key : undefined, step: curStep, isFinalStep: !!isLastStep, mode: via });",
       "eng.logEvent('lesson_complete', { score: newScore, totalQuestions: totalQ,",
       "engine.logEvent('lesson_load', { title: lesson.title || 'unknown'",
     ]) expect(source.includes(logged), logged).toBe(true);
@@ -211,7 +212,9 @@ describe('The completion dialog tells the truth about the course', () => {
   }
 
   it('does not claim the course is complete after finishing the last lesson in the chain', () => {
-    const m = finished('geometryHarbor');
+    const harbor = finished('geometryHarbor');
+    try { expect(nextButton(harbor).textContent).toContain('Next: Scale Up'); } finally { harbor.unmount(); }
+    const m = finished('scaleUp');
     try {
       expect(dialog(m)).toBeTruthy();
       expect(journeyText(m)).toBe('');

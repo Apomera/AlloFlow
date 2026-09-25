@@ -140,7 +140,9 @@ const splitTextToSentences = (text, deps) => {
   try { if (window._DEBUG_PURE_HELPERS) console.log("[PureHelpers] splitTextToSentences fired"); } catch(_) {}
       if (!text) return [];
       const linkMap = [];
-      let protectedText = _protectSentenceSplitLinks(String(text).replace(/\r\n?/g, '\n'), linkMap);
+      // A literal "|" would be taken for the split marker below ("|-3| = 3"
+      // became "-3" and "= 3"), and a chart directive is not speakable.
+      let protectedText = _protectSentenceSplitLinks(String(text).replace(/\r\n?/g, '\n').replace(/\[\[CHART:[\s\S]*?\]\]/g, '\n\n').replace(/\|/g, '{{PIPE}}'), linkMap);
       const latexMap = [];
       protectedText = protectedText.replace(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g, (match) => {
           latexMap.push(match);
@@ -200,8 +202,10 @@ const splitTextToSentences = (text, deps) => {
           let restored = s.replace(/{{DOT}}/g, ".").trim();
           restored = restored.replace(/{{LATEX_(\d+)}}/g, (_, index) => latexMap[parseInt(index, 10)] || "");
           restored = restored.replace(/{{LINK_(\d+)}}/g, (_, index) => linkMap[parseInt(index, 10)] || "");
-          return restored;
-      }).filter(s => s.length > 0);
+          return restored.replace(/{{PIPE}}/g, '|');
+      // A heading marker with no text ("#") or a divider ("---", "* * *") is not
+      // a sentence: speech sent "#" as "Say the sound: #" and read "hash" aloud.
+      }).filter(s => s.length > 0 && !/^#{1,6}$/.test(s) && !/^(?:[-*]\s*){3,}$/.test(s));
 };
 
 const diffWords = (oldText, newText, deps) => {

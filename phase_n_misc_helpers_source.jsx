@@ -141,7 +141,7 @@ const handleGeneratePOSData = async (deps) => {
         }
         const fullTaggedText = taggedChunks.join('');
         const parsedData = parseTaggedContent(fullTaggedText);
-        const updatedContent = { ...generatedContent, immersiveData: parsedData, posEnriched: true };
+        const updatedContent = { ...generatedContent, immersiveData: parsedData, immersiveSource: String(generatedContent.data || ''), posEnriched: true };
         setGeneratedContent(updatedContent);
         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
         if (failedChunks > 0) {
@@ -235,11 +235,29 @@ const handleMasteryGrading = async (text, rubric, topic, draftCount = 1, deps) =
       };
 };
 
-const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) => {
+// A citation link shows only "⁽¹⁾", which screen readers read as "superscript
+// one", and links open a new tab without saying so. Character codes, not
+// literals: ⁰ ¹ ² ³ ⁴-⁹, then ⁽ and ⁾.
+const _SUPERSCRIPT_DIGITS = [0x2070, 0xB9, 0xB2, 0xB3, 0x2074, 0x2075, 0x2076, 0x2077, 0x2078, 0x2079].map(code => String.fromCharCode(code));
+const _citationNumber = (label) => {
+  const value = String(label || '').trim();
+  if (value.length < 3 || value.charCodeAt(0) !== 0x207D || value.charCodeAt(value.length - 1) !== 0x207E) return null;
+  const digits = value.slice(1, -1).split('').map(ch => _SUPERSCRIPT_DIGITS.indexOf(ch));
+  return digits.every(d => d >= 0) ? digits.join('') : null;
+};
+const _linkLabel = (label, t) => {
+  const tr = (key, fallback, params) => { const v = typeof t === 'function' ? t(key, params) : undefined; return typeof v === 'string' && v && v !== key ? v : fallback; };
+  const number = _citationNumber(label);
+  const name = number ? tr('common.source_number', 'Source ' + number, { number }) : String(label || '');
+  return name + ', ' + tr('common.opens_new_tab', 'opens in a new tab');
+};
+const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps, instanceKey) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, isLineFocusMode, clozeInstanceSet, glossaryDefinitionLevel, glossaryImageStyle, newGlossaryTerm, isAutoFillMode, isShowMeMode, autoRemoveWords, creativeMode, enableEmojiInline, useEmojis, isAnalyzingPos, focusMode, latestGlossary, toFocusText, alloBotRef, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setNewGlossaryTerm, setClozeInstanceSet, setGlossaryHealthIssues, setIsCheckingGlossaryHealth, setMasteryResult, setIsGradingMastery, setIsCheckingLevel, setLevelCheckResult, setIsGeneratingPOS, setIsAnalyzingPos, setIsAddingTerm, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, highlightGlossaryTerms, repairGeneratedText, getReadableContent, extractSourceTextForProcessing, calculateReadability, countWords, playSound, handleScoreUpdate, getDefaultTitle, parseTaggedContent, chunkText, _stripForImmersive, validateDraftQuality, RELEVANCE_GATE_PROMPT, ClozeInput, MathSymbol } = deps;
   try { if (window._DEBUG_PHASE_N) console.log("[PhaseN] formatInteractiveText fired"); } catch(_) {}
       if (!text) return null;
-      const parts = text.split(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$|\*\*.*?\*\*|\*.*?\*|\[.*?\]\(.*?\))/g);
+      // Inline math needs non-space inside both dollars and no digit after the
+      // closing one, so "Sam had $5 and spent $3" stays money, not math.
+      const parts = text.split(/(\$\$[\s\S]+?\$\$|\$(?=\S)[^$]*?\S\$(?!\d)|\*\*.*?\*\*|\*.*?\*|\[.*?\]\(.*?\))/g);
       return parts.filter(p => p != null).map((part, i) => {
           if ((part.startsWith('$') && part.endsWith('$')) || (part.startsWith('$$') && part.endsWith('$$'))) {
                return <React.Fragment key={i}><MathSymbol text={part} /></React.Fragment>;
@@ -251,6 +269,7 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
                       <a
                         key={i}
                         href={match[2]}
+                        aria-label={_linkLabel(match[1], t)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`${isDarkBg ? 'text-sky-300 hover:text-sky-200 focus-visible:ring-sky-300 focus-visible:ring-offset-slate-900' : 'text-blue-700 hover:text-blue-900 focus-visible:ring-blue-700 focus-visible:ring-offset-white'} z-20 relative font-medium underline decoration-2 underline-offset-2 cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`}
@@ -267,7 +286,7 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
           let content = part;
           if (isBold) content = part.slice(2, -2);
           else if (isItalic) content = part.slice(1, -1);
-          const subParts = content.split(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$|\[.*?\]\(.*?\))/g);
+          const subParts = content.split(/(\$\$[\s\S]+?\$\$|\$(?=\S)[^$]*?\S\$(?!\d)|\[.*?\]\(.*?\))/g);
           const renderedSubParts = subParts.filter(sp => sp != null).map((subPart, sIdx) => {
                if ((subPart.startsWith('$') && subPart.endsWith('$')) || (subPart.startsWith('$$') && subPart.endsWith('$$'))) {
                    return <React.Fragment key={sIdx}><MathSymbol text={subPart} /></React.Fragment>;
@@ -279,6 +298,7 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
                           <a
                             key={sIdx}
                             href={match[2]}
+                            aria-label={_linkLabel(match[1], t)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`${isDarkBg ? 'text-sky-300 hover:text-sky-200 focus-visible:ring-sky-300 focus-visible:ring-offset-slate-900' : 'text-blue-700 hover:text-blue-900 focus-visible:ring-blue-700 focus-visible:ring-offset-white'} z-20 relative font-medium underline decoration-2 underline-offset-2 cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`}
@@ -290,7 +310,9 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
                       );
                   }
                }
-               const glossed = highlightGlossaryTerms(subPart, latestGlossary, isCloze, isDarkBg);
+               // Each blank's id carries where it is, so two blanks for the same term
+               // are never one blank (solving one filled every copy).
+               const glossed = highlightGlossaryTerms(subPart, latestGlossary, isCloze, isDarkBg, instanceKey ? instanceKey + '.' + i + '.' + sIdx : undefined);
                let finalContent = glossed;
                if (focusMode && !isCloze) {
                    if (Array.isArray(glossed)) {

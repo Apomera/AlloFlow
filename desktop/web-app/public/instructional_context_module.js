@@ -598,6 +598,39 @@
       && typeof entry.quote === 'string' && snapshot.text.slice(entry.start, entry.end) === entry.quote;
   }
 
+  // An optional picture beside a word support (a Mulberry symbol or a screened
+  // photo), stored inline so students see exactly the pixels that were checked.
+  // Each picture is a small copy and a reading's pictures share one budget,
+  // earliest first, so saves and student packs stay light. (Live sessions strip
+  // every image app-wide; the written support still travels.) A bad or
+  // over-budget picture is dropped, never the written support.
+  var SUPPORT_PICTURE_MAX_CHARS = 32000;
+  var SUPPORT_PICTURES_TOTAL_CHARS = 64000;
+  function normalizeSupportImage(value) {
+    if (!isObject(value)) return null;
+    var src = typeof value.src === 'string' ? value.src : '';
+    if (src.length > SUPPORT_PICTURE_MAX_CHARS || !/^data:image\/(png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/i.test(src)) return null;
+    var https = function (url) { url = typeof url === 'string' ? url.trim() : ''; return /^https:\/\//i.test(url) ? url.slice(0, 2000) : ''; };
+    var credit = isObject(value.attribution) ? value.attribution : {};
+    var attribution = { set: cleanText(credit.set, 120), author: cleanText(credit.author, 160), license: cleanText(credit.license, 120), via: cleanText(credit.via, 120), url: https(credit.url) };
+    if (cleanText(credit.title, 160)) attribution.title = cleanText(credit.title, 160);
+    if (https(credit.licenseUrl)) attribution.licenseUrl = https(credit.licenseUrl);
+    return {
+      src: src,
+      alt: cleanText(value.alt, 250),
+      altSource: value.altSource === 'vision' ? 'vision' : 'author',
+      source: value.source === 'mulberry' || value.source === 'wikimedia' ? value.source : 'upload',
+      attribution: attribution.set || attribution.author ? attribution : null
+    };
+  }
+  function readingSupportPictureBudget(supports) {
+    var used = 0;
+    (isObject(supports) && Array.isArray(supports.annotations) ? supports.annotations : []).forEach(function (entry) {
+      if (isObject(entry) && isObject(entry.image) && typeof entry.image.src === 'string') used += entry.image.src.length;
+    });
+    return { used: used, total: SUPPORT_PICTURES_TOTAL_CHARS, perPicture: SUPPORT_PICTURE_MAX_CHARS, remaining: Math.max(0, SUPPORT_PICTURES_TOTAL_CHARS - used) };
+  }
+
   // Anchors are half-open UTF-16 ranges in canonical sourceSnapshot.text.
   // Curation is additive metadata; neither annotations nor removals change prose.
   function validateReadingSupports(snapshotValue, candidates) {
@@ -612,6 +645,7 @@
       || (envelope.sourceFingerprint && envelope.sourceFingerprint !== snapshot.fingerprint)
       || readingSupportScopeMismatch(scope, envelope);
     var ids = Object.create(null);
+    var pictureChars = 0;
     (Array.isArray(envelope.suppressedAnnotations) ? envelope.suppressedAnnotations : []).forEach(function (entry) {
       if (invalidSource || !validSupportAnchor(snapshot, entry)) { rejectedCount++; return; }
       if (!suppressedAnnotations.some(function (current) { return sameSupportRange(current, entry); })) {
@@ -627,14 +661,21 @@
       if (valid && (ids[id] || annotations.some(function (annotation) { return overlappingSupportRanges(entry, annotation); }))) valid = false;
       if (!valid) { rejectedCount++; return; }
       ids[id] = true;
-      annotations.push({
+      var accepted = {
         id: id, kind: entry.kind || 'gloss', start: entry.start, end: entry.end,
         quote: entry.quote, text: entry.text,
         language: cleanText(entry.language, 80) || snapshot.language,
         origin: entry.origin === 'educator' ? 'educator' : 'generated',
         pinned: entry.pinned === true,
         priority: entry.priority === 'essential' ? 'essential' : 'helpful'
-      });
+      };
+      // Only a teacher's own support carries a picture; a generated suggestion never does.
+      var picture = accepted.origin === 'educator' ? normalizeSupportImage(entry.image) : null;
+      if (picture && pictureChars + picture.src.length <= SUPPORT_PICTURES_TOTAL_CHARS) {
+        pictureChars += picture.src.length;
+        accepted.image = picture;
+      }
+      annotations.push(accepted);
     });
     annotations.sort(function (left, right) { return left.start - right.start; });
     suppressedAnnotations.sort(function (left, right) { return left.start - right.start; });
@@ -738,6 +779,227 @@
       annotations: retained.concat(generated), suppressedAnnotations: current.suppressedAnnotations,
       status: incoming.status === 'unavailable' && retained.length ? 'partial' : incoming.status
     }));
+  }
+
+  // ── Word help on an ADAPTED text (opt-in; students see it only when shown) ──
+  // Kept apart from readingSupports, which belongs to the original, as
+  // adaptedReadingSupports on the adapted item. Anchors are ranges in the
+  // adapted PASSAGE: the leading part of item.data before any English
+  // translation or references. The envelope records the passage's length and
+  // fingerprint, so an edited passage makes its word help stale instead of
+  // pointing at the wrong words; text appended after the passage does not.
+  var ADAPTED_TRANSLATION_MARKER = /\n?[ \t]*---[ \t]*ENGLISH TRANSLATION[ \t]*---/i;
+  function isAdaptedReading(item) {
+    return isObject(item) && item.type === 'simplified' && typeof item.data === 'string'
+      && getInstructionalText(item).form === 'adapted';
+  }
+  function adaptedPassageLength(text) {
+    var end = text.length;
+    var marker = ADAPTED_TRANSLATION_MARKER.exec(text);
+    if (marker) end = Math.min(end, marker.index);
+    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (helpers && typeof helpers.splitReferencesFromBody === 'function') {
+      try {
+        var split = helpers.splitReferencesFromBody(text.slice(0, end));
+        // Only a split that leaves the passage as an exact prefix is usable.
+        if (split && typeof split.body === 'string' && split.references && text.slice(0, split.body.length) === split.body) end = Math.min(end, split.body.length);
+      } catch (_) {}
+    }
+    while (end > 0 && /\s/.test(text.charAt(end - 1))) end--;
+    return end;
+  }
+  function adaptedSnapshotFor(item, length) {
+    var config = isObject(item.config) ? item.config : {};
+    return createSourceSnapshot(item.data.slice(0, length), {
+      language: cleanText(item.language || config.language, 80) || 'English', sourceArtifactId: item.id,
+      provenance: { selection: 'adapted-passage', origin: 'adapted-text' }
+    });
+  }
+  // The passage word help is anchored to, and the word help keyed to it: rebuilt
+  // from a stored envelope's length (checked against its fingerprint), or taken
+  // fresh from the text. When text was only ADDED after that passage, every
+  // anchor is still in place, so the word help carries onto the longer passage
+  // and the new text can get word help too.
+  function adaptedSupportState(item, supports) {
+    if (!isAdaptedReading(item)) return null;
+    var envelope = isObject(supports) && Number.isInteger(supports.passageLength) ? supports : null;
+    var currentLength = adaptedPassageLength(item.data);
+    if (!envelope) return currentLength > 0 ? { snapshot: adaptedSnapshotFor(item, currentLength), supports: supports } : null;
+    var length = envelope.passageLength;
+    if (length <= 0 || length > item.data.length) return null;
+    var stored = adaptedSnapshotFor(item, length);
+    if (envelope.sourceFingerprint !== stored.fingerprint) return null;
+    if (currentLength > length) {
+      var grown = adaptedSnapshotFor(item, currentLength);
+      // "ran" growing into "ranted" changed the last word: that is an edit, not an addition.
+      if (!isWordEdge(grown.text, length)) return null;
+      return { snapshot: grown, supports: Object.assign({}, envelope, { sourceFingerprint: grown.fingerprint, passageLength: currentLength }) };
+    }
+    return { snapshot: stored, supports: envelope };
+  }
+  function getAdaptedSupportSnapshot(item, supports) {
+    var state = adaptedSupportState(item, supports);
+    return state ? state.snapshot : null;
+  }
+  function adaptedEnvelope(result, snapshot, shown) {
+    return Object.assign({}, result, { passageLength: snapshot.text.length, shown: shown === true });
+  }
+  function validateAdaptedReadingSupports(item, supports) {
+    var state = adaptedSupportState(item, supports);
+    if (!state) {
+      return { schemaVersion: 1, annotations: [], suppressedAnnotations: [], rejectedCount: 0, coveredRanges: [], skippedRanges: [],
+        status: isObject(supports) ? 'stale' : 'unavailable', passageLength: 0, shown: false };
+    }
+    return adaptedEnvelope(validateReadingSupports(state.snapshot, state.supports || {}), state.snapshot, isObject(supports) && supports.shown === true);
+  }
+  function requireAdaptedState(item, supports) {
+    if (!isAdaptedReading(item)) throw new Error('Open an adapted reading to edit its word help.');
+    var state = adaptedSupportState(item, supports);
+    if (!state) throw new Error('The adapted text changed after its word help was made. Refresh its suggestions to start again.');
+    return state;
+  }
+  function upsertAdaptedReadingSupport(item, supports, annotation) {
+    var state = requireAdaptedState(item, supports);
+    return adaptedEnvelope(upsertReadingSupport(state.snapshot, state.supports, annotation), state.snapshot, isObject(supports) && supports.shown === true);
+  }
+  function removeAdaptedReadingSupport(item, supports, id) {
+    var state = requireAdaptedState(item, supports);
+    return adaptedEnvelope(removeReadingSupport(state.snapshot, state.supports, id), state.snapshot, supports.shown === true);
+  }
+  function setAdaptedReadingSupportPinned(item, supports, id, pinned) {
+    var state = requireAdaptedState(item, supports);
+    return adaptedEnvelope(setReadingSupportPinned(state.snapshot, state.supports, id, pinned), state.snapshot, supports.shown === true);
+  }
+  function setAdaptedReadingSupportsShown(item, supports, shown) {
+    var state = requireAdaptedState(item, supports);
+    return adaptedEnvelope(validateReadingSupports(state.snapshot, state.supports || {}), state.snapshot, shown);
+  }
+  // Suggestions are generated against this snapshot: the current word help's,
+  // or a fresh one when there is none yet or the passage was edited.
+  function adaptedGenerationSnapshot(item, supports) {
+    return getAdaptedSupportSnapshot(item, supports) || getAdaptedSupportSnapshot(item, null);
+  }
+  // Word help students can see stays as the teacher last reviewed it: anything
+  // that adds explanations they have not read (new suggestions, explanations
+  // kept after an edit, or copied from the original) hides it until they show it again.
+  function supportKey(entry) { return entry.start + ':' + entry.end + ':' + entry.text; }
+  function addsUnreviewed(before, after) {
+    var seen = {};
+    before.forEach(function (entry) { seen[supportKey(entry)] = true; });
+    return after.some(function (entry) { return !seen[supportKey(entry)]; });
+  }
+  // Refresh keeps teacher edits, pins and removals; stale word help starts over.
+  function mergeAdaptedReadingSupports(item, supports, regenerated) {
+    var state = adaptedSupportState(item, supports);
+    // Stale word help: keep the teacher's explanations and removals whose words
+    // survived the edit (as Keep does), then add the suggestions to those.
+    var stale = !state && isObject(supports);
+    if (stale) {
+      var fresh = getAdaptedSupportSnapshot(item, null);
+      if (fresh) state = { snapshot: fresh, supports: rebaseAdaptedReadingSupports(item, supports) };
+    }
+    var snapshot = state ? state.snapshot : getAdaptedSupportSnapshot(item, null);
+    if (!snapshot) throw new Error('This adapted reading has no passage to support.');
+    var before = state ? validateReadingSupports(snapshot, state.supports || {}).annotations : [];
+    var merged = state ? mergeReadingSupports(snapshot, state.supports, regenerated) : validateReadingSupports(snapshot, regenerated);
+    return adaptedEnvelope(merged, snapshot, !stale && !!state && isObject(supports) && supports.shown === true && !addsUnreviewed(before, merged.annotations));
+  }
+  // Start over on the current passage, e.g. after an edit left word help stale.
+  function clearAdaptedReadingSupports(item) {
+    var snapshot = getAdaptedSupportSnapshot(item, null);
+    if (!snapshot) throw new Error('This adapted reading has no passage to support.');
+    return adaptedEnvelope(validateReadingSupports(snapshot, {}), snapshot, false);
+  }
+  // After an edit, keep the word help whose words are still in the passage: each
+  // entry moves to the nearest whole-word match of its own quote. Removed
+  // suggestions move the same way, so a refresh does not bring them back.
+  // Word edges from the platform's word segmenter, so Chinese, Japanese and Thai
+  // (no spaces) work; without one, a letter or digit on both sides - read as whole
+  // characters, not UTF-16 halves - means the edge is inside a word.
+  // A few recent texts: callers alternate between a stored passage and the text
+  // on screen, and a one-text cache re-segmented both for every word.
+  var recentWordEdges = [];
+  function wordEdgesOf(text) {
+    for (var i = 0; i < recentWordEdges.length; i++) if (recentWordEdges[i].text === text) return recentWordEdges[i].edges;
+    var edges = null;
+    try {
+      if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+        edges = new Set([0, text.length]);
+        Array.from(new Intl.Segmenter(undefined, { granularity: 'word' }).segment(text)).forEach(function (part) {
+          edges.add(part.index); edges.add(part.index + part.segment.length);
+        });
+      }
+    } catch (_) { edges = null; }
+    recentWordEdges.unshift({ text: text, edges: edges });
+    recentWordEdges.length = Math.min(recentWordEdges.length, 4);
+    return edges;
+  }
+  function isWordEdge(text, index) {
+    if (index <= 0 || index >= text.length) return true;
+    // "heron" ends before a possessive ('s), whichever way the platform splits words.
+    if (/^['’]s(?![\p{L}\p{M}\p{N}])/u.test(text.slice(index, index + 3))) return true;
+    var edges = wordEdgesOf(text);
+    if (edges) return edges.has(index);
+    var wordChar = /[\p{L}\p{M}\p{N}]/u;
+    var before = text.codePointAt(index - 1);
+    if (index >= 2 && before >= 0xDC00 && before <= 0xDFFF) before = text.codePointAt(index - 2);
+    return !(wordChar.test(String.fromCodePoint(before)) && wordChar.test(String.fromCodePoint(text.codePointAt(index))));
+  }
+  // The nearest free whole-word match of quote: { start, end }, or null. With
+  // anyCase, capitals do not matter (compared match by match, so one unusual
+  // letter elsewhere in the passage cannot switch it off).
+  function nearestWholeWordMatch(text, quote, near, taken, anyCase) {
+    var pattern, match, best = null;
+    try { pattern = new RegExp(quote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), anyCase ? 'giu' : 'gu'); } catch (_) { return null; }
+    while ((match = pattern.exec(text))) {
+      var at = match.index, end = at + match[0].length;
+      pattern.lastIndex = at + 1;
+      if (!match[0].length || !isWordEdge(text, at) || !isWordEdge(text, end)) continue;
+      if (taken.some(function (range) { return at < range.end && end > range.start; })) continue;
+      if (!best || Math.abs(at - near) < Math.abs(best.start - near)) best = { start: at, end: end };
+    }
+    return best;
+  }
+  function rebaseAdaptedReadingSupports(item, supports) {
+    var snapshot = getAdaptedSupportSnapshot(item, null);
+    if (!snapshot) throw new Error('This adapted reading has no passage to support.');
+    var stored = isObject(supports) ? supports : {};
+    // Kept entries place first, so a removed suggestion never lands on one and hides it.
+    var taken = [];
+    var move = function (list) {
+      return (Array.isArray(list) ? list : []).map(function (entry) {
+        if (!isObject(entry) || typeof entry.quote !== 'string' || !entry.quote.trim()) return null;
+        var hit = nearestWholeWordMatch(snapshot.text, entry.quote, Number.isInteger(entry.start) ? entry.start : 0, taken);
+        if (!hit) return null;
+        taken.push(hit);
+        return Object.assign({}, entry, { start: hit.start, end: hit.end });
+      }).filter(Boolean);
+    };
+    var moved = validateReadingSupports(snapshot, { annotations: move(stored.annotations), suppressedAnnotations: move(stored.suppressedAnnotations) });
+    return adaptedEnvelope(moved, snapshot, false);
+  }
+  // Reuse the original's explanations for words the adapted passage kept, at
+  // each word's first free whole-word match. Words already explained here, or
+  // removed here by the teacher, are left alone.
+  function importOriginalSupportsIntoAdapted(item, supports, originalAnnotations) {
+    var state = requireAdaptedState(item, supports);
+    var snapshot = state.snapshot;
+    var current = validateReadingSupports(snapshot, state.supports || {});
+    var seen = {}, ids = {}, added = [];
+    current.annotations.concat(current.suppressedAnnotations).forEach(function (entry) { seen[entry.quote.toLowerCase()] = true; ids[entry.id] = true; });
+    var taken = current.annotations.concat(current.suppressedAnnotations).map(function (entry) { return { start: entry.start, end: entry.end }; });
+    (Array.isArray(originalAnnotations) ? originalAnnotations : []).forEach(function (entry) {
+      if (!isObject(entry) || typeof entry.quote !== 'string' || !entry.quote.trim() || seen[entry.quote.toLowerCase()]) return;
+      var hit = nearestWholeWordMatch(snapshot.text, entry.quote, 0, taken, true);
+      if (!hit) return;
+      var start = hit.start, end = hit.end, id = 'original-' + start + '-' + end;
+      seen[entry.quote.toLowerCase()] = true;
+      taken.push(hit);
+      if (ids[id]) return;
+      added.push(Object.assign({}, entry, { id: id, start: start, end: end, quote: snapshot.text.slice(start, end) }));
+    });
+    var merged = validateReadingSupports(snapshot, Object.assign({}, current, { annotations: current.annotations.concat(added) }));
+    return adaptedEnvelope(merged, snapshot, false);
   }
 
   function selectReadingSupports(snapshotValue, supports, options) {
@@ -1266,6 +1528,20 @@
     ensureReadingSourcePairs: ensureReadingSourcePairs,
     validateReadingSupports: validateReadingSupports,
     upsertReadingSupport: upsertReadingSupport,
+    readingSupportPictureBudget: readingSupportPictureBudget,
+    isAdaptedReading: isAdaptedReading,
+    getAdaptedSupportSnapshot: getAdaptedSupportSnapshot,
+    adaptedGenerationSnapshot: adaptedGenerationSnapshot,
+    validateAdaptedReadingSupports: validateAdaptedReadingSupports,
+    upsertAdaptedReadingSupport: upsertAdaptedReadingSupport,
+    removeAdaptedReadingSupport: removeAdaptedReadingSupport,
+    setAdaptedReadingSupportPinned: setAdaptedReadingSupportPinned,
+    setAdaptedReadingSupportsShown: setAdaptedReadingSupportsShown,
+    mergeAdaptedReadingSupports: mergeAdaptedReadingSupports,
+    clearAdaptedReadingSupports: clearAdaptedReadingSupports,
+    rebaseAdaptedReadingSupports: rebaseAdaptedReadingSupports,
+    importOriginalSupportsIntoAdapted: importOriginalSupportsIntoAdapted,
+    isWordEdge: isWordEdge,
     removeReadingSupport: removeReadingSupport,
     setReadingSupportPinned: setReadingSupportPinned,
     mergeReadingSupports: mergeReadingSupports,

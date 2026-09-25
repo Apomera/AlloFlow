@@ -22,7 +22,7 @@ const generated=()=>({title:'Generated Garden of Bridges',description:'Investiga
 
 describe('Geometry World lesson worksheet parity',()=>{
  it('exports every preset question and follow-up exactly once with unchanged choices',()=>{
-  const presets=api.presets();expect(Object.keys(presets)).toHaveLength(12);
+  const presets=api.presets();expect(Object.keys(presets)).toHaveLength(14);
   for(const [key,lesson] of Object.entries(presets)){
    const original=JSON.stringify(lesson), expected=(lesson.npcs||[]).flatMap(n=>walk(n.question));
    const page=doc(lesson),questions=[...page.querySelectorAll('.question')];

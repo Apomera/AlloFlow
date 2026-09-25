@@ -69,6 +69,7 @@ ${compiled}
   window.AlloModules.SpedTimelines = {
     SpedTimelinesPanel: SpedTimelinesPanel,
     _testing: {
+      spedToday: spedToday,
       spedAnniversary: spedAnniversary,
       spedAddDays: spedAddDays,
       spedDefaultDue: spedDefaultDue,

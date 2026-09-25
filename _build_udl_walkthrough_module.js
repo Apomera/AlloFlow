@@ -78,6 +78,7 @@ ${compiled}
     UdlWalkthroughPanel: UdlWalkthroughPanel,
     // Pure seams exposed for unit tests. Not part of the public contract.
     _testing: {
+      udlwalkDateStamp: udlwalkDateStamp,
       udlwalkFeedbackFromSession: udlwalkFeedbackFromSession,
       udlwalkFeedbackText: udlwalkFeedbackText,
       udlwalkFeedbackHtml: udlwalkFeedbackHtml,

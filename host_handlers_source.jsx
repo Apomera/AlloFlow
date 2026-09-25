@@ -4789,6 +4789,14 @@ const handleUseItem = async (itemInput) => {
       __d.playSound('click');
       __d.setSelectedInventoryItem(null);
   };
+// Regenerating makes new AI art: a picked photo or symbol's credit and its
+// description no longer describe it, so both go. Other images keep their fields.
+const _alloRegeneratedImageData = (data, fields) => {
+    const current = data || {};
+    if (!current.imageAttribution && !['wikimedia', 'mulberry'].includes(current.imageSource)) return { ...current, ...fields };
+    const { imageAttribution, imageCreditBand, ...rest } = current;
+    return { ...rest, ...fields, imageSource: 'ai-generated', altText: '', altSource: '', altHash: '' };
+};
 const handleRestoreImage = async () => {
     __d.setSingleImageOverride(null);
     if (!__d.generatedContent?.data?.prompt) return;
@@ -4805,7 +4813,7 @@ const handleRestoreImage = async () => {
             const executedPlan = await __d.executeVisualPlan(plan, targetWidth, targetQual);
             const updatedContent = {
                 ...__d.generatedContent,
-                data: { ...__d.generatedContent?.data, imageUrl: executedPlan.panels[0]?.imageUrl || __d.generatedContent?.data?.imageUrl, visualPlan: executedPlan }
+                data: _alloRegeneratedImageData(__d.generatedContent?.data, { imageUrl: executedPlan.panels[0]?.imageUrl || __d.generatedContent?.data?.imageUrl, visualPlan: executedPlan })
             };
             __d.setGeneratedContent(updatedContent);
             __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
@@ -4814,7 +4822,7 @@ const handleRestoreImage = async () => {
             const imageBase64 = await __d.callImagen(__d.generatedContent?.data.prompt, targetWidth, targetQual);
             const updatedContent = {
                 ...__d.generatedContent,
-                data: { ...__d.generatedContent?.data, imageUrl: imageBase64 }
+                data: _alloRegeneratedImageData(__d.generatedContent?.data, { imageUrl: imageBase64 })
             };
             __d.setGeneratedContent(updatedContent);
             __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
@@ -4883,7 +4891,13 @@ const handleRefineGlossaryImage = async (index, instructionOverride = null) => {
     task.busy(__d.setIsGeneratingTermImage, true);
     __d.addToast(__d.t('visuals.actions.refining_icon'), "info");
     try {
-        const rawBase64 = currentItem.image.split(',')[1];
+        // A picked symbol or photo carries its credit drawn in a band at the bottom:
+        // take it off before the edit and draw a fresh "edited" credit after.
+        const AltText = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AltText;
+        const creditBand = Number(currentItem.imageCreditBand) || 0;
+        const redrawCredit = !!(currentItem.imageAttribution && creditBand > 0 && AltText && AltText.cropImageBottom && AltText.bakeCreditBand);
+        const editSource = redrawCredit ? await AltText.cropImageBottom(currentItem.image, creditBand) : currentItem.image;
+        const rawBase64 = editSource.split(',')[1];
         const refinementPrompt = `
             Edit this educational icon.
             Instruction: ${instruction}
@@ -4891,7 +4905,12 @@ const handleRefineGlossaryImage = async (index, instructionOverride = null) => {
         `;
         const newImageBase64 = await __d.callGeminiImageEdit(refinementPrompt, rawBase64, undefined, undefined, null, { signal: task.signal });
         if (!newImageBase64) throw new Error('No edited image returned');
-        if (!task.commit(() => ({ image: newImageBase64 })) || !task.visible()) return;
+        // An edited photo is an adaptation: its credit stays and says it was edited.
+        const editedCredit = currentItem.imageAttribution ? { ...currentItem.imageAttribution, modified: true } : null;
+        const recredited = redrawCredit && typeof newImageBase64 === 'string' && /^data:image\//i.test(newImageBase64)
+            ? await AltText.bakeCreditBand(newImageBase64, AltText.openImageCreditLine(editedCredit), { kind: currentItem.imageSource === 'mulberry' ? 'symbol' : 'photo', attribution: editedCredit })
+            : null;
+        if (!task.commit(() => ({ image: recredited ? recredited.dataUrl : newImageBase64, ...(editedCredit ? { imageAttribution: editedCredit } : {}), ...(redrawCredit ? { imageCreditBand: recredited ? recredited.bandHeight : 0 } : {}) })) || !task.visible()) return;
         if (!instructionOverride) {
             __d.setGlossaryRefinementInputs(prev => prev[refinementKey] === instruction ? ({ ...prev, [refinementKey]: '' }) : prev);
         }
@@ -5619,7 +5638,7 @@ const handleGenerateTermImage = async (index, term) => {
              }
         }
         if (!imageUrl) throw new Error('No image returned');
-        if (!task.commit(() => ({ image: imageUrl, imageAlt: '', imageAltHash: '', imageAltSource: '', imageDecorative: false, imageSource: 'ai-generated', imageAttribution: null })) || !task.visible()) return;
+        if (!task.commit(() => ({ image: imageUrl, imageAlt: '', imageAltHash: '', imageAltSource: '', imageDecorative: false, imageSource: 'ai-generated', imageAttribution: null, imageCreditBand: 0 })) || !task.visible()) return;
         __d.addToast(__d.t('glossary.actions.icon_generated', { term: term }), "success");
         return imageUrl;
     } catch (e) {
@@ -9855,18 +9874,27 @@ const handleAnalyzePOS = () => {
         __d.setIsImmersiveReaderActive(false);
         return;
     }
-    if (__d.generatedContent.immersiveData && __d.generatedContent.posEnriched) {
+    const textToAnalyze = __d._stripForImmersive(__d.generatedContent?.data);
+    // The reader's words are reused only for the text they came from. Every
+    // edit or level change copies the item, so the old words used to reopen
+    // after the text changed. Items saved before immersiveSource existed are
+    // compared word by word.
+    const cached = __d.generatedContent.immersiveData;
+    const words = list => (Array.isArray(list) ? list : []).filter(w => w && w.pos !== 'newline').map(w => String(w.text || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '')).filter(Boolean).join(' ');
+    const fresh = !!cached && (__d.generatedContent.immersiveSource != null
+        ? __d.generatedContent.immersiveSource === String(__d.generatedContent.data || '')
+        : words(cached) === words(__d.parseTaggedContent(textToAnalyze)));
+    if (fresh && __d.generatedContent.posEnriched) {
         __d.setIsImmersiveReaderActive(true);
         return;
     }
-    const textToAnalyze = __d._stripForImmersive(__d.generatedContent?.data);
     if (!textToAnalyze.trim()) {
         __d.warnLog('handleAnalyzePOS: empty text after stripping links/URLs/citations.');
         __d.addToast(__d.t('process.grammar_failed') || 'Nothing to display — text is empty after stripping links/citations.', 'error');
         return;
     }
     const parsedData = __d.parseTaggedContent(textToAnalyze);
-    const updatedContent = { ...__d.generatedContent, immersiveData: parsedData, posEnriched: false };
+    const updatedContent = { ...__d.generatedContent, immersiveData: parsedData, immersiveSource: String(__d.generatedContent.data || ''), posEnriched: false };
     __d.setGeneratedContent(updatedContent);
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
     __d.setIsImmersiveReaderActive(true);

@@ -142,6 +142,15 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(airtime, 'no landing cue after the jump').toBeGreaterThan(0);
     expect(airtime, 'hop too short for one-sixth gravity').toBeGreaterThan(1.6);
     expect(airtime, 'hop too long: physics is tied to the frame rate again').toBeLessThan(3.2);
+    // The hop timer the moonwalk prediction is checked against must publish the same
+    // lunar airtime to saved state, where the prediction card reads it.
+    const timed = await page.waitForFunction(() => {
+      const v = (((window as any).__toolData || {}).moonMission || {}).evaHopTime;
+      return typeof v === 'number' ? v : false;
+    }, null, { timeout: 10000 }).then((h) => h.jsonValue()).catch(() => null);
+    expect(timed, 'the hop timer never reached saved state').not.toBeNull();
+    expect(timed as number).toBeGreaterThan(1.6);
+    expect(timed as number).toBeLessThan(3.2);
   });
 
   test('arrow keys walk too, for students who never learned WASD', async ({ page }) => {
@@ -646,7 +655,11 @@ test.describe('Moon Mission — real WebGL EVA', () => {
 
     // Leg 1 — sound on: advancing a phase must actually create audio nodes.
     await instrument();
-    await harness.mount(page, { moonMission: { missionPhase: 1 } }, undefined, { expectCanvas: false });
+    // Entering phase 2 can roll the Space Adaptation Syndrome event (30% on Pilot), which
+    // holds the phase change and so its sound: leg 1 then failed at random, and leg 2
+    // could pass for the wrong reason. Seeded as already resolved, the step is certain.
+    const noEvent = { resolvedEvents: ['space_sickness'] };
+    await harness.mount(page, { moonMission: Object.assign({ missionPhase: 1 }, noEvent) }, undefined, { expectCanvas: false });
     const soundBtn = page.locator('[data-moonmission-sound-toggle="true"]');
     await expect(soundBtn).toHaveAttribute('aria-pressed', 'false');
     await expect(proceed).toBeEnabled({ timeout: 120_000 });
@@ -659,7 +672,7 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     // Leg 2 — muted: the same transition must create none.
     await harness.destroy(page);
     await instrument();
-    await harness.mount(page, { moonMission: { missionPhase: 1, soundOff: true } }, undefined, { expectCanvas: false });
+    await harness.mount(page, { moonMission: Object.assign({ missionPhase: 1, soundOff: true }, noEvent) }, undefined, { expectCanvas: false });
     await expect(soundBtn).toHaveAttribute('aria-pressed', 'true');
     await expect(soundBtn).toContainText('Mute sound');   // one name; aria-pressed carries the state
     await expect(proceed).toBeEnabled({ timeout: 120_000 });

@@ -191,9 +191,12 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
   // would silently suppress the annotation.
   const showPassageForm = status === 'success' && !!_passageForm && !!val
     && !answerMatches(val, _passageForm);
+  // The reader counts solved blanks to decide the activity is complete.
   return (
       <span
         className="inline-block mx-1 relative align-middle"
+        data-cloze-blank="true"
+        data-cloze-solved={status === 'success' ? 'true' : 'false'}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

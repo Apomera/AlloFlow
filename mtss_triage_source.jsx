@@ -40,7 +40,11 @@ function mtssNextId(prefix) {
 }
 
 function mtssToday() {
-  return new Date().toISOString().slice(0, 10);
+  // The LOCAL calendar date. toISOString() is UTC, which in US time zones is
+  // already tomorrow by late afternoon (5 pm in Portland in summer).
+  // Here dates stamped in the evening were a day ahead.
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 // ── Pure seams ──────────────────────────────────────────────────────
@@ -48,13 +52,30 @@ function mtssToday() {
 // Paste parser: "code, score" per line (comma/tab/semicolon). Header rows
 // (non-numeric score) are skipped — and an EMPTY numeric cell must be NaN,
 // not 0 (the Number('')===0 header-parse bug class from the analyzer).
+// Spreadsheet pastes are tab-separated and keep number formatting ("1,080"),
+// so a line with a tab splits on tabs only; splitting on the comma too read
+// "1,080" as 1. Otherwise ";" then ",", keeping a quoted field ("1,080") whole.
+function mtssSplitRow(line) {
+  if (line.indexOf('\t') !== -1) return line.split('\t');
+  const sep = line.indexOf(';') !== -1 ? ';' : ',';
+  const out = [];
+  let cur = '';
+  let quoted = false;
+  for (const ch of line) {
+    if (ch === '"') { quoted = !quoted; continue; }
+    if (ch === sep && !quoted) { out.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
 function mtssParsePaste(text) {
   const rows = [];
   const skipped = [];
   String(text || '').split(/\r?\n/).forEach((line) => {
     const t = line.trim();
     if (!t) return;
-    const parts = t.split(/[\t;,]/).map((p) => p.trim().replace(/^"|"$/g, ''));
+    const parts = mtssSplitRow(t).map((p) => p.trim());
     if (parts.length < 2) { skipped.push(t); return; }
     const code = parts[0];
     const cleaned = String(parts[1]).replace(/[^0-9.-]/g, '');

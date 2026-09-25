@@ -211,6 +211,12 @@ function csPrintHtml(title, pages, options) {
 
 // The formula is unbounded (one long sentence of long words scores 37); past
 // 12 the number means "harder than high school", so say that.
+// The LOCAL calendar date for file names. toISOString() is UTC, which in US
+// time zones is already tomorrow by late afternoon.
+function csLocalDate(d = new Date()) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 function csGradeLabel(grade) {
   if (grade == null || !Number.isFinite(Number(grade))) return '';
   const g = Number(grade);
@@ -1007,7 +1013,7 @@ function CommunicationsStudioPanel(props) {
     }
     setBusy('drive'); setDriveLink('');
     try {
-      const name = `${template.label} ${new Date().toISOString().slice(0, 10)}.html`;
+      const name = `${template.label} ${csLocalDate()}.html`;
       const out = outgoingTranslation();
       const reply = await dd.deliverCall(config, { a: 'deliver', name, mime: 'text/html', text: csDraftToHtml(template.label, draft, out ? out.text : '', { language: out ? out.language : '', disclosure }), convert: 'doc' });
       setDriveLink(reply.url || '');

@@ -52,7 +52,11 @@ function disproNextId() {
 }
 
 function disproDateStamp() {
-  return new Date().toISOString().slice(0, 10);
+  // The LOCAL calendar date. toISOString() is UTC, which in US time zones is
+  // already tomorrow by late afternoon (5 pm in Portland in summer).
+  // Here evening saves and exports were dated a day ahead.
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 // ── Pure metric engine ──────────────────────────────────────────────
@@ -76,6 +80,7 @@ function disproNormalizeAlt(altComparison) {
 function disproCompute(groups, altComparison) {
   const errors = [];
   const clean = [];
+  const seenNames = new Set();
   (groups || []).forEach((g, i) => {
     const name = String((g && g.name) || '').trim();
     const enrollment = Number(g && g.enrollment);
@@ -91,6 +96,14 @@ function disproCompute(groups, altComparison) {
     if (students > enrollment) {
       errors.push({ row: i, message: '"' + name + '": ' + students + ' students with the outcome exceeds enrollment of ' + enrollment + '. Counts must be unduplicated students, not incidents.' }); return;
     }
+    // A repeated group is compared against "all others" that include its own
+    // other row, so every copy's ratio is wrong (and understated): two
+    // "Black" rows read 3.33 and 2.97 where the combined group is 3.86.
+    const key = name.toLowerCase();
+    if (seenNames.has(key)) {
+      errors.push({ row: i, message: '"' + name + '" appears more than once. Combine its rows into one: each group is compared with all other students, which would include itself.' }); return;
+    }
+    seenNames.add(key);
     clean.push({ name, enrollment, students });
   });
   const totals = clean.reduce((acc, g) => ({ enrollment: acc.enrollment + g.enrollment, students: acc.students + g.students }), { enrollment: 0, students: 0 });
@@ -164,13 +177,30 @@ function disproTrendSeries(analyses) {
 // Paste parser: comma / tab / semicolon separated lines of
 // "group, enrollment, students-with-outcome". Header rows (non-numeric
 // 2nd/3rd column) are skipped, not errors.
+// Spreadsheet pastes are tab-separated and keep number formatting ("1,080"),
+// so a line with a tab splits on tabs only; splitting on the comma too read
+// "1,080" as 1. Otherwise ";" then ",", keeping a quoted field ("1,080") whole.
+function disproSplitRow(line) {
+  if (line.indexOf('\t') !== -1) return line.split('\t');
+  const sep = line.indexOf(';') !== -1 ? ';' : ',';
+  const out = [];
+  let cur = '';
+  let quoted = false;
+  for (const ch of line) {
+    if (ch === '"') { quoted = !quoted; continue; }
+    if (ch === sep && !quoted) { out.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
 function disproParsePaste(text) {
   const groups = [];
   const skipped = [];
   String(text || '').split(/\r?\n/).forEach((line) => {
     const t = line.trim();
     if (!t) return;
-    const parts = t.split(/[\t;,]/).map((p) => p.trim().replace(/^"|"$/g, ''));
+    const parts = disproSplitRow(t).map((p) => p.trim());
     if (parts.length < 3) { skipped.push(t); return; }
     const name = parts[0];
     // Number('') is 0 — a header like "Group,Enrollment,Students" would parse

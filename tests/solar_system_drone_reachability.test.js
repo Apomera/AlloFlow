@@ -89,7 +89,10 @@ describe('solar system vehicle mode reachability', () => {
       // nothing at all. Same trap for any per-frame material write.
       expect(source, `${path}: ring opacity is assigned, not modulated`)
         .not.toMatch(/rm\.material\.opacity = 0\.2 \+/);
-      expect(source).toContain('if (rm._baseOpacity == null) rm._baseOpacity = rm.material.opacity;');
+      // The ring arch stores its built opacity and scales that (by how far above the
+      // cloud tops the probe is), rather than writing a constant over it.
+      expect(source).toContain('rbMat._baseOpacity = rbMat.opacity;');
+      expect(source).toContain('rm.material.opacity = rm.material._baseOpacity * ringSeen;');
     });
   });
 

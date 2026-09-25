@@ -1140,7 +1140,10 @@ const handleLoadProject = (e, deps) => {
                      addToast(t('toasts.project_loaded'), "success");
                 }
                 if (hydratedHistory.length > 0) {
-                    const lastItem = hydratedHistory[hydratedHistory.length - 1];
+                    // An AlloPack opens on its directions (the run sheet, goals and quest map),
+                    // not on its last resource; a saved project reopens where the work left off.
+                    const lastItem = (rawData && rawData.allopack && hydratedHistory.find((item) => item && item.type === 'directions'))
+                        || hydratedHistory[hydratedHistory.length - 1];
                     // Restore the whole artifact envelope. Narrowing this to
                     // type/data/id discarded text role, source linkage,
                     // standards context, and complexity evidence immediately

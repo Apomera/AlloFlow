@@ -32,10 +32,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for behaviorLab 1`] = `
 {
-  "buttons": 19,
+  "buttons": 21,
   "inputs": 4,
-  "lengthBucket": 57,
-  "sha": "0d3904e5f4505c33",
+  "lengthBucket": 63,
+  "sha": "b859700bd29561fa",
   "svgs": 0,
 }
 `;
@@ -82,10 +82,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for geologyExplorer 1`] = `
 {
-  "buttons": 51,
-  "inputs": 2,
-  "lengthBucket": 192,
-  "sha": "6a0d87f3cd170cc5",
+  "buttons": 40,
+  "inputs": 1,
+  "lengthBucket": 146,
+  "sha": "fc32d85bf9a59471",
   "svgs": 1,
 }
 `;
@@ -114,8 +114,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 35,
   "inputs": 0,
-  "lengthBucket": 113,
-  "sha": "86dc5aab1eb25ee0",
+  "lengthBucket": 114,
+  "sha": "2f0b8bb8422177d7",
   "svgs": 0,
 }
 `;

@@ -328,7 +328,9 @@ describe('the dialog speech bar, mounted', () => {
 
 describe('source contract', () => {
   it('no longer drives raw browser speechSynthesis for character lines', () => {
-    const dialog = src.slice(src.indexOf('showNpcDialog && engine && engine.npcs[dialogNpcIdx] && (function() {'), src.indexOf('showNpcDialog && engine && engine.npcs[dialogNpcIdx] && (function() {') + 30000);
+    const start = src.indexOf('showNpcDialog && !npcPeek && engine && engine.npcs[dialogNpcIdx] && (function() {');
+    expect(start).toBeGreaterThan(-1);
+    const dialog = src.slice(start, start + 30000);
     expect(dialog).not.toContain('new SpeechSynthesisUtterance');
     expect(dialog).toContain("speakNpcLine(translation.dialogue, data, { language: LANG_NAMES[homeLang] || homeLang, force: true });");
   });

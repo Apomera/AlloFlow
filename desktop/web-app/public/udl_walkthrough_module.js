@@ -585,8 +585,8 @@ function udlwalkCsv(rows) {
   };
   return [cols.join(","), ...rows.map((r) => cols.map((c) => esc(r[c])).join(","))].join("\r\n");
 }
-function udlwalkDateStamp() {
-  return (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+function udlwalkDateStamp(d = /* @__PURE__ */ new Date()) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function udlwalkEscHtml(value) {
   return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -960,7 +960,7 @@ function UdlWalkthroughPanel(props) {
     const session = {
       id: udlwalkNextId("wt"),
       teacherId: draft.teacherId,
-      date: now.toISOString().slice(0, 10),
+      date: udlwalkDateStamp(now),
       startedAt: draft.startedAt,
       durationMin: Math.max(1, Math.round((Date.now() - draft.startedAt) / 6e4)),
       context: draft.context,
@@ -1380,6 +1380,7 @@ function UdlWalkthroughPanel(props) {
     UdlWalkthroughPanel: UdlWalkthroughPanel,
     // Pure seams exposed for unit tests. Not part of the public contract.
     _testing: {
+      udlwalkDateStamp: udlwalkDateStamp,
       udlwalkFeedbackFromSession: udlwalkFeedbackFromSession,
       udlwalkFeedbackText: udlwalkFeedbackText,
       udlwalkFeedbackHtml: udlwalkFeedbackHtml,

@@ -921,7 +921,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 
     if (!isOpen) return null;
 
-    const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\n{3,}/g, '\n\n').trim();
+    const cleaned = String(text || '').replace(/<\/?[a-zA-Z][^<>]*>/g, '').replace(/\n{3,}/g, '\n\n').trim();
     const paragraphs = cleaned.split(/\n{2,}/).filter(Boolean);
     const staticPreview = !isPlaying && translateY === 0;
     const togglePlay = () => {
@@ -1407,7 +1407,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenc
             return;
         }
         if (!text) { setSentences([]); return; }
-        const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        const cleaned = String(text || '').replace(/<\/?[a-zA-Z][^<>]*>/g, '').replace(/\s+/g, ' ').trim();
         // Prefer the SHARED splitter (KaraokeAudioStore) so stored/vetted
         // audio keys line up exactly with what the player requests; the
         // inline regex below is the identical fallback when the store

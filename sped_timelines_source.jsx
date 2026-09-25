@@ -43,7 +43,11 @@ function spedNextId() {
 }
 
 function spedToday() {
-  return new Date().toISOString().slice(0, 10);
+  // The LOCAL calendar date. toISOString() is UTC, which in US time zones is
+  // already tomorrow by late afternoon (5 pm in Portland in summer).
+  // Here a deadline due today read as Overdue every evening.
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 // ── Pure date seams ─────────────────────────────────────────────────

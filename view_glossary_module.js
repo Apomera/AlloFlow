@@ -126,23 +126,85 @@ async function prepareGlossaryMulberry(result, signal) {
   ctx.fillText('Mulberry Symbols by Steve Lee | CC BY-SA 4.0 | Converted to PNG', 320, 650);
   ctx.fillText('globalsymbols.com/symbolsets/mulberry', 320, 666);
   ctx.fillText('creativecommons.org/licenses/by-sa/4.0/', 320, 682);
-  return canvas.toDataURL('image/png');
+  const symbol = canvas.toDataURL('image/png');
+  glossaryCreditBands.set(symbol, 688 - 640);
+  return symbol;
 }
-function glossaryImageReplacement(image, attribution = null) {
-  return {
+// A classroom photo arrives screened, with AI alt text of the photo itself.
+// Credit is drawn in a band under it, as for Mulberry, so it survives exports
+// that copy only the image bytes.
+async function prepareGlossaryPhoto(choice, signal) {
+  const source = typeof choice?.dataUrl === 'string' && /^data:image\/(png|jpeg|gif|webp)[;,]/i.test(choice.dataUrl) ? choice.dataUrl : '';
+  if (!source) throw new Error('This photo has no usable image.');
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    const stop = () => {
+      img.src = '';
+      cleanup();
+      reject(new Error('Image replacement canceled.'));
+    };
+    const cleanup = () => {
+      if (signal) signal.removeEventListener('abort', stop);
+    };
+    img.onload = () => {
+      cleanup();
+      resolve(img);
+    };
+    img.onerror = () => {
+      cleanup();
+      reject(new Error('The photo could not be opened.'));
+    };
+    if (signal?.aborted) {
+      stop();
+      return;
+    }
+    if (signal) signal.addEventListener('abort', stop, {
+      once: true
+    });
+    img.src = source;
+  });
+  if (!image.naturalWidth || !image.naturalHeight) throw new Error('The photo could not be opened.');
+  const width = Math.min(960, image.naturalWidth);
+  const height = Math.round(image.naturalHeight * (width / image.naturalWidth));
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('The photo could not be opened.');
+  ctx.font = '13px sans-serif';
+  // The shared credit band keeps the licence and its address on lines of their own.
+  const bandLines = window.AlloModules?.AltText?.creditBandLines;
+  const credit = bandLines ? bandLines(ctx, width, choice.attribution, choice.creditLine) : [String(choice.creditLine || '')];
+  canvas.width = width;
+  canvas.height = height + (credit.length ? 10 + credit.length * 17 : 0);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(image, 0, 0, width, height);
+  ctx.fillStyle = '#334155';
+  ctx.font = '13px sans-serif';
+  ctx.textAlign = 'center';
+  credit.forEach((text, i) => ctx.fillText(text, width / 2, height + 20 + i * 17, width - 8));
+  const photo = canvas.toDataURL('image/jpeg', 0.9);
+  glossaryCreditBands.set(photo, canvas.height - height);
+  return photo;
+}
+// The height of the credit band drawn under a prepared picture, by its data URL,
+// read once by replace() so an AI refine can take the band off and redraw it.
+const glossaryCreditBands = new Map();
+function glossaryImageReplacement(image, attribution = null, extra = null) {
+  return Object.assign({
     image,
     imageAlt: '',
     imageAltHash: '',
     imageAltSource: '',
     imageDecorative: false,
     imageSource: attribution ? 'mulberry' : 'author-upload',
-    imageAttribution: attribution
-  };
+    imageAttribution: attribution,
+    imageCreditBand: 0
+  }, extra || {});
 }
 // Capture only image fields: Undo must not roll back term/definition edits.
 function glossaryImageSnapshot(item) {
   const snapshot = {};
-  ['image', 'imageAlt', 'imageAltHash', 'imageAltSource', 'imageDecorative', 'imageSource', 'imageAttribution'].forEach(key => {
+  ['image', 'imageAlt', 'imageAltHash', 'imageAltSource', 'imageDecorative', 'imageSource', 'imageAttribution', 'imageCreditBand'].forEach(key => {
     snapshot[key] = item[key] ?? (key === 'imageDecorative' ? false : key === 'imageAttribution' ? null : '');
   });
   return snapshot;
@@ -373,7 +435,7 @@ function GlossaryImageControls({
     setStatus('Image updated. You can add a description or undo this change.');
     focusDescriptionRef.current = true;
   }
-  async function replace(load, attribution) {
+  async function replace(load, attribution, extraFor) {
     if (!canEdit || typeof beginTask !== 'function' || working) return;
     const before = glossaryImageSnapshot(item);
     const task = beginTask(index);
@@ -393,7 +455,11 @@ function GlossaryImageControls({
         if (mountedRef.current && task.isOwner()) setError('The term changed while the image loaded. Please try again.');
         return;
       }
-      const saved = task.commit(() => glossaryImageReplacement(image, attribution));
+      const creditBand = glossaryCreditBands.get(image) || 0;
+      glossaryCreditBands.delete(image);
+      const saved = task.commit(() => glossaryImageReplacement(image, attribution, Object.assign({
+        imageCreditBand: creditBand
+      }, typeof extraFor === 'function' ? extraFor(image) : null)));
       if (mountedRef.current) {
         if (saved) recordReplacement(before, image);else setError('The term changed while the image loaded. Please try again.');
       }
@@ -563,6 +629,17 @@ function GlossaryImageControls({
   }, text('glossary.images.mulberry', 'Find Mulberry symbol')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass,
+    disabled: working || !beginTask,
+    "aria-pressed": mode === 'photos',
+    onClick: () => {
+      stopSearch();
+      setError('');
+      setStatus('');
+      setMode('photos');
+    }
+  }, text('glossary.images.photo', 'Find photo')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
     disabled: working || !onGenerate,
     onClick: generate
   }, text('glossary.images.generate', 'Generate image'))), /*#__PURE__*/React.createElement("p", {
@@ -635,6 +712,30 @@ function GlossaryImageControls({
     className: buttonClass,
     onClick: () => {
       stopSearch();
+      setMode('choices');
+      setStatus('');
+      setError('');
+    }
+  }, text('glossary.images.back', 'Back to current image'))) : mode === 'photos' ? /*#__PURE__*/React.createElement("section", {
+    "aria-label": 'Photos for ' + item.term
+  }, window.AlloModules && window.AlloModules.ClassroomImagePicker ? React.createElement(window.AlloModules.ClassroomImagePicker, {
+    idPrefix: 'glossary-photo-' + index,
+    initialQuery: item.term,
+    sources: ['photos'],
+    t,
+    onChoose: choice => replace(signal => prepareGlossaryPhoto(choice, signal), choice.attribution, image => ({
+      imageSource: 'wikimedia',
+      imageAlt: choice.alt || '',
+      imageAltSource: choice.alt ? 'vision' : '',
+      imageAltHash: choice.alt ? glossaryImageDescriptionHash(image) : ''
+    }))
+  }) : /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "text-sm text-slate-700"
+  }, text('glossary.images.photos_loading', 'Photo search is still loading. Try again in a moment.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass + ' mt-3',
+    onClick: () => {
       setMode('choices');
       setStatus('');
       setError('');
@@ -874,6 +975,7 @@ var Languages = _lazyIcon('Languages');
 var MonitorPlay = _lazyIcon('MonitorPlay');
 var MousePointerClick = _lazyIcon('MousePointerClick');
 var Pencil = _lazyIcon('Pencil');
+var Settings = _lazyIcon('Settings');
 var Plus = _lazyIcon('Plus');
 var Printer = _lazyIcon('Printer');
 var RefreshCw = _lazyIcon('RefreshCw');
@@ -2560,12 +2662,19 @@ function GlossaryView(props) {
   function renderGlossaryToolbar() {
     var toolButton = 'min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
     var secondaryButton = toolButton + ' bg-white text-slate-700 border-slate-300 hover:border-indigo-300 hover:bg-indigo-50';
-    return /*#__PURE__*/React.createElement("section", {
+    // Skip past the study, game and teacher tools straight to the word list.
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-skip": true,
+      onClick: () => document.querySelector('[data-glossary-word-list]')?.focus(),
+      className: "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white"
+    }, t('glossary.skip_to_words') || 'Skip to the word list'), /*#__PURE__*/React.createElement("section", {
       "aria-label": t('glossary.title'),
       className: "mb-4 space-y-4 rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
-    }, /*#__PURE__*/React.createElement("p", {
+    }, isTeacherMode && /*#__PURE__*/React.createElement("p", {
+      "data-glossary-udl-goal": true,
       className: "max-w-xl text-sm text-blue-800"
     }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('glossary.udl_goal_desc')), /*#__PURE__*/React.createElement("div", {
       className: "relative w-full sm:max-w-sm",
@@ -2650,7 +2759,7 @@ function GlossaryView(props) {
       "aria-expanded": glossaryToolsOpen.teacher,
       "aria-controls": "glossary-teacher-tools",
       className: toolButton + ' bg-white text-slate-800 border-slate-300 hover:bg-slate-50'
-    }, /*#__PURE__*/React.createElement(Pencil, {
+    }, /*#__PURE__*/React.createElement(Settings, {
       size: 16,
       "aria-hidden": "true"
     }), " ", t('glossary.more_tools'), " ", /*#__PURE__*/React.createElement(ChevronDown, {
@@ -2801,7 +2910,7 @@ function GlossaryView(props) {
     }, t('glossary.matching')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-matching-help",
       className: "block text-xs font-normal text-slate-600"
-    }, Math.min(activityMatchingCount, activityBoardSize === 'standard' ? 8 : Number(activityBoardSize)), " ", activityText('glossary.activities.matching_help', 'pairs: connect words with meanings or pictures')))), /*#__PURE__*/React.createElement("button", {
+    }, Math.min(activityMatchingCount, activityBoardSize === 'standard' ? 8 : Number(activityBoardSize)), " ", activityText('glossary.activities.matching_help', 'pairs: connect words with meanings or pictures')))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.bingo'),
       "data-help-key": "glossary_bingo",
@@ -2970,7 +3079,7 @@ function GlossaryView(props) {
       className: 'min-h-11 rounded-md px-3 py-2 text-sm font-bold ' + (glossaryFilter === 'domain' ? 'bg-purple-700 text-white' : 'text-slate-700 hover:bg-slate-50')
     }, t('glossary.label_tier3'))), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-blue-800"
-    }, "Academic vocabulary appears across subjects; subject vocabulary is specific to this topic.")), renderGlossaryAudioReviewPanel());
+    }, "Academic vocabulary appears across subjects; subject vocabulary is specific to this topic.")), renderGlossaryAudioReviewPanel()));
   }
   // Wrapped in a Fragment so the phonics popup can render as a sibling of
   // the main content. The popup state (phonicsData) lives at the host level
@@ -3864,6 +3973,7 @@ function GlossaryView(props) {
     id: "glossary-table-scroll-hint",
     className: "px-3 py-2 text-xs text-slate-600 bg-slate-50 sm:hidden print:hidden"
   }, t('glossary.table_scroll_hint')), /*#__PURE__*/React.createElement("div", {
+    "data-glossary-word-list": true,
     className: "overflow-x-auto focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600",
     role: "region",
     "aria-label": t('glossary.table_label'),
