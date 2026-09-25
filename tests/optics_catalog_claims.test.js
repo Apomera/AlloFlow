@@ -34,35 +34,32 @@ function total(...names) {
   }, 0);
 }
 
-// Every nav tooltip that promises a quantity, with the tables behind it.
+// Every nav tooltip that states a quantity, with the table its panel shows.
 // `desc` is rendered as `title:` on the tab button, so a student hovering the
 // tab reads this and then opens a panel printing the real number.
 //
-// ★ The promised number is READ FROM THE SOURCE, never written here. Copying
-// it into the test would only assert the test against itself: raising the
-// shipped claim to "80+ hands-on experiments" would still pass a test that
-// hardcoded 20.
+// Round 12: the "50+ / 100+ / 120+" literals were all true lower bounds but
+// stale (the glossary said 120+ over 456 entries, 38 of them duplicates). Each
+// tooltip now reads the length of the same array its panel lists, so no copy
+// can promise more (or less) than the tab holds. optics_reference_r12 checks
+// the rendered tooltip against the panel's own "Showing N of N".
 const CLAIMS = [
-  { tab: 'Scientists', claim: /'(\d+)\+ optical scientists/, tables: ['FAMOUS_OPTICIANS', 'FAMOUS_OPTICIANS_MORE'] },
-  { tab: 'History', claim: /'(\d+)\+ optics milestones'/, tables: ['OPTICS_HISTORY', 'OPTICS_HISTORY_MORE'] },
-  { tab: 'Instruments', claim: /'(\d+)\+ telescopes, microscopes/, tables: ['OPTICAL_INSTRUMENTS', 'OPTICAL_INSTRUMENTS_MORE'] },
-  { tab: 'Lab Kits', claim: /'(\d+)\+ hands-on experiments'/, tables: ['OPTICS_LAB_KITS', 'OPTICS_LAB_KITS_MORE', 'OPTICS_LAB_KITS_FINAL'] },
-  { tab: 'Worked Problems', claim: /'(\d+)\+ step-by-step AP problems'/, tables: ['WORKED_PROBLEMS', 'WORKED_PROBLEMS_MORE', 'WORKED_PROBLEMS_EXTRA'] },
-  { tab: 'Careers', claim: /'(\d+)\+ optics career paths'/, tables: ['OPTICS_CAREERS', 'OPTICS_CAREERS_MORE'] },
-  { tab: 'Glossary+', claim: /'(\d+)\+ optics terms with examples'/, tables: ['GLOSSARY_EXPANDED', 'GLOSSARY_EXPANDED_MORE', 'GLOSSARY_E_Z', 'GLOSSARY_RZ'] },
+  { tab: 'Scientists', table: 'FAMOUS_OPTICIANS', stale: /'\d+\+ optical scientists/ },
+  { tab: 'History', table: 'OPTICS_HISTORY', stale: /'\d+\+ optics milestones'/ },
+  { tab: 'Instruments', table: 'OPTICAL_INSTRUMENTS', stale: /'\d+\+ telescopes, microscopes/ },
+  { tab: 'Lab Kits', table: 'OPTICS_LAB_KITS', stale: /'\d+\+ hands-on experiments'/ },
+  { tab: 'Worked Problems', table: 'WORKED_PROBLEMS', stale: /'\d+\+ step-by-step AP problems'/ },
+  { tab: 'Careers', table: 'OPTICS_CAREERS', stale: /'\d+\+ optics career paths'/ },
+  { tab: 'Glossary+', table: 'GLOSSARY_EXPANDED', stale: /'\d+\+ optics terms with examples'/ },
 ];
 
 describe('Optics catalogue claims — the tab promises no more than it holds', () => {
   for (const c of CLAIMS) {
-    it(`${c.tab} holds at least what its tooltip promises`, () => {
-      const m = SRC.match(c.claim);
-      expect(m, `${c.tab}: the claim was reworded — this rule now guards nothing`).toBeTruthy();
-      const promise = Number(m[1]);
-      const actual = total(...c.tables);
-      expect(actual, `${c.tab}: no table resolved — they were renamed`).toBeGreaterThan(0);
-      expect(actual,
-        `${c.tab} promises ${promise}+ but only ${actual} entries exist`)
-        .toBeGreaterThanOrEqual(promise);
+    it(`${c.tab} derives its count from the table it shows`, () => {
+      expect(SRC, `${c.tab}: a hand-written count is back`).not.toMatch(c.stale);
+      expect(SRC, `${c.tab}: the tooltip no longer reads ${c.table}.length`)
+        .toContain(".replace('{n}', " + c.table + '.length) },');
+      expect(table(c.table), `${c.tab}: the table was renamed`).not.toBeNull();
     });
   }
 

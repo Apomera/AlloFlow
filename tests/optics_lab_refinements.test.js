@@ -90,7 +90,7 @@ describe('Optics Lab refinements', () => {
 
   it('renders persistent, restorable experiment trials with an evidence plot', () => {
     const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
-    const guided = renderTool('opticsLab', state({
+    const guidedSetup = {
       mode: 'lenses',
       opTopicTouched: { lenses: true },
       opPredictionNotes: { lenses: 'A farther object should move the image toward the focal point.' },
@@ -100,7 +100,8 @@ describe('Optics Lab refinements', () => {
         { id: 'run-1', capturedAt: 1, series: 'lenses-converging', setup: { lensDo: 18 }, x: 18, y: 36, xLabel: 'Object distance', yLabel: 'Image distance', xUnit: 'cm', yUnit: 'cm', summary: 'Real image at 36 cm.' },
         { id: 'run-2', capturedAt: 2, series: 'lenses-converging', setup: { lensDo: 24 }, x: 24, y: 24, xLabel: 'Object distance', yLabel: 'Image distance', xUnit: 'cm', yUnit: 'cm', summary: 'Real image at 24 cm.' },
       ] },
-    }));
+    };
+    const guided = renderTool('opticsLab', state(guidedSetup));
 
     expect(guided).toContain('data-op-trial-journal="lenses"');
     expect(guided).toContain('2 / 20 trials');
@@ -110,7 +111,12 @@ describe('Optics Lab refinements', () => {
     expect(guided).toContain('Evidence trend');
     expect(guided).toContain('Export CSV');
     expect(guided).toContain('Restore trial 1 setup');
-    expect(guided).toContain('Run a contrast trial');
+    // The saved prediction is for another setup, so the next step is to predict this one...
+    expect(guided).toContain('Predict this setup');
+    expect(guided).not.toContain('Run a contrast trial');
+    // ...and with a prediction for THIS setup the loop moves on.
+    const predicted = renderTool('opticsLab', state(withPrediction('lenses', guidedSetup, guidedSetup.opPredictionNotes.lenses)));
+    expect(predicted).toContain('Run a contrast trial');
     expect(source).toContain('function _opticsTrialRecord(tab, state, preview)');
     expect(source).toContain('function _downloadOpticsTrialsCsv(tab, trials)');
     expect(source).toContain('opTrialRuns: d.opTrialRuns || {}');
@@ -375,11 +381,12 @@ describe('Optics Lab refinements', () => {
 
   it('uses physical grating openings and mode-correct 3D aperture geometry', () => {
     const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
-    const grating = renderTool('opticsLab', state({
+    // Revealed: held, the order labels are hidden (see optics_content_accuracy).
+    const grating = renderTool('opticsLab', state(withPrediction('diffraction', {
       mode: 'diffraction', diffMode: 'grating', diffLambda: 600,
       diffGrating: 600, diffGratingDuty: 50, diffScreenL: 1,
       diffScreenProbeMm: 385, diffShowWavefield3D: true,
-    }));
+    })));
     const single = renderTool('opticsLab', state({
       mode: 'diffraction', diffMode: 'single', diffLambda: 600,
       diffSlitWidth: 30, diffScreenL: 1.5, diffShowWavefield3D: true,
@@ -444,7 +451,8 @@ describe('Optics Lab refinements', () => {
     expect(source).toContain("addRow('screen_profile'");
     expect(source).toContain("addRow('detector_depth_trail'");
     expect(source).toContain('if (opticsWavefieldSampleCache.order.length > 8)');
-    expect(source).toContain('if (group.count > 8000)');
+    // Round 12: 8000 wiped the group mid-render at fine settings (13.7k samples).
+    expect(source).toContain('if (group.count > 32000)');
   });
 
   it('renders near-field, broadband, detector-averaged, uncertainty, and phase states coherently', () => {
@@ -501,11 +509,20 @@ describe('Optics Lab refinements', () => {
   });
 
   it('turns setup changes into a cause, law, and measured-result chain', () => {
-    const isolated = renderTool('opticsLab', state({
+    const isolatedSetup = {
       mode: 'interference', intLambda: 700, intSlitSep: 0.1, intScreenL: 1, intSlitWidth: 50,
       opTopicTouched: { interference: true },
       opTopicSnapshots: { interference: { before: { intLambda: 600, intSlitSep: 0.1, intScreenL: 1, intSlitWidth: 50 } } },
-    }));
+    };
+    const isolated = renderTool('opticsLab', state(withPrediction('interference', isolatedSetup)));
+    // The new fringe spacing is the answer the prediction gate holds, so the
+    // chain names the cause and the law but holds the result until a prediction.
+    const held = renderTool('opticsLab', state(isolatedSetup));
+    // Held, the law is part of the answer ("spacing grows with λ"), so it waits too.
+    expect(held).toContain('Which law links this change to the result? Save a prediction for this setup to see it.');
+    expect(held).not.toContain('Fringe spacing is directly proportional to wavelength');
+    expect(held).not.toContain('Fringe spacing increased by 1.00 mm');
+    expect(held).toContain('Result held until you save a prediction for this setup.');
     const confounded = renderTool('opticsLab', state({
       mode: 'interference', intLambda: 700, intSlitSep: 0.06, intScreenL: 1.5, intSlitWidth: 50,
       opTopicTouched: { interference: true },

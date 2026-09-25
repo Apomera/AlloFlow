@@ -38,6 +38,20 @@ test.describe('Optics — reduced motion mid-session', () => {
       const raf = w.requestAnimationFrame.bind(w);
       w.requestAnimationFrame = (cb: any) => { w.__rafCount++; return raf(cb); };
     });
+    // Round 12: the wave pauses while out of view (IntersectionObserver). Push the
+    // scene out of the viewport deterministically, prove it stops, then bring it back.
+    const host = page.locator('[data-op-polarization-3d-host="true"]');
+    await host.scrollIntoViewIfNeeded();
+    await host.evaluate((el) => { (el as HTMLElement).style.transform = 'translateY(100000px)'; });
+    await page.waitForTimeout(500);
+    await page.evaluate(() => { (window as any).__rafCount = 0; });
+    await page.waitForTimeout(1200);
+    const hidden = await page.evaluate(() => {
+      const w = window as any; const n = w.__rafCount; w.__rafCount = 0; return n;
+    });
+    expect(hidden, 'the wave kept animating while out of view').toBeLessThan(5);
+    await host.evaluate((el) => { (el as HTMLElement).style.transform = ''; });
+    await host.scrollIntoViewIfNeeded();
     await page.waitForTimeout(1200);
 
     const before = await page.evaluate(() => {

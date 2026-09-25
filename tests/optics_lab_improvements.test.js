@@ -91,7 +91,8 @@ describe('Optics Lab improvement regressions', () => {
     // prefers-reduced-motion before rescheduling, because S.animate is only
     // refreshed when a new config is pushed and the OS toggle can flip mid-run.
     // The intent pinned here is unchanged: reschedule only while animating.
-    expect(source).toContain('if (S.animate && !opticsPrefersReducedMotion()) scheduleFrame();');
+    // Round 12: also paused while scrolled out of view (IntersectionObserver).
+    expect(source).toContain('if (S.animate && S.inView !== false && !opticsPrefersReducedMotion()) scheduleFrame();');
   });
 
   it('makes the polarization 3D outcome explain each intensity projection', () => {

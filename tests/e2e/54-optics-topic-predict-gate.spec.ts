@@ -71,7 +71,7 @@ test.describe('Optics topic panels — the solved rows wait for a prediction', (
     const body = await page.locator('body').innerText();
     // The answer: solved image position, size and kind.
     expect(body, 'd_i was readable before committing').not.toMatch(/23\.08|d_i\s*\n?\s*\d/);
-    expect(body).not.toMatch(/✓ Real \(light converges/);
+    expect(body).not.toMatch(/Real \(light converges/);
   });
 
   test('keeps the equation, the student inputs and the caveats visible', async ({ page }) => {
@@ -95,7 +95,7 @@ test.describe('Optics topic panels — the solved rows wait for a prediction', (
 
     expect(await maskedCount(page), 'the outcome stayed hidden after a valid prediction').toBe(0);
     const body = await page.locator('body').innerText();
-    expect(body).toMatch(/✓ Real \(light converges/);
+    expect(body).toMatch(/Real \(light converges/);
   });
 
   test('moving a control asks again rather than staying unlocked', async ({ page }) => {

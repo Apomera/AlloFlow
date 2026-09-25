@@ -194,13 +194,17 @@ describe('Optics grating caption — describes what the screen actually shows', 
   // but the shared default screen distance is 1.5 m, where m = ±1 lands off
   // the ±500 mm screen: one spot under a caption describing three.
   const FIT = 'the first-order peaks fit on this fixed 1000 mm screen';
-  const ONLY = 'only the central peak is on this fixed 1000 mm screen right now';
+  const ONLY = 'the first orders land off this fixed 1000 mm screen';
+  const HELD = 'Physical-scale view on a fixed 1000 mm screen.';
   const firstOrderMm = (nm, linesPerMm, L) => L * Math.tan(Math.asin(nm * 1e-9 / (1e-3 / linesPerMm))) * 1000;
 
-  function caption(state) {
+  // Held, the caption is neutral: which orders reach the screen is observable on
+  // the bench, but the sentence would say it before the prediction.
+  function caption(state, revealed = true) {
     resetStemLab();
     loadTool('stem_lab/stem_tool_optics.js', 'opticsLab');
-    return renderTool('opticsLab', { opticsLab: { mode: 'diffraction', diffMode: 'grating', ...state } });
+    const s = { mode: 'diffraction', diffMode: 'grating', ...state };
+    return renderTool('opticsLab', { opticsLab: revealed ? withPrediction('diffraction', s) : s });
   }
 
   it('says only the central peak shows at the default 1.5 m, and names the fixes', () => {
@@ -218,10 +222,19 @@ describe('Optics grating caption — describes what the screen actually shows', 
     expect(html).not.toContain(ONLY);
   }, RENDER_TIMEOUT);
 
-  it('does not say WHY the orders are missing, which is the held answer', () => {
-    const html = caption({ diffLambda: 600, diffGrating: 600, diffScreenL: 1.5 });
-    const note = html.match(/Physical-scale view:[^<]*/)[0];
-    expect(note).not.toMatch(/mλ|m lambda|no real|sin ?θ|off the edge because/i);
+  it('held, says only that the screen is fixed; revealed, tells "off screen" from "does not exist"', () => {
+    for (const setup of [{ diffLambda: 600, diffGrating: 600, diffScreenL: 1.5 }, { diffLambda: 633, diffGrating: 600, diffScreenL: 1.0 }, { diffLambda: 633, diffGrating: 1700, diffScreenL: 1.0 }]) {
+      const held = caption(setup, false);
+      expect(held).toContain(HELD);
+      expect(held).not.toContain(FIT);
+      expect(held).not.toContain(ONLY);
+      expect(held).not.toMatch(/mλ|does not exist/);
+    }
+    // 1700 lines/mm at 633 nm: d = 588 nm < λ, so m = 1 has no solution; moving the
+    // screen cannot help (the old caption advised exactly that).
+    const none = caption({ diffLambda: 633, diffGrating: 1700, diffScreenL: 1.0 });
+    expect(none).toContain('m = 1 does not exist here');
+    expect(none).not.toContain('Move the screen closer');
   }, RENDER_TIMEOUT);
 });
 
@@ -284,7 +297,8 @@ describe('Optics records and trivia — stated comparisons are arithmetic', () =
   });
 
   it('CO₂ wavelength vs red, MINFLUX vs the diffraction limit, EHT on the Moon', () => {
-    const co2 = recordText('Far-infrared workhorse laser');
+    // 10.6 μm is long-wave (mid) IR; far IR starts near 15-50 μm, as the tool's own EM table says.
+    const co2 = recordText('Mid-infrared (long-wave IR) workhorse laser');
     expect(co2).toContain(`about ${Math.round(10600 / 700)} times longer than red light`);
 
     const minflux = recordText('Highest-resolution optical microscope');
@@ -730,8 +744,9 @@ describe('Optics eye — glasses follow the vergence rule 1/d′ = 1/d − P', (
     loadTool('stem_lab/stem_tool_optics.js', 'opticsLab');
     const html = renderTool('opticsLab', { opticsLab: { mode: 'phenomena', phenoSub: 'eye', ...state } });
     const read = (label) => {
-      const m = html.match(new RegExp(`${label}: ~(∞|[0-9]+) cm|${label}: ~(∞)`));
+      const m = html.match(new RegExp(`${label}: ~(∞|[0-9]+) cm|${label}: ~(∞)|${label}: (beyond ∞)`));
       expect(m, `${label} not rendered`).toBeTruthy();
+      if (m[3]) return 'beyond';
       return (m[1] || m[2]) === '∞' ? Infinity : Number(m[1]);
     };
     return { near: read('Near point'), far: read('Far point') };
@@ -750,6 +765,9 @@ describe('Optics eye — glasses follow the vergence rule 1/d′ = 1/d − P', (
   it('+3 D reading glasses bring a hyperope\'s near point IN by the vergence rule', () => {
     const bare = eye({ phenoEyeCondition: 'hyperopia', phenoEyeGlasses: false });
     const worn = eye({ phenoEyeCondition: 'hyperopia', phenoEyeGlasses: true, phenoEyeGlassesD: 3 });
+    // Relaxed, a hyperope still has converging power to spare: parallel light
+    // focuses behind the retina, so the far point is "beyond infinity", not ∞.
+    expect(bare.far).toBe('beyond');
     expect(worn.near).toBeLessThan(bare.near);
     expect(Math.abs(worn.near - 100 / (100 / bare.near + 3)), `${worn.near} cm`).toBeLessThanOrEqual(1);
   }, RENDER_TIMEOUT);
@@ -919,7 +937,7 @@ describe('Optics deep dives — stated comparisons are arithmetic', () => {
   it('the fiber-laser record agrees with the lasers deep dive', () => {
     const record = RECORDS.find((r) => r.title === 'Most powerful continuous-wave fiber laser');
     expect(record.value).toBe('100+ kilowatts');
-    expect(SRC).toMatch(/IPG.{0,2}s 100\+ kW machines/);
+    expect(SRC).toMatch(/IPG.{0,2}s 100\+ kW industrial machines/);
   });
 });
 
@@ -1236,9 +1254,14 @@ describe('Optics visual lab — every mini-sim draws the physics it names', () =
       expect(p.x, `${type} do=${dO}`).toBeCloseTo(img.x1, 3);
       expect(p.y, `${type} do=${dO}`).toBeCloseTo(img.y2, 3);
       // The object is on the left: a concave mirror's middle sits further right than its rim.
-      const q = html.match(/<path d="M 390 50 Q ([0-9.]+) 130 390 210"/);
+      // The vertex sits at x = 300, leaving 200 px behind the mirror for virtual images.
+      const q = html.match(/data-op-viz-mirror-vertex="300" d="M ([0-9.]+) 50 Q ([0-9.]+) 130 ([0-9.]+) 210"/);
       expect(q, 'mirror curve').toBeTruthy();
-      expect(Number(q[1]) > 390, `${type} curve`).toBe(type === 'concave');
+      const [rimTop, ctrl, rimBottom] = q.slice(1).map(Number);
+      expect(rimTop).toBe(rimBottom);
+      expect(ctrl > rimTop, `${type} curve`).toBe(type === 'concave');
+      // The curve's apex, half-way to the control point, is x = 390, where the rays reflect.
+      expect((rimTop + ctrl) / 2, `${type} vertex`).toBe(300);
     }
   }, RENDER_TIMEOUT);
 
@@ -1290,15 +1313,22 @@ describe('Optics visual lab — every mini-sim draws the physics it names', () =
   it('double slit: the drawn fringe period is Δy = λL/d at the stated scale', () => {
     for (const [lam, slit, L] of [[550, 0.05, 1.0], [650, 0.1, 2.0], [450, 0.2, 1.5]]) {
       const html = viz({ vizShowDS: true, vizDsLam: lam, vizDsSlit: slit, vizDsL: L });
-      const bars = [...html.matchAll(/data-op-viz-ds-fringe="true" x="([0-9.]+)" y="70" width="2" height="120" fill="[^"]*" opacity="([0-9.]+)"/g)]
-        .map((m) => ({ x: Number(m[1]) + 1, I: Number(m[2]) }));
-      expect(bars.length).toBe(150);
+      const bars = [...html.matchAll(/data-op-viz-ds-fringe="true" x="([0-9.]+)" y="70" width="1.05" height="120" fill="[^"]*" opacity="([0-9.]+)"/g)]
+        .map((m) => ({ x: Number(m[1]) + 0.5, I: Number(m[2]) }));
+      expect(bars.length).toBe(300);
       const peaks = bars.filter((b, i) => i > 0 && i < bars.length - 1 && b.I >= bars[i - 1].I && b.I > bars[i + 1].I && b.I > 0.9);
       expect(peaks.length, `${lam}/${slit}/${L}: at least two bright fringes`).toBeGreaterThanOrEqual(2);
       const periodPx = (peaks[peaks.length - 1].x - peaks[0].x) / (peaks.length - 1);
       const expectedPx = (lam * 1e-9 * L / (slit * 1e-3)) * 1000 * 7.5;
-      expect(Math.abs(periodPx - expectedPx), `${lam}/${slit}/${L}: ${periodPx} px vs ${expectedPx}`).toBeLessThan(2.1);
+      expect(Math.abs(periodPx - expectedPx), `${lam}/${slit}/${L}: ${periodPx} px vs ${expectedPx}`).toBeLessThan(1.1);
     }
+    // 380 nm, 0.5 mm, 0.3 m: a 1.7 px period. 2 px sampling beat it into false
+    // wide fringes; now the screen is an even grey and the text says why.
+    const fine = viz({ vizShowDS: true, vizDsLam: 380, vizDsSlit: 0.5, vizDsL: 0.3 });
+    const fineOps = [...fine.matchAll(/data-op-viz-ds-fringe="true"[^>]* opacity="([0-9.]+)"/g)].map((m) => Number(m[1]));
+    expect(fineOps.length).toBe(300);
+    expect(new Set(fineOps)).toEqual(new Set([0.5]));
+    expect(fine).toContain('too fine to draw here');
   }, RENDER_TIMEOUT);
 
   it('Snell visualizer: the θ₁ arc is measured from the normal, not the surface', () => {
@@ -1317,14 +1347,15 @@ describe('Optics visual lab — every mini-sim draws the physics it names', () =
   it("Newton's rings: the first dark ring sits at √(λR) and grows with λ", () => {
     const firstDark = (lam) => {
       const html = viz({ vizShowNr: true, vizNrLam: lam });
-      const rings = [...html.matchAll(/data-op-viz-newton-ring="([0-9.]+)" cx="250" cy="110" r="[0-9.]+" fill="none" stroke="[^"]*" stroke-width="1.05" opacity="([0-9.]+)"/g)]
+      const rings = [...html.matchAll(/data-op-viz-newton-ring="([0-9.]+)" cx="250" cy="110" r="[0-9.]+" fill="none" stroke="[^"]*" stroke-width="0.55" opacity="([0-9.]+)"/g)]
         .map((m) => ({ r: Number(m[1]), I: Number(m[2]) }));
-      expect(rings.length).toBe(110);
+      expect(rings.length).toBe(220);
+      expect(rings[1].r - rings[0].r, 'half-pixel steps').toBe(0.5);
       const i = rings.findIndex((ring, k) => k > 3 && ring.I < rings[k - 1].I && ring.I <= rings[k + 1].I);
       return rings[i].r;
     };
     for (const lam of [450, 650]) {
-      expect(Math.abs(firstDark(lam) - Math.sqrt(lam * 1e-6 * 1000) * 30), `${lam} nm`).toBeLessThan(1.1);
+      expect(Math.abs(firstDark(lam) - Math.sqrt(lam * 1e-6 * 1000) * 30), `${lam} nm`).toBeLessThan(0.6);
     }
     expect(firstDark(650)).toBeGreaterThan(firstDark(450));
   }, RENDER_TIMEOUT);
@@ -1349,8 +1380,14 @@ describe('Optics visual lab — every mini-sim draws the physics it names', () =
     expect(nearWide).toBeGreaterThan(10 * nearNarrow);
     expect(farWide).toBeGreaterThan(10 * farNarrow);
     expect(farNarrow).toBeLessThan(1);
-    // b = f²/(N(s − f)) · |x − s|/x for f 50 mm, s 3 m, x 1.5 m, CoC 0.03 mm
-    expect(nearWide).toBeCloseTo((2500 / (1.4 * 2950)) / 0.03, 2);
+    // b = f²/(N(s − f)) · |x − s|/x for f 50 mm, s 3 m, x 2 m, CoC 0.03 mm
+    expect(nearWide).toBeCloseTo((2500 / (1.4 * 2950)) * (1000 / 2000) / 0.03, 2);
+    // The intro says f/20 and up sharpens all three: true at f/20, not yet at f/16.
+    const [near20, far20] = blur(20);
+    expect(near20).toBeLessThan(1);
+    expect(far20).toBeLessThan(1);
+    expect(blur(16)[1]).toBeGreaterThan(1);
+    expect(viz({ vizShowCam: true })).toContain('here f/20 and up');
   }, RENDER_TIMEOUT);
 
   it('pinhole: rays run straight through the hole and the image is d_i/d_o as tall', () => {
@@ -1488,5 +1525,621 @@ describe('Optics visual-lab reference cards — numbers that follow from the phy
       'sound from speakers is incoherent', 'Same as lens, with sign flipped', 'Renaissance artists projected']) {
       expect(SRC, wrong).not.toContain(wrong);
     }
+  });
+});
+
+describe('Optics encyclopedia, instruments and reference tables — claims the physics settles', () => {
+  // Round 5 audit, Sept 2026: glass beads and raindrops "use total internal
+  // reflection", the Moon was called Lambertian, crown and flint indices were
+  // swapped, a lunar sunrise was "instant", and more. Each check below derives
+  // the claim before reading the text that states it.
+  const PHENOMENA = rows('OPTICAL_PHENOMENA_DB', 'OPTICAL_PHENOMENA_DB_MORE');
+  const INDEX = rows('REFRACTIVE_INDEX_DATA');
+  const INSTRUMENTS = rows('OPTICAL_INSTRUMENTS', 'OPTICAL_INSTRUMENTS_MORE');
+  const MAINE = rows('OPTICS_MAINE');
+  const entry = (pred, what) => { const e = PHENOMENA.find(pred); expect(e, what).toBeTruthy(); return e; };
+  const text = (e) => Object.values(e).filter((v) => typeof v === 'string').join(' ');
+
+  it('no ray can be totally internally reflected inside a sphere', () => {
+    for (const n of [1.33, 1.5, 1.9]) {
+      const critical = Math.asin(1 / n);
+      for (let deg = 0; deg < 90; deg += 1) {
+        // The chord makes the same angle with the far surface as the refracted ray made on entry.
+        expect(Math.asin(Math.sin(deg * DEG) / n), `n ${n}, ${deg}°`).toBeLessThan(critical);
+      }
+    }
+    const retro = entry((e) => /retroreflect/i.test(e.name || e.id || ''), 'retroreflector entry');
+    expect(text(retro)).not.toMatch(/total internal reflection at the back face/);
+    const bow = entry((e) => /^rainbow$/i.test(e.id || '') || /^rainbow/i.test(e.name || ''), 'rainbow entry');
+    expect(text(bow)).not.toMatch(/totally-or-partially/);
+  });
+
+  it('a lunar sunrise takes about an hour; Earth refraction adds 2-3 minutes a side', () => {
+    const lunarDegPerHour = 360 / (29.53 * 24);
+    expect(0.533 / lunarDegPerHour * 60).toBeGreaterThan(50);
+    expect(0.533 / lunarDegPerHour * 60).toBeLessThan(75);
+    const refractionMinutes = 34 / 15;
+    expect(refractionMinutes).toBeGreaterThan(2);
+    expect(refractionMinutes).toBeLessThan(3);
+    const all = PHENOMENA.map(text).join(' ');
+    expect(all).toContain('a sunrise takes about an hour');
+    expect(all).toContain('roughly 2–3 minutes at each end of the day');
+    expect(all).not.toMatch(/rises and sets instantly|16 extra minutes/);
+  });
+
+  it('crown glass has the lower index and flint the higher, in the table and the text', () => {
+    const crown = INDEX.find((r) => /crown/i.test(r.material));
+    const flints = INDEX.filter((r) => /flint/i.test(r.material));
+    expect(crown && flints.length, 'crown and flint rows').toBeTruthy();
+    flints.forEach((f) => expect(f.n, f.material).toBeGreaterThan(crown.n));
+    expect(PHENOMENA.map(text).join(' ')).toContain('crown glass (low dispersion, lower n) and flint glass (high dispersion, higher n)');
+  });
+
+  it("the heavy-flint range contains the table's own flint rows", () => {
+    const heavy = INDEX.find((r) => /heavy flint/i.test(r.material));
+    const m = heavy.note.match(/range about ([0-9.]+) to ([0-9.]+)/);
+    expect(m, heavy.note).toBeTruthy();
+    const [lo, hi] = [Number(m[1]), Number(m[2])];
+    INDEX.filter((r) => /flint/i.test(r.material) && !/crown/i.test(r.material)).forEach((r) => {
+      expect(r.n >= lo && r.n <= hi, `${r.material} n = ${r.n} outside ${lo}-${hi}`).toBe(true);
+    });
+  });
+
+  it('calcite |Δn| in the encyclopedia matches the index table', () => {
+    const calcite = INDEX.filter((r) => /calcite/i.test(r.material)).map((r) => r.n);
+    expect(calcite.length, 'calcite rows').toBe(2);
+    const bi = PHENOMENA.map(text).join(' ').match(/[|]Δn[|] ≈ ([0-9.]+) [(]n_o = ([0-9.]+), n_e = ([0-9.]+)[)]/);
+    expect(bi, 'birefringence values').toBeTruthy();
+    const [dn, no, ne] = bi.slice(1).map(Number);
+    expect([no, ne].sort()).toEqual([...calcite].sort());
+    expect(Math.abs(no - ne)).toBeCloseTo(dn, 1);
+  });
+
+  it('a 200 mm Airy disk is finer than 1-3″ seeing', () => {
+    const arcsec = 1.22 * 550e-9 / 0.2 * RAD_TO_ARCSEC;
+    expect(arcsec).toBeCloseTo(0.69, 2);
+    expect(arcsec).toBeLessThan(1);
+    expect(PHENOMENA.map(text).join(' ')).toContain('Airy disk ~0.7 arcseconds, finer than typical atmospheric "seeing"');
+  });
+
+  it('a Galilean telescope (negative eyepiece) has a positive, upright magnification', () => {
+    const galilean = INSTRUMENTS.find((i) => /galilean/i.test(i.name));
+    expect(galilean.magnification).toContain('M = −f_obj / f_eye');
+    const [fObj, fEye] = [100, -20];
+    expect(-fObj / fEye).toBeGreaterThan(0);
+  });
+
+  it('keeps the corrected instrument, timeline and Maine facts', () => {
+    const history = rows('OPTICS_HISTORY_MORE');
+    const region = (re) => history.find((h) => re.test(h.event)).region;
+    expect(region(/Tycho Brahe/)).toBe('Denmark');
+    expect(region(/Daguerre/)).toBe('France');
+    expect(region(/scanning tunneling/)).toBe('Switzerland');
+    expect(region(/Cassegrain/)).toBe('France');
+    expect(region(/Hipparcos/)).toBe('Europe (ESA)');
+    const hene = INSTRUMENTS.find((i) => /helium-neon/i.test(i.name));
+    expect(hene.history).toMatch(/1[.]15 μm/);
+    expect(hene.history).toMatch(/632[.]8 nm line in 1962/);
+    expect(INSTRUMENTS.map((i) => i.history || '').join(' ')).toContain('the Plössl uses 4 elements');
+    const maine = MAINE.map((m) => m.detail).join(' ');
+    expect(maine).not.toMatch(/next solar maximum peaks around 202[45]/);
+    expect(maine).not.toMatch(/Acadia[^.]*is a designated International Dark Sky Park/);
+    expect(maine).toMatch(/last one built there was USS Sand Lance, 1971/);
+    for (const wrong of ['Plusiotis resplendens reflects almost only', 'The Moon is approximately Lambertian', "Andy Warhol", 'Atomic-scale ranged adaptive optics',
+      'All natural amino acids are L-form', 'refractive index ∝ density', 'Fresnel (1815-ish)', 'Disparity ≈ (IOD × baseline)/depth',
+      'Discovered cosmic rays', 'Mentored Einstein, Schrödinger', 'three laws of blackbody radiation', 'Optical aiming for ballistics',
+      'better than 1 part in 10⁹', 'Apple Vision Pro).', 'AAPOS certification', 'NASA picks ~10 per ~4000', 'Maine requires licensure',
+      'Galileo (1609) built first one', 'first continuous-wave visible laser', 'Leonard Digges. Foundational', 'Astronomical Society of Eastern Maine',
+      'EMMC Eye Care', 'Bangor Public Library has a VR room', 'narrow gain bandwidth', '10⁵+ hours', 'iPhone 7 (2016)']) {
+      expect(SRC, wrong).not.toContain(wrong);
+    }
+  });
+
+  it('the after-image fixation mark stays visible while you stare', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_optics.js', 'opticsLab');
+    const html = renderTool('opticsLab', { opticsLab: { mode: 'phenomena', phenoSub: 'afterimage', phenoAfterPhase: 'staring', phenoAfterStartedAt: Date.now() } });
+    const mark = html.match(/<div aria-hidden="true" data-op-afterimage-fixation="true" style="([^"]*)"/);
+    expect(mark, 'fixation mark').toBeTruthy();
+    // A black mark with mix-blend-mode: difference equals the colour behind it.
+    expect(mark[1]).not.toMatch(/mix-blend-mode/);
+  }, RENDER_TIMEOUT);
+});
+
+describe('Optics visual lab and calculators — controls say what they are and what state they are in', () => {
+  // All 152 visual-lab toggles were announced only as "Open" or "Hide", with no
+  // expanded state, and the segmented selectors never said which was chosen.
+  const SRC_KEYS = [...new Set([...SRC.matchAll(/upd[(]"(vizShow[A-Za-z0-9]+)"/g)].map((m) => m[1]))];
+  function viz(open) {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_optics.js', 'opticsLab');
+    const state = { mode: 'viz' };
+    SRC_KEYS.forEach((k) => { state[k] = open; });
+    return renderTool('opticsLab', { opticsLab: state });
+  }
+
+  it('every Open/Hide toggle is named by its own title and reports whether it is expanded', () => {
+    expect(SRC_KEYS.length).toBe(152);
+    for (const open of [false, true]) {
+      const html = viz(open);
+      const buttons = [...html.matchAll(/<button id="opviz-b-(vizShow[A-Za-z0-9]+)" aria-labelledby="([^"]*)" aria-expanded="(true|false)"/g)];
+      expect(buttons.length, `toggles rendered (open=${open})`).toBe(152);
+      for (const [, key, labelledby, expanded] of buttons) {
+        expect(labelledby, key).toBe(`opviz-b-${key} opviz-t-${key}`);
+        expect(expanded, key).toBe(String(open));
+        const title = html.match(new RegExp('<span id="opviz-t-' + key + '"[^>]*>([^<]+)<'));
+        expect(title && title[1].trim().length, `${key} has a title to be named by`).toBeGreaterThan(2);
+      }
+    }
+  }, RENDER_TIMEOUT);
+
+  it('segmented selectors mark exactly one choice as pressed', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_optics.js', 'opticsLab');
+    const calcs = renderTool('opticsLab', { opticsLab: { mode: 'calcs', calcSubTool: 'tir' } });
+    const nav = [...calcs.matchAll(/<button aria-pressed="(true|false)" title="/g)].map((m) => m[1]);
+    expect(nav.length).toBe(14);
+    expect(nav.filter((v) => v === 'true').length).toBe(1);
+    const lens = viz(false).length && renderTool('opticsLab', { opticsLab: { mode: 'viz', vizShowLens: true, vizLensType: 'diverging' } });
+    const pressed = [...lens.matchAll(/<button aria-pressed="(true|false)"[^>]*>(converging|diverging)</g)].map((m) => m[2] + '=' + m[1]);
+    expect(pressed).toEqual(['converging=false', 'diverging=true']);
+  }, RENDER_TIMEOUT);
+});
+
+describe('Optics quiz explanations, worked-problem working and glossary — the numbers they state', () => {
+  const GLOSS = rows('GLOSSARY_EXPANDED', 'GLOSSARY_EXPANDED_MORE', 'GLOSSARY_E_Z', 'GLOSSARY_RZ');
+  const term = (name) => { const hits = GLOSS.filter((g) => g.term === name); expect(hits.length, `glossary term ${name}`).toBeGreaterThan(0); return hits; };
+  const all = (g) => Object.values(g).filter((v) => typeof v === 'string').join(' ');
+
+  it('a 5 mW beam focused to a ~20 μm spot is ~10⁷ W/m² on the retina (it said 10⁴)', () => {
+    const retinal = 5e-3 / (Math.PI * (10e-6) ** 2);
+    expect(retinal).toBeGreaterThan(5e6);
+    expect(retinal).toBeLessThan(3e7);
+    expect(GLOSS.map(all).join(' ')).toContain('reaches ~10 million W/m² on the retina');
+    expect(SRC).not.toContain('can reach ~10,000 W/m² on the retina');
+  });
+
+  it('every glossary infrared entry starts where the visible band ends, 750 nm', () => {
+    const ir = GLOSS.filter((g) => /^Infrared/.test(g.term));
+    expect(ir.length).toBeGreaterThanOrEqual(2);
+    ir.forEach((g) => expect(g.def, g.term).toMatch(/from 750 nm to 1 mm/));
+    term('Hard X-ray').forEach((g) => {
+      expect(1239.84 / 0.1 / 1000).toBeCloseTo(12.4, 1);
+      expect(g.def).toContain('above ~12 keV');
+    });
+  });
+
+  it('worked problems: sail acceleration, fibre acceptance and photon flux follow from their givens', () => {
+    const sail = problem('wpx7');
+    expect(sail.answer).toContain('9.07×10⁻⁵ m/s²');
+    const fiber = problem('wp_g1');
+    const na = Math.sqrt(1.5 ** 2 - 1.48 ** 2);
+    expect(na).toBeCloseTo(0.24, 2);
+    expect(Math.asin(na) / DEG).toBeCloseTo(14.1, 1);
+    expect(90 - Math.asin(1.48 / 1.5) / DEG).toBeCloseTo(9.4, 1);
+    expect(fiber.pitfalls).toMatch(/≤ 9[.]4° from the axis[^]*NA = √[(]n_core² − n_clad²[)] ≈ 0[.]24, so θa ≈ 14°/);
+    const perMm2 = 1000 / (6.626e-34 * C / 550e-9) * 1e-6;
+    expect(perMm2 / 1e15).toBeCloseTo(2.8, 0);
+    expect(problem('wp_c2').pitfalls).toContain('~2.8×10¹⁵ photons per second');
+  });
+
+  it('accommodation is explained the right way round everywhere', () => {
+    expect(SRC).not.toMatch(/ciliary muscle squeezes the lens fatter/);
+    expect((SRC.match(/the ciliary muscle contracts, the fibres holding the lens/g) || []).length).toBe(2);
+  });
+
+  it('keeps the qualified quiz stems and drops invented glossary terms', () => {
+    expect(question('doubling the light intensity at the same frequency').q).toContain('above the threshold frequency');
+    expect(question('radius of curvature R = 30 cm').q).toContain('paraxial');
+    expect(question('cannot produce').q).toContain('A diverging lens, with a real object');
+    for (const invented of ["term: 'Cymbal'", "term: 'RDM'", "term: 'Unbiased imaging'"]) expect(SRC).not.toContain(invented);
+    expect(term('GPS')[0].def).not.toMatch(/optical atomic clocks/);
+    expect(SRC).not.toContain('smallest critical angle of any natural transparent material');
+  });
+});
+
+describe('Optics lab kits — each procedure produces what it promises', () => {
+  const KITS = rows('OPTICS_LAB_KITS', 'OPTICS_LAB_KITS_MORE', 'OPTICS_LAB_KITS_FINAL');
+  const kitText = (k) => Object.values(k).map((v) => (Array.isArray(v) ? v.join(' ') : typeof v === 'string' ? v : '')).join(' ');
+  const find = (re) => { const k = KITS.find((x) => re.test(kitText(x))); expect(k, String(re)).toBeTruthy(); return kitText(k); };
+
+  it('finger-gap diffraction spreads ~0.3°, whatever the lamp distance (it said 1.7 mm at 30 m)', () => {
+    const theta = 550e-9 / 0.1e-3;
+    expect(theta / DEG).toBeCloseTo(0.3, 1);
+    const t = find(/fingers|gap narrows/);
+    expect(t).toContain('θ ≈ 0.0055 rad ≈ 0.3°');
+    expect(t).not.toContain('y₁ = 1.7 mm');
+  });
+
+  it('a 1 MeV electron in water radiates Cherenkov light at ~37°, not 41°', () => {
+    const gamma = 1 + 1 / 0.511;
+    const beta = Math.sqrt(1 - 1 / gamma ** 2);
+    expect(beta).toBeCloseTo(0.94, 2);
+    const theta = Math.acos(1 / (beta * 1.33)) / DEG;
+    expect(theta).toBeCloseTo(37, 0);
+    expect(Math.acos(1 / 1.33) / DEG).toBeCloseTo(41, 0);
+    expect(find(/Cherenkov angle/)).toContain('θ ≈ 37° (the largest possible, as β → 1, is about 41°)');
+  });
+
+  it('a burning lens concentrates sunlight thousands of times, to hundreds of W/cm²', () => {
+    const spot = 0.1 * 0.0093;                       // f × the Sun's angular diameter, m
+    const gain = 50e-4 / (Math.PI * (spot / 2) ** 2);
+    expect(gain).toBeGreaterThan(6000);
+    expect(gain).toBeLessThan(9000);
+    expect(0.1 * gain).toBeGreaterThan(300);        // W/cm² from 0.1 W/cm² sunlight
+    const t = find(/concentrates the light roughly/);
+    expect(t).toContain('roughly 7000×, to hundreds of W/cm²');
+    expect(t).not.toMatch(/1[.]5 kW\/m² ground level|reaching 4 W\/cm²/);
+  });
+
+  it('circular light passes a linear polarizer equally at every angle, as the kit now shows', () => {
+    // Jones vector (1, i)/√2 projected on (cos α, sin α): |cos α + i sin α|²/2 = 1/2.
+    for (const deg of [0, 30, 60, 90, 135]) {
+      const a = deg * DEG;
+      const re = Math.cos(a) / Math.SQRT2;
+      const im = Math.sin(a) / Math.SQRT2;
+      expect(re * re + im * im, `${deg}°`).toBeCloseTo(0.5, 12);
+    }
+    const t = find(/CIRCULAR polarizing filter/);
+    expect(t).toContain('the brightness stays the same at every angle');
+    expect(t).not.toMatch(/brightness doesn.t change much|light only passes at the right angle/);
+  });
+
+  it('soap film goes black only far thinner than λ/4n, and a laser never changes colour', () => {
+    expect(550 / (4 * 1.33)).toBeGreaterThan(100);
+    expect(SRC).toContain('far thinner than λ/(4n) (under ~25 nm)');
+    expect(SRC).not.toContain('Notice the BLUER scattering near the entry point; the transmitted beam exits REDDER');
+    expect(SRC).not.toContain('Cornstarch particles are small (sub-micron)');
+  });
+
+  it('every kit that lists a laser asks for a Class 2 pointer, and no step points a glass thermometer at a burning focus', () => {
+    const laserKits = KITS.filter((k) => /laser/i.test((k.materials || []).join(' ')));
+    expect(laserKits.length).toBeGreaterThanOrEqual(3);
+    laserKits.forEach((k) => expect((k.materials || []).join(' '), k.id).not.toMatch(/Class 3R[)]/));
+    expect(SRC).not.toContain('Try focusing on a thermometer');
+    expect(SRC).not.toContain('Use this principle in survival situations');
+  });
+});
+
+describe('Optics benches — each label, class and drawing agrees with the model it shows', () => {
+  // Every expected value is worked from the physics here and compared with what
+  // the bench DRAWS or PRINTS, never with a value the tool recomputes for a test.
+  const load = () => { resetStemLab(); loadTool('stem_lab/stem_tool_optics.js', 'opticsLab'); };
+  const render = (state) => renderTool('opticsLab', { opticsLab: state });
+  const shown = (tab, state) => render(withPrediction(tab, state));
+  const tags = (html, tag, marker) => [...html.matchAll(new RegExp('<' + tag + ' [^>]*' + marker + '[^>]*>', 'g'))].map((m) => m[0]);
+  const attr = (t, name) => { const m = t.match(new RegExp(' ' + name + '="([^"]*)"')); return m ? m[1] : null; };
+  const num = (t, name) => Number(attr(t, name));
+  const decode = (s) => s && s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+  const cell = (html, label) => { const m = html.match(new RegExp('>' + label + '<[/]span><span[^>]*>([^<]*)<')); return m ? decode(m[1]) : null; };
+
+  it('an object at C (mirror) or 2F (lens) gives a SAME-size image; the rows said "Reduced" or "Enlarged"', () => {
+    load();
+    const mirror = (d) => shown('reflection', { mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10, reflDo: d, reflObjH: 5, reflShowMath: true });
+    const lens = (d) => shown('lenses', { mode: 'lenses', lensType: 'converging', lensFocal: 10, lensDo: d, lensObjH: 5, lensShowMath: true });
+    // 1/f = 1/d_o + 1/d_i with d_o = 2f gives d_i = 2f, so m = -d_i/d_o = -1.
+    for (const [name, html] of [['mirror at C', mirror(20)], ['lens at 2F', lens(20)]]) {
+      expect(cell(html, 'Size'), name).toBe('Same size (|m| = 1)');
+      expect(html, name).toContain('|m| = 1 →  SAME SIZE');
+    }
+    expect(cell(mirror(25), 'Size')).toBe('Reduced (|m| < 1)');
+    expect(cell(mirror(15), 'Size')).toBe('Enlarged (|m| > 1)');
+    expect(cell(lens(15), 'Size')).toBe('Magnified (|m| > 1)');
+  }, RENDER_TIMEOUT);
+
+  it('the Bending row agrees with the refracted ray as drawn, including "no bend"', () => {
+    load();
+    const fromNormal = (t) => Math.atan2(Math.abs(num(t, 'x2') - num(t, 'x1')), Math.abs(num(t, 'y2') - num(t, 'y1'))) / DEG;
+    const cases = [
+      [1.333, 1.333, 30, '→ no bend (same refractive index)'],
+      [1, 1.52, 0, '→ no bend (along the normal)'],
+      [1, 1.52, 30, '↘ toward the normal (entering a higher-index medium)'],
+      [1.52, 1, 30, '↗ away from the normal (entering a lower-index medium)'],
+    ];
+    for (const [n1, n2, t1, words] of cases) {
+      const html = shown('refraction', { mode: 'refraction', refrN1: n1, refrN2: n2, refrTheta1: t1 });
+      const row = cell(html, 'Bending');
+      expect(row, `${n1} to ${n2} at ${t1}°`).toBe(words);
+      const drawn = fromNormal(tags(html, 'line', 'data-op-refraction-ray="transmitted"')[0]);
+      const verdict = Math.abs(drawn - t1) < 0.05 ? 'no bend' : (drawn < t1 ? 'toward' : 'away');
+      expect(row, `the drawn refracted ray is ${drawn.toFixed(2)}° from the normal`).toContain(verdict);
+    }
+  }, RENDER_TIMEOUT);
+
+  it('the incident arrowhead points along the incident ray (it was mirrored, off by 2θ₁)', () => {
+    load();
+    for (const t1 of [20, 45, 70]) {
+      const html = shown('refraction', { mode: 'refraction', refrN1: 1, refrN2: 1.52, refrTheta1: t1 });
+      const poly = tags(html, 'polygon', 'data-op-refraction-arrow-deg')[0];
+      const [phi, ox, oy] = attr(poly, 'transform').match(/rotate[(]([-0-9.e]+) ([-0-9.e]+) ([-0-9.e]+)[)]/).slice(1).map(Number);
+      // The incident ray is the gold line that ENDS at the arrow's pivot (the interface point).
+      const ray = [...html.matchAll(/<line x1="([^"]+)" y1="([^"]+)" x2="([^"]+)" y2="([^"]+)" stroke="#fbbf24" stroke-width="2.5"/g)]
+        .map((m) => m.slice(1).map(Number)).find(([, , x2, y2]) => Math.abs(x2 - ox) < 1e-6 && Math.abs(y2 - oy) < 1e-6);
+      expect(ray, `θ₁ = ${t1}°: incident ray`).toBeTruthy();
+      const rot = ([x, y]) => {
+        const c = Math.cos(phi * DEG), s = Math.sin(phi * DEG);
+        return [ox + (x - ox) * c - (y - oy) * s, oy + (x - ox) * s + (y - oy) * c];
+      };
+      const [p0, p1, tip] = attr(poly, 'points').split(' ').map((p) => rot(p.split(',').map(Number)));
+      const arrow = Math.atan2(tip[1] - (p0[1] + p1[1]) / 2, tip[0] - (p0[0] + p1[0]) / 2);
+      const travel = Math.atan2(ray[3] - ray[1], ray[2] - ray[0]);
+      expect(Math.abs(arrow - travel) / DEG, `θ₁ = ${t1}°`).toBeLessThan(1);
+    }
+  }, RENDER_TIMEOUT);
+
+  it('Snell-window "no window" text is right for equal indices and for entering a higher index', () => {
+    load();
+    const equal = render({ mode: 'refraction', refrShowWindow: true, refrN1: 1.333, refrN2: 1.333 });
+    expect(equal).toContain('the two indices are equal, so light never bends and no angle gives total internal reflection');
+    const up = render({ mode: 'refraction', refrShowWindow: true, refrN1: 1, refrN2: 1.333 });
+    expect(up).toContain('light is entering the higher-index medium, so no angle gives total internal reflection');
+    for (const html of [equal, up]) expect(html).not.toContain('entering the denser medium, so no angle is beyond');
+  }, RENDER_TIMEOUT);
+
+  it('no mirror ray is drawn meeting the mirror outside its drawn aperture', () => {
+    load();
+    // f = 10, h = 5, d_o = 12 (between F and C): the ray through F meets the
+    // mirror plane at y = 5 - 2.5 × 12 = -25 cm, twice the ±12 cm aperture.
+    for (const d of [12, 14, 30]) {
+      const html = shown('reflection', { mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10, reflDo: d, reflObjH: 5 });
+      const nums = attr(tags(html, 'path', 'data-op-mirror-surface="true"')[0], 'd').match(/-?[0-9.]+/g).map(Number);
+      const mx = nums[0], top = Math.min(nums[1], nums[5]), bottom = Math.max(nums[1], nums[5]);
+      let touching = 0;
+      for (const t of tags(html, 'line', 'y2=')) {
+        if (Math.abs(num(t, 'x1') - num(t, 'x2')) < 1e-6) continue;   // a vertical guide at the mirror plane, not a ray
+        for (const [xk, yk] of [['x1', 'y1'], ['x2', 'y2']]) {
+          if (Math.abs(num(t, xk) - mx) > 1e-6) continue;
+          touching += 1;
+          const y = num(t, yk);
+          expect(y >= top - 0.5 && y <= bottom + 0.5, `d_o = ${d}: a ray meets the mirror at y = ${y}, outside ${top}..${bottom}`).toBe(true);
+        }
+      }
+      expect(touching, `d_o = ${d}: rays at the mirror`).toBeGreaterThanOrEqual(2);
+    }
+  }, RENDER_TIMEOUT);
+
+  it('the double-slit probe calls a fringe under an envelope zero "missing", and the drawn bars agree', () => {
+    load();
+    // d = 0.1 mm, a = 50 μm, λ = 600 nm, L = 1 m: bright fringes every λL/d = 6 mm,
+    // single-slit zeros every λL/a = 12 mm, so every even order is missing.
+    const at = (mm) => shown('interference', { mode: 'interference', intLambda: 600, intSlitSep: 0.1, intSlitWidth: 50, intScreenL: 1, intScreenProbeMm: mm });
+    const cls = (html) => decode((html.match(/class="opticslab-screen-probe-class">([^<]*)</) || [])[1]);
+    const html12 = at(12);
+    expect(cls(at(6))).toBe('bright fringe');
+    expect(cls(html12)).toBe('missing order (envelope zero)');
+    expect(cls(at(3))).toBe('dark fringe');
+    const bar = (mm) => num(tags(html12, 'rect', `data-op-int-sample="${Math.round((mm + 30) / 60 * 160)}"`)[0], 'opacity');
+    expect(bar(12)).toBeLessThan(0.01);
+    expect(bar(-12)).toBeLessThan(0.01);
+    expect(bar(6)).toBeGreaterThan(0.3);
+  }, RENDER_TIMEOUT);
+
+  it('fringes finer than the screen bars are averaged, not aliased into false wide fringes', () => {
+    load();
+    // λ = 400 nm, d = 0.5 mm, L = 0.2 m: fringes every 0.16 mm, but each of the
+    // 161 bars spans 60/160 = 0.375 mm. Point samples beat against the fringes and
+    // drew wide false fringes; each bar must show the average over its width.
+    const lambda = 400e-9, d = 0.5e-3, a = 10e-6, L = 0.2;
+    const html = shown('interference', { mode: 'interference', intLambda: 400, intSlitSep: 0.5, intSlitWidth: 10, intScreenL: L });
+    const bars = tags(html, 'rect', 'data-op-int-sample=').map((t) => [num(t, 'data-op-int-sample'), num(t, 'opacity')]);
+    expect(bars.length).toBe(161);
+    const I = (y) => {
+      const s = Math.sin(Math.atan2(y, L));
+      const b = Math.PI * a * s / lambda;
+      return (b === 0 ? 1 : (Math.sin(b) / b) ** 2) * Math.cos(Math.PI * d * s / lambda) ** 2;
+    };
+    const bin = 0.060 / 160;
+    let worst = 0;
+    let spread = 0;
+    for (const [i, drawn] of bars) {
+      const y = -0.030 + 0.060 * i / 160;
+      let avg = 0;
+      for (let k = 0; k < 400; k += 1) avg += I(y + ((k + 0.5) / 400 - 0.5) * bin);
+      avg /= 400;
+      worst = Math.max(worst, Math.abs(drawn - avg));
+      spread = Math.max(spread, avg);
+    }
+    expect(spread, 'the averaged pattern is not flat, so a match means something').toBeGreaterThan(0.3);
+    expect(worst).toBeLessThan(0.05);
+  }, RENDER_TIMEOUT);
+
+  it('warns when the slits are wider than their separation (they would merge)', () => {
+    load();
+    expect(render({ mode: 'interference', intSlitWidth: 100, intSlitSep: 0.1 })).toContain('data-op-slit-overlap="true"');
+    expect(render({ mode: 'interference', intSlitWidth: 150, intSlitSep: 0.1 })).toContain('overlap into one wide opening');
+    expect(render({ mode: 'interference', intSlitWidth: 50, intSlitSep: 0.1 })).not.toContain('data-op-slit-overlap');
+  }, RENDER_TIMEOUT);
+
+  it('the single-slit probe finds minima where a sin θ = mλ, not wherever the signal is dim', () => {
+    load();
+    // a = 30 μm, λ = 600 nm, L = 1.5 m: minima at y ≈ mλL/a = 30, 60 mm.
+    // At 50 mm a sin θ/λ = 1.67: the far shoulder of the first side lobe, 2.8% of
+    // the peak, which a "below 4%" threshold called a dark minimum.
+    const cls = (mm) => decode((shown('diffraction', { mode: 'diffraction', diffMode: 'single', diffLambda: 600, diffSlitWidth: 30, diffScreenL: 1.5, diffScreenProbeMm: mm })
+      .match(/class="opticslab-screen-probe-class">([^<]*)</) || [])[1]);
+    const s50 = Math.sin(Math.atan2(0.05, 1.5)) * 30e-6 / 600e-9;
+    const i50 = (Math.sin(Math.PI * s50) / (Math.PI * s50)) ** 2;
+    expect(i50).toBeLessThan(0.04);
+    expect(cls(10)).toBe('central maximum');
+    expect(cls(30)).toBe('dark minimum');
+    expect(cls(43)).toBe('side lobe');
+    expect(cls(50)).toBe('side lobe');
+    expect(cls(60)).toBe('dark minimum');
+  }, RENDER_TIMEOUT);
+
+  it('a grating order under a zero of the opening envelope is labelled MISSING', () => {
+    load();
+    // 300 lines/mm, λ = 600 nm, L = 1 m: sin θ_m = 0.18 m. With the openings 50%
+    // of the spacing, a sin θ = (m/2) λ, a whole number of λ for m = ±2.
+    const y2 = 1000 * Math.tan(Math.asin(2 * 600e-9 / (1e-3 / 300)));
+    const g = (duty) => shown('diffraction', { mode: 'diffraction', diffMode: 'grating', diffLambda: 600, diffGrating: 300, diffGratingDuty: duty, diffScreenL: 1, diffScreenProbeMm: +y2.toFixed(2) });
+    const orders = (html) => Object.fromEntries(tags(html, 'g', 'data-op-grating-order=').map((t) => [attr(t, 'data-op-grating-order'), attr(t, 'data-op-grating-order-missing')]));
+    const half = g(50);
+    expect(orders(half)).toEqual({ '-2': 'true', '-1': 'false', 0: 'false', 1: 'false', 2: 'true' });
+    expect(half).toContain('missing order m = +2 (envelope zero)');
+    expect(cell(half, 'θ for m=2')).toContain('missing');
+    expect(cell(half, 'θ for m=1')).not.toContain('missing');
+    const thirty = g(30);
+    expect(Object.values(orders(thirty))).not.toContain('true');
+    expect(thirty).toContain('resolved order m = +2');
+    expect(cell(thirty, 'θ for m=2')).not.toContain('missing');
+  }, RENDER_TIMEOUT);
+
+  it('with the quarter-wave plate in, the flat diagram draws the plate and circular light reaching P₂', () => {
+    load();
+    const html = shown('polarization', { mode: 'polarization', polQwp: true, polTheta2: 30 });
+    const plate = tags(html, 'rect', 'data-op-pol-qwp-plate="true"');
+    expect(plate.length).toBe(1);
+    const px = num(plate[0], 'x');
+    const pw = num(plate[0], 'width');
+    const disks = tags(html, 'circle', 'fill="rgba[(]99,102,241,0.10[)]"').map((t) => ({ cx: num(t, 'cx'), r: num(t, 'r') })).sort((p, q) => p.cx - q.cx);
+    expect(disks.length).toBe(2);
+    const [p1, p2] = disks;
+    expect(px).toBeGreaterThan(p1.cx + p1.r);
+    expect(px + pw).toBeLessThan(p2.cx - p2.r);
+    const rings = tags(html, 'circle', 'data-op-pol-efield="circular"');
+    expect(rings.length).toBeGreaterThanOrEqual(1);
+    rings.forEach((t) => {
+      expect(num(t, 'cx') - num(t, 'r')).toBeGreaterThan(px + pw);
+      expect(num(t, 'cx') + num(t, 'r')).toBeLessThanOrEqual(p2.cx - p2.r);
+    });
+    // The linear field drawn after P₁ stops at the plate.
+    const linear = tags(html, 'line', 'class="opticslab-efield-vec"').filter((t) => num(t, 'x1') > p1.cx + p1.r && num(t, 'x1') < p2.cx - p2.r);
+    expect(linear.length).toBeGreaterThanOrEqual(1);
+    linear.forEach((t) => expect(Math.max(num(t, 'x1'), num(t, 'x2'))).toBeLessThan(px));
+    expect(html).toContain('then a quarter-wave plate at 45° that makes the light circular');
+    const off = shown('polarization', { mode: 'polarization', polQwp: false, polTheta2: 30 });
+    expect(off).not.toContain('data-op-pol-qwp-plate');
+    expect(off).not.toContain('data-op-pol-efield="circular"');
+  }, RENDER_TIMEOUT);
+
+  it('refraction power, image type and polarizer intensities are held outside the table too', () => {
+    load();
+    // Worked values: 60° on P₂ passes ½cos²60° = 12.5%; 30° then 90° passes
+    // ½cos²30° = 37.5% at P₂; circular light passes half at any P₂ angle.
+    const cases = [
+      ['refraction', { mode: 'refraction', refrN1: 1, refrN2: 1.52, refrTheta1: 30 },
+        [/reflected R [0-9]/, /refracted T [0-9]/, /Reflected <strong[^>]*>[0-9]/, /Transmitted <strong[^>]*>[0-9]/, /data-op-fresnel-segment="reflected"/]],
+      ['refraction', { mode: 'refraction', refrN1: 1.5, refrN2: 1, refrTheta1: 60 }, [/TIR — no light transmitted/]],
+      ['polarization', { mode: 'polarization', polTheta2: 60, polShowMath: true }, [/I = 12[.]5% I₀/, /= 0[.]1250 I₀/, /= 12[.]50% I₀/]],
+      ['polarization', { mode: 'polarization', polTheta2: 30, polUseP3: true, polTheta3: 90, polShowMath: true }, [/I = 37[.]5% I₀/, /= 0[.]3750 · cos²/]],
+      ['polarization', { mode: 'polarization', polQwp: true, polTheta2: 30, polShowMath: true },
+        [/P₂ then transmits half at every axis/, /I2 = 1[/]2 I_QWP/, /would transmit half at any angle/]],
+      ['reflection', { mode: 'reflection', reflMirrorType: 'plane', reflDo: 25, reflObjH: 5 }, [/Image [(]virtual[)]/]],
+    ];
+    for (const [tab, setup, answers] of cases) {
+      const revealed = shown(tab, setup);
+      const held = render(setup);
+      for (const re of answers) {
+        expect(revealed, `${tab}: ${re} is not rendered even with a prediction, so its absence below proves nothing`).toMatch(re);
+        expect(held, `${tab}: ${re} leaked before a prediction`).not.toMatch(re);
+      }
+    }
+    // What stays: P₁'s given 50%, a neutral power bar, a placeholder on P₂.
+    const heldPol = render({ mode: 'polarization', polTheta2: 60 });
+    expect(heldPol).toContain('I = 50.0% I₀');
+    expect(heldPol).toContain('I = ?');
+    expect(render({ mode: 'refraction', refrN1: 1, refrN2: 1.52, refrTheta1: 30 })).toContain('data-op-fresnel-segment="held"');
+  }, RENDER_TIMEOUT);
+
+  it('held, the 3-D captions read the same for a real and a virtual image', () => {
+    load();
+    const cap = (html) => ((html.match(/[A-Za-z ]*ashed pink lines are backward extensions[^.]*[.]/) || [''])[0]).trim();
+    for (const [tab, base, real, virt] of [
+      ['reflection', { mode: 'reflection', reflShow3D: true, reflMirrorType: 'concave', reflFocal: 10, reflObjH: 5 }, { reflDo: 30 }, { reflDo: 5 }],
+      ['lenses', { mode: 'lenses', lensShow3D: true, lensType: 'converging', lensFocal: 10, lensObjH: 5 }, { lensDo: 30 }, { lensDo: 5 }],
+    ]) {
+      const r = { ...base, ...real };
+      const v = { ...base, ...virt };
+      expect(cap(shown(tab, r)), `${tab}, real image, revealed`).toBe('');
+      expect(cap(shown(tab, v)), `${tab}, virtual image, revealed`).toMatch(/^Dashed pink lines/);
+      expect(cap(render(r)), `${tab}, real image, held`).toMatch(/^Any dashed pink lines/);
+      expect(cap(render(v)), `${tab}: the held caption must not depend on the image type`).toBe(cap(render(r)));
+    }
+  }, RENDER_TIMEOUT);
+
+  it('the hints and try-this steps state what the bench really does', () => {
+    load();
+    // Three polarizers: P₃ sits AFTER P₂ here, so the demo is P₂ = 45°, P₃ = 90°:
+    // ½ · cos²45° · cos²45° = 1/8 of I₀; crossed P₁/P₂ alone passes nothing.
+    const pol = (s) => shown('polarization', { mode: 'polarization', ...s });
+    expect(pol({ polTheta2: 90 })).toContain('data-final-intensity="0.000000"');
+    expect(pol({ polTheta2: 45, polUseP3: true, polTheta3: 90 })).toContain('data-final-intensity="0.125000"');
+    const polPage = render({ mode: 'polarization' });
+    expect(polPage).toContain('Set P₂ = 90° (P₁ ⊥ P₂) and predict the output. Then add P₃ at 90° and turn P₂ to 45°, and predict again.');
+    expect(polPage).toContain('predict what fraction of I₀ gets through, then check');
+    // The masked output (0, then 1/8) is not restated by the instructions.
+    expect(polPage).not.toContain('→ I = 0');
+    expect(polPage).not.toContain('1/8 of I₀ gets through');
+    // Diffraction: slider minimum 5 μm = 8.3λ at the default 600 nm; 60 μm = 100λ
+    // gives a 2λL/a = 30 mm central peak at the default L = 1.5 m; at 5 μm it is
+    // 360 mm, wider than the 180 mm screen.
+    expect(SRC).toContain("type: 'range', min: 5, max: 100, step: 1, value: slitWidth_um,");
+    expect(SRC).toContain('var OP_DIFFRACTION_DEFAULTS = { diffLambda: 600, diffSlitWidth: 30, diffScreenL: 1.5 };');
+    expect(5e-6 / 600e-9).toBeCloseTo(8.3, 1);
+    expect(60e-6 / 600e-9).toBeCloseTo(100, 6);
+    expect(2 * 600e-9 * 1.5 / 60e-6 * 1000).toBeCloseTo(30, 6);
+    expect(2 * 600e-9 * 1.5 / 5e-6 * 1000).toBeGreaterThan(180);
+    expect(render({ mode: 'diffraction' })).toContain('Drag the slit to its minimum (5 μm, about 8λ)');
+    // Interference: 400 → 700 nm is ×1.75, and both ends are on the slider.
+    expect(700 / 400).toBe(1.75);
+    expect(SRC).toContain("type: 'range', min: 380, max: 750, step: 5,");
+    expect(render({ mode: 'interference' })).toContain('from 400 nm to 700 nm (×1.75)');
+    // Grating sharpness is set by the TOTAL line count (the model uses 50).
+    expect(SRC).toContain('var count = 50;');
+    expect(SRC).toContain('Math.sin(50 * alpha) / (50 * denominator)');
+    expect(render({ mode: 'diffraction', diffMode: 'grating' })).toContain('Peaks sharpen as the TOTAL number of lines grows (this bench models 50)');
+    expect(SRC).not.toContain('Very narrow peaks for many lines per mm');
+    expect(SRC).not.toContain('try a single slit (close one)');
+  }, RENDER_TIMEOUT);
+
+  it('inquiry presets: the fiber and grating hints follow from their own parameters', () => {
+    const SP = rows('SAMPLE_PROBLEMS');
+    const fiber = SP.find((p) => p.title === 'Fiber-optic cable');
+    const tc = Math.asin(fiber.params.refrN2 / fiber.params.refrN1) / DEG;
+    expect(tc).toBeGreaterThan(74.5);
+    expect(tc).toBeLessThan(75.5);
+    expect(fiber.params.refrTheta1).toBeGreaterThan(tc);
+    expect(fiber.answer).toContain('Critical angle here is large (~75°)');
+    const grating = SP.find((p) => p.title === 'Diffraction grating spectrum');
+    const spacing = 1e-3 / grating.params.diffGrating;
+    const lam = grating.params.diffLambda * 1e-9;
+    const th1 = Math.asin(lam / spacing) / DEG;
+    const th2 = Math.asin(2 * lam / spacing) / DEG;
+    expect(Math.round(th1)).toBe(22);
+    expect(Math.round(th2)).toBe(49);
+    // The grating screen spans ±500 mm (screenWindow_m = 1.0).
+    expect(SRC).toContain("var screenWindow_m = mode === 'single' ? 0.18 : 1.0;");
+    expect(1000 * grating.params.diffScreenL * Math.tan(th2 * DEG)).toBeGreaterThan(500);
+    expect(1000 * 0.4 * Math.tan(th2 * DEG)).toBeLessThan(500);
+    expect(grating.answer).toContain('m=2 is around 49°, but at L = 1 m it lands off the screen; move the screen to 0.4 m');
+    const presets = [...SRC.matchAll(/label: '(Narrow|Wide) slit', patch: [{] diffMode: 'single', diffLambda: ([0-9]+)/g)].map((m) => m[2]);
+    expect(presets).toEqual(['600', '600']);
+  });
+
+  it('corrected history and deep-dive figures follow from the numbers they quote', () => {
+    // NIF: the card says "about 2 MJ over ~20 ns": 2e6 / 20e-9 = 100 TW, not 90 PW.
+    expect(2e6 / 20e-9 / 1e12).toBeCloseTo(100, 6);
+    expect(SRC).toContain('about 2 MJ over ~20 ns (an average of ~100 terawatts');
+    expect(SRC).not.toContain('90 petawatts peak power');
+    // 10¹⁵ V/m is ~1000× below the Schwinger field.
+    expect(1.32e18 / 1e15).toBeCloseTo(1320, 6);
+    expect(SRC).toContain('roughly 1000× below the Schwinger limit');
+    // Rømer: a ~22-minute delay across the orbit (2 AU) is ~227,000 km/s; 220,000 is ~27% low.
+    const romer = 2 * 1.496e11 / (22 * 60) / 1000;
+    expect(romer).toBeGreaterThan(210000);
+    expect(romer).toBeLessThan(235000);
+    expect((C / 1000 - 220000) / (C / 1000)).toBeCloseTo(0.27, 1);
+    expect(SRC).toContain('His delay of about 22 minutes across Earth');
+    // Michelson: 1,553,163.5 wavelengths per metre is 643.85 nm, the cadmium red line.
+    expect(1e9 / 1553163.5).toBeCloseTo(643.85, 1);
+    expect(SRC).toContain('measured the standard metre in cadmium-red wavelengths (1892–93)');
+    expect(SRC).not.toContain('Defined the meter in terms of cadmium light wavelengths');
+    // Malus: 23 June 1775 to 24 February 1812.
+    expect(SRC).toContain('Died young (36) of tuberculosis');
+    // Mastery copy matches the rule the code applies.
+    expect(SRC).toContain('var OP_MASTERY_CORRECT_TARGET = 2;');
+    expect(SRC).not.toContain('mastery is permanent');
+    expect((SRC.match(/correctly twice in a row and it counts as mastered here; a later miss takes it off the list again/g) || []).length).toBe(2);
   });
 });

@@ -9,6 +9,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { withPrediction } from './helpers/optics_prediction.js';
 import { withPrediction, opticsConstant } from './helpers/optics_prediction.js';
 
 function render(state) {
@@ -184,11 +185,17 @@ describe('opticsLab — thin-lens engine (rendered)', () => {
     expect(heightHtml).toContain('Mission 1/3: Capture a sharp lens image.');
     expect(heightHtml).toContain('class="opticslab-mission" data-complete="false"');
 
-    const sharpMissionHtml = render({
+    const sharpSetup = {
       mode: 'lenses', lensType: 'converging', lensFocal: 10,
       lensDo: 30, lensObjH: 8, lensScreenCm: 15,
       opMissionStage: { lenses: 0 }
-    });
+    };
+    // Sharpness is judged on the held image distance, so the mission waits for a
+    // prediction: a live "Complete" gave the answer away as the screen crossed it.
+    const sharpHeld = render(sharpSetup);
+    expect(sharpHeld).toContain('class="opticslab-mission" data-complete="false"');
+    expect(sharpHeld).toContain('Save a prediction for your setup to have it checked.');
+    const sharpMissionHtml = render(withPrediction('lenses', sharpSetup));
     expect(sharpMissionHtml).toContain('Mission 1/3: Capture a sharp lens image.');
     expect(sharpMissionHtml).toContain('class="opticslab-mission" data-complete="true"');
     expect(sharpMissionHtml).toContain('Complete - the live model meets the target.');
@@ -343,18 +350,27 @@ describe('opticsLab — mirror engine (rendered)', () => {
     expect(screenFormulaHtml).toContain('blur / aperture = |1 - ');
     expect(screenFormulaHtml).toContain('reaches zero only when a real image plane and the sampling screen coincide');
 
-    const sharpMissionHtml = render({
+    const sharpSetup = {
       mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10,
       reflDo: 30, reflObjH: 8, reflScreenCm: 15,
       opMissionStage: { reflection: 0 }
-    });
+    };
+    // Sharpness is judged on the held image distance, so the mission waits for a
+    // prediction: a live "Complete" gave the answer away as the screen crossed it.
+    const sharpHeld = render(sharpSetup);
+    expect(sharpHeld).toContain('class="opticslab-mission" data-complete="false"');
+    expect(sharpHeld).toContain('Save a prediction for your setup to have it checked.');
+    const sharpMissionHtml = render(withPrediction('reflection', sharpSetup));
     expect(sharpMissionHtml).toContain('Mission 1/3: Capture a sharp mirror image.');
     expect(sharpMissionHtml).toContain('class="opticslab-mission" data-complete="true"');
     expect(sharpMissionHtml).toContain('Complete - the live model meets the target.');
   });
 
   it('plane mirror keeps physical rays in front and locates the symmetric virtual image with equal-angle arcs', () => {
-    const html = render({ mode: 'reflection', reflMirrorType: 'plane', reflDo: 25, reflObjH: 6 });
+    const planeSetup = { mode: 'reflection', reflMirrorType: 'plane', reflDo: 25, reflObjH: 6 };
+    const html = render(withPrediction('reflection', planeSetup));
+    // The image type is the masked answer, so the drawn label is held too.
+    expect(render(planeSetup)).not.toContain('Image (virtual)');
     expect((html.match(/data-op-mirror-ray="reflected"/g) || [])).toHaveLength(2);
     expect((html.match(/data-op-mirror-ray="virtual-extension"/g) || [])).toHaveLength(2);
     expect(html).toContain('data-op-mirror-ray-side="incident-medium"');
@@ -410,7 +426,8 @@ describe('opticsLab — mirror engine (rendered)', () => {
       mode: 'reflection', reflShow3D: true,
       reflMirrorType: 'concave', reflFocal: 10, reflDo: 10, reflObjH: 5
     }));
-    expect(atFocal).toContain('cyan physical reflected rays leave parallel and the image is at infinity');
+    // The 3D reflected rays are red (0xef4444, OP_RAY.reflected); the alt text said cyan.
+    expect(atFocal).toContain('red physical reflected rays leave parallel and the image is at infinity');
   });
 });
 
@@ -546,9 +563,10 @@ describe('opticsLab — slider a11y (aria-valuetext speaks the image result)', (
       ['lenses', { mode: 'lenses', lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 5, lensScreenCm: 20 }, 'lensFocal', 15, true],
       // Looks inert with P3 off; with P3 on it sets the final intensity.
       ['polarization', { mode: 'polarization', polTheta2: 40, polTheta3: 70, polUseP3: true }, 'polTheta3', 20, true],
-      // Grating mode: lines/mm sets every order's angle; duty cycle only brightness.
+      // Grating mode: lines/mm sets every order's angle; the open fraction decides
+      // which orders go missing (m × open fraction a whole number), so both re-ask.
       ['diffraction', { mode: 'diffraction', diffMode: 'grating', diffLambda: 600, diffGrating: 600, diffGratingDuty: 50, diffScreenL: 1 }, 'diffGrating', 300, true],
-      ['diffraction', { mode: 'diffraction', diffMode: 'grating', diffLambda: 600, diffGrating: 600, diffGratingDuty: 50, diffScreenL: 1 }, 'diffGratingDuty', 30, false],
+      ['diffraction', { mode: 'diffraction', diffMode: 'grating', diffLambda: 600, diffGrating: 600, diffGratingDuty: 50, diffScreenL: 1 }, 'diffGratingDuty', 30, true],
     ];
     for (const [tab, base, key, value, asksAgain] of cases) {
       const answered = withPrediction(tab, base);
@@ -684,19 +702,23 @@ describe('opticsLab — Fresnel interface energy', () => {
 describe('opticsLab — polarization state agreement', () => {
   it('keeps the QWP analyzer angle-independent in the calculator, then resumes Malus at P3', () => {
     [0, 45, 90, 135].forEach((angle) => {
-      const html = render({
-        mode: 'polarization', polQwp: true, polTheta2: angle, polShowMath: true
-      });
+      const setup = { mode: 'polarization', polQwp: true, polTheta2: angle, polShowMath: true };
+      const html = render(withPrediction('polarization', setup));
       expect(html).toContain('data-op-polarization-calc-mode="circular"');
       expect(html).toContain('data-final-intensity="0.250000"');
       expect(html).toContain('P₂ then transmits half at every axis');
       expect(html).toContain('I2 = 1/2 I_QWP = 0.2500 I0');
+      // "Half at every axis" IS the answer to the QWP prediction: held until one is saved.
+      const held = render(setup);
+      expect(held).not.toContain('P₂ then transmits half at every axis');
+      expect(held).not.toContain('I2 = 1/2 I_QWP');
+      expect(held).not.toContain('25.00% I0');
     });
 
-    const withP3 = render({
+    const withP3 = render(withPrediction('polarization', {
       mode: 'polarization', polQwp: true, polTheta2: 45,
       polUseP3: true, polTheta3: 90, polShowMath: true
-    });
+    }));
     expect(withP3).toContain('data-final-intensity="0.125000"');
     expect(withP3).toContain('after P₂ the light is linear again');
     expect(withP3).toContain('Step 3: P₂ → P₃');

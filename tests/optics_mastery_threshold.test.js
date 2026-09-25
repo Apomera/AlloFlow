@@ -15,7 +15,7 @@ function between(startMarker, endMarker) {
 const M = vm.runInNewContext(
   `(function () {
      ${between('var OP_MASTERY_CORRECT_TARGET =', 'function _pickOpticsQuizQuestions(')}
-     return { OP_MASTERY_CORRECT_TARGET, mastered: _opQuestionMastered, seen: _opQuestionSeenCorrect };
+     return { OP_MASTERY_CORRECT_TARGET, mastered: _opQuestionMastered, seen: _opQuestionSeenCorrect, record: _opRecordQuizMastery };
    })()`,
   { isFinite },
 );
@@ -58,32 +58,75 @@ describe('Optics mastery — one lucky guess is not mastery', () => {
     }
     // A legacy entry from before correctCount existed must not read as mastered.
     expect(M.mastered({ firstCorrectAt: '2026-01-01T00:00:00.000Z' })).toBe(false);
+    for (const bad of [{ streak: '2' }, { streak: NaN }, { streak: Infinity, correctCount: 1 }]) {
+      expect(M.mastered(bad), JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it('reads the streak when there is one, and a legacy total only when there is not', () => {
+    expect(M.mastered({ streak: 2, correctCount: 2 })).toBe(true);
+    // A long history does not outvote a broken streak.
+    expect(M.mastered({ streak: 1, correctCount: 9 })).toBe(false);
+    expect(M.seen({ streak: 0, correctCount: 9 })).toBe(false);
   });
 });
 
-describe('Optics mastery — the recorder and the readers agree', () => {
-  it('records a miss on a question the learner had previously got right', () => {
-    const submit = between('var isCorrect = ans[qi] === q.correct;', 'upd({');
-    expect(submit).toContain('missedSinceCorrect: true');
-    // A miss on a question never answered correctly needs no extra state.
-    expect(submit).toContain('var missedEntry = nextMastery[q.q];');
-    expect(submit).toContain('if (missedEntry) {');
+describe('Optics mastery — replaying a learner through the shipped recorder', () => {
+  // The recorder is the function the quiz's Submit button calls, so these
+  // sequences exercise the rule that ships. It used to keep a running total
+  // with a "missed" flag that the next correct answer cleared, so right, wrong,
+  // right counted as mastered although the copy promises "twice in a row".
+  const Q = { q: 'Which way does light bend entering glass?', correct: 2, tags: ['refraction'] };
+  const OTHER = { q: 'An unrelated question', correct: 0, tags: [] };
+  const NOW = '2026-09-24T00:00:00.000Z';
+  function replay(pattern, start = {}) {
+    let mastery = start;
+    let last = null;
+    for (const ch of pattern) {
+      last = M.record(mastery, [Q], [ch === 'R' ? Q.correct : (Q.correct + 1) % 4], NOW, [Q, OTHER]);
+      mastery = last.mastery;
+    }
+    return { entry: mastery[Q.q], last };
+  }
+
+  it('needs two correct answers IN A ROW', () => {
+    expect(M.mastered(replay('R').entry)).toBe(false);
+    expect(M.seen(replay('R').entry)).toBe(true);
+    expect(M.mastered(replay('RR').entry)).toBe(true);
+    expect(M.mastered(replay('RWR').entry), 'right, wrong, right is not two in a row').toBe(false);
+    expect(M.mastered(replay('RRW').entry), 'a miss after mastery unlocks it').toBe(false);
+    expect(M.mastered(replay('RRWR').entry), 'one correct answer does not re-master').toBe(false);
+    expect(M.mastered(replay('RRWRR').entry)).toBe(true);
+    expect(replay('W').entry, 'a miss on a never-correct question stores nothing').toBeUndefined();
   });
 
-  it('clears the miss flag when the question is answered right again', () => {
-    const submit = between('var isCorrect = ans[qi] === q.correct;', 'upd({');
-    // BOTH branches must clear it: the existing-entry update (a question that
-    // was missed and is now right again) and the brand-new entry. Asserting
-    // the string once passes even if the update branch drops it.
-    expect((submit.match(/missedSinceCorrect: false/g) || []).length,
-      'a mastery branch no longer clears the miss flag').toBe(2);
+  it('celebrates only the answer that crosses the threshold, with the true mastered count', () => {
+    expect(replay('R').last.newlyMastered).toBeNull();
+    expect(replay('RR').last.newlyMastered.question).toBe(Q.q);
+    expect(replay('RRR').last.newlyMastered, 'already mastered: no second celebration').toBeNull();
+    expect(replay('RWR').last.newlyMastered).toBeNull();
+    // Three questions each answered right once, then one crosses: the overlay
+    // said "3 / N mastered" (every key ever stored); only one is mastered.
+    const once = { [Q.q]: { correctCount: 1, streak: 1 }, [OTHER.q]: { correctCount: 1, streak: 1 }, 'Third': { correctCount: 1, streak: 1 } };
+    const out = M.record(once, [Q], [Q.correct], NOW, [Q, OTHER, { q: 'Third' }]);
+    expect(out.newlyMastered.question).toBe(Q.q);
+    expect(out.masteredTotal).toBe(1);
   });
 
-  // Otherwise the overlay congratulates a coin flip.
-  it('celebrates at the mastery threshold, not on the first correct answer', () => {
-    const submit = between('var isCorrect = ans[qi] === q.correct;', 'upd({');
-    expect(submit).toContain('_opQuestionMastered(nextMastery[key])');
-    expect(submit).toContain('!_opQuestionMastered(existingEntry)');
+  it('carries legacy entries over conservatively', () => {
+    const legacy = { [Q.q]: { correctCount: 3, missedSinceCorrect: false } };
+    expect(M.mastered(legacy[Q.q])).toBe(true);
+    expect(M.mastered(replay('W', legacy).entry)).toBe(false);
+    expect(M.mastered(replay('WR', legacy).entry)).toBe(false);
+    expect(M.mastered(replay('WRR', legacy).entry)).toBe(true);
+    const pendingMiss = { [Q.q]: { correctCount: 5, missedSinceCorrect: true } };
+    expect(M.mastered(replay('R', pendingMiss).entry), 'a pending miss is a broken streak').toBe(false);
+  });
+
+  it('the quiz submit and the celebration use the recorder', () => {
+    expect(SRC).toContain('var recorded = _opRecordQuizMastery(d.quizMastery, d.quizQuestions, ans,');
+    expect(SRC).toContain('total: recorded.masteredTotal');
+    expect(SRC).not.toContain('total: Object.keys(nextMastery).length');
   });
 
   // Every surface that reports a count must use the same threshold, or the
@@ -95,11 +138,12 @@ describe('Optics mastery — the recorder and the readers agree', () => {
     expect(usages.length, 'not every consumer uses the predicate').toBeGreaterThanOrEqual(6);
   });
 
-  it('shows the seen-once middle state instead of hiding real progress', () => {
+  it('names each list state in words for a screen reader', () => {
     const list = between('var partial = !done && _opQuestionSeenCorrect(entry);', 'flex: 1, minWidth: 0');
-    expect(list).toContain("done ? '✓' : (partial ? '◐' : '○')");
-    // The marker is decorative, so the state needs a text alternative.
-    expect(list).toMatch(/Answered correctly once; needs one more/);
+    // Round 12: "missed since a correct answer" got its own mark (it shared ○ with "never answered").
+    expect(list).toContain("done ? '✓' : (partial ? '◐' : (missed ? '↺' : '○'))");
+    expect(list).toContain('Answered correctly once; get it right once more in a row to master it.');
+    expect(list).toContain('Missed since the last correct answer; needs two in a row.');
     expect(list).toMatch(/aria-hidden': 'true'/);
   });
 });

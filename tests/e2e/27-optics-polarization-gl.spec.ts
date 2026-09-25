@@ -232,7 +232,7 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     expect(mobileColumns.flow.trim().split(/\s+/)).toHaveLength(3);
     expect(mobileColumns.guided.trim().split(/\s+/)).toHaveLength(1);
     await expect(page.getByText('Saved ✓', { exact: true })).toBeHidden();
-    await expect(page.getByRole('button', { name: /Predict/ })).toContainText('✓');
+    await expect(page.locator('button.opticslab-flow-step').filter({ hasText: 'Predict' })).toContainText('✓');
 
     await page.getByRole('button', { name: /Explore/ }).click();
     expect(await page.evaluate(() => document.activeElement?.id)).toBe('op-explore-lenses');
@@ -315,17 +315,18 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
   test('completes and persists the predict-observe-explain notebook', async ({ page }) => {
     await mountUi(page, { mode: 'lenses', lensType: 'converging', lensFocal: 12, lensDo: 25 });
 
-    await page.getByRole('button', { name: /Predict/ }).click();
+    await page.locator('button.opticslab-flow-step').filter({ hasText: 'Predict' }).click();
     await page.getByLabel('Your prediction for the lenses experiment').fill('The image will become virtual and upright inside the focal point.');
     await page.getByRole('button', { name: 'Save prediction' }).click();
-    await page.getByRole('button', { name: 'Magnifier', exact: true }).click();
+    await page.getByRole('button', { name: 'Inside f', exact: true }).click();   // the preset formerly named Magnifier
     await page.getByLabel('Your observation for the lenses experiment').fill('The ray extensions met on the object side, and the calculation reported a virtual upright image.');
     await page.getByRole('button', { name: 'Save observation' }).click();
     await page.getByRole('button', { name: /Explain/ }).click();
     await page.locator('#op-ai-lenses').fill('Because the object is inside the focal length, the outgoing rays diverge and their backward extensions meet on the object side, so the observed image is virtual and upright.');
     await page.getByRole('button', { name: 'Check with offline rubric' }).click();
 
-    await expect(page.getByText(/Local rubric estimate:/)).toBeVisible();
+    // The offline rubric is a checklist of an explanation's parts, not a grade.
+    await expect(page.getByText(/Checklist: [0-5] of 5 parts present/)).toBeVisible();
     await expect(page.getByLabel('Experiment results notebook').getByText('Observation saved ✓', { exact: true })).toBeVisible();
     const bucket = await page.evaluate(() => (window as any).__bucket());
     expect(bucket.opTopicTouched.lenses).toBe(true);
@@ -341,7 +342,7 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     await page.reload();
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
     await page.evaluate(() => (window as any).__mount({ mode: 'lenses' }));
-    await page.getByRole('button', { name: /Predict/ }).click();
+    await page.locator('button.opticslab-flow-step').filter({ hasText: 'Predict' }).click();
     await expect(page.getByText(/Saved: The image will become virtual/)).toBeVisible();
     await expect(page.getByLabel('Experiment results notebook').getByText('Observation saved ✓', { exact: true })).toBeVisible();
   });
@@ -376,7 +377,7 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     });
     await autoPredict(page);
 
-    const slit = page.getByRole('slider', { name: 'Drag to change slit separation' });
+    const slit = page.getByRole('slider', { name: 'Slit separation handle' });
     await slit.press('ArrowDown');
     await page.waitForFunction(() => (window as any).__bucket().intSlitSep === 0.09);
     // Slit separation sets the fringe spacing, so the gate asks again.
@@ -398,7 +399,7 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     await page.locator('[data-op-detector-target="center"]').click();
     await page.waitForFunction(() => (window as any).__bucket().intScreenProbeMm === 0);
 
-    const screen = page.getByRole('slider', { name: 'Drag to change screen distance' });
+    const screen = page.getByRole('slider', { name: 'Screen distance handle' });
     await screen.press('End');
     await page.waitForFunction(() => (window as any).__bucket().intScreenL === 3);
     await expect(page.locator('[data-op-causal-insight="interference"]')).toHaveAttribute('data-isolated-variable', 'false');
@@ -656,6 +657,9 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     await page.waitForFunction(() => (window as any).__bucket().diffGratingDuty === 25);
     await expect(duty).toHaveAttribute('aria-valuetext', /opening width 0\.42 micrometers/);
     await expect(page.locator('[data-op-grating-aperture="true"]')).toHaveAttribute('data-op-grating-duty', '25');
+    // Held, the chain names the change but not the law (it answers the prediction).
+    await expect(page.locator('[data-op-causal-insight="diffraction"]')).toContainText('Which law links this change to the result?');
+    await predictAgain(page);
     await expect(page.locator('[data-op-causal-insight="diffraction"]')).toHaveAttribute('data-isolated-variable', 'true');
     await expect(page.locator('[data-op-causal-insight="diffraction"]')).toContainText('without moving the ideal order angles');
     await expect(page.locator('[data-op-grating-order="1"]')).toHaveCount(1);
@@ -953,6 +957,25 @@ test.describe('Optics Lab polarization — real WebGL', () => {
     expect(await page.evaluate(() => document.querySelectorAll('svg').length)).toBeGreaterThan(0);
   });
 
+  test('a move with no button held does not orbit (a lost pointerup used to leave hover rotating)', async ({ page }) => {
+    await mount(page, { polTheta2: 30 });
+    const before = await page.evaluate(() => (window as any).__bucket().polRot);
+    await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-optics-gl="true"]') as HTMLCanvasElement;
+      const host = c.parentElement as HTMLElement;
+      const r = host.getBoundingClientRect();
+      const mk = (t: string, x: number, buttons: number) =>
+        new PointerEvent(t, { clientX: x, clientY: r.top + r.height / 2, bubbles: true, cancelable: true, pointerId: 1, button: 0, buttons });
+      host.dispatchEvent(mk('pointerdown', r.left + r.width / 2, 1));
+      // no pointerup arrives; the next moves report no button held
+      host.dispatchEvent(mk('pointermove', r.left + r.width / 2 + 80, 0));
+      host.dispatchEvent(mk('pointermove', r.left + r.width / 2 + 120, 0));
+    });
+    await page.waitForTimeout(400);
+    const after = await page.evaluate(() => (window as any).__bucket().polRot);
+    expect(after?.rotY ?? 34).toBe(before?.rotY ?? 34);
+  });
+
   test('the loading overlay actually goes away', async ({ page }) => {
     await mount(page, { polTheta2: 30 });
     expect(await page.evaluate(() => (window as any).__text())).not.toContain('Loading 3D view');
@@ -965,8 +988,10 @@ test.describe('Optics Lab polarization — real WebGL', () => {
       const c = document.querySelector('canvas[data-optics-gl="true"]') as HTMLCanvasElement;
       const host = c.parentElement as HTMLElement;
       const r = host.getBoundingClientRect();
+      // A real held left button reports button 0 on down and buttons 1 while moving;
+      // round 12 ignores a move with no button held (a lost pointerup kept orbiting).
       const mk = (t: string, x: number, y: number) =>
-        new PointerEvent(t, { clientX: x, clientY: y, bubbles: true, cancelable: true, pointerId: 1 });
+        new PointerEvent(t, { clientX: x, clientY: y, bubbles: true, cancelable: true, pointerId: 1, button: 0, buttons: t === 'pointerup' ? 0 : 1 });
       host.dispatchEvent(mk('pointerdown', r.left + r.width / 2, r.top + r.height / 2));
       host.dispatchEvent(mk('pointermove', r.left + r.width / 2 + 80, r.top + r.height / 2));
       host.dispatchEvent(mk('pointerup', r.left + r.width / 2 + 80, r.top + r.height / 2));
@@ -1027,6 +1052,9 @@ test.describe('Optics Lab evidence journal', () => {
       opTopicTouched: { lenses: true }, opTrialRuns: {},
       opPredictionNotes: { lenses: 'A farther object should move the image closer to the focal plane.' }
     }));
+    // A trial captured before its setup is predicted holds its result, so this
+    // walkthrough predicts each setup it captures.
+    await autoPredict(page);
     const capture = page.locator('[data-op-trial-capture="lenses"]');
     await capture.click();
     await page.waitForFunction(() => (window as any).__bucket().opTrialRuns?.lenses?.length === 1);
@@ -1052,6 +1080,27 @@ test.describe('Optics Lab evidence journal', () => {
     await page.evaluate(() => (window as any).__mount({ mode: 'lenses' }));
     await expect(page.locator('[data-op-trial-journal="lenses"]')).toContainText('2 / 20 trials');
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('restoring a measured trial puts the detector back where it was measured', async ({ page }) => {
+    // In measured mode the detector position IS the plotted x, but it is an
+    // instrument, not a control key, so it used to be left out of the saved setup:
+    // restoring trial 1 left the detector wherever it had last been dragged.
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(() => (window as any).__mount({
+      mode: 'interference', intLambda: 600, intSlitSep: 0.1, intScreenL: 1, intSlitWidth: 50,
+      intDetectorWidthMm: 1, intScreenProbeMm: 0, opTrialRuns: {}
+    }));
+    const capture = page.locator('[data-op-trial-capture="interference"]');
+    await capture.click();
+    await page.waitForFunction(() => (window as any).__bucket().opTrialRuns?.interference?.length === 1);
+    await page.evaluate(() => (window as any).__set({ intScreenProbeMm: 3 }));
+    await capture.click();
+    await page.waitForFunction(() => (window as any).__bucket().opTrialRuns?.interference?.length === 2);
+    await page.getByRole('button', { name: 'Restore trial 1 setup' }).click();
+    await page.waitForFunction(() => (window as any).__bucket().intScreenProbeMm === 0);
+    expect(await page.evaluate(() => (window as any).__bucket().intScreenProbeMm)).toBe(0);
   });
 });
 
@@ -1423,6 +1472,10 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     expect(gl.fitHalf.z).toBeLessThan(3.1);
     expect(gl.cameraDistance).toBeLessThan(23);
     await expect(host).toHaveAttribute('role', 'group');
+    // Held, the key always lists virtual extensions: listing them only for a
+    // virtual image answered "real or virtual?" before the prediction.
+    await expect(rayKey).toContainText('virtual extensions');
+    await autoPredict(page);
     await expect(rayKey).toContainText('input rays');
     await expect(rayKey).toContainText('physical rays');
     await expect(rayKey).not.toContainText('virtual extensions');
@@ -1681,6 +1734,8 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
 
   test('builds a real concave-mirror bundle that crosses focus and continues', async ({ page }) => {
     await mountMirror(page);
+    // Held, the key lists virtual extensions whatever the image type.
+    await expect(page.locator('[data-op-mirror-3d-ray-key]')).toContainText('virtual extensions');
     await autoPredict(page);
     const host = page.locator('[data-op-mirror-3d-host]');
     const rayKey = page.locator('[data-op-mirror-3d-ray-key]');
@@ -1703,7 +1758,7 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     expect(gl.cameraDistance).toBeLessThan(24);
     await expect(host).toHaveAttribute('role', 'group');
     await expect(rayKey).toContainText('input rays');
-    await expect(rayKey).toContainText('physical rays');
+    await expect(rayKey).toContainText('reflected rays');
     await expect(rayKey).not.toContainText('virtual extensions');
     expect(await page.evaluate(() => (window as any).__mirrorCanvasCount())).toBe(1);
     await expect(mirrorOutcome).toHaveAttribute('data-image-side', 'incident');
@@ -2200,12 +2255,17 @@ test.describe('Optics reference pages and calculators stay readable in every the
     ...['photon', 'em', 'brewster', 'tir', 'fiber', 'lensmaker', 'grating', 'arcoat', 'doppler', 'telescope', 'dof', 'color', 'eye', 'polartri']
       .map((s): [string, Record<string, unknown>] => ['calculator ' + s, { mode: 'calcs', calcSubTool: s }]),
     ['visual lab, every tool open', VIZ],
-    ...['worked', 'reference', 'deep', 'scientists', 'instruments', 'careers', 'history', 'quiz']
+    ...['worked', 'reference', 'deep', 'scientists', 'instruments', 'careers', 'history', 'quiz',
+      // Round 13: these three were 1.06-3.8:1 in the default theme and the gate never visited them.
+      'phenomena_db', 'lab_kits', 'glossary_ex',
+      'home', 'reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization', 'sleuth', 'inquiry', 'mastery']
       .map((m): [string, Record<string, unknown>] => [m, { mode: m }]),
+    ...['rainbow', 'prism', 'mirage', 'afterimage', 'colormix', 'polsky', 'eye', 'sunset']
+      .map((p): [string, Record<string, unknown>] => ['phenomenon ' + p, { mode: 'phenomena', phenoSub: p }]),
   ];
-  // Known exception: the colour mixer's pure-red preset chip IS the colour it
-  // names; neither dark (4.46:1) nor white (4.00:1) ink reaches 4.5 on #ff0000.
-  const ALLOWED = new Set(['Red@rgb(255, 0, 0)']);
+  // No exceptions: the pure-red preset chip was allow-listed as "no ink reaches 4.5",
+  // but pure black does (5.25:1); round 13 made the chooser use #000.
+  const ALLOWED = new Set<string>([]);
 
   for (const theme of ['theme-default', 'theme-dark']) {
     test(`text reaches 4.5:1 on its card (${theme})`, async ({ page }) => {
@@ -2227,7 +2287,12 @@ test.describe('Optics reference pages and calculators stay readable in every the
         await page.waitForSelector('[data-opticslab-tool="true"]');
         await page.waitForTimeout(150);
         const rows = await page.evaluate(() => {
-          const cols = (s: string) => (s.match(/rgba?[(][^)]*[)]/g) || []).map((c) => { const m = (c.match(/[0-9.]+/g) || []).map(Number); return { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? m[3] : 1 }; });
+          // color-mix() computes to color(srgb r g b [/ a]) with 0-1 channels.
+          const cols = (s: string) => (s.match(/rgba?[(][^)]*[)]|color[(]srgb [^)]*[)]/g) || []).map((c) => {
+            const m = (c.match(/[0-9.]+/g) || []).map(Number);
+            const k = c.startsWith('color(') ? 255 : 1;
+            return { r: m[0] * k, g: m[1] * k, b: m[2] * k, a: m.length > 3 ? m[3] : 1 };
+          });
           const parse = (c: string) => cols(c)[0] || { r: 0, g: 0, b: 0, a: 0 };
           const over = (t: any, u: any) => ({ r: t.r * t.a + u.r * (1 - t.a), g: t.g * t.a + u.g * (1 - t.a), b: t.b * t.a + u.b * (1 - t.a), a: 1 });
           const lum = (c: any) => { const f = (x: number) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
@@ -2254,7 +2319,10 @@ test.describe('Optics reference pages and calculators stay readable in every the
             const cs = getComputedStyle(el);
             if (cs.display === 'none' || cs.visibility === 'hidden') continue;
             const box = el.getBoundingClientRect(); if (box.width === 0 || box.height === 0) continue;
+            // Disabled controls (and the label of a disabled slider) are exempt from 1.4.3.
+            if ((el as any).disabled || el.closest('[disabled],[aria-disabled="true"]') || (el.tagName === 'LABEL' && el.querySelector('input:disabled'))) continue;
             let op = 1; for (let e: Element | null = el; e; e = e.parentElement) op *= Number(getComputedStyle(e).opacity);
+            if (!cols(cs.color).length) { out.push({ text: own.slice(0, 40), ratio: 0, fg: 'UNPARSED ' + cs.color, bg: '' }); continue; }
             const fg = parse(cs.color); fg.a *= op;
             const g = groundOf(el);
             out.push({ text: own.slice(0, 40), ratio: ratio(over(fg, g), g), fg: cs.color, bg: 'rgb(' + [g.r, g.g, g.b].map(Math.round).join(', ') + ')' });
@@ -2268,7 +2336,7 @@ test.describe('Optics reference pages and calculators stay readable in every the
         }
         await page.evaluate(() => (window as any).__destroy());
       }
-      expect(checked, 'text runs found').toBeGreaterThan(4000);
+      expect(checked, 'text runs found').toBeGreaterThan(5000);
       expect(failures.slice(0, 40), `${theme}: ${failures.length} low-contrast text runs`).toEqual([]);
     });
   }
@@ -2302,4 +2370,274 @@ test('a disposed 3D renderer cannot throw into, or fail, the next scene', async 
   const errors: string[] = await page.evaluate(() => (window as any).__events.errors);
   expect(errors.filter((e) => /contextLost/.test(e))).toEqual([]);
   expect(await page.evaluate(() => (window as any).__gl()?.state)).toBe('ready');
+});
+
+test('no Optics page scrolls sideways on a 360 px phone', async ({ page }) => {
+  // The eight phenomenon pages laid out two fixed columns (340 + 260 px min),
+  // so each scrolled sideways to 624 px on a phone. Every page is checked,
+  // including the visual lab with all 152 tools open.
+  test.setTimeout(300_000);
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+  const src = readFileSync(join(ROOT, 'stem_lab/stem_tool_optics.js'), 'utf8');
+  const viz: Record<string, unknown> = { mode: 'viz' };
+  [...new Set([...src.matchAll(/upd[(]"(vizShow[A-Za-z0-9]+)"/g)].map((m) => m[1]))].forEach((k) => { viz[k] = true; });
+  const pages: Array<[string, Record<string, unknown>]> = [
+    ...['photon', 'em', 'brewster', 'tir', 'fiber', 'lensmaker', 'grating', 'arcoat', 'doppler', 'telescope', 'dof', 'color', 'eye', 'polartri']
+      .map((s): [string, Record<string, unknown>] => ['calculator ' + s, { mode: 'calcs', calcSubTool: s }]),
+    ['visual lab', viz],
+    ...['home', 'reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization', 'sleuth', 'inquiry', 'mastery',
+      'quiz', 'worked', 'reference', 'deep', 'history', 'scientists', 'instruments', 'careers',
+      'phenomena_db', 'lab_kits', 'glossary_ex']
+      .map((m): [string, Record<string, unknown>] => [m, { mode: m }]),
+    ...['rainbow', 'prism', 'mirage', 'afterimage', 'colormix', 'polsky', 'eye', 'sunset']
+      .map((p): [string, Record<string, unknown>] => ['phenomenon ' + p, { mode: 'phenomena', phenoSub: p }]),
+  ];
+  const wide: string[] = [];
+  for (const [name, bucket] of pages) {
+    await page.evaluate((b) => (window as any).__mount(b), bucket);
+    await page.waitForSelector('[data-opticslab-tool="true"]');
+    await page.waitForTimeout(150);
+    const sw = await page.evaluate(() => document.documentElement.scrollWidth);
+    if (sw > 361) wide.push(`${name}: page is ${sw} px wide`);
+    await page.evaluate(() => (window as any).__destroy());
+  }
+  // Round 13 added phenomena_db, lab_kits and glossary_ex (41 -> 44).
+  expect(pages.length).toBe(44);
+  expect(wide).toEqual([]);
+});
+
+test('the 3-D mirror, Snell window and refraction bench draw the geometry the physics requires', async ({ page }) => {
+  // Each value is read back from the geometry as BUILT, not recomputed:
+  //  - the concave mirror bulged away from the object (its rim at x > 0), so
+  //    the "concave" bench showed a convex mirror and vice versa;
+  //  - the Snell's-window cone had its apex at the water surface and its base
+  //    at the eye, upside down;
+  //  - the teal "mirror outside the window" rays came in at 1.9x the hit radius,
+  //    so incidence and reflection differed by up to ~15 degrees;
+  //  - the theta-1 arc was drawn beside the reflected ray, not the incident one.
+  test.setTimeout(180_000);
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+  const show = async (bucket: Record<string, unknown>, probe: string) => {
+    await page.evaluate((b) => (window as any).__mount(b), bucket);
+    await page.waitForFunction((p) => (window as any)[p]()?.state === 'ready', probe, { timeout: 30000 });
+    await page.waitForTimeout(300);
+    const gl = await page.evaluate((p) => (window as any)[p](), probe);
+    await page.evaluate(() => (window as any).__destroy());
+    return gl;
+  };
+
+  for (const type of ['concave', 'convex']) {
+    const m = await show({ mode: 'reflection', reflShow3D: true, reflMirrorType: type, reflFocal: 10, reflDo: 30, reflObjH: 5 }, '__mirror');
+    expect(m.objectX, type).toBeLessThan(0);
+    // A concave mirror curls toward the object and its real focus; a convex one
+    // curls away, toward its virtual focus behind the glass.
+    expect(Math.sign(m.surfaceRimX), `${type}: rim x ${m.surfaceRimX}`).toBe(type === 'concave' ? -1 : 1);
+    expect(Math.sign(m.surfaceRimX), `${type}: rim and focus marker on the same side`).toBe(Math.sign(m.focalMarkerX));
+  }
+
+  const w = await show({ mode: 'refraction', refrShowWindow: true, refrN1: 1.333, refrN2: 1.0 }, '__win');
+  expect(w.eyeY).toBeLessThan(0);
+  expect(w.coneApexY, 'the cone apex sits at the eye').toBeCloseTo(w.eyeY, 6);
+  expect(w.tirRays).toBeGreaterThan(4);
+  expect(w.tirMirrorErrorDeg, 'incidence equals reflection on every teal ray').toBeLessThan(0.01);
+  expect(w.tirMinIncidenceDeg, 'every teal ray is beyond the critical angle').toBeGreaterThan(w.coneDeg);
+
+  for (const theta1 of [20, 45, 70]) {
+    const r = await show({ mode: 'refraction', refrShow3D: true, refrN1: 1, refrN2: 1.52, refrTheta1: theta1 }, '__refr');
+    const arcDeg = Math.atan2(r.incidentArcEndX, r.incidentArcEndY) * 180 / Math.PI;
+    const rayDeg = Math.atan2(r.incidentRayStart.x, r.incidentRayStart.y) * 180 / Math.PI;
+    expect(r.incidentRayStart.x, `theta1 ${theta1}`).toBeLessThan(0);
+    expect(arcDeg, `theta1 ${theta1}: the arc ends ON the incident ray`).toBeCloseTo(rayDeg, 3);
+    expect(Math.abs(arcDeg), `theta1 ${theta1}`).toBeCloseTo(theta1, 3);
+  }
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('the 3-D circular wave carries the power of the linear light that made it', async ({ page }) => {
+  // A quarter-wave plate changes the state, not the intensity. The helix was
+  // drawn with each component as large as the linear wave's full amplitude,
+  // i.e. twice the power. Time-averaged power is (along² + across²) / 2 for the
+  // peak components read off the drawn wave.
+  await mount(page, { polQwp: true, polTheta2: 30 });
+  await page.waitForFunction(() => !!(window as any).__gl()?.spreads?.qwp, null, { timeout: 30000 });
+  const s = await page.evaluate(() => (window as any).__gl().spreads);
+  const power = (x: { along: number; across: number }) => (x.along ** 2 + x.across ** 2) / 2;
+  expect(s.qwp.across, 'the helix really is circular').toBeCloseTo(s.qwp.along, 1);
+  expect(power(s.qwp) / power(s.p1)).toBeCloseTo(1, 1);
+  // ...and the next polarizer passes half of it at any angle.
+  expect(power(s.p2) / power(s.qwp)).toBeCloseTo(0.5, 1);
+});
+
+test('the 3-D screen spot is the bundle cross-section the text states, however large', async ({ page }) => {
+  // The spot is |1 - d_s/d_i| x the ray aperture (1.74 units for the mirror, 1.72
+  // for the lens). It was capped at 1.9 units (~110%), so a plane mirror's 160%
+  // bundle and a diverging lens's 380% bundle drew the same small spot. Now the
+  // disc stops at the 2.4-unit screen edge and a ring shows the true size.
+  test.setTimeout(180_000);
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+  const show = async (bucket: Record<string, unknown>, probe: string, statusSel: string) => {
+    await page.evaluate((b) => (window as any).__mount(b), bucket);
+    await page.waitForFunction((p) => (window as any)[p]()?.state === 'ready', probe, { timeout: 30000 });
+    await page.waitForTimeout(300);
+    const gl = await page.evaluate((p) => (window as any)[p](), probe);
+    const ratio = Number(await page.locator(statusSel).first().getAttribute('data-screen-bundle-ratio'));
+    await page.evaluate(() => (window as any).__destroy());
+    return { gl, ratio };
+  };
+  const cases: Array<[string, Record<string, unknown>, string, string, number]> = [
+    ['plane mirror', { mode: 'reflection', reflShow3D: true, reflMirrorType: 'plane', reflDo: 25, reflObjH: 5, reflScreenCm: 15 }, '__mirror', '[data-op-mirror-screen-test]', 1.74],
+    ['concave mirror', { mode: 'reflection', reflShow3D: true, reflMirrorType: 'concave', reflFocal: 10, reflDo: 30, reflObjH: 5, reflScreenCm: 20 }, '__mirror', '[data-op-mirror-screen-test]', 1.74],
+    ['diverging lens', { mode: 'lenses', lensShow3D: true, lensType: 'diverging', lensFocal: 10, lensDo: 25, lensObjH: 5, lensScreenCm: 20 }, '__lens', '[data-op-lens-screen-test]', 1.72],
+  ];
+  for (const [name, bucket, probe, statusSel, aperture] of cases) {
+    const { gl, ratio } = await show(bucket, probe, statusSel);
+    const truth = aperture * ratio;
+    expect(ratio, name).toBeGreaterThan(0);
+    expect(gl.screenSpotRadius, `${name}: disc`).toBeCloseTo(Math.min(Math.max(truth, 0.09), 2.4), 3);
+    if (truth > 2.4) expect(gl.screenSpotRing, `${name}: ring at the true size`).toBeCloseTo(truth, 3);
+    else expect(gl.screenSpotRing, `${name}: no ring`).toBeNull();
+  }
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('the 3-D object and image arrows end exactly at the object and image points', async ({ page }) => {
+  // The cone is centred on its position, so placing it 0.18 past the tip put
+  // the point 0.39 beyond where the rays meet, and a small image drew 4x tall.
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+  const show = async (bucket: Record<string, unknown>, probe: string) => {
+    await page.evaluate((b) => (window as any).__mount(b), bucket);
+    await page.waitForFunction((p) => (window as any)[p]()?.state === 'ready', probe, { timeout: 30000 });
+    await page.waitForTimeout(300);
+    const gl = await page.evaluate((p) => (window as any)[p](), probe);
+    await page.evaluate(() => (window as any).__destroy());
+    return gl;
+  };
+  const cases: Array<[string, Record<string, unknown>, string]> = [
+    ['lens, real image', { mode: 'lenses', lensShow3D: true, lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 5 }, '__lens'],
+    ['lens, tiny image', { mode: 'lenses', lensShow3D: true, lensType: 'converging', lensFocal: 5, lensDo: 45, lensObjH: 5 }, '__lens'],
+    ['mirror, virtual image', { mode: 'reflection', reflShow3D: true, reflMirrorType: 'convex', reflFocal: 10, reflDo: 30, reflObjH: 5 }, '__mirror'],
+  ];
+  for (const [name, bucket, probe] of cases) {
+    const gl = await show(bucket, probe);
+    expect(gl.arrowTips?.length, `${name}: object and image arrows`).toBe(2);
+    for (const a of gl.arrowTips) {
+      expect(Math.abs(a.tip - a.height), `${name}: tip ${a.tip} vs point ${a.height}`).toBeLessThan(1e-6);
+    }
+  }
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('a 3-D screen spot sits at the true bundle height, and a bundle that misses the screen shows none', async ({ page }) => {
+  // The spot was clamped to +-2.15 units, painting light on the screen where no
+  // ray lands. An oversized spot ring also set the camera distance.
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+  const show = async (bucket: Record<string, unknown>) => {
+    await page.evaluate((b) => (window as any).__mount(b), Object.assign({ mode: 'lenses', lensShow3D: true, lensType: 'converging', lensObjH: 5 }, bucket));
+    await page.waitForFunction(() => (window as any).__lens()?.state === 'ready', null, { timeout: 30000 });
+    await page.waitForTimeout(300);
+    const gl = await page.evaluate(() => (window as any).__lens());
+    await page.evaluate(() => (window as any).__destroy());
+    return gl;
+  };
+  // The bundle is centred on the chief ray, which runs through the lens centre
+  // to the image point: on the screen, y = (image tip) * d_s / d_i. The bench
+  // rescales per setup, so the image arrow is the scale. d_s is where the
+  // screen really is (it stops at 42 cm).
+  for (const [f, dO, h, s] of [[10, 30, 5, 15], [10, 30, 5, 20], [10, 13, 4, 43]]) {
+    const g = await show({ lensFocal: f, lensDo: dO, lensObjH: h, lensScreenCm: s });
+    const imageTip = g.arrowTips[1].tip;
+    expect(g.screenSpotMiss, `f ${f} d_o ${dO} h ${h} screen ${s}`).toBe(false);
+    expect(g.screenSpotY, `f ${f} d_o ${dO} h ${h} screen ${s}`).toBeCloseTo(imageTip * g.screenDistance / g.imageDistance, 6);
+    if (s === 43) expect(Math.abs(g.screenSpotY), 'not clamped to 2.15').toBeGreaterThan(2.15);
+  }
+  // Focused image just past the screen's 2.45-unit edge: no light lands on it.
+  const miss = await show({ lensFocal: 10, lensDo: 16, lensScreenCm: 26.7 });
+  expect(Math.abs(miss.arrowTips[1].tip)).toBeGreaterThan(2.45);
+  expect(miss.screenSpotMiss).toBe(true);
+  expect(miss.screenSpotRing, 'no ring for a bundle that misses').toBeNull();
+  // A 380% diverging bundle draws its ring but the camera still frames the bench.
+  const wide = await show({ lensType: 'diverging', lensFocal: 10, lensDo: 25, lensScreenCm: 20 });
+  expect(wide.screenSpotRing).toBeGreaterThan(2.4);
+  // Fitted to the ring, the half-height would be at least the ring's radius.
+  expect(wide.fitHalf.y, 'camera fit ignores the ring').toBeLessThan(wide.screenSpotRing * 0.9);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('the 3-D diverging lens is biconcave and the converging one biconvex', async ({ page }) => {
+  // It was a flat parallel plate, which has no power at all.
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+  const thickness = async (type: string) => {
+    await page.evaluate((t) => (window as any).__mount({ mode: 'lenses', lensShow3D: true, lensType: t, lensFocal: 12, lensDo: 25, lensObjH: 5 }), type);
+    await page.waitForFunction(() => (window as any).__lens()?.state === 'ready', null, { timeout: 30000 });
+    const t = await page.evaluate(() => (window as any).__lens().lensThickness);
+    await page.evaluate(() => (window as any).__destroy());
+    return t;
+  };
+  const conv = await thickness('converging');
+  const div = await thickness('diverging');
+  expect(conv.centre, 'converging: thick in the middle').toBeGreaterThan(conv.rim * 1.5);
+  expect(div.rim, 'diverging: thick at the rim').toBeGreaterThan(div.centre * 1.5);
+  expect(div.radius).toBeCloseTo(conv.radius, 1);
+});
+
+test('the 3-D polarizer axes tilt the same way as the disks of the flat diagram', async ({ page }) => {
+  // The flat disk draws a 30° axis with its top leaning RIGHT. The 3-D axis
+  // used +z, which the default camera (looking back up the beam) shows as
+  // LEFT: a 30° disc looked like 150°.
+  for (const [deg, side] of [[30, 1], [150, -1]] as Array<[number, number]>) {
+    await mount(page, { polTheta2: deg });
+    const axes = await page.evaluate(() => (window as any).__gl().axisScreen);
+    // The recorded end is +axis; past 90° that is the LOWER end, so take the upper one.
+    const up = (a: { dx: number; dy: number }) => (a.dy >= 0 ? a : { ...a, dx: -a.dx, dy: -a.dy });
+    const found = axes.find((a: { deg: number; plate: boolean }) => a.deg === deg && !a.plate);
+    expect(found, `P2 axis at ${deg}°`).toBeTruthy();
+    const p2 = up(found);
+    expect(Math.sign(p2.dx), `${deg}°: the axis top leans ${side > 0 ? 'right' : 'left'}`).toBe(side);
+    expect(p2.dy, `${deg}°: the axis top is above the centre`).toBeGreaterThan(0);
+    // Perspective leans every off-centre line a little, so compare lean ratios.
+    const p1 = up(axes.find((a: { deg: number; plate: boolean }) => a.deg === 0 && !a.plate));
+    expect(Math.abs(p1.dx / p1.dy), 'P1 at 0° stands (nearly) straight up').toBeLessThan(Math.abs(p2.dx / p2.dy) / 3);
+    await page.evaluate(() => (window as any).__destroy());
+  }
+});
+
+test('the 3-D wave is continuous through every polarizer: each passes the projection, sign included', async ({ page }) => {
+  // Past 90° from the previous axis the projection is negative; drawn as +, the
+  // tube flipped at the disc. After circular light the output lags by θ₂.
+  const cases: Array<Record<string, unknown>> = [
+    { polTheta2: 30 },
+    { polTheta2: 120 },
+    { polTheta2: 150, polUseP3: true, polTheta3: 20 },
+    { polTheta2: 60, polUseP3: true, polTheta3: 170 },
+    { polQwp: true, polTheta2: 60 },
+    { polQwp: true, polTheta2: 60, polUseP3: true, polTheta3: 170 },
+  ];
+  for (const bucket of cases) {
+    await mount(page, bucket);
+    const joins = await page.evaluate(() => (window as any).__gl().joins);
+    expect(joins.p2, `${JSON.stringify(bucket)}: jump at P2`).toBeLessThan(1e-3);
+    if (bucket.polUseP3) expect(joins.p3, `${JSON.stringify(bucket)}: jump at P3`).toBeLessThan(1e-3);
+    await page.evaluate(() => (window as any).__destroy());
+  }
+});
+
+test('the held throughput bar is a neutral full-width hatch, then shows the real output', async ({ page }) => {
+  // Its length IS the masked output, so while held it cannot be drawn to scale.
+  await mount(page, { polTheta2: 30 });
+  const fill = page.locator('[data-op-polarization-throughput="true"] > div');
+  const style = () => fill.evaluate((el) => ({ w: (el as HTMLElement).style.width, bg: (el as HTMLElement).style.background }));
+  let s = await style();
+  expect(s.w).toBe('100%');
+  expect(s.bg).toContain('repeating-linear-gradient');
+  await autoPredict(page);
+  s = await style();
+  expect(s.w).toBe('37.5%');
+  expect(s.bg).not.toContain('repeating-linear-gradient');
 });
