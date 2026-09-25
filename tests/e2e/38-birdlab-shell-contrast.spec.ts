@@ -13,6 +13,8 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const harness = new GlHarness({
   toolId: 'birdLab',
@@ -88,3 +90,58 @@ test('glossary search: typed text is dark on the white field', async ({ page }) 
   const ink = await box.evaluate((el) => getComputedStyle(el).color);
   expect(ink).toBe('rgb(30, 41, 59)');
 });
+
+// Every view the tool can show, read from its own dispatch so a new view is
+// swept without editing a list. axe files text over a gradient as
+// "incomplete" rather than failing it; the cross-lab link eyebrows, the Photo
+// ID button, the compare "vs" disc and the I-spy step arrows were 2.4-4.05:1
+// that way and never reported. That text is measured here against every stop.
+const SOURCE = fs.readFileSync(path.join(process.cwd(), 'stem_lab', 'stem_tool_birdlab.js'), 'utf8');
+const ALL_VIEWS = [...new Set([...SOURCE.matchAll(/if \(view === '([A-Za-z0-9_]+)'\) return/g)].map((m) => m[1]))];
+const fullContrast = (page: Page) => page.evaluate(async () => {
+  const r = await (window as any).axe.run(document.querySelector('#wrap'), { runOnly: { type: 'rule', values: ['color-contrast'] } });
+  const bad: string[] = (r.violations[0]?.nodes || []).map((n: any) => `${String(n.target[0]).slice(0, 70)} ${n.any[0]?.data?.fgColor} on ${n.any[0]?.data?.bgColor}`);
+  const rgb = (c: string) => (c.match(/[\d.]+/g) || []).map(Number);
+  const lum = (c: number[]) => { const f = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+  let judged = 0;
+  for (const n of (r.incomplete[0]?.nodes || [])) {
+    const el = document.querySelector(n.target[0]) as HTMLElement | null;
+    if (!el || el instanceof SVGElement) continue;
+    const cs = getComputedStyle(el);
+    // Gradient-filled lettering (background-clip: text) is painted BY its gradient.
+    if (cs.backgroundClip === 'text' || (cs as any).webkitBackgroundClip === 'text') continue;
+    let a: HTMLElement | null = el, img = 'none';
+    while (a && (img = getComputedStyle(a).backgroundImage) === 'none' && rgb(getComputedStyle(a).backgroundColor)[3] === 0) a = a.parentElement;
+    if (!img.includes('gradient')) continue;
+    judged++;
+    const fg = rgb(cs.color), L1 = lum(fg);
+    const px = parseFloat(cs.fontSize), large = px >= 24 || (px >= 18.66 && Number(cs.fontWeight) >= 700);
+    for (const stop of img.match(/rgba?\([^)]+\)/g) || []) {
+      const bg = rgb(stop);
+      if (bg.length > 3 && bg[3] === 0) continue;
+      const L2 = lum(bg), ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+      if (ratio < (large ? 3 : 4.5)) bad.push(`${String(n.target[0]).slice(0, 70)} "${(el.textContent || '').trim().slice(0, 30)}" ${cs.color} on gradient stop ${stop}: ${ratio.toFixed(2)}`);
+    }
+  }
+  return { bad, judged };
+});
+
+test('the view list comes from the dispatch', () => {
+  expect(ALL_VIEWS.length, 'views found in the dispatch').toBeGreaterThanOrEqual(110);
+  for (const v of ['topology', 'raptors', 'owls', 'tracksSign', 'eggGallery', 'wingHunt']) expect(ALL_VIEWS).toContain(v);
+});
+for (let part = 0; part < 4; part++) {
+  test(`every view is readable in the shell, text over gradients included (${part + 1} of 4)`, async ({ page }) => {
+    const bad: string[] = [];
+    let judged = 0, swept = 0;
+    for (const v of ALL_VIEWS.filter((_, i) => i % 4 === part)) {
+      await mountInShell(page, v);
+      const r = await fullContrast(page);
+      judged += r.judged; swept++;
+      bad.push(...r.bad.map((b) => `${v}: ${b}`));
+    }
+    expect(swept).toBeGreaterThanOrEqual(Math.floor(ALL_VIEWS.length / 4));
+    expect(judged, 'text over a gradient was found and measured').toBeGreaterThan(0);
+    expect(bad).toEqual([]);
+  });
+}

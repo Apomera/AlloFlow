@@ -253,10 +253,311 @@ describe('file-wide audit, 2026-09-23 (every restatement, not just one)', () => 
     expect(SRC).toMatch(/penobscot_name: 'oqim \(Passamaquoddy-Maliseet\)'/);
   });
 
+  it('reads tracks, sign and feet correctly', () => {
+    // Early hummingbirds feed at sapsucker sap wells; nobody drills feeders.
+    expect(SRC).not.toMatch(/Yellow holes drilled into hummingbird feeders/);
+    expect(SRC).toMatch(/sapsucker sap wells/);
+    // A gull's tiny hind toe rarely prints; ospreys usually eat the head first.
+    expect(SRC).not.toMatch(/4-toed webbed prints|head \+ bones discarded/);
+    // Grebes + coots have lobed (lobate) toes; semipalmate means partly webbed.
+    expect(SRC).not.toMatch(/Lobed swimmer \(semi-palmate\)/);
+  });
+
+  it('sizes owls + raptors from published ranges', () => {
+    // All About Birds: Eastern Screech-Owl 6.3-9.8 in; Sharp-shinned wingspan 17-22 in.
+    expect(SRC).toMatch(/size: '6–10 in tall, 6 oz'/);
+    expect(SRC).toMatch(/group: 'Small accipiter', size: '10–14 in, 4 oz', wingspan: '~20 in'/);
+  });
+
   it('quotes only what people wrote', () => {
     expect(SRC).not.toMatch(/co-collaborator with the bird|Birds invite us to see|saved by it|author: 'Maine Loon Project'/);
     expect(SRC).not.toMatch(/Hope is a thing with feathers|Maya Angelou \(Chinese proverb\)/);
     expect(SRC).toMatch(/is the thing with feathers/);
+  });
+});
+
+describe('bird topography', () => {
+  const topo = () => sliceBetween(SRC, 'var TOPOLOGY = [', 'var TOPO_ART = (function() {', { label: 'TOPOLOGY' });
+  const art = () => sliceBetween(SRC, 'var TOPO_ART = (function() {', 'var BY_ID = {};', { label: 'TOPO_ART parts' });
+
+  it('names 24 regions, each drawn once on the bird', () => {
+    const named = [...topo().matchAll(/\{ id: '([a-z-]+)', label:/g)].map((m) => m[1]);
+    const drawn = [...art().matchAll(/\{ id: '([a-z-]+)', fill:/g)].map((m) => m[1]);
+    expect(named.length).toBe(24);
+    expect(new Set(named).size).toBe(24);
+    expect([...drawn].sort()).toEqual([...named].sort());
+  });
+
+  it('corrects the region notes', () => {
+    // Eastern Wood-Pewee underparts are whitish; the lemon-yellow belly is the
+    // Great Crested Flycatcher. The nape is no hummingbird mark, and neither
+    // Yellow-rumped Warbler nor flicker is a forehead example.
+    expect(SRC).not.toMatch(/yellow in many warblers \+ Eastern Wood-Pewee/);
+    expect(SRC).not.toMatch(/distinguishing flickers \(red nape\), hummingbirds/);
+    expect(SRC).not.toMatch(/Can show distinctive color \(Yellow-rumped Warbler, flicker\)/);
+    expect(SRC).not.toMatch(/Total topology points labeled/);
+    expect(SRC).toMatch(/A Great Crested Flycatcher is bright lemon yellow here/);
+    expect(SRC).toMatch(/Pale tips on two rows of coverts \(the median and greater coverts\)/);
+    expect(SRC).toMatch(/The rusty undertail coverts of a Gray Catbird/);
+    expect(SRC).toMatch(/The red waxy tips of a Cedar Waxwing are on its secondaries/);
+    expect(SRC).toMatch(/in fall a Blackpoll Warbler has pale legs and a Bay-breasted Warbler dark ones/);
+  });
+});
+
+describe('plumage plates', () => {
+  it('ages goldfinches by their spring molt, not a "first complete molt"', () => {
+    // First-year males turn yellow in a partial spring (prealternate) molt.
+    expect(SRC).not.toMatch(/lack adult bright yellow until first complete molt/);
+    expect(SRC).toMatch(/Young male goldfinches get their first bright yellow in their first spring/);
+  });
+
+  it('describes seasonal changes the birds actually make', () => {
+    // Loons have no eye-stripe to lose and are back at ice-out; fall male
+    // blackbirds wear rusty edges; Wood Ducks are not in Maine all winter.
+    expect(SRC).not.toMatch(/no eye-stripe/);
+    expect(SRC).not.toMatch(/Breeding plumage May–August on Maine lakes/);
+    expect(SRC).not.toMatch(/Male plumage same — but the red epaulets/);
+    expect(SRC).not.toMatch(/Breeding plumage Oct–July in Maine/);
+    expect(SRC).toMatch(/from ice-out \(April\) through late summer/);
+    expect(SRC).toMatch(/males have rusty \+ buff feather edges that wear away by spring/);
+  });
+
+  it('draws the gray group with the birds its caption lists', () => {
+    // The Gray plate showed a Common Raven, which is black and not in its list.
+    const gray = sliceBetween(SRC, "color: 'Gray',", "color: 'Iridescent',", { label: 'Gray group' });
+    expect(gray).not.toMatch(/name: 'Raven'/);
+    expect(gray).toMatch(/name: 'Gray Catbird'/);
+    expect(gray).toMatch(/Gray Catbird/);
+  });
+});
+
+describe('shape reference + flight patterns', () => {
+  it('gives tail, bill and size examples that match the birds', () => {
+    // Falcon tails are fairly long; magpie tails are long + graduated; a
+    // skimmer's bill is a knife, not a pouch; woodpeckers run 6-17 in.
+    expect(SRC).not.toMatch(/Short tails \(auks, ducks, falcons\)/);
+    expect(SRC).not.toMatch(/Square \(crows, magpies\)|Round \(most songbirds\)/);
+    expect(SRC).not.toMatch(/pelican-like \(skimmers\)/);
+    expect(SRC).not.toMatch(/robins \+ jays \+ woodpeckers, 9-11 in/);
+    expect(SRC).toMatch(/Square \(Sharp-shinned Hawk, American Crow\)/);
+    expect(SRC).toMatch(/Rounded \(Cooper\\'s Hawk, Blue Jay\)/);
+  });
+
+  it('describes each flight style with birds that fly that way', () => {
+    // Cedar Waxwings fly fast + direct; crows row and seldom glide; a hovering
+    // hummingbird is not silent.
+    const flight = sliceBetween(SRC, 'var FLIGHT_PATTERNS = [', 'var OWL_PROFILES = [', { label: 'FLIGHT_PATTERNS' });
+    expect(flight).not.toMatch(/Cedar Waxwing/);
+    expect(flight).not.toMatch(/Crows give 2-3 strong beats then brief glide/);
+    expect(flight).not.toMatch(/hover is silent/);
+    expect(flight).toMatch(/Crows row steadily; ravens often soar and glide/);
+    expect(flight).toMatch(/Song Sparrow pumps its tail/);
+  });
+});
+
+describe('warblers + family views', () => {
+  it('does not count a vagrant as a Maine breeder, and puts its streaks where they are', () => {
+    // The list includes the Yellow-throated Warbler, a rare visitor that breeds
+    // farther south; its back is plain gray and the streaks run down its sides.
+    expect(SRC).not.toMatch(/ Maine breeders\. Each tiny, fast-moving/);
+    expect(SRC).not.toMatch(/blue-gray \+ black streaks on back/);
+    expect(SRC).toMatch(/plain gray back, black streaks down the white sides/);
+  });
+
+  it('describes Canada Jay, Purple Finch and robin as they look', () => {
+    // Canada Jay: white face, dark hood on the back of the head (no eye
+    // stripe). Purple Finch males are only faintly streaked; House Finch males
+    // are the boldly streaked ones. A robin's eye marks are arcs, not a ring.
+    expect(SRC).not.toMatch(/Gray with white head \+ black stripe behind eye/);
+    expect(SRC).not.toMatch(/raspberry-red overall, streaked sides/);
+    expect(SRC).not.toMatch(/orange-red breast, white eye-ring/);
+    expect(SRC).toMatch(/dark gray hood on the back of the head/);
+    expect(SRC).toMatch(/sides only faintly streaked \(a male House Finch is boldly streaked\)/);
+  });
+});
+
+describe('physiology + seabirds', () => {
+  it('credits each feat to the right bird, with its caveats', () => {
+    // A resting hummingbird heart is far below 600; the famous snow-plunge is
+    // the Great Gray Owl's; the kestrel UV-urine result has been questioned.
+    expect(SRC).not.toMatch(/600\+ beats per minute at rest/);
+    expect(SRC).not.toMatch(/Saw-whet Owl can find a mouse under a foot of snow/);
+    expect(SRC).not.toMatch(/Kestrels see UV trails of urine left by voles in grass\./);
+    expect(SRC).toMatch(/A Great Gray Owl can hear a vole under a foot or more of snow/);
+    expect(SRC).toMatch(/a 1995 finding that later work has questioned/);
+  });
+
+  it('uses the current English name for Ardenna gravis', () => {
+    expect(SRC).not.toMatch(/Greater Shearwater/);
+    expect(SRC).toMatch(/name: 'Great Shearwater', sci: 'Ardenna gravis'/);
+  });
+});
+
+describe('duck ID', () => {
+  it('keeps dabbler and diver anatomy the right way round, and loons out of the ducks', () => {
+    // Divers have the big feet, set far back; dabbler legs sit mid-body.
+    // Whistling wings are a goldeneye (diver) mark; loons are not ducks.
+    const duck = sliceBetween(SRC, 'var DUCK_ID_GUIDE = [', '\n  ];', { label: 'DUCK_ID_GUIDE' });
+    expect(duck).not.toMatch(/Larger feet positioned mid-body/);
+    expect(duck).not.toMatch(/Wings whistle/);
+    expect(duck).not.toMatch(/Loon \(related diving\)/);
+    expect(duck).toMatch(/Legs set near the middle of the body/);
+    expect(duck).toMatch(/Big feet set far back on the body/);
+    expect(duck).toMatch(/Loons and grebes dive too, but they are not ducks/);
+  });
+});
+
+describe('nest boxes', () => {
+  // The drawings read NESTBOX_DIMS; the guide's prose is what a reader sees.
+  // Every drawn number must sit inside what the prose states.
+  it('draws every box from the numbers its own text gives', () => {
+    const guide = new Function(sliceBetween(SRC, 'var NESTBOX_GUIDE = [', '\n  ];', { label: 'NESTBOX_GUIDE' }) + '\n];\nreturn NESTBOX_GUIDE;')();
+    const dims = new Function(sliceBetween(SRC, 'var NESTBOX_DIMS = {', '\n  };', { label: 'NESTBOX_DIMS' }) + '\n};\nreturn NESTBOX_DIMS;')();
+    const range = (m) => [Number(m[1]), Number(m[2] || m[1])];
+    const within = (v, r) => v >= r[0] - 1e-9 && v <= r[1] + 1e-9;
+    const bad = [];
+    expect(guide.length).toBe(12);
+    expect(Object.keys(dims).sort()).toEqual(guide.map((g) => g.species).sort());
+    for (const g of guide) {
+      const d = dims[g.species], who = g.species;
+      const floor = /(\d+)×(\d+) in/.exec(g.box_size);
+      const depth = /depth: ([\d.]+)(?:-([\d.]+))? in/.exec(g.box_size) || /([\d.]+)(?:-([\d.]+))? in tall/.exec(g.box_size);
+      if (!floor || Number(floor[1]) !== d.floor) bad.push(`${who} floor ${d.floor} vs "${g.box_size}"`);
+      if (!depth || !within(d.depth, range(depth))) bad.push(`${who} depth ${d.depth} vs "${g.box_size}"`);
+      const oval = /([\d.]+) in high × ([\d.]+) in wide oval/.exec(g.entry);
+      const round = /([\d.]+)(?:-([\d.]+))? in round/.exec(g.entry);
+      if (oval) { if (d.holeH !== Number(oval[1]) || d.holeW !== Number(oval[2])) bad.push(`${who} oval hole`); }
+      else if (!round || !within(d.hole, range(round))) bad.push(`${who} hole ${d.hole} vs "${g.entry}"`);
+      const above = /~?([\d.]+)(?:-([\d.]+))? in above floor/.exec(g.entry);
+      if (above ? !(d.above != null && within(d.above, range(above))) : d.above != null) bad.push(`${who} hole height ${d.above} vs "${g.entry}"`);
+    }
+    expect(bad).toEqual([]);
+  });
+});
+
+describe('recovery stories', () => {
+  const stories = () => new Function(sliceBetween(SRC, 'var RECOVERY_STORIES = [', '\n  ];', { label: 'RECOVERY_STORIES' }) + '\n];\nreturn RECOVERY_STORIES;')();
+  it('fixes the puffin history, condor causes and pelican count area', () => {
+    // By 1901 hunting had left one pair, on Matinicus Rock (Project Puffin);
+    // condor chicks die of "microtrash" their parents bring, not microbes; the
+    // pelican's 600,000+ is range-wide (USFWS delisting, 2009).
+    const by = Object.fromEntries(stories().map((r) => [r.species, r]));
+    expect(by['Atlantic Puffin'].decline).not.toMatch(/1970s/);
+    expect(by['Atlantic Puffin'].decline).toMatch(/single pair in Maine, on Matinicus Rock/);
+    expect(by['California Condor'].causes).not.toMatch(/Microbial/);
+    expect(by['California Condor'].causes).toMatch(/bullet fragments/);
+    expect(by['Brown Pelican'].result).toMatch(/600,000\+ across its whole range/);
+  });
+  it('charts only counts its own story states', () => {
+    const by = Object.fromEntries(stories().map((r) => [r.species, r]));
+    const counts = new Function(sliceBetween(SRC, 'var RECOVERY_COUNTS = [', '\n  ];', { label: 'RECOVERY_COUNTS' }) + '\n];\nreturn RECOVERY_COUNTS;')();
+    const bad = [];
+    expect(counts.length).toBe(7);
+    for (const c of counts) {
+      const s = by[c.species];
+      if (!s) { bad.push(`${c.species}: no story`); continue; }
+      // A Maine row reads the story's Maine line; the others read the rest.
+      const text = c.where === 'maine' ? [s.maine, s.decline, s.result, s.action].join(' ') : [s.decline, s.result].join(' ');
+      // Whole numbers only: "0" must not match the 0 inside 1960s.
+      const esc = (v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const has = (v) => (v === '1' ? /single pair/.test(text) : new RegExp('(^|[^0-9,.])' + esc(v) + '(?![0-9])').test(text));
+      if (!has(c.then)) bad.push(`${c.species}/${c.where} then ${c.then}`);
+      if (!has(c.now)) bad.push(`${c.species}/${c.where} now ${c.now}`);
+      if (!text.includes(c.thenYear)) bad.push(`${c.species}/${c.where} year ${c.thenYear}`);
+    }
+    expect(bad).toEqual([]);
+    expect(counts.map((c) => c.species)).not.toContain('Brown Pelican');
+  });
+});
+
+describe('migration deep science', () => {
+  it('gives the goose altitude the tracked record, as the other two mentions do', () => {
+    // GPS-tracked Bar-headed Geese peaked at 7,290 m (about 23,900 ft) over
+    // the Himalayas; "geese to 25,000+ ft" overstated it.
+    const mig = sliceBetween(SRC, 'var MIGRATION_DEEP = [', '\n  ];', { label: 'MIGRATION_DEEP' });
+    expect(mig).not.toMatch(/geese to 25,000/);
+    expect(mig).toMatch(/Bar-headed Geese have been tracked crossing the Himalayas at nearly 24,000 ft/);
+    expect(SRC).toMatch(/tracked as high as 23,900 ft \(7,290 m\)/);
+  });
+});
+
+describe('habitats deep', () => {
+  it('names current species, real laws and real places', () => {
+    // Sharp-tailed Sparrow was split (AOU, 1995) into Saltmarsh + Nelson's;
+    // Snowy Plover is a vagrant in Maine, not a beach bird; wetland filling
+    // falls under the Natural Resources Protection Act; ice fishing happens
+    // months after loons nest, while lead tackle kills adult loons.
+    const hab = sliceBetween(SRC, 'var HABITATS_DEEP = [', '\n  ];', { label: 'HABITATS_DEEP' });
+    expect(SRC).not.toMatch(/Sharp-tailed [Ss]parrow/);
+    expect(hab).not.toMatch(/Snowy Plover/);
+    expect(hab).not.toMatch(/Sanderling, sanderling/);
+    expect(hab).not.toMatch(/Wetland Filling Act/);
+    expect(hab).not.toMatch(/ice fishing/);
+    expect(hab).not.toMatch(/sandhills/);
+    expect(hab).toMatch(/Natural Resources Protection Act regulates filling \+ draining wetlands/);
+    expect(hab).toMatch(/Lead fishing tackle, a leading killer of adult loons/);
+    expect(hab).toMatch(/Kennebunk Plains sandplain grassland/);
+    expect(SRC).toMatch(/key_species: 'Saltmarsh \+ Nelson\\'s Sparrows/);
+  });
+});
+
+describe('hawkwatch + fall migration', () => {
+  it('gives spring and fall their own winds, and hawks their real habits', () => {
+    // Bradbury's own data: big spring days come on south or southwest winds,
+    // so "strong southerly wind" is only bad in fall. Hawks ride thermals from
+    // mid-morning and migrate mostly in silence.
+    const guide = sliceBetween(SRC, 'var HAWKWATCH_GUIDE = [', '\n  ];', { label: 'HAWKWATCH_GUIDE' });
+    const fall = sliceBetween(SRC, 'var FALL_MIGRATION_TIPS = [', '\n  ];', { label: 'FALL_MIGRATION_TIPS' });
+    expect(guide).not.toMatch(/Strong southerly wind/);
+    expect(guide).not.toMatch(/Best mornings after cold front/);
+    expect(guide).toMatch(/Spring \(Bradbury\): warm S or SW winds/);
+    expect(guide).toMatch(/Wind against the flight: southerly in fall, northerly in spring/);
+    expect(guide).toMatch(/Hawks fly from mid-morning, once the sun builds thermals/);
+    expect(fall).not.toMatch(/Hawks call frequently/);
+    expect(fall).not.toMatch(/largest stopover area in Western Hemisphere/);
+    expect(fall).toMatch(/Migrating hawks are mostly silent/);
+    expect(fall).toMatch(/Semipalmated Sandpipers, fattening on tiny mud shrimp/);
+  });
+  it('keeps the Bradbury season the same in the guide and the data', () => {
+    const guide = sliceBetween(SRC, 'var HAWKWATCH_GUIDE = [', '\n  ];', { label: 'HAWKWATCH_GUIDE' });
+    const data = sliceBetween(SRC, 'var HAWKWATCH_DATA = [', '\n  ];', { label: 'HAWKWATCH_DATA' });
+    const g = /Bradbury: (\w+ \d+) to (\w+ \d+)/.exec(guide);
+    const d = /\((\w+ \d+)–(\w+ \d+)\)/.exec(data);
+    expect(g && d).toBeTruthy();
+    expect([g[1], g[2]]).toEqual([d[1], d[2]]);
+    expect(data).toMatch(/south or southwest winds/);
+    expect(data).toMatch(/northwest winds/);
+  });
+});
+
+describe('climate + birds', () => {
+  it('states range shifts and sea level at their measured rates', () => {
+    // Hitch + Leberg (2007): northern range limits of southern species in
+    // eastern North America moved north ~2.35 km a year (BBS, 1967-71 to
+    // 1998-2002); "~50 km per decade" doubled it. NOAA's Portland gauge trend is
+    // ~1.9 mm a year since 1912; "3-5 mm/year (~1 inch per decade)" contradicted
+    // itself (3-5 mm a year is 1.2-2 inches a decade).
+    const cli = sliceBetween(SRC, 'var CLIMATE_BIRDS = [', '\n  ];', { label: 'CLIMATE_BIRDS' });
+    expect(cli).not.toMatch(/50 km north per decade/);
+    expect(cli).not.toMatch(/3-5 mm\/year/);
+    expect(cli).toMatch(/moved north about 2\.35 km \(1\.5 mi\) a year/);
+    expect(cli).toMatch(/about 1\.9 mm a year since 1912 \(about 7\.5 inches a century\)/);
+    // 1.9 mm x 100 years, in inches.
+    expect((1.9 * 100) / 25.4).toBeCloseTo(7.5, 0);
+  });
+});
+
+describe('monthly calendar + Maine numbers', () => {
+  it('agrees with Spring Arrivals, and every stat reads as a whole sentence', () => {
+    const monthly = sliceBetween(SRC, 'var MONTHLY_CALENDAR = [', '\n  ];', { label: 'MONTHLY_CALENDAR' });
+    const arrivals = sliceBetween(SRC, 'var SPRING_ARRIVALS = [', '\n  ];', { label: 'SPRING_ARRIVALS' });
+    const stats = sliceBetween(SRC, 'var MAINE_BIRD_STATS = [', '\n  ];', { label: 'MAINE_BIRD_STATS' });
+    expect(arrivals).toMatch(/species: 'American Robin', date: 'Mid-March'/);
+    expect(monthly).toMatch(/American Robins \(mid-March\)/);
+    expect(arrivals).toMatch(/When lake ice breaks up/);
+    expect(monthly).toMatch(/Loons return to lakes as the ice goes out/);
+    expect(stats).not.toMatch(/Maine birding has grown'/);
+    expect(stats).not.toMatch(/marine economy/);
   });
 });
 
