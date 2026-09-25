@@ -6160,7 +6160,10 @@ return React.createElement("div", {
 
         onClick: function () {
 
-          updMulti({ presetId: p.id, volumeAdded: 0, _reachedEquiv: false, _prevVolume: 0, additionAnimating: false });
+          // "Try 2 titration setups" counts presetsUsed, which nothing wrote. The setup
+          // being left counts too, so starting on the default and switching makes two.
+          var used = Object.assign({}, d.presetsUsed || {}); used[presetId] = true; used[p.id] = true;
+          updMulti({ presetId: p.id, presetsUsed: used, volumeAdded: 0, _reachedEquiv: false, _prevVolume: 0, additionAnimating: false });
 
           if (typeof awardStemXP === 'function') awardStemXP('titrationLab', 3, 'Preset loaded');
 
