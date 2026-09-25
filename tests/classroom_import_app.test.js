@@ -74,7 +74,8 @@ function harness(overrides = {}) {
             };
             connectors.push(connector); return connector;
         }),
-        convertSnapshot: vi.fn(() => converted)
+        convertSnapshot: vi.fn(() => converted),
+        ...(overrides.serviceExtras || {})
     };
     w.AlloModules = { GoogleClassroomImport: service };
     if (overrides.unconfigured) w.eval(defaultConfig);
@@ -342,7 +343,7 @@ describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
             expect(h.$('send-classroom').hidden).toBe(true);
             expect(h.$('handoff-note').hidden).toBe(true);
             expect(h.$('download-classroom').disabled).toBe(false);
-            if (o) expect(o.postMessage).not.toHaveBeenCalled();
+            if (o) expect(o.postMessage.mock.calls.every(([message]) => message.type === 'alloflow-classroom-hello')).toBe(true);
         }
     });
 
@@ -350,6 +351,8 @@ describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
         const o = opener();
         const h = harness({ opener: o });
         h.ready();
+        expect(o.postMessage.mock.calls).toEqual([[{ type: 'alloflow-classroom-hello' }, sameOrigin]]);
+        o.postMessage.mockClear();
         expect(h.$('send-classroom').hidden).toBe(false);
         expect(h.$('send-classroom').disabled).toBe(true);
         h.click('send-classroom');
@@ -362,7 +365,7 @@ describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
         expect(o.postMessage).toHaveBeenCalledTimes(1);
         const [message, targetOrigin] = o.postMessage.mock.calls[0];
         expect(targetOrigin).toBe(sameOrigin);
-        expect(message).toEqual({ type: 'alloflow-classroom-roster', json: prepared().json });
+        expect(message).toEqual({ type: 'alloflow-classroom-roster', json: prepared().json, mode: 'replace' });
         expect(JSON.stringify(message)).not.toContain(PRIVATE_NAME);
         expect(JSON.stringify(message)).not.toContain(SECRET);
         expect(o.focus).toHaveBeenCalled();
@@ -395,5 +398,99 @@ describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
         expect(h.$('import-status').querySelector('img')).toBeNull();
         expect(h.$('import-status').textContent.length).toBeLessThan(420);
         expect(h.logs.every(spy => spy.mock.calls.every(call => !JSON.stringify(call).includes(PRIVATE_NAME) && !JSON.stringify(call).includes(SECRET)))).toBe(true);
+    });
+});
+
+describe('linked Classroom sync in the helper', () => {
+    const sameOrigin = 'https://alloflow.example.test';
+    const KEY = 'K'.repeat(42) + 'A';
+    const LINKED_CLASS = 'CLS-33333333-3333-4333-8333-333333333333';
+    const RETURNING = 'LRN-44444444-4444-4444-8444-444444444444';
+    function opener() {
+        const location = {};
+        Object.defineProperty(location, 'origin', { get: () => sameOrigin });
+        return { closed: false, location, postMessage: vi.fn(), focus: vi.fn() };
+    }
+    function linkedResult(status = 'new') {
+        const base = prepared();
+        return { ...base, preview: base.preview.map(row => ({ ...row, status })), returningCount: status === 'returning' ? 1 : 0, newCount: status === 'new' ? 1 : 0, absentCount: status === 'returning' ? 2 : 0 };
+    }
+    function context(h, o, data, origin = sameOrigin) {
+        const event = new h.w.MessageEvent('message', { data: { type: 'alloflow-classroom-context', ...data }, origin });
+        Object.defineProperty(event, 'source', { value: o });
+        h.w.dispatchEvent(event);
+    }
+    function extras(result = linkedResult(), ids = { [COURSE]: LINKED_CLASS }) {
+        return { convertLinkedSnapshot: vi.fn(async () => { if (result instanceof Error) throw result; return result; }), linkedClassIds: vi.fn(async () => ids) };
+    }
+
+    it('links a new class: hides download, converts with the device key and sends in link mode', async () => {
+        const o = opener(), serviceExtras = extras();
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { mode: 'link', syncKey: KEY, classId: null, existing: {} });
+        expect(h.$('send-classroom').textContent).toBe('Send to AlloFlow and link this class');
+        expect(h.$('download-classroom').hidden).toBe(true);
+        await h.connect(); await h.read();
+        expect(serviceExtras.convertLinkedSnapshot).toHaveBeenCalledWith(expect.objectContaining({ selectedCourseId: COURSE }), { syncKey: KEY, classId: null, existing: {} });
+        expect(h.service.convertSnapshot).not.toHaveBeenCalled();
+        expect(h.$('preview-count').textContent).toContain('Sending links this class');
+        h.acknowledge();
+        expect(h.$('download-classroom').disabled).toBe(true);
+        h.click('download-classroom');
+        expect(h.blobs).toHaveLength(0);
+        h.click('send-classroom');
+        const sent = o.postMessage.mock.calls.find(([message]) => message.type === 'alloflow-classroom-roster')[0];
+        expect(sent.mode).toBe('link');
+        expect(JSON.stringify(sent)).not.toContain(KEY);
+        expect(h.$('import-status').textContent).not.toContain(KEY);
+        expect(h.logs.every(spy => spy.mock.calls.every(call => !JSON.stringify(call).includes(KEY)))).toBe(true);
+    });
+
+    it('syncs a linked class: preselects the linked course, shows what changes and sends in sync mode', async () => {
+        const o = opener(), serviceExtras = extras(linkedResult('returning'));
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { mode: 'sync', syncKey: KEY, classId: LINKED_CLASS, existing: { [RETURNING]: 'Calm Owl 1' } });
+        expect(h.$('send-classroom').textContent).toBe('Send update to AlloFlow');
+        expect(h.$('confirm-text').textContent).toContain('AlloFlow will list every change');
+        await h.connect();
+        expect(serviceExtras.linkedClassIds).toHaveBeenCalledWith(KEY, [COURSE]);
+        expect(h.$('classroom-course').value).toBe(COURSE);
+        expect(h.$('import-status').textContent).toContain('linked to this AlloFlow class is selected');
+        h.click('read-classroom'); await flush();
+        expect(serviceExtras.convertLinkedSnapshot.mock.calls[0][1]).toEqual({ syncKey: KEY, classId: LINKED_CLASS, existing: { [RETURNING]: 'Calm Owl 1' } });
+        expect(h.$('preview-count').textContent).toBe('1 students read: 1 keep their codenames, 0 new, and 2 in AlloFlow are no longer in this Classroom class (AlloFlow keeps them).');
+        h.acknowledge(); h.click('send-classroom');
+        expect(o.postMessage.mock.calls.find(([message]) => message.type === 'alloflow-classroom-roster')[0].mode).toBe('sync');
+        expect(h.$('import-status').textContent).toContain('Update sent');
+    });
+
+    it('explains a class mismatch without discarding the connection, and says when no listed class is the linked one', async () => {
+        const mismatch = Object.assign(new Error('LINKED_CLASS_MISMATCH'), { code: 'LINKED_CLASS_MISMATCH' });
+        const o = opener(), serviceExtras = extras(mismatch, { [COURSE]: 'CLS-55555555-5555-4555-8555-555555555555' });
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { mode: 'sync', syncKey: KEY, classId: LINKED_CLASS, existing: {} });
+        await h.connect();
+        expect(h.$('import-status').textContent).toContain('None of the classes this account teaches is the one linked');
+        await h.read();
+        expect(h.$('import-status').textContent).toContain('linked to a different Google Classroom class');
+        expect(h.$('preview-section').hidden).toBe(true);
+        expect(h.$('course-section').hidden).toBe(false);
+        expect(h.connectors[0].dispose).not.toHaveBeenCalled();
+    });
+
+    it('ignores malformed contexts and contexts from anywhere but its own opener', async () => {
+        const o = opener(), serviceExtras = extras();
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { mode: 'sync', syncKey: 'short', classId: LINKED_CLASS, existing: {} });
+        context(h, o, { mode: 'link', syncKey: KEY, classId: LINKED_CLASS, existing: {} });
+        context(h, o, { mode: 'link', syncKey: KEY, classId: null, existing: { [RETURNING]: 'Calm Owl' } });
+        context(h, o, { mode: 'admin', syncKey: KEY, classId: null, existing: {} });
+        context(h, {}, { mode: 'link', syncKey: KEY, classId: null, existing: {} });
+        context(h, o, { mode: 'link', syncKey: KEY, classId: null, existing: {} }, 'https://other.example.test');
+        expect(h.$('send-classroom').textContent).toBe('Send to the AlloFlow tab');
+        expect(h.$('download-classroom').hidden).toBe(false);
+        await h.connect(); await h.read();
+        expect(serviceExtras.convertLinkedSnapshot).not.toHaveBeenCalled();
+        expect(h.service.convertSnapshot).toHaveBeenCalled();
     });
 });
