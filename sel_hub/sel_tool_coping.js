@@ -26316,6 +26316,7 @@ window.SelHub = window.SelHub || {
         var newBadges = Object.assign({}, earnedBadges);
         newBadges[badgeId] = Date.now();
         upd('earnedBadges', newBadges);
+        earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         var badge = BADGES.find(function(b) { return b.id === badgeId; });
         if (badge) {
           upd('showBadgePopup', badgeId);

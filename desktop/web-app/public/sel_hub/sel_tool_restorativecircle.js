@@ -998,6 +998,7 @@ window.SelHub = window.SelHub || {
         }
         if (newBadge) {
           upd('earnedBadges', eb);
+          earnedBadges = eb; // keep this render's copy current: a second award in one handler must add, not replace
           addToast('Badge earned: ' + newBadge.emoji + ' ' + newBadge.name + '!', 'success');
           ctx.awardXP(20);
           if (ctx.celebrate) ctx.celebrate();

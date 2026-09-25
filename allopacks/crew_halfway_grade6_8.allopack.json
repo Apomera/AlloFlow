@@ -564,6 +564,7 @@
     {
       "id": "sel_station_crew_launch_halfway",
       "name": "Crew station: Week 10: The Six-Week Check",
+      "gradeLevel": "6th-8th Grade",
       "tools": [
         "goals",
         "howlTracker",

@@ -565,6 +565,15 @@ window.SelHub = window.SelHub || {
   // ── Tool Registration ──
   // ══════════════════════════════════════════════════════════════
 
+  // How many per-scenario practice drafts (objects of text fields) have any writing.
+  function selSavedDrafts(drafts) {
+    if (!drafts || typeof drafts !== 'object' || Array.isArray(drafts)) return 0;
+    return Object.keys(drafts).filter(function(k) {
+      var v = drafts[k];
+      return !!v && typeof v === 'object' && Object.keys(v).some(function(f) { return typeof v[f] === 'string' && v[f].trim() !== ''; });
+    }).length;
+  }
+
   window.SelHub.registerTool('growthmindset', {
     icon: '\uD83C\uDF31',
     label: 'Growth Mindset Workshop',
@@ -626,7 +635,9 @@ window.SelHub = window.SelHub || {
       var letterDraft    = (typeof d.letterDraft === 'string' ? d.letterDraft : '');
 
       // Stats
-      var totalReframes = reframeScore || 0;
+      // Reframe It saves notes per scenario (practiceDrafts); reframeScore is the earlier
+      // activity's count and nothing writes it, so the bar always said "0 reframed".
+      var totalReframes = (reframeScore || 0) + selSavedDrafts(d.practiceDrafts);
       var totalStories  = Object.keys(storiesRead || {}).length;
       var totalFacts    = Object.keys(brainExplored || {}).length;
 

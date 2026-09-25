@@ -903,12 +903,21 @@ window.SelHub = window.SelHub || {
         if (earnedBadges.indexOf(badgeId) === -1) {
           var newBadges = earnedBadges.concat([badgeId]);
           upd('earnedBadges', newBadges);
+          earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
           var badge = BADGES.find(function(b) { return b.id === badgeId; });
           if (badge) {
             addToast(badge.icon + ' Badge earned: ' + badge.label + '!', 'success');
             ctx.awardXP(10);
           }
         }
+      };
+
+      // "Civic Champion: explored all tabs" had no record of visits, so it never unlocked.
+      var markTabVisited = function(nextTab) {
+        var seen = Object.assign({}, d.tabsVisited || {});
+        seen[tab] = true; seen[nextTab] = true;
+        upd('tabsVisited', seen);
+        if (TABS.every(function(x) { return seen[x.id]; })) awardBadge('civic_champion');
       };
 
       // ── AI counselor ──
@@ -1006,7 +1015,7 @@ window.SelHub = window.SelHub || {
             return h('button', { 'aria-label': t.label,
               key: t.id,
               role: 'tab', 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1,
-              onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
+              onClick: function() { upd('tab', t.id); markTabVisited(t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
               className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 ' +
                 (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-700 hover:text-teal-700')
             }, t.label);

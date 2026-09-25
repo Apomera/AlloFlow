@@ -623,6 +623,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
         var people = d.affirmingPeople || [];
         var spaces = d.affirmingSpaces || [];
         var notes = d.notes || '';
+        // No tab has a form for these lists, so print lines to fill in by hand.
+        // Who affirms a student is not stored on a shared device.
+        function identityWriteIn(title) {
+          return h('div', { style: { padding: 12, border: '2px dashed #94a3b8', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+            h('div', { style: { fontSize: 12, color: _ideFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, title),
+            h('div', { style: { fontSize: 12, color: _ideFg('#475569'), fontStyle: 'italic', marginBottom: 6 } }, 'Fill these in by hand after printing. They are not saved in AlloFlow.'),
+            [0, 1, 2, 3].map(function(i) { return h('div', { key: i, 'aria-hidden': 'true', style: { borderBottom: '1px solid #94a3b8', height: 26 } }); })
+          );
+        }
 
         return h('div', null,
           h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.4)', borderRight: '1px solid rgba(236,72,153,0.4)', borderBottom: '1px solid rgba(236,72,153,0.4)', borderLeft: '3px solid #ec4899', marginBottom: 12, fontSize: 12.5, color: _ideFg('#fbcfe8'), lineHeight: 1.65 } },
@@ -655,16 +664,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: _ideFg('#0f172a'), lineHeight: 1.7 } },
                 people.map(function(p, i) { return h('li', { key: i }, (p.name || p) + (p.role ? ' · ' + p.role : '')); })
               )
-            ) : h('div', { style: { padding: 12, border: '2px dashed #cbd5e1', borderRadius: 10, marginBottom: 12, fontSize: 12.5, color: _ideFg('#475569'), fontStyle: 'italic' } },
-              'People who affirm me: (open the Finding community tab to add them)'
-            ),
+            ) : identityWriteIn('People who affirm me'),
 
             spaces && spaces.length > 0 ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 12, color: _ideFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Spaces where I feel like myself'),
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: _ideFg('#0f172a'), lineHeight: 1.7 } },
                 spaces.map(function(s, i) { return h('li', { key: i }, s.name || s); })
               )
-            ) : null,
+            ) : identityWriteIn('Spaces where I feel like myself'),
 
             notes ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 12, color: _ideFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'My notes'),

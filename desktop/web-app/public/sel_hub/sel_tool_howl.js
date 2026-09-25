@@ -12557,9 +12557,12 @@ var EXPEDITION_CONNECTIONS = [
             t.icon + ' ' + t.label);
         }
         return h('div', null,
-          h('div', { role: 'tablist', 'aria-label': 'HOWL Tracker sections',
-            style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
-            studentTabs.map(tabButton),
+          // A tab list may own only tabs, so the leader toggle sits beside the list, not in it.
+          h('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap', alignItems: 'center' } },
+            h('div', { role: 'tablist', 'aria-label': 'HOWL Tracker sections',
+              style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              studentTabs.map(tabButton)
+            ),
             h('button', { key: '__leader', type: 'button', onClick: function() { upd({ showLeaderTabs: !showLeader }); },
               'aria-expanded': showLeader ? 'true' : 'false', 'aria-controls': 'howl-leader-tabs',
               title: 'Prompts, protocols, climate, rituals and libraries for the adult who runs Crew',

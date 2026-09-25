@@ -1041,9 +1041,9 @@ window.SelHub = window.SelHub || {
     growthMindset: { icon: '\uD83C\uDF31', name: 'Growth Mindset', desc: 'Identify a growth area' },
     aiCoach: { icon: '\uD83E\uDD16', name: 'Coaching Session', desc: 'Ask the AI strengths coach' },
     sharedStrengths: { icon: '\uD83D\uDCE4', name: 'Strength Sharer', desc: 'Export your strengths profile' },
-    firstScenario: { icon: '\uD83C\uDFAD', name: 'Strength Applier', desc: 'Complete a scenario' },
-    threeScenarios: { icon: '\uD83C\uDFC6', name: 'Scenario Pro', desc: 'Complete 3 scenarios with top rating' },
-    allScenarios: { icon: '\uD83D\uDC51', name: 'Master Strategist', desc: 'Complete all scenarios' },
+    firstScenario: { retired: true, icon: '\uD83C\uDFAD', name: 'Strength Applier', desc: 'Complete a scenario' },
+    threeScenarios: { retired: true, icon: '\uD83C\uDFC6', name: 'Scenario Pro', desc: 'Complete 3 scenarios with top rating' },
+    allScenarios: { retired: true, icon: '\uD83D\uDC51', name: 'Master Strategist', desc: 'Complete all scenarios' },
     firstQuiz: { icon: '\uD83E\uDDE9', name: 'Strength Detective', desc: 'Earlier match quiz: 3 or more answers matched' },
     perfectQuiz: { icon: '\uD83C\uDFAF', name: 'Perfect Match', desc: 'Earlier match quiz: all answers matched' },
     fiveReflections: { icon: '\uD83D\uDCDA', name: 'Philosopher', desc: 'Complete 5 reflections' },
@@ -1177,6 +1177,7 @@ window.SelHub = window.SelHub || {
         var showBadges = d.showBadges || false;
         var badges = d.badges || {};
         var badgeCount = Object.keys(badges).length;
+        var shownBadgeIds = Object.keys(BADGES).filter(function(id) { return !BADGES[id].retired || badges[id]; }); // retired badges show only to students who earned them
         // Scenario state
         var scenariosDone = d.scenariosDone || [];
         var topScenarios = d.topScenarios || 0;
@@ -1304,7 +1305,7 @@ window.SelHub = window.SelHub || {
               text += '\nQ: ' + r.prompt + '\nA: ' + r.response + '\n';
             });
           }
-          text += '\n\uD83C\uDFC5 Badges: ' + badgeCount + '/' + Object.keys(BADGES).length + '\n';
+          text += '\n\uD83C\uDFC5 Badges: ' + badgeCount + '/' + shownBadgeIds.length + '\n';
           window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
             if (addToast) addToast('\uD83D\uDCCB Strengths profile copied to clipboard!', 'success');
           }).catch(function() {});
@@ -1422,9 +1423,9 @@ window.SelHub = window.SelHub || {
 
           // Badge panel
           showBadges ? h('div', { style: { padding: 12, background: 'rgba(167,139,250,0.08)', borderBottom: '1px solid rgba(167,139,250,0.15)' } },
-            h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _strFg('#c4b5fd'), marginBottom: 8 } }, '\uD83C\uDFC5 Badges \u2014 ' + badgeCount + '/' + Object.keys(BADGES).length),
+            h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _strFg('#c4b5fd'), marginBottom: 8 } }, '\uD83C\uDFC5 Badges \u2014 ' + badgeCount + '/' + shownBadgeIds.length),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-              Object.keys(BADGES).map(function(id) {
+              shownBadgeIds.map(function(id) {
                 var b = BADGES[id];
                 var earned = !!badges[id];
                 return h('div', { key: id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: earned ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.03)', border: earned ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.1)', opacity: earned ? 1 : 0.5, fontSize: 11 } },

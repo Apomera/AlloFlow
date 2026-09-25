@@ -135,6 +135,23 @@ window.SelHub = window.SelHub || {
     return dates;
   }
 
+  // ── Accountability days ──
+  // LOCAL calendar dates. toISOString() is UTC, so an evening check-in (after
+  // 5 pm in Portland) landed on tomorrow, and the streak walked back in 24-hour
+  // steps, which skip a day across a DST change.
+  function goalLocalDate(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function goalAccountabilityStreak(log, now) {
+    var base = new Date(now);
+    var s = 0;
+    for (var i = 0; i < 30; i++) {
+      var ds = goalLocalDate(new Date(base.getFullYear(), base.getMonth(), base.getDate() - i));
+      if (log && log[ds]) { s++; } else { break; }
+    }
+    return s;
+  }
+
   // ── Weekly review record helpers ──
   function goalReviewSnapshot(goals, now) {
     var start = now - 7 * 86400000;
@@ -1658,17 +1675,10 @@ window.SelHub = window.SelHub || {
         };
 
         var logAccountability = function(didWork) {
-          var today = new Date().toISOString().slice(0, 10);
+          var today = goalLocalDate(new Date());
           var newLog = Object.assign({}, accountabilityLog);
           newLog[today] = didWork;
-          // Calculate streak
-          var s = 0;
-          var checkDate = new Date();
-          for (var i = 0; i < 30; i++) {
-            var ds = checkDate.toISOString().slice(0, 10);
-            if (newLog[ds]) { s++; } else { break; }
-            checkDate = new Date(checkDate.getTime() - 86400000);
-          }
+          var s = goalAccountabilityStreak(newLog, Date.now());
           sfxClick();
           if (didWork && addToast) addToast('\uD83D\uDCAA Nice! Accountability streak: ' + s + ' day' + (s !== 1 ? 's' : '') + '!', 'info');
           upd({ accountabilityLog: newLog, accountabilityStreak: s });
@@ -1697,7 +1707,7 @@ window.SelHub = window.SelHub || {
             summaryVersion: 2, periodStart: reviewNow - 7 * 86400000, periodEnd: reviewNow,
             id: 'wci-' + Date.now(),
             date: Date.now(),
-            weekOf: new Date().toISOString().slice(0, 10),
+            weekOf: goalLocalDate(new Date()),
             progressSummary: summary,
             obstacles: weeklyDraft.obstacles || '',
             focus: weeklyDraft.focus || '',
@@ -1720,7 +1730,7 @@ window.SelHub = window.SelHub || {
         // ── Daily Nudge helper ──
         var getDailyNudge = function() {
           if (goals.length === 0) return null;
-          var today = new Date().toISOString().slice(0, 10);
+          var today = goalLocalDate(new Date());
           // Check if any steps were completed today (use accountability log as proxy)
           if (accountabilityLog[today] === true) return null;
           var dayIndex = Math.floor(Date.now() / 86400000) % DAILY_NUDGE_MESSAGES.length;
@@ -2124,7 +2134,7 @@ window.SelHub = window.SelHub || {
               ) : null,
               // Accountability check
               (function() {
-                var today = new Date().toISOString().slice(0, 10);
+                var today = goalLocalDate(new Date());
                 if (accountabilityLog[today] !== undefined) return null;
                 if (goals.length === 0) return null;
                 return h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', gap: 10 } },

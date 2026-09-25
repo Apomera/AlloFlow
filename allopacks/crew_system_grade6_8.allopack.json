@@ -561,6 +561,7 @@
     {
       "id": "sel_station_crew_launch_system",
       "name": "Crew station: Week 4: One System for the Week",
+      "gradeLevel": "6th-8th Grade",
       "tools": [
         "execfunction",
         "goals"

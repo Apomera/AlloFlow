@@ -1336,19 +1336,18 @@
     // the 90+ tool suite feels like a connected system, not a list.
     var pairsPanel = null;
     if (data.pairsWith && data.pairsWith.length) {
-      var canNavigate = !!(ctx && typeof ctx.setSelHubTool === 'function');
+      var canNavigate = !!(ctx && (typeof ctx.openTool === 'function' || typeof ctx.setSelHubTool === 'function'));
       pairsPanel = h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1' } },
         h('div', { style: { fontSize: 10, color: '#a5b4fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '🔗 Pairs naturally with'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           data.pairsWith.map(function(p, i) {
-            var label = p.id;
-            var toolExists = false;
-            if (window.SelHub && window.SelHub._registry && window.SelHub._registry[p.id]) {
-              toolExists = true;
-              if (window.SelHub._registry[p.id].label) {
-                label = window.SelHub._registry[p.id].label;
-              }
-            }
+            // Tools load on demand (2026-09-20), so most partners are not registered yet: name
+            // them from the hub catalog (ctx.toolLabel) and open them with ctx.openTool.
+            var entry = window.SelHub && window.SelHub._registry && window.SelHub._registry[p.id];
+            var catalogLabel = '';
+            try { if (ctx && typeof ctx.toolLabel === 'function') catalogLabel = ctx.toolLabel(p.id) || ''; } catch (e) { catalogLabel = ''; }
+            var label = (entry && entry.label) || catalogLabel || p.id;
+            var toolExists = !!entry || !!catalogLabel;
             var nameNode = h('strong', { style: { color: '#c7d2fe' } }, label);
             var whyNode = p.why ? h('span', { style: { color: '#94a3b8' } }, ' · ' + p.why) : null;
 
@@ -1357,7 +1356,7 @@
                 key: i,
                 type: 'button',
                 onClick: function() {
-                  try { ctx.setSelHubTool(p.id); } catch (e) {}
+                  try { if (typeof ctx.openTool === 'function') ctx.openTool(p.id, label); else ctx.setSelHubTool(p.id); } catch (e) {}
                   if (ctx.announceToSR) {
                     try { ctx.announceToSR('Opened ' + label); } catch (e2) {}
                   }

@@ -1075,10 +1075,10 @@ window.SelHub = window.SelHub || {
   // Maps badge IDs to their display info. Populated as users earn them.
   // ══════════════════════════════════════════════════════════════
   var BADGE_CATALOG = {
-    self_check_done:    { id: 'self_check_done',    label: 'Honest Mirror',           icon: '🪞', color: '#7c3aed', desc: 'Took the role self-check' },
+    self_check_done:    { id: 'self_check_done', retired: true,    label: 'Honest Mirror',           icon: '🪞', color: '#7c3aed', desc: 'Took the role self-check' },
     pledge_sealed:      { id: 'pledge_sealed',      label: 'Pledge Sealed',           icon: '🏆', color: '#ca8a04', desc: 'Sealed your Upstander Pledge' },
-    practice_courage:   { id: 'practice_courage',   label: 'Practiced Courage',       icon: '🎭', color: '#2563eb', desc: 'Locked in strong responses in Practice' },
-    repair_walked:      { id: 'repair_walked',      label: 'Walked the Repair Path',  icon: '🔧', color: '#dc2626', desc: 'Completed the Repair pathway' },
+    practice_courage:   { id: 'practice_courage', retired: true,   label: 'Practiced Courage',       icon: '🎭', color: '#2563eb', desc: 'Locked in strong responses in Practice' },
+    repair_walked:      { id: 'repair_walked', retired: true,      label: 'Walked the Repair Path',  icon: '🔧', color: '#dc2626', desc: 'Completed the Repair pathway' },
     self_care:          { id: 'self_care',          label: 'Took Care of Yourself',   icon: '🛟', color: '#2563eb', desc: 'Completed the Right-After sequence' },
     trusted_circle:     { id: 'trusted_circle',     label: 'Built Your Circle',       icon: '👥', color: '#059669', desc: 'Listed 3+ trusted adults' },
     witness_logged:     { id: 'witness_logged',     label: 'Witness Logged',          icon: '📓', color: '#1e3a8a', desc: 'Saved a Witness Log entry' },
@@ -7693,6 +7693,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
         var nb = Object.assign({}, earnedBadges);
         nb[badgeId] = { id: badgeId, date: new Date().toLocaleDateString(), ts: Date.now() };
         upd({ earnedBadges: nb, showBadgeToast: badge });
+        earnedBadges = nb; // keep this render's copy current: a second award in one handler must add, not replace
         if (awardXP && xpAmount) awardXP(xpAmount, badge.label);
         if (soundOn) sfxBrave();
         if (addToast) addToast('Badge earned: ' + badge.label, 'success');
@@ -9321,7 +9322,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           // ── Badge Gallery ──
           (function() {
             var earnedIds = Object.keys(earnedBadges);
-            var allBadgeIds = Object.keys(BADGE_CATALOG);
+            var allBadgeIds = Object.keys(BADGE_CATALOG).filter(function(id) { return !BADGE_CATALOG[id].retired || earnedBadges[id]; }); // retired badges show only to students who earned them
             var earnedCount = earnedIds.length;
             var totalCount = allBadgeIds.length;
             return h('div', { style: { marginTop: 24 } },
@@ -9760,7 +9761,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                           if (!parsed.title) parsed.title = 'Your scenario';
                           upd({ genLoading: false, genScenario: parsed, genChoice: null, genError: '' });
                           if (soundOn) sfxBrave();
-                          tryAwardBadge('generated', 10);
+                          if (awardXP) awardXP(10, 'Generated a practice scenario'); // no badge was ever defined for this
                           if (announceToSR) announceToSR('Scenario ready');
                         } catch (e) {
                           upd({ genLoading: false, genError: 'The AI returned something I could not read. Try again or change one of the fields.' });
@@ -10238,7 +10239,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                             var reflectText = (r || 'You showed up to the practice. That matters. Next time, try one sentence shorter — short and direct usually lands better than long.').trim();
                             upd({ rpEnded: true, rpReflection: reflectText, rpLoading: false });
                             if (soundOn) sfxBrave();
-                            tryAwardBadge('roleplayed', 20);
+                            tryAwardBadge('rehearsed', 20); // a role-play reflection is AI feedback on a rehearsal ('roleplayed' matched no badge)
                             if (announceToSR) announceToSR('Reflection ready');
                           }).catch(function() {
                             upd({ rpEnded: true, rpReflection: 'Practice complete. Next time, try one short, direct sentence — usually lands better than a long one.', rpLoading: false });

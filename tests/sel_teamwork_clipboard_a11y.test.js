@@ -46,7 +46,8 @@ describe('Teamwork clipboard fallback accessibility', () => {
     // Hub-wide toolbar contract (tests/sel_toolbar_toggle_names.test.js): the sound
     // toggle is a switch named for sound; the badge toggle carries the count.
     expect(text).toContain("'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled");
-    expect(text).toContain("'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel");
+    // shownBadges leaves out retired badges a student never earned (tests/sel_retired_badges.test.js).
+    expect(text).toContain("'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel");
     // Named by its visible text (WCAG 2.5.3, Label in Name); no overriding label.
     expect(text).toContain("'Copy review text'");
     expect(text).not.toContain("'aria-label': 'Export retrospective as text'");

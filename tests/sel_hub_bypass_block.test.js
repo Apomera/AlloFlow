@@ -54,9 +54,11 @@ describe.skipIf(!R)('SEL Hub · the catalog can be bypassed', () => {
       onExportRequested: noop,
     }));
     doc = new R.JSDOM('<!doctype html><body>' + html + '</body>').window.document;
+    // The hub's focus guards (data-sel-focus-guard, 2026-09-24) pass focus straight on to the first or
+    // last control, so a keyboard user never rests on one; they are not stops.
     stops = [...doc.querySelectorAll(FOCUSABLE)].filter((el) => {
       const ti = el.getAttribute('tabindex');
-      return !(ti !== null && Number(ti) < 0) && !el.hasAttribute('disabled');
+      return !(ti !== null && Number(ti) < 0) && !el.hasAttribute('disabled') && !el.hasAttribute('data-sel-focus-guard');
     });
     cards = [...doc.querySelectorAll('[data-sel-tool-card-id]')];
   });

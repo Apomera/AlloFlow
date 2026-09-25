@@ -1311,25 +1311,39 @@ window.SelHub = window.SelHub || {
     { id: 'decision_5',        icon: '\uD83E\uDDE0', name: 'Thoughtful Thinker',   desc: 'Complete 5 decision trees' },
     { id: 'first_dilemma',     icon: '\uD83E\uDD14', name: 'Moral Explorer',       desc: 'Engage with your first ethical dilemma' },
     { id: 'dilemma_5',         icon: '\uD83D\uDCA1', name: 'Ethics Scholar',       desc: 'Engage with 5 ethical dilemmas' },
-    { id: 'first_consequence', icon: '\uD83D\uDD17', name: 'Consequence Tracker',  desc: 'Complete your first consequence map' },
-    { id: 'consequence_3',     icon: '\uD83C\uDF10', name: 'Ripple Effect Master', desc: 'Complete 3 consequence maps' },
-    { id: 'first_bias',        icon: '\uD83D\uDD0D', name: 'Bias Spotter',         desc: 'Historical award for revealing an earlier bias card' },
-    { id: 'bias_all',          icon: '\uD83E\uDDD0', name: 'Clear Thinker',        desc: 'Historical award based on earlier card reveals; not evidence of bias-free thinking' },
+    { id: 'first_consequence', retired: true, icon: '\uD83D\uDD17', name: 'Consequence Tracker',  desc: 'Complete your first consequence map' },
+    { id: 'consequence_3', retired: true,     icon: '\uD83C\uDF10', name: 'Ripple Effect Master', desc: 'Complete 3 consequence maps' },
+    { id: 'first_bias', retired: true,        icon: '\uD83D\uDD0D', name: 'Bias Spotter',         desc: 'Historical award for revealing an earlier bias card' },
+    { id: 'bias_all', retired: true,          icon: '\uD83E\uDDD0', name: 'Clear Thinker',        desc: 'Historical award based on earlier card reveals; not evidence of bias-free thinking' },
     { id: 'ai_advisor',        icon: '\u2728',        name: 'Wisdom Seeker',        desc: 'Use the AI decision advisor' },
     { id: 'total_10',          icon: '\uD83C\uDFC6', name: 'Master Decider',       desc: 'Complete 10 activities across all tabs' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Decision Streak',      desc: 'Practice 3 days in a row' },
     { id: 'values_explorer',   icon: '\uD83D\uDC9C', name: 'Values Explorer',      desc: 'Consider 3+ different values in one decision' },
-    { id: 'first_sort',        icon: '\uD83C\uDCCF', name: 'Priority Setter',      desc: 'Earlier activity: completed a values sort' },
-    { id: 'sort_3',            icon: '\uD83C\uDFAF', name: 'Values Architect',     desc: 'Earlier activity: completed 3 values sorts' },
+    { id: 'first_sort', retired: true,        icon: '\uD83C\uDCCF', name: 'Priority Setter',      desc: 'Earlier activity: completed a values sort' },
+    { id: 'sort_3', retired: true,            icon: '\uD83C\uDFAF', name: 'Values Architect',     desc: 'Earlier activity: completed 3 values sorts' },
     { id: 'first_realworld',   icon: '\uD83C\uDF0D', name: 'History Student',      desc: 'Analyze your first real-world decision' },
     { id: 'realworld_all',     icon: '\uD83C\uDFDB\uFE0F', name: 'Moral Historian', desc: 'Study all real-world decisions in your grade band' },
-    { id: 'compass_done',      icon: '\uD83E\uDDED', name: 'Moral Compass',     desc: 'Historical award from the earlier Moral Compass quiz' },
-    { id: 'compass_balanced',  icon: '\u2696\uFE0F', name: 'Balanced Thinker',  desc: 'Historical award from earlier quiz scores; not a measure of reasoning quality' }
+    { id: 'compass_done', retired: true,      icon: '\uD83E\uDDED', name: 'Moral Compass',     desc: 'Historical award from the earlier Moral Compass quiz' },
+    { id: 'compass_balanced', retired: true,  icon: '\u2696\uFE0F', name: 'Balanced Thinker',  desc: 'Historical award from earlier quiz scores; not a measure of reasoning quality' }
   ];
 
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // Local calendar day (YYYY-MM-DD). toISOString() is the UTC date, which in
+  // US time zones becomes tomorrow in the late afternoon or evening.
+  function selLocalDay(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // How many per-scenario practice drafts (objects of text fields) have any writing.
+  function selSavedDrafts(drafts) {
+    if (!drafts || typeof drafts !== 'object' || Array.isArray(drafts)) return 0;
+    return Object.keys(drafts).filter(function(k) {
+      var v = drafts[k];
+      return !!v && typeof v === 'object' && Object.keys(v).some(function(f) { return typeof v[f] === 'string' && v[f].trim() !== ''; });
+    }).length;
+  }
+
   window.SelHub.registerTool('decisions', {
     icon: '\u2696\uFE0F',
     label: 'Decision Workshop',
@@ -1395,7 +1409,9 @@ window.SelHub = window.SelHub || {
       var csMid          = d.csMid || '';
       var csLong         = d.csLong || '';
       var csSaved        = d.csSaved || false;
-      var csCompleted    = d.csCompleted || 0;
+      // Consequence maps are saved as notes per scenario (mapDrafts); csCompleted is the
+      // earlier activity's count and nothing writes it, so "Consequence Maps" read 0.
+      var csCompleted    = (d.csCompleted || 0) + selSavedDrafts(d.mapDrafts);
 
       // Bias Check state
       var biasIdx        = d.biasIdx || 0;
@@ -1429,6 +1445,7 @@ window.SelHub = window.SelHub || {
       // Practice log & badges
       var practiceLog    = d.practiceLog || [];
       var earnedBadges   = d.earnedBadges || {};
+      var shownBadges = BADGES.filter(function(b) { return !b.retired || earnedBadges[b.id]; }); // retired badges show only to students who earned them
       var showBadgePopup = d.showBadgePopup || null;
       var showBadgesPanel = d.showBadgesPanel || false;
       var decisionBadgeDialogRef = React.useRef(null);
@@ -1504,6 +1521,7 @@ window.SelHub = window.SelHub || {
         var newBadges = Object.assign({}, earnedBadges);
         newBadges[badgeId] = Date.now();
         upd('earnedBadges', newBadges);
+        earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         var badge = BADGES.find(function(b) { return b.id === badgeId; });
         if (badge) {
           upd('showBadgePopup', badgeId);
@@ -1521,13 +1539,13 @@ window.SelHub = window.SelHub || {
         var totalActivities = dtCompleted + edCompleted + csCompleted + biasViewed + vsCompleted + rwCompleted;
         if (totalActivities + 1 >= 10) tryAwardBadge('total_10');
         var daySet = {};
-        newLog.forEach(function(e) { daySet[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+        newLog.forEach(function(e) { daySet[selLocalDay(new Date(e.timestamp))] = true; });
         var today = new Date();
         var streak = 0;
         for (var si = 0; si < 30; si++) {
           var chk = new Date(today);
           chk.setDate(chk.getDate() - si);
-          if (daySet[chk.toISOString().slice(0,10)]) { streak++; } else if (si > 0) { break; }
+          if (daySet[selLocalDay(chk)]) { streak++; } else if (si > 0) { break; }
         }
         if (streak >= 3) tryAwardBadge('streak_3');
       }
@@ -1580,7 +1598,7 @@ window.SelHub = window.SelHub || {
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         // Badge counter
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _decFg('#94a3b8'), position: 'relative' }
         },
@@ -1644,9 +1662,9 @@ window.SelHub = window.SelHub || {
         badgePopup = h('div', { ref: decisionBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'decision-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeDecisionBadgeDialogs(); } },
           h('div', { style: { position: 'relative', background: _decBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
             h('button', { 'aria-label': 'Close badges panel', onClick: closeDecisionBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _decBg('#334155'), color: _decFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
-            h('h3', { id: 'decision-badges-panel-title', style: { textAlign: 'center', color: _decFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { id: 'decision-badges-panel-title', style: { textAlign: 'center', color: _decFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-              BADGES.map(function(b) {
+              shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _decBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),

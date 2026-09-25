@@ -958,8 +958,8 @@ window.SelHub = window.SelHub || {
     { id: 'ai_mediator',      icon: '\u2728',        name: 'Mediation Seeker',      desc: 'Use the AI mediator' },
     { id: 'style_quiz',       icon: '\uD83E\uDDE9', name: 'Self-Aware',            desc: 'Complete the conflict styles quiz' },
     { id: 'style_collab',     icon: '\uD83C\uDF1F', name: 'Collaborator',          desc: 'Score highest in Collaborating style' },
-    { id: 'first_apology',    icon: '\uD83D\uDC8C', name: 'Brave Apologizer',      desc: 'Complete your first structured apology' },
-    { id: 'apology_3',        icon: '\uD83D\uDC96', name: 'Repair Artist',         desc: 'Complete 3 structured apologies' },
+    { id: 'first_apology', retired: true,    icon: '\uD83D\uDC8C', name: 'Brave Apologizer',      desc: 'Complete your first structured apology' },
+    { id: 'apology_3', retired: true,        icon: '\uD83D\uDC96', name: 'Repair Artist',         desc: 'Complete 3 structured apologies' },
     { id: 'first_cooldown',   icon: '\uD83E\uDDD8', name: 'Cool & Collected',      desc: 'Use a cool-down exercise' },
     { id: 'conflict_10',     icon: '\uD83C\uDFAF', name: 'Conflict Veteran',      desc: 'Complete 10 conflict scenarios' },
     { id: 'istatement_10',   icon: '\uD83D\uDCAC', name: 'Voice of Reason',       desc: 'Complete 10 I-statement conversions' },
@@ -978,6 +978,20 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // Local calendar day (YYYY-MM-DD). toISOString() is the UTC date, which in
+  // US time zones becomes tomorrow in the late afternoon or evening.
+  function selLocalDay(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // How many per-scenario practice drafts (objects of text fields) have any writing.
+  function selSavedDrafts(drafts) {
+    if (!drafts || typeof drafts !== 'object' || Array.isArray(drafts)) return 0;
+    return Object.keys(drafts).filter(function(k) {
+      var v = drafts[k];
+      return !!v && typeof v === 'object' && Object.keys(v).some(function(f) { return typeof v[f] === 'string' && v[f].trim() !== ''; });
+    }).length;
+  }
+
   window.SelHub.registerTool('conflict', {
     icon: '\uD83E\uDD1D',
     label: 'Conflict Resolution Lab',
@@ -1070,7 +1084,9 @@ window.SelHub = window.SelHub || {
       var apRepair       = d.apRepair || '';
       var apPromise      = d.apPromise || '';
       var apRevealed     = d.apRevealed || false;
-      var apCompleted    = d.apCompleted || 0;
+      // Apologies are saved as notes per scenario (apDrafts); apCompleted is the earlier
+      // activity's count and nothing writes it, so "Apologies Crafted" read 0.
+      var apCompleted    = (d.apCompleted || 0) + selSavedDrafts(d.apDrafts);
 
       // Role-Play state (Practice Mode)
       var rpModeRP       = d.rpModeRP || null; // null | 'practice' | 'mediation'
@@ -1099,6 +1115,7 @@ window.SelHub = window.SelHub || {
       // Practice log & badges
       var practiceLog    = d.practiceLog || [];
       var earnedBadges   = d.earnedBadges || {};
+      var shownBadges = BADGES.filter(function(b) { return !b.retired || earnedBadges[b.id]; }); // retired badges show only to students who earned them
       var showBadgePopup = d.showBadgePopup || null;
       var showBadgesPanel = d.showBadgesPanel || false;
       var badgeDialogRef = React.useRef(null);
@@ -1174,6 +1191,7 @@ window.SelHub = window.SelHub || {
         var newBadges = Object.assign({}, earnedBadges);
         newBadges[badgeId] = Date.now();
         upd('earnedBadges', newBadges);
+        earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         var badge = BADGES.find(function(b) { return b.id === badgeId; });
         if (badge) {
           upd('showBadgePopup', badgeId);
@@ -1192,13 +1210,13 @@ window.SelHub = window.SelHub || {
         if (totalActivities + 1 >= 10) tryAwardBadge('total_10');
         if (totalActivities + 1 >= 20) tryAwardBadge('total_20');
         var daySet = {};
-        newLog.forEach(function(e) { daySet[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+        newLog.forEach(function(e) { daySet[selLocalDay(new Date(e.timestamp))] = true; });
         var today = new Date();
         var streak = 0;
         for (var si = 0; si < 30; si++) {
           var chk = new Date(today);
           chk.setDate(chk.getDate() - si);
-          if (daySet[chk.toISOString().slice(0,10)]) { streak++; } else if (si > 0) { break; }
+          if (daySet[selLocalDay(chk)]) { streak++; } else if (si > 0) { break; }
         }
         if (streak >= 3) tryAwardBadge('streak_3');
       }
@@ -1241,7 +1259,7 @@ window.SelHub = window.SelHub || {
           })
         ),
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _cflFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _cflFg('#94a3b8'), position: 'relative' } },
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _cflFg('#94a3b8'), position: 'relative' } },
           '\uD83C\uDFC5',
           Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _cflFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
         )
@@ -1378,9 +1396,9 @@ window.SelHub = window.SelHub || {
         badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeBadgeDialogs(); } },
           h('div', { style: { position: 'relative', background: _cflBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
             h('button', { 'aria-label': 'Close badges panel', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
-            h('h3', { id: 'conflict-badges-panel-title', style: { textAlign: 'center', color: _cflFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { id: 'conflict-badges-panel-title', style: { textAlign: 'center', color: _cflFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-              BADGES.map(function(b) {
+              shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _cflBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _cflBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),

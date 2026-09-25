@@ -556,7 +556,7 @@ window.SelHub = window.SelHub || {
     { id: 'identity_builder',  icon: '\uD83E\uDDE9', name: 'Identity Builder',     desc: 'Fill in 3 identity areas' },
     { id: 'ally_training',     icon: '\uD83E\uDD1D', name: 'Ally in Training',     desc: 'Complete a scenario with top rating' },
     { id: 'deep_listener',     icon: '\uD83D\uDC42', name: 'Deep Listener',        desc: 'Complete 3 scenarios' },
-    { id: 'bridge_builder',    icon: '\uD83C\uDF09', name: 'Bridge Builder',       desc: 'Complete a scenario in every grade band topic' },
+    { id: 'bridge_builder', retired: true,    icon: '\uD83C\uDF09', name: 'Bridge Builder',       desc: 'Complete a scenario in every grade band topic' },
     { id: 'reflective',        icon: '\uD83E\uDE9E', name: 'Reflective',           desc: 'Write your Cultural Superpower reflection' },
     { id: 'ai_learner',        icon: '\u2728',        name: 'AI Learner',           desc: 'Ask the AI Cultural Coach a question' },
     { id: 'all_tabs',          icon: '\uD83D\uDCCB', name: 'All Tabs Visited',     desc: 'Visit every tab at least once' },
@@ -581,6 +581,12 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // Local calendar day (YYYY-MM-DD). toISOString() is the UTC date, which in
+  // US time zones becomes tomorrow in the late afternoon or evening.
+  function selLocalDay(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   window.SelHub.registerTool('community', {
     icon: '\uD83C\uDF0D',
     label: 'Community & Culture',
@@ -723,6 +729,7 @@ window.SelHub = window.SelHub || {
         // Badges & log
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
+        var shownBadges = BADGES.filter(function(b) { return !b.retired || earnedBadges[b.id]; }); // retired badges show only to students who earned them
         var showBadgePopup = d.showBadgePopup || null;
         var showBadgesPanel = d.showBadgesPanel || false;
         var communityBadgeDialogRef = React.useRef(null);
@@ -802,6 +809,7 @@ window.SelHub = window.SelHub || {
           var newBadges = Object.assign({}, earnedBadges);
           newBadges[badgeId] = Date.now();
           upd({ earnedBadges: newBadges });
+          earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
           var badge = BADGES.find(function(b) { return b.id === badgeId; });
           if (badge) {
             upd({ showBadgePopup: badgeId });
@@ -870,13 +878,13 @@ window.SelHub = window.SelHub || {
           var totalAct = learnCount + scCompleted + Object.keys(identityMap).length;
           if (totalAct + 1 >= 10) tryAwardBadge('total_10');
           var daySet = {};
-          newLog.forEach(function(e) { daySet[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+          newLog.forEach(function(e) { daySet[selLocalDay(new Date(e.timestamp))] = true; });
           var today = new Date();
           var streak = 0;
           for (var si = 0; si < 30; si++) {
             var chk = new Date(today);
             chk.setDate(chk.getDate() - si);
-            if (daySet[chk.toISOString().slice(0,10)]) { streak++; } else if (si > 0) { break; }
+            if (daySet[selLocalDay(chk)]) { streak++; } else if (si > 0) { break; }
           }
           if (streak >= 3) tryAwardBadge('streak_3');
         }
@@ -1019,9 +1027,9 @@ window.SelHub = window.SelHub || {
           badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeCommunityBadgeDialogs(); } },
             h('div', { style: { position: 'relative', background: _comBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
               h('button', { 'aria-label': 'Close badges panel', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
-              h('h3', { id: 'community-badges-panel-title', style: { textAlign: 'center', color: _comFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+              h('h3', { id: 'community-badges-panel-title', style: { textAlign: 'center', color: _comFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-                BADGES.map(function(b) {
+                shownBadges.map(function(b) {
                   var earned = !!earnedBadges[b.id];
                   return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                     h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
@@ -2079,9 +2087,9 @@ window.SelHub = window.SelHub || {
               )
             ),
             // Badge grid
-            h('h4', { style: { fontSize: 14, color: _comFg('#f1f5f9'), marginBottom: 12 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h4', { style: { fontSize: 14, color: _comFg('#f1f5f9'), marginBottom: 12 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 } },
-              BADGES.map(function(b) {
+              shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.45 } },
                   h('div', { style: { fontSize: 26 } }, earned ? b.icon : '\uD83D\uDD12'),

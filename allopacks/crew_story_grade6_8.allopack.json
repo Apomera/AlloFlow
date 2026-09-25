@@ -565,6 +565,7 @@
     {
       "id": "sel_station_crew_launch_story",
       "name": "Crew station: Week 12: The Story of Your Trimester",
+      "gradeLevel": "6th-8th Grade",
       "tools": [
         "howlTracker",
         "strengths"

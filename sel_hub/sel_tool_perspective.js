@@ -1311,6 +1311,12 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // Local calendar day (YYYY-MM-DD). toISOString() is the UTC date, which in
+  // US time zones becomes tomorrow in the late afternoon or evening.
+  function selLocalDay(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   window.SelHub.registerTool('perspective', {
     icon: '\uD83D\uDD04',
     label: 'Perspective-Taking Lab',
@@ -1469,6 +1475,7 @@ window.SelHub = window.SelHub || {
         var newBadges = Object.assign({}, earnedBadges);
         newBadges[badgeId] = Date.now();
         upd('earnedBadges', newBadges);
+        earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         var badge = BADGES.find(function(b) { return b.id === badgeId; });
         if (badge) {
           upd('showBadgePopup', badgeId);
@@ -1486,13 +1493,13 @@ window.SelHub = window.SelHub || {
         var totalActivities = scenCompleted + swapCompleted + emCompleted + hfTotal + journalDone + respondDone + storyDone + exerciseDone + biasDone + guidedJDone;
         if (totalActivities + 1 >= 10) tryAwardBadge('total_10');
         var daySet = {};
-        newLog.forEach(function(e) { daySet[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+        newLog.forEach(function(e) { daySet[selLocalDay(new Date(e.timestamp))] = true; });
         var today = new Date();
         var streak = 0;
         for (var si = 0; si < 30; si++) {
           var chk = new Date(today);
           chk.setDate(chk.getDate() - si);
-          if (daySet[chk.toISOString().slice(0,10)]) { streak++; } else if (si > 0) { break; }
+          if (daySet[selLocalDay(chk)]) { streak++; } else if (si > 0) { break; }
         }
         if (streak >= 3) tryAwardBadge('streak_3');
       }

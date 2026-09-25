@@ -55,24 +55,13 @@ still there on Thursday. Students can find it again under SEL Stations in the Hi
 record is a practice record, not a grade, and the station says so on screen. Saving the project
 keeps it.
 
-**Known problems as of September 22, 2026, and what to do.** Fixes have been requested; check with
-the AlloFlow team before PD, and skip this paragraph once they ship.
+**Known problem as of September 24, 2026, and what to do.** Three problems listed here earlier are
+fixed on the live app (checked September 24): tool links open their tool, Hub work comes back
+from a saved project, and the pack survives a browser reload. One remains:
 
-- *A tool link opens the Hub but not the tool.* After about 20 seconds the Crew station starts and
-  a message says the tool "is not available in this SEL Hub". It is available: in the station box
-  at the top of the Hub, click **Open activity for this step**, and the tool opens in a second or
-  two.
 - *A link opens AlloFlow again in a new tab.* That happens when a link is clicked while the app is
   still loading (a small "left" counter shows in the bottom corner). Close the new tab, wait for
   the counter to go away, and click the link again.
-- *Hub work does not come back from a saved project.* A student's HOWL Tracker check-ins and goals
-  and their Goal Setter goals are not restored when the saved project is loaded the next week, so
-  week 10's "open your week-4 goal" and week 12's "pull evidence from your check-ins" find nothing.
-  Until this is fixed, have students also write the week-4 goal and each week-6 rating with its
-  evidence in their notebook. The Crew station records are not affected.
-- *After the browser is reopened, the directions show a block of code and no goals.* Load the
-  week's pack file again (History panel, More, Load Project). The directions and goals come back,
-  with the ticks the student had already earned.
 
 **What "HOWL evidence" means here.** Each week's commitment is one observable behavior from the
 HOWL's own language on the grading guide. The evidence is the student's account of a specific
@@ -464,9 +453,9 @@ and the goal set with it, keeps what worked, and changes one part.
 | 33 to 38 | Frames: the review in three answers and one change. Memory aid. | Sentence Frames, Remember Said, Happened, Change |
 | 38 to 40 | Launch the challenge; say the commitment. | Decide Challenge: One Thing, Not Everything |
 
-**In the Hub.** Goal Setter opens on Goals; "No goals yet" means the goal did not come back with the
-project, not that the student never wrote one (see "Known problems" under Before week 1), so use
-the notebook copy. Answer the three questions against the goal as written. HOWL Tracker's History
+**In the Hub.** Goal Setter opens on Goals, with the week-4 goal if the student saved the project
+after setting it; "No goals yet" means that save did not happen, so work from the goal as the
+student remembers it. Answer the three questions against the goal as written. HOWL Tracker's History
 tab is a trend chart of the weekly check-in ratings with the past check-ins under it. The Tracker
 counts time in quarters, not trimesters, and files a student's work under the quarter the Tracker
 was started in. A Tracker started fresh in November reads "Q2 (Nov-Jan)" and its History says "No

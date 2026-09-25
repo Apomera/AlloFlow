@@ -1577,10 +1577,13 @@
     function gradeBand(gradeLevel) {
       if (!gradeLevel) return 'elementary';
       var g = String(gradeLevel).toLowerCase().replace(/[^a-z0-9-]/g, '');
-      if (/^[k012]|pre|kinder/.test(g)) return 'elementary';
-      if (/^[345]/.test(g))             return 'elementary';
-      if (/^[678]|middle|6-8/.test(g))  return 'middle';
-      return 'high'; // 9-12, high, etc.
+      if (/pre|kinder|^k/.test(g)) return 'elementary';
+      // The leading grade number decides: /^[k012]/ once read 10th, 11th and 12th as elementary.
+      var n = parseInt(g, 10);
+      if (!isNaN(n)) return n <= 5 ? 'elementary' : n <= 8 ? 'middle' : 'high';
+      if (/middle/.test(g)) return 'middle';
+      if (/elementary|primary/.test(g)) return 'elementary';
+      return 'high'; // high school, college, adult
     }
 
     // ── For-Educators content (inlined from FOR_EDUCATORS.md) ──
@@ -2214,7 +2217,6 @@
       var chooseResponse = _chooseResponse[0], setChooseResponse = _chooseResponse[1];
       var _exampleBand = React.useState(gradeBand(gradeLevel));
       var exampleBand = _exampleBand[0], setExampleBand = _exampleBand[1];
-      React.useEffect(function () { setExampleBand(gradeBand(gradeLevel)); }, [gradeLevel]);
 
       // Tool snapshots (save/load)
       var _selSnapshots = React.useState(function () {
@@ -2274,6 +2276,16 @@
         window.addEventListener('allo-plugins-changed', handler);
         return function() { window.removeEventListener('allo-plugins-changed', handler); };
       }, []);
+      // A tool can be selected before its module has loaded: by another tool (the Anxiety Toolkit
+      // sends a student who is not safe to Crisis Companion), by the host, or by a restored session.
+      // Only a card click used to request the module, so those waited on "Loading tool..." forever.
+      React.useEffect(function () {
+        if (!selHubTool) return;
+        try {
+          if (window.SelHub && window.SelHub.isRegistered(selHubTool)) return;
+          if (typeof window.__alloEnsureSelPluginLoaded === 'function') window.__alloEnsureSelPluginLoaded(selHubTool);
+        } catch (e) {}
+      }, [selHubTool]);
 
       var _viewportWidthState = React.useState(function() {
         try { return window.innerWidth || 1024; } catch (e) { return 1024; }
@@ -2289,6 +2301,47 @@
       }, []);
       var isCompact = viewportWidth < 720;
       var isMidWidth = viewportWidth < 980;
+      // The AlloBot floats above this dialog (z 10000 vs 9999) and parks at the top right, where the
+      // header's buttons end: at its default spot it covered Close SEL Hub completely, so a click on
+      // the X opened the bot's voice settings. While the bot overlaps the header, the header leaves
+      // that side free. Measured, not assumed: the student can drag the bot anywhere, or hide it.
+      var _botClearState = React.useState(null);
+      var botClear = _botClearState[0]; var setBotClear = _botClearState[1];
+      var _selHeaderRef = React.useRef(null);
+      React.useEffect(function () {
+        if (!showSelHub) { setBotClear(null); return; }
+        function measure() {
+          var next = null;
+          try {
+            var hdr = _selHeaderRef.current;
+            var bot = document.querySelector('[data-allobot-control-surface="true"]');
+            if (hdr && bot) {
+              var hr = hdr.getBoundingClientRect();
+              var box = null;
+              // The control ring sits outside the bot's own box.
+              [bot].concat(Array.prototype.slice.call(bot.querySelectorAll('button'))).forEach(function (el) {
+                var r = el.getBoundingClientRect();
+                if (!r.width || !r.height) return;
+                box = box ? { l: Math.min(box.l, r.left), r: Math.max(box.r, r.right), t: Math.min(box.t, r.top), b: Math.max(box.b, r.bottom) } : { l: r.left, r: r.right, t: r.top, b: r.bottom };
+              });
+              if (box && box.t < hr.bottom && box.b > hr.top && box.l < hr.right && box.r > hr.left) {
+                next = (box.l + box.r) / 2 > (hr.left + hr.right) / 2
+                  ? { side: 'right', px: Math.ceil(hr.right - box.l) + 8 }
+                  : { side: 'left', px: Math.ceil(box.r - hr.left) + 8 };
+              }
+            }
+          } catch (e) { next = null; }
+          setBotClear(function (prev) {
+            if (!prev && !next) return prev;
+            if (prev && next && prev.side === next.side && Math.abs(prev.px - next.px) < 4) return prev;
+            return next;
+          });
+        }
+        measure();
+        var timer = setInterval(measure, 1000);
+        window.addEventListener('resize', measure);
+        return function () { clearInterval(timer); window.removeEventListener('resize', measure); };
+      }, [showSelHub]);
 
       // ── CHANGE 1: Ephemerality explainer state ──
       // Surfaces a first-run modal explaining that work is lost without Export.
@@ -2608,6 +2661,11 @@
         if (!activeStationId) return null;
         return savedStations.find(function (s) { return s.id === activeStationId; }) || null;
       })();
+      // A station may declare the grade its tools were written for (a Crew Launch pack is 6-8).
+      // While it is active the hub hands tools that grade, not the app-wide setting, which stays
+      // '5th Grade' until a teacher changes it and also drives text leveling elsewhere.
+      var toolGradeLevel = (activeStation && typeof activeStation.gradeLevel === 'string' && activeStation.gradeLevel.trim()) || gradeLevel;
+      React.useEffect(function () { setExampleBand(gradeBand(toolGradeLevel)); }, [toolGradeLevel]);
 
       var _questProgress = React.useState(function () {
         // localStorage first; the host's window slot when storage is blocked or
@@ -3185,6 +3243,54 @@
         return function() { document.removeEventListener('keydown', handleKeyDown); };
       });
 
+      // The hub is a full-screen aria-modal dialog, but only its inner dialogs kept focus: after its
+      // last control Tab went to <body> and on to the page hidden behind it, and closing it left focus
+      // on <body>. Two focus guards (the dialog's first and last children) wrap Tab around, and focus
+      // goes back to whatever opened the hub.
+      React.useEffect(function () {
+        if (!showSelHub) return;
+        var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]';
+        function hubEl() { return document.querySelector('[role="dialog"][aria-label="SEL Hub"]'); }
+        function focusEdge(hub, last) {
+          var list = Array.prototype.slice.call(hub.querySelectorAll(FOCUSABLE)).filter(function (el) {
+            return !el.hasAttribute('data-sel-focus-guard') && el.getAttribute('tabindex') !== '-1';
+          });
+          if (last) list.reverse();
+          for (var i = 0; i < list.length; i++) {
+            try { list[i].focus(); } catch (e) {}
+            // A control that is hidden (or inside a closed <details>) refuses focus: try the next.
+            if (document.activeElement === list[i]) return true;
+          }
+          return false;
+        }
+        var wasInside = false;
+        function onFocusIn(e) {
+          var hub = hubEl(); var t = e.target;
+          if (!hub || !t) return;
+          var guard = t.getAttribute && t.getAttribute('data-sel-focus-guard');
+          if (guard && hub.contains(t)) {
+            // From inside, reaching a guard means Tab ran off that end: wrap. From outside: come in.
+            focusEdge(hub, guard === 'start' ? wasInside : !wasInside);
+            return;
+          }
+          wasInside = hub.contains(t);
+        }
+        var opener = document.activeElement;
+        var openHub = hubEl();
+        if (!opener || opener === document.body || (openHub && openHub.contains(opener))) opener = null;
+        document.addEventListener('focusin', onFocusIn, true);
+        return function () {
+          document.removeEventListener('focusin', onFocusIn, true);
+          setTimeout(function () {
+            try {
+              var a = document.activeElement;
+              // Only when focus was lost with the hub; a place the student chose since is left alone.
+              if (opener && opener.isConnected && (!a || a === document.body || !a.isConnected)) opener.focus();
+            } catch (e) {}
+          }, 0);
+        };
+      }, [showSelHub]);
+
       // ── Reduced motion preference ──
       var _reduceMotion = false;
       try { _reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
@@ -3591,7 +3697,7 @@
       }
 
       function _selGradePick() {
-        var band = gradeBand(gradeLevel);
+        var band = gradeBand(toolGradeLevel);
         var ids = band === 'elementary'
           ? ['zones', 'emotions', 'coping', 'friendship']
           : band === 'middle'
@@ -4225,9 +4331,13 @@
       });
 
       // ── Header bar (fixed: removed bogus role=button from non-interactive containers) ──
+      var _headerPad = isCompact ? 12 : 20;
       var header = h('div', {
         role: 'banner',
-        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: isCompact ? 'wrap' : 'nowrap', padding: isCompact ? '12px 12px' : '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
+        ref: _selHeaderRef,
+        'data-sel-bot-clear': botClear ? botClear.side + ':' + botClear.px : undefined,
+        style: Object.assign({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: isCompact ? 'wrap' : 'nowrap', padding: isCompact ? '12px 12px' : '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg },
+          botClear ? (botClear.side === 'right' ? { paddingRight: Math.max(_headerPad, botClear.px) } : { paddingLeft: Math.max(_headerPad, botClear.px) }) : null)
       },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 8 : 12, minWidth: 0 } },
           selHubTool && h('button', {
@@ -4240,7 +4350,7 @@
           ),
           h('span', {
             style: { display: isCompact ? 'none' : 'inline', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
-          }, gradeBand(gradeLevel) === 'elementary' ? 'Elementary' : gradeBand(gradeLevel) === 'middle' ? 'Middle School' : 'High School')
+          }, gradeBand(toolGradeLevel) === 'elementary' ? 'Elementary' : gradeBand(toolGradeLevel) === 'middle' ? 'Middle School' : 'High School')
         ),
         h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 6 : 8, position: 'relative', flexWrap: 'wrap', justifyContent: isCompact ? 'flex-end' : 'flex-start', marginLeft: 'auto' } },
           // CHANGE 2: Unsaved-changes badge \u2014 dot only when dirty
@@ -4285,7 +4395,8 @@
           // XP badge (fixed: removed bogus role=button from display-only element)
           h('div', {
             'aria-label': selXp + ' SEL experience points',
-            style: { background: _t.accent, color: _t.accentText, borderRadius: 20, padding: isCompact ? '6px 10px' : '4px 14px', fontSize: 12, fontWeight: 700, minHeight: isCompact ? 24 : 'auto' }
+            // High contrast forces yellow text on every div, so the accent (#00ff00) cannot stay behind it.
+            style: { background: isContrast ? '#000000' : _t.accent, color: isContrast ? '#ffff00' : _t.accentText, border: isContrast ? '1px solid #ffff00' : 'none', borderRadius: 20, padding: isCompact ? '6px 10px' : '4px 14px', fontSize: 12, fontWeight: 700, minHeight: isCompact ? 24 : 'auto' }
           }, '\u2728 ' + selXp + ' XP'),
           // Close button
           h('button', {
@@ -5193,7 +5304,7 @@
         // Grade-band split follows the crisis tool's existing convention:
         // elementary is pointed at a person, not at a phone number.
         function _selCrisisBandLines() {
-          if (gradeBand(gradeLevel) === 'elementary') {
+          if (gradeBand(toolGradeLevel) === 'elementary') {
             return h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.6, fontWeight: 700, color: _t.text } },
               'If you cannot find an adult right away, keep asking until someone listens. You deserve help.');
           }
@@ -6158,7 +6269,7 @@
                 teacherCue && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, marginTop: 2 } },
                   h('span', { style: { fontSize: 12, color: _t.textMuted, fontWeight: 800 } }, teacherCue.time + ' | ' + teacherCue.format),
                   teacherCue.sensitive && h('span', {
-                    style: { fontSize: 12, fontWeight: 900, color: '#991b1b', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 4, padding: '1px 5px', textTransform: 'uppercase' }
+                    style: { fontSize: 12, fontWeight: 900, color: isContrast ? '#ffff00' : '#991b1b', background: isContrast ? '#000000' : '#fef2f2', border: '1px solid ' + (isContrast ? '#ffff00' : '#fecaca'), borderRadius: 4, padding: '1px 5px', textTransform: 'uppercase' }
                   }, 'Preview first')
                 ),
                 // Evidence-tradition pill (sourced from sel_standards_alignment.js)
@@ -6188,7 +6299,7 @@
                   return h('span', {
                     'aria-label': srText,
                     title: srText,
-                    style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: tierMeta.bg, color: tierMeta.color, letterSpacing: 0.3, textTransform: 'uppercase', marginTop: 4, alignSelf: 'flex-start' }
+                    style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: isContrast ? '#000000' : tierMeta.bg, color: isContrast ? '#ffff00' : tierMeta.color, border: isContrast ? '1px solid #ffff00' : 'none', letterSpacing: 0.3, textTransform: 'uppercase', marginTop: 4, alignSelf: 'flex-start' }
                   },
                     h('span', { 'aria-hidden': 'true', style: { width: 6, height: 6, borderRadius: '50%', background: tierMeta.color, display: 'inline-block', flexShrink: 0 } }),
                     tierMeta.label
@@ -6265,6 +6376,10 @@
 
           // ── Navigation ──
           setSelHubTool: setSelHubTool,
+          // Name and open ANOTHER tool the way its card does: the catalog exists before any tool
+          // module does, and openSelToolById requests an unloaded tool's module before opening it.
+          toolLabel: function (toolId) { var t = _selToolById(toolId); return t ? t.label : ''; },
+          openTool: function (toolId, label) { openSelToolById(toolId, label); },
           setSelHubTab: setSelHubTab,
           selHubTab: selHubTab,
           selHubTool: selHubTool,
@@ -6317,8 +6432,8 @@
           },
 
           // ── Grade / complexity ──
-          gradeLevel: gradeLevel,
-          gradeBand: gradeBand(gradeLevel), // 'elementary', 'middle', or 'high'
+          gradeLevel: toolGradeLevel,
+          gradeBand: gradeBand(toolGradeLevel), // 'elementary', 'middle', or 'high'
 
           // ── Snapshots ──
           toolSnapshots: selSnapshots,
@@ -6390,6 +6505,9 @@
 
       // ── Loading state (tool selected but plugin not yet loaded) ──
       if (selHubTool && !toolContent) {
+        var _toolLoadState = null;
+        try { if (typeof window.__alloGetSelPluginState === 'function') _toolLoadState = window.__alloGetSelPluginState(selHubTool); } catch (e) { _toolLoadState = null; }
+        var _toolLoadFailed = !!(_toolLoadState && _toolLoadState.status === 'error');
         toolContent = h('div', { style: { padding: 60, textAlign: 'center', color: _t.textMuted } },
           h('div', { 'aria-hidden': 'true',
             style: {
@@ -6397,8 +6515,13 @@
               animation: _reduceMotion ? 'none' : 'pulse 2s ease-in-out infinite'
             }
           }, '\u2764\uFE0F\u200D\uD83D\uDD25'),
-          h('p', { style: { fontWeight: 700, fontSize: 16, marginBottom: 4, color: _t.text } }, 'Loading tool...'),
-          h('p', { style: { fontSize: 12 } }, 'The plugin file is still being fetched.'),
+          h('p', { style: { fontWeight: 700, fontSize: 16, marginBottom: 4, color: _t.text } }, _toolLoadFailed ? 'This tool could not load.' : 'Loading tool...'),
+          h('p', { style: { fontSize: 12 } }, _toolLoadFailed ? ((_toolLoadState.error || 'The file did not arrive.') + ' Check the connection, then try again.') : 'The plugin file is still being fetched.'),
+          _toolLoadFailed ? h('button', {
+            type: 'button',
+            onClick: function() { try { if (typeof window.__alloRetrySelPlugin === 'function') window.__alloRetrySelPlugin(selHubTool); } catch (e) {} },
+            style: { marginTop: 16, marginRight: 8, padding: '8px 20px', borderRadius: 8, background: _t.btnBg, color: _t.btnText, fontWeight: 600, border: _t.btnBorder, cursor: 'pointer' }
+          }, 'Try again') : null,
           h('button', {
             onClick: function() { var fromTool = selHubTool; setSelHubTool(null); alloFocusToolCard(fromTool); },
             style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: _t.btnBg, color: _t.btnText, fontWeight: 600, border: _t.btnBorder, cursor: 'pointer' }
@@ -6423,6 +6546,7 @@
           overflow: 'hidden'
         }
       },
+        h('span', { tabIndex: 0, 'data-sel-focus-guard': 'start', style: { position: 'fixed', top: 1, left: 1, width: 1, height: 0, padding: 0, overflow: 'hidden', outline: 'none' } }),
         srLive,
         header,
         h('div', {
@@ -6445,7 +6569,8 @@
         ephemeralExplainerModal,
         forEducatorsModal,
         clearSelDataConfirmModal,
-        sharePacketModal
+        sharePacketModal,
+        h('span', { tabIndex: 0, 'data-sel-focus-guard': 'end', style: { position: 'fixed', top: 1, left: 1, width: 1, height: 0, padding: 0, overflow: 'hidden', outline: 'none' } })
       );
     };
   }

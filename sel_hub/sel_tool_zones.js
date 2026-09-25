@@ -33277,6 +33277,12 @@ var CULTURAL_ZONE_ADAPTATIONS = [
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // Local calendar day (YYYY-MM-DD). toISOString() is the UTC date, which in
+  // US time zones becomes tomorrow in the late afternoon or evening.
+  function selLocalDay(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   window.SelHub.registerTool('zones', {
     icon: '\uD83D\uDEA6',
     label: 'Emotion Zones',
@@ -33448,6 +33454,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         var newBadges = Object.assign({}, earnedBadges);
         newBadges[badgeId] = Date.now();
         upd('earnedBadges', newBadges);
+        earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         var badge = BADGES.find(function(b) { return b.id === badgeId; });
         if (badge) {
           upd('showBadgePopup', badgeId);
@@ -33649,8 +33656,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                 whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0
               }
             }, tab.label);
-          }).concat([moreTabsToggle])
+          })
         ),
+        // A tab list may own only tabs, so the More toggle sits beside the list, not in it.
+        moreTabsToggle,
         h('button', {
           'aria-label': 'Sound effects',
           'aria-pressed': !!soundEnabled,
@@ -35361,7 +35370,10 @@ if (activeTab === 'checkin_flow') {
         h('button', { onClick: function() { upd({ cfStep: 2 }); if (soundEnabled) sfxClick(); },
           style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
-        h('button', { onClick: function() { upd({ cfStep: 0, cfBody: [], cfThought: [], cfPredicted: null, cfIntensity: 5, cfChosenStrategy: null }); if (soundEnabled) sfxCheckin(); addToast && addToast('Check-in saved. You did the noticing — that matters.', 'success'); },
+        h('button', { onClick: function() {
+            // Keep the check-in (it said "saved" and discarded it); History and Heatmap read checkInLog.
+            var cfSaved = cfPredicted ? [{ zone: cfPredicted, note: '', intensity: cfIntensity, timestamp: Date.now(), source: 'in_the_moment' }] : [];
+            upd({ checkInLog: (d.checkInLog || []).concat(cfSaved), cfStep: 0, cfBody: [], cfThought: [], cfPredicted: null, cfIntensity: 5, cfChosenStrategy: null }); if (soundEnabled) sfxCheckin(); addToast && addToast('Check-in saved. You did the noticing — that matters.', 'success'); },
           style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: _zoBg('#5eead4'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'Save & restart')
       )
@@ -35566,18 +35578,22 @@ if (activeTab === 'sorter') {
 // ══════════════════════════════════════════════════════════
 var zoneHistoryContent = null;
 if (activeTab === 'zone_history') {
-  var checkins = d.checkins || [];
+  // Check-ins save to checkInLog { zone, timestamp } and pulses to pulseRecent
+  // { zone, date }; this read d.checkins, which nothing writes, so the heatmap
+  // was always empty. Each lands on its local day.
+  var checkins = (d.checkInLog || []).map(function(c) { return c && { zone: c.zone, ts: c.timestamp }; })
+    .concat((d.pulseRecent || []).map(function(c) { return c && { zone: c.zone, ts: Date.parse(c.date) }; }))
+    .filter(function(c) { return c && c.zone && isFinite(c.ts); });
   var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   var today = new Date();
-  var todayStr = today.toISOString().slice(0, 10);
+  var todayStr = selLocalDay(today);
   function _dateOffset(daysAgo) {
-    return new Date(today.getTime() - daysAgo * 86400000).toISOString().slice(0, 10);
+    return selLocalDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysAgo));
   }
   // Build date -> dominant zone map
   var dailyDominant = {};
   checkins.forEach(function(c) {
-    if (!c || !c.date || !c.zone) return;
-    var d2 = c.date.slice(0, 10);
+    var d2 = selLocalDay(new Date(c.ts));
     if (!dailyDominant[d2]) dailyDominant[d2] = {};
     dailyDominant[d2][c.zone] = (dailyDominant[d2][c.zone] || 0) + 1;
   });
@@ -35607,7 +35623,7 @@ if (activeTab === 'zone_history') {
         Object.keys(ZONE_COLORS).map(function(z) {
           var pct = total ? Math.round((zoneCounts[z] / total) * 100) : 0;
           return h('div', { key: z, style: { padding: 12, borderRadius: 10, background: _zoBg('#0f172a'), border: '1px solid ' + ZONE_COLORS[z] + '55' } },
-            h('div', { style: { color: _zoFg(ZONE_COLORS)[z], fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, z + ' zone'),
+            h('div', { style: { color: ZONE_COLORS[z], fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, z + ' zone'),
             h('div', { style: { color: _zoFg('#f1f5f9'), fontSize: 24, fontWeight: 800, marginTop: 4 } }, pct + '%'),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11 } }, zoneCounts[z] + ' check-ins')
           );

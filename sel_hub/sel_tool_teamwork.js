@@ -569,25 +569,25 @@ window.SelHub = window.SelHub || {
     { id: 'challenge_accepted', icon: '\uD83C\uDFD7\uFE0F', name: 'Challenge Accepted', desc: 'Complete a collaborative challenge' },
     { id: 'collab_expert',     icon: '\uD83C\uDF1F', name: 'Collaboration Expert', desc: 'Complete 3 collaborative challenges' },
     { id: 'all_roles',         icon: '\uD83C\uDFAD', name: 'All Roles Explored',   desc: 'Explore every role in your grade band' },
-    { id: 'scenario_pro',      icon: '\uD83C\uDFAF', name: 'Scenario Pro',         desc: 'Earlier quiz: answered the teamwork scenarios' },
+    { id: 'scenario_pro', retired: true,      icon: '\uD83C\uDFAF', name: 'Scenario Pro',         desc: 'Earlier quiz: answered the teamwork scenarios' },
     { id: 'ai_coach',          icon: '\u2728',        name: 'AI Team Coach',        desc: 'Get advice from the AI team coach' },
     { id: 'reflective_leader', icon: '\uD83D\uDCDD', name: 'Reflective Leader',    desc: 'Write a team role reflection' },
     { id: 'full_explorer',     icon: '\uD83D\uDE80', name: 'Full Explorer',        desc: 'Visit all 4 tabs' },
     { id: 'teamwork_champion', icon: '\uD83C\uDFC6', name: 'Teamwork Champion',    desc: 'Earn 7 or more badges' },
-    { id: 'perfect_scenarios', icon: '\u2B50',        name: 'Perfect Insight',      desc: 'Earlier quiz: received full scenario ratings' },
+    { id: 'perfect_scenarios', retired: true, icon: '\u2B50',        name: 'Perfect Insight',      desc: 'Earlier quiz: received full scenario ratings' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Teamwork Streak',      desc: 'Practice 3 days in a row' },
     { id: 'skills_assessor',   icon: '\uD83D\uDCCA', name: 'Skills Assessor',      desc: 'Complete the Team Skills Quiz' },
-    { id: 'contract_creator',  icon: '\uD83D\uDCDC', name: 'Contract Creator',     desc: 'Earlier activity: built a team contract' },
+    { id: 'contract_creator', retired: true,  icon: '\uD83D\uDCDC', name: 'Contract Creator',     desc: 'Earlier activity: built a team contract' },
     { id: 'challenge_champ',   icon: '\uD83E\uDD47', name: 'Challenge Champion',   desc: 'Complete 5 collaborative challenges' },
     { id: 'all_challenges',    icon: '\uD83C\uDF1F', name: 'All Challenges Done',  desc: 'Complete every challenge in your grade band' },
     { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 12 or more badges' },
-    { id: 'comm_style',        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Earlier activity: completed the communication questionnaire' },
-    { id: 'virtual_team_pro',  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Earlier activity: completed the virtual-team quiz' },
-    { id: 'conflict_converter', icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Earlier activity: requested three conflict-coach responses' },
-    { id: 'retro_runner',      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Earlier activity: completed a team retrospective' },
+    { id: 'comm_style', retired: true,        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Earlier activity: completed the communication questionnaire' },
+    { id: 'virtual_team_pro', retired: true,  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Earlier activity: completed the virtual-team quiz' },
+    { id: 'conflict_converter', retired: true, icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Earlier activity: requested three conflict-coach responses' },
+    { id: 'retro_runner', retired: true,      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Earlier activity: completed a team retrospective' },
     { id: 'master_collaborator', icon: '\uD83C\uDF1F', name: 'Master Collaborator', desc: 'Earn 18 or more badges' },
-    { id: 'virtual_scenario_1', icon: '\uD83D\uDCF1', name: 'Remote Ready',        desc: 'Earlier activity: answered a virtual-team scenario' },
-    { id: 'retro_exporter',    icon: '\uD83D\uDCE4', name: 'Retro Exporter',      desc: 'Earlier activity: exported a retrospective as text' }
+    { id: 'virtual_scenario_1', retired: true, icon: '\uD83D\uDCF1', name: 'Remote Ready',        desc: 'Earlier activity: answered a virtual-team scenario' },
+    { id: 'retro_exporter', retired: true,    icon: '\uD83D\uDCE4', name: 'Retro Exporter',      desc: 'Earlier activity: exported a retrospective as text' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -1101,6 +1101,12 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // Local calendar day (YYYY-MM-DD). toISOString() is the UTC date, which in
+  // US time zones becomes tomorrow in the late afternoon or evening.
+  function selLocalDay(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   window.SelHub.registerTool('teamwork', {
     icon: '\uD83E\uDD1C\uD83E\uDD1B',
     label: 'Teamwork Builder',
@@ -1194,6 +1200,7 @@ window.SelHub = window.SelHub || {
         // Practice log & badges
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
+        var shownBadges = BADGES.filter(function(b) { return !b.retired || earnedBadges[b.id]; }); // retired badges show only to students who earned them
         var showBadgePopup = d.showBadgePopup || null;
         // Hand focus back where it came from when the badge dialog closes. Without
         // this the dialog just unmounts and focus falls to the body, dropping a
@@ -1236,6 +1243,7 @@ window.SelHub = window.SelHub || {
           var newBadges = Object.assign({}, earnedBadges);
           newBadges[badgeId] = Date.now();
           upd('earnedBadges', newBadges);
+          earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
           var badge = BADGES.find(function(b) { return b.id === badgeId; });
           if (badge) {
             upd('showBadgePopup', badgeId);
@@ -1262,13 +1270,13 @@ window.SelHub = window.SelHub || {
           var newLog = practiceLog.concat([entry]);
           upd('practiceLog', newLog);
           var daySet = {};
-          newLog.forEach(function(e) { daySet[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+          newLog.forEach(function(e) { daySet[selLocalDay(new Date(e.timestamp))] = true; });
           var today = new Date();
           var streak = 0;
           for (var si = 0; si < 30; si++) {
             var chk = new Date(today);
             chk.setDate(chk.getDate() - si);
-            if (daySet[chk.toISOString().slice(0,10)]) { streak++; } else if (si > 0) { break; }
+            if (daySet[selLocalDay(chk)]) { streak++; } else if (si > 0) { break; }
           }
           if (streak >= 3) tryAwardBadge('streak_3');
         }
@@ -1401,7 +1409,7 @@ window.SelHub = window.SelHub || {
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           // Badge counter
-          h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+          h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
             onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
             style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _teaFg('#94a3b8'), position: 'relative' }
           },
@@ -1493,7 +1501,7 @@ window.SelHub = window.SelHub || {
           var panelContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-              BADGES.map(function(b) {
+              shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', {                   key: b.id,
                   style: { padding: 14, borderRadius: 12, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (earned ? ACCENT + '66' : _teaBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 }
@@ -2529,7 +2537,7 @@ window.SelHub = window.SelHub || {
             { icon: '\uD83D\uDD04', label: 'Earlier retrospective', value: retroSaved ? 'Saved earlier' : 'No earlier save', color: _teaFg('#06b6d4') },
             { icon: '\uD83D\uDCCA', label: 'Quiz', value: quizSubmitted ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },
             { icon: '\uD83D\uDCDC', label: 'Earlier contract', value: contractSaved ? 'Saved earlier' : 'No earlier save', color: _teaFg('#a78bfa') },
-            { icon: '\uD83C\uDFC5', label: 'Badges', value: Object.keys(earnedBadges).length + '/' + BADGES.length, color: _teaFg('#ec4899') },
+            { icon: '\uD83C\uDFC5', label: 'Badges', value: Object.keys(earnedBadges).length + '/' + shownBadges.length, color: _teaFg('#ec4899') },
             { icon: '\uD83D\uDCDD', label: 'Reflections', value: String(reflectionLog.length), color: _teaFg('#22d3ee') },
             { icon: '\uD83D\uDD25', label: 'Activities', value: String(practiceLog.length), color: _teaFg('#ef4444') }
           ];
@@ -2569,7 +2577,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { marginBottom: 16 } },
               h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83C\uDFC5 Badges Earned'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } },
-                BADGES.map(function(b) {
+                shownBadges.map(function(b) {
                   var earned = !!earnedBadges[b.id];
                   return h('div', {
                     key: b.id,

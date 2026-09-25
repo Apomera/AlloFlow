@@ -561,6 +561,7 @@
     {
       "id": "sel_station_crew_launch_norms",
       "name": "Crew station: Week 1: Norms We Can Name and Keep",
+      "gradeLevel": "6th-8th Grade",
       "tools": [
         "crewProtocols"
       ],

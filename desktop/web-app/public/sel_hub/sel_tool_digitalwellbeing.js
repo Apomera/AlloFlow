@@ -4178,6 +4178,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
         if (earnedBadges[badgeId]) return;
         var nb = Object.assign({}, earnedBadges); nb[badgeId] = true;
         upd({ earnedBadges: nb, showBadgePopup: { id: badgeId, label: label } });
+        earnedBadges = nb; // keep this render's copy current: a second award in one handler must add, not replace
         if (addToast) addToast('Badge earned: ' + label, 'success');
         if (celebrate) celebrate();
         if (announceToSR) announceToSR('Badge earned: ' + label);

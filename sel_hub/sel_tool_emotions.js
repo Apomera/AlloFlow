@@ -18153,6 +18153,12 @@ var EMOTION_JOURNAL_TEMPLATES = [
     }
   ];
 
+  // Local calendar day (YYYY-MM-DD). toISOString() is the UTC date, which in
+  // US time zones becomes tomorrow in the late afternoon or evening.
+  function selLocalDay(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   window.SelHub.registerTool('emotions', {
     icon: '\uD83D\uDE0A',
     label: 'Emotions Explorer',
@@ -18551,6 +18557,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
         var newBadges = Object.assign({}, earnedBadges);
         newBadges[badgeId] = Date.now();
         upd('earnedBadges', newBadges);
+        earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         var badge = BADGES.find(function(b) { return b.id === badgeId; });
         if (badge) {
           upd('showBadgePopup', badgeId);
@@ -20165,7 +20172,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
             var dayMap = {};
             var dayIntensity = {};
             hist.forEach(function(e) {
-              var dateStr = new Date(e.timestamp).toISOString().slice(0, 10);
+              var dateStr = selLocalDay(new Date(e.timestamp));
               dayMap[dateStr] = e.family; // last one wins
               dayIntensity[dateStr] = e.intensity;
             });
@@ -20176,7 +20183,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
             for (var di = 27; di >= 0; di--) {
               var d2 = new Date(today);
               d2.setDate(d2.getDate() - di);
-              var ds = d2.toISOString().slice(0, 10);
+              var ds = selLocalDay(d2);
               days.push({ date: ds, dayNum: d2.getDate(), dayName: ['S','M','T','W','T','F','S'][d2.getDay()], family: dayMap[ds] || null, intensity: dayIntensity[ds] || 0 });
             }
 
@@ -20193,7 +20200,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 }),
                 // Pad first week to correct day alignment
                 (function() {
-                  var firstDay = new Date(days[0].date);
+                  var firstDay = new Date(days[0].date + 'T00:00:00'); // local midnight; a bare date parses as UTC, a weekday early
                   var pad = firstDay.getDay();
                   var pads = [];
                   for (var pi = 0; pi < pad; pi++) {
@@ -20206,7 +20213,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   var fam = day.family ? EMOTION_FAMILIES.find(function(f) { return f.id === day.family; }) : null;
                   var bgColor = fam ? fam.color + '44' : P.bg;
                   var borderColor = fam ? fam.color + '66' : P.card;
-                  var isToday = day.date === today.toISOString().slice(0, 10);
+                  var isToday = day.date === selLocalDay(today);
                   return h('div', {
                     key: day.date,
                     title: day.date + (fam ? ' \u2014 ' + _famLabel(fam) + ' (' + day.intensity + '/10)' : ''),

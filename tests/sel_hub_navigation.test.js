@@ -134,7 +134,9 @@ describe('SEL Hub · crisis vocabulary routes to support, not to a grid', () => 
 
   it('elementary gets a person, non-elementary also gets the hotlines', () => {
     const fn = block('function _selCrisisBandLines()', '\n        }');
-    expect(fn).toContain("gradeBand(gradeLevel) === 'elementary'");
+    // toolGradeLevel: the active station's grade when it declares one (a Crew pack is 6-8), else the
+    // app grade. Pinning the app grade kept King's middle schoolers on the elementary lines.
+    expect(fn).toContain("gradeBand(toolGradeLevel) === 'elementary'");
     expect(fn).toContain('988');
     expect(fn).toContain('741741');
   });

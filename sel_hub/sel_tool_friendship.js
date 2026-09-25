@@ -1018,6 +1018,13 @@ window.SelHub = window.SelHub || {
       var digitalShown  = d.digitalShown || false;
       var digitalDraft  = d.digitalDraft || '';
       var digitalDone   = d.digitalDone || {};
+      // The Digital tab saves notes per dilemma in digitalCases. digitalDone is the
+      // earlier activity's record and nothing writes it now, so this stat stayed 0.
+      var digitalCasesSaved = d.digitalCases && typeof d.digitalCases === 'object' && !Array.isArray(d.digitalCases) ? d.digitalCases : {};
+      var digitalPracticeCount = Object.keys(digitalDone).length + Object.keys(digitalCasesSaved).filter(function(k) {
+        var c = digitalCasesSaved[k];
+        return !!c && typeof c === 'object' && Object.keys(c).some(function(f) { return typeof c[f] === 'string' && c[f].trim() !== ''; });
+      }).length;
 
       // ── Host theme remap (consumes ctx.theme) — same pattern as Growth Mindset ──
       // Friendship is light-base: _frC('#hex') returns the ORIGINAL hex on a light host
@@ -1200,7 +1207,7 @@ window.SelHub = window.SelHub || {
             friendStat('ways to explore', CARE_PRACTICES.length, AMBER),
             friendStat('sections explored', exploredCount + '/' + TABS.length, '#10b981'),
             friendStat('saved notes', friendNotes.length, '#0ea5e9'),
-            friendStat('digital practices', Object.keys(digitalDone).length, '#a855f7')
+            friendStat('digital practices', digitalPracticeCount, '#a855f7')
           )
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },

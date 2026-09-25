@@ -570,6 +570,7 @@
     {
       "id": "sel_station_crew_launch_repair",
       "name": "Crew station: Week 2: Repair When Something Goes Wrong",
+      "gradeLevel": "6th-8th Grade",
       "tools": [
         "restorativeCircle",
         "perspective"

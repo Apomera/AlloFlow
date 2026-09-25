@@ -21859,6 +21859,12 @@ var VISUAL_ANCHORS = [
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // Local calendar day (YYYY-MM-DD). toISOString() is the UTC date, which in
+  // US time zones becomes tomorrow in the late afternoon or evening.
+  function selLocalDay(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   window.SelHub.registerTool('mindfulness', {
     icon: '\uD83E\uDDD8',
     label: 'Mindfulness Corner',
@@ -22054,6 +22060,7 @@ var VISUAL_ANCHORS = [
         var newBadges = Object.assign({}, earnedBadges);
         newBadges[badgeId] = Date.now();
         upd('earnedBadges', newBadges);
+        earnedBadges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         var badge = BADGES.find(function(b) { return b.id === badgeId; });
         if (badge) {
           upd('showBadgePopup', badgeId);
@@ -22071,20 +22078,21 @@ var VISUAL_ANCHORS = [
 
         // Streak check
         var daySet = {};
-        newLog.forEach(function(e) { daySet[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+        newLog.forEach(function(e) { daySet[selLocalDay(new Date(e.timestamp))] = true; });
         var today = new Date();
         var streak = 0;
         for (var si = 0; si < 30; si++) {
           var chk = new Date(today);
           chk.setDate(chk.getDate() - si);
-          if (daySet[chk.toISOString().slice(0,10)]) { streak++; } else if (si > 0) { break; }
+          if (daySet[selLocalDay(chk)]) { streak++; } else if (si > 0) { break; }
         }
         if (streak >= 3) tryAwardBadge('streak_3');
-        if (streak >= 7) tryAwardBadge('streak_7');
+        // streak_7_new ("7-Day Streak") has the same criterion and was never awarded.
+        if (streak >= 7) { tryAwardBadge('streak_7'); tryAwardBadge('streak_7_new'); }
         if (newLog.length >= 10) tryAwardBadge('total_10');
       }
 
-      function todayStr() { return new Date().toISOString().slice(0,10); }
+      function todayStr() { return selLocalDay(new Date()); }
 
       // ══════════════════════════════════════════════════════════
       // ── Tab Bar ──
@@ -23126,13 +23134,13 @@ var VISUAL_ANCHORS = [
 
         // Compute streak
         var daySet = {};
-        practiceLog.forEach(function(e) { daySet[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+        practiceLog.forEach(function(e) { daySet[selLocalDay(new Date(e.timestamp))] = true; });
         var today = new Date();
         var streak = 0;
         for (var si = 0; si < 60; si++) {
           var chk = new Date(today);
           chk.setDate(chk.getDate() - si);
-          if (daySet[chk.toISOString().slice(0,10)]) { streak++; } else if (si > 0) { break; }
+          if (daySet[selLocalDay(chk)]) { streak++; } else if (si > 0) { break; }
         }
 
         // Weekly practice count (current week)
@@ -23142,7 +23150,7 @@ var VISUAL_ANCHORS = [
         var weekPractices = 0;
         practiceLog.forEach(function(e) { if (e.timestamp >= weekStart.getTime()) weekPractices++; });
         var weekDaysActive = {};
-        practiceLog.forEach(function(e) { if (e.timestamp >= weekStart.getTime()) weekDaysActive[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+        practiceLog.forEach(function(e) { if (e.timestamp >= weekStart.getTime()) weekDaysActive[selLocalDay(new Date(e.timestamp))] = true; });
         var weekDays = Object.keys(weekDaysActive).length;
 
         // Calendar (last 28 days for 4 full weeks)
@@ -23150,7 +23158,7 @@ var VISUAL_ANCHORS = [
         for (var ci = 27; ci >= 0; ci--) {
           var cd = new Date(today);
           cd.setDate(cd.getDate() - ci);
-          var cds = cd.toISOString().slice(0,10);
+          var cds = selLocalDay(cd);
           calDays.push({ date: cds, dayNum: cd.getDate(), practiced: !!daySet[cds], isToday: ci === 0 });
         }
         // Day labels
@@ -25142,15 +25150,16 @@ if (activeTab === 'streak') {
   var pLog = d.practiceLog || [];
   // Build last 56 days (8 weeks) grid
   var today = new Date();
-  var todayStr = today.toISOString().slice(0, 10);
+  var todayStr = selLocalDay(today);
   function _dateOffset(daysAgo) {
-    var dt = new Date(today.getTime() - daysAgo * 86400000);
-    return dt.toISOString().slice(0, 10);
+    return selLocalDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysAgo));
   }
-  // Set of practice dates
+  // Sessions per local day. logPractice saves { type, id, timestamp }; this
+  // read entry.date, which nothing writes, so the tab always showed 0.
   var practiceDates = {};
   pLog.forEach(function(entry) {
-    if (entry && entry.date) practiceDates[entry.date] = (practiceDates[entry.date] || 0) + 1;
+    var ds = entry && (entry.timestamp ? selLocalDay(new Date(entry.timestamp)) : entry.date);
+    if (ds) practiceDates[ds] = (practiceDates[ds] || 0) + 1;
   });
   // 56-day grid (8 weeks)
   var days = Array.from({ length: 56 }, function(_, i) {
