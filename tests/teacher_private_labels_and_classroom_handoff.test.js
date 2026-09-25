@@ -251,7 +251,7 @@ describe('in-app Google Classroom handoff', () => {
   it('exposes the same acceptance rule the panel uses', () => {
     const helper = {};
     const ok = internals.acceptHandoff({ source: helper, origin: 'https://a.test', data: { type: internals.handoffType, json: '{}' } }, helper, 'https://a.test');
-    expect(ok).toEqual({ json: '{}' });
+    expect(ok).toEqual({ json: '{}', mode: 'replace' });
     expect(internals.acceptHandoff({ source: helper, origin: 'https://a.test', data: { type: internals.handoffType, json: '{}' } }, {}, 'https://a.test')).toBeNull();
     expect(internals.acceptHandoff({ source: helper, origin: 'https://b.test', data: { type: internals.handoffType, json: '{}' } }, helper, 'https://a.test')).toBeNull();
     expect(internals.acceptHandoff({ source: helper, origin: '', data: { type: internals.handoffType, json: '{}' } }, helper, '')).toBeNull();

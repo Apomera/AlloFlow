@@ -20,6 +20,24 @@
     } catch (_) { return null; }
   })();
   let handoffEpoch = 0, handoffTimer = null;
+  // Linked sync: AlloFlow answers this helper's hello with the class's device-held key. It stays
+  // in this tab's memory, is used only to derive IDs, and is never logged, shown or downloaded.
+  let linkContext = null;
+  const confirmOriginal = $('confirm-text').cloneNode(true);
+  function linkMode() { return linkContext ? linkContext.mode : 'replace'; }
+  function describeMode() {
+    const mode = linkMode();
+    $('send-classroom').textContent = mode === 'sync' ? 'Send update to AlloFlow' : mode === 'link' ? 'Send to AlloFlow and link this class' : 'Send to the AlloFlow tab';
+    if (mode === 'sync') {
+      $('confirm-text').textContent = 'I reviewed the roster. AlloFlow will list every change for my confirmation before anything is updated.';
+      $('handoff-note').textContent = 'Opened from a linked AlloFlow class. Returning students keep their codenames; only the codename-only roster goes back to AlloFlow.';
+    } else {
+      $('confirm-text').replaceChildren(...confirmOriginal.cloneNode(true).childNodes);
+      $('handoff-note').textContent = mode === 'link'
+        ? 'Opened from AlloFlow. Sending links this class to Google Classroom on that device, so later syncs keep every codename. Only the codename-only roster goes back.'
+        : 'This helper was opened from AlloFlow. Sending hands the same codename-only roster to that tab for your confirmation; nothing else leaves this page.';
+    }
+  }
   const say = message => { $('import-status').textContent = message; };
   function configured() {
     const safeOrigin = location.protocol === 'https:' ||
@@ -44,6 +62,8 @@
     $('send-classroom').hidden = !handoff;
     $('handoff-note').hidden = !handoff;
     $('send-classroom').disabled = !handoff || busy || !result || missingNames || !$('confirm-new-class').checked;
+    $('download-classroom').hidden = !!linkContext;
+    if (linkContext) $('download-classroom').disabled = true;
   }
   function clearPreview() {
     result = null;
@@ -105,6 +125,15 @@
       if (listing.status !== 'complete') throw new Error('INCOMPLETE');
       showCourses(listing.courses);
       say(courses.length ? 'Connected. Choose one class to read its roster.' : 'No eligible classes were returned for this teacher account.');
+      if (linkContext && linkContext.mode === 'sync' && courses.length && typeof service.linkedClassIds === 'function') {
+        try {
+          const ids = await service.linkedClassIds(linkContext.syncKey, courses.map(course => course.id));
+          if (epoch !== generation) return;
+          const match = courses.find(course => ids[course.id] === linkContext.classId);
+          if (match) { $('classroom-course').value = match.id; say('Connected. The Classroom class linked to this AlloFlow class is selected.'); }
+          else say('None of the classes this account teaches is the one linked to this AlloFlow class. Sign in with the teacher account that linked it.');
+        } catch (_) { /* Selection stays manual; the read still refuses a mismatched class. */ }
+      }
       $('classroom-course').focus();
     } catch (_) {
       if (epoch === generation) clearSession('Classroom could not be read. Check school approval, account access and connection, then reconnect. No roster was exported.');
@@ -150,24 +179,34 @@
     try {
       const snapshot = await connector.readSelectedCourse({ courseId });
       if (epoch !== generation) return;
-      const converted = service.convertSnapshot(snapshot, { destinationRoster: null });
+      const mode = linkMode();
+      const converted = mode === 'replace' || typeof service.convertLinkedSnapshot !== 'function'
+        ? service.convertSnapshot(snapshot, { destinationRoster: null })
+        : await service.convertLinkedSnapshot(snapshot, { syncKey: linkContext.syncKey, classId: mode === 'sync' ? linkContext.classId : null, existing: mode === 'sync' ? linkContext.existing : {} });
       if (epoch !== generation) return;
       result = converted;
       missingNames = converted.preview.some(student => typeof student.fullName !== 'string' || !student.fullName.trim());
       for (const student of converted.preview) {
         const row = document.createElement('tr');
-        for (const value of [student.fullName && student.fullName.trim() ? student.fullName : 'Name unavailable — verify in Classroom', student.codename]) {
+        for (const value of [student.fullName && student.fullName.trim() ? student.fullName : 'Name unavailable — verify in Classroom', student.codename + (student.status === 'new' && linkMode() === 'sync' ? ' · new' : '')]) {
           const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell);
         }
         $('roster-preview').appendChild(row);
       }
-      $('preview-count').textContent = converted.studentCount + ' students read. Compare this list with the selected Classroom roster.';
+      $('preview-count').textContent = linkMode() === 'sync'
+        ? converted.studentCount + ' students read: ' + converted.returningCount + ' keep their codenames, ' + converted.newCount + ' new' +
+          (converted.absentCount ? ', and ' + converted.absentCount + ' in AlloFlow are no longer in this Classroom class (AlloFlow keeps them).' : '.')
+        : converted.studentCount + ' students read. Compare this list with the selected Classroom roster.' +
+          (linkMode() === 'link' ? ' Sending links this class so later syncs keep every codename.' : '');
       $('preview-section').hidden = false;
       $('missing-name-warning').hidden = !missingNames;
       say(missingNames ? 'Some Classroom names are unavailable. Download is blocked until you resolve these identities in Classroom and read the roster again.' : 'The private preview is ready. Confirm the list and new-class destination before downloading.');
       $('confirm-new-class').focus();
-    } catch (_) {
-      if (epoch === generation) {
+    } catch (error) {
+      if (epoch === generation && error && error.code === 'LINKED_CLASS_MISMATCH') {
+        clearPreview();
+        say('This AlloFlow class is linked to a different Google Classroom class. Choose the class it was linked to. Nothing was read into AlloFlow.');
+      } else if (epoch === generation) {
         clearSession('The selected roster could not be completed or verified. Private data was cleared and nothing was exported. Reconnect to retry.');
       }
     } finally {
@@ -197,13 +236,13 @@
     if (!handoff || busy || !result || missingNames || !$('confirm-new-class').checked) return;
     const epoch = ++handoffEpoch;
     try {
-      handoff.postMessage({ type: 'alloflow-classroom-roster', json: result.json }, location.origin);
+      handoff.postMessage({ type: 'alloflow-classroom-roster', json: result.json, mode: linkMode() }, location.origin);
     } catch (_) {
       say('The roster could not be sent to AlloFlow. Download it instead.');
       return;
     }
     $('confirm-new-class').checked = false; controls();
-    say('Roster sent. Switch to the AlloFlow tab and confirm the replacement there.');
+    say(linkMode() === 'sync' ? 'Update sent. Switch to the AlloFlow tab to review and confirm the changes.' : 'Roster sent. Switch to the AlloFlow tab and confirm the replacement there.');
     try { handoff.focus(); } catch (_) {}
     if (handoffTimer) clearTimeout(handoffTimer);
     handoffTimer = setTimeout(() => {
@@ -214,10 +253,21 @@
   window.addEventListener('message', event => {
     if (!handoff || event.origin !== location.origin || event.source !== handoff) return;
     const data = event.data;
+    if (data && typeof data === 'object' && data.type === 'alloflow-classroom-context') {
+      const existing = data.existing;
+      const valid = (data.mode === 'link' || data.mode === 'sync') && typeof data.syncKey === 'string' && /^[A-Za-z0-9_-]{43}$/.test(data.syncKey) &&
+        existing && typeof existing === 'object' && !Array.isArray(existing) &&
+        (data.mode === 'link' ? data.classId === null && Object.keys(existing).length === 0 : typeof data.classId === 'string' && data.classId.length <= 60);
+      if (!valid) return;
+      linkContext = Object.freeze({ mode: data.mode, syncKey: data.syncKey, classId: data.classId, existing: Object.freeze({ ...existing }) });
+      if (result) { clearPreview(); say('AlloFlow updated this helper’s class link. Read the roster again.'); }
+      describeMode(); controls();
+      return;
+    }
     if (!data || typeof data !== 'object' || data.type !== 'alloflow-classroom-roster-received') return;
     if (handoffTimer) { clearTimeout(handoffTimer); handoffTimer = null; }
     const message = String(data.message || '').slice(0, 320);
-    say(data.ok ? 'AlloFlow imported the roster. ' + message + ' Keep this private preview only as long as needed.'
+    say(data.ok ? (linkMode() === 'sync' ? 'AlloFlow received the update. ' : 'AlloFlow imported the roster. ') + message + ' Keep this private preview only as long as needed.'
       : 'AlloFlow did not import the roster. ' + (message || 'Download the roster instead.'));
   });
   $('clear-classroom').onclick = () => clearSession('Session cleared. Local access token and private roster preview were discarded. Google’s authorization grant still exists until revoked.');
@@ -235,6 +285,8 @@
     } catch (_) { say('Session data is cleared, but revocation was not confirmed. Review third-party access in your Google account.'); }
   };
   window.addEventListener('pagehide', () => clearSession());
+  describeMode();
+  if (handoff) { try { handoff.postMessage({ type: 'alloflow-classroom-hello' }, location.origin); } catch (_) { /* Download remains available. */ } }
   if (!configured()) {
     say('Not configured for Google access. The AlloFlow helper is installed; school deployment review and an approved OAuth client are still required.');
     controls(); return;

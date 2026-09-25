@@ -923,13 +923,76 @@ const ALLO_CLASSROOM_HANDOFF_TYPE = 'alloflow-classroom-roster';
 const ALLO_CLASSROOM_HANDOFF_REPLY = 'alloflow-classroom-roster-received';
 const ALLO_CLASSROOM_HANDOFF_WINDOW = 'alloflow-classroom-import';
 const ALLO_ROSTER_IMPORT_MAX_BYTES = 2 * 1024 * 1024;
+const ALLO_CLASSROOM_HELLO_TYPE = 'alloflow-classroom-hello';
+const ALLO_CLASSROOM_CONTEXT_TYPE = 'alloflow-classroom-context';
 const alloAcceptClassroomHandoff = (event, helperWindow, origin) => {
   if (!event || !helperWindow || event.source !== helperWindow) return null;
   if (typeof origin !== 'string' || !origin || event.origin !== origin) return null;
   const data = event.data;
+  if (data && typeof data === 'object' && data.type === ALLO_CLASSROOM_HELLO_TYPE) return { hello: true };
   if (!data || typeof data !== 'object' || data.type !== ALLO_CLASSROOM_HANDOFF_TYPE || typeof data.json !== 'string') return null;
   if (data.json.length > ALLO_ROSTER_IMPORT_MAX_BYTES) return { error: 'That roster is larger than the 2 MB safety limit.' };
-  return { json: data.json };
+  return { json: data.json, mode: data.mode === 'link' || data.mode === 'sync' ? data.mode : 'replace' };
+};
+// Linked Classroom sync (2026-09-25). Each linked class has a random 256-bit key held only on
+// this device, like the private labels: never in rosterKey, so never in any export, Store file,
+// worksheet, live session or AI context. The helper derives learner/class IDs from Google IDs
+// with it (HMAC), so a later read of the same class reproduces the same IDs. Losing the key
+// means the class can no longer sync; it can be moved between devices only as an explicit file.
+const ALLO_CLASSROOM_SYNC_KEYS_KEY = 'alloflow_classroom_sync_keys';
+const ALLO_CLASSROOM_SYNC_KEY_FILE_TYPE = 'alloflow-classroom-sync-key';
+const ALLO_CLASSROOM_SYNC_MAX_CLASSES = 20;
+const ALLO_CLASSROOM_SYNC_KEY_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+const ALLO_CLASSROOM_LEARNER_ID_PATTERN = /^LRN-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const alloNewClassroomSyncKey = () => {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  let binary = '';
+  bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+const alloReadClassroomSyncKeys = storage => {
+  try {
+    const parsed = JSON.parse(storage.getItem(ALLO_CLASSROOM_SYNC_KEYS_KEY) || 'null');
+    const byClass = {};
+    if (parsed && typeof parsed === 'object' && parsed.byClass && typeof parsed.byClass === 'object') {
+      for (const [classId, entry] of Object.entries(parsed.byClass)) {
+        if (typeof classId === 'string' && classId && entry && ALLO_CLASSROOM_SYNC_KEY_PATTERN.test(entry.key || '')) byClass[classId] = { key: entry.key, linkedAt: String(entry.linkedAt || '') };
+      }
+    }
+    return { version: 1, byClass };
+  } catch (_) { return { version: 1, byClass: {} }; }
+};
+const alloWriteClassroomSyncKeys = (storage, store) => {
+  try {
+    const entries = Object.entries(store?.byClass || {});
+    if (!entries.length) { storage.removeItem(ALLO_CLASSROOM_SYNC_KEYS_KEY); return true; }
+    storage.setItem(ALLO_CLASSROOM_SYNC_KEYS_KEY, JSON.stringify({ version: 1, byClass: Object.fromEntries(entries.slice(-ALLO_CLASSROOM_SYNC_MAX_CLASSES)) }));
+    return true;
+  } catch (_) { return false; }
+};
+const alloSetClassroomSyncKey = (store, classId, key) => {
+  const byClass = { ...(store?.byClass || {}) };
+  delete byClass[classId];
+  if (key) byClass[classId] = { key, linkedAt: new Date().toISOString() };
+  return { version: 1, byClass };
+};
+// The codename map the helper needs so returning students keep their codenames. Codenames and
+// opaque learner IDs only; entries the helper would reject (non-UUID manual IDs) are left out
+// and simply stay in AlloFlow as learners Classroom does not list.
+const alloClassroomSyncExisting = roster => {
+  const existing = {};
+  Object.entries(roster?.learnerIds || {}).forEach(([codename, learnerId]) => {
+    if (typeof learnerId === 'string' && ALLO_CLASSROOM_LEARNER_ID_PATTERN.test(learnerId) && Object.prototype.hasOwnProperty.call(roster.students || {}, codename)) existing[learnerId] = codename;
+  });
+  return existing;
+};
+const alloParseClassroomSyncKeyFile = (text, classId) => {
+  let data;
+  try { data = JSON.parse(text); } catch (_) { throw new Error('This is not an AlloFlow Classroom sync key file.'); }
+  if (!data || data.type !== ALLO_CLASSROOM_SYNC_KEY_FILE_TYPE || data.version !== 1 || !ALLO_CLASSROOM_SYNC_KEY_PATTERN.test(data.key || '')) throw new Error('This is not an AlloFlow Classroom sync key file.');
+  if (data.classId !== classId) throw new Error('This sync key belongs to a different AlloFlow class.');
+  return data.key;
 };
 
 const alloEscapeRosterWorksheetHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -1135,6 +1198,13 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const classPrivateLabels = privateLabels.byClass[privateLabelClassKey] || {};
   const classroomHelperRef = useRef(null);
   const applyImportedRosterRef = useRef(null);
+  const planRosterUpdateTextRef = useRef(null);
+  const [classroomSyncKeys, setClassroomSyncKeys] = useState(() => privateLabelsAllowed ? alloReadClassroomSyncKeys(window.localStorage) : { version: 1, byClass: {} });
+  const classroomSyncKeysRef = useRef(classroomSyncKeys);
+  classroomSyncKeysRef.current = classroomSyncKeys;
+  const pendingLinkKeyRef = useRef(null);
+  const syncKeyFileRef = useRef(null);
+  const linkedSyncKey = rosterKey?.classId ? (classroomSyncKeys.byClass[rosterKey.classId]?.key || '') : '';
   const [classroomHelperBlocked, setClassroomHelperBlocked] = useState(false);
   const [showPrintOptions, setShowPrintOptions] = useState(false);
   const [printLocationPosition, setPrintLocationPosition] = useState('after-name');
@@ -1216,6 +1286,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     alloWriteTeacherPrivateLabels(window.localStorage, privateLabels);
   }, [privateLabels, privateLabelsAllowed]);
   useEffect(() => {
+    if (!privateLabelsAllowed) return;
+    alloWriteClassroomSyncKeys(window.localStorage, classroomSyncKeys);
+  }, [classroomSyncKeys, privateLabelsAllowed]);
+  useEffect(() => {
     if (isOpen) return;
     setShowPrivateLabels(false);                  // labels never survive a close: projecting the next open is safe
     setEditingLabelFor(null);
@@ -1225,8 +1299,34 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     const onMessage = event => {
       const accepted = alloAcceptClassroomHandoff(event, classroomHelperRef.current, window.location.origin);
       if (!accepted) return;
+      const roster = currentRosterRef.current;
+      const linkedKey = roster?.classId ? classroomSyncKeysRef.current.byClass[roster.classId]?.key : '';
+      if (accepted.hello) {
+        let context;
+        if (linkedKey) context = { type: ALLO_CLASSROOM_CONTEXT_TYPE, mode: 'sync', syncKey: linkedKey, classId: roster.classId, existing: alloClassroomSyncExisting(roster) };
+        else {
+          if (!pendingLinkKeyRef.current) pendingLinkKeyRef.current = alloNewClassroomSyncKey();
+          context = { type: ALLO_CLASSROOM_CONTEXT_TYPE, mode: 'link', syncKey: pendingLinkKeyRef.current, classId: null, existing: {} };
+        }
+        try { event.source.postMessage(context, event.origin); } catch (_) {}
+        return;
+      }
       let outcome = { ok: false, message: accepted.error || '' };
-      if (!accepted.error && typeof applyImportedRosterRef.current === 'function') outcome = applyImportedRosterRef.current(accepted.json, 'Google Classroom');
+      if (!accepted.error && accepted.mode === 'sync') {
+        outcome = linkedKey && typeof planRosterUpdateTextRef.current === 'function'
+          ? planRosterUpdateTextRef.current(accepted.json)
+          : { ok: false, message: 'This AlloFlow class is not linked to Google Classroom on this device. Nothing changed.' };
+      } else if (!accepted.error && accepted.mode === 'link') {
+        const linkKey = pendingLinkKeyRef.current;
+        outcome = linkKey && typeof applyImportedRosterRef.current === 'function'
+          ? applyImportedRosterRef.current(accepted.json, 'Google Classroom')
+          : { ok: false, message: 'Open the helper from AlloFlow again to link this class. Nothing changed.' };
+        if (outcome.ok && outcome.classId) {
+          setClassroomSyncKeys(store => alloSetClassroomSyncKey(store, outcome.classId, linkKey));
+          pendingLinkKeyRef.current = null;
+          outcome = { ...outcome, message: outcome.message + ' This class is now linked to Google Classroom on this device.' };
+        }
+      } else if (!accepted.error && typeof applyImportedRosterRef.current === 'function') outcome = applyImportedRosterRef.current(accepted.json, 'Google Classroom');
       try { event.source.postMessage({ type: ALLO_CLASSROOM_HANDOFF_REPLY, ok: !!outcome.ok, message: String(outcome.message || '').slice(0, 320) }, event.origin); } catch (_) {}
     };
     window.addEventListener('message', onMessage);
@@ -1379,14 +1479,32 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     const reader = new FileReader();
     reader.onload = event => {
       if (requestId !== rosterUpdateReadRef.current) return;
-      try {
-        const preview = alloPlanTeacherRosterUpdate(currentRosterRef.current, JSON.parse(event.target.result));
-        setRosterUpdatePreview(preview);
-        announceRoster(preview.canApply ? 'Review the roster update below. Nothing has changed yet.' : 'This update has identity conflicts. Review the details below.', preview.canApply ? 'info' : 'error');
-      } catch (error) { announceRoster(error instanceof SyntaxError ? 'This file is not valid roster JSON.' : (error?.message || 'This roster cannot be updated safely.'), 'error'); }
+      planRosterUpdateText(event.target.result);
     };
     reader.onerror = () => { if (requestId === rosterUpdateReadRef.current) announceRoster('The roster file could not be read.', 'error'); };
     reader.readAsText(file);
+  };
+  // Shared by the update-file picker and a linked Google Classroom sync: nothing changes until
+  // the teacher reviews the preview and confirms it.
+  const planRosterUpdateText = text => {
+    try {
+      const preview = alloPlanTeacherRosterUpdate(currentRosterRef.current, JSON.parse(text));
+      setRosterUpdatePreview(preview);
+      const message = preview.canApply ? 'Review the roster update below. Nothing has changed yet.' : 'This update has identity conflicts. Review the details below.';
+      announceRoster(message, preview.canApply ? 'info' : 'error');
+      return { ok: preview.canApply, message: preview.canApply ? 'Review and confirm the update in the AlloFlow roster panel. Nothing has changed yet.' : message };
+    } catch (error) {
+      const message = error instanceof SyntaxError ? 'This file is not valid roster JSON.' : (error?.message || 'This roster cannot be updated safely.');
+      announceRoster(message, 'error');
+      return { ok: false, message };
+    }
+  };
+  planRosterUpdateTextRef.current = text => {
+    rosterUpdateReadRef.current++;
+    alloCancelTeacherRosterUpdate(rosterUpdatePreview);
+    setRosterUpdatePreview(null);
+    setRosterUpdateAcknowledged(false);
+    return planRosterUpdateText(text);
   };
   const confirmRosterUpdate = () => {
     if (!rosterUpdatePreview || !rosterUpdateAcknowledged || rosterUpdateCompletion) return;
@@ -1435,7 +1553,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         setShowPrintOptions(false);
       const message = `Roster imported: ${groupsCount} groups and ${studentsCount} codenames. Legacy real-name fields were removed.`;
       announceRoster(message, 'success');
-      return { ok: true, message };
+      return { ok: true, message, classId: pendingRoster.classId };
     } catch(err) {
       console.error('Invalid roster JSON:', err);
       const message = err?.message || 'This file is not a valid roster.';
@@ -1467,8 +1585,44 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       return;
     }
     classroomHelperRef.current = helper;
+    pendingLinkKeyRef.current = null;
     setClassroomHelperBlocked(false);
     announceRoster('Google Classroom helper opened in a new tab. Sending the roster from that tab brings it here for your confirmation.', 'info');
+  };
+  const handleSaveSyncKey = () => {
+    if (!linkedSyncKey || !rosterKey?.classId) return;
+    if (!window.confirm('Save this class’s Google Classroom sync key? Anyone with this file and access to the Classroom class could match codenames to students. Keep it private like a password, and load it only on your own devices.')) return;
+    let url = null;
+    try {
+      url = URL.createObjectURL(new Blob([JSON.stringify({ type: ALLO_CLASSROOM_SYNC_KEY_FILE_TYPE, version: 1, classId: rosterKey.classId, key: linkedSyncKey })], { type: 'application/json' }));
+      const anchor = document.createElement('a');
+      anchor.href = url; anchor.download = 'alloflow-classroom-sync-key.json';
+      document.body.appendChild(anchor); anchor.click(); anchor.remove();
+      announceRoster('Sync key saved. Load it on another device’s copy of this class to sync there.', 'success');
+    } catch (_) { announceRoster('The sync key file could not be saved.', 'error'); }
+    finally { if (url) setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  };
+  const handleLoadSyncKey = event => {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+    event.target.value = '';
+    if (file.size > 4096 || !rosterKey?.classId) { announceRoster('This is not an AlloFlow Classroom sync key file.', 'error'); return; }
+    const classId = rosterKey.classId;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const key = alloParseClassroomSyncKeyFile(ev.target.result, classId);
+        setClassroomSyncKeys(store => alloSetClassroomSyncKey(store, classId, key));
+        announceRoster('Sync key loaded. This class now syncs with Google Classroom on this device.', 'success');
+      } catch (error) { announceRoster(error.message, 'error'); }
+    };
+    reader.onerror = () => announceRoster('The sync key file could not be read.', 'error');
+    reader.readAsText(file);
+  };
+  const handleUnlinkClassroom = () => {
+    if (!rosterKey?.classId || !window.confirm('Unlink this class from Google Classroom on this device? The roster stays as it is. Later Classroom reads cannot update it unless you load its saved sync key.')) return;
+    setClassroomSyncKeys(store => alloSetClassroomSyncKey(store, rosterKey.classId, ''));
+    announceRoster('This class is no longer linked to Google Classroom on this device.', 'success');
   };
   const beginPrivateLabelEdit = codename => { setEditingLabelFor(codename); setLabelDraft(classPrivateLabels[codename] || ''); };
   const commitPrivateLabel = codename => {
@@ -1912,7 +2066,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5">
             <Upload size={14} /> Import / replace roster
           </button>
-          {privateLabelsAllowed && <button type="button" onClick={openClassroomHelper} className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors motion-reduce:transition-none" title="Opens the Google Classroom roster helper in a new tab. It can send the codename-only roster straight back here.">Google Classroom setup</button>}
+          {privateLabelsAllowed && <button type="button" onClick={openClassroomHelper} className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors motion-reduce:transition-none" title={linkedSyncKey ? 'Reads the linked Google Classroom class again. Returning students keep their codenames; you review every change before it applies.' : 'Opens the Google Classroom roster helper in a new tab. It can send the codename-only roster straight back here and link the class for later syncs.'}>{linkedSyncKey ? 'Sync with Google Classroom' : 'Google Classroom setup'}</button>}
+          {privateLabelsAllowed && rosterKey?.classId && <span className="w-full flex flex-wrap items-center gap-2 text-xs text-slate-700">
+            {linkedSyncKey ? <>
+              <span className="font-bold text-blue-900">Linked to Google Classroom on this device.</span>
+              <button type="button" onClick={handleSaveSyncKey} className="underline font-bold text-blue-900">Save sync key</button>
+              <button type="button" onClick={handleUnlinkClassroom} className="underline font-bold text-red-800">Unlink</button>
+            </> : <button type="button" onClick={() => syncKeyFileRef.current?.click()} className="underline font-bold text-blue-900" title="Linked this class on another device? Load the sync key you saved there.">Load sync key</button>}
+            <input ref={syncKeyFileRef} type="file" accept=".json,application/json" onChange={handleLoadSyncKey} className="hidden" aria-label="Choose a Google Classroom sync key file" />
+          </span>}
           {privateLabelsAllowed && classroomHelperBlocked && <a href={ALLO_TEACHER_CLASSROOM_IMPORT_URL} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold underline hover:bg-blue-100 transition-colors motion-reduce:transition-none">Open the Classroom helper (download the roster there)</a>}
           {privateLabelsAllowed && <button type="button" onClick={() => setShowPrivateLabels(value => !value)} aria-pressed={showPrivateLabels} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 ${showPrivateLabels ? 'bg-slate-800 text-white hover:bg-slate-900' : 'bg-slate-100 text-slate-800 hover:bg-slate-200'}`} title="Your own note beside each codename, kept only in this browser. Hidden again every time the roster closes.">
             <Eye size={14} /> {showPrivateLabels ? (t('roster.hide_private_labels') || 'Hide my private labels') : (t('roster.show_private_labels') || 'Show my private labels')}
@@ -2031,7 +2193,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <p className="mt-2 text-xs font-bold text-amber-950">Absent from this file: {rosterUpdatePreview.retainedAbsences.length}. Keep these codenames and all their work for teacher review.</p>
               {rosterUpdatePreview.retainedAbsences.length > 0 && <ul className="mt-1 max-h-32 overflow-y-auto list-disc pl-5 text-xs text-amber-950">{rosterUpdatePreview.retainedAbsences.map(entry => <li key={entry.learnerId}>{entry.codename}</li>)}</ul>}
               {rosterUpdatePreview.conflicts.length > 0 && <div role="alert" className="mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-xs text-red-950"><p className="font-bold">Update blocked: resolve these identity conflicts in the source file.</p><ul className="mt-1 max-h-40 overflow-y-auto list-disc pl-5">{rosterUpdatePreview.conflicts.map((conflict, index) => <li key={conflict.code + index}>{conflict.codename ? conflict.codename + ': ' : ''}{conflict.message}</li>)}</ul></div>}
-              <p className="mt-3 text-xs text-slate-700">Use a version 4 AlloFlow export for this same class with reviewed stable learner IDs. A newly generated Google Classroom roster has new IDs and cannot refresh an existing class. Imported settings and history are ignored by this update.</p>
+              <p className="mt-3 text-xs text-slate-700">Use a version 4 AlloFlow export for this same class with reviewed stable learner IDs. A Google Classroom sync of a linked class reproduces the same learner IDs; an unlinked Classroom download has new IDs and cannot refresh an existing class. Imported settings and history are ignored by this update.</p>
               {rosterUpdatePreview.canApply && <label className="mt-3 flex items-start gap-2 text-xs font-bold text-indigo-950"><input type="checkbox" checked={rosterUpdateAcknowledged} onChange={event => setRosterUpdateAcknowledged(event.target.checked)} className="mt-0.5" /><span>I reviewed these exact codename and learner ID bindings and approve the additions. Absent learners will stay in the roster.</span></label>}
               <div className="mt-3 flex flex-wrap gap-2">
                 <button type="button" onClick={cancelRosterUpdate} className="min-h-10 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-bold text-indigo-900 hover:bg-indigo-100">Cancel update</button>
@@ -8710,7 +8872,10 @@ window.AlloModules.TeacherPrivateLabelInternals = {
   classKey: alloTeacherPrivateLabelClassKey, normalizeLabel: alloNormalizeTeacherPrivateLabel,
   read: alloReadTeacherPrivateLabels, write: alloWriteTeacherPrivateLabels,
   setLabel: alloSetTeacherPrivateLabel, dropLabel: alloDropTeacherPrivateLabel, clearClass: alloClearTeacherPrivateLabels,
-  handoffType: ALLO_CLASSROOM_HANDOFF_TYPE, handoffReply: ALLO_CLASSROOM_HANDOFF_REPLY, acceptHandoff: alloAcceptClassroomHandoff
+  handoffType: ALLO_CLASSROOM_HANDOFF_TYPE, handoffReply: ALLO_CLASSROOM_HANDOFF_REPLY, acceptHandoff: alloAcceptClassroomHandoff,
+  helloType: ALLO_CLASSROOM_HELLO_TYPE, contextType: ALLO_CLASSROOM_CONTEXT_TYPE,
+  syncKeysKey: ALLO_CLASSROOM_SYNC_KEYS_KEY, syncKeyFileType: ALLO_CLASSROOM_SYNC_KEY_FILE_TYPE, newSyncKey: alloNewClassroomSyncKey,
+  readSyncKeys: alloReadClassroomSyncKeys, setSyncKey: alloSetClassroomSyncKey, syncExisting: alloClassroomSyncExisting, parseSyncKeyFile: alloParseClassroomSyncKeyFile
 };
 window.AlloModules.normalizeRosterSessionFollowUpPlan = normalizeRosterSessionFollowUpPlan;
 window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv;
