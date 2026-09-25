@@ -544,3 +544,197 @@ describe('crystalline swatches tile', () => {
     expect(Math.abs(sum - W * W) / (W * W)).toBeLessThan(0.01);
   });
 });
+
+// ── The rock-cycle network: pick an arrow, see a real rock make that change ──
+// The six arrows were drawings. Each is now a button, and picking one shows a
+// rock from its family, what it becomes and the sentence from its own card
+// (RK_ROCK_LINKS.into). Every arrow needs at least one example: sedimentary ->
+// igneous had none until shale got a melting row.
+describe('rock-cycle arrows with real examples', () => {
+  const TYPE = Object.fromEntries(ROCK_ROWS.map((r) => [r.id, r.type]));
+  const TO = { heat: 'metamorphic', weather: 'sedimentary', melt: 'igneous' };
+  const FAMS = ['igneous', 'metamorphic', 'sedimentary'];
+  const ARROWS = FAMS.flatMap((a) => FAMS.filter((b) => b !== a).map((b) => a + '-' + b));
+  // Written out from the data, not borrowed from the tool.
+  const expected = (arrow) => {
+    const [from, to] = arrow.split('-');
+    const out = [];
+    ROCK_ROWS.forEach((r) => {
+      if (r.type !== from || !LINKS[r.id]) return;
+      LINKS[r.id].into.forEach((row) => {
+        if (TO[row[0]] !== to) return;
+        if (row[1].length === 0 && row[0] !== 'melt') return;
+        out.push({ id: r.id, row });
+      });
+    });
+    return out;
+  };
+  const exampleOf = (m) => /data-rk-cyc-example="([\w-]+):(\w*)"/.exec(m);
+
+  it('makes each of the six arrows a button that picks and unpicks itself', () => {
+    const t = tree({ mode: 'landscape' });
+    const picks = findAll(t.node, (n) => n.props && n.props['data-rk-cyc-pick']);
+    expect(picks.map((p) => p.props['data-rk-cyc-pick']).sort()).toEqual(ARROWS.slice().sort());
+    picks.forEach((p) => {
+      expect(p.props.role).toBe('button');
+      expect(p.props.tabIndex).toBe(0);
+      expect(p.props['aria-pressed']).toBe(false);
+    });
+    const one = picks.find((p) => p.props['data-rk-cyc-pick'] === 'metamorphic-sedimentary');
+    one.props.onClick();
+    expect(t.store.rocks).toMatchObject({ cycArrow: 'metamorphic-sedimentary', cycEx: 0 });
+    const again = tree(t.store.rocks);
+    const on = findAll(again.node, (n) => n.props && n.props['data-rk-cyc-pick'] === 'metamorphic-sedimentary')[0];
+    expect(on.props['aria-pressed']).toBe(true);
+    on.props.onKeyDown({ key: 'Enter', preventDefault() {} });
+    expect(again.store.rocks.cycArrow).toBe(null);
+    expect(render({ mode: 'landscape' }).markup).toContain('data-rk-cyc-hint');
+  });
+
+  it('gives every arrow at least one example, all of them from the rocks\' own rows', () => {
+    ARROWS.forEach((arrow) => {
+      const want = expected(arrow);
+      expect(want.length, arrow).toBeGreaterThan(0);
+      const seen = [];
+      for (let k = 0; k < want.length; k++) {
+        const m = render({ mode: 'landscape', cycArrow: arrow, cycEx: k }).markup;
+        const ex = exampleOf(m);
+        expect(ex[1], arrow).toBe(arrow);
+        seen.push(ex[2]);
+        const at = m.indexOf('data-rk-cyc-example=');
+        const panel = m.slice(at, m.indexOf('</li>', at));
+        const row = want.find((w) => w.id === ex[2]).row;
+        // The sentence is the one on the rock's own card.
+        expect(panel, arrow + ' ' + ex[2]).toContain(row[2]);
+        const opens = [...panel.matchAll(/data-rk-cyc-open="(\w+)"/g)].map((o) => o[1]);
+        expect(opens[0]).toBe(ex[2]);
+        expect(TYPE[ex[2]]).toBe(arrow.split('-')[0]);
+        if (row[1].length) {
+          expect(opens.slice(1), arrow + ' ' + ex[2]).toEqual(row[1]);
+          row[1].forEach((id) => expect(TYPE[id], id).toBe(arrow.split('-')[1]));
+        } else {
+          expect(row[0]).toBe('melt');
+          expect(panel).toContain('data-rk-cyc-magma');
+        }
+        if (want.length > 1) expect(panel).toContain('data-rk-cyc-next="' + (k + 1) + '/' + want.length + '"');
+      }
+      expect(seen.slice().sort(), arrow).toEqual(want.map((w) => w.id).sort());
+    });
+    // A rock that melts shows its sedimentary-to-igneous path.
+    expect(exampleOf(render({ mode: 'landscape', cycArrow: 'sedimentary-igneous' }).markup)[2]).toBe('shale');
+  });
+
+  it('leads with the clearest example, and "Another example" wraps round', () => {
+    const lead = { 'igneous-sedimentary': 'granite', 'sedimentary-metamorphic': 'shale', 'metamorphic-igneous': 'gneiss' };
+    Object.keys(lead).forEach((a) => expect(exampleOf(render({ mode: 'landscape', cycArrow: a }).markup)[2], a).toBe(lead[a]));
+    const n = expected('igneous-sedimentary').length;
+    const t = tree({ mode: 'landscape', cycArrow: 'igneous-sedimentary', cycEx: n - 1 });
+    findAll(t.node, (x) => x.props && x.props['data-rk-cyc-next'])[0].props.onClick();
+    expect(exampleOf(render(t.store.rocks).markup)[2]).toBe('granite');
+  });
+
+  it('opens a rock from the example', () => {
+    const t = tree({ mode: 'landscape', cycArrow: 'sedimentary-metamorphic' });
+    findAll(t.node, (x) => x.props && x.props['data-rk-cyc-open'] === 'slate')[0].props.onClick();
+    expect(t.store.rocks).toMatchObject({ mode: 'rocks', selectedRock: 'slate' });
+  });
+
+  it('ignores a picked arrow that is not one of the six', () => {
+    ['igneous-igneous', 'lava-sedimentary', 5, { a: 1 }].forEach((bad) => {
+      const m = render({ mode: 'landscape', cycArrow: bad, cycEx: 'x' }).markup;
+      expect(m, String(bad)).not.toContain('data-rk-cyc-example');
+      expect(m).toContain('data-rk-cyc-hint');
+    });
+    expect(exampleOf(render({ mode: 'landscape', cycArrow: 'igneous-metamorphic', cycEx: -7 }).markup)[1]).toBe('igneous-metamorphic');
+  });
+
+  it('never says a rock that was never magma melts "again"', () => {
+    Object.keys(LINKS).forEach((id) => {
+      if (TYPE[id] === 'igneous') return;
+      LINKS[id].into.filter((row) => row[0] === 'melt').forEach((row) => {
+        expect(row[2], id).not.toMatch(/\bagain\b|\breturns\b/);
+      });
+    });
+    expect(LINKS.quartzite.into.find((r) => r[0] === 'melt')[2]).toBe('Melted deep in the crust, it becomes magma.');
+  });
+});
+
+// ── The network follows the tour, and says the tour is one route ───────────
+describe('rock-cycle network during the tour', () => {
+  const lit = (m) => [...m.matchAll(/data-rk-cyc-arrow="([\w-]+)" data-rk-cyc-lit="(\w+)"/g)].map((x) => x[1] + ':' + x[2]);
+  const tourNode = (m) => (/data-rk-cyc-tour-node="(\w+)"/.exec(m) || [])[1] || null;
+  const example = (m) => (/data-rk-cyc-example="([\w-]+):(\w*)"/.exec(m) || []).slice(1).join(':') || null;
+
+  it('lights the step the tour is on: two families and three changes', () => {
+    const want = [
+      { node: 'igneous', arrow: null },
+      { node: null, arrow: 'igneous-sedimentary' },
+      { node: 'sedimentary', arrow: null },
+      { node: null, arrow: 'sedimentary-metamorphic' },
+      { node: null, arrow: 'metamorphic-igneous' },
+    ];
+    want.forEach((w, stage) => {
+      const m = render({ mode: 'landscape', tourOn: true, tourStage: stage }).markup;
+      expect(tourNode(m), 'stage ' + stage).toBe(w.node);
+      expect(lit(m), 'stage ' + stage).toEqual(w.arrow ? [w.arrow + ':tour'] : []);
+      expect(m, 'stage ' + stage).toContain('data-rk-cyc-tour="' + stage + '"');
+      expect(m).toContain('It follows one route; the faded arrows are other routes a rock can take.');
+      // A change the tour is on shows its real example; a family step does not.
+      if (w.arrow) expect(example(m)).toMatch(new RegExp('^' + w.arrow + ':\\w+$'));
+      else { expect(example(m)).toBe(null); expect(m).toContain('data-rk-cyc-hint'); }
+    });
+    expect(example(render({ mode: 'landscape', tourOn: true, tourStage: 1 }).markup)).toBe('igneous-sedimentary:granite');
+  });
+
+  it('lets a picked arrow win, and ignores the tour when it is off or junk', () => {
+    const both = render({ mode: 'landscape', tourOn: true, tourStage: 1, cycArrow: 'metamorphic-sedimentary' }).markup;
+    expect(lit(both)).toEqual(['metamorphic-sedimentary:pick']);
+    expect(example(both)).toMatch(/^metamorphic-sedimentary:/);
+    [{ tourOn: false, tourStage: 1 }, { tourOn: true, tourStage: -1 }, { tourOn: true, tourStage: 9 }, { tourOn: true, tourStage: 'two' }, { tourOn: 'yes' }].forEach((st) => {
+      const m = render(Object.assign({ mode: 'landscape' }, st)).markup;
+      expect(m, JSON.stringify(st)).not.toContain('data-rk-cyc-tour=');
+      expect(lit(m)).toEqual([]);
+      expect(tourNode(m)).toBe(null);
+    });
+  });
+
+  it('marks the focused arrow or family itself, not a box round the hit area', () => {
+    const m = render({ mode: 'landscape' }).markup;
+    const style = /<style>([^<]*)<\/style>/.exec(m.slice(m.indexOf('data-rk-cycle-net')))[1];
+    expect(style).toContain('.rk-cyc-btn{outline:none}');
+    expect(style).toContain('.rk-cyc-btn:focus-visible .rk-cyc-halo{stroke:#0f172a');
+    // Forced colours keep a system outline.
+    expect(style).toContain('@media (forced-colors: active){.rk-cyc-btn:focus-visible{outline:2px solid CanvasText}}');
+    const t = tree({ mode: 'landscape' });
+    const btns = findAll(t.node, (n) => n.props && (n.props['data-rk-cyc-pick'] || n.props['data-rk-cyc-node']));
+    expect(btns.length).toBe(9);
+    btns.forEach((b) => {
+      expect(b.props.className, b.props['data-rk-cyc-pick'] || b.props['data-rk-cyc-node']).toBe('rk-cyc-btn');
+      expect(findAll(b, (n) => n.props && n.props.className === 'rk-cyc-halo').length).toBe(1);
+    });
+  });
+
+  it('takes the tour state from the canvas, which owns it', () => {
+    // The canvas cannot run in jsdom, so run its own sync function as written.
+    const at = SRC.indexOf('function rkLsTourSync() {');
+    const body = SRC.slice(at, SRC.indexOf('\n            }\n', at) + 14);
+    const make = new Function('rkLsTour', 'setLabToolData', body + '; return rkLsTourSync;');
+    const run = (stage, rocks) => {
+      let out;
+      make({ stage }, (fn) => { out = fn({ rocks, other: 1 }); })();
+      return out;
+    };
+    const prev = { tourOn: true, tourStage: 3, mode: 'landscape' };
+    // A fresh canvas (stage -1) clears a stale "tour on" left by leaving the tab.
+    expect(run(-1, prev).rocks).toMatchObject({ tourOn: false, tourStage: -1, mode: 'landscape' });
+    expect(run(2, {}).rocks).toMatchObject({ tourOn: true, tourStage: 2 });
+    // Nothing moved: the same object back, so no extra render.
+    const same = { rocks: { tourOn: true, tourStage: 2 } };
+    let back;
+    make({ stage: 2 }, (fn) => { back = fn(same); })();
+    expect(back).toBe(same);
+    // It runs on every stage change and when a canvas starts.
+    expect(SRC).toMatch(/function rkLsTourAnnounce\(\) \{\s*rkLsTourSync\(\);/);
+    expect(SRC).toMatch(/canvasEl\._rocksTourCmd = rkLsTourCmd;\s*\/\/[^\n]*\n\s*rkLsTourSync\(\);/);
+  });
+});

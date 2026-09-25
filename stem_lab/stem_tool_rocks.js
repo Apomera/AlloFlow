@@ -1590,7 +1590,7 @@
     },
     shale: {
       from: 'Clay and silt that settled in quiet water, in lakes, lagoons and on deep sea floors, then compacted.',
-      into: [['heat', ['slate', 'phyllite', 'schist', 'gneiss'], 'Rising heat and pressure: slate, then phyllite, schist and gneiss.'], ['weather', [], 'Weathered again, it becomes mud.']],
+      into: [['heat', ['slate', 'phyllite', 'schist', 'gneiss'], 'Rising heat and pressure: slate, then phyllite, schist and gneiss.'], ['weather', [], 'Weathered again, it becomes mud.'], ['melt', [], 'Buried deep enough to melt, it becomes magma: some granites began as melted mudrock.']],
       look: [['slate', 'Slate is harder, rings when tapped and splits into flat, even sheets. Shale is soft and crumbles into flakes.'], ['siltstone', 'Siltstone feels gritty and does not split into layers.']],
       clue: 'Smooth and soft, it splits into thin flaky layers, and it is the most common sedimentary rock on Earth.'
     },
@@ -1632,7 +1632,7 @@
     },
     quartzite: {
       from: 'Sandstone heated and squeezed until its quartz grains recrystallized and welded into one another, without melting.',
-      into: [['weather', ['sandstone'], 'It resists weathering, but eventually becomes sand again.'], ['melt', [], 'Melted again, it returns to magma.']],
+      into: [['weather', ['sandstone'], 'It resists weathering, but eventually becomes sand again.'], ['melt', [], 'Melted deep in the crust, it becomes magma.']],
       look: [['marble', 'Marble fizzes in acid and a knife scratches it; quartzite does neither.'], ['sandstone', 'Sandstone breaks around its grains; quartzite breaks straight through them.']],
       clue: 'Very hard and glassy on a broken face, because it breaks straight through its welded quartz grains. It scratches glass.'
     },
@@ -3344,10 +3344,11 @@
   // classification is something a student can SEE rather than only read.
   //
   // DELIBERATELY driven by the discrete 4-state marker ONLY, never by the raw
-  // slider values. The widget's design note pins "discrete 4-state weathering
-  // marker; no rate score; no reveal — by design", and scaling crack counts or
-  // pit sizes off the sliders would smuggle a continuous intensity readout back
-  // in through the artwork. Four states, four pictures.
+    // slider values. The widget's design note pins "discrete 4-state weathering
+  // marker; no rate score", and scaling crack counts or pit sizes off the
+  // sliders would smuggle a continuous intensity readout back in through the
+  // artwork. Four states, four pictures. (The model's full map is shown only
+  // once the student has logged evidence and explained it: see wxModelOpen.)
   // The rock is a CATEGORY, like the state: it decides which signature is
   // drawn (limestone dissolves into hollows, granite rots into rounded
   // boulders in its own sand, sandstone crumbles grain by grain), never how
@@ -4121,14 +4122,20 @@
     });
   })();
 
+  // count/target drive both the badge check and the progress each chip shows,
+  // so the two cannot disagree. `go` is where the work happens and `where`
+  // says so: the chips named six goals without saying where to earn them.
+  var rkChKeys = function (o) { return o && typeof o === 'object' && !Array.isArray(o) ? Object.keys(o).length : 0; };
+  var rkChNum = function (n) { return typeof n === 'number' && isFinite(n) && n > 0 ? n : 0; };
   var ROCKS_CHALLENGES = [
-    { id: 'types_explored', name: 'Petrologist', desc: 'Examine all 3 rock types (Igneous, Sedimentary, Metamorphic)', icon: '⛰️', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.typesViewed || {}).length >= 3; } },
-    { id: 'specimens_examined', name: 'Rock Collector', desc: 'Examine 5+ rock specimens', icon: '🔍', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.rocksViewed || {}).length >= 5; } },
-    { id: 'quiz_ace', name: 'Earth Science Ace', desc: 'Correctly answer 3 questions in the quiz', icon: '🎓', rp: 20, check: function(s) { var st = s || {}; return (st.quizScore || 0) >= 3; } },
-    { id: 'vocab_studied', name: 'Vocabulary Master', desc: 'Study 3 key terminology definitions', icon: '📖', rp: 15, check: function(s) { var st = s || {}; return (st.vocabLookedUp || []).length >= 3; } },
-    { id: 'wb_identify', name: 'Field Mineralogist', desc: 'Identify 2 unknown specimens at the Mineral Workbench', icon: '🔬', rp: 25, check: function(st) { var w = (st || {}).wb || {}; return (w.solved || 0) >= 2; } },
-    { id: 'cycle_interact', name: 'Cycle Creator', desc: 'Perform 3 operations in the Rock Cycle simulator', icon: '🔄', rp: 20, check: function(s) { var st = s || {}; return (st.cycleInteractions || 0) >= 3; } }
+    { id: 'types_explored', name: 'Petrologist', desc: 'Examine all 3 rock types (Igneous, Sedimentary, Metamorphic)', icon: '⛰️', rp: 15, target: 3, go: 'rocks', where: 'On the Rocks tab, open one rock from each family: igneous, sedimentary and metamorphic.', count: function (s) { return rkChKeys((s || {}).typesViewed); } },
+    { id: 'specimens_examined', name: 'Rock Collector', desc: 'Examine 5+ rock specimens', icon: '🔍', rp: 15, target: 5, go: 'rocks', where: 'On the Rocks tab, open 5 different rocks.', count: function (s) { return rkChKeys((s || {}).rocksViewed); } },
+    { id: 'quiz_ace', name: 'Earth Science Ace', desc: 'Correctly answer 3 questions in the quiz', icon: '🎓', rp: 20, target: 3, go: 'quiz', where: 'In the Quiz, get 3 answers right in one round.', count: function (s) { return rkChNum((s || {}).quizScore); } },
+    { id: 'vocab_studied', name: 'Vocabulary Master', desc: 'Study 3 key terminology definitions', icon: '📖', rp: 15, target: 3, go: 'quiz', where: 'In the Quiz, after you answer, press Study Term under Concept Focus. Do it for 3 terms.', count: function (s) { var v = (s || {}).vocabLookedUp; return Array.isArray(v) ? v.length : 0; } },
+    { id: 'wb_identify', name: 'Field Mineralogist', desc: 'Identify 2 unknown specimens at the Mineral Workbench', icon: '🔬', rp: 25, target: 2, go: 'workbench', where: 'At the Workbench, test 2 unknown specimens and name them correctly.', count: function (s) { var w = (s || {}).wb; return rkChNum(w && w.solved); } },
+    { id: 'cycle_interact', name: 'Cycle Creator', desc: 'Perform 3 operations in the Rock Cycle simulator', icon: '🔄', rp: 20, target: 3, go: 'rockCycle', where: 'Open the Rock Cycle tool and press Transform! 3 times.', count: function (s) { return rkChNum((s || {}).cycleInteractions); } }
   ];
+  ROCKS_CHALLENGES.forEach(function (ch) { ch.check = function (st) { return ch.count(st) >= ch.target; }; });
 
   var ROCKS_VOCAB = {
     'Igneous': 'Rock formed from the cooling and solidification of molten magma or lava.',
@@ -4278,7 +4285,36 @@
   // minerals lab and once in the workbench — each carrying a note asking the
   // other to be kept in step by hand. One list, two readers.
   var RK_CARBONATE_IDS = ['calcite', 'malachite', 'azurite'];
+  // The one magnetic mineral, read by the Workbench and the look-alike tables.
+  var RK_MAGNETIC_IDS = ['magnetite'];
+  // ══ Minerals that look alike, and the test that tells them apart ══
+  // Rock cards had look-alikes; mineral cards had none, though telling two
+  // similar minerals apart BY A TEST is the skill the whole tool teaches. Each
+  // pair once; both cards show it. The sentence is the quick test; the table
+  // beside it is computed from the two minerals' own data, so it cannot claim
+  // a test separates them when the numbers say it does not.
+  var RK_MIN_LOOKALIKES = [
+    ['quartz', 'calcite', 'Quartz scratches glass; calcite does not, and only calcite fizzes in acid and splits into leaning rhombs.'],
+    ['quartz', 'fluorite', 'Glass scratches fluorite but not quartz, and fluorite splits into eight-sided pieces while quartz breaks in curves.'],
+    ['quartz', 'feldspar', 'Feldspar splits into flat, stair-stepped faces at right angles; quartz has no cleavage and breaks in curved, glassy shells.'],
+    ['quartz', 'topaz', 'Topaz is harder, so it scratches quartz. It also feels heavier and splits along one smooth plane.'],
+    ['quartz', 'diamond', 'Diamond scratches quartz and everything else, feels heavier, and sparkles with a brilliant (adamantine) shine.'],
+    ['calcite', 'halite', 'Both are clear and blocky. Calcite fizzes in acid and splits into leaning rhombs; halite does not fizz and splits into cubes.'],
+    ['calcite', 'gypsum', 'A fingernail scratches gypsum but not calcite, and only calcite fizzes in acid.'],
+    ['talc', 'gypsum', 'Both are soft and pale. Talc is softer still, so gypsum scratches it, and talc feels soapy.'],
+    ['magnetite', 'hematite', 'Both are dark, metallic and heavy. Hematite leaves a red-brown streak; magnetite leaves a black one and pulls a magnet.'],
+    ['galena', 'magnetite', 'Galena is much heavier, soft enough for copper to scratch, splits into cubes and ignores a magnet.'],
+    ['graphite', 'galena', 'Both are grey, metallic and soft. Graphite is very light and feels greasy; galena is very heavy and splits into cubes.'],
+    ['olivine', 'apatite', 'Both can be green and glassy. Glass scratches apatite but not olivine. Apatite gets its name from a Greek word meaning to deceive.'],
+    ['malachite', 'azurite', 'Both are copper carbonates that fizz in acid and are often found together. Malachite is green with a green streak; azurite is deep blue with a pale-blue streak.'],
+    ['sulfur', 'pyrite', 'Both are yellow. Sulfur is soft, light and resinous; pyrite is hard, heavy and metallic, and leaves a greenish-black streak.']
+  ];
+  function rkMinLookalikesOf(id) {
+    return RK_MIN_LOOKALIKES.filter(function (p) { return p[0] === id || p[1] === id; })
+      .map(function (p) { return { other: p[0] === id ? p[1] : p[0], key: p[0] + '_' + p[1], text: p[2] }; });
+  }
 
+  var RK_MOHS_REFS = [['fingernail', 2.5, '💅'], ['penny', 3.5, '🪙'], ['steel_nail', 5.5, '🪟'], ['streak_plate', 6.5, '🍽️']];
   var RK_MOHS_INDEX = [['talc', 1], ['gypsum', 2], ['calcite', 3], ['fluorite', 4], ['apatite', 5], ['feldspar', 6], ['quartz', 7], ['topaz', 8], ['corundum', 9], ['diamond', 10]];
 
   var RK_FORM_BY_ID = { apatite: 'prism', graphite: 'sheets', biotite: 'sheets', malachite: 'massive', azurite: 'prism', hematite: 'massive', talc: 'sheets', gypsum: 'blades', diamond: 'pyramids', sulfur: 'massive', olivine: 'massive', corundum: 'prism' };
@@ -4951,6 +4987,13 @@ const d = labToolData.rocks || {};
             };
             return m && m.habit && W[m.habit] ? W[m.habit] : null;
           };
+                    // The everyday scratch references, named as the Scratch Test Lab names them.
+          const rkMohsRefName = function (id) {
+            return id === 'fingernail' ? __alloT('stem.rocks.tool_fingernail', 'Fingernail')
+              : id === 'penny' ? __alloT('stem.rocks.tool_copper_reference', 'Copper reference (modeled)')
+              : id === 'steel_nail' ? __alloT('stem.rocks.tool_glass_reference', 'Glass reference (modeled)')
+              : __alloT('stem.rocks.tool_streak_plate', 'Streak Plate');
+          };
           const rkLusterText = function (m) {
             return String((m && m.luster) || '').split('/').map(function (w) {
               var k = w.trim().toLowerCase();
@@ -5541,6 +5584,81 @@ const d = labToolData.rocks || {};
           });
 
           const selRock = d.selectedRock ? ROCKS.find(r => r.id === d.selectedRock) : null;
+          // The sections a rock's card shows, in the order it shows them. The
+          // card decides each section from this list and the "On this card"
+          // links are built from it, so a link can never point at a section the
+          // card left out.
+          const rkCardSecs = function (rock) {
+            if (!rock) return [];
+            var id = rock.id, out = [];
+            if (RK_ROCK_LINKS[id]) out.push('links');
+            if (RK_ROCK_LINKS[id] && RK_ROCK_LINKS[id].look.length > 0) out.push('lookalikes');
+            out.push('lens');
+            if (RK_THIN_SECTION[id]) out.push('thin');
+            if (rock.type === 'igneous') out.push('cooling', 'chart');
+            if (RK_SED_STOPS.some(function (st) { return st.rock === id; })) out.push('journey');
+            if (id === 'coal') out.push('coal');
+            if (RK_CARB_ENVS.some(function (e) { return e.rock === id; })) out.push('carb');
+            if (RK_META_PRESET[id]) out.push('squeeze');
+            out.push('acid');
+            return out;
+          };
+                    const rkSelSecs = rkCardSecs(selRock);
+          // Rocks are made of minerals, and the tool never said so outside the
+          // thin-section panel. Both directions come from RK_THIN_SECTION.
+          const rkMineralsOf = function (rockId) {
+            var ts = RK_THIN_SECTION[rockId];
+            if (!ts) return [];
+            return ts.parts.slice().sort(function (a, b) { return b[1] - a[1]; }).map(function (p) {
+              return { part: p[0], frac: p[1], mineral: MINERALS.find(function (m) { return m.id === p[0]; }) || null };
+            });
+          };
+          const rkRocksWith = function (mineralId) {
+            return ROCKS.map(function (r) {
+              var ts = RK_THIN_SECTION[r.id];
+              var hit = ts && ts.parts.filter(function (p) { return p[0] === mineralId; })[0];
+              return hit ? { rock: r, frac: hit[1] } : null;
+            }).filter(Boolean).sort(function (a, b) { return b.frac - a.frac; });
+          };
+          // After switching tabs, bring the newly opened card into view.
+          const rkRevealSoon = function (selector) {
+            try {
+              setTimeout(function () {
+                var el = document.querySelector(selector);
+                if (!el) return;
+                var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                el.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+              }, 80);
+            } catch (e) {}
+          };
+          const rkSecLabel = function (sec) {
+            return sec === 'links' ? __alloT('stem.rocks.sec_links', 'Where it comes from')
+              : sec === 'lookalikes' ? __alloT('stem.rocks.sec_lookalikes', 'Look-alikes')
+              : sec === 'lens' ? __alloT('stem.rocks.sec_lens', 'Hand lens')
+              : sec === 'thin' ? __alloT('stem.rocks.sec_thin', 'Thin section')
+              : sec === 'cooling' ? __alloT('stem.rocks.sec_cooling', 'Cooling model')
+              : sec === 'chart' ? __alloT('stem.rocks.sec_chart', 'Igneous chart')
+              : sec === 'journey' ? __alloT('stem.rocks.sec_journey', 'The journey')
+              : sec === 'coal' ? __alloT('stem.rocks.sec_coal', 'Coal rank')
+              : sec === 'carb' ? __alloT('stem.rocks.sec_carb', 'Who made the calcite')
+              : sec === 'squeeze' ? __alloT('stem.rocks.sec_squeeze', 'Squeeze and heat')
+              : __alloT('stem.rocks.sec_acid', 'Acid test');
+          };
+          // Scroll to a section and put focus there, so a keyboard user lands
+          // where the link said.
+          const rkJumpTo = function (sec) {
+            try {
+              var el = document.getElementById('rk-sec-' + sec);
+              if (!el) return;
+              var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              el.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+              el.focus({ preventScroll: true });
+            } catch (e) {}
+          };
+          // A zero-size landing point before a section.
+          const rkSecAnchor = function (sec) {
+            return rkSelSecs.indexOf(sec) !== -1 ? React.createElement("span", { id: 'rk-sec-' + sec, "data-rk-sec": sec, tabIndex: -1, style: { display: 'block', scrollMarginTop: 12 } }) : null;
+          };
 
           const selMineral = d.selectedMineral ? MINERALS.find(m => m.id === d.selectedMineral) : null;
           // Lab results (fizz, streak, scratch) belong to the specimen they were
@@ -5556,6 +5674,20 @@ const d = labToolData.rocks || {};
           };
 
           const quizQ = mode === 'quiz' && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+          // First-try results for this round, by question index. The quiz used to
+          // wrap round at question 36 with nothing but a running count, so a
+          // student never saw which topics they knew and which they did not.
+          const rkQuizLog = (d.quizLog && typeof d.quizLog === 'object' && !Array.isArray(d.quizLog)) ? d.quizLog : {};
+          const rkQuizLogWith = function (idx, correct) {
+            var n = Object.assign({}, rkQuizLog);
+            if (n[idx] !== 0 && n[idx] !== 1) n[idx] = correct ? 1 : 0;
+            return n;
+          };
+          const rkQuizNext = function () {
+            var at = d.quizIdx || 0;
+            if (at + 1 >= QUIZ_BANK.length) { updMulti({ quizDone: true, quizFeedback: null }); return; }
+            updMulti({ quizIdx: at + 1, quizFeedback: null });
+          };
 
 
 
@@ -5784,7 +5916,21 @@ const d = labToolData.rocks || {};
               RK_LS_TOUR[3].path = [[W * 0.60, H * 0.84], [W * 0.70, H * 0.82], [W * 0.80, H * 0.68]];
               RK_LS_TOUR[4].path = [[W * 0.70, H * 0.86], [W * 0.45, H * 0.99], [W * 0.24, H * 0.76]];
             }
+            // The tour lives in the canvas, but the network card below follows
+            // it, and the tour button reads tourOn. The canvas is the source of
+            // truth: leaving the tab mid-tour used to leave tourOn stuck on.
+            function rkLsTourSync() {
+              try {
+                var sg = rkLsTour.stage;
+                setLabToolData(function (prev) {
+                  var r = (prev && prev.rocks) || {};
+                  if (r.tourStage === sg && !!r.tourOn === (sg >= 0)) return prev;
+                  return Object.assign({}, prev, { rocks: Object.assign({}, r, { tourStage: sg, tourOn: sg >= 0 }) });
+                });
+              } catch (e) {}
+            }
             function rkLsTourAnnounce() {
+              rkLsTourSync();
               if (rkLsTour.stage < 0) { rkLsAnnounce(__alloT('stem.rocks.tour_stopped', 'Rock cycle tour stopped.')); return; }
               var st = RK_LS_TOUR[rkLsTour.stage];
               rkLsAnnounce(__alloT('stem.rocks.tour_stage', 'Stage ') + (rkLsTour.stage + 1) + __alloT('stem.rocks.tour_of', ' of ') + RK_LS_TOUR.length + ': ' + st.cap + '.');
@@ -6484,6 +6630,8 @@ const d = labToolData.rocks || {};
             canvasEl.addEventListener('keydown', onRockKey);
             // Imperative handle for the React controls under the canvas.
             canvasEl._rocksTourCmd = rkLsTourCmd;
+            // A fresh canvas has no tour running, whatever the saved state says.
+            rkLsTourSync();
             // Stopping is immediate: cancel the pending frame and paint one
             // static one. Resuming has to kick the loop by hand, because with
             // motion off nothing was left scheduling frames.
@@ -6612,7 +6760,7 @@ const d = labToolData.rocks || {};
 
                       upd("mode", m);
 
-                      if (m === 'quiz') { upd("quizIdx", 0); upd("quizScore", 0); upd("quizFeedback", null); }
+                      if (m === 'quiz') { updMulti({ quizIdx: 0, quizScore: 0, quizFeedback: null, quizLog: null, quizDone: null }); }
 
                       if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + modeLabel + ' mode.', repeat: modeLabel + ' mode.', terse: m + '.' }, { debounce: 500 }); }
 
@@ -6661,9 +6809,41 @@ const d = labToolData.rocks || {};
                   },
                     React.createElement("span", { "aria-hidden": true, className: done ? "" : "grayscale opacity-60" }, (done ? '✓ ' : '') + ch.icon),
                     rkChallengeText(ch, 'name'),
+                    !done ? React.createElement("span", { className: "font-mono text-orange-800", "data-rk-challenge-progress": Math.min(ch.count(d), ch.target) + '/' + ch.target }, ' ' + Math.min(ch.count(d), ch.target) + '/' + ch.target) : null,
                     React.createElement("span", { className: "sr-only" }, (done ? __alloT('stem.rocks.challenge_done_sr', ": done. ") : __alloT('stem.rocks.challenge_todo_sr', ": not yet. ")) + rkChallengeText(ch, 'desc') + '.'));
                 })
-              )
+              ),
+              React.createElement("button", { type: "button", "aria-expanded": !!d.chHelp, "aria-controls": "rk-challenge-help", "data-rk-challenge-help-toggle": true,
+                onClick: function () { upd('chHelp', !d.chHelp); },
+                className: "mt-2 min-h-[28px] text-[0.6875rem] font-bold text-amber-900 underline hover:text-amber-950" },
+                (d.chHelp ? '\u25B4 ' : '\u25BE ') + __alloT('stem.rocks.ch_how_to_earn', 'How to earn them')),
+              d.chHelp && React.createElement("ul", { id: "rk-challenge-help", className: "mt-2 grid gap-1.5 sm:grid-cols-2", "data-rk-challenge-help": true },
+                ROCKS_CHALLENGES.map(function (ch) {
+                  var done = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).indexOf(ch.id) !== -1;
+                  var n = Math.min(ch.count(d), ch.target);
+                  var here = ch.go !== 'rockCycle' && mode === ch.go;
+                  var goThere = function () {
+                    if (ch.go === 'rockCycle') { if (typeof setStemLabTool === 'function') setStemLabTool('rockCycle'); return; }
+                    // Same as the Quiz tab button: a fresh round.
+                    if (ch.go === 'quiz') updMulti({ mode: 'quiz', quizIdx: 0, quizScore: 0, quizFeedback: null, quizLog: null, quizDone: null });
+                    else updMulti({ mode: ch.go });
+                    sfxRockClick();
+                  };
+                  return React.createElement("li", { key: ch.id, "data-rk-challenge-row": ch.id + ':' + (done ? 'done' : n + '/' + ch.target), className: "rounded-lg border bg-white p-2 " + (done ? "border-amber-500" : "border-orange-200") },
+                    React.createElement("div", { className: "flex items-center gap-1.5" },
+                      React.createElement("span", { "aria-hidden": true }, ch.icon),
+                      React.createElement("span", { className: "text-xs font-black text-slate-900" }, rkChallengeText(ch, 'name')),
+                      React.createElement("span", { className: "ml-auto text-[0.6875rem] font-bold " + (done ? "text-amber-900" : "text-slate-700") },
+                        done ? '\u2713 ' + __alloT('stem.rocks.ch_done', 'Done') : n + ' ' + __alloT('stem.rocks.myst_of', 'of') + ' ' + ch.target)),
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-700 leading-snug mt-0.5" }, rkChallengeText(ch, 'desc') + ' (' + ch.rp + ' RP)'),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-800 leading-snug mt-0.5" }, rkChallengeText(ch, 'where')),
+                    !done && React.createElement("div", { className: "mt-1 h-1.5 w-full rounded-full bg-orange-100", "aria-hidden": true },
+                      React.createElement("div", { className: "h-1.5 rounded-full bg-orange-500", style: { width: (n / ch.target * 100) + '%' } })),
+                    !done && !here && React.createElement("button", { type: "button", "data-rk-challenge-go": ch.go, onClick: goThere,
+                      className: "mt-1.5 min-h-[28px] rounded-full border border-orange-300 bg-white px-2.5 py-0.5 text-[0.6875rem] font-bold text-orange-900 hover:border-orange-600" },
+                      ch.go === 'rockCycle' ? '\u2197 ' + __alloT('stem.rocks.ch_open_cycle', 'Open the Rock Cycle tool') : '\u2192 ' + __alloT('stem.rocks.ch_take_me', 'Take me there')),
+                    !done && here && React.createElement("p", { className: "mt-1 text-[0.6875rem] font-bold text-emerald-800", "data-rk-challenge-here": true }, __alloT('stem.rocks.ch_you_are_here', 'You are on this tab now.')));
+                }))
             ),
 
             // ── Topic-accent hero band per mode ──
@@ -6702,7 +6882,7 @@ const d = labToolData.rocks || {};
                 // tool paints no themed ground anywhere, so its substrate is white in
                 // BOTH themes and its ink is a fixed dark utility like every other
                 // colour in the file.
-                  React.createElement('p', { className: 'text-slate-600', style: { margin: '3px 0 0', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { className: 'text-slate-700', style: { margin: '3px 0 0', fontSize: 12.5, lineHeight: 1.5 } }, meta.hint)
                 )
               );
             })(),
@@ -6769,6 +6949,35 @@ const d = labToolData.rocks || {};
                   igneous: { color: '#b91c1c', text: __alloT('stem.rocks.cyc_to_ign', 'Melting, then cooling, makes igneous rock') }
                 };
                 var h = React.createElement;
+                // Pick an arrow to see a real rock make that change. Examples
+                // come from each rock's own "can become" rows (RK_ROCK_LINKS),
+                // the same sentences its card shows.
+                var pick = typeof d.cycArrow === 'string' && /^(igneous|metamorphic|sedimentary)-(igneous|metamorphic|sedimentary)$/.test(d.cycArrow) && d.cycArrow.split('-')[0] !== d.cycArrow.split('-')[1] ? d.cycArrow : null;
+                // The tour's five stages, as places on this network. It is ONE
+                // route; the card says so, and the other arrows fade.
+                var TOUR_ON_NET = [{ node: 'igneous' }, { arrow: 'igneous-sedimentary' }, { node: 'sedimentary' }, { arrow: 'sedimentary-metamorphic' }, { arrow: 'metamorphic-igneous' }];
+                var tourAt = d.tourOn && typeof d.tourStage === 'number' && TOUR_ON_NET[d.tourStage] ? TOUR_ON_NET[d.tourStage] : null;
+                // A picked arrow wins over the tour's.
+                var shown = pick || (tourAt && tourAt.arrow) || null;
+                var AGENT_TO = { heat: 'metamorphic', weather: 'sedimentary', melt: 'igneous' };
+                var LEAD = { 'igneous-sedimentary': 'granite', 'igneous-metamorphic': 'granite', 'sedimentary-metamorphic': 'shale', 'sedimentary-igneous': 'shale', 'metamorphic-sedimentary': 'gneiss', 'metamorphic-igneous': 'gneiss' };
+                var examplesFor = function (from, to) {
+                  var out = [];
+                  ROCKS.forEach(function (r) {
+                    if (r.type !== from || !RK_ROCK_LINKS[r.id]) return;
+                    RK_ROCK_LINKS[r.id].into.forEach(function (row) {
+                      if (AGENT_TO[row[0]] !== to) return;
+                      var targets = row[1].map(function (id) { return ROCKS.find(function (x) { return x.id === id; }); }).filter(Boolean);
+                      // A change into rocks this collection does not have is
+                      // not an example a student can open; melting always is.
+                      if (!targets.length && row[0] !== 'melt') return;
+                      out.push({ rock: r, row: row, targets: targets });
+                    });
+                  });
+                  var lead = LEAD[from + '-' + to];
+                  return out.filter(function (e) { return e.rock.id === lead; }).concat(out.filter(function (e) { return e.rock.id !== lead; }));
+                };
+                var openRock = function (id) { updMulti({ mode: 'rocks', selectedRock: id }); sfxRockClick(); rkRevealSoon('[data-rk-rock-card]'); };
                 var arrows = [];
                 FAM.forEach(function (from) {
                   FAM.forEach(function (to) {
@@ -6780,7 +6989,16 @@ const d = labToolData.rocks || {};
                     // side so the pair between two families does not overlap.
                     var sx = p[0] + ux * 36, sy = p[1] + uy * 36, ex = q[0] - ux * 40, ey = q[1] - uy * 40;
                     var mx = (sx + ex) / 2 - uy * 20, my = (sy + ey) / 2 + ux * 20;
-                    arrows.push(h('path', { key: from + to, 'data-rk-cyc-arrow': from + '-' + to, d: 'M' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' Q' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1), fill: 'none', stroke: PROC[to].color, strokeWidth: 3, markerEnd: 'url(#rk-cyc-head-' + to + ')', opacity: 0.9 }));
+                    var key = from + '-' + to, on = pick === key, lit = shown === key;
+                    var dPath = 'M' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' Q' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1);
+                    var choose = function () { updMulti({ cycArrow: on ? null : key, cycEx: 0 }); sfxRockClick(); };
+                    arrows.push(h('g', { key: from + to, role: 'button', tabIndex: 0, 'aria-pressed': on, 'data-rk-cyc-pick': key, className: 'rk-cyc-btn', style: { cursor: 'pointer' },
+                      'aria-label': ROCK_TYPES[from].label + ' ' + __alloT('stem.rocks.cyc_to_word', 'to') + ' ' + ROCK_TYPES[to].label + ': ' + __alloT('stem.rocks.cyc_arrow_aria', 'show a real example'),
+                      onClick: choose,
+                      onKeyDown: function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); choose(); } } },
+                      h('path', { d: dPath, fill: 'none', stroke: 'transparent', strokeWidth: 16 }),
+                      h('path', { className: 'rk-cyc-halo', d: dPath, fill: 'none', stroke: 'transparent', strokeWidth: 11, strokeLinecap: 'round' }),
+                      h('path', { 'data-rk-cyc-arrow': key, 'data-rk-cyc-lit': lit ? (on ? 'pick' : 'tour') : null, d: dPath, fill: 'none', stroke: PROC[to].color, strokeWidth: lit ? 5 : 3, markerEnd: 'url(#rk-cyc-head-' + to + ')', opacity: shown || tourAt ? (lit ? 1 : 0.3) : 0.9 })));
                   });
                 });
                 return React.createElement("div", { className: "mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3", "data-rk-cycle-net": "1" },
@@ -6789,6 +7007,7 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex flex-wrap gap-3 items-center" },
                     React.createElement("div", { style: { flex: '1 1 300px', maxWidth: 440 } },
                       h('svg', { viewBox: '0 0 420 240', width: '100%', role: 'img', 'aria-label': __alloT('stem.rocks.cyc_svg_aria', 'Igneous, metamorphic and sedimentary rock, with arrows both ways between every pair.'), style: { display: 'block' } },
+                        h('style', null, '.rk-cyc-btn{outline:none}.rk-cyc-btn:focus-visible .rk-cyc-halo{stroke:#0f172a;stroke-opacity:0.5}@media (forced-colors: active){.rk-cyc-btn:focus-visible{outline:2px solid CanvasText}}'),
                         h('defs', null, FAM.map(function (to) {
                           return h('marker', { key: to, id: 'rk-cyc-head-' + to, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' },
                             h('path', { d: 'M0 0 L10 5 L0 10 Z', fill: PROC[to].color }));
@@ -6797,12 +7016,14 @@ const d = labToolData.rocks || {};
                         FAM.map(function (fam) {
                           var rt = ROCK_TYPES[fam], p = POS[fam];
                           return h('g', {
-                            key: fam, role: 'button', tabIndex: 0, 'data-rk-cyc-node': fam, style: { cursor: 'pointer' },
+                            key: fam, role: 'button', tabIndex: 0, 'data-rk-cyc-node': fam, className: 'rk-cyc-btn', style: { cursor: 'pointer' },
                             'aria-label': __alloT('stem.rocks.cyc_node_aria', 'Show the rocks in this family: ') + rt.label,
                             onClick: function () { updMulti({ mode: 'rocks', selectedType: fam, selectedRock: null }); sfxRockClick(); },
                             onKeyDown: function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); updMulti({ mode: 'rocks', selectedType: fam, selectedRock: null }); } }
                           },
-                            h('circle', { cx: p[0], cy: p[1], r: 32, fill: '#ffffff', stroke: rt.color, strokeWidth: 4 }),
+                            h('circle', { className: 'rk-cyc-halo', cx: p[0], cy: p[1], r: 39, fill: 'none', stroke: 'transparent', strokeWidth: 4 }),
+                            tourAt && tourAt.node === fam ? h('circle', { 'data-rk-cyc-tour-node': fam, cx: p[0], cy: p[1], r: 38, fill: 'none', stroke: rt.ink, strokeWidth: 3, strokeDasharray: '5 4' }) : null,
+                            h('circle', { cx: p[0], cy: p[1], r: 32, fill: '#ffffff', stroke: rt.color, strokeWidth: 4, opacity: tourAt && !(tourAt.node === fam) && !shown ? 0.55 : 1 }),
                             h('text', { x: p[0], y: p[1] + 8, textAnchor: 'middle', fontSize: 24, 'aria-hidden': true }, rt.icon),
                             h('text', { x: p[0], y: p[1] + (fam === 'igneous' ? -42 : 54), textAnchor: 'middle', fontSize: 13, fontWeight: 800, fill: rt.ink }, rt.label));
                         }))),
@@ -6811,7 +7032,35 @@ const d = labToolData.rocks || {};
                         return React.createElement("li", { key: to, className: "flex items-start gap-2 text-xs text-slate-800 leading-snug" },
                           React.createElement("span", { "aria-hidden": true, className: "shrink-0 rounded-full mt-1", style: { width: 22, height: 5, background: PROC[to].color } }),
                           PROC[to].text);
-                      }))));
+                      }),
+                      tourAt ? React.createElement("li", { className: "pt-1 text-[0.6875rem] font-bold text-slate-800", "data-rk-cyc-tour": d.tourStage }, "\u{1F6B6} " + __alloT('stem.rocks.cyc_tour_line', 'The tour is on this step. It follows one route; the faded arrows are other routes a rock can take.')) : null,
+                      !shown ? React.createElement("li", { className: "pt-1 text-[0.6875rem] font-bold text-amber-900", "data-rk-cyc-hint": true }, "👉 " + __alloT('stem.rocks.cyc_pick_hint', 'Pick an arrow to see a real rock make that change.')) : null,
+                      shown ? React.createElement("li", { className: "pt-1" }, (function () {
+                        var ft = shown.split('-'), from = ft[0], to = ft[1];
+                        var ex = examplesFor(from, to);
+                        var k = ex.length ? ((Number(d.cycEx) || 0) % ex.length + ex.length) % ex.length : 0;
+                        var e = ex[k];
+                        var tile = function (r, key) {
+                          return React.createElement("button", { key: key, type: "button", "data-rk-cyc-open": r.id, onClick: function () { openRock(r.id); },
+                            "aria-label": r.label + '. ' + __alloT('stem.rocks.found_in_open', 'Open its rock card.'),
+                            className: "flex flex-col items-center gap-0.5 rounded-lg border border-slate-300 bg-white px-1.5 py-1 hover:border-slate-600" },
+                            React.createElement("span", { "aria-hidden": true }, rkRockSwatch(React.createElement, r, 44)),
+                            React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-900" }, r.label));
+                        };
+                        return React.createElement("div", { className: "rounded-lg border-2 bg-white p-2.5", style: { borderColor: PROC[to].color }, "data-rk-cyc-example": shown + ':' + (e ? e.rock.id : '') },
+                          React.createElement("p", { className: "text-xs font-black text-slate-900" }, ROCK_TYPES[from].icon + ' ' + ROCK_TYPES[from].label + ' → ' + ROCK_TYPES[to].icon + ' ' + ROCK_TYPES[to].label),
+                          e ? React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" },
+                            tile(e.rock, 'from'),
+                            React.createElement("span", { "aria-hidden": true, className: "text-lg font-black", style: { color: PROC[to].color } }, '→'),
+                            e.targets.length
+                              ? e.targets.map(function (r) { return tile(r, r.id); })
+                              : React.createElement("span", { className: "rounded-lg border border-red-300 bg-red-50 px-2 py-1 text-[0.6875rem] font-bold text-red-900", "data-rk-cyc-magma": true }, "🔥 " + __alloT('stem.rocks.cyc_magma', 'Magma, which cools into a new igneous rock'))) : null,
+                          e ? React.createElement("p", { className: "text-xs text-slate-800 leading-snug mt-1.5" },
+                            React.createElement("span", { className: "font-bold" }, e.rock.label + ': '), rkLinkInto(e.rock.id, e.row)) : null,
+                          ex.length > 1 ? React.createElement("button", { type: "button", "data-rk-cyc-next": k + 1 + '/' + ex.length, onClick: function () { upd('cycEx', k + 1); sfxRockClick(); },
+                            className: "mt-1.5 rounded-full border border-slate-300 bg-white px-2.5 py-0.5 min-h-[28px] text-[0.6875rem] font-bold text-slate-800 hover:border-slate-600" },
+                            '↻ ' + __alloT('stem.rocks.cyc_another', 'Another example') + ' (' + (k + 1) + ' ' + __alloT('stem.rocks.myst_of', 'of') + ' ' + ex.length + ')') : null);
+                      })()) : null)));
               })(),
 
               // ── Where did it form? ──
@@ -7035,11 +7284,33 @@ const d = labToolData.rocks || {};
 
                     React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[0.6875rem] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].label + " Rock"),
 
-                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc),
+                                        React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc),
+                    rkMineralsOf(selRock.id).length > 0 && React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5", "data-rk-made-of": selRock.id },
+                      React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-700" }, __alloT('stem.rocks.made_of', 'Made of:')),
+                      rkMineralsOf(selRock.id).map(function (p) {
+                        var pct = Math.round(p.frac * 100) + '%';
+                        var nm = __alloT('stem.rocks.tsmin_' + p.part, p.part);
+                        return p.mineral
+                          ? React.createElement("button", { key: p.part, type: "button", "data-rk-made-of-mineral": p.part,
+                              "aria-label": nm + ' ' + pct + '. ' + __alloT('stem.rocks.made_of_open', 'Open its mineral card.'),
+                              onClick: function () { updMulti({ mode: 'minerals', selectedMineral: p.mineral.id, selectedRock: null }); sfxRockClick(); rkRevealSoon('[data-rk-mineral-hero]'); },
+                              className: "inline-flex items-center gap-1 rounded-full border border-violet-300 bg-white pl-0.5 pr-2 py-0.5 text-[0.6875rem] font-bold text-violet-900 hover:border-violet-600" },
+                              React.createElement("span", { "aria-hidden": true }, rkMineralSwatch(React.createElement, p.mineral, 20)),
+                              nm + ' ' + pct)
+                          : React.createElement("span", { key: p.part, "data-rk-made-of-part": p.part, className: "inline-flex items-center rounded-full border border-slate-300 bg-slate-50 px-2 py-0.5 text-[0.6875rem] font-bold text-slate-700" }, nm + ' ' + pct);
+                      })),
 
                   )
 
                 ),
+
+                // On this card: one link per section, from the same list the card uses.
+                React.createElement("nav", { className: "mt-3 flex flex-wrap items-center gap-1.5", "aria-label": __alloT('stem.rocks.sec_nav_aria', 'Sections of this card'), "data-rk-sec-nav": rkSelSecs.join(' ') },
+                  React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-700" }, __alloT('stem.rocks.sec_nav_label', 'On this card:')),
+                  rkSelSecs.map(function (sec) {
+                    return React.createElement("button", { key: sec, type: "button", "data-rk-sec-jump": sec, onClick: function () { rkJumpTo(sec); },
+                      className: "rounded-full border border-slate-300 bg-white px-2.5 py-0.5 min-h-[28px] text-[0.6875rem] font-bold text-slate-800 hover:border-slate-500" }, rkSecLabel(sec));
+                  })),
 
                 // Properties
 
@@ -7070,11 +7341,12 @@ const d = labToolData.rocks || {};
 
                 ),
 
+                rkSecAnchor('links'),
                 // ── Where it comes from, where it goes ──
                 // Each chip is a real catalogue rock and opens its card, so the
                 // cycle can be walked specimen by specimen: shale to slate to
                 // phyllite to schist to gneiss, and back to sand.
-                RK_ROCK_LINKS[selRock.id] && (function () {
+                rkSelSecs.indexOf('links') !== -1 && (function () {
                   var L = RK_ROCK_LINKS[selRock.id];
                   var goRock = function (id) {
                     var target = ROCKS.find(function (r) { return r.id === id; });
@@ -7110,11 +7382,12 @@ const d = labToolData.rocks || {};
                   );
                 })(),
 
+                rkSecAnchor('lookalikes'),
                 // ── Easily confused with ──
                 // Recognition is learned by contrast, not by a list of facts about
                 // one specimen, so each look-alike is drawn beside this rock with
                 // the single observation that separates them.
-                RK_ROCK_LINKS[selRock.id] && RK_ROCK_LINKS[selRock.id].look.length > 0 && React.createElement("div", { className: "mt-3", "data-rk-lookalikes": selRock.id },
+                rkSelSecs.indexOf('lookalikes') !== -1 && React.createElement("div", { className: "mt-3", "data-rk-lookalikes": selRock.id },
                   React.createElement("p", { className: "text-xs font-black text-slate-800 mb-1.5" }, "👀 " + __alloT('stem.rocks.rlink_look_title', 'Easily confused with')),
                   React.createElement("div", { className: "grid gap-2 sm:grid-cols-2" },
                     RK_ROCK_LINKS[selRock.id].look.map(function (row, li) {
@@ -7179,6 +7452,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)")))
 
                 ),
+                rkSecAnchor('lens'),
                 // ── Through a 10x hand lens ──
                 // The step between the specimen and the thin section, with the
                 // whole ladder of scales so a student knows where they are.
@@ -7218,11 +7492,12 @@ const d = labToolData.rocks || {};
                     )
                   );
                 })(),
+                rkSecAnchor('thin'),
                 // ── Thin section under the polarizing microscope ──
                 // Sits between the hand-specimen art above and the mineral tool's
                 // atomic view: the magnification where a rock stops being a
                 // texture and becomes a named list of minerals.
-                RK_THIN_SECTION[selRock.id] && (function () {
+                rkSelSecs.indexOf('thin') !== -1 && (function () {
                   var ts = d.thinSection || {};
                   var xpl = !!ts.xpl;
                   var stage = typeof ts.stage === 'number' ? ts.stage : 0;
@@ -7324,8 +7599,9 @@ const d = labToolData.rocks || {};
                   );
                 })(),
 
+                rkSecAnchor('cooling'),
                 // Igneous Cooling Rate Simulator
-                selRock && selRock.type === 'igneous' && (function() {
+                rkSelSecs.indexOf('cooling') !== -1 && (function() {
                   var coolingSpeed = d.coolingSpeed || 'slow';
                   var animProgress = d.coolingProgress || 0;
                   var isAnimActive = d.coolingAnimActive || false;
@@ -7683,11 +7959,12 @@ const d = labToolData.rocks || {};
                   );
                 })(),
 
+                rkSecAnchor('chart'),
                 // ── The igneous rock chart ──
                 // The cooling model above is one axis; this adds the other,
                 // what the magma was made of, and puts the six crystalline
                 // igneous rocks on the grid the two axes make.
-                selRock && selRock.type === 'igneous' && (function () {
+                rkSelSecs.indexOf('chart') !== -1 && (function () {
                   var ignT = function (kind, o, field) { return __alloT('stem.rocks.ign_' + kind + '_' + field + '_' + o.id, o[field]); };
                   var cellOf = {};
                   ROCKS.forEach(function (r) { var c = rkIgnCell(r.id); if (c) cellOf[r.id] = c; });
@@ -7890,11 +8167,12 @@ const d = labToolData.rocks || {};
                         }))));
                 })(),
 
+                rkSecAnchor('journey'),
                 // ── The journey: how a clastic rock records its trip ──
                 // The sedimentary counterpart of the cooling model above. Only
                 // the five clastic rocks get it: limestone, chalk, travertine
                 // and coal are not made of grains that travelled.
-                selRock && RK_SED_STOPS.some(function (st) { return st.rock === selRock.id; }) && (function () {
+                rkSelSecs.indexOf('journey') !== -1 && (function () {
                   var stop = RK_SED_STOPS.filter(function (st) { return st.rock === selRock.id; })[0];
                   var sj = (d.sedJourney && typeof d.sedJourney === 'object' && !Array.isArray(d.sedJourney)) ? d.sedJourney : {};
                   var tPos = (sj.forRock === selRock.id && typeof sj.t === 'number' && isFinite(sj.t)) ? Math.max(0, Math.min(1, sj.t)) : stop.at;
@@ -7977,8 +8255,9 @@ const d = labToolData.rocks || {};
                   );
                 })(),
 
+                rkSecAnchor('coal'),
                 // ── Coal: from swamp to rock, by burial ──
-                selRock && selRock.id === 'coal' && (function () {
+                rkSelSecs.indexOf('coal') !== -1 && (function () {
                   var cl = (d.coalLab && typeof d.coalLab === 'object' && !Array.isArray(d.coalLab)) ? d.coalLab : {};
                   var tPos = (typeof cl.t === 'number' && isFinite(cl.t)) ? Math.max(0, Math.min(1, cl.t)) : 0.62;
                   var c = rkCoalAt(tPos), r = c.rank;
@@ -8040,8 +8319,9 @@ const d = labToolData.rocks || {};
                   );
                 })(),
 
+                rkSecAnchor('carb'),
                 // ── Limestone, chalk, travertine: who made the calcite ──
-                selRock && RK_CARB_ENVS.some(function (e) { return e.rock === selRock.id; }) && (function () {
+                rkSelSecs.indexOf('carb') !== -1 && (function () {
                   var pre = RK_CARB_ENVS.filter(function (e) { return e.rock === selRock.id; })[0];
                   var cb = (d.carbLab && typeof d.carbLab === 'object' && !Array.isArray(d.carbLab)) ? d.carbLab : {};
                   var env = (cb.forRock === selRock.id && RK_CARB_ENVS.filter(function (e) { return e.id === cb.env; })[0]) || pre;
@@ -8098,8 +8378,9 @@ const d = labToolData.rocks || {};
                   );
                 })(),
 
+                rkSecAnchor('squeeze'),
                 // ── Squeeze and heat: how a metamorphic rock forms ──
-                selRock && RK_META_PRESET[selRock.id] && (function () {
+                rkSelSecs.indexOf('squeeze') !== -1 && (function () {
                   var pre = RK_META_PRESET[selRock.id];
                   var ml = (d.metaLab && typeof d.metaLab === 'object' && !Array.isArray(d.metaLab)) ? d.metaLab : {};
                   var mine = ml.forRock === selRock.id;
@@ -8198,6 +8479,7 @@ const d = labToolData.rocks || {};
                   );
                 })(),
 
+                rkSecAnchor('acid'),
                 // Acid Fizz Test Lab
                 // The rocks that fizz come from RK_KEY_ROCKS_FIZZ, the list the
                 // identification key's acid test reads, so the two can never
@@ -8673,24 +8955,43 @@ const d = labToolData.rocks || {};
                 React.createElement("section", { className: "rounded-xl border border-violet-200 bg-violet-50 p-2.5", "data-mohs-scale": "index-minerals", "aria-labelledby": "mohs-scale-title" },
                   React.createElement("p", { id: "mohs-scale-title", className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.mohs_scale_title', 'The Mohs scale, mineral by mineral')),
                   React.createElement("p", { className: "text-[10.5px] text-violet-900 mt-0.5 leading-snug" }, __alloT('stem.rocks.mohs_scale_body', 'Every step of the scale is a real mineral, from talc at 1 to diamond at 10, and all ten are in this catalogue. Open a step to see what defines it. The steps are a ranking, not a measurement: diamond is far harder than corundum, not one step harder.')),
-                  React.createElement("ol", { className: "flex flex-wrap gap-1.5 mt-2", "aria-label": __alloT('stem.rocks.mohs_scale_aria', 'Mohs index minerals from 1 to 10') },
-                    RK_MOHS_INDEX.map(function (step) {
-                      var stepM = MINERALS.filter(function (m) { return m.id === step[0]; })[0];
-                      if (!stepM) return null;
-                      var stepOn = d.selectedMineral === stepM.id;
-                      return React.createElement("li", { key: step[0] },
-                        React.createElement("button", {
-                          type: "button", "data-mohs-step": String(step[1]), "aria-pressed": stepOn,
-                          className: "rounded-lg border px-1.5 py-1 min-h-[44px] flex items-center gap-1.5 " + (stepOn ? "border-violet-500 bg-white ring-2 ring-violet-300" : "border-violet-200 bg-white hover:border-violet-400"),
-                          onClick: function () { upd("selectedMineral", stepOn ? null : stepM.id); upd("selectedRock", null); }
-                        },
-                          React.createElement("span", { className: "w-5 h-5 rounded-full bg-violet-700 text-white text-[0.625rem] font-black flex items-center justify-center shrink-0", "aria-hidden": "true" }, String(step[1])),
-                          React.createElement("span", { "aria-hidden": "true", className: "shrink-0 leading-none" }, rkMineralSwatch(React.createElement, stepM, 18)),
-                          React.createElement("span", { className: "text-[10.5px] font-black text-violet-900" }, stepM.label)
-                        )
-                      );
-                    })
-                  )
+                  // A staircase rather than a row of chips: each mineral stands on a
+                  // step as tall as its number, and the everyday references sit
+                  // between the steps they separate. A tool scratches everything
+                  // to its left, which is how the scale is actually used.
+                  React.createElement("div", { className: "mt-2 overflow-x-auto", "data-rk-mohs-ladder": "1" },
+                    React.createElement("div", { className: "relative", style: { minWidth: 560 } },
+                      React.createElement("ol", { className: "grid gap-1", style: { gridTemplateColumns: 'repeat(10, minmax(0, 1fr))', alignItems: 'end' }, "aria-label": __alloT('stem.rocks.mohs_scale_aria', 'Mohs index minerals from 1 to 10') },
+                        RK_MOHS_INDEX.map(function (step) {
+                          var stepM = MINERALS.filter(function (m) { return m.id === step[0]; })[0];
+                          if (!stepM) return null;
+                          var stepOn = d.selectedMineral === stepM.id;
+                          return React.createElement("li", { key: step[0] },
+                            React.createElement("button", {
+                              type: "button", "data-mohs-step": String(step[1]), "aria-pressed": stepOn,
+                              className: "w-full rounded-lg border flex flex-col items-center gap-0.5 px-0.5 pt-1 " + (stepOn ? "border-violet-500 bg-white ring-2 ring-violet-300" : "border-violet-200 bg-white hover:border-violet-400"),
+                              onClick: function () { upd("selectedMineral", stepOn ? null : stepM.id); upd("selectedRock", null); }
+                            },
+                              React.createElement("span", { "aria-hidden": "true", className: "shrink-0 leading-none" }, rkMineralSwatch(React.createElement, stepM, 30)),
+                              React.createElement("span", { className: "text-[0.625rem] font-black text-violet-900 leading-tight text-center" }, stepM.label),
+                              React.createElement("span", { "aria-hidden": "true", "data-mohs-bar": String(step[1]), className: "w-full rounded-b-md flex items-start justify-center pt-0.5", style: { height: 8 + step[1] * 8, background: 'hsl(262, 60%, ' + (92 - step[1] * 5) + '%)' } },
+                                React.createElement("span", { className: "w-5 h-5 rounded-full bg-violet-700 text-white text-[0.625rem] font-black flex items-center justify-center" }, String(step[1])))
+                            )
+                          );
+                        })
+                      ),
+                      // Where each everyday reference falls between the steps.
+                      React.createElement("div", { "aria-hidden": true, className: "pointer-events-none absolute inset-x-0 top-0", style: { bottom: 0 } },
+                        RK_MOHS_REFS.map(function (ref) {
+                          return React.createElement("span", { key: ref[0], "data-mohs-ref": ref[0], style: { position: 'absolute', left: ((ref[1] - 0.5) * 10) + '%', top: 0, bottom: 0, borderLeft: '2px dashed #b45309' } });
+                        })),
+                      React.createElement("div", { "aria-hidden": true, className: "relative mt-1", style: { height: 34 } },
+                        RK_MOHS_REFS.map(function (ref, ri) {
+                          return React.createElement("span", { key: ref[0], className: "absolute whitespace-nowrap rounded-full border border-amber-400 bg-amber-50 px-1.5 text-[0.625rem] font-black text-amber-900", style: { left: ((ref[1] - 0.5) * 10) + '%', top: ri % 2 ? 17 : 0, transform: 'translateX(-50%)' } }, ref[2] + ' ' + ref[1]);
+                        })))),
+                  React.createElement("p", { className: "text-[10.5px] text-violet-900 mt-1 leading-snug", "data-rk-mohs-refs": RK_MOHS_REFS.map(function (r) { return r[0]; }).join(' ') },
+                    React.createElement("span", { className: "font-black" }, __alloT('stem.rocks.mohs_refs_rule', 'A tool scratches every mineral to its left: ')),
+                                        RK_MOHS_REFS.map(function (ref) { return ref[2] + ' ' + rkMohsRefName(ref[0]) + ' ' + ref[1]; }).join(' · '))
                 ),
 
                 // Mineral grid
@@ -8740,7 +9041,18 @@ const d = labToolData.rocks || {};
 
                   React.createElement("div", { className: "flex-1 min-w-0" },
 
-                    selMineral.desc && React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selMineral.desc)
+                                        selMineral.desc && React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selMineral.desc),
+                    rkRocksWith(selMineral.id).length > 0 && React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5", "data-rk-found-in": selMineral.id },
+                      React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-700" }, __alloT('stem.rocks.found_in_rocks', 'Found in these rocks:')),
+                      rkRocksWith(selMineral.id).map(function (x) {
+                        var pct = Math.round(x.frac * 100) + '%';
+                        return React.createElement("button", { key: x.rock.id, type: "button", "data-rk-found-in-rock": x.rock.id,
+                          "aria-label": x.rock.label + ', ' + pct + ' ' + selMineral.label + '. ' + __alloT('stem.rocks.found_in_open', 'Open its rock card.'),
+                          onClick: function () { updMulti({ mode: 'rocks', selectedRock: x.rock.id, selectedMineral: null }); sfxRockClick(); rkRevealSoon('[data-rk-rock-card]'); },
+                          className: "inline-flex items-center gap-1 rounded-full border border-amber-300 bg-white pl-0.5 pr-2 py-0.5 text-[0.6875rem] font-bold text-amber-900 hover:border-amber-600" },
+                          React.createElement("span", { "aria-hidden": true }, rkRockSwatch(React.createElement, x.rock, 22)),
+                          x.rock.label + ' ' + pct);
+                      }))
 
                   )
 
@@ -8806,6 +9118,85 @@ const d = labToolData.rocks || {};
                     )
                   );
                 })(),
+                // ── Easily confused with: the test that tells them apart ──
+                (function () {
+                  var looks = rkMinLookalikesOf(selMineral.id).filter(function (l) { return MINERALS.some(function (m) { return m.id === l.other; }); });
+                  if (!looks.length) return null;
+                  var cur = looks.filter(function (l) { return l.other === d.minLook; })[0] || looks[0];
+                  var a = selMineral, b = MINERALS.find(function (m) { return m.id === cur.other; });
+                  var hA = Number(a.hardness), hB = Number(b.hardness), dA = Number(a.density), dB = Number(b.density);
+                  var softer = hA <= hB ? a : b, harder = hA <= hB ? b : a;
+                  var lo = Math.min(hA, hB), hi = Math.max(hA, hB);
+                  // The reference nearest the middle of the gap: glass for quartz and calcite.
+                  var ref = RK_MOHS_REFS.filter(function (r) { return r[1] > lo && r[1] < hi; }).reduce(function (best, r) { return !best || Math.abs(r[1] - (lo + hi) / 2) < Math.abs(best[1] - (lo + hi) / 2) ? r : best; }, null);
+                  var fizzA = RK_CARBONATE_IDS.indexOf(a.id) !== -1, fizzB = RK_CARBONATE_IDS.indexOf(b.id) !== -1;
+                  var magA = RK_MAGNETIC_IDS.indexOf(a.id) !== -1, magB = RK_MAGNETIC_IDS.indexOf(b.id) !== -1;
+                  var kA = rkCleavageKind(a), kB = rkCleavageKind(b);
+                  var streakKey = function (m) { return Object.prototype.hasOwnProperty.call(RK_STREAK_HEX, m.streak) ? RK_STREAK_HEX[m.streak] : String(m.streak || '').toLowerCase(); };
+                  var fizzWord = function (f) { return f ? __alloT('stem.rocks.ml_fizzes', 'Fizzes') : __alloT('stem.rocks.ml_no_fizz', 'No fizz'); };
+                  var magWord = function (g) { return g ? __alloT('stem.rocks.ml_pulls', 'Pulls') : __alloT('stem.rocks.ml_no_pull', 'No pull'); };
+                  var kindWord = function (k) { return __alloT('stem.rocks.brk_kind_' + k, RK_CLEAVAGE_KINDS[k].name); };
+                  var rows = [
+                    { id: 'hardness', label: t('stem.rocks.hardness'), va: String(hA), vb: String(hB), splits: Math.abs(hA - hB) >= 1 },
+                    { id: 'streak', label: t('stem.rocks.streak'), va: rkStreakText(a), vb: rkStreakText(b), ca: RK_STREAK_HEX[a.streak], cb: RK_STREAK_HEX[b.streak], splits: streakKey(a) !== streakKey(b) },
+                    { id: 'acid', label: __alloT('stem.rocks.ml_acid', 'Acid drop'), va: fizzWord(fizzA), vb: fizzWord(fizzB), splits: fizzA !== fizzB },
+                    { id: 'magnet', label: __alloT('stem.rocks.ml_magnet', 'Magnet'), va: magWord(magA), vb: magWord(magB), splits: magA !== magB },
+                    { id: 'heft', label: __alloT('stem.rocks.ml_heft', 'Heft (density)'), va: dA + ' g/cm\u00B3', vb: dB + ' g/cm\u00B3', splits: Math.abs(dA - dB) >= 0.8 },
+                    { id: 'cleavage', label: __alloT('stem.rocks.cleavage_label', 'Cleavage'), va: kindWord(kA), vb: kindWord(kB), splits: kA !== kB }
+                  ];
+                  // How the scratch test would go, from the same hardness numbers.
+                  var hardHow = Math.abs(hA - hB) < 1
+                    ? __alloT('stem.rocks.ml_hard_close', 'Their hardness is too close to tell apart by scratching.')
+                    : ref
+                      ? rkMohsRefName(ref[0]) + ' (' + ref[1] + ') ' + __alloT('stem.rocks.ml_hard_ref', 'scratches') + ' ' + softer.label + ' ' + __alloT('stem.rocks.ml_hard_but_not', 'but not') + ' ' + harder.label + '.'
+                      : harder.label + ' ' + __alloT('stem.rocks.ml_hard_ref', 'scratches') + ' ' + softer.label + ' ' + __alloT('stem.rocks.ml_hard_each_tail', '(rub one against the other).');
+                  var splitCount = rows.filter(function (r) { return r.splits; }).length;
+                  return React.createElement("section", { className: "rounded-xl border border-sky-200 bg-sky-50/60 p-3", "data-rk-min-lookalikes": a.id, "aria-label": __alloT('stem.rocks.ml_title', 'Easily confused with') },
+                    React.createElement("p", { className: "text-xs font-black text-sky-900 mb-1.5" }, "\u{1F440} " + __alloT('stem.rocks.ml_title', 'Easily confused with')),
+                    looks.length > 1 && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2", role: "group", "aria-label": __alloT('stem.rocks.ml_pick', 'Pick a look-alike') },
+                      looks.map(function (l) {
+                        var om = MINERALS.find(function (m) { return m.id === l.other; });
+                        var on = l.other === cur.other;
+                        return React.createElement("button", { key: l.other, type: "button", "aria-pressed": on, "data-rk-min-look": l.other, onClick: function () { upd('minLook', l.other); sfxRockClick(); },
+                          className: "inline-flex items-center gap-1 rounded-full border pl-0.5 pr-2 py-0.5 text-[0.6875rem] font-bold " + (on ? "bg-sky-900 border-sky-950 text-white" : "bg-white border-sky-300 text-sky-900 hover:border-sky-700") },
+                          React.createElement("span", { "aria-hidden": true }, rkMineralSwatch(React.createElement, om, 20)), om.label);
+                      })),
+                    React.createElement("div", { className: "rounded-lg border border-sky-200 bg-white p-2.5", "data-rk-min-look-pair": a.id + ':' + b.id + ':' + splitCount },
+                      React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                        React.createElement("span", { className: "inline-flex items-center gap-1.5" },
+                          React.createElement("span", { "aria-hidden": true }, rkMineralSwatch(React.createElement, a, 44)),
+                          React.createElement("span", { className: "text-sm font-black text-slate-900" }, a.label)),
+                        React.createElement("span", { className: "text-xs font-black text-slate-600", "aria-hidden": true }, 'vs'),
+                        React.createElement("span", { className: "inline-flex items-center gap-1.5" },
+                          React.createElement("span", { "aria-hidden": true }, rkMineralSwatch(React.createElement, b, 44)),
+                          React.createElement("span", { className: "text-sm font-black text-slate-900" }, b.label)),
+                        React.createElement("button", { type: "button", "data-rk-min-look-open": b.id, onClick: function () { updMulti({ selectedMineral: b.id, minLook: a.id }); sfxRockClick(); rkRevealSoon('[data-rk-mineral-hero]'); },
+                          className: "ml-auto rounded-full border border-sky-300 bg-white px-2.5 py-0.5 min-h-[28px] text-[0.6875rem] font-bold text-sky-900 hover:border-sky-700" },
+                          __alloT('stem.rocks.ml_open', 'Open') + ' ' + b.label + ' \u2192')),
+                      React.createElement("p", { className: "text-xs font-bold text-slate-900 leading-snug mt-2" },
+                        React.createElement("span", { className: "text-sky-900" }, __alloT('stem.rocks.ml_quick', 'The quick test:') + ' '),
+                        __alloT('stem.rocks.minlook_' + cur.key, cur.text)),
+                      React.createElement("div", { className: "overflow-x-auto mt-2" },
+                        React.createElement("table", { className: "w-full text-[0.6875rem] border-collapse", "data-rk-min-look-table": true },
+                          React.createElement("thead", null,
+                            React.createElement("tr", { className: "text-left text-slate-700" },
+                              React.createElement("th", { scope: "col", className: "py-1 pr-2 font-bold" }, __alloT('stem.rocks.ml_col_test', 'Test')),
+                              React.createElement("th", { scope: "col", className: "py-1 pr-2 font-bold" }, a.label),
+                              React.createElement("th", { scope: "col", className: "py-1 pr-2 font-bold" }, b.label),
+                              React.createElement("th", { scope: "col", className: "py-1 font-bold" }, __alloT('stem.rocks.ml_col_result', 'Tells them apart?')))),
+                          React.createElement("tbody", null,
+                            rows.map(function (r) {
+                              var chip = function (hex) { return hex ? React.createElement("span", { "aria-hidden": true, className: "inline-block align-middle mr-1 rounded-sm", style: { width: 12, height: 8, background: hex, border: '1px solid #64748b' } }) : null; };
+                              return React.createElement("tr", { key: r.id, "data-rk-min-look-row": r.id + ':' + (r.splits ? 'yes' : 'no'), className: "border-t border-slate-200 " + (r.splits ? "" : "text-slate-600") },
+                                React.createElement("th", { scope: "row", className: "py-1 pr-2 text-left font-bold text-slate-800" }, r.label),
+                                React.createElement("td", { className: "py-1 pr-2" }, chip(r.ca), r.va),
+                                React.createElement("td", { className: "py-1 pr-2" }, chip(r.cb), r.vb),
+                                React.createElement("td", { className: "py-1 font-bold " + (r.splits ? "text-emerald-800" : "text-slate-600") },
+                                  r.splits ? '\u2714 ' + __alloT('stem.rocks.ml_yes', 'Yes') : '\u2013 ' + __alloT('stem.rocks.ml_no', 'No')));
+                            })))),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-700 leading-snug mt-1.5", "data-rk-min-look-hard": true },
+                        React.createElement("span", { className: "font-bold" }, __alloT('stem.rocks.ml_scratch_label', 'Scratch test:') + ' '), hardHow)));
+                })(),
                 selMineral.uses && React.createElement("div", { className: "bg-blue-50 rounded-lg p-2.5" },
 
                   React.createElement("p", { className: "text-[0.6875rem] font-bold text-blue-800 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F " + __alloT('stem.rocks.uses_heading', "Uses")),
@@ -8862,7 +9253,19 @@ const d = labToolData.rocks || {};
 
                     React.createElement("span", null, __alloT('stem.rocks.mohs_min_talc', "1 (Talc)")),
 
-                    React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)")))
+                                        React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)"))),
+                  // Which everyday references would scratch THIS mineral, by the
+                  // scratch lab's own rule: harder scratches, equal is too close
+                  // to call. The numbers above only mean something in this form.
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5", "data-rk-mohs-verdicts": selMineral.id },
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-700" }, __alloT('stem.rocks.mohs_scratched_by', 'Would it be scratched by…')),
+                    RK_MOHS_REFS.map(function (ref) {
+                      var out = rkScratchOutcome(ref[1], selMineral.hardness);
+                      return React.createElement("span", { key: ref[0], "data-rk-mohs-verdict": ref[0] + ':' + out,
+                        className: "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.6875rem] font-bold " + (out === 'scratched' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : out === 'borderline' ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-slate-300 bg-white text-slate-700') },
+                        React.createElement("span", { "aria-hidden": true }, ref[2]),
+                        rkMohsRefName(ref[0]) + ' (' + ref[1] + '): ' + (out === 'scratched' ? __alloT('stem.rocks.mohs_verdict_yes', 'yes') : out === 'borderline' ? __alloT('stem.rocks.mohs_verdict_close', 'too close to call') : __alloT('stem.rocks.mohs_verdict_no', 'no')));
+                    }))
 
                 ),
 
@@ -9371,6 +9774,29 @@ const d = labToolData.rocks || {};
               const clues = Array.isArray(myst.clues) ? myst.clues : [];
 
               const cluesShown = Math.min(Math.max(myst.cluesShown || 0, 0), clues.length);
+              // Every wrong guess stays marked (only the LAST one used to, so a
+              // student could guess the same wrong rock twice), and a student can
+              // cross out rocks a clue rules out: detective work by elimination.
+              const mystIds = ROCKS.map(function (r) { return r.id; });
+              const mystWrong = Array.isArray(myst.wrong)
+                ? myst.wrong.filter(function (x) { return mystIds.indexOf(x) !== -1 && x !== myst.rockId; })
+                : (myst.lastGuess && myst.lastGuess !== myst.rockId && mystIds.indexOf(myst.lastGuess) !== -1 ? [myst.lastGuess] : []);
+              const mystOut = Array.isArray(myst.out) ? myst.out.filter(function (x) { return mystIds.indexOf(x) !== -1; }) : [];
+              const mystIsWrong = function (id) { return mystWrong.indexOf(id) !== -1; };
+              const mystIsOut = function (id) { return mystIsWrong(id) || mystOut.indexOf(id) !== -1; };
+              const mystLeft = ROCKS.filter(function (r) { return !mystIsOut(r.id); }).length;
+              function mystSetOut(next) { upd("mystery", Object.assign({}, myst, { out: next })); }
+              function mystToggle(id) {
+                mystSetOut(mystOut.indexOf(id) !== -1 ? mystOut.filter(function (x) { return x !== id; }) : mystOut.concat([id]));
+                sfxRockClick();
+              }
+              function mystToggleFamily(type) {
+                var ids = ROCKS.filter(function (r) { return r.type === type; }).map(function (r) { return r.id; });
+                var allOut = ids.every(mystIsOut);
+                mystSetOut(allOut ? mystOut.filter(function (x) { return ids.indexOf(x) === -1; }) : mystOut.concat(ids.filter(function (x) { return mystOut.indexOf(x) === -1 && !mystIsWrong(x); })));
+                sfxRockClick();
+              }
+
 
 
 
@@ -9458,7 +9884,7 @@ const d = labToolData.rocks || {};
 
               function guess(rockId) {
 
-                if (!mysteryRock || myst.solved || myst.revealed) return;
+                if (!mysteryRock || myst.solved || myst.revealed || mystIsWrong(rockId)) return;
 
                 const correct = rockId === myst.rockId;
 
@@ -9479,7 +9905,7 @@ const d = labToolData.rocks || {};
 
                   rockTone(200, 0.1, 'sawtooth', 0.05);
 
-                  upd("mystery", Object.assign({}, myst, { lastGuess: rockId, cluesShown: Math.min(cluesShown + 1, clues.length) }));
+                  upd("mystery", Object.assign({}, myst, { lastGuess: rockId, wrong: mystWrong.concat([rockId]), cluesShown: Math.min(cluesShown + 1, clues.length) }));
 
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.sr_mystery_wrong', 'Not quite. Next clue revealed.'));
 
@@ -9595,10 +10021,11 @@ const d = labToolData.rocks || {};
 
                         React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-700 mt-0.5" }, rkTextureName(mysteryRock.texture, mysteryRock.id) + " — " + rkGloss(mysteryRock.texture, mysteryRock.id)),
 
-                        React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-1 leading-relaxed" }, mysteryRock.desc)
-
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-1 leading-relaxed" }, mysteryRock.desc),
+                        myst.solved && React.createElement("p", { className: "text-[0.6875rem] font-bold text-green-800 mt-1", "data-rk-mystery-record": cluesShown + ':' + mystWrong.length },
+                          __alloT('stem.rocks.myst_record_clues', 'You used') + ' ' + cluesShown + ' ' + __alloT('stem.rocks.myst_of', 'of') + ' ' + clues.length + ' ' + __alloT('stem.rocks.myst_record_clues_tail', 'clues') + ' · ' +
+                          (mystWrong.length === 0 ? __alloT('stem.rocks.myst_record_no_wrong', 'no wrong guesses') : mystWrong.length + ' ' + (mystWrong.length === 1 ? __alloT('stem.rocks.myst_record_wrong_one', 'wrong guess') : __alloT('stem.rocks.myst_record_wrong_many', 'wrong guesses'))))
                       )
-
                     ),
 
                     React.createElement("button", {
@@ -9617,41 +10044,68 @@ const d = labToolData.rocks || {};
 
                     React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1.5" }, __alloT('stem.rocks.click_rock_matches_clues', "Click the rock you think matches the clues:")),
 
-                    React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-2", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") },
-
-                      ROCKS.map(function (rock) {
-
-                        const rt = ROCK_TYPES[rock.type];
-
-                        const wasWrong = myst.lastGuess === rock.id && myst.lastGuess !== myst.rockId;
-
-                        return React.createElement("button", {
-
-                          key: rock.id,
-
-                          onClick: function () { guess(rock.id); },
-
-                          // This is an IDENTIFICATION game, so the option tiles
-                          // have to carry identifying information. They used to
-                          // be the rock-type emoji — every igneous option looked
-                          // the same, which made the picture useless and left the
-                          // clue text doing all the work.
-                          "aria-label": __alloT('stem.rocks.guess_label', "Guess ") + rock.label + ' — ' + rkGloss(rock.texture, rock.id),
-
-                                                    // Same tile as the Rocks grid, so the catalogue looks the
-                          // same wherever a student meets it.
-                          "data-rk-mystery-tile": rock.id,
-                          className: "p-2 rounded-xl text-center border-2 transition-all hover:scale-105 " + (wasWrong ? "border-red-600" : "border-slate-200 hover:border-amber-400"),
-                          style: { background: wasWrong ? '#fef2f2' : '#ffffff', borderTopWidth: 5, borderTopColor: wasWrong ? '#dc2626' : ROCK_TYPES[rock.type].color }
-                        },
-                          React.createElement("div", { className: "flex justify-center mb-1 rounded-lg py-1", style: { background: 'radial-gradient(circle at 50% 42%, ' + ROCK_TYPES[rock.type].color + '26 0%, ' + ROCK_TYPES[rock.type].color + '0d 45%, rgba(255,255,255,0) 72%)' } }, rkRockSwatch(React.createElement, rock, 68)),
-                          React.createElement("span", { className: "block text-xs font-black leading-tight " + (wasWrong ? "text-red-800" : "text-slate-900") }, (wasWrong ? '✗ ' : '') + rock.label),
-                          React.createElement("span", { className: "block text-[0.625rem] font-bold text-slate-600 leading-tight mt-0.5" }, rkTextureName(rock.texture, rock.id)));
-
-                      })
-
+                    // How many rocks the student still thinks it could be.
+                    React.createElement("div", { className: "flex flex-wrap items-center gap-x-3 gap-y-1 mb-2", "data-rk-mystery-left": mystLeft },
+                      React.createElement("span", { className: "text-[0.75rem] font-black text-slate-900", role: "status", "aria-live": "polite" },
+                        __alloT('stem.rocks.myst_still_possible', 'Still possible:') + ' ' + mystLeft + ' ' + __alloT('stem.rocks.myst_of', 'of') + ' ' + ROCKS.length),
+                      React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, __alloT('stem.rocks.myst_cross_hint', 'Cross out the rocks a clue rules out, with ⊘ on a rock or a whole family at once.')),
+                      mystOut.length > 0 && React.createElement("button", { type: "button", "data-rk-mystery-clear": true, onClick: function () { mystSetOut([]); },
+                        className: "text-[0.6875rem] font-bold text-slate-800 underline hover:text-slate-950" }, __alloT('stem.rocks.myst_clear_out', 'Bring them all back'))
                     ),
-
+                    mystLeft === 0 && React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-900 mb-2", "data-rk-mystery-none-left": true },
+                      __alloT('stem.rocks.myst_none_left', 'You have crossed out every rock, so one of them must be wrong. Read the clues again and bring one back.')),
+                    ['igneous', 'sedimentary', 'metamorphic'].map(function (type) {
+                      const fam = ROCKS.filter(function (r) { return r.type === type; });
+                      const famLeft = fam.filter(function (r) { return !mystIsOut(r.id); }).length;
+                      const famAllOut = famLeft === 0;
+                      const famName = ROCK_TYPES[type].label;
+                      return React.createElement("div", { key: type, className: "mb-2", "data-rk-mystery-family": type + ':' + famLeft },
+                        React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-1" },
+                          React.createElement("span", { className: "text-[0.75rem] font-black", style: { color: ROCK_TYPES[type].ink } }, ROCK_TYPES[type].icon + ' ' + famName),
+                          React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, famLeft + ' ' + __alloT('stem.rocks.myst_of', 'of') + ' ' + fam.length + ' ' + __alloT('stem.rocks.myst_still_in', 'still possible')),
+                          React.createElement("button", { type: "button", "aria-pressed": famAllOut, "data-rk-mystery-family-out": type,
+                            onClick: function () { mystToggleFamily(type); },
+                            className: "ml-auto px-2.5 py-0.5 min-h-[28px] rounded-full border text-[0.6875rem] font-bold " + (famAllOut ? "bg-slate-700 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-800 hover:border-slate-600") },
+                            (famAllOut ? '↺ ' + __alloT('stem.rocks.myst_family_back', 'Bring back all') : '⊘ ' + __alloT('stem.rocks.myst_family_out', 'Cross out all')) + ' ' + famName)
+                        ),
+                        React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") + ': ' + famName },
+                          fam.map(function (rock) {
+                            const wasWrong = mystIsWrong(rock.id);
+                            const crossed = !wasWrong && mystOut.indexOf(rock.id) !== -1;
+                            return React.createElement("div", { key: rock.id, className: "relative" },
+                              React.createElement("button", {
+                              key: rock.id,
+                              onClick: function () { guess(rock.id); },
+                              disabled: wasWrong ? true : undefined,
+                              "data-rk-mystery-state": wasWrong ? 'wrong' : crossed ? 'out' : 'in',
+                              // This is an IDENTIFICATION game, so the option tiles
+                              // have to carry identifying information. They used to
+                              // be the rock-type emoji — every igneous option looked
+                              // the same, which made the picture useless and left the
+                              // clue text doing all the work.
+                              "aria-label": wasWrong ? rock.label + ': ' + __alloT('stem.rocks.myst_already_wrong', 'already guessed, not it') : __alloT('stem.rocks.guess_label', "Guess ") + rock.label + ' — ' + rkGloss(rock.texture, rock.id) + (crossed ? '. ' + __alloT('stem.rocks.myst_crossed_note', 'You crossed this one out.') : ''),
+                                                        // Same tile as the Rocks grid, so the catalogue looks the
+                              // same wherever a student meets it.
+                              "data-rk-mystery-tile": rock.id,
+                              className: "w-full h-full p-2 rounded-xl text-center border-2 transition-all " + (wasWrong ? "border-red-600 cursor-not-allowed" : crossed ? "border-slate-200 hover:border-amber-400" : "border-slate-200 hover:border-amber-400 hover:scale-105"),
+                              style: { background: wasWrong ? '#fef2f2' : crossed ? '#f1f5f9' : '#ffffff', borderTopWidth: 5, borderTopColor: wasWrong ? '#dc2626' : crossed ? '#cbd5e1' : ROCK_TYPES[rock.type].color }
+                            },
+                              React.createElement("div", { className: "flex justify-center mb-1 rounded-lg py-1", style: { opacity: crossed ? 0.35 : 1, filter: crossed ? 'grayscale(1)' : undefined, background: 'radial-gradient(circle at 50% 42%, ' + ROCK_TYPES[rock.type].color + '26 0%, ' + ROCK_TYPES[rock.type].color + '0d 45%, rgba(255,255,255,0) 72%)' } }, rkRockSwatch(React.createElement, rock, 68)),
+                              React.createElement("span", { className: "block text-xs font-black leading-tight " + (wasWrong ? "text-red-800" : crossed ? "text-slate-600 line-through" : "text-slate-900") }, (wasWrong ? '✗ ' : '') + rock.label),
+                              React.createElement("span", { className: "block text-[0.625rem] font-bold text-slate-600 leading-tight mt-0.5" }, rkTextureName(rock.texture, rock.id))),
+                              !wasWrong && React.createElement("button", {
+                                type: "button",
+                                "aria-pressed": crossed,
+                                "data-rk-mystery-cross": rock.id,
+                                "aria-label": (crossed ? __alloT('stem.rocks.myst_bring_back', 'Bring back') : __alloT('stem.rocks.myst_cross_out', 'Cross out')) + ' ' + rock.label,
+                                title: (crossed ? __alloT('stem.rocks.myst_bring_back', 'Bring back') : __alloT('stem.rocks.myst_cross_out', 'Cross out')) + ' ' + rock.label,
+                                onClick: function () { mystToggle(rock.id); },
+                                className: "absolute top-2 right-1.5 w-7 h-7 rounded-full border text-[0.8125rem] font-black leading-none flex items-center justify-center " + (crossed ? "bg-slate-700 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-700 hover:border-slate-600")
+                              }, crossed ? '↺' : '⊘'));
+                          })
+                        )
+                      );
+                    }),
                     React.createElement("button", {
 
                       onClick: giveUp,
@@ -9760,7 +10214,7 @@ const d = labToolData.rocks || {};
               var wbPoolFor = function () { return wb.pool === 'challenge' ? WB_POOL_CHALLENGE : WB_POOL; };
               var wbMineral = function (id) { for (var i = 0; i < MINERALS.length; i++) { if (MINERALS[i].id === id) return MINERALS[i]; } return null; };
               var WB_CARBONATES = RK_CARBONATE_IDS;
-              var WB_MAGNETIC = ['magnetite'];
+              var WB_MAGNETIC = RK_MAGNETIC_IDS;
               var WB_DENSITY_BAND = 0.5; // modeled balance resolution, g/cm³
               var WB_REFS = [
                 { id: 'fingernail', label: '💅 ' + __alloT('stem.rocks.tool_fingernail', 'Fingernail'), h: 2.5 },
@@ -11072,8 +11526,11 @@ const d = labToolData.rocks || {};
                 React.createElement("g", { key: 'specimen-' + sp.id, className: wbShowMagnet && spIsMag ? 'rk-wb-tug' : (wb.anim === 'wrong' ? 'rk-wb-shake' : 'rk-wb-drop'), "data-wb-specimen": "hand-specimen" },
                   React.createElement("g", { transform: "translate(215 30)" }, rkHandSpecimenSvg(React.createElement, sp, 130, { plate: false, aria: __alloT('stem.rocks.wb_specimen_aria', 'Unknown hand specimen: an irregular broken fragment.') }))
                 ),
-                React.createElement("rect", { x: 213, y: 174, width: 134, height: 25, rx: 6, fill: "#f8fafc", stroke: "#cbd5e1", strokeWidth: 1.5 }),
-                React.createElement("text", { className: "hidden sm:inline", x: 280, y: 191, fontSize: 11, fill: "#334155", textAnchor: "middle", fontWeight: 900, letterSpacing: 1 }, __alloT('stem.rocks.wb_unknown_label', 'UNKNOWN SPECIMEN')),
+                // The label outgrew its 134-wide pill (bold caps with letter spacing), and
+                // translations run longer still: a wider pill, and a long label is
+                // squeezed to fit rather than spilling over the edge.
+                React.createElement("rect", { x: 196, y: 174, width: 168, height: 25, rx: 6, fill: "#f8fafc", stroke: "#cbd5e1", strokeWidth: 1.5 }),
+                (function () { var wbLabel = __alloT('stem.rocks.wb_unknown_label', 'UNKNOWN SPECIMEN'); return React.createElement("text", { className: "hidden sm:inline", x: 280, y: 191, fontSize: 11, fill: "#334155", textAnchor: "middle", fontWeight: 900, letterSpacing: 0.8, "data-wb-unknown-label": true, textLength: wbLabel.length * 8.2 > 156 ? 156 : undefined, lengthAdjust: wbLabel.length * 8.2 > 156 ? "spacingAndGlyphs" : undefined }, wbLabel); })(),
                 React.createElement("line", { x1: 220, y1: 216, x2: 340, y2: 216, stroke: "#f8fafc", strokeWidth: 2 }),
                 [0, 1, 2, 3, 4].map(function (i) { return React.createElement("line", { key: 'tick' + i, x1: 220 + i * 30, y1: 211, x2: 220 + i * 30, y2: 221, stroke: "#f8fafc", strokeWidth: 1.5 }); }),
                 React.createElement("text", { className: "hidden sm:inline", x: 280, y: 238, fontSize: 9, fill: "#e2e8f0", textAnchor: "middle", fontWeight: 700 }, __alloT('stem.rocks.wb_scale_reference', 'VISUAL SCALE REFERENCE')),
@@ -11976,7 +12433,7 @@ const d = labToolData.rocks || {};
 
             // ── Quiz mode ──
 
-            quizQ && React.createElement("div", {
+            quizQ && !d.quizDone && React.createElement("div", {
               className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-600",
               role: "region", "aria-label": __alloT('stem.rocks.quiz_region_aria', "Rock identification quiz. Press 1 through 4 to answer, or N for next."),
               tabIndex: 0,
@@ -11990,6 +12447,7 @@ const d = labToolData.rocks || {};
                     const opt = quizQ.options[idx];
                     const correct = opt === quizQ.a;
                     const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[idx] : (correct ? __alloT('stem.rocks.correct_exclaim', "Correct!") : __alloT('stem.rocks.incorrect', "Incorrect."));
+                    upd("quizLog", rkQuizLogWith(d.quizIdx || 0, correct));
                     upd("quizFeedback", {
                       correct: correct,
                       chosenIdx: idx,
@@ -12008,8 +12466,7 @@ const d = labToolData.rocks || {};
                   }
                 } else if ((k === 'n' || k === 'N' || k === 'Enter') && d.quizFeedback) {
                   e.preventDefault();
-                  const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
-                  upd("quizIdx", nextIdx); upd("quizFeedback", null);
+                  rkQuizNext();
                 }
               }
             },
@@ -12017,8 +12474,19 @@ const d = labToolData.rocks || {};
                 React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "🧠 " + __alloT('stem.rocks.question_label', "Question ") + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
                 React.createElement("span", { className: "font-bold text-green-800 text-xs" }, "✔ " + (d.quizScore || 0))
               ),
-              React.createElement("div", { "aria-hidden": true, className: "mb-3 rounded-full overflow-hidden", style: { height: 6, background: '#fde68a' }, "data-rk-quiz-progress": (d.quizIdx || 0) + 1 },
-                React.createElement("div", { style: { height: '100%', width: (((d.quizIdx || 0) + 1) / QUIZ_BANK.length * 100).toFixed(1) + '%', background: '#b45309', borderRadius: 9999 } })),
+              (function () {
+                var done = Object.keys(rkQuizLog).filter(function (k) { return QUIZ_BANK[k]; });
+                var rightN = done.filter(function (k) { return rkQuizLog[k] === 1; }).length;
+                return React.createElement("div", {
+                  className: "flex flex-wrap gap-1 mb-3", role: "img", "data-rk-quiz-progress": (d.quizIdx || 0) + 1,
+                  "aria-label": __alloT('stem.rocks.quiz_map_answered', 'Answered ') + done.length + __alloT('stem.rocks.quiz_map_of', ' of ') + QUIZ_BANK.length + ', ' + rightN + __alloT('stem.rocks.quiz_map_right', ' right on the first try.')
+                },
+                  QUIZ_BANK.map(function (qq, qi) {
+                    var r = rkQuizLog[qi], here = qi === (d.quizIdx || 0);
+                    return React.createElement("span", { key: qi, "data-rk-quiz-dot": r === 1 ? 'right' : r === 0 ? 'wrong' : 'open',
+                      style: { display: 'inline-block', width: 10, height: 10, borderRadius: 9999, background: r === 1 ? '#047857' : r === 0 ? '#b91c1c' : '#ffffff', border: '1.5px solid ' + (here ? '#78350f' : r === 1 || r === 0 ? 'transparent' : '#d6b36a'), boxShadow: here ? '0 0 0 2px #fcd34d' : undefined } });
+                  }));
+              })(),
               Array.isArray(quizQ.show) && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", "data-rk-quiz-show": quizQ.show.join(' ') },
                 quizQ.show.map(function (sid) {
                   var sp = rkQuizSpecimen(sid);
@@ -12037,6 +12505,7 @@ const d = labToolData.rocks || {};
                       if (d.quizFeedback) return;
                       const correct = opt === quizQ.a;
                       const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[i] : (correct ? __alloT('stem.rocks.correct_exclaim', "Correct!") : __alloT('stem.rocks.incorrect', "Incorrect."));
+                      upd("quizLog", rkQuizLogWith(d.quizIdx || 0, correct));
                       upd("quizFeedback", {
                         correct: correct,
                         chosenIdx: i,
@@ -12092,19 +12561,64 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "flex justify-end" },
                   React.createElement("button", { "aria-label": __alloT('stem.rocks.next_question_aria', "Next question (shortcut: N)"),
                     onClick: function () {
-                      const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
-                      upd("quizIdx", nextIdx); upd("quizFeedback", null);
+                      rkQuizNext();
                     }, className: "px-4 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all active:scale-[0.97]"
-                  }, __alloT('stem.rocks.next_question', "Next Question") + " \u2192 (N)")
+                  }, (d.quizIdx || 0) + 1 >= QUIZ_BANK.length ? '🏁 ' + __alloT('stem.rocks.quiz_see_results', "See your results") + " (N)" : __alloT('stem.rocks.next_question', "Next Question") + " \u2192 (N)")
                 )
               )
             ),
 
+            // ── The round's results: by topic, weakest first, and what to revisit ──
+            mode === 'quiz' && d.quizDone && (function () {
+              var done = Object.keys(rkQuizLog).filter(function (k) { return QUIZ_BANK[k]; });
+              var rightN = done.filter(function (k) { return rkQuizLog[k] === 1; }).length;
+              var topics = {};
+              done.forEach(function (k) {
+                var c = QUIZ_BANK[k].concept || '';
+                if (!topics[c]) topics[c] = { n: 0, r: 0 };
+                topics[c].n++;
+                if (rkQuizLog[k] === 1) topics[c].r++;
+              });
+              var order = Object.keys(topics).sort(function (a, b) { return (topics[a].r / topics[a].n) - (topics[b].r / topics[b].n) || topics[b].n - topics[a].n; });
+              var missed = done.filter(function (k) { return rkQuizLog[k] === 0; });
+              var weakest = order.length && topics[order[0]].r < topics[order[0]].n ? order[0] : null;
+              return React.createElement("div", { className: "mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4", "data-rk-quiz-done": rightN + '/' + done.length, role: "region", "aria-label": __alloT('stem.rocks.quiz_done_title', "Round complete") },
+                React.createElement("p", { className: "text-base font-black text-amber-900" }, '🏁 ' + __alloT('stem.rocks.quiz_done_title', "Round complete") + ': ' + rightN + ' / ' + QUIZ_BANK.length),
+                React.createElement("p", { className: "text-xs text-slate-700 mt-0.5" }, __alloT('stem.rocks.quiz_done_note', "Each question counts your first answer. The ones you missed are listed below with the right answer.")),
+                React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-amber-900 mt-3 mb-1" }, __alloT('stem.rocks.quiz_by_topic', "By topic, weakest first")),
+                React.createElement("ul", { className: "space-y-1" },
+                  order.map(function (c) {
+                    var t = topics[c], pct = t.r / t.n;
+                    return React.createElement("li", { key: c || 'none', className: "flex items-center gap-2 text-xs text-slate-800", "data-rk-quiz-topic": c },
+                      React.createElement("span", { className: "font-bold", style: { width: 120, flexShrink: 0 } }, c ? rkVocabTerm(__alloT, c) : '—'),
+                      React.createElement("span", { "aria-hidden": true, className: "flex-1 rounded-full overflow-hidden", style: { height: 8, background: '#fde68a', maxWidth: 220 } },
+                        React.createElement("span", { style: { display: 'block', height: '100%', width: (pct * 100).toFixed(0) + '%', background: pct >= 0.75 ? '#047857' : pct >= 0.5 ? '#b45309' : '#b91c1c' } })),
+                      React.createElement("span", { className: "font-mono", style: { width: 44, flexShrink: 0 } }, t.r + ' / ' + t.n),
+                      c === weakest && React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black text-white", style: { background: '#b91c1c' } }, __alloT('stem.rocks.quiz_practise_next', "Practise next")));
+                  })),
+                missed.length > 0 && React.createElement("div", { className: "mt-3" },
+                  React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-amber-900 mb-1" }, __alloT('stem.rocks.quiz_revisit', "Questions to revisit")),
+                  React.createElement("ol", { className: "space-y-1.5 list-decimal pl-5" },
+                    missed.map(function (k) {
+                      var qq = QUIZ_BANK[k];
+                      return React.createElement("li", { key: k, className: "text-xs text-slate-800 leading-snug", "data-rk-quiz-missed": k },
+                        React.createElement("span", { className: "font-bold" }, qq.q),
+                                                React.createElement("span", { className: "flex items-center gap-1.5 text-emerald-900 font-bold mt-0.5" },
+                          (function () { var ap = rkQuizSpecimenByLabel(qq.a); return ap ? React.createElement("span", { "aria-hidden": true, "data-rk-quiz-answer-pic": ap.id }, ap.pic(26)) : null; })(),
+                          '→ ' + __alloT('stem.rocks.quiz_answer_was', "Answer: ") + qq.a));
+                    }))),
+                React.createElement("button", { type: "button", "data-rk-quiz-again": "1",
+                  onClick: function () { updMulti({ quizIdx: 0, quizScore: 0, quizFeedback: null, quizLog: null, quizDone: null }); sfxRockClick(); },
+                  className: "mt-3 px-4 py-1.5 rounded-lg text-xs font-black bg-amber-700 text-white hover:bg-amber-800" }, '↻ ' + __alloT('stem.rocks.quiz_new_round', "Start a new round")));
+            })(),
+
             // === H7b'' inquiry widget: rock weathering ===
             mode === 'weathHunt' && (function() {
               var h = React.createElement;
-              var iq = d.weathHunt || { tempSwing: 20, rainfall: 200, pH: 5.6, rock: 'granite', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              var iq = d.weathHunt || { tempSwing: 20, rainMm: 1200, pH: 5.6, rock: 'granite', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
               function setIQ(patch) { upd("weathHunt", Object.assign({}, iq, patch)); }
+              // A saved log can hold anything; one bad entry used to crash the tab.
+              var wxLog = Array.isArray(iq.log) ? iq.log : [];
               // The same climate weathers different rocks differently: a
               // carbonate dissolves, quartz barely reacts, porous sandstone
               // soaks up water that then freezes.
@@ -12115,16 +12629,72 @@ const d = labToolData.rocks || {};
               // "rain" at pH 12 as corrosive as acid rain. Water weathers rock at
               // any pH (hydrolysis turns feldspar to clay), natural rain is about
               // pH 5.6 from dissolved CO2, and acid only speeds it up.
-              var rainPH = isFinite(Number(iq.pH)) ? Math.max(3, Math.min(8, Number(iq.pH))) : 5.6;
-              var acidity = 0.45 + Math.max(0, 7 - rainPH) / 6.5;
-              var physical = (iq.tempSwing / 50) * WX_ROCKS[wxRock].phys;
-              var chemical = (iq.rainfall / 500) * acidity * WX_ROCKS[wxRock].chem;
-              var total = physical + chemical;
-              var state;
-              if (chemical > physical * 1.5 && chemical > 0.4) state = 'chemDom';
-              else if (physical > chemical * 1.5 && physical > 0.4) state = 'physDom';
-              else if (total > 0.5) state = 'mixed';
-              else state = 'minimal';
+                            var wxNum = function (v, lo, hi) {
+                var n = typeof v === 'number' ? v : (typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN);
+                return isFinite(n) ? Math.max(lo, Math.min(hi, n)) : null;
+              };
+              var rainPH = wxNum(iq.pH, 3, 8); if (rainPH == null) rainPH = 5.6;
+              var swing = wxNum(iq.tempSwing, 0, 50); if (swing == null) swing = 20;
+              // Rainfall is real millimetres a year: deserts get under 250,
+              // rainforests over 2,000. The slider used to stop at 500, which put
+              // its "typical temperate climate" at a semi-desert's 200 mm. Older
+              // saves hold that scale in `rainfall`; x6 reads them onto this one
+              // and gives the same result.
+              var rainMm = wxNum(iq.rainMm, 0, 3000);
+              if (rainMm == null) { var oldRain = wxNum(iq.rainfall, 0, 500); rainMm = oldRain == null ? 1200 : oldRain * 6; }
+              // One rule for the result, the map and the logged dots.
+              // A shape per result as well as a colour: red and green dots
+              // look alike to a red-green colour-blind student.
+              var wxShape = function (st, x, y, s, props) {
+                var k = s / 8;
+                if (st === 'physDom') return h('rect', Object.assign({ x: x - 6 * k, y: y - 6 * k, width: 12 * k, height: 12 * k, rx: 1.5 * k }, props));
+                if (st === 'mixed') return h('path', Object.assign({ d: 'M' + x + ',' + (y - 8 * k) + 'L' + (x + 8 * k) + ',' + y + 'L' + x + ',' + (y + 8 * k) + 'L' + (x - 8 * k) + ',' + y + 'Z' }, props));
+                if (st === 'minimal') return h('path', Object.assign({ d: 'M' + x + ',' + (y - 8.5 * k) + 'L' + (x + 8.5 * k) + ',' + (y + 6 * k) + 'L' + (x - 8.5 * k) + ',' + (y + 6 * k) + 'Z' }, props));
+                return h('circle', Object.assign({ cx: x, cy: y, r: 6.5 * k }, props));
+              };
+              var wxClassify = function (sw, mm, ph, rockId) {
+                var acidity = 0.45 + Math.max(0, 7 - ph) / 6.5;
+                var physical = (sw / 50) * WX_ROCKS[rockId].phys;
+                var chemical = (mm / 3000) * acidity * WX_ROCKS[rockId].chem;
+                if (chemical > physical * 1.5 && chemical > 0.4) return 'chemDom';
+                if (physical > chemical * 1.5 && physical > 0.4) return 'physDom';
+                if (physical + chemical > 0.5) return 'mixed';
+                return 'minimal';
+              };
+              var state = wxClassify(swing, rainMm, rainPH, wxRock);
+              // Places to start from, so the sliders mean something. Natural rain.
+              var WX_PLACES = [
+                { id: 'desert', icon: '🏜️', sw: 30, mm: 100, label: __alloT('stem.rocks.wx_place_desert', 'Hot desert') },
+                { id: 'temperate', icon: '🌳', sw: 14, mm: 1300, label: __alloT('stem.rocks.wx_place_temperate', 'Temperate lowland') },
+                { id: 'mountains', icon: '🏔️', sw: 35, mm: 1500, label: __alloT('stem.rocks.wx_place_mountains', 'High mountains') },
+                { id: 'rainforest', icon: '🌴', sw: 8, mm: 2800, label: __alloT('stem.rocks.wx_place_rainforest', 'Rainforest') }
+              ];
+              var WX_SHORT = {
+                chemDom: __alloT('stem.rocks.wx_map_chem', 'Chemical wins'),
+                physDom: __alloT('stem.rocks.wx_map_phys', 'Physical wins'),
+                mixed: __alloT('stem.rocks.wx_map_mixed', 'Both at work'),
+                                minimal: __alloT('stem.rocks.wx_map_minimal', 'Little weathering')
+              };
+              var WX_FILL = { chemDom: '#ddd6fe', physDom: '#fecaca', mixed: '#a5f3fc', minimal: '#bbf7d0' };
+              var WX_INK = { chemDom: '#4c1d95', physDom: '#7f1d1d', mixed: '#164e63', minimal: '#14532d' };
+              // The model's map is EARNED: evidence first (4 logged trials that
+              // got at least 2 different results), then the student's own
+              // explanation. Only then can they compare it with the model's
+              // answer. A teacher can open it straight away. Worked out on every
+              // render, so clearing the log locks it again.
+              var wxGood = wxLog.filter(function (e) { return e && typeof e === 'object' && WX_SHORT[e.st]; });
+              var wxKinds = Object.keys(wxGood.reduce(function (o, e) { o[e.st] = 1; return o; }, {})).length;
+              var wxEvidenceOk = wxGood.length >= 4 && wxKinds >= 2;
+              var wxExplainOk = !!iq.understood && typeof iq.explanation === 'string' && iq.explanation.trim().length >= 20;
+              var wxTeacher = !!ctx.isTeacherMode;
+              var wxModelOpen = wxTeacher || (wxEvidenceOk && wxExplainOk);
+              var wxModelOn = wxModelOpen && iq.modelOn === true;
+              var wxGateMark = function (done) {
+                return h('span', { className: 'inline-flex items-center justify-center shrink-0 rounded-full mt-px', style: { width: 15, height: 15, background: done ? '#047857' : '#ffffff', border: '1.5px solid ' + (done ? '#047857' : '#64748b'), fontSize: 10, fontWeight: 900 } },
+                  h('span', { className: 'sr-only' }, done ? __alloT('stem.rocks.wx_gate_done', 'Done:') : __alloT('stem.rocks.wx_gate_todo', 'To do:')),
+                  done ? h('span', { 'aria-hidden': true, style: { color: '#ffffff', background: '#047857', lineHeight: 1 } }, '✓') : null);
+              };
+              var wxShowModel = function () { setIQ({ modelOn: true }); rkRevealSoon('[data-wx-map]'); };
               // Extracted from an inline [state] index so the trial log below can
               // look up any state's label and colour, not just the current one.
               var SM_ALL = {
@@ -12158,8 +12728,147 @@ const d = labToolData.rocks || {};
                 // weathering was asking students to picture the whole thing.
                 // The frame belongs around the artwork, not around a 420px
                 // drawing floating in a full-width box with white on both sides.
-                h('div', { className: 'rounded-lg overflow-hidden border-2', style: { borderColor: sm.border, maxWidth: '420px', margin: '0 auto' } },
-                  rkWeatheringSvg(h, state, __alloT, wxRock)
+                h('div', { className: 'grid gap-3 md:grid-cols-2 items-center' },
+                  h('div', { className: 'rounded-lg overflow-hidden border-2 w-full', style: { borderColor: sm.border, maxWidth: '420px', margin: '0 auto' } },
+                    rkWeatheringSvg(h, state, __alloT, wxRock)
+                  ),
+                  // Your trials on a climate map. This is an inquiry widget, so
+                  // the map starts as the student's own evidence only: each logged
+                  // trial is a dot coloured by what it got. The model's regions
+                  // appear only once the gate above is met (or for a teacher).
+                  (function () {
+                    var M = { W: 360, H: 216, x0: 46, x1: 350, y0: 10, y1: 180 };
+                    var xOf = function (mm) { return M.x0 + (mm / 3000) * (M.x1 - M.x0); };
+                    var yOf = function (sw) { return M.y1 - (sw / 50) * (M.y1 - M.y0); };
+                    var trials = wxLog.map(function (e, li) {
+                      if (!e || typeof e !== 'object') return null;
+                      var tsw = wxNum(e.t, 0, 50), tmm = wxNum(e.rm, 0, 3000);
+                      if (tmm == null) { var or = wxNum(e.r, 0, 500); tmm = or == null ? null : or * 6; }
+                      if (tsw == null || tmm == null) return null;
+                      var same = (e.rk || 'granite') === wxRock && Math.abs((wxNum(e.p, 3, 8) || 0) - rainPH) < 0.05;
+                      var tst = SM_ALL[e.st] ? e.st : 'minimal';
+                      return { n: li + 1, x: xOf(tmm), y: yOf(tsw), st: tst, ink: SM_ALL[tst].color, same: same };
+                    }).filter(Boolean);
+                    var anyHollow = trials.some(function (tr) { return !tr.same; });
+                    var cx = xOf(rainMm), cy = yOf(swing);
+                    var runs = [], labels = [];
+                    if (wxModelOn) {
+                      var NX = 60, NY = 40, cw = (M.x1 - M.x0) / NX, ch = (M.y1 - M.y0) / NY, tally = {};
+                      for (var j = 0; j < NY; j++) {
+                        var gsw = (j + 0.5) * 50 / NY, runAt = 0, runSt = null;
+                        for (var i = 0; i <= NX; i++) {
+                          var gst = i < NX ? wxClassify(gsw, (i + 0.5) * 3000 / NX, rainPH, wxRock) : null;
+                          if (gst) { var tt = tally[gst] || (tally[gst] = { n: 0, sx: 0, sy: 0, cells: [] }); tt.n++; tt.sx += i; tt.sy += j; tt.cells.push([i, j]); }
+                          if (gst !== runSt) { if (runSt) runs.push({ st: runSt, i0: runAt, i1: i, j: j, x: M.x0 + runAt * cw, y: M.y1 - (j + 1) * ch, w: (i - runAt) * cw, hh: ch }); runAt = i; runSt = gst; }
+                        }
+                      }
+                      // Each label sits wholly inside its own region, clear of
+                      // every pin and dot, as near the region's middle as it can.
+                      var marks = WX_PLACES.map(function (p) { return [xOf(p.mm), yOf(p.sw), 10]; })
+                        .concat(trials.map(function (tr) { return [tr.x, tr.y, 8.5]; })).concat([[cx, cy, 9.5]]);
+                      var stateAt = function (x, y) { return wxClassify((M.y1 - y) / (M.y1 - M.y0) * 50, (x - M.x0) / (M.x1 - M.x0) * 3000, rainPH, wxRock); };
+                      labels = Object.keys(tally).map(function (k) {
+                        var tk = tally[k], mx = M.x0 + (tk.sx / tk.n + 0.5) * cw, my = M.y1 - (tk.sy / tk.n + 0.5) * ch;
+                        var hw = WX_SHORT[k].length * 3.1 + 3, hh = 7, best = null, bd = Infinity;
+                        tk.cells.forEach(function (c) {
+                          var lx = M.x0 + (c[0] + 0.5) * cw, ly = M.y1 - (c[1] + 0.5) * ch;
+                          var dd = (lx - mx) * (lx - mx) + (ly - my) * (ly - my);
+                          if (dd >= bd) return;
+                          var l = lx - hw, r = lx + hw, tp = ly - hh, bt = ly + hh;
+                          if (l < M.x0 + 2 || r > M.x1 - 2 || tp < M.y0 + 1 || bt > M.y1 - 1) return;
+                          var pts = [[l, tp], [r, tp], [l, bt], [r, bt], [lx, tp], [lx, bt]];
+                          for (var q = 0; q < pts.length; q++) if (stateAt(pts[q][0], pts[q][1]) !== k) return;
+                          for (var o = 0; o < marks.length; o++) {
+                            var nx = Math.max(l, Math.min(r, marks[o][0])), ny = Math.max(tp, Math.min(bt, marks[o][1]));
+                            if ((nx - marks[o][0]) * (nx - marks[o][0]) + (ny - marks[o][1]) * (ny - marks[o][1]) < marks[o][2] * marks[o][2]) return;
+                          }
+                          bd = dd; best = [lx, ly];
+                        });
+                        return best ? { st: k, x: best[0], y: best[1] + 3.7 } : null;
+                      }).filter(Boolean);
+                    }
+                    // Where the example places land on this map, in words: the
+                    // model's answer for anyone who cannot see the colours.
+                    var placeWords = WX_PLACES.map(function (p) { return p.label + ': ' + WX_SHORT[wxClassify(p.sw, p.mm, rainPH, wxRock)]; }).join(' · ');
+                    var mapAria = __alloT('stem.rocks.wx_map_aria_lead', 'Climate map: rainfall across, 0 to 3000 mm a year; temperature swing up, 0 to 50 degrees.') + ' ' +
+                      __alloT('stem.rocks.wx_map_you', 'Your climate') + ': ' + rainMm + ' mm, ' + swing + ' °C. ' +
+                      trials.length + ' ' + __alloT('stem.rocks.wx_map_aria_trials', 'logged trials, listed below.') +
+                      (wxModelOn ? ' ' + __alloT('stem.rocks.wx_model_aria', 'The model is shown. Where the places land:') + ' ' + placeWords + '.' : '');
+                    return h('div', { className: 'rounded-lg border-2 border-slate-200 bg-white p-2', 'data-wx-map': trials.length, 'data-wx-model': wxModelOn ? 'on' : 'off' },
+                      h('div', { className: 'text-[0.75rem] font-black text-slate-800' }, '\u{1F5FA}\u{FE0F} ' + __alloT('stem.rocks.wx_map_title', 'Your trials on a climate map')),
+                      h('p', { className: 'text-[0.6875rem] text-slate-700 leading-snug mb-1' }, __alloT('stem.rocks.wx_map_hint', 'Each logged trial is a dot, coloured by what won. Log trials in different climates and look for a pattern. Click the map to try that climate.')),
+                      h('svg', { viewBox: '0 0 ' + M.W + ' ' + M.H, width: '100%', role: 'img', 'aria-label': mapAria, style: { display: 'block', cursor: 'crosshair', maxWidth: 520, margin: '0 auto' },
+                        onClick: function (ev) {
+                          try {
+                            var r = ev.currentTarget.getBoundingClientRect();
+                            if (!r.width || !r.height) return;
+                            var vx = (ev.clientX - r.left) / r.width * M.W, vy = (ev.clientY - r.top) / r.height * M.H;
+                            if (vx < M.x0 || vx > M.x1 || vy < M.y0 || vy > M.y1) return;
+                            setIQ({ rainMm: Math.round((vx - M.x0) / (M.x1 - M.x0) * 60) * 50, tempSwing: Math.round((M.y1 - vy) / (M.y1 - M.y0) * 50) });
+                          } catch (err) {}
+                        } },
+                        h('rect', { x: M.x0, y: M.y0, width: M.x1 - M.x0, height: M.y1 - M.y0, fill: '#f8fafc' }),
+                        runs.map(function (ru, k) {
+                          return h('rect', { key: 'r' + k, 'data-wx-run': ru.st, x: ru.x, y: ru.y, width: ru.w, height: ru.hh + 0.4, fill: WX_FILL[ru.st] });
+                        }),
+                        [500, 1000, 1500, 2000, 2500].map(function (v) { return h('line', { key: 'gx' + v, x1: xOf(v), y1: M.y0, x2: xOf(v), y2: M.y1, stroke: '#e2e8f0', strokeWidth: 1 }); }),
+                        [10, 20, 30, 40].map(function (v) { return h('line', { key: 'gy' + v, x1: M.x0, y1: yOf(v), x2: M.x1, y2: yOf(v), stroke: '#e2e8f0', strokeWidth: 1 }); }),
+                        h('line', { x1: M.x0, y1: M.y1, x2: M.x1, y2: M.y1, stroke: '#475569', strokeWidth: 1.2 }),
+                        h('line', { x1: M.x0, y1: M.y0, x2: M.x0, y2: M.y1, stroke: '#475569', strokeWidth: 1.2 }),
+                        [0, 1000, 2000, 3000].map(function (v) { return h('text', { key: 'x' + v, x: xOf(v), y: M.y1 + 12, textAnchor: v === 3000 ? 'end' : v === 0 ? 'start' : 'middle', fontSize: 9, fill: '#334155' }, String(v)); }),
+                        [0, 25, 50].map(function (v) { return h('text', { key: 'y' + v, x: M.x0 - 5, y: yOf(v) + (v === 50 ? 7 : v === 0 ? 0 : 3), textAnchor: 'end', fontSize: 9, fill: '#334155' }, String(v)); }),
+                        h('text', { x: (M.x0 + M.x1) / 2, y: M.H - 6, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#1e293b' }, __alloT('stem.rocks.wx_map_x', 'Rainfall (mm a year)')),
+                        h('text', { x: 12, y: (M.y0 + M.y1) / 2, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#1e293b', transform: 'rotate(-90 12 ' + (M.y0 + M.y1) / 2 + ')' }, __alloT('stem.rocks.wx_map_y', 'Temperature swing (°C)')),
+                        labels.map(function (lb) {
+                          return h('text', { key: 'l' + lb.st, 'data-wx-region': lb.st, x: lb.x, y: lb.y, textAnchor: 'middle', fontSize: 10.5, fontWeight: 800, fill: WX_INK[lb.st], stroke: '#ffffff', strokeWidth: 2.5, paintOrder: 'stroke', style: { pointerEvents: 'none' } }, WX_SHORT[lb.st]);
+                        }),
+                        trials.length === 0 && !wxModelOn ? h('text', { x: (M.x0 + M.x1) / 2, y: M.y0 + 22, textAnchor: 'middle', fontSize: 10, fill: '#475569', 'data-wx-map-empty': true }, __alloT('stem.rocks.wx_map_empty', 'Log a trial and it lands here as a dot.')) : null,
+                        WX_PLACES.map(function (p) {
+                          return h('g', { key: 'p' + p.id, 'data-wx-pin': p.id, 'aria-hidden': true, style: { pointerEvents: 'none' } },
+                            h('circle', { cx: xOf(p.mm), cy: yOf(p.sw), r: 8.5, fill: '#ffffff', stroke: '#94a3b8', strokeWidth: 1 }),
+                            h('text', { x: xOf(p.mm), y: yOf(p.sw) + 3.8, textAnchor: 'middle', fontSize: 10.5 }, p.icon));
+                        }),
+                        h('g', { 'data-wx-you': rainMm + ':' + swing, style: { pointerEvents: 'none' } },
+                          h('line', { x1: cx, y1: cy, x2: cx, y2: M.y1, stroke: '#0f172a', strokeWidth: 1, strokeDasharray: '3 2' }),
+                          h('line', { x1: M.x0, y1: cy, x2: cx, y2: cy, stroke: '#0f172a', strokeWidth: 1, strokeDasharray: '3 2' }),
+                          h('circle', { cx: cx, cy: cy, r: 7.5, fill: 'none', stroke: '#0f172a', strokeWidth: 2.5 })),
+                        // Dots last, so a trial is never hidden under the marker.
+                        trials.map(function (tr) {
+                          return h('g', { key: 't' + tr.n, 'data-wx-trial': tr.n + ':' + (tr.same ? 'same' : 'other'), style: { pointerEvents: 'none' } },
+                            wxShape(tr.st, tr.x, tr.y, 8, { 'data-wx-shape': tr.st, fill: tr.same ? tr.ink : '#ffffff', stroke: tr.same ? '#ffffff' : tr.ink, strokeWidth: tr.same ? 1.2 : 2, strokeDasharray: tr.same ? null : '2.5 1.5' }),
+                            h('text', { x: tr.x, y: tr.y + (tr.st === 'minimal' ? 4 : 3), textAnchor: 'middle', fontSize: 8, fontWeight: 800, fill: tr.same ? '#ffffff' : '#0f172a' }, String(tr.n)));
+                        })
+                      ),
+                      h('div', { className: 'flex flex-wrap gap-x-3 gap-y-1 mt-1 text-[0.6875rem] text-slate-800' },
+                        ['chemDom', 'physDom', 'mixed', 'minimal'].map(function (k) {
+                          return h('span', { key: k, className: 'inline-flex items-center gap-1' },
+                            h('svg', { 'aria-hidden': true, width: 13, height: 13, viewBox: '0 0 18 18', 'data-wx-key-shape': k }, wxModelOn ? h('rect', { width: 18, height: 18, rx: 3, fill: WX_FILL[k] }) : null, wxShape(k, 9, 9.5, 8, { fill: SM_ALL[k].color })),
+                            WX_SHORT[k]);
+                        }),
+                        h('span', { className: 'inline-flex items-center gap-1' },
+                          h('span', { 'aria-hidden': true, style: { display: 'inline-block', width: 11, height: 11, borderRadius: 99, background: '#ffffff', border: '2.5px solid #0f172a' } }),
+                          __alloT('stem.rocks.wx_map_you', 'Your climate'))),
+                      anyHollow ? h('p', { className: 'text-[0.6875rem] text-slate-700 leading-snug mt-1', 'data-wx-hollow-note': true }, wxModelOn
+                        ? __alloT('stem.rocks.wx_map_hollow_model', 'A hollow dot was logged with another rock or rain pH, so these colours are not its answer.')
+                        : __alloT('stem.rocks.wx_map_hollow', 'A hollow dot was logged with another rock or rain pH.')) : null,
+                      h('div', { className: 'mt-2 rounded-lg border p-2 ' + (wxModelOpen ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50'), 'data-wx-model-gate': wxModelOpen ? 'open' : 'locked' },
+                        h('button', { type: 'button', disabled: !wxModelOpen, 'aria-pressed': wxModelOn, 'data-wx-model-toggle': true,
+                          onClick: function () { if (wxModelOpen) setIQ({ modelOn: !wxModelOn }); },
+                          className: 'px-3 py-1 min-h-[36px] rounded-lg text-[0.75rem] font-bold border ' + (!wxModelOpen ? 'bg-slate-100 border-slate-300 text-slate-600 cursor-not-allowed' : wxModelOn ? 'bg-white border-emerald-700 text-emerald-900' : 'bg-emerald-700 border-emerald-800 text-white hover:bg-emerald-800') },
+                          (wxModelOpen ? '' : '🔒 ') + (wxModelOn ? __alloT('stem.rocks.wx_model_hide', 'Hide the model') : __alloT('stem.rocks.wx_model_show', 'Compare with the model'))),
+                        wxTeacher ? h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1', 'data-wx-model-teacher': true }, __alloT('stem.rocks.wx_model_teacher', 'Teacher view: the model is open to you without the steps.')) : null,
+                        !wxModelOpen ? h('div', { className: 'mt-1.5 space-y-0.5 text-[0.6875rem] text-slate-800' },
+                          h('p', { className: 'font-bold' }, __alloT('stem.rocks.wx_model_gate', 'The model shows where each kind of weathering wins. Find your own pattern first:')),
+                          h('p', { 'data-wx-gate-step': 'evidence:' + (wxEvidenceOk ? 'done' : 'todo'), className: 'flex items-start gap-1.5' }, wxGateMark(wxEvidenceOk), h('span', null,
+                            __alloT('stem.rocks.wx_gate_evidence', 'Log 4 trials that get at least 2 different results') + ' (' + wxGood.length + ' ' + __alloT('stem.rocks.wx_gate_logged', 'logged') + ', ' + wxKinds + ' ' + __alloT('stem.rocks.wx_gate_kinds', 'different') + ')')),
+                          h('p', { 'data-wx-gate-step': 'explain:' + (wxExplainOk ? 'done' : 'todo'), className: 'flex items-start gap-1.5' }, wxGateMark(wxExplainOk), h('span', null,
+                            __alloT('stem.rocks.wx_gate_explain', 'Tick "I understand" below and explain the pattern in your own words')))) : null,
+                        wxModelOn ? h('div', { className: 'mt-1.5 text-[0.6875rem] text-slate-800 leading-snug', 'data-wx-model-notes': true },
+                          h('p', null, __alloT('stem.rocks.wx_model_compare', 'This is the model\'s answer for this rock and this rain pH. Where does it agree with your explanation, and what surprised you? Change the rock or the rain pH and watch the colours move.')),
+                          h('p', { className: 'mt-1', 'data-wx-model-places': true }, h('span', { className: 'font-bold' }, __alloT('stem.rocks.wx_model_places', 'Where the places land:') + ' '), placeWords)) : null
+                      )
+                    );
+                  })()
                 ),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
@@ -12175,21 +12884,33 @@ const d = labToolData.rocks || {};
                       className: 'px-2.5 py-1 min-h-[36px] rounded-lg text-[0.6875rem] font-bold border ' + (on ? 'bg-amber-800 border-amber-900 text-white' : 'bg-white border-slate-300 text-slate-800 hover:border-amber-500') }, opt[1]);
                   })
                 ),
-                h('div', { className: 'grid grid-cols-3 gap-3' },
-                  [{ k: 'tempSwing', l: __alloT('stem.rocks.weath_temp_swing', 'Temp swing (\u00b0C)'), mn: 0, mx: 50, st: 1 },
-                   { k: 'rainfall', l: __alloT('stem.rocks.weath_rainfall', 'Rainfall (mm/yr)'), mn: 0, mx: 500, st: 10 },
-                   { k: 'pH', l: __alloT('stem.rocks.weath_rain_ph', 'Rain pH'), mn: 3, mx: 8, st: 0.1, scale: __alloT('stem.rocks.weath_ph_scale', '3 = strong acid rain · 5.6 = natural rain · 7 = neutral') }].map(function(s) {
+                                // Try a place: sets rainfall and swing, with natural rain.
+                h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': __alloT('stem.rocks.wx_places_aria', 'Try the climate of a place'), 'data-wx-places': true },
+                  h('span', { className: 'text-[0.6875rem] font-black text-slate-700 mr-1' }, __alloT('stem.rocks.wx_places_label', 'Try a place:')),
+                  WX_PLACES.map(function (p) {
+                    var on = swing === p.sw && rainMm === p.mm && Math.abs(rainPH - 5.6) < 0.01;
+                    return h('button', { key: p.id, type: 'button', 'aria-pressed': on, 'data-wx-place': p.id,
+                      onClick: function () { setIQ({ tempSwing: p.sw, rainMm: p.mm, pH: 5.6 }); },
+                      className: 'inline-flex items-center gap-1 px-2.5 py-1 min-h-[36px] rounded-lg text-[0.6875rem] font-bold border ' + (on ? 'bg-sky-800 border-sky-900 text-white' : 'bg-white border-slate-300 text-slate-800 hover:border-sky-600') },
+                      h('span', { 'aria-hidden': true }, p.icon), p.label);
+                  }),
+                  h('span', { className: 'text-[0.625rem] text-slate-600' }, __alloT('stem.rocks.wx_places_note', 'Places use natural rain, pH 5.6.'))
+                ),
+                h('div', { className: 'grid gap-3 sm:grid-cols-3' },
+                  [{ k: 'tempSwing', v: swing, l: __alloT('stem.rocks.weath_temp_swing', 'Temp swing (\u00b0C)'), mn: 0, mx: 50, st: 1, scale: __alloT('stem.rocks.weath_swing_scale', 'How far it heats and cools. Big swings, and ice in cracks, split rock.') },
+                   { k: 'rainMm', v: rainMm, l: __alloT('stem.rocks.weath_rainfall', 'Rainfall (mm/yr)'), mn: 0, mx: 3000, st: 50, scale: __alloT('stem.rocks.weath_rain_scale', 'Desert under 250 · temperate about 600 to 1500 · rainforest over 2000') },
+                   { k: 'pH', v: rainPH, l: __alloT('stem.rocks.weath_rain_ph', 'Rain pH'), mn: 3, mx: 8, st: 0.1, scale: __alloT('stem.rocks.weath_ph_scale', '3 = strong acid rain · 5.6 = natural rain · 7 = neutral') }].map(function(s) {
                     return h('div', { key: s.k },
-                      h('label', { htmlFor: 'wh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-800' }, iq[s.k])),
-                      h('input', { id: 'wh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      h('label', { htmlFor: 'wh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-800' }, s.v)),
+                      h('input', { id: 'wh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: s.v,
                         onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }),
                       s.scale ? h('p', { className: 'text-[0.625rem] text-slate-600 leading-snug mt-0.5' }, s.scale) : null);
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempSwing, r: iq.rainfall, p: iq.pH, rk: wxRock, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
-                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainfall: 200, pH: 5.6, rock: 'granite', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
+                  h('button', { onClick: function() { setIQ({ log: wxLog.concat([{ t: swing, rm: rainMm, p: rainPH, rk: wxRock, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
+                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainMm: 1200, rainfall: null, pH: 5.6, rock: 'granite', log: [], modelOn: false, hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
                 ),
                 // The Log button has always written iq.log — and nothing has ever
                 // rendered it. Clicking it stored a trial and showed the student
@@ -12198,26 +12919,32 @@ const d = labToolData.rocks || {};
                 // visible: conditions on the left, the state they produced on the
                 // right. No score and no ranking — it is a notebook, not a
                 // leaderboard, per the widget's design note.
-                (iq.log || []).length > 0 && h('div', { className: 'rounded-lg border border-slate-300 bg-slate-50 p-2' },
+                wxLog.length > 0 && h('div', { className: 'rounded-lg border border-slate-300 bg-slate-50 p-2' },
                   h('div', { className: 'flex items-center justify-between mb-1.5' },
                     // The log keeps the last 8 (see the Log button's slice). Say so
                     // when it is full, rather than silently dropping the oldest
                     // trial out from under a student who is comparing runs.
                     h('span', { className: 'text-[0.6875rem] font-black text-slate-700' },
-                      '📋 ' + __alloT('stem.rocks.weath_log_title', 'Logged trials') + ' (' + iq.log.length + ')' +
-                      (iq.log.length >= 8 ? ' · ' + __alloT('stem.rocks.weath_log_capped', 'showing the last 8') : '')),
+                      '📋 ' + __alloT('stem.rocks.weath_log_title', 'Logged trials') + ' (' + wxLog.length + ')' +
+                      (wxLog.length >= 8 ? ' · ' + __alloT('stem.rocks.weath_log_capped', 'showing the last 8') : '')),
                     h('button', {
                       type: 'button',
                       onClick: function() { setIQ({ log: [] }); },
                       className: 'text-[0.625rem] font-bold text-slate-700 underline hover:text-slate-900'
                     }, __alloT('stem.rocks.weath_log_clear', 'Clear'))
                   ),
-                  h('ul', { className: 'space-y-1' }, iq.log.map(function(entry, li) {
+                  h('ul', { className: 'space-y-1' }, wxLog.map(function(entry, li) {
+                    if (!entry || typeof entry !== 'object') return null;
                     var em = SM_ALL[entry.st] || SM_ALL.minimal;
-                    return h('li', { key: li, className: 'flex items-center gap-2 text-[0.6875rem]' },
-                      h('span', { className: 'font-mono text-slate-700 shrink-0' },
+                    var entryMm = entry.rm != null ? entry.rm : (entry.r != null && isFinite(Number(entry.r)) ? Number(entry.r) * 6 : '?');
+                    return h('li', { key: li, className: 'flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.6875rem]' },
+                      // The number of its dot on the map.
+                      h('svg', { 'aria-hidden': true, width: 20, height: 20, viewBox: '0 0 20 20', className: 'shrink-0', 'data-wx-log-badge': (SM_ALL[entry.st] ? entry.st : 'minimal') },
+                        wxShape(SM_ALL[entry.st] ? entry.st : 'minimal', 10, 10.5, 9, { fill: em.color }),
+                        h('text', { x: 10, y: entry.st === 'minimal' ? 15 : 14, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#ffffff' }, String(li + 1))),
+                      h('span', { className: 'font-mono text-slate-700 min-w-0' },
                         (__alloT('stem.rocks.weath_log_temp', 'ΔT') + ' ' + entry.t + '°  ' +
-                         __alloT('stem.rocks.weath_log_rain', 'rain') + ' ' + entry.r + '  ' +
+                         __alloT('stem.rocks.weath_log_rain', 'rain') + ' ' + entryMm + ' mm  ' +
                          __alloT('stem.rocks.weath_log_ph', 'pH') + ' ' + entry.p +
                          (entry.rk ? '  · ' + (entry.rk === 'limestone' ? __alloT('stem.rocks.weath_rock_carbonate', 'Limestone or marble') : t('stem.rocks.' + entry.rk)) : ''))),
                       h('span', {
@@ -12240,8 +12967,14 @@ const d = labToolData.rocks || {};
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     __alloT('stem.rocks.weath_understand_label', 'I understand \u2014 explain in own words')),
                   iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': __alloT('stem.rocks.explanation_input', 'Weathering climate explanation'), placeholder: __alloT('stem.rocks.weath_explanation_placeholder', 'Explain how climate selects which weathering mode dominates.'),
-                    className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                h('div', { className: 'text-[0.625rem] italic text-slate-600' }, __alloT('stem.rocks.weath_design_note', 'This lab shows which kind of weathering wins, not how fast it happens. Real rates also depend on time, on how cracked the rock is, and on plants and soil.'))
+                    className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                  iq.understood && !wxTeacher && h('div', { className: 'mt-2 flex flex-wrap items-center gap-2', 'data-wx-explain-next': wxModelOpen ? 'open' : 'locked' },
+                    wxModelOpen
+                      ? h('button', { type: 'button', onClick: wxShowModel, className: 'px-3 py-1 min-h-[36px] rounded-lg text-[0.75rem] font-bold border bg-emerald-700 border-emerald-800 text-white hover:bg-emerald-800' }, '↑ ' + __alloT('stem.rocks.wx_explain_compare', 'Compare your explanation with the model'))
+                      : h('p', { className: 'text-[0.6875rem] text-slate-700' }, !wxEvidenceOk
+                        ? __alloT('stem.rocks.wx_explain_need_trials', 'To compare with the model, log 4 trials that get at least 2 different results.')
+                        : __alloT('stem.rocks.wx_explain_need_words', 'Write a little more, then you can compare with the model.')))),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-snug' }, __alloT('stem.rocks.weath_design_note', 'This lab shows which kind of weathering wins, not how fast it happens. Real rates also depend on time, on how cracked the rock is, and on plants and soil.'))
               );
             })(),
 

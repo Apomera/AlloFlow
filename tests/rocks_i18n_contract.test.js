@@ -225,12 +225,12 @@ describe('the badge and vocabulary tables speak through the translator', () => {
   const strings = () => JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.rocks;
   const slug = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '_');
 
-  it('has a key for every challenge name and description', () => {
+  it('has a key for every challenge name, description and where-to-earn line', () => {
     const rows = literalAt('var ROCKS_CHALLENGES = [', '[');
     expect(rows.length).toBeGreaterThan(4);
     const S = strings();
     rows.forEach((ch) => {
-      ['name', 'desc'].forEach((k) => {
+      ['name', 'desc', 'where'].forEach((k) => {
         expect(S['challenge_' + ch.id + '_' + k], ch.id + '.' + k).toBe(ch[k]);
       });
     });
@@ -255,9 +255,12 @@ describe('the badge and vocabulary tables speak through the translator', () => {
     // The rock-cycle quiz reads a type-guarded copy of d.rcQuiz (a3a2b8473);
     // the invariant is the same: the guard looks the English term up raw.
     expect(s).toContain('_rcQuizSafe.concept && ROCKS_VOCAB[_rcQuizSafe.concept] &&');
-    // ...while both cards render through the helpers.
+    // ...while both cards render through the helpers. The third term call is
+    // the quiz results card, which names each topic for DISPLAY and still
+    // groups the answers by the raw English concept.
     expect((s.match(/rkVocabDef\(__alloT,/g) || []).length).toBe(2);
-    expect((s.match(/rkVocabTerm\(__alloT,/g) || []).length).toBe(2);
+    expect((s.match(/rkVocabTerm\(__alloT,/g) || []).length).toBe(3);
+    expect(s).toContain("var c = QUIZ_BANK[k].concept || '';");
   });
 
   it('leaves no raw challenge name or description at a render site', () => {

@@ -184,7 +184,7 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(source).toContain("key === 'z'");
     expect(source).toContain("key === 'h'");
     expect(source).toContain("'data-geology-mining-target': 'true'");
-    expect(source).toContain("'aria-label': fpTool === 'drill' ? 'Hold to drill continuously' : 'Dig at the reticle; hold to keep digging'");
+    expect(source).toContain("'aria-label': fpTool === 'drill' ? t('stem.geology.a11y.hold_to_drill', 'Hold to drill continuously') : t('stem.geology.a11y.dig_at_reticle', 'Dig at the reticle; hold to keep digging')");
     expect(source).toContain('now - fp.lastMineAt < 140');
     expect(source).toContain('grounded-collision-jump-and-reticle-mining');
     expect(source).toContain('var FIELD_EXPEDITIONS =');
@@ -819,7 +819,7 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(correlationBody).toContain("h('figure'");
     expect(correlationBody).toContain("h('figcaption'");
     expect(correlationBody).toContain("role: 'meter'");
-    expect(correlationBody).toContain("'aria-valuetext': similarity + ' percent recovered sequence match'");
+    expect(correlationBody).toContain("'aria-valuetext': tf('stem.geology.a11y.sequence_match_value', '{percent} percent recovered sequence match', { percent: similarity })");
     expect(correlationBody).toContain("'data-geology-core-correlation': findingLevel");
     expect(correlationBody).toContain("'data-geology-core-strip': laneId");
     expect(correlationBody).toContain("'data-geology-core-band': key");

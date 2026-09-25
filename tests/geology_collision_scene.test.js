@@ -285,8 +285,8 @@ describe('Geology Explorer — mountain belt registries (mission, quiz, sequence
     expect((block.match(/addGeologyGlacierTongue3d\(-?\d/g) || []).length).toBe(3);
     expect(block).toContain('registerGeologyLandform3d(riverMesh3d, WORLD.d * 0.5 - 0.01, 0, false)');
     expect(source).toContain("var isoSideX3d = SCENE.id === 'collision' ? -1 : 1;");
-    expect(source).toContain('iso: [[NX * 1.15 * isoSideX3d, NY * 1.05, NZ * 1.4]');
-    expect(source).toContain('camera.position.set(WORLD.w * 1.15 * isoSideX3d, WORLD.h * 1.05, WORLD.d * 1.4);');
+    expect(source).toContain('iso: [[WORLD.w * 1.15 * isoSideX3d * k, WORLD.h * 1.05 * k, WORLD.d * 1.4 * k]');
+    expect(source).toContain('camera.position.set(WORLD.w * 1.15 * isoSideX3d * camScale3d, WORLD.h * 1.05 * camScale3d, WORLD.d * 1.4 * camScale3d);');
   });
 
   it('type chips use AA ink in both themes for every material type in every scene', () => {

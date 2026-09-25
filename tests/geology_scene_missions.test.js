@@ -164,13 +164,14 @@ describe('Geology Explorer guided missions', () => {
     expect(source).toContain('identifiedByScene');
     expect(source).toContain('d.quizByScene');
     expect(source).toContain('function sceneMissionPanel');
-    expect(source).toContain('function sceneJourneyPanel');
-    expect(source).toContain('function sceneBeaconPanel');
-    expect(source).toContain('function startBeaconTour');
-    expect(source).toContain('function processCuePanel');
+    // The three-stage story is drawn ONCE (sceneStoryPanel); the five panels that each redrew it
+    // in different words were merged into it (2026-09-24) and must not come back.
+    expect(source).toContain('function sceneStoryPanel');
+    for (const gone of ['sceneJourneyPanel', 'sceneBeaconPanel', 'startBeaconTour', 'processCuePanel', 'formationTimelinePanel', 'sceneSignalPanel']) {
+      expect(source, gone).not.toContain('function ' + gone);
+    }
     expect(source).toContain('function cameraOrientationPanel');
-    expect(source).toContain('function formationTimelinePanel');
-    expect(source).toContain('data-geology-formation-timeline');
+    expect(source).toContain("'data-geology-story': SCENE.id");
     expect(source).toContain('sceneTimeline: sceneTimelineFor');
     expect(source).toContain('data-geology-camera-compass');
     expect(source).toContain('data-geology-process-overlay');
@@ -197,25 +198,25 @@ describe('Geology Explorer guided missions', () => {
     expect(source).not.toContain('rockFacts(rockKeyAt(v.x, below, v.z), below)');
     expect(source).not.toContain('ROCKS[v.key].name');
     expect(source).toContain('processCues: sceneProcessCueFor');
-    expect(source).toContain('data-geology-evidence-trail');
+    expect(source).toContain("'data-geology-story-cer': 'true'");
     expect(source).toContain('Carry trail into CER');
     expect(source).toContain('data-geology-beacon-overlay');
     expect(source).toContain('sceneBeacons: sceneBeaconsFor');
-    expect(source).toContain('data-geology-journey');
-    expect(source).toContain('focusJourneyTarget');
+    expect(source).toContain('data-geology-journey-progress');
+    expect(source).toContain('function carryToCer');
     expect(source).toContain('data-geology-journey-complete');
-    expect(source).toContain('function sceneSignalPanel');
     expect(source).toContain('function reconstructPanel');
     expect(source).toContain("palette = SCENE.palette || ROCKS");
     expect(source).toContain('Explain your evidence');
     expect(source).toContain('Export field note');
   });
 
-  it('keeps timeline, tour, and camera controls synchronized without stealing focus', () => {
+  it('keeps story stages, landmarks, and camera controls synchronized without stealing focus', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain('setBeaconTourStep(stage)');
+    // choosing a story stage goes through its landmark: highlight, camera, cutaway, saved step
+    expect(source).toContain('if (b) { activateBeacon(b); return; }');
     expect(source).toContain('if (beacon.view) setCameraView(beacon.view)');
-    expect(source).toContain("'aria-valuetext': 'Stage '");
+    expect(source).toContain("'aria-label': tf('stem.geology.a11y.story_stage', 'Stage {n}: {label}. {state}'");
     expect(source).toContain("'data-geology-camera-view': vw[0]");
     expect(source).toContain('pointer-events-none absolute bottom-12 left-2');
     expect(source).toContain("style: { maxWidth: 'min(19rem, calc(100% - 6rem))' }");

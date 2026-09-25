@@ -330,10 +330,12 @@ describe('WCAG 1.4.3 — the tool paints no themed ground, so it must not read t
     });
   });
 
-  it('keeps the hero hint as a fixed dark utility at the same colour', () => {
+  it('keeps the hero hint as a fixed dark utility', () => {
+    // 2026-09-24: one step darker (slate-700) and a size up, no longer
+    // italic. Still a fixed utility, never a themed token.
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      expect(src).toContain("React.createElement('p', { className: 'text-slate-600', style: { margin: '3px 0 0', fontSize: 11");
+      expect(src).toContain("React.createElement('p', { className: 'text-slate-700', style: { margin: '3px 0 0', fontSize: 12.5");
     });
   });
 

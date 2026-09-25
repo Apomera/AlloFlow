@@ -118,8 +118,8 @@ describe('rebuild ambient occlusion on a flat grid', () => {
 describe('dig sound', () => {
   function installFakeAudio() {
     const nodes = [];
-    const param = () => { const pr = { value: 0, targets: [], setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {}, setTargetAtTime(v) { pr.targets.push(v); }, cancelScheduledValues() {} }; return pr; };
-    const node = (kind, extra) => { const n = Object.assign({ kind, to: [], connect(x) { n.to.push(x); }, start() { n.started = true; }, stop() { n.stopped = true; } }, extra); nodes.push(n); return n; };
+    const param = () => { const pr = { value: 0, targets: [], sets: [], setValueAtTime(v, at) { pr.sets.push([v, at]); }, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {}, setTargetAtTime(v) { pr.targets.push(v); }, cancelScheduledValues() {} }; return pr; };
+    const node = (kind, extra) => { const n = Object.assign({ kind, to: [], connect(x) { n.to.push(x); }, start(at) { n.started = true; n.startAt = at; }, stop() { n.stopped = true; } }, extra); nodes.push(n); return n; };
     class FakeAC {
       constructor() { this.currentTime = 0; this.sampleRate = 8000; this.destination = {}; this.state = 'running'; }
       createBuffer(ch, len, rate) { const data = new Float32Array(len); return { sampleRate: rate, getChannelData: () => data }; }
@@ -128,6 +128,7 @@ describe('dig sound', () => {
       createGain() { return node('gain', { gain: param() }); }
       createOscillator() { return node('osc', { type: '', frequency: param() }); }
       createDelay() { return node('delay', { delayTime: param() }); }
+      createStereoPanner() { return node('panner', { pan: param() }); }
     }
     window.AudioContext = FakeAC; window.StemLab.audioContext = undefined;
     P.sfx.reset();
@@ -217,6 +218,56 @@ describe('dig sound', () => {
     const voices = [...soft, ...hard, ...seep].filter((n) => n.kind === 'gain' && n !== bus.input && n !== bus.wet && !n.to.some((x) => x && x.kind === 'delay'));
     expect(voices.length).toBeGreaterThan(4);
     voices.forEach((g) => expect(g.to).toContain(bus.input));
+  });
+
+  it('near molten rock a low rumble swells: one looping voice, louder closer, gone at a distance or on mute', () => {
+    const nodes = installFakeAudio();
+    P.sfx.rumble(0.3); const first = nodes.splice(0);
+    const v = P.sfx.rumbleVoice();
+    expect(v).toBeTruthy();
+    expect(first.filter((n) => n.kind === 'noise' && n.loop)).toHaveLength(1);
+    expect(first.some((n) => n.kind === 'filter' && n.type === 'lowpass' && n.frequency.value <= 200)).toBe(true);   // felt more than heard
+    expect(v.g.to).toContain(P.sfx.bus().input);
+    const quiet = v.g.gain.targets.slice(-1)[0];
+    P.sfx.rumble(0.9); expect(nodes.splice(0)).toHaveLength(0);                     // the same voice, not a new one
+    expect(v.g.gain.targets.slice(-1)[0]).toBeGreaterThan(quiet * 3);
+    P.sfx.rumble(0); expect(v.n.stopped && v.o.stopped).toBe(true); expect(P.sfx.rumbleVoice()).toBe(null);
+    P.sfx.rumble(0.8); expect(P.sfx.rumbleVoice()).toBeTruthy();
+    P.sfx.setMuted(true); P.sfx.rumble(0.8); expect(P.sfx.rumbleVoice()).toBe(null);   // mute silences it at once
+  });
+
+  it('the survey pulse pings toward its target: panned that way, higher above, lower below, a later echo when farther', () => {
+    const nodes = installFakeAudio();
+    const ping = (d, pan, v) => { nodes.length = 0; P.sfx.surveyPing(d, pan, v); return nodes.splice(0); };
+    const oscs = (l) => l.filter((n) => n.kind === 'osc');
+    const echoGap = (l) => oscs(l)[1].startAt - oscs(l)[0].startAt;
+    const near = ping(2, 0.8, 'above you'), far = ping(12, -0.6, 'below you'), level = ping(5, 0, 'near your level');
+    expect(oscs(near)).toHaveLength(2);                                             // the ping, then its echo
+    expect(near.find((n) => n.kind === 'panner').pan.value).toBeCloseTo(0.8, 9);
+    expect(far.find((n) => n.kind === 'panner').pan.value).toBeCloseTo(-0.6, 9);
+    const pitch = (l) => oscs(l)[0].frequency.sets[0][0];
+    expect(pitch(near)).toBeGreaterThan(pitch(level)); expect(pitch(level)).toBeGreaterThan(pitch(far));
+    expect(echoGap(far)).toBeGreaterThan(echoGap(near) + 0.4);                      // 10 blocks further: the echo comes back later
+    const panner = near.find((n) => n.kind === 'panner'), bus = P.sfx.bus();
+    expect(panner.to).toContain(bus.input);
+    const voices = near.filter((n) => n.kind === 'gain' && n !== bus.input && n !== bus.wet && !n.to.some((x) => x && x.kind === 'delay'));   // not the bus's own gains
+    expect(voices).toHaveLength(2);
+    voices.forEach((g) => expect(g.to).toContain(panner));
+    P.sfx.setMuted(true); expect(ping(3, 0, 'below you')).toHaveLength(0);
+  });
+
+  it('every survey pulse pings, panned from where the view faced before it turns', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toMatch(/function fpSurveyMark\(cell, wp, distanceSq, now\) \{[\s\S]{0,2000}geoSfxSurveyPing\(reading\.distanceBlocks, -Math\.sin\(dYaw\), reading\.vertical\);/);
+  });
+
+  it('the rumble follows the heat warning, and stops on leaving first person, unmount and mute', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toMatch(/var level = Math\.round\(fpHazardProximity\([^)]*\) \* 20\) \/ 20;\s*geoSfxRumble\(level\);/);
+    expect(src).toMatch(/if \(!fp\.active \|\| fp\.mode !== 'mine'\) \{ if \(heatVignette\) heatVignette\.style\.opacity = '0'; geoSfxRumble\(0\); return; \}/);
+    expect(src).toMatch(/fpCancelMining\(\); geoSfxDrill\(false\); geoSfxRumble\(0\);/);
+    expect(src).toMatch(/exitFP\(true\); \} catch \(e\) \{\}[^\n]*\n\s*geoSfxDrill\(false\); geoSfxRumble\(0\);/);
+    expect(src).toContain('if (mute) { geoSfxDrill(false); geoSfxRumble(0); }');
   });
 
   it('water sounds are wired: entering water by falling splashes, and the first flood gurgles', () => {
@@ -509,6 +560,55 @@ describe('climbing out of a dug hole', () => {
     expect(edge.z).toBeCloseTo(0.25, 9);                                            // the nearest rim spot (0.2) lies past the edge: held at it
   });
 
+  it('one-button climb: faces the nearest rock face; among equal faces, the one needing the least turn', () => {
+    const P0 = { x: 0, y: -3 + B.eye, z: 0 };
+    const box = (x, y, z) => y < -3 || ((Math.abs(x) > 0.5 || Math.abs(z) > 0.5) && y < 0);     // a square shaft, walls 0.5 away
+    const facing = (yaw) => P.fpClimbOutHeading(P0, yaw, B, box, 3);
+    expect(facing(0).yaw).toBeCloseTo(0, 9);                                        // already facing a wall: no turn
+    expect(facing(Math.PI / 2 + 0.2).yaw).toBeCloseTo(Math.PI / 2, 9);              // the wall nearest the view
+    expect(facing(-Math.PI / 2 - 0.2).yaw).toBeCloseTo(3 * Math.PI / 2, 9);         // wraps round, not the long way
+    expect(facing(0).distance).toBeCloseTo(0.52, 9);                                // first probe past the 0.5 face
+    const off = { x: 0, y: -3 + B.eye, z: 0.15 };                                   // nearer the +z wall (0.35) than the others
+    expect(P.fpClimbOutHeading(off, 0, B, box, 3).yaw).toBeCloseTo(Math.PI, 9);     // turns right round to the NEAREST face
+    expect(P.fpClimbOutHeading(off, 0, B, box, 3).distance).toBeCloseTo(0.37, 9);
+  });
+
+  it('one-button climb: finds a far wall across a wide pit, but not one out of range or across open ground', () => {
+    const P0 = { x: 0, y: -3 + B.eye, z: 0 };
+    const pit = (x, y, z) => y < -3 || (x > 2.5 && y < 0);                           // one wall, 2.5 away to +x
+    expect(P.fpClimbOutHeading(P0, 0, B, pit, 3).yaw).toBeCloseTo(3 * Math.PI / 2, 9);   // yaw 3π/2 faces +x
+    expect(P.fpClimbOutHeading(P0, 0, B, pit, 2)).toBe(null);
+    expect(P.fpClimbOutHeading(P0, 0, B, (x, y) => y < -3, 3)).toBe(null);
+    expect(P.fpClimbOutHeading(P0, 0, B, (x, y, z) => y < -3 || (z < -0.5 && y < -2.6), 3)).toBe(null);   // a step, not a wall
+  });
+
+  it('one-button climb: only ever a grid direction (at an angle the 5-point body slips into the wall and wedges)', () => {
+    const P0 = { x: 0, y: -3 + B.eye, z: 0 };
+    const corner = (x, y, z) => y < -3 || (x < -0.4 && z < -0.4 && y < 0);         // rock only off the diagonal
+    expect(P.fpClimbOutHeading(P0, 5 * Math.PI / 4, B, corner, 3)).toBe(null);
+    let seed = 11;
+    const rand = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+    for (let n = 0; n < 40; n++) {                                                  // lopsided shafts, any starting view
+      const w = [0.35 + rand(), 0.35 + rand(), 0.35 + rand(), 0.35 + rand()];
+      const shaft = (x, y, z) => y < -3 || ((x < -w[0] || x > w[1] || z < -w[2] || z > w[3]) && y < 0);
+      const h = P.fpClimbOutHeading(P0, rand() * 6.28, B, shaft, 3);
+      expect(h).not.toBe(null);
+      expect(Math.abs(Math.sin(h.yaw * 2))).toBeLessThan(1e-9);                   // a multiple of 90 degrees
+    }
+  });
+
+  it('the one-button climb is wired: C and the 🧗 button, the same physics, handed back on any key, cleared by H', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toContain('fpClimbOutHeading(fp.pos, fp.yaw, FP_BODY, fpRockSolid, VOXEL * 3)');
+    expect(src).toMatch(/fp\.climbAssist = \{[^}]*\};\s*fp\.input\.fwd = 1; fp\.input\.strafe = 0; fp\.input\.jump = true;/);   // drives the SAME inputs as keys
+    expect(src).toMatch(/if \(!\(fp\.input\.fwd > 0 && fp\.input\.jump\)\) fp\.climbAssist = null;/);                           // a key press takes over
+    expect(src).toMatch(/fp\.climbAssist\.elapsed \+= dt;[\s\S]{0,160}fp\.climbAssist\.elapsed > 12\) fpEndClimbAssist\('gave-up'\)/);   // play time, not wall time
+    expect(src).toMatch(/if \(fp\.climbAssist && fp\.onGround && holeDepthNow < VOXEL \* 0\.3\) fpEndClimbAssist\('out'\)/);  // out = on the surface
+    expect(src).toMatch(/function fpRespawn\(home\) \{\s*if \(fp\.climbAssist\) \{ fp\.climbAssist = null;/);
+    expect(src).toMatch(/key === 'c' && fpExplorerMode\(scene\) === 'mine'\)[\s\S]{0,80}climbOutAction\(\);/);
+    expect(src).toMatch(/\(fpWalkScene && !rigDeployed && fpInHole\) \? h\('button', \{ type: 'button', 'data-geology-climb-out': 'true', onClick: function \(\) \{ fpAction\('climb-out'\); \}/);
+  });
+
   it('the engine climbs rock only, and mantles with its own ground and body tests', () => {
     const src = fs.readFileSync(sourcePath, 'utf8');
     expect(src).toContain('fpClimbGrip(fp.pos, fx, fz, FP_BODY, fpRockSolid)');
@@ -737,8 +837,260 @@ describe('field-guide progress across the seven worlds', () => {
   });
 });
 
+describe('measuring the tilt of a layer (strike and dip)', () => {
+  // A synthetic block: grid y runs DOWN; 'air' above the layer, 'sand' 3 thick, 'shale' below.
+  const block = (topAt) => (x, y, z) => {
+    if (x < 0 || y < 0 || z < 0 || x >= 21 || y >= 34 || z >= 21) return null;
+    const top = topAt(x, z);
+    return y < top ? 'air' : (y < top + 3 ? 'sand' : 'shale');
+  };
+  const near = (a, b, tol) => Math.abs(((a - b + 540) % 360) - 180) <= tol;
+
+  it('flat layers measure flat', () => {
+    const t = P.fpLayerTilt(block(() => 10), 10, 11, 10);
+    expect(t.dip).toBeCloseTo(0, 9); expect(t.rms).toBeCloseTo(0, 9); expect(t.surface).toBe('top');
+  });
+
+  it('a layer rising to the east dips west; one rising to the north dips south (even stair-stepped)', () => {
+    const east = P.fpLayerTilt(block((x) => 20 - Math.floor(0.5 * x)), 10, 16, 10);
+    expect(east.dip).toBeGreaterThan(26.57 - 3); expect(east.dip).toBeLessThan(26.57 + 3);
+    expect(near(east.dipBearing, 270, 10)).toBe(true);
+    expect(P.fpCompassWord(east.dipBearing)).toBe('west');
+    const north = P.fpLayerTilt(block((x, z) => 6 + Math.round(Math.tan(Math.PI / 6) * z)), 10, 13, 10);
+    expect(north.dip).toBeGreaterThan(27); expect(north.dip).toBeLessThan(33);
+    expect(P.fpCompassWord(north.dipBearing)).toBe('south');
+    expect(north.rms).toBeLessThan(0.5);
+  });
+
+  it('a fold has no single tilt; a lone cell has too little to measure; a top at the land surface falls back to the base', () => {
+    const fold = P.fpLayerTilt(block((x) => 10 + Math.abs(x - 10)), 10, 11, 10);
+    expect(fold.rms).toBeGreaterThan(0.75);
+    expect(P.fpLayerTilt((x, y, z) => (x === 5 && y === 5 && z === 5 ? 'sand' : (x >= 0 && x < 11 && y >= 0 && y < 11 && z >= 0 && z < 11 ? 'air' : null)), 5, 5, 5)).toBe(null);
+    const toTop = (x, y, z) => (x < 0 || y < 0 || z < 0 || x >= 21 || y >= 34 || z >= 21) ? null : (y <= 15 - Math.floor(0.5 * x) ? 'sand' : 'shale');
+    const base = P.fpLayerTilt(toTop, 10, 5, 10);
+    expect(base.surface).toBe('base');
+    expect(P.fpCompassWord(base.dipBearing)).toBe('west');
+    expect(base.dip).toBeGreaterThan(23);
+  });
+
+  it('only layered rock is measured: layers, the sinking slab, collision foliation; not plutons, magma, cones or baked rock', () => {
+    expect(P.fpTiltKind('crust', 'Sedimentary')).toBe('layer');
+    expect(P.fpTiltKind('subduction', 'Subducting plate')).toBe('slab');
+    expect(P.fpTiltKind('collision', 'Metamorphic')).toBe('foliation');
+    expect(P.fpTiltKind('crust', 'Metamorphic')).toBe(null);                          // marble and hornfels baked by the pluton
+    expect(P.fpTiltKind('ridge', 'Igneous (extrusive)')).toBe('layer');
+    expect(P.fpTiltKind('hotspot', 'Igneous (extrusive)')).toBe(null);               // a volcano cone
+    ['Igneous (intrusive)', 'Molten', 'Surface', 'Water', 'Mantle (rigid)'].forEach((type) => expect(P.fpTiltKind('crust', type)).toBe(null));
+  });
+
+  it('in the worlds themselves: crust layers lie flat, the subducting slab dives steeply one way, collision rock is tilted', () => {
+    P.setGrid('standard');
+    const g = P.grid();
+    const measureAll = (id, gen) => {
+      P.setScene(id);
+      const keyAt = (x, y, z) => (x < 0 || y < 0 || z < 0 || x >= g.NX || y >= g.NY || z >= g.NZ) ? null : gen(x, y, z);
+      const types = Object.fromEntries(P.sceneMaterials(id).map((m) => [m.key, m.type]));
+      const out = {};
+      for (let x = 0; x < g.NX; x += 2) for (let z = 0; z < g.NZ; z += 2) for (let y = 0; y < g.NY; y++) {
+        const k = keyAt(x, y, z); if (!P.fpTiltKind(id, types[k])) continue;
+        const t = P.fpLayerTilt(keyAt, x, y, z); if (t) (out[k] = out[k] || []).push(t);
+      }
+      return out;
+    };
+    const median = (arr) => arr.map((t) => t.dip).sort((a, b) => a - b)[Math.floor(arr.length / 2)];
+    const crust = measureAll('crust', P.rockKeyAt);
+    ['sandstone', 'shale', 'limestone'].forEach((k) => { expect(crust[k].length).toBeGreaterThan(20); crust[k].forEach((t) => expect(t.dip).toBeLessThan(1)); });
+    const sub = measureAll('subduction', P.subductionKeyAt);
+    expect(median(sub.slab)).toBeGreaterThan(30);
+    expect(new Set(sub.slab.filter((t) => t.dip > 10).map((t) => P.fpCompassWord(t.dipBearing))).size).toBe(1);   // one way: under the other plate
+    const col = measureAll('collision', P.collisionKeyAt);
+    ['foldedStrata', 'schist', 'gneiss'].forEach((k) => expect(median(col[k])).toBeGreaterThan(10));
+  });
+
+  it('the engine measures the ORIGINAL rock at the reticle, draws the fitted plane, and explains what the tilt means', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toContain('var tilt = fpLayerTilt(function (x, y, z) { var c = cellAt(x, y, z); return c ? c.key : null; }, v.x, v.y, v.z);');
+    expect(src).toContain('tiltPlane3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(-tilt.a, 1, -tilt.b).normalize());');
+    expect(src).toContain('folded: tilt.rms > 0.75, flat: tilt.dip < 4 };');                 // the thresholds the pure tests calibrate
+    expect(src).toMatch(/key === 't' && fpExplorerMode\(scene\) === 'mine'\)[\s\S]{0,80}measureTiltAction\(\);/);
+    expect(src).toContain("else if (name === 'tilt') result = measureTiltAction();");
+    expect(src).toMatch(/'data-geology-measure-tilt': 'true', onClick: function \(\) \{ fpAction\('tilt'\); \}/);
+    expect(src).toMatch(/'stem\.geology\.sr\.tilt_flat', '[^']*as it was laid down/);                 // original horizontality
+    expect(src).toMatch(/'stem\.geology\.sr\.tilt_tilted', '[^']*tilted after it formed/);
+    expect(src).toMatch(/'stem\.geology\.sr\.tilt_slab', '[^']*diving beneath the other plate/);
+  });
+});
+
+describe('the first-person HUD keeps every control clickable', () => {
+  // A browser audit found the science card drawn OVER the action column (Home unclickable at every
+  // width; undo, redo and the rig too once the column grew). These pin the stacking and placement.
+  it('controls draw above the science card, which sits beside the column and below the middle of the view', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toContain("'data-geology-mining-actions': 'true', className: 'absolute right-2 top-14 flex flex-col gap-1', style: { zIndex: 20, flexWrap: 'wrap-reverse', alignContent: 'flex-start', maxHeight: 'calc(100% - 64px)' }");
+    expect(src).toContain("'data-geology-science-card': 'true', style: { maxWidth: 'min(220px, 48%)', maxHeight: '50%', overflowY: 'auto' }, className: 'absolute bottom-2 right-14 z-10 ");
+    ['data-geology-mining-target', 'data-geology-mining-progress-shell', 'data-geology-key-legend', 'data-geology-key-legend-toggle'].forEach((attr) => {
+      // (the key legend's style is Object.assign({ zIndex: 20 }, beside-the-card offsets))
+      expect(src).toMatch(new RegExp("'" + attr + "': 'true',[^{}]{0,120}style: (Object\\.assign\\()?\\{ zIndex: 20 \\}"));
+    });
+  });
+});
+
+describe('the compass ribbon', () => {
+  it('bearings run clockwise from north, where the view faces', () => {
+    expect(P.fpBearingOfYaw(0)).toBeCloseTo(0, 9);
+    expect(P.fpBearingOfYaw(-Math.PI / 2)).toBeCloseTo(90, 9);
+    expect(P.fpBearingOfYaw(Math.PI)).toBeCloseTo(180, 9);
+    expect(P.fpBearingOfYaw(Math.PI / 2)).toBeCloseTo(270, 9);
+    expect(P.fpBearingOfYaw(7 * Math.PI)).toBeCloseTo(180, 6);                    // any number of turns
+    [[1, 0, 90], [0, 1, 180], [-1, 0, 270], [0, -1, 0]].forEach(([dx, dz, b]) => expect(P.fpBearingTo(dx, dz)).toBeCloseTo(b, 9));
+  });
+
+  it('agrees with the compass words the survey speaks (its "east" is the ribbon\'s E)', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    const rule = "direction: Math.abs(deltaX) > Math.abs(deltaZ) ? (deltaX >= 0 ? 'east' : 'west') : (deltaZ >= 0 ? 'south' : 'north'),";
+    expect(src).toContain(rule);                                                    // the rule below is the survey's own
+    const word = (dx, dz) => (Math.abs(dx) > Math.abs(dz) ? (dx >= 0 ? 'east' : 'west') : (dz >= 0 ? 'south' : 'north'));
+    const at = { north: 0, east: 90, south: 180, west: 270 };
+    let seed = 5;
+    const rand = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff * 2 - 1; };
+    for (let i = 0; i < 400; i++) {
+      const dx = rand(), dz = rand(), b = P.fpBearingTo(dx, dz), off = Math.abs(((b - at[word(dx, dz)] + 540) % 360) - 180);
+      expect(off).toBeLessThanOrEqual(45 + 1e-9);
+    }
+  });
+
+  it('is visual only, and the engine moves it every frame', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toContain("h('div', { 'data-geology-compass': 'true', 'aria-hidden': 'true',");
+    expect(src).toContain('fpUpdatePlayerStatus(); fpUpdateCompass();');
+    expect(src).toMatch(/compassEls3d\.strip\.style\.transform = 'translateX\(' \+ \(-bearing \* COMPASS_PX_PER_DEG\)/);
+    expect(src).toMatch(/style: \{ left: \(deg \* 1\.5\) \+ 'px' \}/);                     // marks placed at the SAME scale the engine slides by
+    expect(src).toContain('COMPASS_PX_PER_DEG = 1.5');
+  });
+
+  it('steps aside when the view is too narrow for it (measured, not guessed from the window width)', () => {
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect(src).toContain("root.querySelectorAll('[data-geology-view-buttons], [data-geology-tool-selector], [data-geology-fullscreen-toggle]')");
+    expect(src).toContain("compassEls3d.ribbon.style.visibility = clear ? '' : 'hidden';");
+    expect(src).toContain("h('div', { 'data-geology-view-buttons': 'true', className: 'absolute top-2 left-2 z-10 flex gap-1' },");
+  });
+});
+
+describe('surveying for hidden finds outside a Field Run', () => {
+  let src, body;
+  beforeAll(() => {
+    src = fs.readFileSync(sourcePath, 'utf8');
+    body = src.slice(src.indexOf('function fpSurveyFind()'), src.indexOf('function updateSurveyMarker3d'));
+  });
+
+  it('G and 📡 survey for the nearest hidden find instead of refusing, and a Field Run keeps its own survey', () => {
+    expect(src).toContain('if (!entry || !entry.active) return surveyHiddenFind();');
+    expect(src).not.toContain("'Start a Field Run before using the specimen survey.'");
+    expect(src).toMatch(/\(!rigDeployed && sceneFindCatalog\.length && !\(fieldBook && fieldBook\.byScene && fieldBook\.byScene\[scene\] && fieldBook\.byScene\[scene\]\.active\)\) \? h\('button', \{ type: 'button', 'data-geology-find-survey': 'true', onClick: function \(\) \{ fpAction\('survey'\); \}/);
+    expect(src).toContain('var targetKey = contract && contract.targets ? contract.targets[(entry.collected || []).length] : null;');   // the run survey is untouched
+  });
+
+  it('only finds still in the rock, in this cutaway and this moment in time, count', () => {
+    expect(body.length).toBeGreaterThan(400);
+    expect(body).toContain('if (sp.taken || sp.cell.z >= NZ - sliceZ || formedAt > showStage) continue;');
+    expect(body).toMatch(/if \(distanceSq < nearestDistanceSq\) \{ nearest = sp;/);                        // the NEAREST
+  });
+
+  it('the reading gives the host rock, the sign, how far and which way, never what the find is', () => {
+    expect(body).toContain('hostName: host.name, sign: specimenSign(nearest.info.kind, geoT)');
+    expect(body).not.toMatch(/\.info\.name|SPECIMENS\[|FOSSILS\[|fieldSpecimenName/);
+    const reading = src.match(/'stem\.geology\.sr\.survey_find_reading', '([^']+)'/);
+    expect(reading).not.toBe(null);
+    expect(reading[1]).toMatch(/\{host\}/); expect(reading[1]).toMatch(/\{sign\}/); expect(reading[1]).not.toMatch(/\{name\}|\{kind\}/);
+  });
+
+  it('the rock-type survey still reports the same reading after sharing the aim-and-mark step', () => {
+    expect(src).toContain('return Object.assign({ key: key, name: material.name, found: true }, fpSurveyMark(nearest, nearestWorld, nearestDistanceSq, now));');
+    expect(src).toMatch(/function fpSurveyMark\(cell, wp, distanceSq, now\) \{[\s\S]{0,1600}distanceBlocks: Math\.max\(1, Math\.round\(Math\.sqrt\(distanceSq\) \/ VOXEL\)\),[\s\S]{0,200}direction:[\s\S]{0,200}vertical:/);
+  });
+});
+
+describe('what the app actually says (registered strings win over the code)', () => {
+  // The app's t() returns the ui_strings.js value whenever the key is registered, so a fallback
+  // edited in the code never reaches an English user. Resolve text the way the app does.
+  let reg, src;
+  beforeAll(() => { reg = JSON.parse(fs.readFileSync(path.join(root, 'ui_strings.js'), 'utf8')); src = fs.readFileSync(sourcePath, 'utf8'); });
+  const registered = (key) => key.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), reg);
+  const appT = (key, fallback) => { const v = registered(key); return typeof v === 'string' && v !== key ? v : fallback; };
+
+  it('walk mode speaks and shows the walking controls, not the older flight text', () => {
+    expect(src).toContain("fpExplorerMode(scene) === 'mine' ? t('stem.geology.fp_on_walk', fpInstructions) : t('stem.geology.fp_on', fpInstructions)");
+    const legend = src.match(/fpWalkScene \? t\('stem\.geology\.fp_keys_walk', '([^']+)'\)/);
+    expect(legend).not.toBe(null);
+    const shown = appT('stem.geology.fp_keys_walk', legend[1]);
+    expect(shown).toBe(legend[1]);
+    expect(shown).toMatch(/walk/); expect(shown).not.toMatch(/\bfly\b|Q E/);
+    const walkText = src.match(/\? '(Mine mode on\. W A S D[^']+)'/)[1];            // the walking instructions in the code
+    const spoken = appT('stem.geology.fp_on_walk', walkText);
+    expect(spoken).toBe(walkText);                                                  // registered (09-24) AS the walking text
+    expect(spoken).toMatch(/walk/); expect(spoken).not.toMatch(/Q and E|\bfly\b/);
+  });
+
+  it('no registered stem.geology string hides a changed fallback (two known, harmless exceptions)', () => {
+    const drift = [];
+    const re = /\bt\(\s*'(stem\.geology\.[A-Za-z0-9_.]+)'\s*,\s*'((?:[^'\\]|\\.)*)'/g;
+    let m, checked = 0;
+    while ((m = re.exec(src))) {
+      const v = registered(m[1]); if (typeof v !== 'string') continue;
+      checked++;
+      if (v !== m[2].replace(/\\'/g, "'")) drift.push(m[1]);
+    }
+    expect(checked).toBeGreaterThan(60);                                          // the scan really saw the registered calls
+    expect(drift.sort()).toEqual(['stem.geology.fp_keys', 'stem.geology.schematic_note']);   // flight legend (brief but right); a dash vs hyphen
+  });
+
+  it('a registered key never takes a fallback that varies (one key cannot say two things)', () => {
+    const varying = [];
+    const re = /\bt\(\s*'(stem\.geology\.[A-Za-z0-9_.]+)'\s*,\s*(?![\s'"])/g;       // [\s] too, or \s* backtracks onto the quote
+    let m;
+    while ((m = re.exec(src))) if (typeof registered(m[1]) === 'string') varying.push(m[1]);
+    // fp_on: flight mode only; fp_on_walk: walk mode only, its variable IS the walking text (checked above);
+    // quiz_title: the crust only, whose bank title IS the registered text
+    expect([...new Set(varying)].sort()).toEqual(['stem.geology.fp_on', 'stem.geology.fp_on_walk', 'stem.geology.quiz_title']);
+  });
+
+  it('each world titles its own quiz (not every world "relative dating")', () => {
+    const banks = [...src.matchAll(/^\s{4}(\w+):\s*\{ title: '(Test yourself[^']+)'/gm)].map((b) => ({ id: b[1], title: b[2] }));
+    expect(banks.length).toBe(7);
+    const shown = banks.map((b) => appT(b.id === 'crust' ? 'stem.geology.quiz_title' : 'stem.geology.quiz_title_' + b.id, b.title));
+    banks.forEach((b, i) => expect(shown[i], b.id).toBe(b.title));
+    expect(new Set(shown).size).toBe(7);
+    expect(src).toContain("var quizTitle = SCENE.id === 'crust' ? t('stem.geology.quiz_title', _bank.title) : t('stem.geology.quiz_title_' + SCENE.id, _bank.title);");
+    expect(src).toContain("'🧠 ' + quizTitle");
+    expect(src).not.toContain('Relative dating quiz');                           // the region label read "relative dating" in every world
+  });
+});
+
 describe('mirror', () => {
   it('keeps both app mirrors identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
   }, 60000);
+});
+
+// Visual pass (09-24): the walk-mode sky, the orbit view's light pool, and view buttons that frame the
+// model the same way at every detail level.
+describe('sky, stage light and camera framing', () => {
+  const src = fs.readFileSync(sourcePath, 'utf8');
+  it('walk mode gets a gradient sky that follows the camera, dims underground and restores the orbit fog', () => {
+    expect(src).toContain('var sky3d = new THREE.Mesh(skyGeo3d, skyMat3d);');
+    expect(src).toContain("var skyMat3d = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false });");
+    expect(src).toContain('sky3d.position.copy(camera.position);');
+    expect(src).toContain('skyMat3d.color.setScalar(1 - 0.88 * underground3d);');
+    expect(src).toContain("fogBaseColor3d.setHex(0x0a1322); scene.fog.color.copy(fogBaseColor3d);");   // leaving walk mode: dark studio fog again
+    expect(src).toContain('try { updateSky3d(); } catch (e) {}');
+  });
+  it('the orbit view sits the block on a light pool, but not in first person or under the round Earth', () => {
+    expect(src).toContain("contactShadow3d.visible = !fp.active && SCENE.id !== 'deepEarth';");
+    expect(src).toContain('scene.remove(contactShadow3d); shadowGeo3d.dispose(); shadowMat3d.dispose(); shadowTex3d.dispose();');
+  });
+  it('view buttons use world units, not voxel counts (High detail used to shrink the model ~1.6x)', () => {
+    const setView = src.slice(src.indexOf('eng.setView = function'), src.indexOf('eng.setSlice = function'));
+    expect(setView).toContain('WORLD.w * 1.15 * isoSideX3d * k');
+    expect(setView).not.toMatch(/\bN[XYZ] \*/);
+  });
 });
