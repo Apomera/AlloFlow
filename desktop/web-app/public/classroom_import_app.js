@@ -9,6 +9,17 @@
   let generation = 0, busy = false, authReady = false, courses = [], result = null;
   let missingNames = false;
   const downloadUrls = new Set();
+  // In-app handoff (2026-09-25): when AlloFlow opened this helper as a same-origin window, the
+  // codename-only JSON can be posted straight back instead of downloaded. Nothing about the
+  // private preview, token or snapshot is ever posted. A cross-origin opener is ignored.
+  const handoff = (() => {
+    try {
+      const opener = window.opener;
+      if (!opener || opener === window || opener.closed) return null;
+      return opener.location.origin === location.origin ? opener : null;
+    } catch (_) { return null; }
+  })();
+  let handoffEpoch = 0, handoffTimer = null;
   const say = message => { $('import-status').textContent = message; };
   function configured() {
     const safeOrigin = location.protocol === 'https:' ||
@@ -30,6 +41,9 @@
     $('read-classroom').disabled = busy || !token || !$('classroom-course').value;
     $('cancel-classroom').disabled = !busy;
     $('download-classroom').disabled = busy || !result || missingNames || !$('confirm-new-class').checked;
+    $('send-classroom').hidden = !handoff;
+    $('handoff-note').hidden = !handoff;
+    $('send-classroom').disabled = !handoff || busy || !result || missingNames || !$('confirm-new-class').checked;
   }
   function clearPreview() {
     result = null;
@@ -179,6 +193,33 @@
     $('confirm-new-class').checked = false; controls();
     say('Codename-only roster downloaded. In AlloFlow, open a new class and choose the replacement roster-file import. Keep this private preview only as long as needed.');
   };
+  $('send-classroom').onclick = function () {
+    if (!handoff || busy || !result || missingNames || !$('confirm-new-class').checked) return;
+    const epoch = ++handoffEpoch;
+    try {
+      handoff.postMessage({ type: 'alloflow-classroom-roster', json: result.json }, location.origin);
+    } catch (_) {
+      say('The roster could not be sent to AlloFlow. Download it instead.');
+      return;
+    }
+    $('confirm-new-class').checked = false; controls();
+    say('Roster sent. Switch to the AlloFlow tab and confirm the replacement there.');
+    try { handoff.focus(); } catch (_) {}
+    if (handoffTimer) clearTimeout(handoffTimer);
+    handoffTimer = setTimeout(() => {
+      if (epoch !== handoffEpoch) return;
+      say('AlloFlow has not confirmed the roster yet. If nothing appeared there, download the roster instead.');
+    }, 20000);
+  };
+  window.addEventListener('message', event => {
+    if (!handoff || event.origin !== location.origin || event.source !== handoff) return;
+    const data = event.data;
+    if (!data || typeof data !== 'object' || data.type !== 'alloflow-classroom-roster-received') return;
+    if (handoffTimer) { clearTimeout(handoffTimer); handoffTimer = null; }
+    const message = String(data.message || '').slice(0, 320);
+    say(data.ok ? 'AlloFlow imported the roster. ' + message + ' Keep this private preview only as long as needed.'
+      : 'AlloFlow did not import the roster. ' + (message || 'Download the roster instead.'));
+  });
   $('clear-classroom').onclick = () => clearSession('Session cleared. Local access token and private roster preview were discarded. Google’s authorization grant still exists until revoked.');
   $('cancel-classroom').onclick = () => clearSession('Import cancelled and private data cleared. Late responses cannot restore the preview.');
   $('revoke-classroom').onclick = function () {

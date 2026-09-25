@@ -38,7 +38,7 @@ Do not collapse everything into one all-purpose consent request just to save a c
 
 ## What is not automatically connected
 
-Classroom membership does not establish a Store student identity or an evaluator role. The importer generates new AlloFlow identities and discards the raw Google-ID mapping. Re-running it is not ongoing synchronization.
+Classroom membership does not establish a Store student identity or an evaluator role. The importer generates new AlloFlow identities and discards the raw Google-ID mapping. Re-running it is not ongoing synchronization. A teacher may keep their own private label beside a codename inside the roster panel; that label stays in their browser under a separate key and never enters the roster, an export, a Store file or a live session.
 
 AlloFlow now includes a default-off [reviewed class-link workflow](school_store_class_links.md). A teacher exports existing stable lesson IDs and codenames; a Store administrator manually matches them to existing Store students, reviews staff grants and confirms the binding. Authorized staff can then resolve a linked codename inside the Store and review the recipient before filling the existing award form. This is not automatic Classroom synchronization or an OAuth permission bridge. No first-name-only matching, automatic role grants, student-history resets or automatic awards.
 

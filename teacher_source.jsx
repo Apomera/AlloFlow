@@ -862,6 +862,75 @@ const ALLO_TEACHER_CLASSROOM_IMPORT_URL = (() => {
   } catch (_) {}
   return 'https://alloflow-cdn.pages.dev/classroom-import.html';
 })();
+// Teacher-private labels (2026-09-25). A per-codename note (initials, a name, a seat) that
+// lives ONLY in this browser under its own storage key. It is never merged into rosterKey, so
+// every roster export, Store review file, printed worksheet, live-session sync and AI path
+// stays codename-only by construction. Hidden by default each time the panel opens.
+const ALLO_TEACHER_PRIVATE_LABELS_KEY = 'alloflow_teacher_private_labels';
+const ALLO_TEACHER_PRIVATE_LABEL_MAX = 40;
+const ALLO_TEACHER_PRIVATE_LABEL_CLASSES = 8;
+const alloTeacherPrivateLabelClassKey = roster => String(roster?.classId || 'local-class');
+const alloNormalizeTeacherPrivateLabel = value => (typeof value === 'string' ? value : '')
+  .replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, ALLO_TEACHER_PRIVATE_LABEL_MAX);
+const alloEmptyTeacherPrivateLabels = () => ({ version: 1, byClass: {} });
+const alloReadTeacherPrivateLabels = storage => {
+  try {
+    const raw = storage.getItem(ALLO_TEACHER_PRIVATE_LABELS_KEY);
+    if (!raw) return alloEmptyTeacherPrivateLabels();
+    const parsed = JSON.parse(raw);
+    const byClass = {};
+    if (parsed && typeof parsed === 'object' && parsed.byClass && typeof parsed.byClass === 'object') {
+      for (const [classKey, labels] of Object.entries(parsed.byClass)) {
+        if (!labels || typeof labels !== 'object') continue;
+        const clean = {};
+        for (const [codename, label] of Object.entries(labels)) {
+          const text = alloNormalizeTeacherPrivateLabel(label);
+          if (text) clean[codename] = text;
+        }
+        if (Object.keys(clean).length) byClass[classKey] = clean;
+      }
+    }
+    return { version: 1, byClass };
+  } catch (_) { return alloEmptyTeacherPrivateLabels(); }
+};
+const alloWriteTeacherPrivateLabels = (storage, store) => {
+  try {
+    const entries = Object.entries(store?.byClass || {}).filter(([, labels]) => labels && Object.keys(labels).length);
+    if (!entries.length) { storage.removeItem(ALLO_TEACHER_PRIVATE_LABELS_KEY); return true; }
+    storage.setItem(ALLO_TEACHER_PRIVATE_LABELS_KEY, JSON.stringify({ version: 1, byClass: Object.fromEntries(entries.slice(-ALLO_TEACHER_PRIVATE_LABEL_CLASSES)) }));
+    return true;
+  } catch (_) { return false; }
+};
+const alloSetTeacherPrivateLabel = (store, classKey, codename, label) => {
+  const text = alloNormalizeTeacherPrivateLabel(label);
+  const byClass = { ...(store?.byClass || {}) };
+  const labels = { ...(byClass[classKey] || {}) };
+  if (text) labels[codename] = text; else delete labels[codename];
+  delete byClass[classKey];                       // re-insert last so the most recently used classes survive the cap
+  if (Object.keys(labels).length) byClass[classKey] = labels;
+  return { version: 1, byClass };
+};
+const alloDropTeacherPrivateLabel = (store, classKey, codename) => alloSetTeacherPrivateLabel(store, classKey, codename, '');
+const alloClearTeacherPrivateLabels = (store, classKey) => {
+  const byClass = { ...(store?.byClass || {}) };
+  delete byClass[classKey];
+  return { version: 1, byClass };
+};
+// In-app Classroom handoff (2026-09-25). The helper tab this panel opened may post the
+// codename-only roster JSON back instead of downloading a file. Accept only that window,
+// only from this origin, only the documented shape, and only under the file size limit.
+const ALLO_CLASSROOM_HANDOFF_TYPE = 'alloflow-classroom-roster';
+const ALLO_CLASSROOM_HANDOFF_REPLY = 'alloflow-classroom-roster-received';
+const ALLO_CLASSROOM_HANDOFF_WINDOW = 'alloflow-classroom-import';
+const ALLO_ROSTER_IMPORT_MAX_BYTES = 2 * 1024 * 1024;
+const alloAcceptClassroomHandoff = (event, helperWindow, origin) => {
+  if (!event || !helperWindow || event.source !== helperWindow) return null;
+  if (typeof origin !== 'string' || !origin || event.origin !== origin) return null;
+  const data = event.data;
+  if (!data || typeof data !== 'object' || data.type !== ALLO_CLASSROOM_HANDOFF_TYPE || typeof data.json !== 'string') return null;
+  if (data.json.length > ALLO_ROSTER_IMPORT_MAX_BYTES) return { error: 'That roster is larger than the 2 MB safety limit.' };
+  return { json: data.json };
+};
 
 const alloEscapeRosterWorksheetHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const alloNormalizeRosterWorksheetOptions = value => {
@@ -1057,6 +1126,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [rosterNotice, setRosterNotice] = useState('');
   const [rosterNoticeTone, setRosterNoticeTone] = useState('info');
   const [rosterImportUndo, setRosterImportUndo] = useState(null);
+  const privateLabelsAllowed = !isParentMode && !isIndependentMode;
+  const [privateLabels, setPrivateLabels] = useState(() => privateLabelsAllowed ? alloReadTeacherPrivateLabels(window.localStorage) : alloEmptyTeacherPrivateLabels());
+  const [showPrivateLabels, setShowPrivateLabels] = useState(false);
+  const [editingLabelFor, setEditingLabelFor] = useState(null);
+  const [labelDraft, setLabelDraft] = useState('');
+  const privateLabelClassKey = alloTeacherPrivateLabelClassKey(rosterKey);
+  const classPrivateLabels = privateLabels.byClass[privateLabelClassKey] || {};
+  const classroomHelperRef = useRef(null);
+  const applyImportedRosterRef = useRef(null);
+  const [classroomHelperBlocked, setClassroomHelperBlocked] = useState(false);
   const [showPrintOptions, setShowPrintOptions] = useState(false);
   const [printLocationPosition, setPrintLocationPosition] = useState('after-name');
   const [printRowSize, setPrintRowSize] = useState('standard');
@@ -1132,6 +1211,27 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     setRosterUpdatePreview(null);
     setRosterUpdateAcknowledged(false);
   }, [isOpen]);
+  useEffect(() => {
+    if (!privateLabelsAllowed) return;
+    alloWriteTeacherPrivateLabels(window.localStorage, privateLabels);
+  }, [privateLabels, privateLabelsAllowed]);
+  useEffect(() => {
+    if (isOpen) return;
+    setShowPrivateLabels(false);                  // labels never survive a close: projecting the next open is safe
+    setEditingLabelFor(null);
+  }, [isOpen]);
+  useEffect(() => {
+    if (!privateLabelsAllowed) return undefined;
+    const onMessage = event => {
+      const accepted = alloAcceptClassroomHandoff(event, classroomHelperRef.current, window.location.origin);
+      if (!accepted) return;
+      let outcome = { ok: false, message: accepted.error || '' };
+      if (!accepted.error && typeof applyImportedRosterRef.current === 'function') outcome = applyImportedRosterRef.current(accepted.json, 'Google Classroom');
+      try { event.source.postMessage({ type: ALLO_CLASSROOM_HANDOFF_REPLY, ok: !!outcome.ok, message: String(outcome.message || '').slice(0, 320) }, event.origin); } catch (_) {}
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [privateLabelsAllowed]);
   useEffect(() => {
     if (!rosterUpdateCompletion) return;
     const result = rosterUpdateCompletion;
@@ -1306,23 +1406,19 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       announceRoster(error?.message || 'Choose the file again to review the latest roster.', 'error');
     }
   };
-  const handleImport = (e) => {
-    const file = e.target?.files?.[0];
-    if (!file) return;
-    e.target.value = '';
-    announceRoster('');
-    if (file.size > 2 * 1024 * 1024) {
-      announceRoster('That roster file is larger than the 2 MB safety limit.', 'error');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        const pendingRoster = alloNormalizeTeacherRosterImport(data);
-        const groupsCount = Object.keys(pendingRoster.groups || {}).length;
-        const studentsCount = Object.keys(pendingRoster.students || {}).length;
-        if (!window.confirm(`Replace the current roster with ${groupsCount} groups and ${studentsCount} codenames? This also replaces roster history, seating, class goals, and offline-submission setup. Digital real-name fields are discarded.`)) return;
+  // Shared by the file picker and the Google Classroom handoff. Returns { ok, message } so the
+  // helper tab can show the outcome; every path announces the same message in this panel.
+  const applyImportedRoster = (text, sourceNote) => {
+    try {
+      const data = JSON.parse(text);
+      const pendingRoster = alloNormalizeTeacherRosterImport(data);
+      const groupsCount = Object.keys(pendingRoster.groups || {}).length;
+      const studentsCount = Object.keys(pendingRoster.students || {}).length;
+      if (!window.confirm(`Replace the current roster with ${groupsCount} groups and ${studentsCount} codenames${sourceNote ? ' from ' + sourceNote : ''}? This also replaces roster history, seating, class goals, and offline-submission setup. Digital real-name fields are discarded.`)) {
+        const message = 'Roster replacement cancelled. Nothing changed.';
+        announceRoster(message, 'info');
+        return { ok: false, message };
+      }
         const previousRoster = rosterKey || { groups: {}, students: {} };
         setRosterImportUndo({
           roster: previousRoster,
@@ -1337,14 +1433,69 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         setSessionPlannerStatus({});
         setRosterStudentQuery('');
         setShowPrintOptions(false);
-        announceRoster(`Roster imported: ${groupsCount} groups and ${studentsCount} codenames. Legacy real-name fields were removed.`, 'success');
-      } catch(err) {
-        console.error('Invalid roster JSON:', err);
-        announceRoster(err?.message || 'This file is not a valid roster.', 'error');
-      }
-    };
+      const message = `Roster imported: ${groupsCount} groups and ${studentsCount} codenames. Legacy real-name fields were removed.`;
+      announceRoster(message, 'success');
+      return { ok: true, message };
+    } catch(err) {
+      console.error('Invalid roster JSON:', err);
+      const message = err?.message || 'This file is not a valid roster.';
+      announceRoster(message, 'error');
+      return { ok: false, message };
+    }
+  };
+  applyImportedRosterRef.current = applyImportedRoster;
+  const handleImport = (e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    announceRoster('');
+    if (file.size > ALLO_ROSTER_IMPORT_MAX_BYTES) {
+      announceRoster('That roster file is larger than the 2 MB safety limit.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => { applyImportedRoster(ev.target.result, ''); };
     reader.onerror = () => announceRoster('The roster file could not be read.', 'error');
     reader.readAsText(file);
+  };
+  const openClassroomHelper = () => {
+    let helper = null;
+    try { helper = window.open(ALLO_TEACHER_CLASSROOM_IMPORT_URL, ALLO_CLASSROOM_HANDOFF_WINDOW); } catch (_) { helper = null; }
+    if (!helper) {
+      setClassroomHelperBlocked(true);
+      announceRoster('The browser blocked the Google Classroom helper window. Allow pop-ups for AlloFlow, or use the link that just appeared.', 'warning');
+      return;
+    }
+    classroomHelperRef.current = helper;
+    setClassroomHelperBlocked(false);
+    announceRoster('Google Classroom helper opened in a new tab. Sending the roster from that tab brings it here for your confirmation.', 'info');
+  };
+  const beginPrivateLabelEdit = codename => { setEditingLabelFor(codename); setLabelDraft(classPrivateLabels[codename] || ''); };
+  const commitPrivateLabel = codename => {
+    setPrivateLabels(store => alloSetTeacherPrivateLabel(store, privateLabelClassKey, codename, labelDraft));
+    setEditingLabelFor(null);
+    setLabelDraft('');
+  };
+  const renderPrivateLabel = (codename, tone) => {
+    if (!privateLabelsAllowed || !showPrivateLabels) return null;
+    const label = classPrivateLabels[codename] || '';
+    if (editingLabelFor === codename) {
+      return (
+        <input type="text" value={labelDraft} maxLength={ALLO_TEACHER_PRIVATE_LABEL_MAX} autoFocus
+          onChange={event => setLabelDraft(event.target.value)}
+          onBlur={() => commitPrivateLabel(codename)}
+          onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); commitPrivateLabel(codename); } else if (event.key === 'Escape') { event.preventDefault(); setEditingLabelFor(null); setLabelDraft(''); } }}
+          aria-label={'Private label for ' + codename + ' (this device only)'}
+          className={`min-h-9 w-28 rounded-lg border px-2 text-[11px] focus:outline-none focus:ring-2 ${tone === 'amber' ? 'border-amber-300 focus:ring-amber-300 text-amber-900' : 'border-indigo-300 focus:ring-indigo-300 text-indigo-900'}`} />
+      );
+    }
+    return (
+      <button type="button" onClick={() => beginPrivateLabelEdit(codename)} title="Private label: stays on this device, never exported or shared"
+        aria-label={(label ? 'Edit private label for ' : 'Add private label for ') + codename}
+        className={`min-h-9 rounded-lg border border-dashed px-2 text-[11px] font-semibold ${tone === 'amber' ? 'border-amber-300 text-amber-900 hover:bg-amber-100' : 'border-indigo-300 text-indigo-900 hover:bg-indigo-100'}`}>
+        {label || '+ label'}
+      </button>
+    );
   };
   const handleRestoreRosterImport = () => {
     if (!rosterImportUndo?.roster) return;
@@ -1645,6 +1796,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       if (seating !== prev.seating) next.seating = seating;
       return next;
     });
+    setPrivateLabels(store => alloDropTeacherPrivateLabel(store, privateLabelClassKey, name));
     announceRoster('Codename "' + name + '" deleted from the roster.', 'success');
   };
   const handleMoveStudent = (name, toGroup) => {
@@ -1760,7 +1912,12 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5">
             <Upload size={14} /> Import / replace roster
           </button>
-          {!isParentMode && !isIndependentMode && <a href={ALLO_TEACHER_CLASSROOM_IMPORT_URL} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors motion-reduce:transition-none">Google Classroom setup</a>}
+          {privateLabelsAllowed && <button type="button" onClick={openClassroomHelper} className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors motion-reduce:transition-none" title="Opens the Google Classroom roster helper in a new tab. It can send the codename-only roster straight back here.">Google Classroom setup</button>}
+          {privateLabelsAllowed && classroomHelperBlocked && <a href={ALLO_TEACHER_CLASSROOM_IMPORT_URL} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold underline hover:bg-blue-100 transition-colors motion-reduce:transition-none">Open the Classroom helper (download the roster there)</a>}
+          {privateLabelsAllowed && <button type="button" onClick={() => setShowPrivateLabels(value => !value)} aria-pressed={showPrivateLabels} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 ${showPrivateLabels ? 'bg-slate-800 text-white hover:bg-slate-900' : 'bg-slate-100 text-slate-800 hover:bg-slate-200'}`} title="Your own note beside each codename, kept only in this browser. Hidden again every time the roster closes.">
+            <Eye size={14} /> {showPrivateLabels ? (t('roster.hide_private_labels') || 'Hide my private labels') : (t('roster.show_private_labels') || 'Show my private labels')}
+          </button>}
+          {privateLabelsAllowed && showPrivateLabels && <p className="w-full text-xs text-slate-700" role="note">Private labels stay in this browser only. They are never exported, printed, shared to a live session, sent to the Store, or given to an AI. Hide them before projecting.{Object.keys(classPrivateLabels).length > 0 && <> <button type="button" onClick={() => { if (window.confirm('Delete every private label for this class from this browser?')) setPrivateLabels(store => alloClearTeacherPrivateLabels(store, privateLabelClassKey)); }} className="underline font-bold text-red-800">Clear private labels for this class</button></>}</p>}
           <button type="button" onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
             <Download size={14} /> {t('roster.export') || 'Export JSON'}
           </button>
@@ -1999,6 +2156,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                         {shownStudents.map(name => (
                           <span key={name} className="inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-medium">
                             {name}
+                            {renderPrivateLabel(name, 'indigo')}
                             {rosterKey?.progressHistory?.[name]?.length > 0 && (
                               <span className="text-[11px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
                                 {rosterKey.progressHistory[name].length}s
@@ -2104,6 +2262,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                 {visibleUnassigned.map(name => (
                   <span key={name} className="inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-xl text-xs font-medium border border-amber-200">
                     {name}
+                    {renderPrivateLabel(name, 'amber')}
                     {rosterKey?.progressHistory?.[name]?.length > 0 && (
                       <span className="text-[11px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
                         {rosterKey.progressHistory[name].length}s
@@ -8546,6 +8705,13 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
 // ─────────────────────────────────────────────────────────────────────────────
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.RosterKeyPanel             = RosterKeyPanel;
+window.AlloModules.TeacherPrivateLabelInternals = {
+  storageKey: ALLO_TEACHER_PRIVATE_LABELS_KEY, maxLength: ALLO_TEACHER_PRIVATE_LABEL_MAX, maxClasses: ALLO_TEACHER_PRIVATE_LABEL_CLASSES,
+  classKey: alloTeacherPrivateLabelClassKey, normalizeLabel: alloNormalizeTeacherPrivateLabel,
+  read: alloReadTeacherPrivateLabels, write: alloWriteTeacherPrivateLabels,
+  setLabel: alloSetTeacherPrivateLabel, dropLabel: alloDropTeacherPrivateLabel, clearClass: alloClearTeacherPrivateLabels,
+  handoffType: ALLO_CLASSROOM_HANDOFF_TYPE, handoffReply: ALLO_CLASSROOM_HANDOFF_REPLY, acceptHandoff: alloAcceptClassroomHandoff
+};
 window.AlloModules.normalizeRosterSessionFollowUpPlan = normalizeRosterSessionFollowUpPlan;
 window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv;
 window.AlloModules.SimpleBarChart             = SimpleBarChart;

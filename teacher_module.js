@@ -963,6 +963,75 @@ const ALLO_TEACHER_CLASSROOM_IMPORT_URL = (() => {
   }
   return "https://alloflow-cdn.pages.dev/classroom-import.html";
 })();
+const ALLO_TEACHER_PRIVATE_LABELS_KEY = "alloflow_teacher_private_labels";
+const ALLO_TEACHER_PRIVATE_LABEL_MAX = 40;
+const ALLO_TEACHER_PRIVATE_LABEL_CLASSES = 8;
+const alloTeacherPrivateLabelClassKey = (roster) => String(roster?.classId || "local-class");
+const alloNormalizeTeacherPrivateLabel = (value) => (typeof value === "string" ? value : "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ALLO_TEACHER_PRIVATE_LABEL_MAX);
+const alloEmptyTeacherPrivateLabels = () => ({ version: 1, byClass: {} });
+const alloReadTeacherPrivateLabels = (storage) => {
+  try {
+    const raw = storage.getItem(ALLO_TEACHER_PRIVATE_LABELS_KEY);
+    if (!raw) return alloEmptyTeacherPrivateLabels();
+    const parsed = JSON.parse(raw);
+    const byClass = {};
+    if (parsed && typeof parsed === "object" && parsed.byClass && typeof parsed.byClass === "object") {
+      for (const [classKey, labels] of Object.entries(parsed.byClass)) {
+        if (!labels || typeof labels !== "object") continue;
+        const clean = {};
+        for (const [codename, label] of Object.entries(labels)) {
+          const text = alloNormalizeTeacherPrivateLabel(label);
+          if (text) clean[codename] = text;
+        }
+        if (Object.keys(clean).length) byClass[classKey] = clean;
+      }
+    }
+    return { version: 1, byClass };
+  } catch (_) {
+    return alloEmptyTeacherPrivateLabels();
+  }
+};
+const alloWriteTeacherPrivateLabels = (storage, store) => {
+  try {
+    const entries = Object.entries(store?.byClass || {}).filter(([, labels]) => labels && Object.keys(labels).length);
+    if (!entries.length) {
+      storage.removeItem(ALLO_TEACHER_PRIVATE_LABELS_KEY);
+      return true;
+    }
+    storage.setItem(ALLO_TEACHER_PRIVATE_LABELS_KEY, JSON.stringify({ version: 1, byClass: Object.fromEntries(entries.slice(-ALLO_TEACHER_PRIVATE_LABEL_CLASSES)) }));
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+const alloSetTeacherPrivateLabel = (store, classKey, codename, label) => {
+  const text = alloNormalizeTeacherPrivateLabel(label);
+  const byClass = { ...store?.byClass || {} };
+  const labels = { ...byClass[classKey] || {} };
+  if (text) labels[codename] = text;
+  else delete labels[codename];
+  delete byClass[classKey];
+  if (Object.keys(labels).length) byClass[classKey] = labels;
+  return { version: 1, byClass };
+};
+const alloDropTeacherPrivateLabel = (store, classKey, codename) => alloSetTeacherPrivateLabel(store, classKey, codename, "");
+const alloClearTeacherPrivateLabels = (store, classKey) => {
+  const byClass = { ...store?.byClass || {} };
+  delete byClass[classKey];
+  return { version: 1, byClass };
+};
+const ALLO_CLASSROOM_HANDOFF_TYPE = "alloflow-classroom-roster";
+const ALLO_CLASSROOM_HANDOFF_REPLY = "alloflow-classroom-roster-received";
+const ALLO_CLASSROOM_HANDOFF_WINDOW = "alloflow-classroom-import";
+const ALLO_ROSTER_IMPORT_MAX_BYTES = 2 * 1024 * 1024;
+const alloAcceptClassroomHandoff = (event, helperWindow, origin) => {
+  if (!event || !helperWindow || event.source !== helperWindow) return null;
+  if (typeof origin !== "string" || !origin || event.origin !== origin) return null;
+  const data = event.data;
+  if (!data || typeof data !== "object" || data.type !== ALLO_CLASSROOM_HANDOFF_TYPE || typeof data.json !== "string") return null;
+  if (data.json.length > ALLO_ROSTER_IMPORT_MAX_BYTES) return { error: "That roster is larger than the 2 MB safety limit." };
+  return { json: data.json };
+};
 const alloEscapeRosterWorksheetHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 const alloNormalizeRosterWorksheetOptions = (value) => {
   const source = alloRosterPlainRecord(value) ? value : {};
@@ -1196,6 +1265,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [rosterNotice, setRosterNotice] = useState("");
   const [rosterNoticeTone, setRosterNoticeTone] = useState("info");
   const [rosterImportUndo, setRosterImportUndo] = useState(null);
+  const privateLabelsAllowed = !isParentMode && !isIndependentMode;
+  const [privateLabels, setPrivateLabels] = useState(() => privateLabelsAllowed ? alloReadTeacherPrivateLabels(window.localStorage) : alloEmptyTeacherPrivateLabels());
+  const [showPrivateLabels, setShowPrivateLabels] = useState(false);
+  const [editingLabelFor, setEditingLabelFor] = useState(null);
+  const [labelDraft, setLabelDraft] = useState("");
+  const privateLabelClassKey = alloTeacherPrivateLabelClassKey(rosterKey);
+  const classPrivateLabels = privateLabels.byClass[privateLabelClassKey] || {};
+  const classroomHelperRef = useRef(null);
+  const applyImportedRosterRef = useRef(null);
+  const [classroomHelperBlocked, setClassroomHelperBlocked] = useState(false);
   const [showPrintOptions, setShowPrintOptions] = useState(false);
   const [printLocationPosition, setPrintLocationPosition] = useState("after-name");
   const [printRowSize, setPrintRowSize] = useState("standard");
@@ -1265,6 +1344,30 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     setRosterUpdatePreview(null);
     setRosterUpdateAcknowledged(false);
   }, [isOpen]);
+  useEffect(() => {
+    if (!privateLabelsAllowed) return;
+    alloWriteTeacherPrivateLabels(window.localStorage, privateLabels);
+  }, [privateLabels, privateLabelsAllowed]);
+  useEffect(() => {
+    if (isOpen) return;
+    setShowPrivateLabels(false);
+    setEditingLabelFor(null);
+  }, [isOpen]);
+  useEffect(() => {
+    if (!privateLabelsAllowed) return void 0;
+    const onMessage = (event) => {
+      const accepted = alloAcceptClassroomHandoff(event, classroomHelperRef.current, window.location.origin);
+      if (!accepted) return;
+      let outcome = { ok: false, message: accepted.error || "" };
+      if (!accepted.error && typeof applyImportedRosterRef.current === "function") outcome = applyImportedRosterRef.current(accepted.json, "Google Classroom");
+      try {
+        event.source.postMessage({ type: ALLO_CLASSROOM_HANDOFF_REPLY, ok: !!outcome.ok, message: String(outcome.message || "").slice(0, 320) }, event.origin);
+      } catch (_) {
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [privateLabelsAllowed]);
   useEffect(() => {
     if (!rosterUpdateCompletion) return;
     const result = rosterUpdateCompletion;
@@ -1439,45 +1542,122 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       announceRoster(error?.message || "Choose the file again to review the latest roster.", "error");
     }
   };
+  const applyImportedRoster = (text, sourceNote) => {
+    try {
+      const data = JSON.parse(text);
+      const pendingRoster = alloNormalizeTeacherRosterImport(data);
+      const groupsCount = Object.keys(pendingRoster.groups || {}).length;
+      const studentsCount = Object.keys(pendingRoster.students || {}).length;
+      if (!window.confirm(`Replace the current roster with ${groupsCount} groups and ${studentsCount} codenames${sourceNote ? " from " + sourceNote : ""}? This also replaces roster history, seating, class goals, and offline-submission setup. Digital real-name fields are discarded.`)) {
+        const message2 = "Roster replacement cancelled. Nothing changed.";
+        announceRoster(message2, "info");
+        return { ok: false, message: message2 };
+      }
+      const previousRoster = rosterKey || { groups: {}, students: {} };
+      setRosterImportUndo({
+        roster: previousRoster,
+        groupCount: Object.keys(previousRoster.groups || {}).length,
+        studentCount: Object.keys(previousRoster.students || {}).length
+      });
+      setRosterKey(pendingRoster);
+      setNewStudentGroup("");
+      setExpandedGroup(null);
+      setSessionNoteDrafts({});
+      setSessionPlanDrafts({});
+      setSessionPlannerStatus({});
+      setRosterStudentQuery("");
+      setShowPrintOptions(false);
+      const message = `Roster imported: ${groupsCount} groups and ${studentsCount} codenames. Legacy real-name fields were removed.`;
+      announceRoster(message, "success");
+      return { ok: true, message };
+    } catch (err) {
+      console.error("Invalid roster JSON:", err);
+      const message = err?.message || "This file is not a valid roster.";
+      announceRoster(message, "error");
+      return { ok: false, message };
+    }
+  };
+  applyImportedRosterRef.current = applyImportedRoster;
   const handleImport = (e) => {
     const file = e.target?.files?.[0];
     if (!file) return;
     e.target.value = "";
     announceRoster("");
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > ALLO_ROSTER_IMPORT_MAX_BYTES) {
       announceRoster("That roster file is larger than the 2 MB safety limit.", "error");
       return;
     }
     const reader = new FileReader();
     reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        const pendingRoster = alloNormalizeTeacherRosterImport(data);
-        const groupsCount = Object.keys(pendingRoster.groups || {}).length;
-        const studentsCount = Object.keys(pendingRoster.students || {}).length;
-        if (!window.confirm(`Replace the current roster with ${groupsCount} groups and ${studentsCount} codenames? This also replaces roster history, seating, class goals, and offline-submission setup. Digital real-name fields are discarded.`)) return;
-        const previousRoster = rosterKey || { groups: {}, students: {} };
-        setRosterImportUndo({
-          roster: previousRoster,
-          groupCount: Object.keys(previousRoster.groups || {}).length,
-          studentCount: Object.keys(previousRoster.students || {}).length
-        });
-        setRosterKey(pendingRoster);
-        setNewStudentGroup("");
-        setExpandedGroup(null);
-        setSessionNoteDrafts({});
-        setSessionPlanDrafts({});
-        setSessionPlannerStatus({});
-        setRosterStudentQuery("");
-        setShowPrintOptions(false);
-        announceRoster(`Roster imported: ${groupsCount} groups and ${studentsCount} codenames. Legacy real-name fields were removed.`, "success");
-      } catch (err) {
-        console.error("Invalid roster JSON:", err);
-        announceRoster(err?.message || "This file is not a valid roster.", "error");
-      }
+      applyImportedRoster(ev.target.result, "");
     };
     reader.onerror = () => announceRoster("The roster file could not be read.", "error");
     reader.readAsText(file);
+  };
+  const openClassroomHelper = () => {
+    let helper = null;
+    try {
+      helper = window.open(ALLO_TEACHER_CLASSROOM_IMPORT_URL, ALLO_CLASSROOM_HANDOFF_WINDOW);
+    } catch (_) {
+      helper = null;
+    }
+    if (!helper) {
+      setClassroomHelperBlocked(true);
+      announceRoster("The browser blocked the Google Classroom helper window. Allow pop-ups for AlloFlow, or use the link that just appeared.", "warning");
+      return;
+    }
+    classroomHelperRef.current = helper;
+    setClassroomHelperBlocked(false);
+    announceRoster("Google Classroom helper opened in a new tab. Sending the roster from that tab brings it here for your confirmation.", "info");
+  };
+  const beginPrivateLabelEdit = (codename) => {
+    setEditingLabelFor(codename);
+    setLabelDraft(classPrivateLabels[codename] || "");
+  };
+  const commitPrivateLabel = (codename) => {
+    setPrivateLabels((store) => alloSetTeacherPrivateLabel(store, privateLabelClassKey, codename, labelDraft));
+    setEditingLabelFor(null);
+    setLabelDraft("");
+  };
+  const renderPrivateLabel = (codename, tone) => {
+    if (!privateLabelsAllowed || !showPrivateLabels) return null;
+    const label = classPrivateLabels[codename] || "";
+    if (editingLabelFor === codename) {
+      return /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "text",
+          value: labelDraft,
+          maxLength: ALLO_TEACHER_PRIVATE_LABEL_MAX,
+          autoFocus: true,
+          onChange: (event) => setLabelDraft(event.target.value),
+          onBlur: () => commitPrivateLabel(codename),
+          onKeyDown: (event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              commitPrivateLabel(codename);
+            } else if (event.key === "Escape") {
+              event.preventDefault();
+              setEditingLabelFor(null);
+              setLabelDraft("");
+            }
+          },
+          "aria-label": "Private label for " + codename + " (this device only)",
+          className: `min-h-9 w-28 rounded-lg border px-2 text-[11px] focus:outline-none focus:ring-2 ${tone === "amber" ? "border-amber-300 focus:ring-amber-300 text-amber-900" : "border-indigo-300 focus:ring-indigo-300 text-indigo-900"}`
+        }
+      );
+    }
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => beginPrivateLabelEdit(codename),
+        title: "Private label: stays on this device, never exported or shared",
+        "aria-label": (label ? "Edit private label for " : "Add private label for ") + codename,
+        className: `min-h-9 rounded-lg border border-dashed px-2 text-[11px] font-semibold ${tone === "amber" ? "border-amber-300 text-amber-900 hover:bg-amber-100" : "border-indigo-300 text-indigo-900 hover:bg-indigo-100"}`
+      },
+      label || "+ label"
+    );
   };
   const handleRestoreRosterImport = () => {
     if (!rosterImportUndo?.roster) return;
@@ -1783,6 +1963,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       if (seating !== prev.seating) next.seating = seating;
       return next;
     });
+    setPrivateLabels((store) => alloDropTeacherPrivateLabel(store, privateLabelClassKey, name));
     announceRoster('Codename "' + name + '" deleted from the roster.', "success");
   };
   const handleMoveStudent = (name, toGroup) => {
@@ -1890,7 +2071,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       className: "flex-1 px-2 py-1 rounded-lg border border-slate-400 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     }
   ));
-  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-roster-panel-title", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-2xl w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col border-0 sm:border-2 border-indigo-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 p-4 sm:p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { id: "teacher-roster-panel-title", className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-4 sm:px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rosterUpdateFileRef.current?.click(), disabled: !rosterKey?.classId, className: "px-3 py-1.5 bg-indigo-700 text-white rounded-lg text-xs font-bold hover:bg-indigo-800 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " Update roster safely"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " Import / replace roster"), !isParentMode && !isIndependentMode && /* @__PURE__ */ React.createElement("a", { href: ALLO_TEACHER_CLASSROOM_IMPORT_URL, target: "_blank", rel: "noopener noreferrer", className: "px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors motion-reduce:transition-none" }, "Google Classroom setup"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), !isParentMode && !isIndependentMode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleStoreRosterExport, disabled: !rosterKey?.classId || !Object.keys(rosterKey?.students || {}).length, "aria-describedby": "roster-store-export-note", className: "px-3 py-1.5 min-h-[44px] bg-purple-50 text-purple-800 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Store review file"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handlePrintRosterWorksheet, disabled: !Object.keys(rosterKey?.students || {}).length, className: "px-3 py-1.5 bg-cyan-50 text-cyan-800 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Printer, { size: 14 }), " Print worksheet"), !isParentMode && !isIndependentMode && /* @__PURE__ */ React.createElement("p", { id: "roster-store-export-note", className: "w-full text-xs text-slate-600" }, "Store review shares only class/learner IDs and codenames. An authorized Store administrator must review each match; no learning records or points are transferred."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowPrintOptions((value) => !value), "aria-expanded": showPrintOptions, "aria-controls": "roster-print-options", className: "px-3 py-1.5 rounded-lg border border-cyan-200 bg-white text-xs font-bold text-cyan-900 hover:bg-cyan-50 transition-colors motion-reduce:transition-none" }, "Worksheet options"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-roster-panel-title", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-2xl w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col border-0 sm:border-2 border-indigo-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 p-4 sm:p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { id: "teacher-roster-panel-title", className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-4 sm:px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rosterUpdateFileRef.current?.click(), disabled: !rosterKey?.classId, className: "px-3 py-1.5 bg-indigo-700 text-white rounded-lg text-xs font-bold hover:bg-indigo-800 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " Update roster safely"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " Import / replace roster"), privateLabelsAllowed && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openClassroomHelper, className: "px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors motion-reduce:transition-none", title: "Opens the Google Classroom roster helper in a new tab. It can send the codename-only roster straight back here." }, "Google Classroom setup"), privateLabelsAllowed && classroomHelperBlocked && /* @__PURE__ */ React.createElement("a", { href: ALLO_TEACHER_CLASSROOM_IMPORT_URL, target: "_blank", rel: "noopener noreferrer", className: "px-3 py-1.5 bg-blue-50 text-blue-800 rounded-lg text-xs font-bold underline hover:bg-blue-100 transition-colors motion-reduce:transition-none" }, "Open the Classroom helper (download the roster there)"), privateLabelsAllowed && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowPrivateLabels((value) => !value), "aria-pressed": showPrivateLabels, className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 ${showPrivateLabels ? "bg-slate-800 text-white hover:bg-slate-900" : "bg-slate-100 text-slate-800 hover:bg-slate-200"}`, title: "Your own note beside each codename, kept only in this browser. Hidden again every time the roster closes." }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " ", showPrivateLabels ? t("roster.hide_private_labels") || "Hide my private labels" : t("roster.show_private_labels") || "Show my private labels"), privateLabelsAllowed && showPrivateLabels && /* @__PURE__ */ React.createElement("p", { className: "w-full text-xs text-slate-700", role: "note" }, "Private labels stay in this browser only. They are never exported, printed, shared to a live session, sent to the Store, or given to an AI. Hide them before projecting.", Object.keys(classPrivateLabels).length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, " ", /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    if (window.confirm("Delete every private label for this class from this browser?")) setPrivateLabels((store) => alloClearTeacherPrivateLabels(store, privateLabelClassKey));
+  }, className: "underline font-bold text-red-800" }, "Clear private labels for this class"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), !isParentMode && !isIndependentMode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleStoreRosterExport, disabled: !rosterKey?.classId || !Object.keys(rosterKey?.students || {}).length, "aria-describedby": "roster-store-export-note", className: "px-3 py-1.5 min-h-[44px] bg-purple-50 text-purple-800 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Store review file"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handlePrintRosterWorksheet, disabled: !Object.keys(rosterKey?.students || {}).length, className: "px-3 py-1.5 bg-cyan-50 text-cyan-800 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Printer, { size: 14 }), " Print worksheet"), !isParentMode && !isIndependentMode && /* @__PURE__ */ React.createElement("p", { id: "roster-store-export-note", className: "w-full text-xs text-slate-600" }, "Store review shares only class/learner IDs and codenames. An authorized Store administrator must review each match; no learning records or points are transferred."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowPrintOptions((value) => !value), "aria-expanded": showPrintOptions, "aria-controls": "roster-print-options", className: "px-3 py-1.5 rounded-lg border border-cyan-200 bg-white text-xs font-bold text-cyan-900 hover:bg-cyan-50 transition-colors motion-reduce:transition-none" }, "Worksheet options"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1993,7 +2176,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         "aria-label": (t("roster.set_group_color") || "Set group color") + " " + c,
         "aria-pressed": group.color === c
       }
-    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: "Reading theme", value: group.profile?.readingThemeDefault, field: "readingThemeDefault", gId, type: "select", options: ALLO_TEACHER_READING_THEME_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, shownStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-medium" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("select", { value: students[name] || "", onChange: (event) => handleMoveStudent(name, event.target.value), "aria-label": "Move " + name + " to group", className: "min-h-9 max-w-[10rem] rounded-lg border border-indigo-300 bg-white px-2 text-xs text-indigo-900" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Unassigned"), groupIds.map((id) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, groups[id].name))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(name), className: "w-9 h-9 inline-flex items-center justify-center rounded-full hover:bg-indigo-100 hover:text-indigo-900 transition-colors motion-reduce:transition-none", "aria-label": "Edit reading preferences for " + name, title: "Reading preferences" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2605")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "min-h-9 rounded-lg border border-red-200 bg-white px-2 text-red-700 hover:bg-red-50 transition-colors motion-reduce:transition-none", "aria-label": "Delete " + name + " from roster" }, "Delete"))), shownStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, normalizedStudentQuery ? "No matching codenames" : t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-800 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none sm:ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
+    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: "Reading theme", value: group.profile?.readingThemeDefault, field: "readingThemeDefault", gId, type: "select", options: ALLO_TEACHER_READING_THEME_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, shownStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-medium" }, name, renderPrivateLabel(name, "indigo"), rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("select", { value: students[name] || "", onChange: (event) => handleMoveStudent(name, event.target.value), "aria-label": "Move " + name + " to group", className: "min-h-9 max-w-[10rem] rounded-lg border border-indigo-300 bg-white px-2 text-xs text-indigo-900" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Unassigned"), groupIds.map((id) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, groups[id].name))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(name), className: "w-9 h-9 inline-flex items-center justify-center rounded-full hover:bg-indigo-100 hover:text-indigo-900 transition-colors motion-reduce:transition-none", "aria-label": "Edit reading preferences for " + name, title: "Reading preferences" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2605")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "min-h-9 rounded-lg border border-red-200 bg-white px-2 text-red-700 hover:bg-red-50 transition-colors motion-reduce:transition-none", "aria-label": "Delete " + name + " from roster" }, "Delete"))), shownStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, normalizedStudentQuery ? "No matching codenames" : t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-800 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none sm:ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
   }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 sm:items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors motion-reduce:transition-none min-w-0" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -2074,7 +2257,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     /* @__PURE__ */ React.createElement(Plus, { size: 14 }),
     " ",
     t("roster.add_student") || "Add"
-  )), rosterAdjIsValid && rosterAnimalIsValid && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-teal-600 font-medium pl-1" }, /* @__PURE__ */ React.createElement("span", null, "Codename: ", /* @__PURE__ */ React.createElement("strong", null, rosterAdj, " ", rosterAnimal))), studentCodenames.length >= ALLO_ROSTER_MAX_STUDENTS && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs font-bold text-amber-800" }, "Codename limit reached (", ALLO_ROSTER_MAX_STUDENTS, "). Delete an unused codename to add another."))), visibleUnassigned.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-amber-50 border border-amber-200 rounded-xl mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1.5" }, t("roster.unassigned_students") || "Unassigned Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, visibleUnassigned.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-xl text-xs font-medium border border-amber-200" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded-full font-mono ml-0.5", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement(
+  )), rosterAdjIsValid && rosterAnimalIsValid && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-teal-600 font-medium pl-1" }, /* @__PURE__ */ React.createElement("span", null, "Codename: ", /* @__PURE__ */ React.createElement("strong", null, rosterAdj, " ", rosterAnimal))), studentCodenames.length >= ALLO_ROSTER_MAX_STUDENTS && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs font-bold text-amber-800" }, "Codename limit reached (", ALLO_ROSTER_MAX_STUDENTS, "). Delete an unused codename to add another."))), visibleUnassigned.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-amber-50 border border-amber-200 rounded-xl mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1.5" }, t("roster.unassigned_students") || "Unassigned Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, visibleUnassigned.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-xl text-xs font-medium border border-amber-200" }, name, renderPrivateLabel(name, "amber"), rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded-full font-mono ml-0.5", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement(
     "select",
     {
       onChange: (e) => handleMoveStudent(name, e.target.value),
@@ -6789,6 +6972,21 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
 });
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.RosterKeyPanel = RosterKeyPanel;
+window.AlloModules.TeacherPrivateLabelInternals = {
+  storageKey: ALLO_TEACHER_PRIVATE_LABELS_KEY,
+  maxLength: ALLO_TEACHER_PRIVATE_LABEL_MAX,
+  maxClasses: ALLO_TEACHER_PRIVATE_LABEL_CLASSES,
+  classKey: alloTeacherPrivateLabelClassKey,
+  normalizeLabel: alloNormalizeTeacherPrivateLabel,
+  read: alloReadTeacherPrivateLabels,
+  write: alloWriteTeacherPrivateLabels,
+  setLabel: alloSetTeacherPrivateLabel,
+  dropLabel: alloDropTeacherPrivateLabel,
+  clearClass: alloClearTeacherPrivateLabels,
+  handoffType: ALLO_CLASSROOM_HANDOFF_TYPE,
+  handoffReply: ALLO_CLASSROOM_HANDOFF_REPLY,
+  acceptHandoff: alloAcceptClassroomHandoff
+};
 window.AlloModules.normalizeRosterSessionFollowUpPlan = normalizeRosterSessionFollowUpPlan;
 window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv;
 window.AlloModules.SimpleBarChart = SimpleBarChart;
