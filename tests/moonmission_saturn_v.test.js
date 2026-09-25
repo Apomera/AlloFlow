@@ -128,7 +128,7 @@ describe('Moon Mission launch loop', () => {
   const stageOf = (f) => { const t = f.text.find((s) => /^STAGE \d\/3$/.test(s)); return t ? Number(t[6]) : 0; };
   // Stage-body sections are shaded white to grey; count them to see what is drawn.
   const whiteSections = (f) => f.grads.filter((g) => g.stops.join() === '#ffffff,#ffffff,#9ca3af').length;
-  const kerosene = (f) => f.grads.some((g) => g.stops[0] === 'rgba(255,120,0,0.8)');
+  const kerosene = (f) => f.grads.some((g) => /^rgba\(255,120,0,/.test(g.stops[0]));   // fainter as the plume spreads
 
   it('flies the stack in pieces, burns kerosene only on the first stage, and names each separation long enough to read', () => {
     const frames = flyLaunch(1300);
@@ -159,6 +159,32 @@ describe('Moon Mission launch loop', () => {
     expect(flight1.filter(kerosene).length).toBeGreaterThan(flight1.length * 0.9);
     expect(frames.filter((f) => stageOf(f) >= 2 && kerosene(f)).length).toBe(0);
   }, 60_000);   // thousands of real loop frames; slow under load, not wrong
+
+  it('calls Mach 1 and Max Q where the displayed ascent puts them, not on a timer', () => {
+    // Standard atmosphere: sound at 340 m/s at sea level and 295 m/s at 11 km.
+    expect(P.soundSpeed(0)).toBeCloseTo(340.3, 0);
+    expect(P.soundSpeed(11)).toBeCloseTo(295.1, 0);
+    const frames = flyLaunch(700);
+    const hud = (f) => {
+      const t = f.text;
+      const a = t[t.indexOf('ALTITUDE') + 1], v = t[t.indexOf('VELOCITY') + 1];
+      if (!a || !v || t.indexOf('ALTITUDE') < 0) return null;
+      const km = /km$/.test(a) ? parseFloat(a) : parseFloat(a) / 1000;
+      return { km, ms: Number(v.replace(/[^0-9.]/g, '')) };
+    };
+    const first = (re) => frames.findIndex((f) => f.text.some((s) => re.test(s)));
+    const mach = first(/^MACH \d/), maxq = first(/^MAX Q/);
+    expect(mach, 'a Mach callout').toBeGreaterThan(0);
+    expect(maxq, 'a Max Q callout').toBeGreaterThan(mach);
+    // Supersonic by the numbers on the HUD when the callout appears, and not two frames before.
+    const hm = hud(frames[mach]), hb = hud(frames[mach - 2]);
+    expect(hm.ms / P.soundSpeed(hm.km), 'Mach at the callout').toBeGreaterThanOrEqual(1);
+    expect(hb.ms / P.soundSpeed(hb.km), 'Mach just before it').toBeLessThan(1);
+    // Max Q: the dynamic pressure from the HUD's own numbers peaks at the callout.
+    const q = (i) => { const h = hud(frames[i]); return P.dynamicPressure(h.km, h.ms); };
+    expect(q(maxq - 3), 'still rising three frames before').toBeLessThan(q(maxq - 1));
+    expect(q(maxq + 3), 'falling after').toBeLessThan(q(maxq - 1));
+  }, 60_000);   // hundreds of real loop frames; slow under load, not wrong
 
   it('counts down five seconds and reaches orbit on the same clock at 30, 60 or 120 frames a second', () => {
     // It stepped once per painted frame, so a 120 Hz screen ran the "5-second

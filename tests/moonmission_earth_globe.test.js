@@ -119,3 +119,106 @@ describe('Moon Mission Earth globe', () => {
     expect(maxReach, 'furthest drawn extent from the centre').toBeLessThanOrEqual(86 * 1.45 + 1e-9);
   });
 });
+
+describe('Moon Mission Earth clouds', () => {
+  // They were seven fixed arcs round the centre that never turned with the globe,
+  // and read as rings once the globe was drawn large.
+  it('sit on the visible face, foreshortened toward the limb, never stretched', () => {
+    for (const r of [60, 90]) for (const t of TICKS) {
+      const puffs = P.earthClouds(0, 0, r, t);
+      expect(puffs.length, 'clouds in view at tick ' + t).toBeGreaterThan(80);
+      puffs.forEach((c) => {
+        expect(Math.hypot(c.x, c.y), 'on the disc').toBeLessThanOrEqual(r + 1e-9);
+        expect(c.across, 'flattened, not stretched').toBeLessThanOrEqual(c.along + 1e-9);
+        // Foreshortening grows toward the limb: across/along is the cosine of the view angle.
+        expect(Math.abs(c.across / c.along - Math.sqrt(Math.max(0, 1 - (c.x * c.x + c.y * c.y) / (r * r)))), 'foreshortening').toBeLessThan(1e-6);
+      });
+    }
+  });
+
+  it('turn with the Earth: the same sky after one full turn, a different one half a turn on', () => {
+    const key = (t) => P.earthClouds(0, 0, 100, t).map((c) => c.x.toFixed(3) + ',' + c.y.toFixed(3)).join(' ');
+    const turn = 360 / 0.0458;
+    expect(key(turn), 'one full turn').toBe(key(0));
+    expect(key(turn / 2)).not.toBe(key(0));
+    // They move with the land, left to right, like Africa: every puff near the middle
+    // of the face is further right a little later.
+    const later = new Map(P.earthClouds(0, 0, 100, 60).map((c) => [c.i, c]));
+    const mid = P.earthClouds(0, 0, 100, 0).filter((c) => c.z > 0.7);
+    expect(mid.length).toBeGreaterThan(20);
+    mid.forEach((c) => expect(later.get(c.i).x, 'puff ' + c.i).toBeGreaterThan(c.x));
+  });
+});
+
+describe('Moon Mission Earth light', () => {
+  it('keeps the atmosphere glow off the disc, so the night side can be dark', () => {
+    // A radial gradient paints everything inside its inner circle too: filling the
+    // whole circle laid a 25% blue wash over the globe on every frame.
+    const ops = [];
+    const state = {};
+    const grad = () => { const g = { stops: [], addColorStop: (o, c) => g.stops.push(String(c)) }; return g; };
+    const ctx = new Proxy(state, {
+      get: (t, k) => ({
+        createLinearGradient: grad, createRadialGradient: grad,
+        beginPath: () => ops.push(['begin']),
+        arc: (x, y, r, a0, a1, ccw) => ops.push(['arc', r, !!ccw]),
+        ellipse: (x, y, rx, ry, rot, a0, a1, ccw) => ops.push(['ellipse', rx, ry, !!ccw]),
+        fill: () => ops.push(['fill', state.fillStyle]),
+        measureText: () => ({ width: 10 }),
+      }[k] || (k in t ? t[k] : () => {})),
+      set: (t, k, v) => { t[k] = v; return true; },
+    });
+    P.drawEarth(ctx, 0, 0, 50, 0, 0);
+    const glows = [];
+    let path = [];
+    ops.forEach((op) => {
+      if (op[0] === 'begin') path = [];
+      else if (op[0] === 'arc') path.push(op);
+      else if (op[0] === 'fill' && op[1] && op[1].stops && /^#(60a5fa|93c5fd)$/.test(op[1].stops[0])) glows.push(path.slice());
+    });
+    expect(glows.length, 'both glow layers drawn').toBe(2);
+    glows.forEach((g) => expect(g.some((a) => Math.abs(a[1] - 50) < 1e-9 && a[2] === true), 'the disc is cut out of the glow').toBe(true));
+    // At a phase, the night is bounded by the true terminator: a half-ellipse
+    // R |2 lit - 1| wide, swept through the Sun side for a crescent, the far side past half.
+    [[0.25, true], [0.75, false], [0.1, true]].forEach(([lit, crescent]) => {
+      ops.length = 0;
+      P.drawEarth(ctx, 0, 0, 50, 0, 0, lit);
+      const R = 50 * 1.03, term = ops.filter((o) => o[0] === 'ellipse' && Math.abs(o[2] - R) < 1e-9);
+      expect(term.length, 'lit ' + lit + ': one terminator').toBe(1);
+      expect(term[0][1], 'lit ' + lit + ': width').toBeCloseTo(R * Math.abs(2 * lit - 1), 9);
+      expect(term[0][3], 'lit ' + lit + ': toward the Sun for a crescent').toBe(crescent);
+    });
+  });
+
+  it('lights a sphere at a phase: the lit share of the disc is the lit fraction, whatever the Sun angle', () => {
+    for (const lit of [0.1, 0.25, 0.5, 0.75, 0.9]) for (const sun of [0, 1.1, -2.3]) {
+      let on = 0, all = 0;
+      for (let x = -1; x <= 1; x += 0.02) for (let y = -1; y <= 1; y += 0.02) {
+        if (x * x + y * y > 1) continue;
+        all++;
+        if (P.phaseLitAt(x, y, 1, lit, sun)) on++;
+      }
+      expect(Math.abs(on / all - lit), 'lit ' + lit + ', Sun ' + sun).toBeLessThan(0.02);
+    }
+    // The lit side faces the Sun.
+    expect(P.phaseLitAt(0.9, 0, 1, 0.3, 0)).toBe(true);
+    expect(P.phaseLitAt(-0.9, 0, 1, 0.3, 0)).toBe(false);
+  });
+
+  it('shows the crew a half Earth thinning to a crescent on the way home, as the path swings round its night side', () => {
+    const start = P.returnView(384400 - 6378);
+    expect(Math.abs(start.psiDeg - 94), 'the start of the coast is where the Moon was, ~94 deg from the Sun').toBeLessThan(3);
+    expect(start.lit).toBeGreaterThan(0.44);
+    expect(start.lit).toBeLessThan(0.5);
+    expect(start.angRadiusDeg, 'Earth from the Moon: about 1 degree across each way').toBeCloseTo(0.95, 1);
+    let prev = start.lit;
+    for (let d = 370000; d >= 6000; d -= 2000) {
+      const v = P.returnView(d);
+      expect(v.lit, d + ' km: thinning').toBeLessThanOrEqual(prev + 1e-12);
+      prev = v.lit;
+    }
+    expect(P.returnView(30000).lit, 'a crescent 30,000 km out').toBeLessThan(0.2);
+    expect(Math.min(...[5000, 5600, 6000].map((d) => P.returnView(d).lit)), 'nearly dark about an hour out').toBeLessThan(0.02);
+    expect(P.returnView(122).angRadiusDeg, 'at entry interface Earth fills most of the view').toBeCloseTo(78.9, 0);
+  });
+});
