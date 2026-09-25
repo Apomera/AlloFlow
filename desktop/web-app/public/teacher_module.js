@@ -1343,6 +1343,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const classroomHelperRef = useRef(null);
   const applyImportedRosterRef = useRef(null);
   const planRosterUpdateTextRef = useRef(null);
+  const stageHandoffRosterRef = useRef(null);
+  const [pendingHandoff, setPendingHandoff] = useState(null);
+  const pendingHandoffRef = useRef(null);
+  pendingHandoffRef.current = pendingHandoff;
+  const pendingHandoffCardRef = useRef(null);
   const [classroomSyncKeys, setClassroomSyncKeys] = useState(() => privateLabelsAllowed ? alloReadClassroomSyncKeys(window.localStorage) : { version: 1, byClass: {} });
   const classroomSyncKeysRef = useRef(classroomSyncKeys);
   classroomSyncKeysRef.current = classroomSyncKeys;
@@ -1431,7 +1436,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     if (isOpen) return;
     setShowPrivateLabels(false);
     setEditingLabelFor(null);
+    if (pendingHandoffRef.current) cancelPendingHandoff("The roster panel was closed before the Classroom roster was confirmed. Nothing changed.");
   }, [isOpen]);
+  useEffect(() => {
+    if (pendingHandoff) pendingHandoffCardRef.current?.focus();
+  }, [pendingHandoff]);
   useEffect(() => {
     if (!privateLabelsAllowed) return void 0;
     const onMessage = (event) => {
@@ -1455,17 +1464,21 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       let outcome = { ok: false, message: accepted.error || "" };
       if (!accepted.error && accepted.mode === "sync") {
         outcome = linkedKey && typeof planRosterUpdateTextRef.current === "function" ? planRosterUpdateTextRef.current(accepted.json) : { ok: false, message: "This AlloFlow class is not linked to Google Classroom on this device. Nothing changed." };
-      } else if (!accepted.error && accepted.mode === "link") {
-        const linkKey = pendingLinkKeyRef.current;
-        outcome = linkKey && typeof applyImportedRosterRef.current === "function" ? applyImportedRosterRef.current(accepted.json, "Google Classroom") : { ok: false, message: "Open the helper from AlloFlow again to link this class. Nothing changed." };
-        if (outcome.ok && outcome.classId) {
-          setClassroomSyncKeys((store) => alloSetClassroomSyncKey(store, outcome.classId, linkKey));
-          pendingLinkKeyRef.current = null;
-          outcome = { ...outcome, message: outcome.message + " This class is now linked to Google Classroom on this device." };
-        }
-      } else if (!accepted.error && typeof applyImportedRosterRef.current === "function") outcome = applyImportedRosterRef.current(accepted.json, "Google Classroom");
+      } else if (!accepted.error && typeof stageHandoffRosterRef.current === "function") {
+        const source = event.source, origin = event.origin;
+        const reply = (result) => {
+          try {
+            source.postMessage({ type: ALLO_CLASSROOM_HANDOFF_REPLY, ok: !!result.ok, pending: !!result.pending, message: String(result.message || "").slice(0, 320) }, origin);
+          } catch (_) {
+          }
+        };
+        const linkKey = accepted.mode === "link" ? pendingLinkKeyRef.current : null;
+        outcome = accepted.mode === "link" && !linkKey ? { ok: false, message: "Open the helper from AlloFlow again to link this class. Nothing changed." } : stageHandoffRosterRef.current(accepted.json, accepted.mode, linkKey, reply);
+        reply(outcome);
+        return;
+      }
       try {
-        event.source.postMessage({ type: ALLO_CLASSROOM_HANDOFF_REPLY, ok: !!outcome.ok, message: String(outcome.message || "").slice(0, 320) }, event.origin);
+        event.source.postMessage({ type: ALLO_CLASSROOM_HANDOFF_REPLY, ok: !!outcome.ok, pending: false, message: String(outcome.message || "").slice(0, 320) }, event.origin);
       } catch (_) {
       }
     };
@@ -1660,34 +1673,20 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       announceRoster(error?.message || "Choose the file again to review the latest roster.", "error");
     }
   };
+  const prepareImportedRoster = (text) => {
+    const pendingRoster = alloNormalizeTeacherRosterImport(JSON.parse(text));
+    return { pendingRoster, groupsCount: Object.keys(pendingRoster.groups || {}).length, studentsCount: Object.keys(pendingRoster.students || {}).length };
+  };
+  const replaceRosterMessage = (groupsCount, studentsCount, sourceNote) => `Replace the current roster with ${groupsCount} groups and ${studentsCount} codenames${sourceNote ? " from " + sourceNote : ""}? This also replaces roster history, seating, class goals, and offline-submission setup. Digital real-name fields are discarded.`;
   const applyImportedRoster = (text, sourceNote) => {
     try {
-      const data = JSON.parse(text);
-      const pendingRoster = alloNormalizeTeacherRosterImport(data);
-      const groupsCount = Object.keys(pendingRoster.groups || {}).length;
-      const studentsCount = Object.keys(pendingRoster.students || {}).length;
-      if (!window.confirm(`Replace the current roster with ${groupsCount} groups and ${studentsCount} codenames${sourceNote ? " from " + sourceNote : ""}? This also replaces roster history, seating, class goals, and offline-submission setup. Digital real-name fields are discarded.`)) {
-        const message2 = "Roster replacement cancelled. Nothing changed.";
-        announceRoster(message2, "info");
-        return { ok: false, message: message2 };
+      const prepared = prepareImportedRoster(text);
+      if (!window.confirm(replaceRosterMessage(prepared.groupsCount, prepared.studentsCount, sourceNote))) {
+        const message = "Roster replacement cancelled. Nothing changed.";
+        announceRoster(message, "info");
+        return { ok: false, message };
       }
-      const previousRoster = rosterKey || { groups: {}, students: {} };
-      setRosterImportUndo({
-        roster: previousRoster,
-        groupCount: Object.keys(previousRoster.groups || {}).length,
-        studentCount: Object.keys(previousRoster.students || {}).length
-      });
-      setRosterKey(pendingRoster);
-      setNewStudentGroup("");
-      setExpandedGroup(null);
-      setSessionNoteDrafts({});
-      setSessionPlanDrafts({});
-      setSessionPlannerStatus({});
-      setRosterStudentQuery("");
-      setShowPrintOptions(false);
-      const message = `Roster imported: ${groupsCount} groups and ${studentsCount} codenames. Legacy real-name fields were removed.`;
-      announceRoster(message, "success");
-      return { ok: true, message, classId: pendingRoster.classId };
+      return commitImportedRoster(prepared);
     } catch (err) {
       console.error("Invalid roster JSON:", err);
       const message = err?.message || "This file is not a valid roster.";
@@ -1695,7 +1694,67 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       return { ok: false, message };
     }
   };
+  const commitImportedRoster = ({ pendingRoster, groupsCount, studentsCount }) => {
+    const previousRoster = rosterKey || { groups: {}, students: {} };
+    setRosterImportUndo({
+      roster: previousRoster,
+      groupCount: Object.keys(previousRoster.groups || {}).length,
+      studentCount: Object.keys(previousRoster.students || {}).length
+    });
+    setRosterKey(pendingRoster);
+    setNewStudentGroup("");
+    setExpandedGroup(null);
+    setSessionNoteDrafts({});
+    setSessionPlanDrafts({});
+    setSessionPlannerStatus({});
+    setRosterStudentQuery("");
+    setShowPrintOptions(false);
+    const message = `Roster imported: ${groupsCount} groups and ${studentsCount} codenames. Legacy real-name fields were removed.`;
+    announceRoster(message, "success");
+    return { ok: true, message, classId: pendingRoster.classId };
+  };
   applyImportedRosterRef.current = applyImportedRoster;
+  const stageHandoffRoster = (text, mode, linkKey, reply) => {
+    let prepared;
+    try {
+      prepared = prepareImportedRoster(text);
+    } catch (err) {
+      const message = err instanceof SyntaxError ? "This is not a valid roster." : err?.message || "This is not a valid roster.";
+      announceRoster(message, "error");
+      return { ok: false, message };
+    }
+    const previous = pendingHandoffRef.current;
+    if (previous) previous.reply({ ok: false, message: "A newer roster from Google Classroom replaced this one. Nothing changed." });
+    setPendingHandoff({ ...prepared, mode, linkKey, reply });
+    announceRoster("A roster arrived from Google Classroom. Review it below; nothing has changed yet.", "info");
+    try {
+      window.focus();
+    } catch (_) {
+    }
+    return { ok: true, pending: true, message: "Switch to the AlloFlow tab: the roster is waiting there for your confirmation." };
+  };
+  stageHandoffRosterRef.current = stageHandoffRoster;
+  const confirmPendingHandoff = () => {
+    const staged = pendingHandoffRef.current;
+    if (!staged) return;
+    setPendingHandoff(null);
+    let outcome = commitImportedRoster(staged);
+    if (staged.mode === "link" && staged.linkKey && outcome.classId) {
+      setClassroomSyncKeys((store) => alloSetClassroomSyncKey(store, outcome.classId, staged.linkKey));
+      pendingLinkKeyRef.current = null;
+      outcome = { ...outcome, message: outcome.message + " This class is now linked to Google Classroom on this device." };
+      announceRoster(outcome.message, "success");
+    }
+    staged.reply(outcome);
+  };
+  const cancelPendingHandoff = (message) => {
+    const staged = pendingHandoffRef.current;
+    if (!staged) return;
+    setPendingHandoff(null);
+    const text = message || "Roster replacement cancelled. Nothing changed.";
+    announceRoster(text, "info");
+    staged.reply({ ok: false, message: text });
+  };
   const handleImport = (e) => {
     const file = e.target?.files?.[0];
     if (!file) return;
@@ -2291,7 +2350,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       className: "min-h-9 rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
     },
     ALLO_TEACHER_READING_THEME_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.id, value: option.id }, option.label))
-  ))), /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-800" }, "How does this roster connect to AlloFlow?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 ml-4 list-disc space-y-1" }, /* @__PURE__ */ React.createElement("li", null, "Use codenames only. Never enter student names or other identifying information in the digital roster."), /* @__PURE__ */ React.createElement("li", null, "Groups provide reusable differentiation settings and can be synced to an active live session."), /* @__PURE__ */ React.createElement("li", null, "Matching codenames are assigned to their roster group automatically when students join."), /* @__PURE__ */ React.createElement("li", null, "Reading favorites and the last selected reading theme follow a matched learner; personal choices override group and class suggestions."), /* @__PURE__ */ React.createElement("li", null, "The same codenames help identify imported student submissions."), /* @__PURE__ */ React.createElement("li", null, "This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data."))), rosterNotice && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-800" }, "How does this roster connect to AlloFlow?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 ml-4 list-disc space-y-1" }, /* @__PURE__ */ React.createElement("li", null, "Use codenames only. Never enter student names or other identifying information in the digital roster."), /* @__PURE__ */ React.createElement("li", null, "Groups provide reusable differentiation settings and can be synced to an active live session."), /* @__PURE__ */ React.createElement("li", null, "Matching codenames are assigned to their roster group automatically when students join."), /* @__PURE__ */ React.createElement("li", null, "Reading favorites and the last selected reading theme follow a matched learner; personal choices override group and class suggestions."), /* @__PURE__ */ React.createElement("li", null, "The same codenames help identify imported student submissions."), /* @__PURE__ */ React.createElement("li", null, "This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data."))), pendingHandoff && /* @__PURE__ */ React.createElement("section", { ref: pendingHandoffCardRef, tabIndex: -1, "aria-labelledby": "classroom-handoff-title", className: "rounded-xl border-2 border-blue-400 bg-blue-50 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500" }, /* @__PURE__ */ React.createElement("h3", { id: "classroom-handoff-title", className: "text-sm font-black text-blue-950" }, "Roster from Google Classroom"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-blue-950" }, replaceRosterMessage(pendingHandoff.groupsCount, pendingHandoff.studentsCount, "Google Classroom"), pendingHandoff.mode === "link" ? " This class will also be linked to Google Classroom on this device, so later syncs keep every codename." : ""), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancelPendingHandoff(), className: "min-h-10 rounded-lg border border-blue-300 bg-white px-3 text-xs font-bold text-blue-900 hover:bg-blue-100" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmPendingHandoff, className: "min-h-10 rounded-lg bg-blue-700 px-3 text-xs font-bold text-white hover:bg-blue-800" }, "Replace roster"))), rosterNotice && /* @__PURE__ */ React.createElement(
     "p",
     {
       role: rosterNoticeTone === "error" ? "alert" : "status",
