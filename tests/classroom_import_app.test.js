@@ -384,6 +384,20 @@ describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
         expect(h.$('import-status').textContent).not.toContain('<');
     });
 
+    it('tells the teacher to switch tabs while AlloFlow waits for confirmation, without the no-reply warning', async () => {
+        const o = opener();
+        const h = harness({ opener: o });
+        await reviewed(h);
+        h.click('send-classroom');
+        const pending = [...h.timers.values()].find(timer => timer.ms === 20000);
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, pending: true, message: 'Switch to the AlloFlow tab: the roster is waiting there for your confirmation.' });
+        expect(h.$('import-status').textContent).toBe('Switch to the AlloFlow tab: the roster is waiting there for your confirmation.');
+        expect(h.w.clearTimeout).toHaveBeenCalled();
+        expect([...h.timers.values()]).not.toContain(pending);
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, pending: false, message: 'Roster imported: 0 groups and 1 codenames.' });
+        expect(h.$('import-status').textContent).toContain('AlloFlow imported the roster. Roster imported');
+    });
+
     it('tells the teacher to download instead when AlloFlow never confirms, and cannot be spoofed by markup', async () => {
         const o = opener();
         const h = harness({ opener: o });

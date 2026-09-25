@@ -267,6 +267,7 @@
     if (!data || typeof data !== 'object' || data.type !== 'alloflow-classroom-roster-received') return;
     if (handoffTimer) { clearTimeout(handoffTimer); handoffTimer = null; }
     const message = String(data.message || '').slice(0, 320);
+    if (data.pending === true && data.ok) { say(message || 'Switch to the AlloFlow tab to confirm the roster there.'); return; }
     say(data.ok ? (linkMode() === 'sync' ? 'AlloFlow received the update. ' : 'AlloFlow imported the roster. ') + message + ' Keep this private preview only as long as needed.'
       : 'AlloFlow did not import the roster. ' + (message || 'Download the roster instead.'));
   });

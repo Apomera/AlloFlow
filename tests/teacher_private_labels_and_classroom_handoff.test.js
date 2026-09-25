@@ -206,13 +206,21 @@ describe('in-app Google Classroom handoff', () => {
     expect(helper.postMessage).not.toHaveBeenCalled();
     expect(stranger.postMessage).not.toHaveBeenCalled();
     await post(helper, { type: internals.handoffType, json: rosterJson() });
-    expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('2 codenames from Google Classroom'));
+    // No native dialog: it would open in this (background) tab and stall both windows.
+    expect(window.confirm).not.toHaveBeenCalled();
+    expect(liveRoster.classId).toBe('CLS-fictional-a');
+    expect(helper.postMessage).toHaveBeenCalledTimes(1);
+    const [waiting, origin] = helper.postMessage.mock.calls[0];
+    expect(origin).toBe(window.location.origin);
+    expect(waiting).toEqual({ type: internals.handoffReply, ok: true, pending: true, message: expect.stringContaining('Switch to the AlloFlow tab') });
+    const card = container.querySelector('[aria-labelledby="classroom-handoff-title"]');
+    expect(card.textContent).toContain('2 codenames from Google Classroom');
+    expect(document.activeElement).toBe(card);
+    await click(button('Replace roster'));
     expect(liveRoster.classId).toBe('CLS-from-classroom');
     expect(Object.keys(liveRoster.students).sort()).toEqual(['Brave Bear', 'Brave Dolphin']);
-    expect(helper.postMessage).toHaveBeenCalledTimes(1);
-    const [reply, origin] = helper.postMessage.mock.calls[0];
-    expect(origin).toBe(window.location.origin);
-    expect(reply).toEqual({ type: internals.handoffReply, ok: true, message: expect.stringContaining('2 codenames') });
+    expect(helper.postMessage.mock.calls.at(-1)[0]).toEqual({ type: internals.handoffReply, ok: true, pending: false, message: expect.stringContaining('2 codenames') });
+    expect(container.querySelector('[aria-labelledby="classroom-handoff-title"]')).toBeNull();
     expect(container.textContent).toContain('Roster imported: 0 groups and 2 codenames');
   });
 
@@ -221,16 +229,23 @@ describe('in-app Google Classroom handoff', () => {
     vi.spyOn(window, 'open').mockReturnValue(helper);
     await mount();
     await click(button('Google Classroom setup'));
-    window.confirm.mockReturnValueOnce(false);
     await post(helper, { type: internals.handoffType, json: rosterJson() });
+    await click(button('Cancel'));
     expect(liveRoster.classId).toBe('CLS-fictional-a');
-    expect(helper.postMessage.mock.calls.at(-1)[0]).toEqual({ type: internals.handoffReply, ok: false, message: 'Roster replacement cancelled. Nothing changed.' });
+    expect(helper.postMessage.mock.calls.at(-1)[0]).toEqual({ type: internals.handoffReply, ok: false, pending: false, message: 'Roster replacement cancelled. Nothing changed.' });
+    // A second send while one is waiting replaces it and tells the helper the first was superseded.
+    await post(helper, { type: internals.handoffType, json: rosterJson('CLS-first') });
+    await post(helper, { type: internals.handoffType, json: rosterJson('CLS-second') });
+    expect(helper.postMessage.mock.calls.at(-2)[0]).toMatchObject({ ok: false, message: expect.stringContaining('newer roster') });
+    await click(button('Replace roster'));
+    expect(liveRoster.classId).toBe('CLS-second');
     await post(helper, { type: internals.handoffType, json: '{"students": "not a roster"' });
     expect(helper.postMessage.mock.calls.at(-1)[0].ok).toBe(false);
     await post(helper, { type: internals.handoffType, json: 'x'.repeat(2 * 1024 * 1024 + 1) });
-    expect(helper.postMessage.mock.calls.at(-1)[0]).toEqual({ type: internals.handoffReply, ok: false, message: 'That roster is larger than the 2 MB safety limit.' });
-    expect(liveRoster.classId).toBe('CLS-fictional-a');
-    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(helper.postMessage.mock.calls.at(-1)[0]).toEqual({ type: internals.handoffReply, ok: false, pending: false, message: 'That roster is larger than the 2 MB safety limit.' });
+    expect(container.querySelector('[aria-labelledby="classroom-handoff-title"]')).toBeNull();
+    expect(window.confirm).not.toHaveBeenCalled();
+    expect(liveRoster.classId).toBe('CLS-second');                // invalid and oversized sends changed nothing
   });
 
   it('ignores handoff messages entirely in parent and independent mode and before the helper was opened', async () => {

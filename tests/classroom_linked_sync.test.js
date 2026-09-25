@@ -137,7 +137,11 @@ describe('linked sync through the real roster panel', () => {
     expect(first.context.syncKey).toMatch(/^[A-Za-z0-9_-]{43}$/);
     const linked = await service.convertLinkedSnapshot(snapshot([AVERY, JORDAN]), { syncKey: first.context.syncKey, classId: null, existing: {} });
     await post(first.helper, { type: internals.handoffType, json: linked.json, mode: 'link' });
-    expect(reply(first.helper)).toMatchObject({ ok: true, message: expect.stringContaining('now linked to Google Classroom on this device') });
+    expect(reply(first.helper)).toMatchObject({ ok: true, pending: true });
+    expect(storedKeys()).toBeNull();                              // nothing is linked until the teacher confirms
+    expect(container.textContent).toContain('also be linked to Google Classroom on this device');
+    await click(button('Replace roster'));
+    expect(reply(first.helper)).toMatchObject({ ok: true, pending: false, message: expect.stringContaining('now linked to Google Classroom on this device') });
     expect(liveRoster.classId).toBe(linked.roster.classId);
     expect(storedKeys().byClass[linked.roster.classId].key).toBe(first.context.syncKey);
     expect(JSON.stringify(liveRoster)).not.toContain(first.context.syncKey);
@@ -184,7 +188,7 @@ describe('linked sync through the real roster panel', () => {
     expect(stranger.postMessage).not.toHaveBeenCalled();
     const synced = await service.convertLinkedSnapshot(snapshot([AVERY]), { syncKey: KEY_A, classId: null, existing: {} });
     await post(opened, { type: internals.handoffType, json: synced.json, mode: 'sync' });
-    expect(reply(opened)).toEqual({ type: internals.handoffReply, ok: false, message: 'This AlloFlow class is not linked to Google Classroom on this device. Nothing changed.' });
+    expect(reply(opened)).toEqual({ type: internals.handoffReply, ok: false, pending: false, message: 'This AlloFlow class is not linked to Google Classroom on this device. Nothing changed.' });
     expect(liveRoster.classId).toBe(unlinked.classId);
     expect(container.querySelector('[aria-labelledby="roster-update-preview-title"]')).toBeNull();
   });
@@ -194,6 +198,7 @@ describe('linked sync through the real roster panel', () => {
     const { helper, context } = await openHelper();
     const linked = await service.convertLinkedSnapshot(snapshot([AVERY]), { syncKey: context.syncKey, classId: null, existing: {} });
     await post(helper, { type: internals.handoffType, json: linked.json, mode: 'link' });
+    await click(button('Replace roster'));
     const blobs = [];
     window.URL.createObjectURL = vi.fn(blob => { blobs.push(blob); return 'blob:fictional'; });
     window.URL.revokeObjectURL = vi.fn();
