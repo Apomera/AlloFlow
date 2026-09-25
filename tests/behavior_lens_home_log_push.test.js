@@ -62,3 +62,46 @@ describe('the home log panel', () => {
     expect(pushed[0].consequence).toBe('');
   });
 });
+
+// Until 2026-09-24 a push only checked the live ABC records: an entry staff had moved to
+// Recently deleted (or deleted for good) came back with the next push. Pushed entries had
+// no source or observer, so staff views read "Observer: Not recorded".
+describe('what a push sends', () => {
+  const log = [
+    { id: '1', timestamp: '2026-09-22T21:00:00.000Z', occurredAt: '2026-09-22T19:00:00.000Z', behavior: 'Cried' },
+    { id: '2', timestamp: '2026-09-23T21:00:00.000Z', occurredAt: '2026-09-23T19:00:00.000Z', behavior: 'Refused dinner' }
+  ];
+  function panel(extra) {
+    let pushed = null;
+    const q = componentHarness('HomeBehaviorLog', Object.assign({ studentName: 'Kestrel', studentKey: k => k, t: () => undefined, addToast: () => {}, callGemini: null, abcEntries: [], setAbcEntries: f => { pushed = typeof f === 'function' ? f([]) : f; } }, extra), { __durable: { homeLog: log } });
+    const push = () => { pushed = null; q.all(n => n.type === 'button' && /Push to ABC/.test(q.text(n)))[0].props.onClick(); q.render(); return pushed; };
+    return push;
+  }
+  it('an entry staff deleted is not sent again', () => {
+    const push = panel({ deletedAbcEntries: [{ entry: { id: 'home_1' }, deletedAt: '2026-09-23T10:00:00.000Z' }] });
+    expect(push().map(e => e.id)).toEqual(['home_2']);                // home_1 came back
+  });
+  it('each entry is sent once, even after staff delete it for good', () => {
+    const push = panel({});
+    expect(push().map(e => e.id).sort()).toEqual(['home_1', 'home_2']);
+    expect(push()).toBe(null);                                        // both were sent again
+  });
+  it('is labelled as the family entry it is', () => {
+    expect(HL.homeLogToAbc(log[0])).toMatchObject({ source: 'home-log', observer: 'Family (home log)' });   // was 'unknown' and blank
+  });
+});
+
+// Until 2026-09-24 a snapshot sent from Family view was labelled "educator" and carried every
+// school ABC record and observation session unless the family unticked them.
+describe('a snapshot sent from Family view', () => {
+  const props = familyView => ({ studentName: 'Kestrel', studentKey: k => k, abcEntries: [{ id: 'a' }], observationSessions: [{ id: 's' }], aiAnalysis: null, setAbcEntries: () => {}, setObservationSessions: () => {}, t: () => undefined, addToast: () => {}, callGemini: null, familyView });
+  const state = q => ({
+    from: q.all(n => n.type === 'button' && n.props['aria-pressed'] === 'true' && /Educator|Family/.test(q.text(n))).map(n => q.text(n).replace(/[^A-Za-z]/g, '')),
+    abc: q.all(n => n.type === 'label' && /ABC Observations/.test(q.text(n)))[0].children.find(c => c.type === 'input').props.checked,
+    obs: q.all(n => n.type === 'label' && /Observation Sessions/.test(q.text(n)))[0].children.find(c => c.type === 'input').props.checked
+  });
+  it('is from the family and leaves the school records out by default', () => {
+    expect(state(componentHarness('SnapshotExchange', props(true)))).toEqual({ from: ['Family'], abc: false, obs: false });
+    expect(state(componentHarness('SnapshotExchange', props(false)))).toEqual({ from: ['Educator'], abc: true, obs: true });
+  });
+});

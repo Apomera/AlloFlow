@@ -73,7 +73,8 @@ describe('BehaviorLens app shell and visualization accessibility', () => {
     );
     expect(svgContexts).toHaveLength(14);
     for (const context of svgContexts) {
-      expect(context).toMatch(/role:\s*['"](?:img|group)['"]/);
+      // A graph whose points are buttons (ABA manual entry) is a group; otherwise an image.
+      expect(context).toMatch(/role:\s*(?:['"](?:img|group)['"]|[^,?]*\?\s*['"](?:img|group)['"]\s*:\s*['"](?:img|group)['"])/);
       expect(context).toContain("'aria-label':");
     }
 

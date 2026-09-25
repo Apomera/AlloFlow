@@ -59,7 +59,7 @@ describe('effectSizeFromPhaseTags', () => {
 
 describe('the Effect Size panel', () => {
   const graphExport = { phaseAnalysis: ABA, behaviorName: 'Hitting', goalDirection: 'decrease' };
-  const inputs = q => q.all(n => n.type === 'input' && /^eg /.test(n.props['aria-label'] || '')).map(n => n.props.value);
+  const inputs = q => q.all(n => n.type === 'input' && /phase \((A|B)\) data/.test(n.props['aria-label'] || '')).map(n => n.props.value);
   it('fills the chosen contrast and names it', () => {
     const toasts = [];
     const q = componentHarness('EffectSizeCalculator', { sessionHistory: [], designPhases: [], graphExport, onResultsChange: () => {}, setActivePanel: () => {}, abcEntries: [], t: () => undefined, addToast: m => toasts.push(m) });

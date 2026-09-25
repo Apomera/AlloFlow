@@ -34,7 +34,7 @@ describe('Latency Recorder goal', () => {
     vi.spyOn(Date, 'now').mockImplementation(() => now);
     const saved = [];
     const q = componentHarness('LatencyRecorder', { t: () => undefined, addToast: () => {}, onSaveSession: r => saved.push(r) });
-    q.all(n => n.props['aria-label'] === 'eg 3')[0].props.onChange({ target: { value: '3' } }); q.render();
+    q.all(n => n.props['aria-label'] === 'Goal (seconds)')[0].props.onChange({ target: { value: '3' } }); q.render();
     const present = () => { q.all(n => n.props['aria-label'] === 'Present Stimulus')[0].props.onClick(); q.render(); };
     present(); now += 2000;
     q.all(n => n.type === 'button' && n.props['aria-label'] !== 'No Response' && /respon/i.test(q.text(n)))[0].props.onClick(); q.render();

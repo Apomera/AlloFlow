@@ -84,12 +84,18 @@ export function componentHarness(name, props, extraEnv = {}) {
   const h = (type, props, ...children) => ({ type, props: props || {}, children: children.flat(Infinity).filter(child => child !== null && child !== undefined && child !== false && child !== '') });
   // extraEnv.__durable seeds persisted tool state by key (what a returning user has).
   const durable = extraEnv.__durable || {};
-  extraEnv = Object.assign({}, extraEnv); delete extraEnv.__durable;
+  // extraEnv.__durableLog, an array, receives [key, value] for every persisted write.
+  const durableLog = extraEnv.__durableLog || null;
+  extraEnv = Object.assign({}, extraEnv); delete extraEnv.__durable; delete extraEnv.__durableLog;
   const env = Object.assign({
     h, useState, useMemo, useEffect,
     useCallback: (callback, deps) => useMemo(() => callback, deps),
     useRef: initial => useState(() => ({ current: initial }))[0],
-    useDurableToolState: (key, initial) => useState(() => (key in durable ? durable[key] : (typeof initial === 'function' ? initial() : initial))),
+    useDurableToolState: (key, initial) => {
+      const [value, set] = useState(() => (key in durable ? durable[key] : (typeof initial === 'function' ? initial() : initial)));
+      if (!durableLog) return [value, set];
+      return [value, next => { set(next); durableLog.push([key, typeof next === 'function' ? next(value) : next]); }];
+    },
     tt: (key, fallback, params) => {
       let s = fallback;
       if (params && typeof s === 'string') Object.keys(params).forEach(k => { s = s.split('{' + k + '}').join(String(params[k])); });

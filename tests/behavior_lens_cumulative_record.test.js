@@ -100,7 +100,7 @@ describe('the Cumulative Record panel', () => {
     const history = [1, 2, 3, 4].map((d, i) => tracked(d, [['Out of seat', [4, 4, 1, 1][i]]]));
     const q = componentHarness('CumulativeRecord', { sessionHistory: history, t: () => undefined, addToast: () => {} });
     q.all(n => n.props['aria-expanded'] !== undefined && /Add Phase Line/.test(q.text(n)))[0].props.onClick(); q.render();
-    q.all(n => n.props['aria-label'] === 'eg 4')[0].props.onChange({ target: { value: '3' } }); q.render();
+    q.all(n => n.props['aria-label'] === 'Phase change at session number')[0].props.onChange({ target: { value: '3' } }); q.render();
     q.all(n => n.props['aria-label'] === 'Add')[0].props.onClick(); q.render();
     expect(q.text(q.byAttr('data-cumrec-slopes', 'true')[0])).toBe('Responses per session by phase: Baseline 4.0, Intervention 1.0');
   });

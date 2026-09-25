@@ -123,7 +123,7 @@ describe('BehaviorLens recording recovery and modal lifecycle', () => {
     expect(onClose).toHaveBeenCalledOnce();
     await act(async () => mounted.unmount()); mounted = null;
     await mount('FrequencyCounter');
-    expect(byName('Start recording').getAttribute('aria-pressed')).toBe('false');
+    expect(byName('Start recording')).toBeTruthy();                        // restored paused (its label says the action)
     expect(JSON.parse(sessionStorage.getItem(draftKey('frequency'))).data.counters[0].count).toBe(1);
     expect(document.querySelector('.bl-freq-count-solo').textContent).toBe('1');
   });

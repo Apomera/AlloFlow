@@ -67,11 +67,13 @@ describe('importing a family file', () => {
     expect(q.text()).toContain('Home Log Entries (3)');
     expect(q.text()).toContain('Student Self-Check (1)');
   });
-  it('mergeSnapshotSide keeps the newest 250, newest first', () => {
+  it('mergeSnapshotSide keeps every entry, newest first', () => {
+    // Since 2026-09-24 there is no 250 cap: the logs themselves have none, so the cap
+    // silently deleted the oldest entries already here.
     const existing = Array.from({ length: 250 }, (_, i) => ({ id: 'e' + i, timestamp: new Date(Date.UTC(2026, 0, 1) + i * 60000).toISOString() }));
     const out = SN.mergeSnapshotSide(existing, [{ id: 'new', timestamp: '2026-09-22T12:00:00.000Z' }]);
-    expect(out).toHaveLength(250);
+    expect(out).toHaveLength(251);
     expect(out[0].id).toBe('new');
-    expect(out.some(e => e.id === 'e0')).toBe(false);       // the oldest drops off
+    expect(out.some(e => e.id === 'e0')).toBe(true);
   });
 });

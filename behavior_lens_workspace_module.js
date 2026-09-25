@@ -39,6 +39,7 @@
         var normalizedBehaviors = normalizeTargetBehaviors(source.targetBehaviors, source.abcEntries);
         var normalizedAbc = normalizeAbcEntries(source.abcEntries, { targetBehaviors: normalizedBehaviors });
         var normalizedObservations = normalizeObservationSessions(source.observationSessions, { targetBehaviors: normalizedBehaviors });
+        var toolStateReport = { dropped: [] };
         return {
             version: WORKSPACE_VERSION,
             isPracticeMode: source.isPracticeMode === true,
@@ -64,13 +65,14 @@
             favorites: Array.isArray(source.favorites) ? normalizeStringArray(source.favorites, 100, 160) : null,
             userRole: boundedText(source.userRole, 80) || null,
             targetBehaviors: normalizedBehaviors,
-            toolState: normalizeToolState(source.toolState),
+            toolState: normalizeToolState(source.toolState, toolStateReport),
             deletedAbcEntries: normalizeDeletedAbcEntries(source.deletedAbcEntries, normalizedBehaviors),
             auditLog: normalizeAuditLog(source.auditLog),
             workflowDiagnostics: normalizeWorkflowDiagnostics(source.workflowDiagnostics),
             normalizationReport: {
                 abcEntries: normalizedAbc.report,
-                observationSessions: normalizedObservations.report
+                observationSessions: normalizedObservations.report,
+                toolState: toolStateReport
             },
             savedAt: normalizeIsoTimestamp(source.savedAt),
             revision: workspaceRevision(source)
@@ -113,6 +115,28 @@
         return (left.savedAt || null) === (right.savedAt || null);
     }
 
+    // Same saved data, ignoring when and by which tab it was written. A tab that only
+    // opened a student re-saved it under a new snapshot id, and the other tab took that
+    // for a conflicting edit (its later saves went to a side draft).
+    function stableStringify(value) {
+        if (value === null || typeof value !== 'object') return JSON.stringify(value === undefined ? null : value);
+        if (Array.isArray(value)) return '[' + value.map(stableStringify).join(',') + ']';
+        return '{' + Object.keys(value).sort().filter(function (key) { return value[key] !== undefined; }).map(function (key) {
+            return JSON.stringify(key) + ':' + stableStringify(value[key]);
+        }).join(',') + '}';
+    }
+    // Visit times and diagnostics change when a tool is opened, not when data does.
+    var VOLATILE_WORKSPACE_KEYS = { snapshotId: true, savedAt: true, revision: true, activityRegistry: true, workflowDiagnostics: true };
+    function sameWorkspaceContent(left, right) {
+        if (!left || !right || typeof left !== 'object' || typeof right !== 'object') return false;
+        var strip = function (workspace) {
+            var out = {};
+            Object.keys(workspace).forEach(function (key) { if (!VOLATILE_WORKSPACE_KEYS[key]) out[key] = workspace[key]; });
+            return out;
+        };
+        try { return stableStringify(strip(left)) === stableStringify(strip(right)); } catch (_) { return false; }
+    }
+
     function sameWorkspaceSnapshot(left, right) {
         return sameWorkspaceEdit(left, right) &&
             workspaceRevision(left) === workspaceRevision(right);
@@ -143,7 +167,8 @@
     var LOCAL_WORKSPACE_SAVE_DELAY_MS = 300;
     var COLLECTION_DEFAULT_PAGE_SIZE = 50;
     var COLLECTION_MAX_PAGE_SIZE = 100;
-    var MAX_WORKSPACE_IMPORT_BYTES = 4 * 1024 * 1024;
+    // A full backup must load back: at 4 MB, a 5,000-entry student's own backup was refused.
+    var MAX_WORKSPACE_IMPORT_BYTES = 16 * 1024 * 1024;
     var MAX_SHARED_WORKSPACE_IMPORT_BYTES = 1024 * 1024;
     var WORKSPACE_ARRAY_LIMITS = {
         abcEntries: 5000,
@@ -164,7 +189,9 @@
     var MAX_DELETED_ABC_ENTRIES = 250;
     var MAX_AUDIT_EVENTS = 1000;
     var MAX_WORKFLOW_DIAGNOSTICS = 1000;
-    var MAX_TOOL_STATE_BYTES = 512 * 1024;
+    var MAX_TOOL_STATE_BYTES = 2 * 1024 * 1024;
+    var MAX_TOOL_STATE_ARRAY = 10000;
+    var MAX_TOOL_STATE_STRING = 100000;
 
     function paginateCollection(items, requestedPageIndex, requestedPageSize, options) {
         options = options || {};
@@ -302,21 +329,27 @@
         var result = [];
         var seenIds = Object.create(null);
         var seenLabels = Object.create(null);
-        function add(value) {
+        var seenAliases = Object.create(null);
+        function add(value, fromEntry) {
             if (result.length >= MAX_TARGET_BEHAVIORS) return;
             var normalized = normalizeTargetBehavior(value, result.length);
             if (!normalized) return;
             var key = normalizeToken(normalized.label);
             if (seenIds[normalized.id] || seenLabels[key]) return;
+            // A label that is another target's alias is that target: "bolted" (an alias of
+            // Elopement) came back as its own target on every reload and was counted apart. A
+            // target someone defined (with a definition or aliases of its own) is kept.
+            if (seenAliases[key] && (fromEntry || (!normalized.operationalDefinition && !normalized.aliases.length))) return;
             seenIds[normalized.id] = true;
             seenLabels[key] = true;
+            normalized.aliases.forEach(function (alias) { var token = normalizeToken(alias); if (token) seenAliases[token] = true; });
             result.push(normalized);
         }
-        (Array.isArray(values) ? values : []).slice(0, MAX_TARGET_BEHAVIORS).forEach(add);
+        (Array.isArray(values) ? values : []).slice(0, MAX_TARGET_BEHAVIORS).forEach(function (value) { add(value, false); });
         (Array.isArray(entries) ? entries : []).slice(0, 5000).forEach(function (entry) {
             if (!entry || typeof entry !== 'object') return;
             var label = boundedText(entry.behavior, 240);
-            if (label) add({ id: boundedText(entry.behaviorId, 120) || canonicalBehaviorId(label), label: label });
+            if (label) add({ id: boundedText(entry.behaviorId, 120) || canonicalBehaviorId(label), label: label }, true);
         });
         return result;
     }
@@ -335,10 +368,21 @@
         return { byId: byId, byToken: byToken };
     }
 
+    // Built once per targets list (state lists are replaced, never changed in place). It was
+    // rebuilt for every entry: with 40 free-text targets, opening the Overview on 3,000 entries
+    // took over a second.
+    var behaviorLookupCache = typeof WeakMap === 'function' ? new WeakMap() : null;
+    function behaviorLookupFor(targetBehaviors) {
+        if (!behaviorLookupCache || !Array.isArray(targetBehaviors)) return buildBehaviorLookup(targetBehaviors);
+        var cached = behaviorLookupCache.get(targetBehaviors);
+        if (!cached) { cached = buildBehaviorLookup(targetBehaviors); behaviorLookupCache.set(targetBehaviors, cached); }
+        return cached;
+    }
+
     function resolveCanonicalBehavior(value, targetBehaviors) {
         var entry = value && typeof value === 'object' ? value : { behavior: value };
         var label = boundedText(entry.behavior || entry.label, 240);
-        var lookup = buildBehaviorLookup(targetBehaviors);
+        var lookup = behaviorLookupFor(targetBehaviors);
         var behavior = entry.behaviorId && lookup.byId[entry.behaviorId]
             ? lookup.byId[entry.behaviorId] : lookup.byToken[normalizeToken(label)];
         if (behavior) return { id: behavior.id, label: behavior.label, defined: true };
@@ -496,8 +540,31 @@
         return { items: items, report: { inputCount: Array.isArray(values) ? values.length : 0, outputCount: items.length, droppedCount: dropped, issueCounts: issueCounts } };
     }
 
-    function normalizeToolState(value) {
-        return sanitizeJsonObject(value, MAX_TOOL_STATE_BYTES);
+    // Saved tool data, tool by tool. It was sanitized as one object: over 512 KB the whole
+    // object came back {}, so every tool's saved work for the student was dropped on the
+    // next load (and the next save made that permanent), and lists over 1,000 items or
+    // texts over 20,000 characters were cut without a word. Each tool is now kept or left
+    // out on its own, largest first, and what was left out is reported.
+    function normalizeToolState(value, report) {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+        var sized = [];
+        Object.keys(value).slice(0, 500).forEach(function (key) {
+            if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
+            var item = sanitizeJsonValue(value[key], { maxArrayLength: MAX_TOOL_STATE_ARRAY, maxStringLength: MAX_TOOL_STATE_STRING });
+            var bytes;
+            try { bytes = utf8ByteLength(JSON.stringify(item === undefined ? null : item)) + utf8ByteLength(key) + 4; } catch (_) { return; }
+            sized.push({ key: key, item: item, bytes: bytes, dropped: false });
+        });
+        var total = sized.reduce(function (sum, entry) { return sum + entry.bytes; }, 2);
+        var dropped = [];
+        sized.slice().sort(function (a, b) { return b.bytes - a.bytes; }).forEach(function (entry) {
+            if (total <= MAX_TOOL_STATE_BYTES) return;
+            entry.dropped = true; dropped.push(entry.key); total -= entry.bytes;
+        });
+        var result = {};
+        sized.forEach(function (entry) { if (!entry.dropped) result[entry.key] = entry.item; });
+        if (report && typeof report === 'object') report.dropped = dropped;
+        return result;
     }
 
     function normalizeDeletedAbcEntries(values, targetBehaviors) {
@@ -653,7 +720,28 @@
     // The time an observation session covered: it is stamped when saved, so it ran
     // from (stamp - duration) to the stamp. A minute of slack either side absorbs the
     // save delay. A session without a valid stamp and duration covers no known time.
+    // The stretches a session observed, when its recorder kept them. Without them a session was
+    // read as the stretch just before its time stamp: paused for half an hour, or saved long after
+    // it ended, an incident while observing fell outside and one during the pause was counted.
+    function observationSpans(session) {
+        var saved = session && session.data && Array.isArray(session.data.spans) ? session.data.spans : null;
+        var slack = 60000;
+        var spans = (saved || []).map(function (span) {
+            var start = Date.parse(span && span.start), end = Date.parse(span && span.end);
+            return Number.isFinite(start) && Number.isFinite(end) && end >= start ? { id: session && session.id, start: start - slack, end: end + slack } : null;
+        }).filter(Boolean);
+        if (spans.length) return spans;
+        var legacy = legacyObservationWindow(session);
+        return legacy ? [legacy] : [];
+    }
+
     function observationWindow(session) {
+        var spans = observationSpans(session);
+        if (!spans.length) return null;
+        return { id: session && session.id, start: Math.min.apply(null, spans.map(function (s) { return s.start; })), end: Math.max.apply(null, spans.map(function (s) { return s.end; })) };
+    }
+
+    function legacyObservationWindow(session) {
         var iso = normalizeIsoTimestamp(session && (session.occurredAt || session.timestamp || session.date));
         var duration = normalizeDurationSeconds(session && session.duration);
         if (!iso || duration == null || duration <= 0) return null;
@@ -682,7 +770,7 @@
         // A session with no valid time cannot hold an incident, so its minutes stay out
         // of the denominator too; they are reported as untimed.
         var timed = sessions.filter(function (session) { return !!observationWindow(session); });
-        var windows = timed.map(observationWindow);
+        var windows = timed.reduce(function (all, session) { return all.concat(observationSpans(session)); }, []);
         var ids = Object.create(null);
         timed.forEach(function (session) { if (session && session.id) ids[session.id] = true; });
         var observed = inScope.filter(function (entry) {
@@ -745,7 +833,23 @@
         };
     }
 
+    // What an analysis was run on, as a reload loads it. A reload turns the entries' free-text
+    // behavior labels into targets (and fills in ids and local days), so every analysis made
+    // before one read as out of date after it.
+    // About 0.1 s at 5,000 entries, asked on every render that changes any AI input: kept per
+    // entries array (state arrays are replaced, never changed in place).
+    var fingerprintCache = typeof WeakMap === 'function' ? new WeakMap() : null;
     function dataFingerprint(entries, targetBehaviors) {
+        var list = Array.isArray(entries) ? entries : [];
+        var cached = fingerprintCache && list === entries ? fingerprintCache.get(list) : null;
+        if (cached && cached.targets === targetBehaviors) return cached.value;
+        var targets = normalizeTargetBehaviors(targetBehaviors || [], list);
+        var value = legacyDataFingerprint(normalizeAbcEntries(list, { targetBehaviors: targets }).items, targets);
+        if (fingerprintCache && list === entries) fingerprintCache.set(list, { targets: targetBehaviors, value: value });
+        return value;
+    }
+
+    function legacyDataFingerprint(entries, targetBehaviors) {
         var relevant = (Array.isArray(entries) ? entries : []).map(function (entry) {
             return [entry && entry.id, entry && (entry.occurredAt || entry.timestamp), entry && entry.antecedentId, entry && entry.behaviorId, entry && entry.consequenceId, entry && normalizeIntensity(entry.intensity), entry && entry.phase, entry && entry.antecedent, entry && entry.behavior, entry && entry.consequence, entry && entry.setting, entry && entry.notes, entry && entry.duration, entry && entry.timezoneOffset, entry && entry.localDate, entry && entry.observationSessionId];
         }).sort(function (left, right) { return String(left[0] || '').localeCompare(String(right[0] || '')); });
@@ -753,8 +857,11 @@
     }
 
     function selectStratifiedEntries(entries, maximum) {
+        // Oldest first; entries with no date go last (they sorted as 1970, so the sample always began with one).
+        var when = function (entry) { var time = Date.parse(entry && (entry.occurredAt || entry.timestamp) || ''); return Number.isFinite(time) ? time : Infinity; };
         var sorted = (Array.isArray(entries) ? entries : []).slice().sort(function (left, right) {
-            return (Date.parse(left && (left.occurredAt || left.timestamp) || '') || 0) - (Date.parse(right && (right.occurredAt || right.timestamp) || '') || 0);
+            var a = when(left), b = when(right);
+            return a === b ? 0 : a < b ? -1 : 1;
         });
         var limit = Math.max(1, Math.floor(Number(maximum) || 20));
         if (sorted.length <= limit) return { entries: sorted, strategy: 'complete', totalCount: sorted.length, sampleCount: sorted.length };
@@ -788,7 +895,10 @@
     }
 
     function isAnalysisStale(analysis, entries, targetBehaviors) {
-        return !!(analysis && analysis.provenance && analysis.provenance.sourceFingerprint && analysis.provenance.sourceFingerprint !== dataFingerprint(entries, targetBehaviors));
+        var saved = analysis && analysis.provenance && analysis.provenance.sourceFingerprint;
+        if (!saved || saved === dataFingerprint(entries, targetBehaviors)) return false;
+        // Saved before 2026-09-24, fingerprinted with the targets of the moment.
+        return saved !== legacyDataFingerprint(entries, targetBehaviors) && saved !== legacyDataFingerprint(entries, []);
     }
 
     function createAuditEvent(action, options) {
@@ -1009,9 +1119,17 @@
     }
 
     // Parse complete records before splitting rows so quoted notes round-trip.
+    // Each kept row carries rowNumber (hidden), its row in the spreadsheet counting blank rows,
+    // so an error can name the row a teacher sees.
     function parseCsvRows(text) {
         text = String(text || '').replace(/^\uFEFF/, '');
-        var rows = [], row = [], field = '', quoted = false, closed = false;
+        var rows = [], row = [], field = '', quoted = false, closed = false, rowNumber = 0;
+        function keep() {
+            rowNumber += 1;
+            if (!row.some(function (value) { return value.trim() !== ''; })) return;
+            Object.defineProperty(row, 'rowNumber', { value: rowNumber, enumerable: false });
+            rows.push(row);
+        }
         for (var index = 0; index < text.length; index += 1) {
             var char = text[index];
             if (quoted) {
@@ -1022,7 +1140,7 @@
                 row.push(field); field = ''; closed = false;
                 if (char !== ',') {
                     if (char === '\r' && text[index + 1] === '\n') index += 1;
-                    if (row.some(function (value) { return value.trim() !== ''; })) rows.push(row);
+                    keep();
                     row = [];
                 }
             } else if (char === '"') {
@@ -1035,7 +1153,7 @@
         }
         if (quoted) throw new Error('A quoted CSV field is not closed.');
         row.push(field);
-        if (row.some(function (value) { return value.trim() !== ''; })) rows.push(row);
+        keep();
         return rows;
     }
 
@@ -1214,6 +1332,25 @@
         return normalizeRevision(data && data.revision);
     }
 
+    // The account's roster, merged inside the save (entries from this browser first, then the
+    // others by id). Each save replaced the whole list, so the first student opened in a new
+    // browser overwrote every other browser's students.
+    var MAX_CLOUD_ROSTER = 1000;
+    function mergeRosterEntries(local, remote) {
+        var result = [];
+        var seen = Object.create(null);
+        [local, remote].forEach(function (list) {
+            (Array.isArray(list) ? list : []).forEach(function (entry) {
+                if (result.length >= MAX_CLOUD_ROSTER || !entry || typeof entry !== 'object') return;
+                var id = boundedText(entry.id, 120);
+                if (!id || !boundedText(entry.name, 240) || seen[id]) return;
+                seen[id] = true;
+                result.push(entry);
+            });
+        });
+        return result;
+    }
+
     async function commitCloudWorkspace(options) {
         options = options || {};
         if (typeof options.runTransaction !== 'function') {
@@ -1243,7 +1380,9 @@
             }
             var nextRevision = remoteRevision + 1;
             var updatedAt = typeof options.now === 'string' ? options.now : new Date().toISOString();
-            var payload = Object.assign({}, options.data || {}, {
+            var data = options.data || {};
+            if (options.isRoster && remote && Array.isArray(remote.roster)) data = Object.assign({}, data, { roster: mergeRosterEntries(data.roster, remote.roster) });
+            var payload = Object.assign({}, data, {
                 revision: nextRevision,
                 updatedAt: updatedAt,
                 _uid: options.userId
@@ -1368,6 +1507,7 @@
         createHydrationGuard: createHydrationGuard,
         emptyStudentProfile: emptyStudentProfile,
         normalizeWorkspace: normalizeWorkspace,
+        sameWorkspaceContent: sameWorkspaceContent,
         normalizeRevision: normalizeRevision,
         workspaceRevision: workspaceRevision,
         parseDirtyMarker: parseDirtyMarker,
@@ -1404,6 +1544,7 @@
         normalizeToolState: normalizeToolState,
         summarizeIntensity: summarizeIntensity,
         observationWindow: observationWindow,
+        observationSpans: observationSpans,
         groupByCanonicalBehavior: groupByCanonicalBehavior,
         groupByLocalDay: groupByLocalDay,
         filterByDateRange: filterByDateRange,
@@ -1412,6 +1553,7 @@
         summarizePhases: summarizePhases,
         inspectAbcData: inspectAbcData,
         dataFingerprint: dataFingerprint,
+        legacyDataFingerprint: legacyDataFingerprint,
         selectStratifiedEntries: selectStratifiedEntries,
         createAnalysisProvenance: createAnalysisProvenance,
         isAnalysisStale: isAnalysisStale,
@@ -1430,6 +1572,7 @@
         persistLocalWorkspace: persistLocalWorkspace,
         acknowledgeCloudWorkspace: acknowledgeCloudWorkspace,
         commitCloudWorkspace: commitCloudWorkspace,
+        mergeRosterEntries: mergeRosterEntries,
         hasWorkspaceData: hasWorkspaceData,
         loadStudentWorkspace: loadStudentWorkspace
     });

@@ -124,7 +124,7 @@
                     if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
                 });
                 try { if (opener && opener.isConnected && opener !== document.body && typeof opener.focus === 'function') opener.focus();
-                else recordingPanel?.querySelector('[data-bl-add-observation]')?.focus(); } catch (e) {}
+                else { var fallback = document.querySelector('.bl-root [data-bl-panel-content] [data-bl-add-observation]') || document.querySelector('.bl-root [role="dialog"]'); if (fallback && typeof fallback.focus === 'function') fallback.focus(); } } catch (e) {}
                 resolve(accepted === true);
             }
             function onKeyDown(event) {
@@ -244,8 +244,6 @@
                 }
             }
             /* WCAG 1.4.3: Contrast fixes for low-contrast text classes */
-            .bl-root .text-slate-600 { color: #64748b !important; }
-            .bl-root
             .bl-root .text-slate-600 { color: #475569 !important; }
             /* WCAG 1.4.4: Minimum text size (override sub-10px text) */
             .bl-root [class*="text-\\[9px\\]"] { font-size: 10px !important; }
@@ -332,6 +330,8 @@
         ['Tangible']: { bg: '#d1fae5', border: '#10b981', text: '#065f46', emoji: '🎁' },
         ['Sensory']: { bg: '#ede9fe', border: '#8b5cf6', text: '#5b21b6', emoji: '🌀' },
     };
+    // "Multiple", "Unknown" or another answer: it was drawn in Attention's blue with its eyes icon.
+    const FUNCTION_COLOR_OTHER = { bg: '#f1f5f9', border: '#64748b', text: '#334155', emoji: '\u2754' };
 
     const OBSERVATION_METHODS = ['frequency', 'duration', 'interval', 'latency'];
 
@@ -396,6 +396,50 @@
         try { if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID(); } catch (_) {}
         return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
     };
+    // A student's saved work lives under a roster id minted in this browser. Removing a
+    // student from quick switch (or clearing it) and adding the same name again minted a
+    // NEW id, so the saved work could not be reached. Reuse the id of saved work for that
+    // name when there is exactly one and no roster entry already uses it.
+    // Profile fields from a CSV row. A CSV with only names and grades erased each
+    // student's accommodations and replaced the staff notes; blank cells now keep what
+    // was saved and new notes are added, not swapped in.
+    function mergeImportedProfile(previousProfile, row) {
+        const prev = previousProfile || {};
+        const r = row || {};
+        const kept = String(prev.notes || '').trim();
+        const added = String(r.notes || '').trim();
+        const notes = !kept
+            ? [r.grade ? 'Grade: ' + r.grade : '', r.diagnosis ? 'Diagnosis: ' + r.diagnosis : '', added].filter(Boolean).join('\n')
+            : (added && !kept.includes(added) ? kept + '\n' + added : kept);
+        return {
+            grade: r.grade || prev.grade || '',
+            diagnosis: r.diagnosis || prev.diagnosis || '',
+            accommodations: r.accommodations || prev.accommodations || '',
+            notes
+        };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensRosterHelpers = Object.freeze({ mergeImportedProfile, blReusableWorkspaceId });
+    function blReusableWorkspaceId(name, roster) {
+        const target = String(name || '').trim();
+        if (!target || typeof localStorage === 'undefined') return null;
+        const used = new Set((Array.isArray(roster) ? roster : []).map(r => r && r.id).filter(Boolean));
+        const ids = [];
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i) || '';
+                if (key.indexOf('behaviorLens_workspace_') !== 0) continue;
+                // Roster ids have no '_', which also skips the dirty_ and tabdraft_ keys.
+                const id = key.slice('behaviorLens_workspace_'.length);
+                if (!/^[A-Za-z0-9-]{4,120}$/.test(id) || used.has(id)) continue;
+                try {
+                    const ws = JSON.parse(localStorage.getItem(key) || 'null');
+                    if (ws && !ws.isPracticeMode && String(ws.student || '').trim() === target) ids.push(id);
+                } catch (e) { /* not a workspace */ }
+            }
+        } catch (e) { return null; }
+        return ids.length === 1 ? ids[0] : null;
+    }
     const fmtDate = (iso) => {
         if (!iso) return '';
         const d = new Date(iso);
@@ -483,6 +527,7 @@
         const d = new Date(iso);
         return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     };
+    const abcEntryClock = (e, missing = '') => e && e.metadata && e.metadata.timeNotStated ? missing : fmtTime(e && (e.occurredAt || e.timestamp));
     const fmtDuration = (seconds) => {
         if (!seconds || seconds < 0) return '0:00';
         const m = Math.floor(seconds / 60);
@@ -501,6 +546,13 @@
         const d = date instanceof Date ? date : new Date(date);
         if (isNaN(d)) return '';
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    };
+    // Start of a "last N days" window: local midnight N-1 days ago (null for all time).
+    const blRangeStartMs = (range) => {
+        const days = range === 'week' ? 7 : range === 'month' ? 30 : null;
+        if (!days) return null;
+        const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (days - 1));
+        return d.getTime();
     };
     const abcEntryTime = (e) => {
         const t = Date.parse(e && (e.occurredAt || e.timestamp || e.date));
@@ -527,6 +579,58 @@
             return a.index - b.index;
         })
         .map(item => item.entry);
+    // ABC log column sort. Sorting by Intensity called localeCompare on a number and
+    // crashed the log; unrated entries now sort last in either direction.
+    function abcSortCompare(a, b, field, dir) {
+        const sign = dir === 'desc' ? -1 : 1;
+        if (field === 'intensity') {
+            const rt = getBehaviorLensWorkspaceRuntime();
+            const ia = rt.normalizeIntensity(a && a.intensity), ib = rt.normalizeIntensity(b && b.intensity);
+            if (ia == null || ib == null) return ia == null && ib == null ? 0 : ia == null ? 1 : -1;
+            return sign * (ia - ib);
+        }
+        return sign * String((a && a[field]) ?? '').localeCompare(String((b && b[field]) ?? ''));
+    }
+    // An unrated entry is "not rated" in a prompt, never "null/5", "?/5" or 0.
+    const intensityForPrompt = (v) => { const n = getBehaviorLensWorkspaceRuntime().normalizeIntensity(v); return n == null ? 'not rated' : n + '/5'; };
+    // Notes to ABC entries (natural-language notes and voice transcripts). Both stamped
+    // every entry with the moment the notes were PARSED: a 9:15 incident pasted at
+    // 3:40 pm counted at 15:00, and on the wrong day if parsed the next morning. The
+    // stated time was dropped and entries skipped normalization (no occurredAt, time
+    // zone or local day). Now the stated clock time is used on the date the notes
+    // describe; with none stated, the time of adding is used and the entry says so.
+    function parseNoteClock(text) {
+        const t = String(text || '').toLowerCase();
+        let m = t.match(/(?:^|[^\d])(\d{1,2}):([0-5]\d)(?:\s*([ap])\.?\s?m\b)?/);
+        let h, min;
+        if (m) { h = Number(m[1]); min = Number(m[2]); }
+        else { m = t.match(/(?:^|[^\d:])(\d{1,2})\s*([ap])\.?\s?m\b/); if (!m) return ''; h = Number(m[1]); min = 0; m = [m[0], m[1], '0', m[2]]; }
+        const mer = m[3];
+        if (mer) { if (h < 1 || h > 12) return ''; if (mer === 'p' && h < 12) h += 12; if (mer === 'a' && h === 12) h = 0; }
+        else if (h >= 1 && h <= 6) h += 12; // no am/pm: "2:15" in a school day is afternoon
+        if (h > 23) return '';
+        return String(h).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+    }
+    function notesEntryToAbc(entry, dateKey, source, now) {
+        if (!entry || !String(entry.behavior || '').trim()) return null;
+        const nowDate = now instanceof Date ? now : new Date();
+        const stated = /^\d{2}:\d{2}$/.test(entry.clock || '');
+        const clock = stated ? entry.clock : String(nowDate.getHours()).padStart(2, '0') + ':' + String(nowDate.getMinutes()).padStart(2, '0');
+        const day = /^\d{4}-\d{2}-\d{2}$/.test(dateKey || '') ? dateKey : blLocalDateKey(nowDate);
+        const when = new Date(day + 'T' + clock + ':00');
+        if (isNaN(when)) return null;
+        const res = getBehaviorLensWorkspaceRuntime().normalizeAbcEntry({
+            id: uid(), antecedent: entry.antecedent, behavior: entry.behavior, consequence: entry.consequence || '',
+            intensity: entry.intensity, setting: entry.setting, notes: entry.notes,
+            function: entry.function && entry.function !== 'unknown' ? entry.function : null,
+            timestamp: when.toISOString(), occurredAt: when.toISOString(), recordedAt: nowDate.toISOString(),
+            timezoneOffset: when.getTimezoneOffset(), source,
+            metadata: stated ? undefined : { timeNotStated: true }
+        });
+        return res && res.ok ? res.entry : null;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensAbcNotes = Object.freeze({ abcSortCompare, intensityForPrompt, parseNoteClock, notesEntryToAbc });
     // Mean over RATED entries only. Counting an unrated entry as 0 put report
     // averages below the 1-5 scale.
     const ratedIntensityMean = (entries) => {
@@ -537,6 +641,85 @@
     };
     // The AI analysis is an object; interpolating it printed "[object Object]" and
     // `.substring` on it threw, which failed every BCBA handoff packet.
+    // The analysis reply, checked. It took an array, {} or unrelated JSON as an analysis (an empty
+    // card replaced the saved one), any text as the function, and dropped patterns written as sentences.
+    const BL_FUNCTION_WORDS = [['Attention', /attention/i], ['Escape', /escape|avoid/i], ['Tangible', /tangible/i], ['Sensory', /sensory|automatic/i]];
+    function blCanonicalFunction(value) {
+        const text = typeof value === 'string' ? value.trim() : '';
+        if (!text) return 'Unknown';
+        const named = BL_FUNCTION_WORDS.filter(pair => pair[1].test(text)).map(pair => pair[0]);
+        if (named.length > 1 || /multiple|combined|more than one/i.test(text)) return 'Multiple';
+        if (named.length === 1) return named[0];
+        return /unknown|unclear|undetermined|insufficient/i.test(text) ? 'Unknown' : text.slice(0, 120);
+    }
+    function normalizeAiAnalysisReply(parsed, provenance) {
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+        const text = (value, max) => typeof value === 'string' ? value.trim().slice(0, max) : '';
+        const patterns = (Array.isArray(parsed.patterns) ? parsed.patterns : []).slice(0, 20)
+            .map(item => typeof item === 'string' ? { pattern: text(item, 500), frequency: '', evidence: '' }
+                : item && typeof item === 'object' ? { pattern: text(item.pattern, 500), frequency: text(item.frequency, 200), evidence: text(item.evidence, 500) } : null)
+            .filter(item => item && item.pattern);
+        const recommendations = (Array.isArray(parsed.recommendations) ? parsed.recommendations : []).map(item => text(item, 500)).filter(Boolean).slice(0, 20);
+        const summary = text(parsed.summary, 4000);
+        const named = text(parsed.hypothesizedFunction, 400);
+        if (!summary && !named && !patterns.length && !recommendations.length) return null;
+        // Missing stays missing (it read as 0, "Low"); a 0-1 fraction is a percentage.
+        const c = parsed.confidence == null || parsed.confidence === '' ? NaN : Number(parsed.confidence);
+        return {
+            summary, hypothesizedFunction: blCanonicalFunction(named),
+            confidence: Number.isFinite(c) ? Math.max(0, Math.min(100, c > 0 && c < 1 ? c * 100 : c)) : null,
+            patterns, recommendations, notes: text(parsed.notes, 2000),
+            provenance, source: 'ai-assisted', reviewStatus: 'unreviewed'
+        };
+    }
+    // One pattern as text: the clinical progress report printed the objects as raw JSON.
+    // Counts over every entry, for a prompt that carries only a sample (24 of 3,000).
+    function blAbcTallies(entries, targets, limit) {
+        const runtime = getBehaviorLensWorkspaceRuntime();
+        const list = Array.isArray(entries) ? entries : [];
+        const top = limit || 8;
+        const tally = read => {
+            const counts = new Map();
+            list.forEach(e => { const value = String(read(e) || '').trim() || 'not recorded'; counts.set(value, (counts.get(value) || 0) + 1); });
+            return Array.from(counts).sort((a, b) => b[1] - a[1]);
+        };
+        const line = (label, rows) => label + ': ' + rows.slice(0, top).map(([value, n]) => value.slice(0, 80) + ' ' + n + ' (' + Math.round(n / Math.max(1, list.length) * 100) + '%)').join('; ')
+            + (rows.length > top ? '; ' + (rows.length - top) + ' other values' : '');
+        return [
+            line('Behaviors', tally(e => runtime.resolveCanonicalBehavior(e, targets || []).label)),
+            line('Antecedents', tally(e => e.antecedent)),
+            line('Consequences', tally(e => e.consequence)),
+            line('Settings', tally(e => e.setting))
+        ];
+    }
+    function blAnalyzedCount(analysis, fallback) {
+        const total = analysis && analysis.provenance && Number(analysis.provenance.totalEntries);
+        return Number.isFinite(total) ? total : fallback;
+    }
+    function blPatternText(p) {
+        if (typeof p === 'string') return p;
+        if (!p || typeof p !== 'object') return '';
+        return [p.pattern, p.frequency && '(' + p.frequency + ')', p.evidence && 'Evidence: ' + p.evidence].filter(Boolean).join(' ');
+    }
+    // The sample an analysis read, in words (the code name was shown and sent as is, and it
+    // said "stratified across the date range": the picks are evenly spaced through the entries).
+    function blSampleText(code) {
+        if (code === 'complete') return 'every entry';
+        if (code === 'stratified-across-date-range') return 'entries spread evenly through the records in time order';
+        return String(code || 'an unrecorded selection');
+    }
+    function blAnalysisBasisText(p) {
+        if (!p || typeof p !== 'object') return '';
+        const total = Number(p.totalEntries), sampled = Number(p.sampleCount);
+        const basis = Number.isFinite(total) && Number.isFinite(sampled)
+            ? (sampled >= total ? 'Based on all ' + total + ' entries' : 'Based on ' + sampled + ' of ' + total + ' entries, ' + blSampleText(p.sampleStrategy))
+            : 'Based on the entries recorded when it ran';
+        const range = p.dateFrom && p.dateTo ? ', recorded ' + blLocalDateKey(p.dateFrom) + ' to ' + blLocalDateKey(p.dateTo) : '';
+        const ran = p.generatedAt && Number.isFinite(Date.parse(p.generatedAt)) ? '. Run ' + new Date(p.generatedAt).toLocaleString() : '';
+        return basis + range + ran + '.';
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensAnalysisReply = Object.freeze({ normalizeAiAnalysisReply, blCanonicalFunction, blPatternText, blAnalysisBasisText });
     const aiAnalysisText = (analysis, maxLength) => {
         if (analysis == null) return '';
         let text;
@@ -552,6 +735,97 @@
     };
     // One CSV cell: always quoted, quotes doubled, and a leading = + - @ (or tab/CR)
     // neutralised so a spreadsheet cannot run a note as a formula (OWASP CSV injection).
+    // Copying. navigator.clipboard is often blocked where AlloFlow runs (a sandboxed
+    // frame), and 17 buttons said "Copied!" without waiting to find out; 13 more showed
+    // nothing when it failed. This tries the API, then the older execCommand path. The
+    // promise resolves only when the text was copied; otherwise it says so and stays
+    // pending, so a success message chained on it never shows.
+    function blTryCopy(text) {
+        const viaTextarea = () => {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = String(text == null ? '' : text);
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed'; ta.style.opacity = '0'; ta.style.top = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                const ok = typeof document.execCommand === 'function' && document.execCommand('copy');
+                ta.remove();
+                return !!ok;
+            } catch (e) { return false; }
+        };
+        try {
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                return Promise.resolve(navigator.clipboard.writeText(String(text == null ? '' : text))).then(() => true, () => viaTextarea());
+            }
+        } catch (e) { /* fall through */ }
+        return Promise.resolve(viaTextarea());
+    }
+    function blWriteClipboard(text, addToast) {
+        return new Promise(resolve => {
+            blTryCopy(text).then(ok => {
+                if (ok) resolve();
+                else if (addToast) addToast(tt('behavior_lens.toast.copy_failed', 'Could not copy here. Select the text and press Ctrl+C (Cmd+C on a Mac).'), 'warning');
+            });
+        });
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensClipboard = Object.freeze({ blTryCopy, blWriteClipboard });
+    // Printing a tool. The panel is a fixed, scrolling overlay, so window.print() printed
+    // the visible part of it over the app behind it, and a textarea printed only the
+    // lines in its box. For the duration of the print this hides everything outside the
+    // tool's panel, un-clips the panel's ancestors, and prints each field's full text.
+    const BL_PRINT_CSS = '[data-bl-print-copy] { display: none; } ' +
+        '@media print { [data-bl-print-hide], [data-bl-print-field] { display: none !important; } ' +
+        '[data-bl-print-path] { position: static !important; display: block !important; overflow: visible !important; height: auto !important; max-height: none !important; min-height: 0 !important; transform: none !important; } ' +
+        '[data-bl-print-root] { overflow: visible !important; height: auto !important; max-height: none !important; } ' +
+        '[data-bl-print-copy] { display: block !important; white-space: pre-wrap !important; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 6px; min-height: 1.2em; } }';
+    let blPrintCleanup = null;
+    function blPreparePrint(root) {
+        if (blPrintCleanup) blPrintCleanup();
+        if (!root || !root.parentElement) return () => {};
+        const marked = [], inserted = [];
+        const mark = (el, attr) => { el.setAttribute(attr, ''); marked.push([el, attr]); };
+        mark(root, 'data-bl-print-root');
+        for (let node = root; node && node !== document.body && node.parentElement; node = node.parentElement) {
+            if (node !== root) mark(node, 'data-bl-print-path');
+            Array.from(node.parentElement.children).forEach(sib => {
+                if (sib !== node && !/^(SCRIPT|STYLE|LINK)$/.test(sib.tagName)) mark(sib, 'data-bl-print-hide');
+            });
+        }
+        root.querySelectorAll('textarea, select, input:not([type]), input[type="text"], input[type="date"], input[type="time"], input[type="number"], input[type="datetime-local"]').forEach(field => {
+            if (field.classList.contains('print:hidden') || field.closest('.print\\:hidden')) return;
+            const text = field.tagName === 'SELECT' ? (field.selectedIndex >= 0 && field.options[field.selectedIndex] ? field.options[field.selectedIndex].text : '') : String(field.value || '');
+            const copy = document.createElement('div');
+            copy.setAttribute('data-bl-print-copy', '');
+            copy.textContent = text;
+            field.parentNode.insertBefore(copy, field.nextSibling);
+            inserted.push(copy);
+            mark(field, 'data-bl-print-field');
+        });
+        const style = document.createElement('style');
+        style.setAttribute('data-bl-print-style', '');
+        style.textContent = BL_PRINT_CSS;
+        document.head.appendChild(style);
+        const cleanup = () => {
+            if (blPrintCleanup !== cleanup) return;
+            blPrintCleanup = null;
+            marked.forEach(([el, attr]) => el.removeAttribute(attr));
+            inserted.forEach(el => el.remove());
+            style.remove();
+        };
+        blPrintCleanup = cleanup;
+        return cleanup;
+    }
+    function blPrintPanel(eventOrElement) {
+        const from = eventOrElement && (eventOrElement.currentTarget || eventOrElement.target || eventOrElement);
+        const root = (from && typeof from.closest === 'function' && from.closest('[data-bl-panel-content]')) || document.querySelector('[data-bl-panel-content]');
+        const cleanup = blPreparePrint(root);
+        window.addEventListener('afterprint', cleanup, { once: true });
+        window.print();
+    }
+    window.AlloModules.BehaviorLensPrint = Object.freeze({ blPreparePrint, blPrintPanel, BL_PRINT_CSS });
+
     const csvCell = (value) => {
         let s = value == null ? '' : String(value);
         if (typeof value !== 'number' && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
@@ -585,53 +859,52 @@
         // Newest first BY TIME: the stored array is newest first for the form but
         // oldest first after an import, which inverted the intensity alerts and
         // dated the "no new entries" alert from the oldest entry.
-        const ordered = abcEntriesNewestFirst(abcEntries);
-        const entryMs = e => new Date(e.occurredAt || e.timestamp).getTime();
-        if (abcEntries.length >= 3) {
-            // Intensity trend: 3+ consecutive entries with increasing intensity
-            const recent = ordered.slice(0, 5);
+        // Only dated entries count in the time maths: a saved entry with no date (null) read as
+        // 1 January 1970, so the average rate was near zero and any 3 recent entries were a "spike".
+        const entryMs = e => abcEntryTime(e);
+        const ordered = abcEntriesNewestFirst(abcEntries).filter(e => !isNaN(entryMs(e)));
+        const newestId = ordered.length ? String(ordered[0].id || entryMs(ordered[0])) : '';
+        if (ordered.length >= 4) {
+            // Intensity trend: rising (or falling) at each of the last 3 steps. It counted any 3 of
+            // the last 4 steps, so a dip in between still read as a steady rise.
+            const recent = ordered.slice(0, 4);
             const hasRatings = recent.every(entry => getBehaviorLensWorkspaceRuntime().normalizeIntensity(entry.intensity) !== null);
-            let increasing = 0;
-            for (let i = 0; i < recent.length - 1; i++) {
-                if (hasRatings && (recent[i].intensity || 0) > (recent[i + 1].intensity || 0)) increasing++;
+            const steps = hasRatings ? recent.slice(0, -1).map((entry, i) => Number(entry.intensity) - Number(recent[i + 1].intensity)) : [];
+            if (steps.length === 3 && steps.every(step => step > 0)) {
+                alerts.push({ id: 'intensity_up', dismissKey: 'intensity_up|' + newestId, type: 'warning', icon: '⚠️', msg: 'Behavior intensity rose in each of the last 4 entries. Review escalation patterns.' });
             }
-            if (increasing >= 3) {
-                alerts.push({ id: 'intensity_up', type: 'warning', icon: '⚠️', msg: `Behavior intensity has increased across ${increasing} recent entries. Review escalation patterns.` });
-            }
-            // Positive trend: decreasing intensity
-            let decreasing = 0;
-            for (let i = 0; i < recent.length - 1; i++) {
-                if (hasRatings && (recent[i].intensity || 0) < (recent[i + 1].intensity || 0)) decreasing++;
-            }
-            if (decreasing >= 3) {
-                alerts.push({ id: 'intensity_down', type: 'positive', icon: '🎉', msg: `Great news! Behavior intensity has decreased across ${decreasing} recent entries.` });
+            if (steps.length === 3 && steps.every(step => step < 0)) {
+                alerts.push({ id: 'intensity_down', dismissKey: 'intensity_down|' + newestId, type: 'positive', icon: '🎉', msg: 'Great news! Behavior intensity fell in each of the last 4 entries.' });
             }
         }
         // Frequency spike: more entries in last 3 days than the per-3-day average
-        if (abcEntries.length >= 5) {
+        if (ordered.length >= 5) {
             const threeDays = 3 * 24 * 60 * 60 * 1000;
-            const recentCount = abcEntries.filter(e => (now - entryMs(e)) < threeDays).length;
+            const recentCount = ordered.filter(e => (now - entryMs(e)) < threeDays).length;
             const totalDays = Math.max(1, (now - entryMs(ordered[ordered.length - 1])) / (24 * 60 * 60 * 1000));
-            const avgPer3Days = (abcEntries.length / totalDays) * 3;
+            const avgPer3Days = (ordered.length / totalDays) * 3;
             if (recentCount > avgPer3Days * 1.5 && recentCount >= 3) {
-                alerts.push({ id: 'freq_spike', type: 'warning', icon: '📈', msg: `Frequency spike: ${recentCount} entries in the last 3 days (avg is ${Math.round(avgPer3Days)}).` });
+                alerts.push({ id: 'freq_spike', dismissKey: 'freq_spike|' + blLocalDateKey(new Date(now)), type: 'warning', icon: '📈', msg: `Frequency spike: ${recentCount} entries in the last 3 days (avg is ${Math.round(avgPer3Days)}).` });
             }
         }
         // No data warning
-        if (abcEntries.length > 0) {
+        if (ordered.length > 0) {
             const latest = new Date(entryMs(ordered[0]));
             const daysSince = (now - latest.getTime()) / (24 * 60 * 60 * 1000);
             if (daysSince >= 7) {
-                alerts.push({ id: 'stale', type: 'info', icon: '📭', msg: `No new entries in ${Math.round(daysSince)} days. Consider collecting more data.` });
+                alerts.push({ id: 'stale', dismissKey: 'stale|' + newestId, type: 'info', icon: '📭', msg: `No new entries in ${Math.round(daysSince)} days. Consider collecting more data.` });
             }
         }
         // Role-aware consultation alerts for teachers and parents
-        const highIntensityCount = abcEntries.filter(e => (e.intensity || 0) >= 4).length;
+        // In the last 30 days: it counted every high-intensity entry ever, so a year of data kept it on
+        // for good ("1002 high-intensity incidents recorded"). A new one after a dismissal brings it back.
+        const recentSevere = ordered.filter(e => entryMs(e) >= now - 30 * 86400000 && (Number(e.intensity) || 0) >= 4);
+        const highIntensityCount = recentSevere.length;
         if (highIntensityCount >= 3 && userRole !== 'bcba') {
-            alerts.push({ id: 'consult_bcba', type: 'warning', icon: '⚠️', msg: `${highIntensityCount} high-intensity incidents recorded. Consider consulting your BCBA or behavioral specialist. Open the BCBA Consultation tool to prepare a handoff packet.` });
+            alerts.push({ id: 'consult_bcba', dismissKey: 'consult_bcba|' + String(recentSevere[0].id || entryMs(recentSevere[0])), type: 'warning', icon: '⚠️', msg: `${highIntensityCount} high-intensity incidents in the last 30 days. Consider consulting your BCBA or behavioral specialist. Open the BCBA Consultation tool to prepare a handoff packet.` });
         }
         if (abcEntries.length >= 10 && !aiAnalysis && userRole !== 'bcba') {
-            alerts.push({ id: 'run_analysis', type: 'info', icon: '🧠', msg: 'You have enough data for AI analysis. Run Pattern Analysis to identify behavioral functions before your next team meeting.' });
+            alerts.push({ id: 'run_analysis', dismissKey: 'run_analysis|' + Math.floor(abcEntries.length / 10), type: 'info', icon: '🧠', msg: 'You have enough data for AI analysis. Run Pattern Analysis to identify behavioral functions before your next team meeting.' });
         }
         return alerts;
     }
@@ -677,13 +950,32 @@
     // `date` field, so this column was blank for every row), rows run oldest first,
     // and every cell goes through csvCell.
     const buildAbcCsv = (entries) => 'Date,Time,Antecedent,Behavior,Consequence,Setting,Intensity,Phase,Function\n'
-        + abcEntriesNewestFirst(entries).reverse().map(e => [abcEntryDay(e), fmtTime(e.occurredAt || e.timestamp), e.antecedent, e.behavior, e.consequence,
+        + abcEntriesNewestFirst(entries).reverse().map(e => [abcEntryDay(e), abcEntryClock(e), e.antecedent, e.behavior, e.consequence,
             e.setting, e.intensity == null ? '' : e.intensity, e.phase, abcEntryFunction(e)].map(csvCell).join(',') + '\n').join('');
-    const buildSessionCsv = (sessions) => 'Date,Behavior,Count,Rate,Phase,Duration\n'
-        + (Array.isArray(sessions) ? sessions : []).map(s => [s.date, s.behavior, s.count ?? '', s.rate ?? '', s.phase, s.duration].map(csvCell).join(',') + '\n').join('');
+    // Session history as CSV. It read `count` and `rate` off every record, so a tracker
+    // session (per-target data) exported an empty row, a duration record exported its
+    // seconds as "Count" and 0 as "Rate", and a latency record its trial count as
+    // "Count" and seconds as "Rate". Now one row per measurement with its type and unit,
+    // on the recorder's day, newest first (the rules the AlloSheet export uses).
+    const buildSessionCsv = (sessions) => {
+        const ordered = observationSessionsNewestFirst(sessions);
+        const header = ['Date', 'Behavior', 'Measure', 'Value', 'Unit', 'Count', 'Rate per minute', 'Total duration (s)', 'Percent', 'Phase', 'Session length (s)', 'Source'];
+        const rows = blAlloSheetSessionMeasurementRows(ordered, false, '', false).map(r => {
+            const v = r.values || {};
+            // A bridged duration record keeps its seconds in `count` too; do not print them as a count.
+            const count = v.measurement_type === 'duration' && v.count === v.measurement_value ? null : v.count;
+            return [v.date, v.behavior, v.measurement_type, v.measurement_value, v.measurement_unit, count, v.rate_per_minute, v.total_duration_seconds, v.percentage, v.phase, v.session_duration_seconds, v.source].map(csvCell).join(',');
+        });
+        return header.join(',') + '\n' + rows.map(r => r + '\n').join('');
+    };
+    const buildObservationCsv = (sessions) => {
+        const ordered = observationSessionsNewestFirst(sessions);
+        return ['Date', 'Time', 'Method', 'Result', 'Session length (s)', 'Notes'].join(',') + '\n'
+            + ordered.map(s => [s && s.timestamp ? blLocalDateKey(s.timestamp) : '', fmtTime(s && s.timestamp), s && s.method, observationResult(s), s && s.duration, s && s.notes].map(csvCell).join(',') + '\n').join('');
+    };
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.BehaviorLensEntryReaders = Object.freeze({
-        abcEntryDay, abcEntryFunction, abcEntriesNewestFirst, ratedIntensityMean, aiAnalysisText, csvCell, blLocalDateKey, buildAbcCsv, buildSessionCsv, mergeAiAbcEdit
+        abcEntryDay, abcEntryFunction, abcEntriesNewestFirst, ratedIntensityMean, aiAnalysisText, csvCell, blLocalDateKey, buildAbcCsv, buildSessionCsv, buildObservationCsv, mergeAiAbcEdit
     });
 
     // ─── Glossary Tooltip System ─────────────────────────────────────────
@@ -900,8 +1192,16 @@
         const selectedTarget = (targetBehaviors || []).find(item => item.id === behaviorId);
         const dialogRef = useRef(null);
         const openerRef = useRef(null);
-        const onCloseRef = useRef(onClose);
-        useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+        // Editing an existing entry keeps no draft, and Escape, the close button or a click outside
+        // threw the changes away without a word.
+        const editChanged = () => !!entry && ([['antecedent', antecedent], ['behavior', behavior], ['consequence', consequence], ['notes', notes], ['setting', setting], ['observer', observer]].some(([key, value]) => String(entry[key] || '') !== String(value || ''))
+            || String(entry.intensity ?? '') !== String(intensity ?? '') || String(entry.duration ?? '') !== String(duration ?? '') || toOccurrenceInput(initialOccurrenceRef.current) !== occurredAtInput);
+        const requestClose = async () => {
+            if (editChanged() && !await askBehaviorLensConfirmation('Discard your changes to this entry?', { title: 'Discard entry changes', confirmText: 'Discard changes' })) return;
+            onClose();
+        };
+        const onCloseRef = useRef(requestClose);
+        onCloseRef.current = requestClose;
         useEffect(() => {
             const dialog = dialogRef.current;
             if (!dialog) return undefined;
@@ -942,6 +1242,10 @@
                 document.removeEventListener('keydown', handleModalKeyDown, true);
                 const opener = openerRef.current;
                 if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
+                else {
+                    const fallback = (recordingPanel && recordingPanel.isConnected ? recordingPanel : document).querySelector('[data-bl-add-observation]');
+                    if (fallback && typeof fallback.focus === 'function') fallback.focus();
+                }
             };
         }, []);
 
@@ -1001,23 +1305,30 @@ Return ONLY valid JSON:
 {
   "antecedent": "what happened before (trigger/context)",
   "behavior": "what the student did",
-  "consequence": "what happened after",
-  "intensity": 1-5 number,
+  "consequence": "what happened after, or empty string if not described",
+  "intensity": "a 1-5 rating only if the teacher states one, otherwise null",
+  "time": "clock time if the teacher states one (e.g. 9:15 am), otherwise empty string",
   "setting": "location if mentioned, or empty string",
   "notes": "any extra context"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                if (parsed.antecedent) setAntecedent(parsed.antecedent);
-                if (parsed.behavior) { setBehavior(parsed.behavior); setBehaviorId(''); }
+                // Fill only what is still empty: it overwrote fields the teacher had typed and
+                // pre-filled an intensity nobody gave (the prompt demanded a 1-5 number).
+                if (parsed.antecedent && !antecedent) setAntecedent(parsed.antecedent);
+                if (parsed.behavior && !behavior) { setBehavior(parsed.behavior); setBehaviorId(''); }
                 setEntrySource('ai-quick-fill');
-                if (parsed.consequence) setConsequence(parsed.consequence);
-                if (Object.prototype.hasOwnProperty.call(parsed, 'intensity')) setIntensity(getBehaviorLensWorkspaceRuntime().normalizeIntensity(parsed.intensity));
-                if (parsed.setting) setSetting(parsed.setting);
-                if (parsed.notes) setNotes(parsed.notes);
+                if (parsed.consequence && !consequence) setConsequence(parsed.consequence);
+                const statedIntensity = getBehaviorLensWorkspaceRuntime().normalizeIntensity(parsed.intensity);
+                if (statedIntensity != null && (intensity === '' || intensity == null)) setIntensity(statedIntensity);
+                if (parsed.setting && !setting) setSetting(parsed.setting);
+                if (parsed.notes && !notes) setNotes(parsed.notes);
+                const statedClock = parseNoteClock(parsed.time);
+                if (statedClock && /^\d{4}-\d{2}-\d{2}T/.test(occurredAtInput || '')) setOccurredAtInput(occurredAtInput.slice(0, 11) + statedClock);
                 setQuickFillText('');
             } catch (err) {
                 warnLog('Quick-fill failed:', err);
@@ -1063,7 +1374,8 @@ Return ONLY valid JSON:
         const renderCategoryPicker = (label, items, value, setValue, customVal, setCustomVal, icon) => {
             return h('fieldset', { className: 'mb-4' },
                 h('legend', { className: 'block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wide' },
-                    icon, ' ', t(`behavior_lens.abc.${label}`) || ({ antecedent: 'Before: what happened just before?', behavior: 'Behavior: what did you see or hear?', consequence: 'After: what happened next?' })[label]
+                    icon, ' ', t(`behavior_lens.abc.${label}`) || ({ antecedent: 'Before: what happened just before?', behavior: 'Behavior: what did you see or hear?', consequence: 'After: what happened next?' })[label],
+                    h('span', { className: 'normal-case font-normal' }, ' ', tt('behavior_lens.abc.required', '(required)'))
                 ),
                 h('details', { className: 'mt-1' },
                     h('summary', { className: 'min-h-11 py-2 text-sm text-indigo-800 cursor-pointer' }, 'Choose a common example'),
@@ -1086,6 +1398,7 @@ Return ONLY valid JSON:
                     onChange: (e) => value === 'Other' ? setCustomVal(e.target.value) : setValue(e.target.value),
                     placeholder: tt('behavior_lens.abc.other_placeholder', 'Describe...'),
                     'aria-label': label.charAt(0).toUpperCase() + label.slice(1) + ' narrative',
+                    'aria-required': 'true',
                     className: 'mt-2 w-full text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400'
                 })
             );
@@ -1094,7 +1407,7 @@ Return ONLY valid JSON:
         return h('div', {
             role: 'presentation',
             className: 'fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200',
-            onClick: (e) => { if (e.target === e.currentTarget) onClose(); }
+            onClick: (e) => { if (e.target === e.currentTarget) requestClose(); }
         },
             h('div', {
                 ref: dialogRef,
@@ -1112,7 +1425,7 @@ Return ONLY valid JSON:
                     h('button', { "aria-label": "Close ABC entry dialog",
                         type: 'button',
                         'data-bl-abc-modal-initial': 'true',
-                        onClick: onClose,
+                        onClick: requestClose,
                         className: 'p-1.5 rounded-full hover:bg-slate-100 text-slate-600 hover:text-slate-600 transition-colors'
                     }, h(X, { size: 18 }))
                 ),
@@ -1208,9 +1521,10 @@ Return ONLY valid JSON:
                                 title: 'Append this student’s current seat position (from the class Seating Chart) to the setting.',
                                 className: 'px-2.5 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-lg text-[11px] font-bold hover:bg-sky-100 disabled:opacity-40 transition-all'
                             }, seatLookupBusy ? '⏳' : ('🪑 ' + tt('behavior_lens.abc.use_seating_context', 'Use seating chart position'))),
-                            h('label', { className: 'flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer' },
+                            h('label', { className: 'flex items-center gap-2 min-h-11 text-xs text-slate-600 cursor-pointer' },
                                 h('input', {
                                     type: 'checkbox',
+                                    className: 'w-5 h-5',
                                     checked: includeNeighbors,
                                     onChange: (e) => setIncludeNeighbors(e.target.checked),
                                     'aria-label': 'Include neighboring students’ names in the setting description'
@@ -1285,7 +1599,10 @@ Return ONLY valid JSON:
                         onClick: onClose,
                         className: 'px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors'
                     }, !entry && onDraftChange ? 'Keep draft and close' : tt('common.cancel', 'Cancel')),
+                    (!antecedent || !behavior || !consequence) && h('p', { id: 'bl-abc-missing', 'data-bl-abc-missing': true, className: 'w-full order-first text-xs text-slate-700 text-end' },
+                        tt('behavior_lens.abc.missing', 'To save, fill in: {fields}', { fields: [!antecedent && 'Before', !behavior && 'Behavior', !consequence && 'After'].filter(Boolean).join(', ') })),
                     h('button', { type: 'button', onClick: handleSave,
+                        'aria-describedby': !antecedent || !behavior || !consequence ? 'bl-abc-missing' : undefined,
                         disabled: !antecedent || !behavior || !consequence,
                         className: `px-5 py-2 text-sm font-bold rounded-lg transition-all ${antecedent && behavior && consequence
                             ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'
@@ -1389,6 +1706,32 @@ Return ONLY valid JSON:
         const [selectedIds, setSelectedIds] = useState(new Set());
         const [expandedId, setExpandedId] = useState(null);
         const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+        const [deletedShown, setDeletedShown] = useState(25);
+        // Delete, "Yes, Delete", Restore, "Clear all filters" and "Clear selection" each removed the
+        // control that was pressed, and focus fell to the page. The next place is set here and
+        // taken after the render.
+        const abcPanelRef = useRef(null);
+        const pendingFocusRef = useRef(null);
+        useEffect(() => {
+            const want = pendingFocusRef.current;
+            const root = abcPanelRef.current;
+            if (!want || !root) return;
+            pendingFocusRef.current = null;
+            const pick = selector => Array.from(root.querySelectorAll(selector));
+            const at = (list, index) => list[Math.min(index, list.length - 1)] || null;
+            const fallback = () => root.querySelector('#bl-abc-recently-deleted-toggle') || root.querySelector('[aria-label="Search ABC entries"]') || root.querySelector('h3');
+            let target = null;
+            if (want.kind === 'confirm') target = root.querySelector('[data-bl-bulk-yes]');
+            else if (want.kind === 'bulk') target = root.querySelector('[data-bl-bulk-delete]');
+            else if (want.kind === 'row') target = at(pick('tbody input[type="checkbox"]'), want.index) || fallback();
+            else if (want.kind === 'restore') target = at(pick('[data-bl-restore]'), want.index) || fallback();
+            else if (want.kind === 'search') target = root.querySelector('[aria-label="Search ABC entries"]');
+            else if (want.kind === 'selectAll') target = root.querySelector('[aria-label="Select all entries on this page"]') || fallback();
+            else target = fallback();
+            if (target) { if (target.tagName === 'H3' && !target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1'); target.focus(); }
+        });
+        // Each row's controls were named alike ("Delete" on every row): they say which entry.
+        const rowLabel = entry => [entry.behavior || 'ABC entry', fmtDate(entry.timestamp), abcEntryClock(entry, '')].filter(Boolean).join(', ');
         const [restorativeId, setRestorativeId] = useState(null);
         const [restorativeText, setRestorativeText] = useState('');
         const [restorativeLoading, setRestorativeLoading] = useState(false);
@@ -1415,7 +1758,7 @@ Incident details:
 - Behavior: ${entry.behavior}
 - Consequence (what happened after): ${entry.consequence}
 - Setting: ${entry.setting || 'classroom'}
-- Intensity: ${entry.intensity}/5
+- Intensity: ${intensityForPrompt(entry.intensity)}
 
 Generate questions that:
 1. Help the student reflect on what happened (referencing the specific antecedent)
@@ -1425,6 +1768,7 @@ Generate questions that:
 
 Make questions warm, specific to THIS incident (not generic), and age-appropriate. Number each question.`;
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setRestorativeText(result);
             } catch (err) {
                 warnLog('Restorative questions failed:', err);
@@ -1453,6 +1797,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 { "antecedent": "...", "behavior": "...", "consequence": "...", "intensity": 1-5 or null if not rated, "setting": "...", "notes": "..." }
 Leave intensity exactly as it is unless the instruction changes it. Never invent a rating.`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -1522,9 +1867,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         ? new Date(b.timestamp) - new Date(a.timestamp)
                         : new Date(a.timestamp) - new Date(b.timestamp);
                 }
-                const va = a[sortField] || '';
-                const vb = b[sortField] || '';
-                return sortDir === 'desc' ? vb.localeCompare(va) : va.localeCompare(vb);
+                return abcSortCompare(a, b, sortField, sortDir);
             });
         }, [entries, sortField, sortDir, filterBehavior, searchText, dateRange]);
 
@@ -1579,6 +1922,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         const handleDelete = async (id) => {
             const msg = (t && t('behavior_lens.confirm.delete_entry')) || 'Move this ABC entry to Recently deleted?';
             if (!await askBehaviorLensConfirmation(msg, { title: 'Delete ABC entry', confirmText: 'Move to Recently deleted' })) return;
+            pendingFocusRef.current = { kind: 'row', index: Math.max(0, visibleEntries.findIndex(entry => entry.id === id)) };
             const runtime = getBehaviorLensWorkspaceRuntime();
             const audit = runtime.createAuditEvent('abc-entry-deleted', { entityType: 'abc-entry', entityId: id, actor: userRole, summary: 'Moved an ABC observation to Recently deleted.' });
             const result = runtime.softDeleteAbcEntries(entries, deletedEntries, [id], { deletedBy: userRole, auditId: audit.id });
@@ -1594,15 +1938,21 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             if (selectedIds.size === 0) return;
             const runtime = getBehaviorLensWorkspaceRuntime();
             const ids = Array.from(selectedIds);
-            const audit = runtime.createAuditEvent('abc-entries-bulk-deleted', { entityType: 'abc-entry', actor: userRole, summary: ids.length + ' ABC observations moved to Recently deleted.', metadata: { ids } });
+            // The id list was dropped from the audit event once it passed 16 KB (about 420 ids).
+            const audit = runtime.createAuditEvent('abc-entries-bulk-deleted', { entityType: 'abc-entry', actor: userRole, summary: ids.length + ' ABC observations moved to Recently deleted.', metadata: { count: ids.length, ids: ids.slice(0, 200) } });
             const result = runtime.softDeleteAbcEntries(entries, deletedEntries, ids, { deletedBy: userRole, auditId: audit.id });
             setEntries(result.entries);
             setDeletedEntries(result.deletedEntries);
             if (appendAuditEvent) appendAuditEvent(audit);
             if (recordWorkflowDiagnostic) recordWorkflowDiagnostic('record-bulk-delete', { toolId: 'abc', outcome: 'recoverable' });
-            if (addToast) addToast(ids.length + ' entries moved to Recently deleted', 'info');
+            // It said "400 entries moved to Recently deleted" when only 250 were kept.
+            const lost = (deletedEntries || []).length + result.removed.length - result.deletedEntries.length;
+            if (addToast) addToast(lost > 0
+                ? result.removed.length + ' entries deleted. Recently deleted keeps ' + runtime.MAX_DELETED_ABC_ENTRIES + ', so ' + lost + ' of the oldest deleted entries can no longer be restored.'
+                : result.removed.length + ' entries moved to Recently deleted', lost > 0 ? 'warning' : 'info');
             setSelectedIds(new Set());
             setConfirmBulkDelete(false);
+            pendingFocusRef.current = { kind: 'deleted' };
         };
 
         const toggleSelect = (id) => {
@@ -1631,6 +1981,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             const runtime = getBehaviorLensWorkspaceRuntime();
             const result = runtime.restoreDeletedAbcEntry(entries, deletedEntries, id);
             if (!result.restored) return;
+            pendingFocusRef.current = { kind: 'restore', index: Math.max(0, (deletedEntries || []).findIndex(item => item.entry && item.entry.id === id)) };
             setEntries(result.entries);
             setDeletedEntries(result.deletedEntries);
             if (appendAuditEvent) appendAuditEvent(runtime.createAuditEvent('abc-entry-restored', { entityType: 'abc-entry', entityId: id, actor: userRole, summary: 'Restored an ABC observation from Recently deleted.' }));
@@ -1645,7 +1996,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             { key: '30', label: '30d' }
         ];
 
-        return h('div', { className: 'space-y-4' },
+        return h('div', { ref: abcPanelRef, className: 'space-y-4' },
             // Header with add button
             h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
@@ -1660,8 +2011,8 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                 ),
                 h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
                     h('button', { type: 'button', 'aria-expanded': String(showBehaviorManager), onClick: () => setShowBehaviorManager(value => !value), className: 'min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 text-xs font-bold text-indigo-800' }, 'Definitions (' + (targetBehaviors || []).length + ')'),
-                    (deletedEntries || []).length > 0 && h('button', { type: 'button', 'aria-expanded': String(showDeletedEntries), onClick: () => setShowDeletedEntries(value => !value), className: 'min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 text-xs font-bold text-amber-900' }, 'Recently deleted (' + deletedEntries.length + ')'),
-                    entries.length >= 3 && h('button', { "aria-label": "On Analyze",
+                    (deletedEntries || []).length > 0 && h('button', { type: 'button', id: 'bl-abc-recently-deleted-toggle', 'aria-expanded': String(showDeletedEntries), onClick: () => setShowDeletedEntries(value => !value), className: 'min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 text-xs font-bold text-amber-900' }, 'Recently deleted (' + deletedEntries.length + ')'),
+                    entries.length >= 3 && h('button', {
                         onClick: onAnalyze,
                         disabled: analyzing, 'aria-busy': analyzing,
                         className: `text-xs font-bold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1 ${analyzing ? 'bg-slate-100 text-slate-600 cursor-wait' : 'bg-purple-50 text-purple-700 border-purple-600 hover:bg-purple-100'
@@ -1680,12 +2031,15 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             showDeletedEntries && (deletedEntries || []).length > 0 && h('section', { className: 'rounded-xl border-2 border-amber-200 bg-amber-50 p-4', 'aria-labelledby': 'behavior-lens-recently-deleted-heading' },
                 h('h4', { id: 'behavior-lens-recently-deleted-heading', className: 'text-sm font-black text-amber-950' }, 'Recently deleted ABC entries'),
                 h('p', { className: 'mt-1 text-xs text-amber-900' }, 'Deleted observations remain recoverable in this workspace until this bounded list reaches 250 entries.'),
-                h('div', { className: 'mt-3 space-y-2' }, deletedEntries.slice(0, 25).map(item => h('div', { key: item.entry.id, className: 'flex flex-wrap items-center gap-3 rounded-lg border border-amber-200 bg-white p-3' },
+                // It listed 25, so entries 26 to 250 could not be restored.
+                deletedEntries.length > deletedShown && h('button', { type: 'button', onClick: () => setDeletedShown(n => n + 25), className: 'mt-2 min-h-11 rounded-lg border border-amber-600 bg-white px-3 py-1 text-xs font-bold text-amber-950 hover:bg-amber-100' },
+                    'Showing ' + deletedShown + ' of ' + deletedEntries.length + '. Show ' + Math.min(25, deletedEntries.length - deletedShown) + ' more'),
+                h('div', { className: 'mt-3 space-y-2' }, deletedEntries.slice(0, deletedShown).map(item => h('div', { key: item.entry.id, className: 'flex flex-wrap items-center gap-3 rounded-lg border border-amber-200 bg-white p-3' },
                     h('div', { className: 'min-w-0 flex-1' },
                         h('p', { className: 'truncate text-xs font-bold text-slate-900' }, item.entry.behavior || 'Unlabeled observation'),
                         h('p', { className: 'text-[11px] text-slate-600' }, 'Deleted ' + (item.deletedAt ? fmtDate(item.deletedAt) : 'recently'))
                     ),
-                    h('button', { type: 'button', onClick: () => restoreDeletedEntry(item.entry.id), className: 'min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800', 'aria-label': 'Restore ' + (item.entry.behavior || 'ABC entry') }, 'Restore')
+                    h('button', { type: 'button', 'data-bl-restore': true, onClick: () => restoreDeletedEntry(item.entry.id), className: 'min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800', 'aria-label': 'Restore ' + rowLabel(item.entry) }, 'Restore')
                 )))
             ),
             // Search + Date range + Behavior filter bar
@@ -1753,19 +2107,21 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             selectedIds.size > 0 && h('div', { className: 'flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5' },
                 h('span', { className: 'text-xs font-bold text-red-700' }, `${selectedIds.size} selected`),
                 !confirmBulkDelete
-                    ? h('button', { onClick: () => setConfirmBulkDelete(true),
+                    ? h('button', { 'data-bl-bulk-delete': true, onClick: () => { pendingFocusRef.current = { kind: 'confirm' }; setConfirmBulkDelete(true); },
                         className: 'text-[11px] px-3 py-1 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-all'
                     }, tt('behavior_lens.delete_selected', '🗑 Delete Selected'))
-                    : h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'text-[11px] text-red-700 font-bold' }, tt('behavior_lens.are_you_sure', 'Are you sure?')),
-                        h('button', { onClick: handleBulkDelete,
+                    : h('div', { className: 'flex items-center gap-2', role: 'group', 'aria-label': 'Confirm deleting ' + selectedIds.size + ' selected entries' },
+                        h('span', { id: 'bl-abc-bulk-confirm-text', className: 'text-[11px] text-red-700 font-bold' }, tt('behavior_lens.are_you_sure', 'Are you sure?')),
+                        selectedIds.size + (deletedEntries || []).length > getBehaviorLensWorkspaceRuntime().MAX_DELETED_ABC_ENTRIES && h('span', { className: 'text-[11px] text-red-800', 'data-bl-bulk-delete-overflow': true },
+                            (selectedIds.size + (deletedEntries || []).length - getBehaviorLensWorkspaceRuntime().MAX_DELETED_ABC_ENTRIES) + ' deleted entries will not be restorable (Recently deleted keeps ' + getBehaviorLensWorkspaceRuntime().MAX_DELETED_ABC_ENTRIES + ').'),
+                        h('button', { 'data-bl-bulk-yes': true, 'aria-describedby': 'bl-abc-bulk-confirm-text', onClick: handleBulkDelete,
                             className: 'text-[11px] px-3 py-1 bg-red-700 text-white rounded-lg font-black hover:bg-red-600 transition-all'
                         }, tt('behavior_lens.yes_delete', 'Yes, Delete')),
-                        h('button', { onClick: () => setConfirmBulkDelete(false),
+                        h('button', { onClick: () => { pendingFocusRef.current = { kind: 'bulk' }; setConfirmBulkDelete(false); },
                             className: 'text-[11px] px-3 py-1 bg-white text-slate-600 border border-slate-400 rounded-lg font-bold hover:bg-slate-50 transition-all'
                         }, tt('common.cancel', 'Cancel'))
                     ),
-                h('button', { onClick: () => { setSelectedIds(new Set()); setConfirmBulkDelete(false); },
+                h('button', { onClick: () => { pendingFocusRef.current = { kind: 'selectAll' }; setSelectedIds(new Set()); setConfirmBulkDelete(false); },
                     className: 'ms-auto text-[11px] text-red-600 hover:text-red-600 font-bold transition-colors'
                 }, tt('behavior_lens.clear_selection', 'Clear selection'))
             ),
@@ -1782,9 +2138,10 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                 )
                 : sorted.length === 0
                     ? h('div', { className: 'text-center py-10 bg-white rounded-xl border border-slate-400' },
-                        h('div', { className: 'text-2xl mb-2' }, '🔍'),
-                        h('p', { className: 'text-sm font-bold text-slate-600' }, tt('behavior_lens.no_entries_match', 'No entries match your filters')),
-                        h('button', { onClick: () => { setSearchText(''); setDateRange('all'); setFilterBehavior(''); },
+                        h('div', { className: 'text-2xl mb-2', 'aria-hidden': 'true' }, '🔍'),
+                        // The "Showing N of M" status went away at zero, so this was silent.
+                        h('p', { role: 'status', className: 'text-sm font-bold text-slate-600' }, tt('behavior_lens.no_entries_match', 'No entries match your filters')),
+                        h('button', { onClick: () => { pendingFocusRef.current = { kind: 'search' }; setSearchText(''); setDateRange('all'); setFilterBehavior(''); },
                             className: 'mt-2 text-xs text-indigo-600 font-bold hover:underline'
                         }, tt('behavior_lens.clear_all_filters', 'Clear all filters'))
                     )
@@ -1800,7 +2157,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                                                 checked: allVisibleSelected,
                                                 onChange: toggleSelectVisible,
                                                 'aria-label': 'Select all entries on this page',
-                                                className: 'w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 cursor-pointer'
+                                                className: 'w-6 h-6 rounded border-slate-300 text-indigo-600 cursor-pointer'
                                             })
                                         ),
                                         ['timestamp', 'antecedent', 'behavior', 'consequence', 'intensity'].map(col => {
@@ -1832,7 +2189,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                                         hasPhases && h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 uppercase tracking-wide' }, tt('behavior_lens.abc.phase', 'Phase')),
                                         // Notes indicator header
                                         h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 w-8' }, '📝'),
-                                        h('th', { scope: 'col', className: 'px-3 py-2.5 text-end text-xs font-bold text-slate-700 uppercase' }, h('span', { className: 'sr-only' }, 'Actions'))
+                                        h('th', { scope: 'col', className: 'sticky right-0 bg-slate-50 px-3 py-2.5 text-end text-xs font-bold text-slate-700 uppercase' }, h('span', { className: 'sr-only' }, 'Actions'))
                                     )
                                 ),
                                 h('tbody', null,
@@ -1847,13 +2204,13 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                                                         type: 'checkbox',
                                                         checked: selectedIds.has(entry.id),
                                                         onChange: () => toggleSelect(entry.id),
-                                                        'aria-label': 'Select this entry',
-                                                        className: 'w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 cursor-pointer'
+                                                        'aria-label': 'Select ' + rowLabel(entry),
+                                                        className: 'w-6 h-6 rounded border-slate-300 text-indigo-600 cursor-pointer'
                                                     })
                                                 ),
                                                 h('td', { className: 'px-3 py-2.5 whitespace-nowrap' },
                                                     h('div', { className: 'text-xs font-bold text-slate-700' }, fmtDate(entry.timestamp)),
-                                                    h('div', { className: 'text-[11px] text-slate-600' }, fmtTime(entry.timestamp))
+                                                    h('div', { className: 'text-xs text-slate-600' }, abcEntryClock(entry, 'No time recorded'))
                                                 ),
                                                 h('td', { className: 'px-3 py-2.5' },
                                                     h('span', { className: 'text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium' }, entry.antecedent)
@@ -1868,7 +2225,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                                                     h('div', {
                                                         className: 'flex items-center gap-0.5 justify-center',
                                                         role: 'img',
-                                                        'aria-label': `Intensity: ${Number(entry.intensity) || 0} out of 5`
+                                                        'aria-label': intensityForPrompt(entry.intensity) === 'not rated' ? 'Intensity not rated' : `Intensity: ${intensityForPrompt(entry.intensity).replace('/5', '')} out of 5`
                                                     },
                                                         Array.from({ length: 5 }, (_, i) =>
                                                             h('div', {
@@ -1877,7 +2234,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                                                                 className: `w-2 h-2 rounded-full ${i < entry.intensity ? 'bg-indigo-500' : 'bg-slate-200'}`
                                                             })
                                                         ),
-                                                        h('span', { className: 'sr-only' }, `${Number(entry.intensity) || 0}/5`)
+                                                        h('span', { className: 'sr-only' }, intensityForPrompt(entry.intensity))
                                                     )
                                                 ),
                                                 // Phase badge
@@ -1893,29 +2250,29 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                                                 ),
                                                 // Notes indicator
                                                 h('td', { className: 'px-2 py-2.5 text-center' },
-                                                    (entry.notes || entry.setting) && h('button', { 'aria-label': expandedId === entry.id ? 'Hide notes' : 'Show notes', 'aria-expanded': expandedId === entry.id ? 'true' : 'false',
+                                                    (entry.notes || entry.setting) && h('button', { 'aria-label': (expandedId === entry.id ? 'Hide notes for ' : 'Show notes for ') + rowLabel(entry), 'aria-expanded': expandedId === entry.id ? 'true' : 'false',
                                                         onClick: () => setExpandedId(expandedId === entry.id ? null : entry.id),
                                                         className: `text-xs transition-all ${expandedId === entry.id ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-400'}`,
                                                         title: entry.notes ? 'View notes' : 'View setting'
                                                     }, expandedId === entry.id ? '▾' : '📝')
                                                 ),
-                                                h('td', { className: 'px-3 py-2.5 text-end' },
+                                                h('td', { className: 'sticky right-0 bg-white shadow-[-6px_0_8px_-6px_rgba(15,23,42,0.25)] px-3 py-2.5 text-end' },
                                                     h('div', { className: 'flex justify-end gap-1' },
-                                                        callGemini && h('button', { "aria-label": "Restorative Questions",
+                                                        callGemini && h('button', { "aria-label": 'Restorative questions for ' + rowLabel(entry),
                                                             onClick: () => handleRestorativeQuestions(entry),
                                                             className: `p-2 rounded transition-colors ${restorativeId === entry.id ? 'bg-purple-100 text-purple-800' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400`,
                                                             title: tt('behavior_lens.restorative_questions', 'Restorative Questions')
                                                         }, restorativeLoading && restorativeId === entry.id ? '⏳' : '💬'),
-                                                        callGemini && h('button', { 'aria-label': 'Edit with AI', 'aria-expanded': nlEditId === entry.id ? 'true' : 'false',
+                                                        callGemini && h('button', { 'aria-label': 'Edit with AI: ' + rowLabel(entry), 'aria-expanded': nlEditId === entry.id ? 'true' : 'false',
                                                             onClick: () => { setNlEditId(nlEditId === entry.id ? null : entry.id); setNlEditInput(''); },
                                                             className: `p-2 rounded transition-colors ${nlEditId === entry.id ? 'bg-amber-100 text-amber-800' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400`,
                                                             title: tt('behavior_lens.ai_edit', 'AI Edit')
                                                         }, '✏️🧠'),
-                                                        h('button', { 'aria-label': 'Edit entry',
+                                                        h('button', { 'aria-label': 'Edit entry: ' + rowLabel(entry),
                                                             onClick: () => { setEditEntry(entry); setShowModal(true); },
                                                             className: 'p-2 rounded hover:bg-indigo-100 text-slate-600 hover:text-indigo-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400'
                                                         }, h(Edit2, { size: 13 })),
-                                                        h('button', { "aria-label": "Delete",
+                                                        h('button', { "aria-label": 'Delete ' + rowLabel(entry),
                                                             onClick: () => handleDelete(entry.id),
                                                             className: 'p-2 rounded hover:bg-red-100 text-slate-600 hover:text-red-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400'
                                                         }, h(Trash2, { size: 13 }))
@@ -2058,7 +2415,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             previous.forEach(({ node }) => node.setAttribute('inert', ''));
             const focusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
                 .filter(node => !node.closest('[hidden], [inert], .hidden') && node.getAttribute('aria-hidden') !== 'true' && window.getComputedStyle(node).display !== 'none');
-            const timer = window.setTimeout(() => (focusable()[0] || dialog).focus(), 0);
+            const timer = window.setTimeout(() => (dialog.querySelector('[data-bl-initial-focus]:not([disabled])') || focusable()[0] || dialog).focus({ preventScroll: true }), 0);
             const onKeyDown = event => {
                 const activeDialog = event.target.closest?.('[role="dialog"], [role="alertdialog"]');
                 if (activeDialog && activeDialog !== dialog) return;
@@ -2091,9 +2448,17 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             return value && value.version === 1 && Date.now() - value.savedAt < 7 * 86400000 && value.data && typeof value.data === 'object' ? value.data : null;
         } catch (_) { return null; }
     };
-    const useObservationRecovery = ({ kind, identity, draft, hasData, onClose, addToast }) => {
-        const latest = useRef({ draft, hasData });
-        latest.current = { draft, hasData };
+    const writeObservationDraft = (kind, identity, data) => {
+        if (!identity) return false;
+        try {
+            if (data) sessionStorage.setItem(observationDraftKey(kind, identity), JSON.stringify({ version: 1, savedAt: Date.now(), data }));
+            else sessionStorage.removeItem(observationDraftKey(kind, identity));
+            return true;
+        } catch (_) { return false; }
+    };
+    const useObservationRecovery = ({ kind, identity, draft, hasData, onClose, addToast, onBeforeAsk }) => {
+        const latest = useRef({ draft, hasData, onBeforeAsk });
+        latest.current = { draft, hasData, onBeforeAsk };
         const cleared = useRef(false);
         const key = observationDraftKey(kind, identity);
         const writeDraft = useCallback(() => {
@@ -2115,11 +2480,17 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         };
         const requestClose = async () => {
             if (!latest.current.hasData) { onClose(); return; }
+            // Recording stops while the question is open (intervals went on being scored), and
+            // "Continue recording" starts it again. onBeforeAsk returns how to resume, if it was running.
+            const before = latest.current.onBeforeAsk;
+            const resume = typeof before === 'function' ? before() : null;
             if (!identity || !writeDraft()) {
+                if (typeof resume === 'function') resume();
                 if (addToast) addToast('This browser could not keep the observation draft. Save the session or explicitly discard it before closing.', 'error');
                 return;
             }
             if (await askBehaviorLensConfirmation('Keep this unfinished observation as a draft and close? Reopen this tool for the same student in this browser tab to resume. Recording will be paused.', { title: 'Keep observation draft', confirmText: 'Keep draft and close', cancelText: 'Continue recording' })) onClose();
+            else if (typeof resume === 'function') resume();
         };
         const discardAndClose = async () => {
             if (!latest.current.hasData || await askBehaviorLensConfirmation('Discard this unfinished observation? Its unsaved measurements cannot be recovered.', { title: 'Discard observation draft', confirmText: 'Discard observation' })) { clearDraft(); onClose(); }
@@ -2137,7 +2508,9 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
     const RecordingTargetContext = ({ target, recovered, requestedTarget }) => h('div', { className: 'w-full max-w-2xl mx-auto px-4 py-3 text-sm text-slate-100', 'data-bl-recording-target': target?.id || '' },
         target && h('div', { className: 'rounded-lg border border-slate-600 bg-slate-800 p-3' },
             h('p', { className: 'font-bold text-white' }, target.label),
-            target.operationalDefinition && h('p', { className: 'mt-1 whitespace-pre-wrap break-words' }, target.operationalDefinition)),
+            target.operationalDefinition && h('details', { className: 'mt-1', open: typeof window === 'undefined' || typeof window.matchMedia !== 'function' || window.matchMedia('(min-width: 640px)').matches },
+                h('summary', { className: 'min-h-11 py-2 cursor-pointer text-xs font-bold text-slate-300' }, 'Definition'),
+                h('p', { className: 'whitespace-pre-wrap break-words' }, target.operationalDefinition))),
         recovered && requestedTarget && requestedTarget.id !== target?.id && h('p', { role: 'status', className: 'mt-2 text-amber-200' }, 'An unfinished recording was restored. Its original target and setup have been kept. Save or discard it before starting a different target.'));
 
     const SupportStrategyWorkspace = ({ studentName, targetBehaviors = [], abcEntries, observationSessions, aiAnalysis, callGemini, t, addToast, onReviewTarget, onDefineTarget }) => {
@@ -2228,9 +2601,10 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         const [timer, setTimer] = useState(recoveredDraft?.timer || 0);
         const [isRunning, setIsRunning] = useState(false);
         const [frequency, setFrequency] = useState(recoveredDraft?.frequency || 0);
-        const [intervals, setIntervals] = useState(recoveredDraft?.intervals || []);
+        // Completed intervals only; the one in progress is currentInterval.
+        const [intervals, setIntervals] = useState(() => (recoveredDraft?.intervals || []).filter(i => i && i.complete !== false));
         const [intervalLength, setIntervalLength] = useState(recoveredDraft?.intervalLength || 15);
-        const [currentInterval, setCurrentInterval] = useState(null);
+        const [currentInterval, setCurrentInterval] = useState(recoveredDraft?.currentInterval || null);
         const [durationStart, setDurationStart] = useState(null);
         const [durations, setDurations] = useState(recoveredDraft?.durations || []);
         const [latencyStart, setLatencyStart] = useState(null);
@@ -2241,9 +2615,20 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         // any pause between cue and response are kept here instead.
         const latencyClockRef = useRef({ cueAt: null, pausedMs: 0, pausedAt: null });
         const [notes, setNotes] = useState(recoveredDraft?.notes || '');
+        // Counts and results were silent for screen readers.
+        const [announcement, setAnnouncement] = useState('');
+        const occurrencesText = n => n + (n === 1 ? ' occurrence' : ' occurrences');
         const timerRef = useRef(null);
         const intervalTimerRef = useRef(null);
-        const recordingStartRef = useRef(null);
+        // Recording time from the wall clock: baseMs before this run, startedAt/lastTick this run,
+        // spans the stretches actually observed (for the per-hour rate, which used the save time).
+        const clockRef = useRef({ baseMs: (recoveredDraft?.timer || 0) * 1000, startedAt: null, lastTick: null, spans: Array.isArray(recoveredDraft?.spans) ? recoveredDraft.spans : [] });
+        const intervalsRef = useRef(intervals);
+        const [suspendedFor, setSuspendedFor] = useState(null);
+        const methodRef = useRef(method); methodRef.current = method;
+        const durationStartRef = useRef(null); durationStartRef.current = durationStart;
+        const latencyEndRef = useRef(null); latencyEndRef.current = latencyEnd;
+        const intervalLengthRef = useRef(intervalLength); intervalLengthRef.current = intervalLength;
         // Mirror of the in-progress interval so the rollover timer reads the
         // LATEST value (incl. the observer's "occurred" mark) instead of the
         // stale closure it captured at start — which silently saved every
@@ -2251,60 +2636,79 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         const currentIntervalRef = useRef(null);
         useEffect(() => { currentIntervalRef.current = currentInterval; }, [currentInterval]);
 
-        // Start/stop timer
-        const toggleTimer = useCallback(() => {
-            if (isRunning) {
-                const pausedAt = Date.now();
-                if (recordingStartRef.current != null) setTimer(Math.max(0, Math.floor((pausedAt - recordingStartRef.current) / 1000)));
-                recordingStartRef.current = null;
-                setIsRunning(false);
-                if (timerRef.current) clearInterval(timerRef.current);
-                if (intervalTimerRef.current) clearInterval(intervalTimerRef.current);
-                const partialInterval = currentIntervalRef.current;
-                if (method === 'interval' && partialInterval) {
-                    setIntervals(previous => [...previous, {
-                        ...partialInterval, end: pausedAt,
-                        durationSeconds: Math.max(0, (pausedAt - partialInterval.start) / 1000),
-                        complete: false
-                    }]);
-                    currentIntervalRef.current = null;
-                    setCurrentInterval(null);
-                }
-                if (method === 'duration' && durationStart) {
-                    const dur = Math.max(0, Math.round((pausedAt - durationStart) / 1000));
-                    setDurations(prev => [...prev, dur]);
-                    setDurationStart(null);
-                }
-                if (method === 'latency' && latencyClockRef.current.cueAt != null && !latencyEnd) latencyClockRef.current.pausedAt = pausedAt;
-            } else {
-                setIsRunning(true);
-                const resumedAt = Date.now();
-                const lc = latencyClockRef.current;
-                if (lc.pausedAt != null) { lc.pausedMs += resumedAt - lc.pausedAt; lc.pausedAt = null; }
-                const start = Date.now() - timer * 1000;
-                recordingStartRef.current = start;
-                timerRef.current = setInterval(() => {
-                    setTimer(Math.floor((Date.now() - start) / 1000));
-                }, 100);
-                // Start interval recording if applicable
-                if (method === 'interval') {
-                    const first = { start: Date.now(), occurred: false, intervalLength, complete: false };
-                    currentIntervalRef.current = first;
-                    setCurrentInterval(first);
-                    intervalTimerRef.current = setInterval(() => {
-                        const finished = currentIntervalRef.current;
-                        if (finished) setIntervals(prev => [...prev, { ...finished, end: Date.now(), durationSeconds: intervalLength, complete: true }]);
-                        const next = { start: Date.now(), occurred: false, intervalLength, complete: false };
-                        currentIntervalRef.current = next;
-                        setCurrentInterval(next);
-                    }, intervalLength * 1000);
-                }
-                if (method === 'latency' && !latencyStart) {
-                    setLatencyStart(resumedAt);
-                    latencyClockRef.current = { cueAt: resumedAt, pausedMs: 0, pausedAt: null };
-                }
+        // Pause at a moment: by hand, or at the last moment the page was running when its timers
+        // stopped for longer than INTERVAL_GRID_MAX_GAP_MS (a closed lid or a locked phone). That
+        // time counted as observed, and the whole second in progress was dropped at each pause.
+        const pauseAt = (at, gapSeconds) => {
+            const clock = clockRef.current;
+            if (clock.startedAt == null) return;
+            clock.baseMs += Math.max(0, at - clock.startedAt);
+            clock.spans = clock.spans.concat([{ start: new Date(clock.startedAt).toISOString(), end: new Date(at).toISOString() }]);
+            clock.startedAt = null;
+            setTimer(Math.floor(clock.baseMs / 1000));
+            setIsRunning(false);
+            if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+            if (gapSeconds) setSuspendedFor(gapSeconds);
+            const episodeStart = durationStartRef.current;
+            if (methodRef.current === 'duration' && episodeStart) {
+                setDurations(prev => [...prev, Math.max(0, Math.round((at - episodeStart) / 1000))]);
+                durationStartRef.current = null;
+                setDurationStart(null);
             }
-        }, [isRunning, timer, method, intervalLength, latencyStart, latencyEnd, durationStart]);
+            if (methodRef.current === 'latency' && latencyClockRef.current.cueAt != null && !latencyEndRef.current) latencyClockRef.current.pausedAt = at;
+        };
+        // Completed intervals come from the recorded time. A timer per interval stopped with the
+        // page: a 10-minute closed lid became ONE "15 s" interval scored not occurred.
+        const syncIntervals = (elapsedMs, at) => {
+            const length = intervalLengthRef.current;
+            const done = Math.floor(elapsedMs / (length * 1000));
+            const have = intervalsRef.current.length;
+            if (done <= have) return;
+            const added = [];
+            for (let i = have; i < done; i++) {
+                const mark = i === have ? currentIntervalRef.current : null;
+                added.push({ index: i, occurred: !!(mark && mark.occurred), intervalLength: length, durationSeconds: length, complete: true, end: at });
+            }
+            intervalsRef.current = intervalsRef.current.concat(added);
+            setIntervals(intervalsRef.current);
+            const next = { index: done, occurred: false, intervalLength: length, complete: false };
+            currentIntervalRef.current = next;
+            setCurrentInterval(next);
+        };
+        const pauseAtRef = useRef(pauseAt); pauseAtRef.current = pauseAt;
+        const syncIntervalsRef = useRef(syncIntervals); syncIntervalsRef.current = syncIntervals;
+
+        // Start/stop timer
+        const toggleTimerRef = useRef(null);
+        const toggleTimer = useCallback(() => {
+            if (isRunning) { pauseAtRef.current(Date.now()); return; }
+            setSuspendedFor(null);
+            setIsRunning(true);
+            const now = Date.now();
+            const lc = latencyClockRef.current;
+            if (lc.pausedAt != null) { lc.pausedMs += now - lc.pausedAt; lc.pausedAt = null; }
+            const clock = clockRef.current;
+            clock.startedAt = now;
+            clock.lastTick = now;
+            if (method === 'interval' && !currentIntervalRef.current) {
+                const first = { index: intervalsRef.current.length, occurred: false, intervalLength, complete: false };
+                currentIntervalRef.current = first;
+                setCurrentInterval(first);
+            }
+            timerRef.current = setInterval(() => {
+                const tickAt = Date.now();
+                if (tickAt - clock.lastTick > INTERVAL_GRID_MAX_GAP_MS) { pauseAtRef.current(clock.lastTick, Math.round((tickAt - clock.lastTick) / 1000)); return; }
+                clock.lastTick = tickAt;
+                const elapsedMs = clock.baseMs + tickAt - clock.startedAt;
+                setTimer(Math.floor(elapsedMs / 1000));
+                if (methodRef.current === 'interval') syncIntervalsRef.current(elapsedMs, tickAt);
+            }, 100);
+            if (method === 'latency' && !latencyStart) {
+                setLatencyStart(now);
+                latencyClockRef.current = { cueAt: now, pausedMs: 0, pausedAt: null };
+            }
+        }, [isRunning, method, intervalLength, latencyStart]);
+        toggleTimerRef.current = toggleTimer;
 
         // Cleanup
         useEffect(() => {
@@ -2321,46 +2725,70 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         const activeDuration = method === 'duration' && durationStart
             ? Math.max(0, Math.round((Date.now() - durationStart) / 1000)) : null;
         const durationsToSave = activeDuration !== null ? [...durations, activeDuration] : durations;
-        const activeInterval = method === 'interval' && currentInterval
-            ? { ...currentInterval, end: Date.now(), durationSeconds: Math.max(0, (Date.now() - currentInterval.start) / 1000), complete: false } : null;
-        const intervalsToSave = activeInterval ? [...intervals, activeInterval] : intervals;
+        // Completed intervals only: the one in progress was counted as a whole interval, so 1 of 4
+        // completed plus a marked current one saved 40% (2/5) while the screen said 25%.
+        const intervalsToSave = intervals;
+        const hasRecording = timer > 0 || frequency > 0 || durationsToSave.length > 0 || intervals.length > 0 || latencyMs !== null;
+        const liveSpans = () => { const clock = clockRef.current; return clock.startedAt != null ? clock.spans.concat([{ start: new Date(clock.startedAt).toISOString(), end: new Date(clock.lastTick || clock.startedAt).toISOString() }]) : clock.spans; };
         const canSave = method === 'frequency' ? timer > 0
             : method === 'duration' ? durationsToSave.length > 0
                 : method === 'interval' ? intervalsToSave.length > 0
                     : latencyMs !== null;
 
-        const recovery = useObservationRecovery({ kind: 'live', identity: draftIdentity, onClose, addToast,
+        const recovery = useObservationRecovery({ kind: 'live', identity: draftIdentity, onClose, addToast, onBeforeAsk: () => { if (clockRef.current.startedAt == null) return null; pauseAtRef.current(Date.now()); return () => toggleTimerRef.current(); },
             hasData: timer > 0 || frequency > 0 || durationsToSave.length > 0 || intervalsToSave.length > 0 || latencyMs !== null || !!notes || !!recordingTarget,
-            draft: { target: recordingTarget, method, timer, frequency, intervalLength, intervals: intervalsToSave, durations: durationsToSave, latencyMs, notes } });
+            draft: { target: recordingTarget, method, timer, frequency, intervalLength, intervals: intervalsToSave, currentInterval, spans: liveSpans(), durations: durationsToSave, latencyMs, notes } });
         useBehaviorLensModal(dialogRef, recovery.requestClose);
         useEffect(() => { if (recoveredDraft && addToast) addToast('Recovered observation draft. Recording is paused.', 'info'); }, []);
+        // When the pressed control is replaced (Start becoming Pause, the latency response button
+        // going away), focus fell to the page; it goes to the main control.
+        useEffect(() => {
+            const dialog = dialogRef.current;
+            const active = document.activeElement;
+            if (!dialog || (active && active !== document.body)) return;
+            const target = dialog.querySelector('[data-bl-initial-focus]');
+            if (target) target.focus();
+        }, [isRunning, latencyStart, latencyEnd, durationStart, method]);
 
         const handleSave = () => {
             if (!canSave) return;
+            const clock = clockRef.current;
+            const savedAt = Date.now();
+            const spans = clock.startedAt != null ? clock.spans.concat([{ start: new Date(clock.startedAt).toISOString(), end: new Date(savedAt).toISOString() }]) : clock.spans;
+            const observedMs = clock.baseMs + (clock.startedAt != null ? savedAt - clock.startedAt : 0);
+            const observedSec = Math.round(observedMs / 1000);
             const sessionData = {
                 id: uid(),
                 method,
                 measurementVersion: 2,
                 behaviorId: recordingTarget?.id || null,
                 behavior: recordingTarget?.label || '',
-                duration: timer,
-                timestamp: new Date().toISOString(),
+                duration: observedSec,
+                // When it was observed (it was the moment Save was pressed, so a session saved the
+                // next morning was dated the next day).
+                timestamp: spans.length ? spans[0].start : new Date(savedAt).toISOString(),
                 notes,
                 data: {}
             };
-            if (method === 'frequency') sessionData.data = { count: frequency, rate: timer > 0 ? (frequency / (timer / 60)).toFixed(2) : 0 };
+            if (method === 'frequency') sessionData.data = { count: frequency, rate: observedSec > 0 ? Math.round(frequency / (observedSec / 60) * 10000) / 10000 : 0 };
             if (method === 'duration') sessionData.data = { durations: durationsToSave, totalDuration: durationsToSave.reduce((s, d) => s + d, 0), episodeCount: durationsToSave.length };
             if (method === 'interval') {
-                const occurredCount = intervalsToSave.filter(i => i.occurred).length;
-                sessionData.data = { intervalLength, intervals: intervalsToSave, totalIntervals: intervalsToSave.length, occurredCount, percentage: intervalsToSave.length ? (occurredCount / intervalsToSave.length) * 100 : 0, complete: intervalsToSave.every(interval => interval.complete === true) };
+                const completed = intervalsRef.current;
+                const occurredCount = completed.filter(i => i.occurred).length;
+                const inProgress = currentIntervalRef.current;
+                const partialSeconds = Math.round((observedMs % (intervalLength * 1000)) / 1000);
+                sessionData.data = { mode: 'partial', intervalLength, intervals: completed, totalIntervals: completed.length, completedCount: completed.length, occurredCount,
+                    percentage: completed.length ? Math.round(occurredCount / completed.length * 1000) / 10 : 0, complete: completed.length > 0,
+                    partialInterval: inProgress && partialSeconds > 0 ? { seconds: partialSeconds, occurred: !!inProgress.occurred } : null };
             }
             if (method === 'latency') sessionData.data = { latencyMs: latencyMs !== null ? latencyMs : 0, latencySeconds: latencyMs !== null ? latencyMs / 1000 : 0 };
+            sessionData.data.spans = spans;
             onSaveSession(sessionData);
             recovery.clearDraft();
-            if (addToast) addToast(tt('behavior_lens.obs.saved', 'Observation session saved ?'), 'success');
+            if (addToast) addToast(tt('behavior_lens.obs.saved_v2', 'Observation session saved'), 'success');
             onClose();
         };
-        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.obs.title', 'Live Observation')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[400] bg-slate-900 flex flex-col text-white animate-in fade-in duration-300' },
+        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.obs.title', 'Live Observation')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[400] bg-slate-900 flex flex-col overflow-y-auto text-white animate-in fade-in duration-300' },
             // Top bar
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2 px-3 sm:px-6 py-3 bg-black/30' },
                 h('div', { className: 'flex items-center gap-3' },
@@ -2368,14 +2796,14 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                     h('h2', { className: 'text-lg font-black' },
                         '🔍 ', tt('behavior_lens.obs.title', 'Live Observation')
                     ),
-                    studentName && h('span', { className: 'text-sm text-slate-300 ms-2' }, `— ${studentName}`)
+                    studentName && h('span', { className: 'hidden sm:inline text-sm text-slate-300 ms-2' }, `— ${studentName}`)
                 ),
                 h('div', { className: 'flex items-center gap-3' },
                     h('button', { onClick: recovery.discardAndClose, className: 'min-h-11 px-3 text-xs text-white underline' }, 'Discard draft'),
-                    h('button', { onClick: handleSave,
+                    h('button', { onClick: handleSave, 'aria-label': tt('behavior_lens.obs.save_session', 'Save Session'),
                         disabled: !canSave,
-                        className: 'text-xs font-bold px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-40 flex items-center gap-1.5'
-                    }, h(Save, { size: 14 }), tt('behavior_lens.obs.save_session', 'Save Session')),
+                        className: 'text-xs font-bold px-4 py-2 rounded-lg bg-green-700 hover:bg-green-800 transition-colors disabled:opacity-40 flex items-center gap-1.5'
+                    }, h(Save, { size: 14 }), h('span', { className: 'hidden sm:inline' }, tt('behavior_lens.obs.save_session', 'Save Session'))),
                     h('button', { 'aria-label': 'Close Live Observation',
                         onClick: recovery.requestClose,
                         className: 'p-2 rounded-full hover:bg-white/10 transition-colors'
@@ -2384,12 +2812,13 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             ),
             h(RecordingTargetContext, { target: recordingTarget, recovered: !!recoveredDraft, requestedTarget: initialTarget }),
             // Method selector
-            h('div', { className: 'flex flex-wrap items-center justify-center gap-2 py-3 bg-black/20' },
+            h('div', { className: 'flex flex-nowrap items-center justify-start sm:justify-center gap-2 px-3 py-2 overflow-x-auto bg-black/20' },
                 OBSERVATION_METHODS.map(m =>
                     h('button', { key: m, 'aria-pressed': method === m,
-                        onClick: () => { if (!isRunning) setMethod(m); },
-                        disabled: isRunning,
-                        className: `text-xs font-bold px-4 py-2 rounded-full transition-all ${method === m
+                        onClick: () => { if (!isRunning && !hasRecording) setMethod(m); },
+                        disabled: isRunning || (hasRecording && method !== m),
+                        title: hasRecording && method !== m ? 'Save or discard this session to change method' : undefined,
+                        className: `shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all ${method === m
                             ? 'bg-indigo-600 text-white shadow-lg'
                             : 'bg-white/10 text-slate-300 hover:bg-white/20 disabled:opacity-50'
                             }`
@@ -2411,13 +2840,17 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                     )
                 ),
                 // Start/stop button
-                h('button', { "aria-label": isRunning ? 'Pause observation timer' : 'Start observation timer', 'aria-pressed': isRunning ? 'true' : 'false',
+                // The label says the action; with aria-pressed it read "Pause, pressed" while recording.
+                h('button', { "aria-label": isRunning ? 'Pause observation timer' : 'Start observation timer', 'data-bl-initial-focus': true,
                     onClick: toggleTimer,
-                    className: `w-24 h-24 rounded-full text-2xl font-black shadow-2xl transition-all transform hover:scale-105 active:scale-95 ${isRunning
+                    className: `shrink-0 w-24 h-24 rounded-full text-2xl font-black shadow-2xl transition-all transform hover:scale-105 active:scale-95 ${isRunning
                         ? 'bg-red-600 hover:bg-red-700 ring-4 ring-red-600/30'
                         : 'bg-green-600 hover:bg-green-700 ring-4 ring-green-600/30'
                         }`
                 }, isRunning ? '⏸' : '▶'),
+                h('p', { role: 'status', 'aria-live': 'polite', className: 'bl-sr-only', 'data-obs-announcement': true }, announcement),
+                suspendedFor != null && h('p', { role: 'status', 'data-obs-suspended': suspendedFor, className: 'max-w-md text-center text-sm text-amber-200' },
+                    tt('behavior_lens.interval.suspended', 'Recording paused: this page stopped running for {n} seconds (screen locked or another app). That time is not counted. Resume when you are watching again.', { n: suspendedFor })),
                 // Method-specific controls
                 method === 'frequency' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-5xl font-black text-indigo-400 tabular-nums' }, frequency),
@@ -2426,20 +2859,20 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         timer > 0 && ` (${(frequency / (timer / 60)).toFixed(1)}/min)`
                     ),
                     h('div', { className: 'flex gap-3' },
-                        h('button', { "aria-label": "+1",
-                            onClick: () => setFrequency(f => f + 1),
+                        h('button', { "aria-label": 'Add one occurrence' + (recordingTarget?.label ? ' of ' + recordingTarget.label : ''),
+                            onClick: () => { setFrequency(f => f + 1); setAnnouncement(occurrencesText(frequency + 1)); },
                             disabled: !isRunning,
                             className: 'w-16 h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-2xl font-black shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-90'
                         }, '+1'),
-                        h('button', { "aria-label": "-1",
-                            onClick: () => setFrequency(f => Math.max(0, f - 1)),
+                        h('button', { "aria-label": 'Remove one occurrence' + (recordingTarget?.label ? ' of ' + recordingTarget.label : ''),
+                            onClick: () => { setFrequency(f => Math.max(0, f - 1)); setAnnouncement(occurrencesText(Math.max(0, frequency - 1))); },
                             disabled: !isRunning || frequency === 0,
                             className: 'w-12 h-12 rounded-xl bg-white/10 hover:bg-white/20 text-lg font-bold transition-all disabled:opacity-30 active:scale-90'
                         }, '-1')
                     )
                 ),
                 method === 'duration' && h('div', { className: 'flex flex-col items-center gap-4' },
-                    h('div', { className: 'text-sm text-slate-600' },
+                    h('div', { className: 'text-sm text-slate-300' },
                         durationStart
                             ? (tt('behavior_lens.obs.behavior_occurring', '🔴 Behavior occurring...'))
                             : (tt('behavior_lens.obs.tap_when_starts', 'Tap when behavior starts'))
@@ -2448,13 +2881,16 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                             if (durationStart) {
                                 const dur = Math.round((Date.now() - durationStart) / 1000);
                                 setDurations(prev => [...prev, dur]);
+                                durationStartRef.current = null;
                                 setDurationStart(null);
                             } else {
-                                setDurationStart(Date.now());
+                                const episodeStart = Date.now();
+                                durationStartRef.current = episodeStart;
+                                setDurationStart(episodeStart);
                             }
                         },
                         disabled: !isRunning,
-                        className: `w-20 h-20 rounded-full text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40 ${durationStart ? 'bg-red-600 hover:bg-red-700 animate-pulse motion-reduce:animate-none' : 'bg-indigo-600 hover:bg-indigo-700'
+                        className: `shrink-0 w-20 h-20 rounded-full text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40 ${durationStart ? 'bg-red-600 hover:bg-red-700 animate-pulse motion-reduce:animate-none' : 'bg-indigo-600 hover:bg-indigo-700'
                             }`
                     }, durationStart ? '⏹' : '▶'),
                     durations.length > 0 && h('div', { className: 'text-xs text-slate-300' },
@@ -2462,7 +2898,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                     )
                 ),
                 method === 'interval' && h('div', { className: 'flex flex-col items-center gap-4' },
-                    !isRunning && h('div', { className: 'flex items-center gap-2' },
+                    !isRunning && !hasRecording && h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-xs text-slate-300' }, tt('behavior_lens.obs.interval_length', 'Interval:')),
                         h('select', {
                             value: intervalLength,
@@ -2473,16 +2909,17 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                             [10, 15, 20, 30, 60].map(v => h('option', { key: v, value: v }, `${v}s`))
                         )
                     ),
-                    currentInterval && isRunning && h('button', { onClick: () => setCurrentInterval(prev => { const next = { ...prev, occurred: !prev.occurred }; currentIntervalRef.current = next; return next; }),
+                    // A toggle: its label was its state ("Not occurred"), read as a command.
+                    currentInterval && isRunning && h('button', { 'aria-label': 'Behavior occurred in this interval', 'aria-pressed': currentInterval.occurred ? 'true' : 'false', onClick: () => setCurrentInterval(prev => { const next = { ...prev, occurred: !prev.occurred }; currentIntervalRef.current = next; return next; }),
                         className: `px-6 py-4 rounded-xl text-sm font-bold transition-all ${currentInterval.occurred ? 'bg-red-600 ring-2 ring-red-400' : 'bg-white/10 hover:bg-white/20'
                             }`
                     }, currentInterval.occurred ? '✅ Behavior occurred' : '❌ Not occurred'),
-                    intervals.length > 0 && h('div', { className: 'text-xs text-slate-600' },
+                    intervals.length > 0 && h('div', { className: 'text-xs text-slate-300' },
                         `${intervals.filter(i => i.occurred).length}/${intervals.length} intervals — ${Math.round((intervals.filter(i => i.occurred).length / intervals.length) * 100)}%`
                     )
                 ),
                 method === 'latency' && h('div', { className: 'flex flex-col items-center gap-4' },
-                    h('div', { className: 'text-sm text-slate-600' },
+                    h('div', { className: 'text-sm text-slate-300' },
                         latencyEnd
                             ? (tt('behavior_lens.obs.latency_recorded', 'Latency recorded!'))
                             : latencyStart
@@ -2492,27 +2929,29 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                     latencyStart && !latencyEnd && h('button', { type: 'button', 'aria-label': tt('behavior_lens.obs.latency_response', 'Response started: stop the latency timer'),
                         onClick: () => {
                             const now = Date.now(), lc = latencyClockRef.current;
+                            const ms = lc.cueAt != null ? Math.max(0, now - lc.cueAt - lc.pausedMs) : Math.max(0, now - latencyStart);
                             setLatencyEnd(now);
-                            setLatencyMs(lc.cueAt != null ? Math.max(0, now - lc.cueAt - lc.pausedMs) : Math.max(0, now - latencyStart));
+                            setLatencyMs(ms);
+                            setAnnouncement('Latency ' + (ms / 1000).toFixed(1) + ' seconds');
                         },
                         disabled: !isRunning,
-                        className: 'w-20 h-20 rounded-full bg-amber-600 hover:bg-amber-700 text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40'
+                        className: 'shrink-0 w-20 h-20 rounded-full bg-amber-600 hover:bg-amber-700 text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40'
                     }, '🎯'),
                     latencyMs !== null && h('div', { className: 'text-3xl font-black text-amber-700' },
                         (latencyMs / 1000).toFixed(1) + 's'
                     )
+                ),
+                // Notes scroll with the rest (a fixed bar at the bottom took 68 px of a phone screen).
+                h('div', { className: 'w-full max-w-xl px-4 mt-auto pt-2' },
+                    h('input', {
+                        type: 'text',
+                        value: notes,
+                        onChange: (e) => setNotes(e.target.value),
+                        placeholder: tt('behavior_lens.obs.session_notes', 'Session notes...'),
+                        'aria-label': 'Session notes',
+                        className: 'w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                    })
                 )
-            ),
-            // Notes bar at bottom
-            h('div', { className: 'px-6 py-3 bg-black/30 flex gap-3 items-center' },
-                h('input', {
-                    type: 'text',
-                    value: notes,
-                    onChange: (e) => setNotes(e.target.value),
-                    placeholder: tt('behavior_lens.obs.session_notes', 'Session notes...'),
-                    'aria-label': 'Session notes',
-                    className: 'flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                })
             )
         );
     };
@@ -2633,8 +3072,10 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                     value = reviewNumber(data.latencySeconds);
                     if (value === null && reviewNumber(data.latencyMs) !== null) value = Number(data.latencyMs) / 1000;
                 } else {
-                    // Incomplete sessions cannot masquerade as a complete interval sample.
-                    value = data.complete === false ? null : reviewNumber(data.percentage);
+                    // Incomplete sessions cannot masquerade as a complete interval sample. One that records
+                    // its completed intervals (and is scored over them) is a shorter, valid sample: a
+                    // grid stopped at 18 of 20 when the bell rang left a gap in the graph.
+                    value = data.complete === false && !(reviewNumber(data.completedCount) > 0) ? null : reviewNumber(data.percentage);
                     if (value > 100) value = null;
                 }
                 rows.push({ id: session.id, date: timestamp, phase: session.phase || 'Phase not recorded', value, records: [session] });
@@ -2671,17 +3112,21 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             }));
     };
 
-    const SharedBehaviorReview = ({ entries, sessions, targets, targetId, studentName, dateRange, presentation, setPresentation, onAdvanced }) => {
+    const SharedBehaviorReview = ({ entries, sessions, targets, targetId, studentName, dateRange, presentation, setPresentation, onAdvanced, familyView }) => {
         const [selection, setSelection] = useState('');
+        const selectedAsideRef = useRef(null);
+        const focusSelectionRef = useRef(false);
+        useEffect(() => { if (focusSelectionRef.current && selectedAsideRef.current) { focusSelectionRef.current = false; selectedAsideRef.current.focus(); } });
         const [printError, setPrintError] = useState('');
         const [narratives, setNarratives] = useDurableToolState('reviewNarratives', {});
         const documentRef = useRef(null);
         const [guide, setGuide] = useDurableToolState('gettingStarted', {});
         useEffect(() => { if (presentation.mode === 'document' && !guide.previewed) setGuide(previous => ({ ...previous, previewed: true })); }, [presentation.mode, guide.previewed]);
         const model = useMemo(() => buildBehaviorReviewSeries({ entries, sessions, targets, targetId, measurement: presentation.measurement || 'notes' }), [entries, sessions, targets, targetId, presentation.measurement]);
-        const documentMode = presentation.mode === 'document';
+        // The document holds the staff's review notes; a layout saved by staff opened it in Family view.
+        const documentMode = !familyView && presentation.mode === 'document';
         const scopeKey = JSON.stringify([targetId, dateRange, model.measurement]);
-        const fingerprint = getBehaviorLensWorkspaceRuntime().stableHash(JSON.stringify([entries, sessions]));
+        const fingerprint = useMemo(() => getBehaviorLensWorkspaceRuntime().stableHash(JSON.stringify([entries, sessions])), [entries, sessions]);
         const narrative = narratives[scopeKey] || {};
         const stale = !!narrative.text && narrative.fingerprint !== fingerprint;
         const target = targets.find(item => item.id === targetId);
@@ -2701,7 +3146,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         };
         return h('section', { className: 'space-y-4', 'data-bl-presentation': documentMode ? 'document' : 'dashboard' },
             h('div', { className: 'rounded-xl border border-slate-300 bg-white p-4 space-y-3' },
-                h('div', { role: 'group', 'aria-label': 'Review presentation', className: 'flex flex-wrap gap-2' }, ['dashboard', 'document'].map(mode => h('button', { key: mode, type: 'button', 'aria-pressed': (documentMode ? 'document' : 'dashboard') === mode, onClick: () => change({ mode }), className: buttonClass + ((documentMode ? 'document' : 'dashboard') === mode ? ' bg-indigo-100' : '') }, mode === 'dashboard' ? 'Dashboard' : 'Document'))),
+                !familyView && h('div', { role: 'group', 'aria-label': 'Review presentation', className: 'flex flex-wrap gap-2' }, ['dashboard', 'document'].map(mode => h('button', { key: mode, type: 'button', 'aria-pressed': (documentMode ? 'document' : 'dashboard') === mode, onClick: () => change({ mode }), className: buttonClass + ((documentMode ? 'document' : 'dashboard') === mode ? ' bg-indigo-100' : '') }, mode === 'dashboard' ? 'Dashboard' : 'Document'))),
                 h('label', { htmlFor: 'bl-review-measurement', className: 'block text-sm font-bold text-slate-800' }, 'Graph measurement'),
                 h('select', { id: 'bl-review-measurement', value: model.measurement, onChange: event => { change({ measurement: event.target.value }); setSelection(''); }, className: 'min-h-11 w-full rounded-lg border border-slate-400 bg-white p-2 text-sm' }, model.options.map(option => h('option', { key: option.id, value: option.id }, option.label))),
                 h('label', { className: 'flex items-center gap-2 min-h-11 text-sm text-slate-800' }, h('input', { type: 'checkbox', checked: !!presentation.monochrome, onChange: event => change({ monochrome: event.target.checked }) }), 'Black and white graph'),
@@ -2721,8 +3166,8 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                     h('summary', { className: 'min-h-11 py-2 font-bold text-sm text-slate-800' }, 'Graph data (' + model.rows.length + ' rows)'),
                     h('div', { className: 'bl-document-table', style: { overflowX: 'auto' }, tabIndex: 0, role: 'region', 'aria-label': 'Graph data table' }, h('table', { className: 'w-full text-sm text-slate-800', style: { borderCollapse: 'collapse' } },
                         h('thead', null, h('tr', null, ['Point', 'Date', 'Phase', model.unit].map(label => h('th', { key: label, scope: 'col', className: 'p-2 text-start border-b border-slate-400' }, label)))),
-                        h('tbody', null, model.rows.map((row, index) => h('tr', { key: row.id }, h('td', { className: 'p-2 border-b' }, h('button', { type: 'button', className: 'min-h-11 min-w-11 underline font-bold', 'aria-label': 'Inspect graph point ' + (index + 1), onClick: () => setSelection(row.id) }, index + 1)), h('td', { className: 'p-2 border-b' }, model.notes ? row.date : new Date(row.date).toLocaleString()), h('td', { className: 'p-2 border-b' }, row.phase || 'Not applicable'), h('td', { className: 'p-2 border-b' }, reviewValue(row.value))))))))),
-            selectedRow && h('aside', { className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-4 space-y-2', 'aria-label': 'Selected graph record', 'data-bl-selected-point': true }, h('h3', { className: 'font-bold text-slate-900' }, 'Source records · ' + selectedRow.date), selectedRow.records.map(record => h('div', { key: record.id, className: 'text-sm text-slate-800 whitespace-pre-wrap break-words' }, h('p', null, record.behavior || target?.label || 'Observation'), h('p', null, record.antecedent ? 'Before: ' + record.antecedent : ''), h('p', null, record.consequence ? 'After: ' + record.consequence : ''), h('p', null, 'Observer: ' + (record.observer || 'Not recorded')), record.notes && h('p', null, record.notes))), h('button', { type: 'button', onClick: () => setSelection(''), className: buttonClass }, 'Close source records')));
+                        h('tbody', null, model.rows.map((row, index) => h('tr', { key: row.id }, h('td', { className: 'p-2 border-b' }, h('button', { type: 'button', className: 'min-h-11 min-w-11 underline font-bold', 'aria-label': 'Inspect graph point ' + (index + 1), onClick: () => { focusSelectionRef.current = true; setSelection(row.id); } }, index + 1)), h('td', { className: 'p-2 border-b' }, model.notes ? row.date : new Date(row.date).toLocaleString()), h('td', { className: 'p-2 border-b' }, row.phase || 'Not applicable'), h('td', { className: 'p-2 border-b' }, reviewValue(row.value))))))))),
+            selectedRow && h('aside', { ref: selectedAsideRef, tabIndex: -1, className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-4 space-y-2', 'aria-label': 'Selected graph record', 'data-bl-selected-point': true }, h('h3', { className: 'font-bold text-slate-900' }, 'Source records · ' + selectedRow.date), selectedRow.records.map(record => h('div', { key: record.id, className: 'text-sm text-slate-800 whitespace-pre-wrap break-words' }, h('p', null, record.behavior || target?.label || 'Observation'), h('p', null, record.antecedent ? 'Before: ' + record.antecedent : ''), h('p', null, record.consequence ? 'After: ' + record.consequence : ''), h('p', null, 'Observer: ' + (record.observer || 'Not recorded')), record.notes && h('p', null, record.notes))), h('button', { type: 'button', onClick: () => setSelection(''), className: buttonClass }, 'Close source records')));
     };
 
     const BehaviorGettingStarted = ({ hasRecords, onRecord, onImport, onExample, onReview }) => {
@@ -2738,7 +3183,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             h('p', { className: 'text-sm text-indigo-950' }, 'For systematic measurement, define a target below: count how often, time how long, time from a cue, or sample intervals. Example data opens in a separate practice workspace.'));
     };
 
-    const OverviewPanel = ({ abcEntries, observationSessions, aiAnalysis, studentName, targetBehaviors, t, onRecord, onEdit, onMeasure, onReport, onSupport, onUpdateSession }) => {
+    const OverviewPanel = ({ abcEntries, observationSessions, aiAnalysis, studentName, targetBehaviors, t, onRecord, onEdit, onMeasure, onReport, onSupport, onUpdateSession, familyView }) => {
         const [presentation, setPresentation] = useDurableToolState('reviewPresentation', { mode: 'dashboard', measurement: 'notes', monochrome: false });
         const [reviewFilters, setReviewFilters] = useDurableToolState('observationReviewFilters', { dateRange: 14, targetId: '' });
         const reviewPage = Number.isInteger(reviewFilters?.page) && reviewFilters.page > 0 ? reviewFilters.page : 0;
@@ -2791,9 +3236,12 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                 if (entry.setting) settingCounts[entry.setting] = (settingCounts[entry.setting] || 0) + 1;
                 const iso = runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp);
                 if (!iso) return;
-                const date = new Date(iso);
-                dayMap[date.getDay()] = (dayMap[date.getDay()] || 0) + 1;
-                hourMap[date.getHours()] = (hourMap[date.getHours()] || 0) + 1;
+                // The recorder's day and hour (the viewer's clock moved a 9:30 pm Monday
+                // entry to Tuesday for a viewer in another time zone).
+                const lp = abcEntryLocalParts(entry);
+                if (!lp) return;
+                dayMap[lp.dow] = (dayMap[lp.dow] || 0) + 1;
+                if (lp.hour != null) hourMap[lp.hour] = (hourMap[lp.hour] || 0) + 1;
             });
 
             const dailyLookup = {};
@@ -2830,12 +3278,17 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             const behaviorGroups = runtime.groupByCanonicalBehavior(filtered, targetBehaviors || []);
             const topBehaviors = behaviorGroups.slice(0, 5).map(group => group.label);
             const topAntecedentNames = topAntecedents.map(item => item[0]);
+            // Each entry's behavior once, and antecedent-behavior pairs in one pass (it went through
+            // every entry 25 times, resolving each behavior again).
+            const labelOf = new Map(filtered.map(entry => [entry, runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label]));
+            const pairCounts = new Map();
+            filtered.forEach(entry => { const key = JSON.stringify([entry.antecedent, labelOf.get(entry)]); pairCounts.set(key, (pairCounts.get(key) || 0) + 1); });
             const corrMatrix = {};
             let corrMax = 1;
             topAntecedentNames.forEach(antecedent => {
                 corrMatrix[antecedent] = {};
                 topBehaviors.forEach(behavior => {
-                    const count = filtered.filter(entry => entry.antecedent === antecedent && runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label === behavior).length;
+                    const count = pairCounts.get(JSON.stringify([antecedent, behavior])) || 0;
                     corrMatrix[antecedent][behavior] = count;
                     corrMax = Math.max(corrMax, count);
                 });
@@ -2844,7 +3297,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             const abcChains = {};
             filtered.forEach(entry => {
                 if (!entry.antecedent || !entry.behavior || !entry.consequence) return;
-                const behavior = runtime.resolveCanonicalBehavior(entry, targetBehaviors || []).label;
+                const behavior = labelOf.get(entry);
                 const chain = entry.antecedent + ' -> ' + behavior + ' -> ' + entry.consequence;
                 abcChains[chain] = (abcChains[chain] || 0) + 1;
             });
@@ -2853,7 +3306,9 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             filtered.forEach(entry => {
                 const iso = runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp);
                 if (!iso) return;
-                const hour = new Date(iso).getHours();
+                const lp = abcEntryLocalParts(entry);
+                if (!lp || lp.hour == null) return;
+                const hour = lp.hour;
                 const key = hour + ':00-' + (hour + 1) + ':00 in ' + (entry.setting || 'unknown');
                 hourSettingMap[key] = (hourSettingMap[key] || 0) + 1;
             });
@@ -2926,8 +3381,8 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                 onSupport && h('button', { type: 'button', onClick: onSupport, className: actionClass }, 'Plan or review supports'),
                 onReport && h('button', { type: 'button', onClick: () => setPresentation(previous => ({ ...previous, mode: 'document' })), className: actionClass }, 'Prepare report from this view')),
             h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm text-slate-700' }, records.length + ' context note' + (records.length === 1 ? '' : 's') + ' and ' + stats.totalObs + ' timed session' + (stats.totalObs === 1 ? '' : 's') + ' match these filters.'),
-            h(SharedBehaviorReview, { entries: stats.filtered, sessions: stats.filteredSessions, targets: reviewTargets, targetId, studentName, dateRange, presentation, setPresentation, onAdvanced: onReport }),
-            presentation.mode !== 'document' && h(React.Fragment, null,
+            h(SharedBehaviorReview, { entries: stats.filtered, sessions: stats.filteredSessions, targets: reviewTargets, targetId, studentName, dateRange, presentation, setPresentation, onAdvanced: onReport, familyView }),
+            (familyView || presentation.mode !== 'document') && h(React.Fragment, null,
             // Stat cards row
             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
                 renderStatCard('📋', 'Context notes', stats.totalAbc, 'indigo'),
@@ -2943,9 +3398,9 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         h('span', null, entry.behavior?.length > 120 ? entry.behavior.slice(0, 120) + '…' : entry.behavior || 'Observation'),
                         h('span', { className: 'block mt-1 text-xs font-normal text-slate-700' }, entry.occurredAt || entry.timestamp ? fmtDate(entry.occurredAt || entry.timestamp) : 'Date not recorded')),
                     h('dl', null, field('Before', entry.antecedent), field('Observed behavior', entry.behavior), field('After', entry.consequence),
-                        field('Setting', entry.setting), field('Observer', entry.observer),
+                        field('Setting', entry.setting), (!familyView || blIsHomeLogEntry(entry)) && field('Observer', entry.observer),
                         field('Intensity', entry.intensity == null ? 'Not rated' : entry.intensity + ' / 5'),
-                        field('Duration', entry.duration == null ? 'Not recorded' : entry.duration + ' seconds'), entry.notes && field('Notes', entry.notes)),
+                        field('Duration', entry.duration == null ? 'Not recorded' : entry.duration + ' seconds'), entry.notes && (!familyView || blIsHomeLogEntry(entry)) && field('Notes', entry.notes)),
                     onEdit && h('button', { type: 'button', onClick: () => onEdit(entry.id), className: actionClass + ' mt-4' }, 'Edit observation'))),
                 pageCount > 1 && h('nav', { 'aria-label': 'Observation note pages', className: 'flex flex-wrap items-center justify-between gap-2' },
                     h('button', { type: 'button', disabled: pageIndex === 0, onClick: () => setReviewPage(pageIndex - 1), className: actionClass + ' disabled:opacity-50' }, 'Previous notes'),
@@ -3016,7 +3471,12 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             stats.trendData.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '📈 ', 'Daily logged notes'),
                 h('p', { className: 'text-xs text-slate-700 mb-3' }, 'Shows up to the latest 30 days. Blank days have no logged notes; they are not measured zeros.'),
-                h('div', { className: 'flex items-end gap-1', style: { height: '120px' } },
+                h('table', { className: 'sr-only', 'data-bl-daily-table': true },
+                    h('caption', null, 'Daily logged notes'),
+                    h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Day'), h('th', { scope: 'col' }, 'Entries'), h('th', { scope: 'col' }, 'Average intensity'))),
+                    h('tbody', null, stats.trendData.filter(day => day.count > 0).map((day, i) => h('tr', { key: day.date || day.timestamp || i },
+                        h('th', { scope: 'row' }, day.label), h('td', null, day.count), h('td', null, day.avgIntensity === null ? 'not rated' : day.avgIntensity.toFixed(1)))))),
+                h('div', { className: 'flex items-end gap-1', style: { height: '120px' }, 'aria-hidden': 'true' },
                     stats.trendData.map((day, i) => {
                         const barH = maxTrend > 0 ? (day.count / maxTrend) * 100 : 0;
                         const intensityColor = day.avgIntensity === null ? '#cbd5e1' : day.avgIntensity <= 2 ? '#86efac'
@@ -3087,7 +3547,12 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             // Hour-of-day distribution
             Object.keys(stats.hourMap).length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🕐 ', tt('behavior_lens.overview.time_of_day', 'Time of Day Distribution')),
-                h('div', { className: 'flex items-end gap-0.5', style: { height: '60px' } },
+                h('table', { className: 'sr-only', 'data-bl-hour-table': true },
+                    h('caption', null, 'Observations by hour of day'),
+                    h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Hour'), h('th', { scope: 'col' }, 'Observations'))),
+                    h('tbody', null, Object.keys(stats.hourMap).map(Number).filter(hr => stats.hourMap[hr] > 0).sort((a, b) => a - b).map(hr => h('tr', { key: hr },
+                        h('th', { scope: 'row' }, hr + ':00 to ' + hr + ':59'), h('td', null, stats.hourMap[hr]))))),
+                h('div', { className: 'flex items-end gap-0.5', style: { height: '60px' }, 'aria-hidden': 'true' },
                     Array.from({ length: 24 }, (_, hr) => {
                         const count = stats.hourMap[hr] || 0;
                         const maxHr = Math.max(1, ...Object.values(stats.hourMap));
@@ -3106,7 +3571,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         });
                     })
                 ),
-                h('div', { className: 'flex justify-between mt-1' },
+                h('div', { className: 'flex justify-between mt-1', 'aria-hidden': 'true' },
                     h('span', { className: 'text-[11px] text-slate-700' }, '12am'),
                     h('span', { className: 'text-[11px] text-slate-700' }, '6am'),
                     h('span', { className: 'text-[11px] text-indigo-700 font-bold' }, '12pm'),
@@ -3141,7 +3606,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         h('tbody', null,
                             Object.entries(stats.corrMatrix).map(([ante, bMap]) =>
                                 h('tr', { key: ante },
-                                    h('td', { className: 'text-end pe-2 text-[11px] text-slate-700 font-medium truncate max-w-[100px]', title: ante }, ante),
+                                    h('th', { scope: 'row', className: 'text-end pe-2 text-[11px] text-slate-700 font-medium truncate max-w-[100px]', title: ante }, ante),
                                     ...stats.topBehaviors.map(b => {
                                         const count = bMap[b] || 0;
                                         const opacity = count > 0 ? 0.15 + (count / stats.corrMax) * 0.85 : 0;
@@ -3215,44 +3680,61 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         const [recordingTarget] = useState(() => recoveredDraft ? recoveredDraft.target || null : initialTarget || null);
         const [counters, setCounters] = useState(recoveredDraft?.counters || [{ id: uid(), label: recordingTarget?.label || '', behaviorId: recordingTarget?.id || null, count: 0 }]);
         const [running, setRunning] = useState(false);
+        const runningNowRef = useRef(false);
+        runningNowRef.current = running;
         const [elapsed, setElapsed] = useState(recoveredDraft?.elapsed || 0);
         const [newLabel, setNewLabel] = useState('');
         const timerRef = useRef(null);
-        const startedAtRef = useRef(null);
         const dialogRef = useRef(null);
-        const recovery = useObservationRecovery({ kind: 'frequency', identity: draftIdentity, onClose, addToast,
-            hasData: elapsed > 0 || counters.some(counter => counter.count > 0 || counter.label), draft: { target: recordingTarget, counters, elapsed } });
+        // Recording time from the wall clock, paused at the last moment the page ran when its
+        // timers stopped (a lid left closed overnight saved 18.5 hours), with the observed stretches.
+        const clockRef = useRef({ baseMs: (recoveredDraft?.elapsed || 0) * 1000, startedAt: null, lastTick: null, spans: Array.isArray(recoveredDraft?.spans) ? recoveredDraft.spans : [] });
+        const [suspendedFor, setSuspendedFor] = useState(null);
+        const observedMsNow = () => { const c = clockRef.current; return c.baseMs + (c.startedAt != null ? Date.now() - c.startedAt : 0); };
+        const stopClock = (at, gapSeconds) => {
+            const c = clockRef.current;
+            if (c.startedAt == null) return;
+            c.baseMs += Math.max(0, at - c.startedAt);
+            c.spans = c.spans.concat([{ start: new Date(c.startedAt).toISOString(), end: new Date(at).toISOString() }]);
+            c.startedAt = null;
+            setElapsed(Math.floor(c.baseMs / 1000));
+            if (gapSeconds) { setSuspendedFor(gapSeconds); setRunning(false); }
+        };
+        const stopClockRef = useRef(stopClock); stopClockRef.current = stopClock;
+        const liveSpans = () => { const c = clockRef.current; return c.startedAt != null ? c.spans.concat([{ start: new Date(c.startedAt).toISOString(), end: new Date(c.lastTick || c.startedAt).toISOString() }]) : c.spans; };
+        const recovery = useObservationRecovery({ kind: 'frequency', identity: draftIdentity, onClose, addToast, onBeforeAsk: () => { if (!runningNowRef.current) return null; setRunning(false); return () => { setSuspendedFor(null); setRunning(true); }; },
+            hasData: elapsed > 0 || counters.some(counter => counter.count > 0 || counter.label), draft: { target: recordingTarget, counters, elapsed, spans: liveSpans() } });
         useBehaviorLensModal(dialogRef, recovery.requestClose);
         useEffect(() => { if (recoveredDraft && addToast) addToast('Recovered frequency draft. Recording is paused.', 'info'); }, []);
 
         const counterColors = ['#818cf8', '#f472b6', '#34d399', '#fbbf24', '#f97316', '#a78bfa'];
 
         useEffect(() => {
-            if (running) {
-                if (startedAtRef.current === null) startedAtRef.current = Date.now() - (elapsed * 1000);
-                timerRef.current = setInterval(() => {
-                    setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
-                }, 100);
-            } else {
-                if (timerRef.current) clearInterval(timerRef.current);
-                startedAtRef.current = null;
-            }
-            return () => { if (timerRef.current) clearInterval(timerRef.current); };
+            if (!running) return undefined;
+            const c = clockRef.current;
+            c.startedAt = Date.now();
+            c.lastTick = c.startedAt;
+            timerRef.current = setInterval(() => {
+                const now = Date.now();
+                if (now - c.lastTick > INTERVAL_GRID_MAX_GAP_MS) { stopClockRef.current(c.lastTick, Math.round((now - c.lastTick) / 1000)); return; }
+                c.lastTick = now;
+                setElapsed(Math.floor((c.baseMs + now - c.startedAt) / 1000));
+            }, 100);
+            return () => { if (timerRef.current) clearInterval(timerRef.current); stopClockRef.current(Date.now()); };
         }, [running]);
 
         const totalCount = counters.reduce((s, c) => s + c.count, 0);
         const totalRate = elapsed > 0 ? (totalCount / (elapsed / 60)).toFixed(1) : '0.0';
 
         const toggleRunning = () => {
-            if (running && startedAtRef.current !== null) {
-                setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
-            } else if (!running) {
-                startedAtRef.current = Date.now() - (elapsed * 1000);
-            }
+            if (!running) setSuspendedFor(null);
             setRunning(prev => !prev);
         };
 
+        const [announcement, setAnnouncement] = useState('');
         const incrementCounter = (id) => {
+            const counter = counters.find(c => c.id === id);
+            if (counter) setAnnouncement((counter.label || 'Unlabeled behavior') + ': ' + (counter.count + 1));
             setCounters(prev => prev.map(c => c.id === id ? { ...c, count: c.count + 1 } : c));
             if (!running) toggleRunning();
         };
@@ -3263,7 +3745,8 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
 
         const addCounter = () => {
             if (counters.length >= 6) return;
-            setCounters(prev => [...prev, { id: uid(), label: newLabel || '', count: 0 }]);
+            // It started counting from now: its rate was divided by the whole session.
+            setCounters(prev => [...prev, { id: uid(), label: newLabel || '', count: 0, addedAtMs: observedMsNow() }]);
             setNewLabel('');
         };
 
@@ -3281,28 +3764,38 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         };
 
         const handleSave = () => {
-            const saveElapsed = startedAtRef.current !== null ? Math.floor((Date.now() - startedAtRef.current) / 1000) : elapsed;
+            const c = clockRef.current;
+            const savedAt = Date.now();
+            const observedMs = c.baseMs + (c.startedAt != null ? savedAt - c.startedAt : 0);
+            const spans = c.startedAt != null ? c.spans.concat([{ start: new Date(c.startedAt).toISOString(), end: new Date(savedAt).toISOString() }]) : c.spans;
+            const saveElapsed = Math.round(observedMs / 1000);
             if (saveElapsed <= 0 && totalCount === 0) {
                 if (addToast) addToast('Record observation time before saving a zero-event session.', 'info');
                 return;
             }
-            const saveRate = saveElapsed > 0 ? (totalCount / (saveElapsed / 60)).toFixed(1) : '0.0';
+            // Per minute, not rounded to one decimal (one count in 40 minutes saved a rate of 0).
+            const perMinute = (count, ms) => ms > 0 ? Math.round(count / (ms / 60000) * 10000) / 10000 : 0;
             onSaveSession({
                 id: uid(),
                 method: 'frequency',
                 behaviorId: counters.length === 1 ? counters[0].behaviorId || null : null,
                 behavior: counters.length === 1 ? counters[0].label : '',
-                timestamp: new Date().toISOString(),
+                timestamp: spans.length ? spans[0].start : new Date(savedAt).toISOString(),
                 duration: saveElapsed,
                 data: {
                     count: totalCount,
-                    rate: parseFloat(saveRate),
-                    counters: counters.map(c => ({
-                        label: c.label || 'Unlabeled',
-                        behaviorId: c.behaviorId || null,
-                        count: c.count,
-                        rate: saveElapsed > 0 ? parseFloat((c.count / (saveElapsed / 60)).toFixed(2)) : 0
-                    }))
+                    rate: perMinute(totalCount, observedMs),
+                    counters: counters.map(counter => {
+                        const exposureMs = Math.max(0, observedMs - (counter.addedAtMs || 0));
+                        return {
+                            label: counter.label || 'Unlabeled',
+                            behaviorId: counter.behaviorId || null,
+                            count: counter.count,
+                            rate: perMinute(counter.count, exposureMs),
+                            observedSeconds: Math.round(exposureMs / 1000)
+                        };
+                    }),
+                    spans
                 }
             });
             if (addToast) addToast(tt('behavior_lens.freq.saved', 'Session saved ✅'), 'success');
@@ -3312,7 +3805,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
 
         return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.freq.title', 'Frequency Counter')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900 flex flex-col items-center overflow-y-auto py-4 text-white' },
             // Top bar
-            h('div', { className: 'w-full shrink-0 flex flex-wrap gap-2 items-center justify-between p-3 mb-4' },
+            h('div', { className: 'sticky top-0 z-10 bg-slate-900 w-full shrink-0 flex flex-wrap gap-2 items-center justify-between p-3 mb-2' },
                 h('button', { onClick: recovery.requestClose, 'aria-label': 'Close Frequency Counter', className: 'p-2 rounded-full hover:bg-white/10 transition-colors' },
                     h(X, { size: 24 })
                 ),
@@ -3341,13 +3834,15 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             },
                 counters.map((counter, idx) => {
                     const color = counterColors[idx % counterColors.length];
-                    const counterRate = elapsed > 0 ? (counter.count / (elapsed / 60)).toFixed(1) : '0.0';
+                    const counterSeconds = Math.max(0, elapsed - Math.floor((counter.addedAtMs || 0) / 1000));
+                    const counterRate = counterSeconds > 0 ? (counter.count / (counterSeconds / 60)).toFixed(1) : '0.0';
                     return h('div', {
                         key: counter.id,
                         className: 'flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/10'
                     },
                         // Label input
-                        h('div', { className: 'w-full flex items-center gap-1' },
+                        // At phone widths the label box was 74-89 px, showing about 30% of a label.
+                        h('div', { className: 'w-full flex flex-wrap sm:flex-nowrap items-center justify-end gap-1' },
                             h('input', {
                                 value: counter.label,
                                 onChange: (e) => setCounters(prev => prev.map(c => c.id === counter.id ? { ...c, label: e.target.value, behaviorId: e.target.value === recordingTarget?.label ? recordingTarget.id : null } : c)),
@@ -3355,10 +3850,10 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                                 'aria-label': 'Behavior counter label',
                                 className: 'min-w-0 w-full flex-1 bg-transparent text-white text-xs text-center border-b border-white/20 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400 outline-none py-0.5'
                             }),
-                            counters.length > 1 && h('button', { "aria-label": "Remove Counter",
+                            counters.length > 1 && h('button', { "aria-label": 'Remove counter ' + (counter.label || 'unlabeled behavior'),
                                 onClick: () => removeCounter(counter.id),
-                                className: 'p-0.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-red-400'
-                            }, h(X, { size: 12 }))
+                                className: 'min-w-6 min-h-6 w-6 h-6 inline-flex items-center justify-center rounded-full hover:bg-white/10 text-slate-300 hover:text-red-400'
+                            }, h(X, { size: 14 }))
                         ),
                         // Count display
                         h('div', {
@@ -3399,12 +3894,19 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                 }, '+ Add')
             ),
 
-            // Controls
-            h('div', { className: 'flex gap-4 mt-6' },
-                h('button', { 'aria-pressed': String(running), "aria-label": running ? 'Pause recording' : 'Start recording',
+            // Timer and controls stay at the bottom of the screen (with three counters they were below it).
+            h('div', { className: 'sticky bottom-0 z-10 w-full mt-4 bg-slate-900 border-t border-white/10 px-3 py-2 flex flex-wrap items-center justify-center gap-3' },
+                h('div', { className: 'text-center' },
+                    h('div', { className: 'text-2xl font-black tabular-nums text-slate-200' }, fmtDuration(elapsed)),
+                    h('div', { className: 'text-xs text-slate-300' }, tt('behavior_lens.freq.elapsed', 'Elapsed'))
+                ),
+                h('button', { "aria-label": running ? 'Pause recording' : 'Start recording', 'data-bl-initial-focus': true,
                     onClick: toggleRunning,
-                    className: `px-5 py-2 rounded-full text-sm font-bold transition-colors ${running ? 'bg-amber-500 hover:bg-amber-400' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'}`
+                    className: `px-5 py-2 rounded-full text-sm font-bold transition-colors ${running ? 'bg-amber-500 hover:bg-amber-400 text-slate-900' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'}`
                 }, running ? '⏸ Pause' : '▶ Start'),
+                h('p', { role: 'status', 'aria-live': 'polite', className: 'bl-sr-only', 'data-freq-announcement': true }, announcement),
+                suspendedFor != null && h('p', { role: 'status', 'data-freq-suspended': suspendedFor, className: 'w-full text-center text-sm text-amber-200' },
+                    tt('behavior_lens.interval.suspended', 'Recording paused: this page stopped running for {n} seconds (screen locked or another app). That time is not counted. Resume when you are watching again.', { n: suspendedFor })),
                 h('button', { "aria-label": "Reset all counts and timer",
                     onClick: async () => {
                         // Reset wipes an unsaved running count — confirm when
@@ -3413,15 +3915,10 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         const hasData = elapsed > 0 || counters.some(c => (c.count || 0) > 0);
                         const msg = (t && t('behavior_lens.confirm.reset_counts')) || 'Reset all counts and the timer? This cannot be undone.';
                         if (hasData && !await askBehaviorLensConfirmation(msg, { title: 'Reset frequency data', confirmText: 'Reset counts' })) return;
-                        setCounters(prev => prev.map(c => ({ ...c, count: 0 }))); setElapsed(0); startedAtRef.current = null; setRunning(false);
+                        setCounters(prev => prev.map(c => ({ ...c, count: 0, addedAtMs: 0 }))); clockRef.current = { baseMs: 0, startedAt: null, lastTick: null, spans: [] }; setSuspendedFor(null); setElapsed(0); setRunning(false);
                     },
                     className: 'px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-sm font-bold transition-colors'
                 }, '↺ Reset')
-            ),
-            // Timer
-            h('div', { className: 'mt-6 pb-4 text-center' },
-                h('div', { className: 'text-3xl font-black tabular-nums text-slate-200' }, fmtDuration(elapsed)),
-                h('div', { className: 'text-xs text-slate-300 mt-1' }, tt('behavior_lens.freq.elapsed', 'Elapsed'))
             )
         );
     };
@@ -3458,16 +3955,20 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         const [intervalSec, setIntervalSec] = useState(recoveredDraft?.intervalSec || 15);
         const [totalIntervals, setTotalIntervals] = useState(recoveredDraft?.totalIntervals || 20);
         const [running, setRunning] = useState(false);
+        const runningNowRef = useRef(false);
+        runningNowRef.current = running;
         const [currentInterval, setCurrentInterval] = useState(recoveredDraft?.currentInterval || 0);
         const [grid, setGrid] = useState(recoveredDraft?.grid || []);
         const [elapsed, setElapsed] = useState(recoveredDraft?.elapsed || 0);
         const [secondsLeft, setSecondsLeft] = useState(null);
         const [suspendedFor, setSuspendedFor] = useState(null);
+        const [lookHint, setLookHint] = useState('');
+        useEffect(() => { if (lookHint && mode === 'momentary' && running && secondsLeft != null && secondsLeft <= INTERVAL_GRID_LOOK_SEC) setLookHint(''); });
         // baseMs: time recorded before the current run; startedAt/lastTick: this run.
-        const clockRef = useRef({ baseMs: (recoveredDraft?.elapsed || 0) * 1000, startedAt: null, lastTick: null });
+        const clockRef = useRef({ baseMs: (recoveredDraft?.elapsed || 0) * 1000, startedAt: null, lastTick: null, spans: Array.isArray(recoveredDraft?.spans) ? recoveredDraft.spans : [] });
         const dialogRef = useRef(null);
-        const recovery = useObservationRecovery({ kind: 'interval', identity: draftIdentity, onClose, addToast,
-            hasData: elapsed > 0 || grid.length > 0 || !!recordingTarget, draft: { target: recordingTarget, mode, intervalSec, totalIntervals, currentInterval, grid, elapsed } });
+        const recovery = useObservationRecovery({ kind: 'interval', identity: draftIdentity, onClose, addToast, onBeforeAsk: () => { if (!runningNowRef.current) return null; setRunning(false); return () => { setSuspendedFor(null); setRunning(true); }; },
+            hasData: elapsed > 0 || grid.length > 0 || !!recordingTarget, draft: { target: recordingTarget, mode, intervalSec, totalIntervals, currentInterval, grid, elapsed, spans: clockRef.current.startedAt != null ? clockRef.current.spans.concat([{ start: new Date(clockRef.current.startedAt).toISOString(), end: new Date(clockRef.current.lastTick || clockRef.current.startedAt).toISOString() }]) : clockRef.current.spans } });
         useBehaviorLensModal(dialogRef, recovery.requestClose);
         useEffect(() => { if (recoveredDraft && addToast) addToast('Recovered interval draft. Recording is paused.', 'info'); }, []);
 
@@ -3494,6 +3995,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                 if (now - clock.lastTick > INTERVAL_GRID_MAX_GAP_MS) {
                     // The page was stopped: keep only the time it was running.
                     clock.baseMs += clock.lastTick - clock.startedAt;
+                    clock.spans = clock.spans.concat([{ start: new Date(clock.startedAt).toISOString(), end: new Date(clock.lastTick).toISOString() }]);
                     clock.startedAt = null;
                     setSuspendedFor(Math.round((now - clock.lastTick) / 1000));
                     syncClock(clock.baseMs);
@@ -3506,15 +4008,28 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             return () => {
                 clearInterval(id);
                 if (clock.startedAt != null) {
-                    clock.baseMs += Date.now() - clock.startedAt;
+                    const endedAt = Date.now();
+                    clock.baseMs += endedAt - clock.startedAt;
+                    clock.spans = clock.spans.concat([{ start: new Date(clock.startedAt).toISOString(), end: new Date(endedAt).toISOString() }]);
                     clock.startedAt = null;
                 }
             };
         }, [running]);
         const lookOpen = mode !== 'momentary' || (running && secondsLeft != null && secondsLeft <= INTERVAL_GRID_LOOK_SEC);
+        // Start, Pause and Resume replace the pressed button, and focus fell to the page (after Start,
+        // "Occurred" was 23 Tab stops away): it goes to the control that is now the next step.
+        useEffect(() => {
+            const dialog = dialogRef.current;
+            const active = document.activeElement;
+            if (!dialog || (active && active !== document.body)) return;
+            const target = dialog.querySelector(running ? '.bl-occurred-btn' : '[aria-label="Resume"]:not([disabled]), [aria-label="Start recording"]');
+            if (target) target.focus();
+        }, [running]);
 
-        const mark = (idx) => {
-            setGrid(g => { const ng = [...g]; ng[idx] = !ng[idx]; return ng; });
+        // A cell tap corrects (toggles); "Occurred" marks. It toggled too, so tapping it again when
+        // the behavior happened again UNMARKED the interval.
+        const mark = (idx, value) => {
+            setGrid(g => { const ng = [...g]; ng[idx] = value === undefined ? !ng[idx] : value; return ng; });
         };
 
         // Scored COMPLETED intervals over completed intervals. A mark on the unfinished
@@ -3528,14 +4043,17 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         const pct = pctValue == null ? '—' : String(pctValue);
 
         const handleSave = () => {
+            const clock = clockRef.current;
+            const spans = clock.startedAt != null ? clock.spans.concat([{ start: new Date(clock.startedAt).toISOString(), end: new Date().toISOString() }]) : clock.spans;
             onSaveSession({
                 id: uid(),
                 method: 'interval',
                 behaviorId: recordingTarget?.id || null,
                 behavior: recordingTarget?.label || '',
-                timestamp: new Date().toISOString(),
+                // When it was observed, not when Save was pressed.
+                timestamp: spans.length ? spans[0].start : new Date().toISOString(),
                 duration: elapsed,
-                data: { mode, intervalSec, totalIntervals, grid: [...grid], occurredCount, completedCount, percentage: pctValue == null ? 0 : pctValue, complete: completedCount >= totalIntervals, inProgressScored }
+                data: { mode, intervalSec, totalIntervals, grid: [...grid], occurredCount, completedCount, percentage: pctValue == null ? 0 : pctValue, complete: completedCount >= totalIntervals, inProgressScored, spans }
             });
             if (addToast) addToast(tt('behavior_lens.interval.saved', 'Interval session saved ✅'), 'success');
             recovery.clearDraft();
@@ -3577,7 +4095,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                 h('p', { className: 'text-xs text-slate-300 text-center' }, modeLabels[mode].desc),
                 h('div', { className: 'flex gap-4 items-center justify-center' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-300 uppercase block mb-1' }, tt('behavior_lens.interval_sec', 'Interval (sec)')),
+                        h('label', { className: 'text-xs font-bold text-slate-300 uppercase block mb-1' }, tt('behavior_lens.interval_sec', 'Interval (sec)')),
                         h('select', {
                             value: intervalSec,
                             onChange: (e) => setIntervalSec(Number(e.target.value)),
@@ -3586,7 +4104,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         }, [10, 15, 20, 30, 60].map(v => h('option', { key: v, value: v }, `${v}s`)))
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-300 uppercase block mb-1' }, tt('behavior_lens.total_intervals', 'Total Intervals')),
+                        h('label', { className: 'text-xs font-bold text-slate-300 uppercase block mb-1' }, tt('behavior_lens.total_intervals', 'Total Intervals')),
                         h('select', {
                             value: totalIntervals,
                             onChange: (e) => setTotalIntervals(Number(e.target.value)),
@@ -3595,8 +4113,8 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         }, [10, 15, 20, 30, 40].map(v => h('option', { key: v, value: v }, v)))
                     )
                 ),
-                h('button', { "aria-label": "Start recording",
-                    onClick: () => { clockRef.current = { baseMs: 0, startedAt: null, lastTick: null }; setSuspendedFor(null); setSecondsLeft(intervalSec); setRunning(true); setGrid([]); setCurrentInterval(0); setElapsed(0); },
+                h('button', { "aria-label": "Start recording", 'data-bl-initial-focus': true,
+                    onClick: () => { clockRef.current = { baseMs: 0, startedAt: null, lastTick: null, spans: [] }; setSuspendedFor(null); setSecondsLeft(intervalSec); setRunning(true); setGrid([]); setCurrentInterval(0); setElapsed(0); },
                     className: 'w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all'
                 }, '▶ ' + (tt('behavior_lens.interval.start', 'Start Recording')))
             ),
@@ -3617,10 +4135,11 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                         const isCurrent = i === currentInterval && running;
                         const occurred = grid[i] === true;
                         let bg = 'bg-slate-700';
-                        if (isCurrent) bg = 'bg-indigo-500 ring-2 ring-indigo-300 animate-pulse motion-reduce:animate-none';
-                        else if (isComplete && occurred) bg = 'bg-red-500';
-                        else if (isComplete && !occurred) bg = 'bg-emerald-500';
-                        const statusLabel = isCurrent ? 'current' : isComplete ? (occurred ? 'occurred' : 'not occurred') : 'not yet recorded';
+                        // White 12px numbers: emerald-500 was 2.5:1, red-500 3.8:1, indigo-500 4.5:1.
+                        if (isCurrent) bg = (occurred ? 'bg-red-700' : 'bg-indigo-700') + ' ring-2 ring-indigo-300 animate-pulse motion-reduce:animate-none';
+                        else if (isComplete && occurred) bg = 'bg-red-700';
+                        else if (isComplete && !occurred) bg = 'bg-emerald-800';
+                        const statusLabel = isCurrent ? (occurred ? 'current, marked occurred' : 'current') : isComplete ? (occurred ? 'occurred' : 'not occurred') : 'not yet recorded';
                         return h('button', {
                             "aria-label": `Interval ${i + 1} — ${statusLabel}`,
                             key: i,
@@ -3630,20 +4149,25 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                             h('span', null, i + 1),
                             // Shape, not color alone, marks occurred (●) vs not (○) —
                             // so red/green isn't the only cue (colorblind + SR users).
-                            isComplete && h('span', { 'aria-hidden': 'true', className: 'text-[10px] mt-0.5' }, occurred ? '●' : '○')
+                            (isComplete || (isCurrent && occurred)) && h('span', { 'aria-hidden': 'true', className: 'text-[10px] mt-0.5' }, occurred ? '●' : '○')
                         );
                     })
                 ),
                 // Controls
                 suspendedFor != null && h('p', { role: 'status', 'data-interval-suspended': suspendedFor, className: 'mt-4 text-sm text-amber-200 text-center' },
                     tt('behavior_lens.interval.suspended', 'Recording paused: this page stopped running for {n} seconds (screen locked or another app). That time is not counted. Resume when you are watching again.', { n: suspendedFor })),
-                running && mode === 'momentary' && h('p', { role: 'status', 'data-interval-look': lookOpen ? 'open' : 'wait', className: `mt-4 text-center font-black ${lookOpen ? 'text-amber-300 text-xl' : 'text-slate-300 text-sm'}` },
+                // Only "Look now" is announced; the countdown spoke every second as a live region.
+                running && mode === 'momentary' && h('p', { role: 'status', className: 'bl-sr-only', 'data-interval-look-live': true }, lookOpen ? tt('behavior_lens.interval.look_now', 'Look now: is it happening at this moment?') : lookHint),
+                running && mode === 'momentary' && h('p', { 'aria-hidden': 'true', 'data-interval-look': lookOpen ? 'open' : 'wait', className: `mt-4 text-center font-black ${lookOpen ? 'text-amber-300 text-xl' : 'text-slate-300 text-sm'}` },
                     lookOpen ? tt('behavior_lens.interval.look_now', 'Look now: is it happening at this moment?') : tt('behavior_lens.interval.look_in', 'Look in {n} s', { n: Math.max(0, Math.ceil((secondsLeft == null ? intervalSec : secondsLeft) - INTERVAL_GRID_LOOK_SEC)) })),
                 running && h('div', { className: 'mt-4 flex gap-3 justify-center' },
+                    // It was disabled outside the look window, so focus fell off it every interval and a
+                    // keyboard user could not get back in time. It stays focusable and says to wait.
                     h('button', { "aria-label": mode === 'momentary' ? 'Mark: occurring at the end of this interval' : "Mark current interval as occurred",
-                        onClick: () => { if (lookOpen) mark(currentInterval); },
-                        disabled: !lookOpen,
-                        className: 'bl-occurred-btn px-8 py-3 bg-red-700 text-white rounded-xl font-bold text-lg hover:bg-red-700 active:scale-95 transition-all disabled:opacity-40'
+                        onClick: () => { if (lookOpen) { mark(currentInterval, true); setLookHint(''); } else setLookHint(tt('behavior_lens.interval.look_wait', 'Not yet: mark it in the last {n} seconds of the interval.', { n: INTERVAL_GRID_LOOK_SEC })); },
+                        'aria-pressed': grid[currentInterval] === true ? 'true' : 'false',
+                        'aria-disabled': !lookOpen ? 'true' : undefined,
+                        className: `bl-occurred-btn px-8 py-3 bg-red-700 text-white rounded-xl font-bold text-lg hover:bg-red-700 active:scale-95 transition-all ${lookOpen ? '' : 'opacity-60'}`
                     }, '✓ ' + (mode === 'momentary' ? tt('behavior_lens.interval.occurring_now', 'Occurring now') : tt('behavior_lens.obs_occurred', 'Occurred'))),
                     h('button', { "aria-label": "Pause",
                         onClick: () => setRunning(false),
@@ -3705,9 +4229,10 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
 
     const TokenBoard = ({ onClose, studentName, studentKey, t, addToast, callGemini }) => {
         const [slots, setSlots] = useState(5);
-        const [tokens, setTokens] = useState([]);
-        const [targetBehavior, setTargetBehavior] = useState('');
-        const [reward, setReward] = useState('');
+        // Kept with the student's workspace: closing the board mid-lesson emptied it.
+        const [tokens, setTokens] = useDurableToolState('tokenBoardTokens', []);
+        const [targetBehavior, setTargetBehavior] = useDurableToolState('tokenBoardTarget', '');
+        const [reward, setReward] = useDurableToolState('tokenBoardReward', '');
         const [showConfetti, setShowConfetti] = useState(false);
         const tokenEmojis = ['⭐', '🌟', '🏆', '🎯', '💎', '🔥', '🌈', '🦄', '🎵', '💫'];
 
@@ -3750,6 +4275,7 @@ Return ONLY valid JSON:
   "rationale": "1-sentence explanation of why this setup"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -3781,7 +4307,7 @@ Return ONLY valid JSON:
                 totalSlots: slots,
             };
             setSessionHistory(prev => {
-                return [session, ...prev].slice(0, 50);
+                return [session, ...prev]; // the 51st silently deleted the oldest
             });
             if (addToast) addToast(tt('behavior_lens.toast.session_saved', 'Session saved ✨'), 'success');
         }, [studentName, responseCount, scheduleType, scheduleParam, targetBehavior, reward, tokens, slots]);
@@ -4007,7 +4533,7 @@ Return ONLY valid JSON:
                 ),
                 // Schedule thinning
                 scheduleType !== 'token' && h('button', { 'aria-expanded': String(showThinning), onClick: () => setShowThinning(!showThinning),
-                    className: 'mt-2 text-xs text-rose-500 hover:text-rose-700 font-bold'
+                    className: 'mt-2 text-xs text-rose-700 hover:text-rose-800 font-bold'
                 }, showThinning ? '▾ Hide Thinning Guide' : '▸ Schedule Thinning Guide'),
                 showThinning && h('div', { className: 'mt-2 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800 space-y-1' },
                     h('p', { className: 'font-bold' }, '📈 Schedule Thinning Steps:'),
@@ -4095,9 +4621,9 @@ Return ONLY valid JSON:
             // Token Board Display
             h('div', { className: `bg-gradient-to-b from-rose-50 to-amber-50 rounded-2xl border-2 border-rose-200 p-8 shadow-lg relative overflow-hidden ${showConfetti ? 'animate-pulse motion-reduce:animate-none' : ''}` },
                 h('div', { className: 'text-center mb-6' },
-                    h('div', { className: 'text-xs font-bold text-rose-500 uppercase mb-1' }, studentName || ''),
+                    h('div', { className: 'text-xs font-bold text-rose-700 uppercase mb-1' }, studentName || ''),
                     targetBehavior && h('div', { className: 'text-lg font-black text-slate-800' }, targetBehavior),
-                    reward && h('div', { className: 'text-sm text-amber-600 font-medium mt-1' }, `🎁 ${reward}`),
+                    reward && h('div', { className: 'text-sm text-amber-800 font-medium mt-1' }, `🎁 ${reward}`),
                     scheduleType !== 'token' && h('div', { className: 'mt-1 inline-block px-2 py-0.5 bg-rose-100 text-rose-800 rounded-full text-[11px] font-bold' },
                         `${scheduleType}-${scheduleParam}`)
                 ),
@@ -4105,11 +4631,12 @@ Return ONLY valid JSON:
                     Array.from({ length: slots }, (_, i) => {
                         const earned = tokens[i];
                         const emoji = tokenEmojis[i % tokenEmojis.length];
-                        return h('button', { key: i,
+                        // border-3 is not a class, so an empty slot had no border, and its "○" was 40% opacity.
+                        return h('button', { key: i, 'aria-label': 'Token ' + (i + 1) + ' of ' + slots + ': ' + (earned ? 'earned' : 'not yet earned'),
                             onClick: () => scheduleType === 'token' ? toggleToken(i) : null,
-                            className: `w-16 h-16 md:w-20 md:h-20 rounded-2xl border-3 flex items-center justify-center text-3xl md:text-4xl transition-all transform ${earned
-                                ? 'bg-amber-100 border-amber-400 shadow-lg shadow-amber-200/50 scale-110'
-                                : 'bg-white border-slate-200 hover:border-rose-300 hover:shadow-md opacity-40 hover:opacity-60'
+                            className: `w-16 h-16 md:w-20 md:h-20 rounded-2xl border-4 flex items-center justify-center text-3xl md:text-4xl transition-all transform ${earned
+                                ? 'bg-amber-100 border-amber-600 shadow-lg shadow-amber-200/50 scale-110'
+                                : 'bg-white border-slate-500 text-slate-600 hover:border-rose-600 hover:shadow-md'
                                 }`
                         }, earned ? emoji : '○');
                     })
@@ -4122,7 +4649,7 @@ Return ONLY valid JSON:
                             style: { width: `${(earnedCount / slots) * 100}%` }
                         })
                     ),
-                    h('span', { className: 'text-sm font-black text-rose-600' }, `${earnedCount}/${slots}`)
+                    h('span', { className: 'text-sm font-black text-rose-700' }, `${earnedCount}/${slots}`)
                 ),
                 showConfetti && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-white/60 rounded-2xl' },
                     h('div', { className: 'text-center' },
@@ -4229,6 +4756,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
   "possibleTriggers": ["environmental factor 1", "factor 2"]
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -4332,12 +4860,12 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     onClick: () => {
                         const header = 'Routine,Count';
                         const rows = routines.map(r => `${r},${matrix[r] || 0}`);
-                        navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast(t('toasts.hotspot_data_copied'), 'success'); });
+                        blWriteClipboard([header, ...rows].join('\n'), addToast).then(() => { if (addToast) addToast(t('toasts.hotspot_data_copied'), 'success'); });
                     },
                     className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-lg text-[11px] font-bold hover:bg-slate-100 transition-all'
                 }, '📋 Copy CSV'),
                 h('button', { "aria-label": "Print",
-                    onClick: () => window.print(),
+                    onClick: blPrintPanel,
                     className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-lg text-[11px] font-bold hover:bg-slate-100 transition-all'
                 }, '🖨️ Print')
             )
@@ -4350,34 +4878,24 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
         const [format, setFormat] = useState('json');
         const [dateRange, setDateRange] = useState('all');
 
+        // "Last 7 days" is today and the 6 days before, as in the progress report (it was a
+        // rolling 168 hours, so a partial 8th day came along). Newest first: the stored
+        // order is mixed (the form prepends, imports append, a merge sorts oldest first).
         const filteredAbc = useMemo(() => {
-            if (dateRange === 'all') return abcEntries;
-            const now = new Date();
-            const cutoff = dateRange === 'week' ? new Date(now - 7 * 86400000) :
-                dateRange === 'month' ? new Date(now - 30 * 86400000) : new Date(0);
-            return abcEntries.filter(e => new Date(e.timestamp) >= cutoff);
+            const from = blRangeStartMs(dateRange);
+            return abcEntriesNewestFirst(abcEntries).filter(e => from == null || abcEntryTime(e) >= from);
         }, [abcEntries, dateRange]);
 
         const filteredObs = useMemo(() => {
-            if (dateRange === 'all') return observationSessions;
-            const now = new Date();
-            const cutoff = dateRange === 'week' ? new Date(now - 7 * 86400000) :
-                dateRange === 'month' ? new Date(now - 30 * 86400000) : new Date(0);
-            return observationSessions.filter(s => new Date(s.timestamp) >= cutoff);
+            const from = blRangeStartMs(dateRange);
+            return observationSessionsNewestFirst(observationSessions).filter(s => from == null || Date.parse(s && s.timestamp) >= from);
         }, [observationSessions, dateRange]);
 
-        const csvEscape = (val) => {
-            if (val == null) return '';
-            const raw = String(val);
-            const numeric = /^[-+]?\d+(?:\.\d+)?$/.test(raw);
-            const str = typeof val === 'string' && /^[-+=@]/.test(raw) && !numeric ? "'" + raw : raw;
-            if (/[",\r\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
-            return str;
-        };
+        const csvEscape = csvCell;
 
         const handleExport = () => {
             let content, filename, type;
-            const dateSuffix = new Date().toISOString().split('T')[0];
+            const dateSuffix = blLocalDateKey(new Date());
             const safeName = String(studentName || 'student').replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^\.+|\.+$/g, '') || 'student';
 
             if (format === 'json') {
@@ -4393,14 +4911,15 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 type = 'application/json';
             } else if (format === 'csv') {
                 // ABC Data as CSV
-                const headers = ['Timestamp', 'Date', 'Time', 'Antecedent', 'Behavior', 'Consequence', 'Setting', 'Intensity', 'Duration (s)', 'Phase', 'Notes'];
+                const headers = ['Timestamp', 'Date', 'Time', 'Antecedent', 'Behavior', 'Consequence', 'Function', 'Setting', 'Intensity', 'Duration (s)', 'Phase', 'Notes'];
                 const rows = filteredAbc.map(e => [
-                    csvEscape(e.timestamp),
-                    csvEscape(fmtDate(e.timestamp)),
-                    csvEscape(fmtTime(e.timestamp)),
+                    csvEscape(e.occurredAt || e.timestamp),
+                    csvEscape(abcEntryDay(e)),
+                    csvEscape(abcEntryClock(e)),
                     csvEscape(e.antecedent),
                     csvEscape(e.behavior),
                     csvEscape(e.consequence),
+                    csvEscape(abcEntryFunction(e)),
                     csvEscape(e.setting),
                     csvEscape(e.intensity),
                     csvEscape(e.duration),
@@ -4411,16 +4930,14 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
 
                 // Append observation sessions as a second section
                 if (filteredObs.length > 0) {
-                    content += '\n\n' + ['Session Timestamp', 'Method', 'Duration (s)', 'Count/Rate', 'Notes'].join(',');
+                    // Latency results were blank, and "3/10" opens in a spreadsheet as 10 March.
+                    content += '\n\n' + ['Session Timestamp', 'Method', 'Session length (s)', 'Result', 'Notes'].join(',');
                     filteredObs.forEach(s => {
-                        const detail = s.method === 'frequency' ? `${s.data?.count || 0} (${s.data?.rate || 0}/min)` :
-                            s.method === 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.completedCount ?? s.data?.totalIntervals ?? 0}` :
-                                s.method === 'duration' ? `${s.data?.totalDuration || 0}s total` : '';
                         content += '\n' + [
                             csvEscape(s.timestamp),
                             csvEscape(s.method),
                             csvEscape(s.duration),
-                            csvEscape(detail),
+                            csvEscape(observationResult(s)),
                             csvEscape(s.notes)
                         ].join(',');
                     });
@@ -4433,20 +4950,19 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 text += '═'.repeat(50) + '\n\n';
                 text += `ABC DATA (${filteredAbc.length} entries)\n` + '─'.repeat(30) + '\n';
                 filteredAbc.forEach((e, i) => {
-                    text += `\n#${i + 1} — ${fmtDate(e.timestamp)} ${fmtTime(e.timestamp)}\n`;
+                    text += `\n#${i + 1}: ${abcEntryDay(e)} ${abcEntryClock(e, '(no time recorded)')}\n`;
                     text += `  Antecedent: ${e.antecedent || '—'}\n`;
                     text += `  Behavior:   ${e.behavior || '—'}\n`;
                     text += `  Consequence: ${e.consequence || '—'}\n`;
                     if (e.setting) text += `  Setting:    ${e.setting}\n`;
-                    if (e.intensity) text += `  Intensity:  ${e.intensity}/5\n`;
+                    if (e.intensity) text += `  Intensity:  ${intensityForPrompt(e.intensity)}\n`;
                     if (e.phase) text += `  Phase:      ${e.phase}\n`;
                     if (e.notes) text += `  Notes:      ${e.notes}\n`;
                 });
                 text += `\n\nOBSERVATION SESSIONS (${filteredObs.length})\n` + '─'.repeat(30) + '\n';
                 filteredObs.forEach((s, i) => {
-                    text += `\n#${i + 1} — ${fmtDate(s.timestamp)} | ${s.method} | ${fmtDuration(s.duration)}\n`;
-                    if (s.method === 'frequency') text += `  Count: ${s.data?.count || 0} (${s.data?.rate || '?'}/min)\n`;
-                    if (s.method === 'interval') text += `  ${s.data?.occurredCount || 0}/${s.data?.completedCount ?? s.data?.totalIntervals ?? 0} intervals (${s.data?.percentage || 0}%)\n`;
+                    text += `\n#${i + 1}: ${fmtDate(s.timestamp)} | ${s.method} | ${fmtDuration(s.duration)}\n`;
+                    text += `  Result: ${observationResult(s)}\n`;
                 });
                 if (aiAnalysis) {
                     text += '\n\nAI-ASSISTED ANALYSIS\n' + '─'.repeat(30) + '\n';
@@ -4470,10 +4986,10 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 h('h3', { className: 'text-sm font-black text-slate-800' }, '📥 ' + (tt('behavior_lens.export.title', 'Export Reports'))),
                 // Format selector
                 h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.format', 'Format')),
-                    h('div', { className: 'flex gap-2' },
+                    h('p', { id: 'bl-export-format-label', className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.format', 'Format')),
+                    h('div', { className: 'flex gap-2', role: 'group', 'aria-labelledby': 'bl-export-format-label' },
                         [['json', '📦 JSON'], ['csv', '📊 CSV'], ['text', '📝 Text']].map(([key, label]) =>
-                            h('button', { key, onClick: () => setFormat(key),
+                            h('button', { key, type: 'button', 'aria-pressed': format === key ? 'true' : 'false', onClick: () => setFormat(key),
                                 className: `flex-1 py-2 rounded-lg text-sm font-bold transition-all ${format === key ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                             }, label)
                         )
@@ -4489,10 +5005,10 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 ),
                 // Date range
                 h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.date_range', 'Date Range')),
-                    h('div', { className: 'flex gap-2' },
+                    h('p', { id: 'bl-export-range-label', className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.date_range', 'Date Range')),
+                    h('div', { className: 'flex gap-2', role: 'group', 'aria-labelledby': 'bl-export-range-label' },
                         [['all', 'All Time'], ['month', 'Last 30 Days'], ['week', 'Last 7 Days']].map(([key, label]) =>
-                            h('button', { key, onClick: () => setDateRange(key),
+                            h('button', { key, type: 'button', 'aria-pressed': dateRange === key ? 'true' : 'false', onClick: () => setDateRange(key),
                                 className: `flex-1 py-2 rounded-lg text-xs font-bold transition-all ${dateRange === key ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                             }, label)
                         )
@@ -4547,8 +5063,8 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         if (filteredAbc.length > 0) {
                             html += `<h2>📋 ABC Data Log</h2><table><tr><th>#</th><th>Date</th><th>${t('bl.antecedent') || 'Antecedent'}</th><th>${t('bl.behavior') || 'Behavior'}</th><th>${t('bl.consequence') || 'Consequence'}</th><th>${t('bl.setting') || 'Setting'}</th><th>Phase</th><th>Int.</th></tr>`;
                             filteredAbc.forEach((e, i) => {
-                                const phaseColors = { baseline: '#94a3b8', intervention: '#10b981', maintenance: '#3b82f6', 'return to baseline': '#f97316' };
-                                const phaseBadge = e.phase ? `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:8pt;font-weight:700;background:${phaseColors[e.phase] || '#e2e8f0'};color:white;">${e.phase === 'baseline' ? 'A' : e.phase === 'intervention' ? 'B' : e.phase === 'maintenance' ? 'M' : "A'"}</span>` : '—';
+                                const phaseColors = { baseline: '#64748b', intervention: '#047857', maintenance: '#1d4ed8', return_to_baseline: '#c2410c' };
+                                const phaseBadge = e.phase ? `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:8pt;font-weight:700;background:${phaseColors[portfolioPhaseLabel(e.phase).key] || '#475569'};color:white;">${esc(portfolioPhaseLabel(e.phase).short)}</span>` : '—';
                                 html += `<tr><td>${i + 1}</td><td>${fmtDate(e.timestamp)}</td><td>${esc(e.antecedent) || '—'}</td><td>${esc(e.behavior) || '—'}</td><td>${esc(e.consequence) || '—'}</td><td>${esc(e.setting) || '—'}</td><td>${phaseBadge}</td><td>${esc(e.intensity) || '—'}</td></tr>`;
                             });
                             html += '</table>';
@@ -4557,7 +5073,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         if (filteredObs.length > 0) {
                             html += `<h2>🔍 Observation Sessions</h2><table><tr><th>#</th><th>Date</th><th>${t('bl.method') || 'Method'}</th><th>${t('bl.duration') || 'Duration'}</th><th>${t('bl.result') || 'Result'}</th></tr>`;
                             filteredObs.forEach((s, i) => {
-                                const detail = s.method === 'frequency' ? `${Number(s.data?.count) || 0} (${Number(s.data?.rate) || 0}/min)` : s.method === 'interval' ? `${Number(s.data?.occurredCount) || 0}/${Number(s.data?.completedCount ?? s.data?.totalIntervals) || 0} intervals` : s.method === 'duration' ? `${Number(s.data?.totalDuration) || 0}s` : '—';
+                                const detail = esc(observationResult(s).replace(/ over .*$/, ''));
                                 html += `<tr><td>${i + 1}</td><td>${fmtDate(s.timestamp)}</td><td>${esc(s.method) || '—'}</td><td>${fmtDuration(s.duration)}</td><td>${detail}</td></tr>`;
                             });
                             html += '</table>';
@@ -4601,7 +5117,8 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                             if (e.setting) sCount[e.setting] = (sCount[e.setting]||0)+1;
                             const fTag = abcEntryFunction(e); if (fTag) fCount[fTag] = (fCount[fTag]||0)+1;
                             if (e.intensity) iDist[e.intensity] = (iDist[e.intensity]||0)+1;
-                            if (e.phase) { if (!phaseData[e.phase]) phaseData[e.phase]={count:0,totalInt:0,rated:0}; phaseData[e.phase].count++; const iv = e.intensity == null || e.intensity === '' ? NaN : Number(e.intensity); if (Number.isFinite(iv)) { phaseData[e.phase].totalInt+=iv; phaseData[e.phase].rated++; } }
+                            // One row per phase however it was written ("Baseline" and "baseline" were two rows).
+                            if (e.phase) { const pk = effectSizePhaseTag(e.phase); if (!phaseData[pk]) phaseData[pk]={count:0,totalInt:0,rated:0,label:String(e.phase)}; phaseData[pk].count++; const iv = e.intensity == null || e.intensity === '' ? NaN : Number(e.intensity); if (Number.isFinite(iv)) { phaseData[pk].totalInt+=iv; phaseData[pk].rated++; } }
                         });
                         const topA = Object.entries(aCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
                         const topC = Object.entries(cCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -4614,15 +5131,21 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         // ── Temporal pattern (Mon–Fri × Morning/Mid/Afternoon) ──
                         const timeSlots = {'Morning (7–10)': [7,8,9], 'Midday (10–13)': [10,11,12], 'Afternoon (13–16)': [13,14,15], 'Late (16–18)': [16,17,18]};
                         const days = ['Mon','Tue','Wed','Thu','Fri'];
+                        // Entries on weekends or outside the slots were dropped without a word.
                         const temporal = {};
+                        let temporalOutside = 0, temporalUntimed = 0;
                         abc.forEach(e => {
-                            const d = new Date(e.timestamp||e.date);
-                            const dayIdx = d.getDay()-1;
-                            if (dayIdx<0||dayIdx>4) return;
-                            const h_ = d.getHours();
+                            const lp = abcEntryLocalParts(e);
+                            if (!lp) { temporalOutside++; return; }
+                            if (lp.hour == null) { temporalUntimed++; return; }
+                            const dayIdx = lp.dow-1;
+                            if (dayIdx<0||dayIdx>4) { temporalOutside++; return; }
+                            const h_ = lp.hour;
+                            let placed = false;
                             Object.entries(timeSlots).forEach(([slot, hrs]) => {
-                                if (hrs.includes(h_)) { const k=dayIdx+'_'+slot; temporal[k]=(temporal[k]||0)+1; }
+                                if (hrs.includes(h_)) { const k=dayIdx+'_'+slot; temporal[k]=(temporal[k]||0)+1; placed = true; }
                             });
+                            if (!placed) temporalOutside++;
                         });
                         const maxTemporal = Math.max(1,...Object.values(temporal));
 
@@ -4662,17 +5185,18 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         ).join('');
 
                         // ── Phase colors ────────────────────────────────────────
-                        const phaseColors = {baseline:'#64748b',intervention:'#059669',maintenance:'#3b82f6','return to baseline':'#f97316',return_to_baseline:'#f97316'};
+                        const phaseColors = {baseline:'#64748b',intervention:'#047857',maintenance:'#1d4ed8',return_to_baseline:'#c2410c',return_baseline:'#c2410c'};
                         const phaseRows = Object.entries(phaseData).map(([ph,d]) =>
-                            `<tr><td><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${phaseColors[ph]||'#e2e8f0'};color:white;font-weight:700;font-size:8.5pt;">${esc(ph)}</span></td><td>${Number(d.count) || 0}</td><td>${Math.round(d.count/total*100)}%</td><td>${d.rated>0?(d.totalInt/d.rated).toFixed(1):'Not rated'}</td></tr>`
+                            `<tr><td><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${phaseColors[ph]||'#475569'};color:white;font-weight:700;font-size:8.5pt;">${esc(d.label || ph)}</span></td><td>${Number(d.count) || 0}</td><td>${Math.round(d.count/total*100)}%</td><td>${d.rated>0?(d.totalInt/d.rated).toFixed(1):'Not rated'}</td></tr>`
                         ).join('');
 
                         // ── Temporal grid ───────────────────────────────────────
-                        const cellColor = (v,max) => v===0?'#f8fafc':v/max>0.6?'#dc2626':v/max>0.3?'#f97316':'#fef9c3';
+                        // Fixed levels: colours relative to the busiest cell made one incident all week red "High".
+                        const cellColor = (v) => v===0?'#f8fafc':v>=4?'#dc2626':v>=2?'#f97316':'#fef9c3';
                         const tempGridRows = Object.keys(timeSlots).map(slot => {
                             const cells = days.map((day,di) => {
                                 const v = temporal[di+'_'+slot]||0;
-                                return `<td style="text-align:center;background:${cellColor(v,maxTemporal)};padding:6px 10px;border:1px solid #e2e8f0;font-size:8.5pt;font-weight:${v>0?700:400};color:${v>0?'#1e293b':'#94a3b8'};">${v||'—'}</td>`;
+                                return `<td style="text-align:center;background:${cellColor(v,maxTemporal)};padding:6px 10px;border:1px solid #e2e8f0;font-size:8.5pt;font-weight:${v>0?700:400};color:${v>=4?'#ffffff':v>0?'#1e293b':'#94a3b8'};">${v||'—'}</td>`;
                             }).join('');
                             return `<tr><td style="padding:6px 10px;font-size:8.5pt;font-weight:600;color:#374151;border:1px solid #e2e8f0;white-space:nowrap;">${esc(slot)}</td>${cells}</tr>`;
                         }).join('');
@@ -4783,7 +5307,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         // Section 6: Temporal Patterns
                         if (Object.keys(temporal).length) {
                             html += `<section><h2>6. Temporal Patterns</h2>
-                                <p style="font-size:9.5pt;color:#475569;margin:0 0 10px">Incident counts by day of week and time of day. <span style="background:#dc2626;color:white;padding:1px 6px;border-radius:3px;font-size:8pt">High</span> <span style="background:#f97316;color:white;padding:1px 6px;border-radius:3px;font-size:8pt">Medium</span> <span style="background:#fef9c3;color:#374151;padding:1px 6px;border-radius:3px;font-size:8pt;border:1px solid #d1d5db">Low</span></p>
+                                <p style="font-size:9.5pt;color:#475569;margin:0 0 10px">Incident counts by day of week and time of day. <span style="background:#dc2626;color:white;padding:1px 6px;border-radius:3px;font-size:8pt">High (4+)</span> <span style="background:#f97316;color:#1e293b;padding:1px 6px;border-radius:3px;font-size:8pt">Medium (2-3)</span> <span style="background:#fef9c3;color:#374151;padding:1px 6px;border-radius:3px;font-size:8pt;border:1px solid #d1d5db">Low (1)</span>${temporalOutside ? ' <span data-bl-temporal-outside="' + temporalOutside + '">' + temporalOutside + (temporalOutside === 1 ? ' entry on a weekend or outside 7:00-18:59 is not shown.' : ' entries on a weekend or outside 7:00-18:59 are not shown.') + '</span>' : ''}${temporalUntimed ? ' <span data-bl-temporal-untimed="' + temporalUntimed + '">' + temporalUntimed + (temporalUntimed === 1 ? ' entry with no time recorded is not shown.' : ' entries with no time recorded are not shown.') + '</span>' : ''}</p>
                                 <table><tr><th>Time Slot</th>${days.map(d=>`<th style="text-align:center">${d}</th>`).join('')}</tr>${tempGridRows}</table>
                             </section>`;
                         }
@@ -4867,6 +5391,7 @@ Analyze this document and return ONLY valid JSON:
   "summary": "2-3 sentence overall summary"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -4965,6 +5490,7 @@ Create a hypothesis diagram and return ONLY valid JSON:
   "function": "Hypothesized function with brief rationale (1-2 sentences)"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -4977,7 +5503,7 @@ Create a hypothesis diagram and return ONLY valid JSON:
             } finally { setGenerating(false); }
         };
 
-        const fc = aiAnalysis?.hypothesizedFunction ? (FUNCTION_COLORS[aiAnalysis.hypothesizedFunction] || FUNCTION_COLORS['Attention']) : FUNCTION_COLORS['Attention'];
+        const fc = aiAnalysis?.hypothesizedFunction ? (FUNCTION_COLORS[aiAnalysis.hypothesizedFunction] || FUNCTION_COLOR_OTHER) : FUNCTION_COLOR_OTHER;
         const diagramSteps = [
             { key: 'setting', label: (tt('behavior_lens.raw.setting_event', 'Setting Event')), icon: '🏫', color: '#e0f2fe', border: '#38bdf8' },
             { key: 'antecedent', label: (tt('behavior_lens.raw.antecedent', 'Antecedent')), icon: '🔺', color: '#fef3c7', border: '#f59e0b' },
@@ -5105,6 +5631,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
   ]
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -5227,7 +5754,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             // Suggestions
             suggestions && suggestions.length > 0 && h('div', { className: 'bg-lime-50 rounded-xl border border-lime-200 p-4 space-y-2' },
                 h('h4', { className: 'text-xs font-bold text-lime-700 uppercase mb-2' }, '💡 AI Suggestions — tap to apply'),
-                suggestions.map((g, i) => h('button', { "aria-label": "Apply Suggestion",
+                suggestions.map((g, i) => h('button', {
                     key: i,
                     onClick: () => applySuggestion(g),
                     className: 'w-full text-start p-3 bg-white rounded-lg border border-lime-600 hover:border-lime-400 transition-all text-sm text-slate-700'
@@ -5355,6 +5882,19 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
 
     // ─── BehaviorContract ───────────────────────────────────────────────
     // AI-assisted behavior contract builder with persistence + history
+    // AI contract terms, as text. A "{}" reply (no key) blanked every typed field while
+    // saying "Contract drafted", and the draft kept the previous contract's SIGNATURES,
+    // so a new record and its printout showed a student signing terms never shown them.
+    const CONTRACT_FIELDS = ['targetBehavior', 'studentExpectations', 'rewards', 'teacherSupports', 'supportPlan', 'duration'];
+    function cleanContractDraft(parsed) {
+        const text = v => Array.isArray(v) ? v.filter(x => typeof x === 'string').join('; ') : typeof v === 'string' ? v : '';
+        const out = {};
+        CONTRACT_FIELDS.forEach(k => { out[k] = text(parsed && (parsed[k] ?? (k === 'supportPlan' ? parsed.consequences : undefined))).trim().slice(0, 1200); });
+        return out.targetBehavior || out.studentExpectations ? out : null;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensContract = Object.freeze({ cleanContractDraft });
+
     const BehaviorContract = ({ studentName, studentKey, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const [history, setHistory] = useDurableToolState('behaviorContracts', []);
         const [target, setTarget] = useState('');
@@ -5392,7 +5932,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
         const saveContract = () => {
             if (!target.trim()) { if (addToast) addToast(tt('behavior_lens.toast.enter_a_target_behavior_first', 'Enter a target behavior first'), 'error'); return; }
             const entry = { id: uid(), savedAt: new Date().toISOString(), target, studentExpectations, rewards, teacherSupports, supportPlan, duration, studentSig, studentSigDate, teacherSig, teacherSigDate, status };
-            setHistory(previous => [entry, ...previous].slice(0, 20));
+            setHistory(previous => [entry, ...previous]); // the 21st contract silently deleted the oldest, signed or not
             if (addToast) addToast(tt('behavior_lens.toast.contract_saved', 'Contract saved'), 'success');
         };
 
@@ -5405,10 +5945,15 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             setStatus(contract.status || 'active'); setShowHistory(false);
         };
 
-        const deleteHistoryItem = (id) => setHistory(previous => previous.filter(contract => contract.id !== id));
+        const deleteHistoryItem = async (id) => {
+            if (!await askBehaviorLensConfirmation(tt('behavior_lens.contract.delete_confirm', 'Delete this saved contract, signatures included?'), { title: 'Delete saved contract', confirmText: 'Delete' })) return;
+            setHistory(previous => previous.filter(contract => contract.id !== id));
+        };
 
         const handleDraft = async () => {
             if (!callGemini) return;
+            const hasTerms = [target, studentExpectations, rewards, teacherSupports, supportPlan, studentSig, teacherSig].some(v => String(v || '').trim());
+            if (hasTerms && !await askBehaviorLensConfirmation(tt('behavior_lens.contract.replace_confirm', 'Replace the contract terms with an AI draft? The signatures are cleared, because they were given for the current terms.'), { title: 'Replace contract terms', confirmText: 'Replace' })) return;
             setDrafting(true);
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
@@ -5429,16 +5974,20 @@ Generate a behavior contract and return ONLY valid JSON:
   "duration": "recommended contract duration"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                setTarget(parsed.targetBehavior || '');
-                setStudentExpectations(parsed.studentExpectations || '');
-                setRewards(parsed.rewards || '');
-                setTeacherSupports(parsed.teacherSupports || '');
-                setSupportPlan(parsed.supportPlan || parsed.consequences || '');
-                setDuration(parsed.duration || '2 weeks');
+                const draft = cleanContractDraft(parsed);
+                if (!draft) throw new Error('No contract terms in reply');
+                setTarget(draft.targetBehavior);
+                setStudentExpectations(draft.studentExpectations);
+                setRewards(draft.rewards);
+                setTeacherSupports(draft.teacherSupports);
+                setSupportPlan(draft.supportPlan);
+                setDuration(draft.duration || '2 weeks');
+                setStudentSig(''); setStudentSigDate(''); setTeacherSig(''); setTeacherSigDate('');
                 setStatus('active');
                 if (addToast) addToast(tt('behavior_lens.toast.contract_drafted', 'Contract drafted ✨'), 'success');
             } catch (err) {
@@ -5447,7 +5996,7 @@ Generate a behavior contract and return ONLY valid JSON:
             } finally { setDrafting(false); }
         };
 
-        const handlePrint = () => { window.print(); };
+        const handlePrint = (e) => { blPrintPanel(e); };
 
         const statusColors = { active: { bg: '#f0fdf4', border: '#86efac', text: '#16a34a' }, expired: { bg: '#fef2f2', border: '#fca5a5', text: '#dc2626' }, renewed: { bg: '#eff6ff', border: '#93c5fd', text: '#2563eb' } };
         const sc = statusColors[status] || statusColors.active;
@@ -5458,7 +6007,7 @@ Generate a behavior contract and return ONLY valid JSON:
                 callGemini && h('button', { onClick: handleDraft, disabled: drafting,
                     className: 'flex-1 py-3 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, drafting ? '⏳ Drafting...' : ('🧠 ' + (tt('behavior_lens.contract.draft', 'AI Draft Contract')))),
-                h('button', { 'aria-expanded': String(showHistory), onClick: saveContract, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save'),
+                h('button', { onClick: saveContract, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save'),
                 history.length > 0 && h('button', { 'aria-expanded': String(showHistory), onClick: () => setShowHistory(!showHistory),
                     className: 'px-4 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
                 }, `📋 History (${history.length})`)
@@ -5538,15 +6087,35 @@ Generate a behavior contract and return ONLY valid JSON:
 
     // ─── EscalationCycle ────────────────────────────────────────────────
     // Colvin & Sugai 7-phase escalation cycle with persistence + editor
+    // Escalation-cycle personalization, keyed by a STABLE phase id. It was keyed by the
+    // translated phase name while the AI replies with English names, so in any other
+    // language the personalization never showed and edits were orphaned when the
+    // language changed. Only the seven phases' signs/response strings are kept.
+    const ESCALATION_PHASE_IDS = ['Calm', 'Triggers', 'Agitation', 'Acceleration', 'Peak', 'De-escalation', 'Recovery'];
+    function cleanEscalationReply(parsed) {
+        const out = {};
+        ESCALATION_PHASE_IDS.forEach(id => {
+            const v = parsed && parsed[id];
+            if (!v || typeof v !== 'object') return;
+            const phase = {};
+            if (typeof v.signs === 'string' && v.signs.trim()) phase.signs = v.signs.trim().slice(0, 300);
+            if (typeof v.response === 'string' && v.response.trim()) phase.response = v.response.trim().slice(0, 300);
+            if (Object.keys(phase).length) out[id] = phase;
+        });
+        return out;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensEscalation = Object.freeze({ cleanEscalationReply, ESCALATION_PHASE_IDS });
+
     const EscalationCycle = ({ abcEntries, aiAnalysis, studentName, studentKey, callGemini, t, addToast }) => {
         const defaultPhases = [
-            { name: tt('behavior_lens.cycle_calm', 'Calm'), icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
-            { name: tt('behavior_lens.cycle_triggers', 'Triggers'), icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
-            { name: tt('behavior_lens.cycle_agitation', 'Agitation'), icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, difficulty following directions begins', response: 'Offer choices, use proximity, check in privately' },
-            { name: tt('behavior_lens.cycle_acceleration', 'Acceleration'), icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Increasing intensity, arguing, difficulty de-escalating', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
-            { name: tt('behavior_lens.cycle_peak', 'Peak'), icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Highest intensity behavior, student is overwhelmed', response: 'Focus on safety, use crisis protocols, document' },
-            { name: tt('behavior_lens.cycle_de_escalation', 'De-escalation'), icon: '🌊', color: '#3b82f6', bg: '#eff6ff', signs: 'Confusion, withdrawal, reduced intensity', response: 'Allow space, avoid debriefing too soon, quiet environment' },
-            { name: tt('behavior_lens.cycle_recovery', 'Recovery'), icon: '🌱', color: '#06b6d4', bg: '#ecfeff', signs: 'Returning to baseline, may be subdued', response: 'Rebuild relationship, gentle re-engagement, debrief when ready' },
+            { id: 'Calm', name: tt('behavior_lens.cycle_calm', 'Calm'), icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
+            { id: 'Triggers', name: tt('behavior_lens.cycle_triggers', 'Triggers'), icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
+            { id: 'Agitation', name: tt('behavior_lens.cycle_agitation', 'Agitation'), icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, difficulty following directions begins', response: 'Offer choices, use proximity, check in privately' },
+            { id: 'Acceleration', name: tt('behavior_lens.cycle_acceleration', 'Acceleration'), icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Increasing intensity, arguing, difficulty de-escalating', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
+            { id: 'Peak', name: tt('behavior_lens.cycle_peak', 'Peak'), icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Highest intensity behavior, student is overwhelmed', response: 'Focus on safety, use crisis protocols, document' },
+            { id: 'De-escalation', name: tt('behavior_lens.cycle_de_escalation', 'De-escalation'), icon: '🌊', color: '#3b82f6', bg: '#eff6ff', signs: 'Confusion, withdrawal, reduced intensity', response: 'Allow space, avoid debriefing too soon, quiet environment' },
+            { id: 'Recovery', name: tt('behavior_lens.cycle_recovery', 'Recovery'), icon: '🌱', color: '#06b6d4', bg: '#ecfeff', signs: 'Returning to baseline, may be subdued', response: 'Rebuild relationship, gentle re-engagement, debrief when ready' },
         ];
         const [selected, setSelected] = useState(null);
         const [personalizing, setPersonalizing] = useState(false);
@@ -5557,21 +6126,23 @@ Generate a behavior contract and return ONLY valid JSON:
             if (addToast) addToast(tt('behavior_lens.toast.escalation_cycle_saved', 'Escalation cycle saved'), 'success');
         };
 
-        const resetCycle = () => {
+        const resetCycle = async () => {
+            if (!await askBehaviorLensConfirmation(tt('behavior_lens.cycle.reset_confirm', 'Clear the personalized signs and responses for every phase and go back to the defaults?'), { title: 'Reset escalation cycle', confirmText: 'Reset cycle' })) return;
             setPersonalized({});
             if (addToast) addToast(tt('behavior_lens.toast.reset_to_defaults', 'Reset to defaults'), 'info');
         };
 
-        const updatePhaseField = (phaseName, field, val) => {
-            setPersonalized(prev => ({ ...prev, [phaseName]: { ...(prev[phaseName] || {}), [field]: val } }));
+        const updatePhaseField = (phaseId, field, val) => {
+            setPersonalized(prev => ({ ...prev, [phaseId]: { ...(prev[phaseId] || {}), [field]: val } }));
         };
 
         const handlePersonalize = async () => {
             if (!callGemini) return;
+            if (Object.keys(personalized || {}).length > 0 && !await askBehaviorLensConfirmation(tt('behavior_lens.cycle.replace_confirm', 'Replace the personalized signs and responses with a new AI draft? Your edits to this cycle will be lost.'), { title: 'Replace escalation cycle', confirmText: 'Replace' })) return;
             setPersonalizing(true);
             try {
                 const dataStr = abcEntriesNewestFirst(abcEntries).slice(0, 10).map((e, i) =>
-                    `#${i + 1}: A="${e.antecedent}", B="${e.behavior}", C="${e.consequence}", Intensity=${e.intensity}/5`
+                    `#${i + 1}: A="${e.antecedent}", B="${e.behavior}", C="${e.consequence}", Intensity=${e.intensity == null ? 'not rated' : e.intensity + '/5'}`
                 ).join('\n');
                 const prompt = `You are a BCBA personalizing a Colvin & Sugai escalation cycle for a student.
 ${RESTORATIVE_PREAMBLE}
@@ -5591,11 +6162,14 @@ Personalize each phase of the cycle and return ONLY valid JSON:
   "Recovery": { "signs": "...", "response": "..." }
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                setPersonalized(parsed);
+                const cleaned2 = cleanEscalationReply(parsed);
+                if (!Object.keys(cleaned2).length) throw new Error('No phases in reply');
+                setPersonalized(cleaned2);
                 if (addToast) addToast(tt('behavior_lens.toast.cycle_personalized', 'Cycle personalized ✨'), 'success');
             } catch (err) {
                 warnLog('Personalization failed:', err);
@@ -5609,18 +6183,19 @@ Personalize each phase of the cycle and return ONLY valid JSON:
                 callGemini && h('button', { onClick: handlePersonalize, disabled: personalizing || abcEntries.length < 2,
                     className: 'flex-1 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, personalizing ? '⏳ Personalizing...' : ('🧠 ' + (tt('behavior_lens.cycle.personalize', 'Personalize for This Student')))),
-                h('button', { 'aria-expanded': String(editing), onClick: saveCycle, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save'),
+                h('button', { onClick: saveCycle, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save'),
                 h('button', { 'aria-expanded': String(editing), onClick: () => setEditing(!editing),
                     className: `px-4 py-3 rounded-xl font-bold text-sm transition-all ${editing ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                 }, editing ? '✏️ Editing' : '✏️ Edit'),
-                Object.keys(personalized).length > 0 && h('button', { "aria-label": "Reset", onClick: resetCycle, className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-red-50 hover:text-red-800 transition-all' }, '🔄 Reset')
+                Object.keys(personalized).length > 0 && h('button', { "aria-label": "Reset escalation cycle", onClick: resetCycle, className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-red-50 hover:text-red-800 transition-all' }, '🔄 Reset')
             ),
             // Cycle visualization
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-4 text-center' }, DualLabel('🔄 Escalation Cycle') || '🔄 ' + (tt('behavior_lens.cycle.title', 'Escalation Cycle (Colvin & Sugai)'))),
                 h('div', { className: 'space-y-2' },
                     defaultPhases.map((phase, idx) => {
-                        const p = personalized[phase.name] || {};
+                        // Stable id first; older saves were keyed by the (translated) name.
+                        const p = personalized[phase.id] || personalized[phase.name] || {};
                         const isSelected = selected === idx;
                         const signsVal = p.signs || phase.signs;
                         const responseVal = p.response || phase.response;
@@ -5646,13 +6221,13 @@ Personalize each phase of the cycle and return ONLY valid JSON:
                                 h('div', null,
                                     h('div', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, '👀 Observable Signs'),
                                     editing
-                                        ? h('textarea', { value: signsVal, onChange: (e) => updatePhaseField(phase.name, 'signs', e.target.value), 'aria-label': 'Observable signs for ' + phase.name, rows: 2, maxLength: 300, className: 'w-full bg-slate-50 rounded-lg px-3 py-2 text-sm border border-slate-400 outline-none resize-none focus:ring-2 focus:ring-indigo-300' })
+                                        ? h('textarea', { value: signsVal, onChange: (e) => updatePhaseField(phase.id, 'signs', e.target.value), 'aria-label': 'Observable signs for ' + phase.name, rows: 2, maxLength: 300, className: 'w-full bg-slate-50 rounded-lg px-3 py-2 text-sm border border-slate-400 outline-none resize-none focus:ring-2 focus:ring-indigo-300' })
                                         : h('p', { className: 'text-sm text-slate-700' }, signsVal)
                                 ),
                                 h('div', null,
                                     h('div', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, '🛡️ Recommended Response'),
                                     editing
-                                        ? h('textarea', { value: responseVal, onChange: (e) => updatePhaseField(phase.name, 'response', e.target.value), 'aria-label': 'Recommended response for ' + phase.name, rows: 2, maxLength: 300, className: 'w-full bg-slate-50 rounded-lg px-3 py-2 text-sm border border-slate-400 outline-none resize-none focus:ring-2 focus:ring-indigo-300' })
+                                        ? h('textarea', { value: responseVal, onChange: (e) => updatePhaseField(phase.id, 'response', e.target.value), 'aria-label': 'Recommended response for ' + phase.name, rows: 2, maxLength: 300, className: 'w-full bg-slate-50 rounded-lg px-3 py-2 text-sm border border-slate-400 outline-none resize-none focus:ring-2 focus:ring-indigo-300' })
                                         : h('p', { className: 'text-sm text-slate-700' }, responseVal)
                                 )
                             )
@@ -5667,6 +6242,18 @@ Personalize each phase of the cycle and return ONLY valid JSON:
     // ─── ReinforcerAssessment ───────────────────────────────────────────
     // Preference inventory across 5 categories with AI suggestions
     // Phase 8: localStorage persistence, date-stamped snapshots, top-3 summary strip
+    // Ranking with ties. "Top 3" numbered items 1, 2, 3 in the order they were first
+    // rated: four items all at 5 stars showed as 1, 2, 3 and the fourth was left out,
+    // though all four were equal. Now equal ratings share a rank (1, 1, 1, 1) and every
+    // item ranked 3rd or better is shown.
+    function rankWithTies(ratingsObj) {
+        const rated = Object.entries(ratingsObj || {}).filter(([, v]) => Number(v) > 0).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+        return rated.map(([item, rating]) => ({ item, rating, rank: 1 + rated.filter(([, v]) => v > rating).length }));
+    }
+    const topRanked = (ratingsObj, n) => rankWithTies(ratingsObj).filter(x => x.rank <= n);
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensReinforcers = Object.freeze({ rankWithTies, topRanked });
+
     const ReinforcerAssessment = ({ studentName, studentKey, aiAnalysis, callGemini, t, addToast }) => {
         const categories = {
             social: { label: 'Social', icon: '👥', items: [tt('behavior_lens.reinf_verbal_praise', 'Verbal praise'), 'High-five/fist bump', tt('behavior_lens.reinf_lunch_with_teacher', 'Lunch with teacher'), 'Phone call home', 'Peer recognition', 'Leadership role'] },
@@ -5699,9 +6286,9 @@ Personalize each phase of the cycle and return ONLY valid JSON:
             const snapshot = {
                 date: new Date().toISOString(),
                 ratings: { ...ratings },
-                topItems: Object.entries(ratings).filter(item => item[1] > 0).sort((left, right) => right[1] - left[1]).slice(0, 3).map(item => item[0])
+                topItems: topRanked(ratings, 3).map(x => x.item)
             };
-            setSnapshots(previous => [snapshot, ...previous].slice(0, 10));
+            setSnapshots(previous => [snapshot, ...previous]); // the 11th silently deleted the oldest
             if (addToast) addToast(tt('behavior_lens.toast.snapshot_saved', 'Snapshot saved'), 'success');
         };
 
@@ -5732,6 +6319,7 @@ Recommend reinforcers and return ONLY valid JSON:
   "tips": "1-2 sentences on reinforcer delivery strategy"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -5744,16 +6332,16 @@ Recommend reinforcers and return ONLY valid JSON:
             } finally { setSuggesting(false); }
         };
 
-        // Top-3 summary strip
-        const top3 = rankedItems.slice(0, 3);
+        // Highest-rated strip: everything ranked 3rd or better, ties sharing a rank.
+        const top3 = topRanked(ratings, 3);
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             // Top-3 summary strip
             top3.length > 0 && h('div', { className: 'flex items-center gap-2 bg-gradient-to-r from-amber-50 to-pink-50 rounded-xl border border-amber-200 px-4 py-3' },
-                h('span', { className: 'text-sm font-black text-amber-700' }, '🏆 Top 3:'),
-                top3.map(([item, rating], i) =>
-                    h('span', { key: item, className: 'inline-flex items-center gap-1 bg-white rounded-full px-3 py-1 text-xs font-bold border border-amber-200 text-slate-700' },
-                        `${i + 1}. ${item}`,
+                h('span', { className: 'text-sm font-black text-amber-700' }, '🏆 Highest rated:'),
+                top3.map(({ item, rating, rank }) =>
+                    h('span', { key: item, 'data-reinforcer-rank': rank, className: 'inline-flex items-center gap-1 bg-white rounded-full px-3 py-1 text-xs font-bold border border-amber-200 text-slate-700' },
+                        `${rank}. ${item}`,
                         h('span', { className: 'text-amber-700 ms-1' }, '★'.repeat(rating))
                     )
                 )
@@ -5837,13 +6425,14 @@ Recommend reinforcers and return ONLY valid JSON:
             rankedItems.length > 0 && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-5' },
                 h('h4', { className: 'text-sm font-black text-amber-800 mb-3' }, '🏆 ' + (tt('behavior_lens.top_preferences', 'Top Preferences'))),
                 h('div', { className: 'space-y-1' },
-                    rankedItems.slice(0, 8).map(([item, rating], i) =>
-                        h('div', { key: item, className: 'flex items-center gap-2 text-sm' },
-                            h('span', { className: 'text-xs font-bold text-amber-600 w-4' }, `${i + 1}.`),
+                    rankWithTies(ratings).slice(0, 8).map(({ item, rating, rank }) =>
+                        h('div', { key: item, 'data-pref-rank': rank, className: 'flex items-center gap-2 text-sm' },
+                            h('span', { className: 'text-xs font-bold text-amber-600 w-4' }, `${rank}.`),
                             h('span', { className: 'text-slate-700' }, item),
                             h('span', { className: 'text-amber-700 ms-auto' }, '★'.repeat(rating))
                         )
-                    )
+                    ),
+                    rankedItems.length > 8 && h('p', { className: 'text-xs text-amber-700' }, tt('behavior_lens.reinforcer.more_rated', '+{count} more rated', { count: rankedItems.length - 8 }))
                 )
             )
         );
@@ -5916,6 +6505,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
   "thenItem": { "label": "a motivating reward", "emoji": "emoji" }
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -5930,13 +6520,14 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
             } finally { setAiChoiceLoading(false); }
         };
 
+        // White labels: the 400-500 gradients gave 1.7 to 2.8:1.
         const gradients = [
-            'from-blue-400 to-indigo-500',
-            'from-emerald-400 to-teal-500',
-            'from-amber-400 to-orange-500',
-            'from-pink-400 to-rose-500',
-            'from-violet-400 to-purple-500',
-            'from-cyan-400 to-sky-500',
+            'from-blue-600 to-indigo-700',
+            'from-emerald-700 to-teal-800',
+            'from-amber-700 to-orange-800',
+            'from-pink-600 to-rose-700',
+            'from-violet-600 to-purple-700',
+            'from-cyan-700 to-sky-800',
         ];
 
         const handleSelect = (idx) => {
@@ -5977,7 +6568,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                     ),
                     // First-Then editor
                     h('div', { className: 'border-t border-slate-200 pt-4 mt-2' },
-                        h('h4', { className: 'text-xs font-bold text-slate-300 uppercase mb-2' }, '⬅️ First-Then Board'),
+                        h('h4', { className: 'text-xs font-bold text-slate-700 uppercase mb-2' }, '⬅️ First-Then Board'),
                         h('div', { className: 'space-y-2' },
                             h('div', { className: 'flex gap-2' },
                                 h('input', { value: firstItem.emoji, onChange: (e) => setFirstItem(p => ({ ...p, emoji: e.target.value })), 'aria-label': 'FIRST task emoji', className: 'w-12 text-center text-xl border rounded-lg', maxLength: 2 }),
@@ -6009,11 +6600,11 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                     // FIRST panel
                     h('button', { onClick: () => { setFirstDone(true); if (addToast) addToast(tt('behavior_lens.toast.first_task_complete', 'First task complete! ✅'), 'success'); },
                         className: `rounded-3xl flex flex-col items-center justify-center shadow-2xl transition-all duration-500 ${firstDone
-                            ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 scale-95 ring-4 ring-emerald-300/50'
-                            : 'bg-gradient-to-br from-blue-400 to-indigo-600 hover:scale-[1.02] active:scale-95'
+                            ? 'bg-gradient-to-br from-emerald-700 to-emerald-800 scale-95 ring-4 ring-emerald-300/50'
+                            : 'bg-gradient-to-br from-blue-600 to-indigo-700 hover:scale-[1.02] active:scale-95'
                             } `
                     },
-                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, tt('behavior_lens.first_label', 'FIRST')),
+                        h('div', { className: 'text-xs font-black text-white uppercase tracking-widest mb-2' }, tt('behavior_lens.first_label', 'FIRST')),
                         h('span', { className: 'text-6xl md:text-8xl mb-4 drop-shadow-lg' }, firstItem.emoji),
                         h('span', { className: 'text-xl md:text-2xl font-black text-white drop-shadow-md text-center px-4' }, firstItem.label),
                         firstDone && h('div', { className: 'mt-4 text-white text-4xl animate-bounce motion-reduce:animate-none' }, '✅')
@@ -6021,14 +6612,14 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                     // THEN panel
                     h('div', {
                         className: `rounded-3xl flex flex-col items-center justify-center shadow-2xl transition-all duration-500 ${firstDone
-                            ? 'bg-gradient-to-br from-amber-400 to-orange-500 scale-[1.05] ring-4 ring-amber-300/50 animate-pulse motion-reduce:animate-none'
-                            : 'bg-gradient-to-br from-slate-600 to-slate-800 opacity-50 grayscale'
+                            ? 'bg-gradient-to-br from-amber-700 to-orange-800 scale-[1.05] ring-4 ring-amber-300/50 animate-pulse motion-reduce:animate-none'
+                            : 'bg-gradient-to-br from-slate-600 to-slate-800 opacity-80 grayscale'
                             } `
                     },
-                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, tt('behavior_lens.then_label', 'THEN')),
+                        h('div', { className: 'text-xs font-black text-white uppercase tracking-widest mb-2' }, tt('behavior_lens.then_label', 'THEN')),
                         h('span', { className: 'text-6xl md:text-8xl mb-4 drop-shadow-lg' }, thenItem.emoji),
                         h('span', { className: 'text-xl md:text-2xl font-black text-white drop-shadow-md text-center px-4' }, thenItem.label),
-                        !firstDone && h('div', { className: 'mt-4 text-white/30 text-sm font-bold' }, '🔒 Complete "First" to unlock')
+                        !firstDone && h('div', { className: 'mt-4 text-white text-sm font-bold' }, '🔒 Complete "First" to unlock')
                     )
                 ),
                 // Reset button
@@ -6107,7 +6698,8 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
             { id: 'transitions', label: 'Transition Cues', desc: 'Clear signals and routines for activity transitions' },
             { id: 'ratio', label: (tt('behavior_lens.raw.positivecorrective_ratio', 'Positive:Corrective Ratio')), desc: 'Aim for 4:1 positive to corrective interactions' },
         ];
-        const [ratings, setRatings] = useState({});
+        // Kept with the student's workspace (ratings were lost on close).
+        const [ratings, setRatings] = useDurableToolState('environmentAuditRatings', {});
         const [aiRecs, setAiRecs] = useState(null);
         const [loading, setLoading] = useState(false);
 
@@ -6139,6 +6731,7 @@ Provide improvement recommendations and return ONLY valid JSON:
             ]
     } `;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -6221,6 +6814,18 @@ Provide improvement recommendations and return ONLY valid JSON:
     // `count=${s.data?.count || 'N/A'}`: a measured ZERO read "N/A" and interval or
     // duration sessions (no data.count) read "N/A" too; and it sent the first five
     // stored sessions, not the latest.
+    // Observation sessions newest first. The list is not stored in one order: saves are
+    // prepended, a snapshot merge sorts it oldest first, so "the first N" could be the
+    // oldest (IEP prep, IEP goals, the hub list and the profile prompt all read it so).
+    function observationSessionsNewestFirst(list) {
+        const time = x => { const t = Date.parse(x && (x.timestamp || x.date)); return Number.isFinite(t) ? t : -Infinity; };
+        return (Array.isArray(list) ? list : []).slice().sort((a, b) => time(b) - time(a));
+    }
+    // The result of one session in words, without the date (exports used to leave
+    // latency blank and the text export printed no duration result).
+    function observationResult(sess) {
+        return observationSessionLine(sess).replace(/^[^:]*: /, '');
+    }
     function observationSessionLine(sess) {
         const d = (sess && sess.data) || {};
         const when = sess && sess.timestamp ? blLocalDateKey(sess.timestamp) : 'undated';
@@ -6238,6 +6843,7 @@ Provide improvement recommendations and return ONLY valid JSON:
         }
     }
     window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensObservationOrder = Object.freeze({ observationSessionsNewestFirst, observationResult });
     window.AlloModules.BehaviorLensTriangulation = Object.freeze({ observationSessionLine });
 
     const TriangulationCheck = ({ abcEntries, observationSessions, aiAnalysis, studentName, callGemini, t, addToast }) => {
@@ -6286,6 +6892,7 @@ Analyze data convergence and return ONLY valid JSON:
   "recommendation": "Next steps based on triangulation"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -6351,23 +6958,34 @@ Analyze data convergence and return ONLY valid JSON:
 
     // ─── ImpactCalculator ───────────────────────────────────────────────
     // Lost instructional time quantifier
+    // Instructional time lost. "Per year" used 36 weeks x the school days entered, but
+    // the cost per minute always divided by 180 days, so a 4-day week understated the
+    // cost by a fifth. Entering 0 days or $0 silently became 5 days or $15,000. The
+    // 6.5-hour day is now stated with the result.
+    const IMPACT_WEEKS = 36, IMPACT_HOURS_PER_DAY = 6.5;
+    function instructionalImpact(perDay, minutesEach, daysPerWeek, costPerPupil) {
+        const num = (v, dflt) => { const n = parseFloat(v); return Number.isFinite(n) && n >= 0 ? n : dflt; };
+        const freq = num(perDay, 0), dur = num(minutesEach, 0);
+        const days = Math.min(7, num(daysPerWeek, 5)), cost = num(costPerPupil, 0);
+        const lostPerDay = freq * dur;
+        const lostPerWeek = lostPerDay * days;
+        const lostPerYear = lostPerWeek * IMPACT_WEEKS;
+        const yearMinutes = IMPACT_WEEKS * days * IMPACT_HOURS_PER_DAY * 60;
+        const costPerMinute = yearMinutes > 0 ? cost / yearMinutes : 0;
+        return { freq, dur, days, cost, lostPerDay, lostPerWeek, lostPerMonth: lostPerWeek * 4, lostPerYear, costPerMinute, annualCost: lostPerYear * costPerMinute, shareOfYear: yearMinutes > 0 ? lostPerYear / yearMinutes : 0 };
+    }
+    window.AlloModules.BehaviorLensImpact = Object.freeze({ instructionalImpact });
+
     const ImpactCalculator = ({ abcEntries, studentName, callGemini, t, addToast }) => {
-        const [frequency, setFrequency] = useState('');
-        const [avgDuration, setAvgDuration] = useState('');
-        const [schoolDays, setSchoolDays] = useState('5');
-        const [costPerPupil, setCostPerPupil] = useState('15000');
+        const [frequency, setFrequency] = useDurableToolState('impactFrequency', '');
+        const [avgDuration, setAvgDuration] = useDurableToolState('impactDuration', '');
+        const [schoolDays, setSchoolDays] = useDurableToolState('impactSchoolDays', '5');
+        const [costPerPupil, setCostPerPupil] = useDurableToolState('impactCostPerPupil', '15000');
         const [aiInsight, setAiInsight] = useState(null);
         const [loading, setLoading] = useState(false);
 
-        const freq = parseFloat(frequency) || 0;
-        const dur = parseFloat(avgDuration) || 0;
-        const days = parseInt(schoolDays) || 5;
-        const lostPerDay = freq * dur;
-        const lostPerWeek = lostPerDay * days;
-        const lostPerMonth = lostPerWeek * 4;
-        const lostPerYear = lostPerWeek * 36;
-        const costPerMinute = (parseFloat(costPerPupil) || 15000) / (180 * 6.5 * 60);
-        const annualCost = lostPerYear * costPerMinute;
+        const impact = instructionalImpact(frequency, avgDuration, schoolDays, costPerPupil);
+        const { freq, dur, days, lostPerDay, lostPerWeek, lostPerMonth, lostPerYear, costPerMinute, annualCost } = impact;
 
         const handleInterpret = async () => {
             if (!callGemini) return;
@@ -6379,7 +6997,8 @@ ${RESTORATIVE_PREAMBLE}
 Behavior frequency: ${freq} per day
 Average episode duration: ${dur} minutes
 Lost instructional time: ${lostPerDay.toFixed(1)} min/day, ${lostPerWeek.toFixed(1)} min/week, ${lostPerYear.toFixed(0)} min/year
-Estimated annual cost: $${annualCost.toFixed(2)}
+Share of the school year: ${(impact.shareOfYear * 100).toFixed(1)}% (${IMPACT_WEEKS} weeks x ${days} days x ${IMPACT_HOURS_PER_DAY} instructional hours)
+Estimated annual cost: $${Math.round(annualCost).toLocaleString('en-US')} (per-pupil spending prorated over those hours)
 
 Provide a brief impact interpretation and return ONLY valid JSON:
 {
@@ -6389,6 +7008,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
   "urgency": "Recommended timeline for intervention"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -6447,7 +7067,9 @@ Provide a brief impact interpretation and return ONLY valid JSON:
                 ),
                 h('div', { className: 'mt-4 p-3 bg-red-50 rounded-lg border border-red-200 text-center' },
                     h('div', { className: 'text-[11px] font-bold text-red-600 uppercase' }, tt('behavior_lens.estimated_annual_cost', 'Estimated Annual Cost')),
-                    h('div', { className: 'text-2xl font-black text-red-700' }, `$${annualCost.toFixed(2)}`)
+                    h('div', { 'data-impact-cost': Math.round(annualCost), className: 'text-2xl font-black text-red-700' }, '$' + Math.round(annualCost).toLocaleString('en-US')),
+                    // The estimate rests on these assumptions; they were not shown.
+                    h('p', { 'data-impact-basis': true, className: 'text-[11px] text-red-700 mt-1' }, tt('behavior_lens.impact.basis', '{pct}% of the school year. Assumes {weeks} weeks of {days} school days and a {hours}-hour instructional day; per-pupil spending is spread evenly over those hours.', { pct: (impact.shareOfYear * 100).toFixed(1), weeks: IMPACT_WEEKS, days, hours: IMPACT_HOURS_PER_DAY }))
                 )
             ),
             // AI interpret
@@ -6560,6 +7182,7 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
   }
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -6650,7 +7273,7 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
             ),
             // Print
             h('button', { "aria-label": "Print Crisis Plan",
-                onClick: () => window.print(),
+                onClick: blPrintPanel,
                 className: 'w-full py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all print:hidden'
             }, '🖨️ Print Crisis Plan')
         );
@@ -6700,6 +7323,7 @@ Create student-friendly language and return ONLY valid JSON:
   "red": { "title": "stop zone title", "items": "moments when I feel overwhelmed and need support, separated by semicolons (4 items)" }
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -6783,7 +7407,7 @@ Create student-friendly language and return ONLY valid JSON:
                     className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-100 transition-all'
                 }, '📷 Export PNG'),
                 h('button', { "aria-label": "Print Poster",
-                    onClick: () => window.print(),
+                    onClick: blPrintPanel,
                     className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
                 }, '🖨️ Print Poster')
             )
@@ -6817,6 +7441,7 @@ Return ONLY valid JSON:
   "rationale": "1-sentence explanation"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -6869,7 +7494,7 @@ Return ONLY valid JSON:
             }
             if (method === 'duration') {
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
-                    h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
+                    h('caption', { className: 'sr-only' }, 'Duration data sheet'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
                             h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, tt('behavior_lens.date', 'Date')),
                             h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.start_time', 'Start Time')),
@@ -6914,7 +7539,7 @@ Return ONLY valid JSON:
             }
             // latency
             return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
-                h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
+                h('caption', { className: 'sr-only' }, 'Latency data sheet'), h('thead', null,
                     h('tr', { className: 'bg-slate-100' },
                         h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, tt('behavior_lens.date', 'Date')),
                         h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.cue_given', 'Cue Given')),
@@ -6950,7 +7575,7 @@ Return ONLY valid JSON:
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.behavior_label', 'Behavior Label')),
-                        h('input', { value: behaviorLabel, onChange: (e) => setBehaviorLabel(e.target.value), 'aria-label': 'eg, Off-task behavior', placeholder: tt('behavior_lens.ph.eg_offtask_behavior', 'e.g., Off-task behavior'), className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
+                        h('input', { value: behaviorLabel, onChange: (e) => setBehaviorLabel(e.target.value), 'aria-label': 'Behavior label', placeholder: tt('behavior_lens.ph.eg_offtask_behavior', 'e.g., Off-task behavior'), className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     method === 'frequency' && h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.periods_per_day', 'Periods per day')),
@@ -6971,7 +7596,7 @@ Return ONLY valid JSON:
                 renderSheet()
             ),
             h('div', { className: 'flex gap-2 print:hidden' },
-                h('button', { "aria-label": "Print Data Sheet", onClick: () => window.print(), className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all' }, '🖨️ Print Data Sheet'),
+                h('button', { "aria-label": "Print Data Sheet", onClick: blPrintPanel, className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all' }, '🖨️ Print Data Sheet'),
                 callGemini && h('button', { onClick: handleAiSuggestConfig,
                     disabled: aiConfigLoading,
                     className: 'px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
@@ -6984,7 +7609,7 @@ Return ONLY valid JSON:
     // AI-drafted parent communication with tone selector
     const HomeNoteGenerator = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const [tone, setTone] = useState('friendly');
-        const [note, setNote] = useState('');
+        const [note, setNote] = useDurableToolState('homeNoteDraft', '');
         const [generating, setGenerating] = useState(false);
         const [preAiNote, setPreAiNote] = useState(null);
         const [showTranslate, setShowTranslate] = useState(false);
@@ -6997,8 +7622,9 @@ Return ONLY valid JSON:
             setShowTranslate(false);
             try {
                 const prompt = `Translate the following home note to ${translateLang.trim()}. Maintain the same tone, formatting, and professionalism. Return ONLY the translated text, no explanations:\n\n${note}`;
-                setPreAiNote(note);
                 const result = await callGemini(prompt, false);
+                if (result == null || !String(result).trim()) return;
+                setPreAiNote(note);
                 setNote(result);
                 if (addToast) addToast(tt('behavior_lens.toast.translated_to_n_v2', 'Translated to {v1} ✨', { v1: translateLang.trim() }), 'success');
                 setTranslateLang('');
@@ -7036,6 +7662,9 @@ Use ${tone === 'friendly' ? 'warm, encouraging' : tone === 'formal' ? 'professio
 Do NOT use the student codename in the note — use "your child" or "your student" instead.
 Return the note as plain text (no JSON). Include date placeholder and signature line.`;
                 const result = await callGemini(prompt, false);
+                if (result == null || !String(result).trim()) return;
+                // Regenerating wiped an edited note with no way back; keep it for Undo AI.
+                if (String(note || '').trim()) setPreAiNote(note);
                 setNote(result);
                 if (addToast) addToast(tt('behavior_lens.toast.home_note_generated', 'Home note generated ✨'), 'success');
             } catch (err) {
@@ -7077,10 +7706,10 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
                 }),
                 h('div', { className: 'flex gap-2 mt-3 print:hidden flex-wrap' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(note); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                        onClick: () => { blWriteClipboard(note, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                         className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200'
                     }, '📋 Copy'),
-                    h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
+                    h('button', { onClick: blPrintPanel, className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
                     // Translate — free-text language input
                     callGemini && h('div', { 'aria-expanded': String(showTranslate), className: 'relative' },
                         h('button', { 'aria-expanded': String(showTranslate), onClick: () => setShowTranslate(!showTranslate),
@@ -7100,7 +7729,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
                                     className: 'flex-1 px-3 py-1.5 text-sm border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-blue-300',
                                     autoFocus: true
                                 }),
-                                h('button', { onClick: handleTranslate,
+                                h('button', { 'aria-label': 'Translate the note',  onClick: handleTranslate,
                                     disabled: !translateLang.trim(),
                                     className: 'px-3 py-1.5 bg-blue-700 text-white rounded-lg text-sm font-bold hover:bg-blue-600 disabled:opacity-40 transition-all'
                                 }, '→')
@@ -7242,6 +7871,7 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
   ]
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -7334,7 +7964,8 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
             { id: 'time', label: (tt('behavior_lens.raw.time_commitment', 'Time Commitment')), desc: 'Is the required time investment realistic given current demands?' },
             { id: 'admin', label: (tt('behavior_lens.raw.administrative_support', 'Administrative Support')), desc: 'Is there leadership buy-in and administrative support?' },
         ];
-        const [ratings, setRatings] = useState({});
+        // Kept with the student's workspace (ratings were lost on close).
+        const [ratings, setRatings] = useDurableToolState('feasibilityRatings', {});
         const [aiRecs, setAiRecs] = useState(null);
         const [loading, setLoading] = useState(false);
 
@@ -7365,6 +7996,7 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
   "recommendations": ["rec 1", "rec 2", "rec 3"]
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -7433,6 +8065,20 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
 
     // ─── GasRubric ──────────────────────────────────────────────────────
     // Goal Attainment Scaling: 5-level rubric (-2 to +2)
+    // GAS descriptors from the AI, re-keyed "-2".."2". A reply keyed "+1"/"+2" (the way
+    // the levels are printed) never showed, and non-text values were stored as-is.
+    function cleanGasReply(parsed) {
+        const out = {};
+        Object.keys(parsed || {}).forEach(k => {
+            const key = String(k).trim(), score = key === '' ? NaN : Number(key);
+            const v = parsed[k];
+            if ([-2, -1, 0, 1, 2].includes(score) && typeof v === 'string' && v.trim()) out[String(score)] = v.trim().slice(0, 400);
+        });
+        return out;
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensGas = Object.freeze({ cleanGasReply });
+
     const GasRubric = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const levels = [
             { score: -2, label: (tt('behavior_lens.raw.much_less_than_expected', 'Much less than expected')), color: '#ef4444' },
@@ -7441,12 +8087,15 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
             { score: 1, label: (tt('behavior_lens.raw.more_than_expected', 'More than expected')), color: '#22c55e' },
             { score: 2, label: (tt('behavior_lens.raw.much_more_than_expected', 'Much more than expected')), color: '#10b981' },
         ];
-        const [goalText, setGoalText] = useState('');
-        const [descriptors, setDescriptors] = useState({});
+        // Kept with the student's workspace (the goal and its five levels were lost on close).
+        const [goalText, setGoalText] = useDurableToolState('gasGoalText', '');
+        const [descriptors, setDescriptors] = useDurableToolState('gasDescriptors', {});
         const [generating, setGenerating] = useState(false);
 
         const handleGenerate = async () => {
             if (!callGemini || !goalText.trim()) return;
+            // It replaced descriptors staff had typed, without asking.
+            if (Object.values(descriptors || {}).some(v => String(v || '').trim()) && !await askBehaviorLensConfirmation(tt('behavior_lens.gas.replace_confirm', 'Replace the descriptors you have written with an AI draft?'), { title: 'Replace GAS descriptors', confirmText: 'Replace' })) return;
             setGenerating(true);
             try {
                 const prompt = `You are a BCBA creating a Goal Attainment Scale (GAS) rubric.
@@ -7464,11 +8113,14 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
   "2": "descriptor for much more than expected outcome"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                setDescriptors(parsed);
+                const levelsOut = cleanGasReply(parsed);
+                if (!Object.keys(levelsOut).length) throw new Error('No GAS levels in reply');
+                setDescriptors(levelsOut);
                 if (addToast) addToast(tt('behavior_lens.toast.gas_rubric_generated', 'GAS rubric generated ✨'), 'success');
             } catch (err) {
                 warnLog('GAS gen failed:', err);
@@ -7531,7 +8183,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                     )
                 )
             ),
-            h('button', { "aria-label": "Print GAS Rubric", onClick: () => window.print(), className: 'w-full py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all print:hidden' }, '🖨️ Print GAS Rubric')
+            h('button', { "aria-label": "Print GAS Rubric", onClick: blPrintPanel, className: 'w-full py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all print:hidden' }, '🖨️ Print GAS Rubric')
         );
     };
 
@@ -7767,6 +8419,10 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
     // wrote "Parent response recorded" as the consequence when the parent recorded no
     // response, and skipped normalization (no local day or time zone). Entries now carry
     // when it happened; older ones say their time is when they were logged.
+    // An entry the family wrote: pushed from the home log (older pushes carry only the note prefix).
+    function blIsHomeLogEntry(entry) {
+        return !!entry && (entry.source === 'home-log' || /^\[Home Log\]/.test(String(entry.notes || '')));
+    }
     function homeLogToAbc(e) {
         const when = e.occurredAt || e.timestamp;
         const loggedTimeOnly = !e.occurredAt;
@@ -7774,15 +8430,16 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
         const normalized = getBehaviorLensWorkspaceRuntime().normalizeAbcEntry({
             id: 'home_' + e.id, occurredAt: when, recordedAt: e.timestamp, timezoneOffset: e.timezoneOffset,
             antecedent: e.context || 'Home setting', behavior: e.behavior, consequence: e.response || '',
-            intensity: null, duration: null, notes, setting: 'Home'
+            intensity: null, duration: null, notes, setting: 'Home', source: 'home-log', observer: 'Family (home log)'
         });
         return normalized && normalized.entry ? Object.assign({}, normalized.entry, { id: 'home_' + e.id }) : null;
     }
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.BehaviorLensHomeLog = Object.freeze({ homeLogToAbc });
 
-    const HomeBehaviorLog = ({ studentName, studentKey, t, addToast, callGemini, setAbcEntries }) => {
+    const HomeBehaviorLog = ({ studentName, studentKey, t, addToast, callGemini, setAbcEntries, abcEntries, deletedAbcEntries }) => {
         const [entries, setEntries] = useDurableToolState('homeLog', []);
+        const [showAllEntries, setShowAllEntries] = useState(false);
         const [showForm, setShowForm] = useState(false);
         const [newEntry, setNewEntry] = useState({ context: '', behavior: '', response: '', notes: '', mood: '', occurredAt: '' });
         const [aiPatternLoading, setAiPatternLoading] = useState(false);
@@ -7813,7 +8470,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             const happened = newEntry.occurredAt ? new Date(newEntry.occurredAt) : now;
             const occurredAt = isNaN(happened) || happened > now ? now.toISOString() : happened.toISOString();
             const entry = { ...newEntry, id: uid(), timestamp: now.toISOString(), occurredAt, timezoneOffset: now.getTimezoneOffset() };
-            setEntries(previous => [entry, ...previous].slice(0, 250));
+            setEntries(previous => [entry, ...previous]); // the 251st silently deleted the oldest
             setNewEntry({ context: '', behavior: '', response: '', notes: '', mood: '', occurredAt: '' });
             setShowForm(false);
             if (addToast) addToast(tt('behavior_lens.toast.entry_saved', 'Entry saved ✅'), 'success');
@@ -7825,18 +8482,22 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 if (addToast) addToast(tt('behavior_lens.toast.no_entries_to_export', 'No entries to export'), 'error');
                 return;
             }
+            // The shape Snapshot Exchange imports (this file was refused as "not a valid snapshot").
             const snapshot = {
-                type: 'behaviorLens_homeLog_snapshot',
-                version: 1,
-                studentName: studentName || 'Unknown',
+                alloflowSnapshot: true,
+                version: '1.0',
                 exportedAt: new Date().toISOString(),
-                homeLogEntries: entries
+                exportedBy: 'family',
+                studentCodename: studentName || 'Unknown',
+                message: null,
+                behaviorLens: { abcEntries: [], observationSessions: [], aiAnalysis: null, homeLogEntries: entries, selfCheckEntries: [] },
+                crossModule: null
             };
             const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `home-log-${(studentName || 'student').replace(/\s+/g, '_')}-${new Date().toISOString().slice(0, 10)}.json`;
+            a.download = `home-log-${(studentName || 'student').replace(/\s+/g, '_')}-${blLocalDateKey(new Date())}.json`;
             a.click();
             URL.revokeObjectURL(url);
             if (addToast) addToast(tt('behavior_lens.toast.home_log_exported_as_snapshot', 'Home log exported as snapshot 📦'), 'success');
@@ -7884,17 +8545,28 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 }, showForm ? '▾ Close Form' : '➕ Log a Behavior'),
                 // Enhancement #3: Push home log entries into the main ABC data stream
                 setAbcEntries && entries.length > 0 && h('button', { onClick: () => {
-                        const newAbcEntries = entries.map(homeLogToAbc).filter(Boolean);
+                        // Each entry is sent once. It only checked the live records, so an entry
+                        // staff had deleted came back with the next push.
+                        const deletedIds = new Set((deletedAbcEntries || []).map(item => item && item.entry && item.entry.id).filter(Boolean));
+                        const liveIds = new Set((abcEntries || []).map(p => p.id));
+                        const unsent = entries.filter(e => !e.pushedAt && !deletedIds.has('home_' + e.id));
+                        const fresh = unsent.map(homeLogToAbc).filter(n => n && !liveIds.has(n.id));
+                        const kept = entries.filter(e => !e.pushedAt && deletedIds.has('home_' + e.id)).length;
+                        if (unsent.length || kept) {
+                            const sentIds = new Set(entries.filter(e => !e.pushedAt).map(e => e.id));
+                            const pushedAt = new Date().toISOString();
+                            setEntries(prev => prev.map(e => sentIds.has(e.id) ? { ...e, pushedAt } : e));
+                        }
+                        if (fresh.length === 0) {
+                            if (addToast) addToast(tt('behavior_lens.toast.all_entries_already_synced_to_abc_data', 'All entries already synced to ABC data'), 'info');
+                            return;
+                        }
                         setAbcEntries(prev => {
                             const existingIds = new Set(prev.map(p => p.id));
-                            const fresh = newAbcEntries.filter(n => !existingIds.has(n.id));
-                            if (fresh.length === 0) {
-                                if (addToast) addToast(tt('behavior_lens.toast.all_entries_already_synced_to_abc_data', 'All entries already synced to ABC data'), 'info');
-                                return prev;
-                            }
-                            if (addToast) addToast(t('behavior_lens.toast.n_home_entries_pushed_to_abc_data', { n: fresh.length }) || `${fresh.length} home entries pushed to ABC data ✅`, 'success');
-                            return [...fresh, ...prev];
+                            const add = fresh.filter(n => !existingIds.has(n.id));
+                            return add.length ? [...add, ...prev] : prev;
                         });
+                        if (addToast) addToast(t('behavior_lens.toast.n_home_entries_pushed_to_abc_data', { n: fresh.length }) || `${fresh.length} home entries pushed to ABC data ✅`, 'success');
                     },
                     className: 'px-4 py-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all'
                 }, '📤 Push to ABC'),
@@ -7919,6 +8591,7 @@ Provide a brief analysis (3-5 bullet points) covering:
 - Which responses seem most effective
 - 1-2 practical suggestions for the family`;
                             const result = await callGemini(prompt, false);
+                            if (result == null) return;
                             setAiPatternResult(result);
                             if (addToast) addToast(tt('behavior_lens.toast.pattern_analysis_complete', 'Pattern analysis complete ✨'), 'success');
                         } catch (err) {
@@ -8015,7 +8688,9 @@ Provide a brief analysis (3-5 bullet points) covering:
             // Entries list
             entries.length > 0 ? h('div', { className: 'space-y-2' },
                 h('h4', { className: 'text-xs font-black text-slate-600 uppercase' }, `${entries.length} Entries`),
-                entries.slice(0, 20).map(e =>
+                // It showed 20 under "N Entries" with no way to see the rest.
+                entries.length > 20 && h('button', { type: 'button', onClick: () => setShowAllEntries(v => !v), 'data-bl-show-all': 'homelog', className: 'min-h-11 text-xs font-bold text-blue-800 underline' }, showAllEntries ? 'Show the newest 20' : 'Showing the newest 20. Show all ' + entries.length),
+                (showAllEntries ? entries : entries.slice(0, 20)).map(e =>
                     h('div', { key: e.id, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                         h('div', { className: 'flex justify-between items-start mb-2' },
                             h('div', { className: 'flex items-center gap-2' },
@@ -8038,8 +8713,22 @@ Provide a brief analysis (3-5 bullet points) covering:
 
     // ─── PocketBip ──────────────────────────────────────────────────────
     // Compact index-card BIP summary for wallet/clipboard carry
+    // Pocket BIP card from the AI: the five sections, as text (a list becomes lines). A
+    // "{}" reply replaced the card with nothing and said "generated".
+    const POCKET_BIP_KEYS = ['targetBehavior', 'function', 'replacementBehavior', 'reinforcement', 'deescalation'];
+    function cleanPocketBipReply(parsed) {
+        const out = {};
+        POCKET_BIP_KEYS.forEach(k => {
+            const v = parsed && parsed[k];
+            out[k] = (Array.isArray(v) ? v.filter(x => typeof x === 'string').join('\n') : typeof v === 'string' ? v : '').trim().slice(0, 600);
+        });
+        return POCKET_BIP_KEYS.some(k => out[k]) ? out : null;
+    }
+    window.AlloModules.BehaviorLensPocketBip = Object.freeze({ cleanPocketBipReply });
+
     const PocketBip = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
-        const [card, setCard] = useState({
+        // Kept with the student's workspace (the card was lost on close).
+        const [card, setCard] = useDurableToolState('pocketBipCard', {
             targetBehavior: '',
             function: '',
             replacementBehavior: '',
@@ -8050,6 +8739,7 @@ Provide a brief analysis (3-5 bullet points) covering:
 
         const handleGenerate = async () => {
             if (!callGemini) return;
+            if (Object.values(card || {}).some(v => String(v || '').trim()) && !await askBehaviorLensConfirmation(tt('behavior_lens.pocket_bip.replace_confirm', 'Replace what is on this card with an AI draft?'), { title: 'Replace pocket BIP', confirmText: 'Replace' })) return;
             setGenerating(true);
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
@@ -8070,11 +8760,14 @@ Create a concise pocket BIP. Return ONLY valid JSON:
   "deescalation": "key de-escalation steps (2-3 bullet points)"
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                setCard(parsed);
+                const cleanedCard = cleanPocketBipReply(parsed);
+                if (!cleanedCard) throw new Error('No card sections in reply');
+                setCard(cleanedCard);
                 if (addToast) addToast(tt('behavior_lens.toast.pocket_bip_generated', 'Pocket BIP generated ✨'), 'success');
             } catch (err) {
                 warnLog('Pocket BIP failed:', err);
@@ -8106,18 +8799,21 @@ Create a concise pocket BIP. Return ONLY valid JSON:
                     sections.map(s =>
                         h('div', { key: s.key, className: 'rounded-lg p-2.5 border', style: { background: s.bg, borderColor: s.color + '40' } },
                             h('div', { className: 'text-[11px] font-black uppercase mb-0.5', style: { color: s.color } }, s.label),
+                            // A one-row textarea printed one line of a 2-3 step de-escalation plan;
+                            // it now grows with its text and prints as plain text.
                             h('textarea', {
                                 value: card[s.key] || '',
                                 onChange: (e) => setCard(prev => ({ ...prev, [s.key]: e.target.value })),
-                                'aria-label': s.label + ' self-check notes',
-                                rows: 1,
-                                className: 'w-full bg-transparent text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-300 rounded resize-none leading-tight'
-                            })
+                                'aria-label': s.label.replace(/^\S+\s/, ''),
+                                rows: Math.max(1, String(card[s.key] || '').split('\n').reduce((n, line) => n + Math.max(1, Math.ceil(line.length / 45)), 0)),
+                                className: 'w-full bg-transparent text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-300 rounded resize-none leading-tight print:hidden'
+                            }),
+                            h('div', { 'aria-hidden': 'true', className: 'hidden print:block whitespace-pre-wrap text-xs text-slate-700 leading-tight' }, card[s.key] || '')
                         )
                     )
                 )
             ),
-            h('button', { "aria-label": "Print Pocket BIP", onClick: () => window.print(), className: 'w-full py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all print:hidden' }, '🖨️ Print Pocket BIP')
+            h('button', { "aria-label": "Print Pocket BIP", onClick: blPrintPanel, className: 'w-full py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all print:hidden' }, '🖨️ Print Pocket BIP')
         );
     };
 
@@ -8516,7 +9212,7 @@ Respond only with the student's words:`;
                     onClick: () => {
                         const header = `Counseling Simulation Transcript\nScenario: ${scenario?.label || 'Unknown'}\nExchanges: ${messages.filter(m => m.role === 'counselor').length}\nSelf-Rating: ${selfRating}/5\nNotes: ${strategyNotes || '(none)'}\n${'─'.repeat(40)}`;
                         const lines = messages.filter(m => m.role !== 'system').map(m => `${m.role === 'counselor' ? 'Counselor' : 'Student'}: ${m.content}`);
-                        navigator.clipboard.writeText([header, ...lines].join('\n')).then(() => { if (addToast) addToast(t('toasts.transcript_copied'), 'success'); });
+                        blWriteClipboard([header, ...lines].join('\n'), addToast).then(() => { if (addToast) addToast(t('toasts.transcript_copied'), 'success'); });
                     },
                     className: 'w-full py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all'
                 }, '📋 Export Transcript'),
@@ -8649,6 +9345,7 @@ Respond only with the student's words:`;
         ];
 
         const [entries, setEntries] = useDurableToolState('selfCheck', []);
+        const [showAllEntries, setShowAllEntries] = useState(false);
         const [showForm, setShowForm] = useState(false);
         const [mood, setMood] = useState('');
         const [answers, setAnswers] = useState({ happening: '', feeling: '', needed: '', nextTime: '' });
@@ -8663,7 +9360,7 @@ Respond only with the student's words:`;
                 mood,
                 ...answers
             };
-            setEntries(previous => [entry, ...previous].slice(0, 250));
+            setEntries(previous => [entry, ...previous]); // the 251st silently deleted the oldest
             setMood('');
             setAnswers({ happening: '', feeling: '', needed: '', nextTime: '' });
             setShowForm(false);
@@ -8739,6 +9436,7 @@ Provide a brief, warm analysis (3-4 bullet points) that:
 - Suggests 1 strategy they could try
 Keep language warm and age-appropriate.`;
                             const result = await callGemini(prompt, false);
+                            if (result == null) return;
                             setAiReflectionResult(result);
                             if (addToast) addToast(tt('behavior_lens.toast.reflection_analysis_ready', 'Reflection analysis ready 🌟'), 'success');
                         } catch (err) {
@@ -8808,7 +9506,8 @@ Keep language warm and age-appropriate.`;
                     h('h4', { className: 'text-xs font-black text-slate-600 uppercase' },
                         `${entries.length} Reflection${entries.length !== 1 ? 's' : ''}`
                     ),
-                    entries.slice(0, 20).map(e => {
+                    entries.length > 20 && h('button', { type: 'button', onClick: () => setShowAllEntries(v => !v), 'data-bl-show-all': 'selfcheck', className: 'min-h-11 text-xs font-bold text-indigo-800 underline' }, showAllEntries ? 'Show the newest 20' : 'Showing the newest 20. Show all ' + entries.length),
+                    (showAllEntries ? entries : entries.slice(0, 20)).map(e => {
                         const moodObj = MOODS.find(m => m.emoji === e.mood) || MOODS[0];
                         return h('div', {
                             key: e.id,
@@ -8868,23 +9567,57 @@ Keep language warm and age-appropriate.`;
             if ((e.id && seen.has('id:' + e.id)) || seen.has('ts:' + e.timestamp)) return;
             const clean = { id: typeof e.id === 'string' && e.id ? e.id : 'import-' + kind + '-' + at, timestamp: new Date(at).toISOString(), importedFrom: from === 'family' ? 'family' : 'educator' };
             fields.forEach(f => { clean[f] = String(e[f] || '').slice(0, 2000); });
+            // When a home incident happened, and on whose clock: dropped, so it counted at the time it was logged.
+            if (kind === 'homeLog') {
+                const happened = typeof e.occurredAt === 'string' ? Date.parse(e.occurredAt) : NaN;
+                if (Number.isFinite(happened) && new Date(happened).getFullYear() >= 2000 && new Date(happened).getFullYear() <= 2100) clean.occurredAt = new Date(happened).toISOString();
+                const offset = Number(e.timezoneOffset);
+                if (e.timezoneOffset != null && e.timezoneOffset !== '' && Number.isFinite(offset) && offset >= -840 && offset <= 840) clean.timezoneOffset = Math.round(offset);
+            }
             seen.add('ts:' + e.timestamp);
             fresh.push(clean);
         });
         return { fresh, rejected };
     }
-    // Newest first, capped like the log itself.
+    // Newest first. It kept 250, so a merge silently deleted the oldest entries already here.
     const mergeSnapshotSide = (existing, fresh) => [...fresh, ...(Array.isArray(existing) ? existing : [])]
-        .sort((a, b) => (Date.parse(b.timestamp) || 0) - (Date.parse(a.timestamp) || 0)).slice(0, 250);
+        .sort((a, b) => (Date.parse(b.timestamp) || 0) - (Date.parse(a.timestamp) || 0));
+    // ABC entries and sessions in a snapshot, checked against what is here. Matching on the time
+    // alone skipped a different incident in the same minute and added an edited copy as a second
+    // record with the SAME id; entries went in un-normalized (intensity 0, no local day), with
+    // nothing to say where they came from.
+    function snapshotRecords(kind, incoming, existing, from) {
+        const runtime = getBehaviorLensWorkspaceRuntime();
+        const key = kind === 'abc' ? blAbcRecordKey
+            : s => [String((s && s.timestamp) || '').slice(0, 16), s && s.method, s && s.duration].map(v => String(v == null ? '' : v).trim().toLowerCase()).join('|');
+        const list = Array.isArray(existing) ? existing : [];
+        const keys = new Set(list.map(key));
+        const ids = new Set(list.map(x => x && x.id).filter(Boolean));
+        const fresh = [];
+        let duplicates = 0, renamed = 0, rejected = 0;
+        (Array.isArray(incoming) ? incoming : []).forEach(value => {
+            const result = kind === 'abc' ? runtime.normalizeAbcEntry(value, { targetBehaviors: [] }) : runtime.normalizeObservationSession(value, { targetBehaviors: [] });
+            const item = result && (kind === 'abc' ? result.entry : result.session);
+            if (!item) { rejected += 1; return; }
+            const k = key(item);
+            if (keys.has(k)) { duplicates += 1; return; }
+            const next = Object.assign({}, item, { metadata: Object.assign({}, item.metadata && typeof item.metadata === 'object' ? item.metadata : {}, { importedFrom: from === 'family' ? 'family' : 'educator' }) });
+            if (!next.id || ids.has(next.id)) { next.id = (kind === 'abc' ? 'snap-abc-' : 'snap-obs-') + uid(); renamed += 1; }
+            keys.add(k); ids.add(next.id);
+            fresh.push(next);
+        });
+        return { fresh, duplicates, renamed, rejected };
+    }
     window.AlloModules = window.AlloModules || {};
-    window.AlloModules.BehaviorLensSnapshot = Object.freeze({ snapshotSideEntries, mergeSnapshotSide });
+    window.AlloModules.BehaviorLensSnapshot = Object.freeze({ snapshotSideEntries, mergeSnapshotSide, snapshotRecords });
 
-    const SnapshotExchange = ({ studentName, studentKey, abcEntries, observationSessions, aiAnalysis, setAbcEntries, setObservationSessions, t, addToast, callGemini }) => {
+    const SnapshotExchange = ({ studentName, studentKey, abcEntries, observationSessions, aiAnalysis, setAbcEntries, setObservationSessions, t, addToast, callGemini, familyView }) => {
         const [tab, setTab] = useState('export');
-        const [role, setRole] = useState('educator');
+        // From Family view it was labelled "educator" and carried every school record by default.
+        const [role, setRole] = useState(familyView ? 'family' : 'educator');
         const [message, setMessage] = useState('');
-        const [includeAbc, setIncludeAbc] = useState(true);
-        const [includeObs, setIncludeObs] = useState(true);
+        const [includeAbc, setIncludeAbc] = useState(!familyView);
+        const [includeObs, setIncludeObs] = useState(!familyView);
         // Data-minimization default: AI-generated inferences are off unless
         // the teacher actively opts in. Mirrors the privacy-first stance of
         // the AI consent gate — AI content can carry over-confident
@@ -8933,7 +9666,7 @@ Keep language warm and age-appropriate.`;
         const handleExport = () => {
             const snapshot = buildSnapshot();
             const content = JSON.stringify(snapshot, null, 2);
-            const dateSuffix = new Date().toISOString().split('T')[0];
+            const dateSuffix = blLocalDateKey(new Date());
             const safeName = (studentName || 'student').replace(/\s/g, '_');
             const filename = `alloflow_snapshot_${safeName}_${role}_${dateSuffix}.json`;
             const blob = new Blob([content], { type: 'application/json' });
@@ -8975,7 +9708,11 @@ Keep language warm and age-appropriate.`;
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const data = JSON.parse(e.target.result);
+                    let data = JSON.parse(e.target.result);
+                    // The home log's own Export wrote this shape, which was refused here.
+                    if (data && data.type === 'behaviorLens_homeLog_snapshot' && Array.isArray(data.homeLogEntries)) {
+                        data = { alloflowSnapshot: true, version: SNAPSHOT_VERSION, exportedAt: data.exportedAt, exportedBy: 'family', studentCodename: data.studentName, behaviorLens: { homeLogEntries: data.homeLogEntries } };
+                    }
                     if (!data || typeof data !== 'object' || !data.alloflowSnapshot) {
                         addToast && addToast(tt('behavior_lens.toast.not_a_valid_alloflow_snapshot_file', 'Not a valid AlloFlow snapshot file'), 'error');
                         return;
@@ -9001,11 +9738,10 @@ Keep language warm and age-appropriate.`;
                         );
                     }
                     // Count duplicates (against the VALIDATED set only)
-                    const existingTs = new Set(abcEntries.map(e => e.timestamp));
-                    const newAbc = validAbc.filter(e => !existingTs.has(e.timestamp));
-                    const existingObsTs = new Set(observationSessions.map(s => s.timestamp));
-                    const newObs = validObs.filter(s => !existingObsTs.has(s.timestamp));
-                    const dupeCount = (validAbc.length - newAbc.length) + (validObs.length - newObs.length);
+                    const abc = snapshotRecords('abc', validAbc, abcEntries, data.exportedBy);
+                    const obs = snapshotRecords('obs', validObs, observationSessions, data.exportedBy);
+                    const newAbc = abc.fresh, newObs = obs.fresh;
+                    const dupeCount = abc.duplicates + obs.duplicates;
                     const home = snapshotSideEntries('homeLog', data.behaviorLens?.homeLogEntries, homeLogEntries, data.exportedBy);
                     const self = snapshotSideEntries('selfCheck', data.behaviorLens?.selfCheckEntries, selfCheckEntries, data.exportedBy);
                     setImportPreview({
@@ -9015,7 +9751,7 @@ Keep language warm and age-appropriate.`;
                         newHome: home.fresh,
                         newSelf: self.fresh,
                         dupeCount,
-                        rejectedCount: rejectedAbc + rejectedObs + home.rejected + self.rejected,
+                        rejectedCount: rejectedAbc + rejectedObs + abc.rejected + obs.rejected + home.rejected + self.rejected,
                         hasAi: !!data.behaviorLens?.aiAnalysis,
                     });
                 } catch (err) {
@@ -9125,6 +9861,7 @@ Data included: ${dataOverview.join(', ') || 'None selected'}
 
 Write 2-3 sentences that are professional, warm, and collaborative. Focus on partnership and shared success. Do NOT use the student's codename in the message.`;
                             const result = await callGemini(prompt, false);
+                            if (result == null) return;
                             setMessage(result.trim());
                             if (addToast) addToast(tt('behavior_lens.toast.message_drafted', 'Message drafted ✨'), 'success');
                         } catch (err) {
@@ -9339,6 +10076,7 @@ Rewrite each section to be warmer, more accessible, and family-friendly. Keep ev
   ]
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -9366,7 +10104,7 @@ Rewrite each section to be warmer, more accessible, and family-friendly. Keep ev
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            const dateSuffix = new Date().toISOString().split('T')[0];
+            const dateSuffix = blLocalDateKey(new Date());
             a.href = url; a.download = `alloflow_consent_template_${dateSuffix}.json`; a.click();
             URL.revokeObjectURL(url);
             addToast && addToast(tt('behavior_lens.toast.consent_template_exported', 'Consent template exported'), 'success');
@@ -9376,14 +10114,21 @@ Rewrite each section to be warmer, more accessible, and family-friendly. Keep ev
             const file = e.target.files?.[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = (ev) => {
+            reader.onload = async (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
                     if (!data.alloflowConsentTemplate || !validConsentSections(data.sections)) {
                         addToast && addToast(tt('behavior_lens.toast.not_a_valid_consent_template_file', 'Not a valid consent template file'), 'error');
                         return;
                     }
-                    setSections(data.sections);
+                    // It replaced the form without asking (Reset asks), could drop or rewrite the
+                    // FERPA rights section, and left an AI-rewrite Undo that would bring the old form back.
+                    if (!await askBehaviorLensConfirmation(tt('behavior_lens.consent.import_confirm', 'Replace this consent form with the imported template? Your edits to this form will be lost. The FERPA rights section stays as it is.'), { title: 'Import consent template', confirmText: 'Replace' })) return;
+                    const locked = sections.filter(s => CONSENT_LOCKED_SECTIONS[s.id]);
+                    const merged = data.sections.map(s => CONSENT_LOCKED_SECTIONS[s.id] ? (locked.find(l => l.id === s.id) || s) : s);
+                    locked.forEach(l => { if (!merged.some(s => s.id === l.id)) merged.splice(Math.min(sections.indexOf(l), merged.length), 0, l); });
+                    setSections(merged);
+                    setBeforeAi(null);
                     if (data.schoolName) setSchoolName(data.schoolName);
                     if (data.teacherName) setTeacherName(data.teacherName);
                     addToast && addToast(tt('behavior_lens.toast.consent_template_imported', 'Consent template imported'), 'success');
@@ -9567,7 +10312,7 @@ Rewrite each section to be warmer, more accessible, and family-friendly. Keep ev
             setGenerating(true);
             try {
                 const behaviors = abcEntriesNewestFirst(abcEntries).slice(0, 10).map(e =>
-                    `B: ${e.behavior} | A: ${e.antecedent} | C: ${e.consequence} | Intensity: ${e.intensity}/5`
+                    `B: ${e.behavior} | A: ${e.antecedent} | C: ${e.consequence} | Intensity: ${intensityForPrompt(e.intensity)}`
                 ).join('\n');
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'not yet determined';
                 const obsCount = observationSessions?.length || 0;
@@ -9649,10 +10394,10 @@ Use plain text formatting. Be specific and actionable.`;
                 }),
                 h('div', { className: 'flex gap-2 mt-3' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                        onClick: () => { blWriteClipboard(plan, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                         className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200'
                     }, '📋 Copy'),
-                    h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
+                    h('button', { onClick: blPrintPanel, className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
                     preAiPlan !== null && h('button', { "aria-label": "Undo AI",
                         onClick: () => { setPlan(preAiPlan); setPreAiPlan(null); if (addToast) addToast(tt('behavior_lens.toast.reverted_to_previous', 'Reverted to previous'), 'info'); },
                         className: 'px-4 py-2 bg-amber-50 text-amber-700 border border-amber-600 rounded-lg text-sm font-bold hover:bg-amber-100'
@@ -9703,7 +10448,7 @@ Use plain text formatting. Be specific and actionable.`;
             setGenerating(true);
             try {
                 const behaviors = abcEntriesNewestFirst(abcEntries).slice(0, 15).map(e =>
-                    `${new Date(e.timestamp).toLocaleDateString()}: B=${e.behavior}, A=${e.antecedent}, C=${e.consequence}, Intensity=${e.intensity}/5`
+                    `${new Date(e.timestamp).toLocaleDateString()}: B=${e.behavior}, A=${e.antecedent}, C=${e.consequence}, Intensity=${intensityForPrompt(e.intensity)}`
                 ).join('\n');
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'not yet determined';
                 const prompt = `You are a special education teacher writing a progress monitoring narrative for an IEP progress report.
@@ -9730,6 +10475,7 @@ ${style === 'brief' ? 'Keep it concise — 1-2 paragraphs maximum.' : 'Provide a
 Use professional, objective language. Do NOT use the student codename — use "the student" instead. Include the reporting period.`;
                 setPreAiNarrative(narrative);
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setNarrative(result);
                 if (addToast) addToast(tt('behavior_lens.toast.progress_narrative_generated', 'Progress narrative generated ✨'), 'success');
             } catch (err) {
@@ -9745,7 +10491,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                     h('label', { className: 'text-xs font-bold text-slate-600' }, tt('behavior_lens.ui.style', 'Style:')),
                     ['brief', 'detailed'].map(s =>
-                        h('button', { key: s,
+                        h('button', { key: s, 'aria-pressed': style === s ? 'true' : 'false',
                             onClick: () => setStyle(s),
                             className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${style === s ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                         }, s === 'brief' ? '⚡ Brief' : '📄 Detailed')
@@ -9773,10 +10519,10 @@ Use professional, objective language. Do NOT use the student codename — use "t
                 }),
                 h('div', { className: 'flex gap-2 mt-3' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(narrative); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                        onClick: () => { blWriteClipboard(narrative, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                         className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200'
                     }, '📋 Copy'),
-                    h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
+                    h('button', { onClick: blPrintPanel, className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
                     preAiNarrative !== null && h('button', { "aria-label": "Undo AI",
                         onClick: () => { setNarrative(preAiNarrative); setPreAiNarrative(null); if (addToast) addToast(tt('behavior_lens.toast.reverted_to_previous', 'Reverted to previous'), 'info'); },
                         className: 'px-4 py-2 bg-amber-50 text-amber-700 border border-amber-600 rounded-lg text-sm font-bold hover:bg-amber-100'
@@ -9964,6 +10710,7 @@ Return a JSON object with this EXACT structure (no markdown, no explanation, ONL
 Generate ${entryCount} entries and ${observationCount} observations. Include a mix of challenging behaviors AND positive moments. Use realistic school settings, specific measurable behaviors, and varied antecedents/consequences. Make timestamps spread across the last ${collectionDays} days.`;
 
                 const raw = await callGemini(prompt, true);
+                if (raw == null) return;
                 // Parse JSON from response (brace-counter, not greedy regex)
                 let data;
                 try {
@@ -10133,7 +10880,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
             (abcEntries && abcEntries.length > 0) && h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-5 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
                     h('h3', { className: 'text-sm font-black text-slate-800 flex items-center gap-2' }, tt('behavior_lens.sandbox.add_phase_data', '📊 Add Phase Data')),
-                    h('span', { className: 'text-[11px] bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold' }, t('behavior_lens.sandbox.entries_loaded') || `${abcEntries.length} entries loaded`)
+                    h('span', { className: 'text-[11px] bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold' }, tt('behavior_lens.sandbox.entries_loaded_v2', '{n} entries loaded', { n: abcEntries.length }))
                 ),
                 h('p', { className: 'text-xs text-slate-600 mb-4' }, tt('behavior_lens.sandbox.add_phase_desc', 'Generate additional data representing a new phase (e.g., after implementing an intervention). New entries will be appended to existing data with timestamps continuing forward.')),
 
@@ -10232,7 +10979,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
 
                             // Get last 5 entries for context
                             const recentEntries = abcEntriesNewestFirst(abcEntries).slice(0, 5).map(e =>
-                                `[${new Date(e.timestamp || e.date || 0).toLocaleDateString()}] B: ${e.behavior} | A: ${e.antecedent} | C: ${e.consequence} | Intensity: ${e.intensity}/5`
+                                `[${new Date(e.timestamp || e.date || 0).toLocaleDateString()}] B: ${e.behavior} | A: ${e.antecedent} | C: ${e.consequence} | Intensity: ${intensityForPrompt(e.intensity)}`
                             ).join('\n');
 
                             const phaseLabels = { intervention: 'Intervention', maintenance: 'Maintenance', return_baseline: 'Return to Baseline' };
@@ -10256,7 +11003,7 @@ ${interventionDesc ? `INTERVENTION DESCRIPTION: ${interventionDesc}` : 'INTERVEN
 EXPECTED PATTERN: ${patternInstructions[expectedPattern] || patternInstructions.improving}
 
 PHASE: ${phaseLabels[phaseLabel] || 'Intervention'}
-Start date: ${startDate.toISOString().split('T')[0]}
+Start date: ${blLocalDateKey(startDate)}
 Duration: ${phaseDays} days
 
 Generate ${phaseEntries} ABC entries that CONTINUE the student's story during the ${phaseLabels[phaseLabel]} phase.
@@ -10266,7 +11013,7 @@ Return ONLY valid JSON with this EXACT structure (no markdown, no explanation):
   "entries": [
     {
       "id": "phase_1",
-      "timestamp": "ISO date string (spread across the ${phaseDays}-day period starting from ${startDate.toISOString().split('T')[0]})",
+      "timestamp": "ISO date string (spread across the ${phaseDays}-day period starting from ${blLocalDateKey(startDate)})",
       "behavior": "Observable, measurable description",
       "antecedent": "What happened before",
       "consequence": "What happened after — reference the intervention when relevant",
@@ -10283,11 +11030,12 @@ Rules:
 - Include a mix of challenging and positive behaviors, weighted by the expected pattern
 - Reference the specific intervention in consequences when appropriate
 - Use realistic school settings consistent with the baseline data
-- Make timestamps spread across the ${phaseDays}-day period starting from ${startDate.toISOString().split('T')[0]}
+- Make timestamps spread across the ${phaseDays}-day period starting from ${blLocalDateKey(startDate)}
 - Include notes that reference intervention effectiveness where relevant
 - Each entry MUST have a "phase" field set to "${phaseLabel}"`;
 
                             const raw = await callGemini(prompt, true);
+                            if (raw == null) return;
                             let data;
                             try {
                                 const obj = parseJsonBlobFromText(raw);
@@ -10502,11 +11250,11 @@ Rules:
             grade,
             color,
             dimensions: [
-                { label: tt('behavior_lens.dq.volume', 'Volume'), value: Math.round(volScore * 100), tip: volScore < 1 ? (t('behavior_lens.dq.tip_add_entries') || `Add ${Math.max(0, 10 - entries.length)} more entries (need 10+)`) : (tt('behavior_lens.dq.tip_great_volume', 'Great volume of data!')) },
-                { label: tt('behavior_lens.dq.recency', 'Recency'), value: Math.round(recScore * 100), tip: recScore < 1 ? (t('behavior_lens.dq.tip_last_entry_ago') || `Last entry was ${Math.round(daysSince)} days ago — add fresh data`) : (tt('behavior_lens.dq.tip_data_current', 'Data is current!')) },
-                { label: tt('behavior_lens.dq.diversity', 'Diversity'), value: Math.round(divScore * 100), tip: divScore < 1 ? (t('behavior_lens.dq.tip_antecedent_types') || `Only ${uniqueAnt.size} antecedent type${uniqueAnt.size !== 1 ? 's' : ''} — collect across 3+ settings`) : (tt('behavior_lens.dq.tip_good_diversity', 'Good setting diversity!')) },
-                { label: tt('behavior_lens.dq.completeness', 'Completeness'), value: Math.round(compScore * 100), tip: compScore < 1 ? (t('behavior_lens.dq.tip_missing_fields') || `${entries.length - complete} entries are missing A, B, or C fields`) : (tt('behavior_lens.dq.tip_all_complete', 'All entries fully complete!')) },
-                { label: tt('behavior_lens.dq.temporal_spread', 'Temporal Spread'), value: Math.round(spreadScore * 100), tip: spreadScore < 1 ? (t('behavior_lens.dq.tip_spread_days') || `Data from only ${uniqueDays.size} day${uniqueDays.size !== 1 ? 's' : ''} — spread across 3+ days`) : (tt('behavior_lens.dq.tip_good_coverage', 'Good temporal coverage!')) },
+                { label: tt('behavior_lens.dq.volume', 'Volume'), value: Math.round(volScore * 100), tip: volScore < 1 ? (tt('behavior_lens.dq.tip_add_entries_v2', 'Add {n} more entries (need 10+)', { n: Math.max(0, 10 - entries.length) })) : (tt('behavior_lens.dq.tip_great_volume', 'Great volume of data!')) },
+                { label: tt('behavior_lens.dq.recency', 'Recency'), value: Math.round(recScore * 100), tip: recScore < 1 ? (tt('behavior_lens.dq.tip_last_entry_ago_v2', 'Last entry was {n} days ago. Add fresh data.', { n: Math.round(daysSince) })) : (tt('behavior_lens.dq.tip_data_current', 'Data is current!')) },
+                { label: tt('behavior_lens.dq.diversity', 'Diversity'), value: Math.round(divScore * 100), tip: divScore < 1 ? (tt('behavior_lens.dq.tip_antecedent_types_v2', 'Antecedent types seen: {n}. Collect across 3+ settings.', { n: uniqueAnt.size })) : (tt('behavior_lens.dq.tip_good_diversity', 'Good setting diversity!')) },
+                { label: tt('behavior_lens.dq.completeness', 'Completeness'), value: Math.round(compScore * 100), tip: compScore < 1 ? (tt('behavior_lens.dq.tip_missing_fields_v2', '{n} of {total} entries are missing A, B, or C', { n: entries.length - complete, total: entries.length })) : (tt('behavior_lens.dq.tip_all_complete', 'All entries fully complete!')) },
+                { label: tt('behavior_lens.dq.temporal_spread', 'Temporal Spread'), value: Math.round(spreadScore * 100), tip: spreadScore < 1 ? (tt('behavior_lens.dq.tip_spread_days_v2', 'Days with data: {n}. Spread across 3+ days.', { n: uniqueDays.size })) : (tt('behavior_lens.dq.tip_good_coverage', 'Good temporal coverage!')) },
             ]
         };
     };
@@ -10514,7 +11262,7 @@ Rules:
     // ─── DataQualityBadge ────────────────────────────────────────────────
     const DataQualityBadge = ({ abcEntries, t }) => {
         const [expanded, setExpanded] = useState(false);
-        const quality = computeDataQuality(abcEntries, t);
+        const quality = useMemo(() => computeDataQuality(abcEntries, t), [abcEntries, t]);
         if (quality.grade === 'none') return null;
 
         const ringColors = { emerald: 'border-emerald-400 bg-emerald-50 text-emerald-700', amber: 'border-amber-400 bg-amber-50 text-amber-700', red: 'border-red-400 bg-red-50 text-red-700' };
@@ -10523,10 +11271,11 @@ Rules:
 
         return h('div', { className: 'relative' },
             h('button', { onClick: () => setExpanded(v => !v),
+                'aria-label': `Data quality: ${quality.grade}, ${quality.score}%`, 'aria-expanded': String(expanded), 'aria-controls': 'bl-data-quality-scorecard',
                 className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all ${ringColors[quality.color]}`,
                 title: `Data Quality: ${quality.grade} (${quality.score}%)`
             }, ringIcons[quality.grade], ` ${quality.score}%`),
-            expanded && h('div', {
+            expanded && h('div', { id: 'bl-data-quality-scorecard', role: 'region', 'aria-label': 'Data quality scorecard',
                 className: 'absolute right-0 top-9 z-50 bg-white border border-slate-400 rounded-xl shadow-2xl p-4 min-w-[280px] animate-in fade-in',
                 onClick: e => e.stopPropagation()
             },
@@ -10536,7 +11285,7 @@ Rules:
                 ),
                 h('div', { className: `text-center py-3 rounded-xl mb-3 ${quality.color === 'emerald' ? 'bg-emerald-50' : quality.color === 'amber' ? 'bg-amber-50' : 'bg-red-50'}` },
                     h('div', { className: 'text-3xl font-black ' + (quality.color === 'emerald' ? 'text-emerald-600' : quality.color === 'amber' ? 'text-amber-600' : 'text-red-600') }, `${quality.score}%`),
-                    h('div', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, (t('behavior_lens.dq.dataset_grade') || quality.grade + ' dataset'))
+                    h('div', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.dq.dataset_grade_v2', '{grade} dataset', { grade: ({ strong: 'Strong', fair: 'Fair', poor: 'Poor' })[quality.grade] || quality.grade }))
                 ),
                 h('div', { className: 'space-y-2.5' },
                     quality.dimensions.map((dim, i) =>
@@ -10564,7 +11313,7 @@ Rules:
         const FBA_STEPS = [
             { id: 1, check: () => !selectedStudent, label: tt('behavior_lens.fba.step_select_student', 'Select a Student'), desc: tt('behavior_lens.fba.step_select_student_desc', 'Choose or create a student profile to begin collecting data'), tool: null, icon: '👤' },
             { id: 2, check: () => abcEntries.length === 0, label: tt('behavior_lens.fba.step_record_abc', 'Record ABC Data'), desc: tt('behavior_lens.fba.step_record_abc_desc', 'Start documenting Antecedent-Behavior-Consequence observations'), tool: 'abc', icon: '📋' },
-            { id: 3, check: () => abcEntries.length > 0 && abcEntries.length < 5, label: tt('behavior_lens.fba.step_collect_more', 'Collect More Data'), desc: t('behavior_lens.fba.step_collect_more_desc') || `You have ${abcEntries.length} entries — aim for 5+ across different days for reliable patterns`, tool: 'abc', icon: '📝' },
+            { id: 3, check: () => abcEntries.length > 0 && abcEntries.length < 5, label: tt('behavior_lens.fba.step_collect_more', 'Collect More Data'), desc: tt('behavior_lens.fba.step_collect_more_desc_v2', 'You have {n} entries. Aim for 5+ across different days for reliable patterns.', { n: abcEntries.length }), tool: 'abc', icon: '📝' },
             { id: 4, check: () => abcEntries.length >= 5 && !aiAnalysis, label: tt('behavior_lens.fba.step_ai_analysis', 'Run AI Pattern Analysis'), desc: tt('behavior_lens.fba.step_ai_analysis_desc', 'You have enough data! Let AI identify behavior patterns and potential functions'), tool: 'analysis', icon: '🧠' },
             { id: 5, check: () => !!aiAnalysis && observationSessions.length === 0, label: tt('behavior_lens.fba.step_hypothesis', 'Build a Hypothesis'), desc: tt('behavior_lens.fba.step_hypothesis_desc', 'Create a visual hypothesis diagram linking triggers, behaviors, and consequences'), tool: 'hypothesis', icon: '🔗' },
             { id: 6, check: () => !!aiAnalysis && sessionHistory.length === 0, label: tt('behavior_lens.fba.step_sessions', 'Track Intervention Sessions'), desc: tt('behavior_lens.fba.step_sessions_desc', 'Start tracking data on your intervention to measure effectiveness'), tool: 'sessiontracker', icon: '📈' },
@@ -10592,7 +11341,7 @@ Rules:
             ),
             h('p', { className: 'text-xs text-white/80 mb-3' }, currentStep.desc),
             h('div', { className: 'flex items-center gap-3' },
-                currentStep.tool && onOpenTool && h('button', { "aria-label": "On Open Tool",
+                currentStep.tool && onOpenTool && h('button', { 'aria-label': 'Open the tool for: ' + currentStep.label,
                     onClick: () => onOpenTool(currentStep.tool),
                     className: 'px-4 py-1.5 bg-white text-slate-800 rounded-lg text-xs font-black hover:bg-white/90 transition-all shadow-sm'
                 }, tt('behavior_lens.fba.open_tool', '→ Open Tool')),
@@ -10600,7 +11349,7 @@ Rules:
                     h('div', { className: 'w-full bg-white/20 rounded-full h-1.5 overflow-hidden' },
                         h('div', { role: 'progressbar', 'aria-label': 'Observation workflow progress', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round(progress), className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
                     ),
-                    h('div', { className: 'text-[11px] text-white/50 mt-1 text-end' }, t('behavior_lens.fba.progress_pct') || `${progress}% through FBA workflow`)
+                    h('div', { className: 'text-[11px] text-white/50 mt-1 text-end' }, tt('behavior_lens.fba.progress_pct_v2', '{pct}% through FBA workflow', { pct: progress }))
                 )
             )
         );
@@ -10609,6 +11358,13 @@ Rules:
     // ─── BehaviorHeatmap ────────────────────────────────────────────────
     const BehaviorHeatmap = ({ abcEntries, onOpenTool, t, addToast, mini }) => {
         const [hoveredCell, setHoveredCell] = useState(null);
+        // Entries by day, once (it filtered every entry for each of the 20 days on every render,
+        // including each keystroke in the hub's search and profile fields).
+        const entriesByDay = useMemo(() => {
+            const byDay = new Map();
+            (abcEntries || []).forEach(e => { const day = abcEntryDay(e); if (!byDay.has(day)) byDay.set(day, []); byDay.get(day).push(e); });
+            return byDay;
+        }, [abcEntries]);
 
         // Build 4-week calendar grid (Mon-Fri, 4 rows)
         const now = new Date();
@@ -10623,7 +11379,7 @@ Rules:
                 const currentDay = now.getDay() || 7; // Sun=7
                 date.setDate(now.getDate() - (currentDay - 1) - (w * 7) + d);
                 const dateStr = blLocalDateKey(date);
-                const dayEntries = abcEntries.filter(e => abcEntryDay(e) === dateStr);
+                const dayEntries = entriesByDay.get(dateStr) || [];
                 const count = dayEntries.length;
                 const functions = {};
                 const phases = {};
@@ -11007,7 +11763,7 @@ Rules:
                                     ),
                                     h('div', { className: 'flex items-center gap-2 shrink-0' },
                                         h('span', { className: `text-[11px] font-black px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}` }, `+${skill.xp} XP`),
-                                        !isDone && skill.tool && onOpenTool && h('button', { "aria-label": "Open Tool",
+                                        !isDone && skill.tool && onOpenTool && h('button', { 'aria-label': 'Open the tool for ' + skill.label,
                                             onClick: (e) => { e.stopPropagation(); onOpenTool(skill.tool); },
                                             className: 'px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 transition-all',
                                             title: 'Open this tool'
@@ -11031,7 +11787,22 @@ Rules:
 
     // ─── GuidedWorkflowHub ──────────────────────────────────────────────
     // Multi-track guided workflow system with sub-steps, auto-completion, and AI recommendations
-    const GuidedWorkflowHub = ({ setActivePanel, abcEntries, observationSessions, aiAnalysis, callGemini, alloBotRef, workflowTrack, setWorkflowTrack, workflowSubSteps, setWorkflowSubSteps, t, addToast }) => {
+    // An AI guess is not a developed hypothesis: "✅ Hypothesized: Unknown" showed for the
+    // analysis' own fallback, and any AI function turned the step green.
+    const aiHypothesisCheck = (analysis) => {
+        const fn = String((analysis && analysis.hypothesizedFunction) || '').trim();
+        if (!fn || /^unknown$/i.test(fn)) return null;
+        return '🔄 AI suggests: ' + fn + ' (confirm it with your team)';
+    };
+    // "Define Target Behavior" turned green as soon as any entry was logged.
+    const targetDefinitionCheck = (targetBehaviors, abcEntries) => {
+        const defined = (targetBehaviors || []).filter(tb => tb && String(tb.operationalDefinition || '').trim()).length;
+        if (defined) return '✅ ' + defined + ' target behavior' + (defined === 1 ? '' : 's') + ' defined';
+        return (abcEntries || []).length ? '🔄 Entries logged, but no written definition saved yet' : null;
+    };
+    window.AlloModules.BehaviorLensWorkflowChecks = Object.freeze({ aiHypothesisCheck, targetDefinitionCheck });
+
+    const GuidedWorkflowHub = ({ setActivePanel, abcEntries, targetBehaviors, observationSessions, aiAnalysis, callGemini, alloBotRef, workflowTrack, setWorkflowTrack, workflowSubSteps, setWorkflowSubSteps, t, addToast }) => {
         const [expandedStep, setExpandedStep] = useState(null);
         const [aiRec, setAiRec] = useState('');
         const [aiRecLoading, setAiRecLoading] = useState(false);
@@ -11081,7 +11852,7 @@ Rules:
                     { id: 'fba_1', num: 1, title: (tt('behavior_lens.raw.define_target_behavior', 'Define Target Behavior')), icon: '🎯', tool: 'abc', toolName: 'ABC Data',
                       desc: 'Operationally define the behavior so it is observable and measurable.',
                       tip: 'Ask: "Could two people independently agree on whether this behavior occurred?"',
-                      autoCheck: () => abcEntries.length > 0 ? `✅ ${abcEntries.length} ABC entries logged` : null,
+                      autoCheck: () => targetDefinitionCheck(targetBehaviors, abcEntries),
                       subs: [
                           { id: 'fba_1a', label: (tt('behavior_lens.raw.write_an_observable_measurable_behavior_definition', 'Write an observable, measurable behavior definition')) },
                           { id: 'fba_1b', label: (tt('behavior_lens.raw.confirm_two_observers_could_agree_on_occurrence', 'Confirm two observers could agree on occurrence')) },
@@ -11108,7 +11879,7 @@ Rules:
                     { id: 'fba_4', num: 4, title: (tt('behavior_lens.raw.hypothesize_function', 'Hypothesize Function')), icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
                       desc: 'Determine WHY the behavior occurs — Escape, Attention, Sensory, or Tangible.',
                       tip: 'A behavior can serve multiple functions. Consider whether function changes across settings.',
-                      autoCheck: () => aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : null,
+                      autoCheck: () => aiHypothesisCheck(aiAnalysis),
                       subs: [
                           { id: 'fba_4a', label: (tt('behavior_lens.raw.map_antecedent_behavior_consequence_pathways', 'Map antecedent → behavior → consequence pathways')) },
                           { id: 'fba_4b', label: (tt('behavior_lens.raw.confirm_hypothesis_with_the_team_or_a_colleague', 'Confirm hypothesis with the team or a colleague')) },
@@ -11142,7 +11913,7 @@ Rules:
                     { id: 'bip_1', num: 1, title: (tt('behavior_lens.raw.confirm_function', 'Confirm Function')), icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
                       desc: 'Verify the hypothesized function of the behavior with your team.',
                       tip: 'Even if the function seems obvious, document it with at least some data.',
-                      autoCheck: () => aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : null,
+                      autoCheck: () => aiHypothesisCheck(aiAnalysis),
                       subs: [
                           { id: 'bip_1a', label: (tt('behavior_lens.raw.review_existing_data_supporting_the_hypothesis', 'Review existing data supporting the hypothesis')) },
                           { id: 'bip_1b', label: (tt('behavior_lens.raw.confirm_function_with_team_consensus', 'Confirm function with team consensus')) },
@@ -11296,6 +12067,7 @@ ${stepsStatus}
 
 Based on this progress, recommend the ONE most important next action. Be specific and actionable. Keep to 2-3 sentences. Start with the step number and name.`;
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setAiRec(result || 'Keep going — you\'re making great progress!');
                 if (alloBotRef?.current?.speak) {
                     try { alloBotRef.current.speak((result || '').slice(0, 180)); } catch (_) {}
@@ -11467,6 +12239,7 @@ Explanation: ${sc.explain}
 
 Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their reasoning and extend their thinking with a follow-up consideration. If incorrect, gently explain why and connect it to real-world practice. Use warm, encouraging language. End with one practical takeaway they can use in their classroom tomorrow.`;
                                         const result = await callGemini(prompt, false);
+                                        if (result == null) return;
                                         setScenarioReflection(prev => ({ ...prev, [step.id]: result }));
                                         if (alloBotRef?.current?.speak) {
                                             try { alloBotRef.current.speak((result || '').slice(0, 180)); } catch (_) {}
@@ -11577,7 +12350,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                     'You are a BCBA reviewing ABC behavioral data entries for quality and completeness.',
                     RESTORATIVE_PREAMBLE,
                     '',
-                    'SAMPLE DISCLOSURE: ' + sample.sampleCount + ' of ' + sample.totalCount + ' entries, selected using ' + sample.strategy + ' across the recorded date range.',
+                    'SAMPLE DISCLOSURE: ' + sample.sampleCount + ' of ' + sample.totalCount + ' entries (' + blSampleText(sample.strategy) + ').',
                     '',
                     entriesStr,
                     '',
@@ -11585,6 +12358,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                     'Return concise plain text with headings QUALITY, STRENGTHS, AREAS FOR IMPROVEMENT, and SPECIFIC SUGGESTIONS. State that findings apply to the disclosed sample.'
                 ].join('\n');
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setReport(result);
                 setReportProvenance(provenance);
                 if (addToast) addToast(tt('behavior_lens.toast.quality_check_complete', 'Quality check complete'), 'success');
@@ -11628,9 +12402,9 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
             abcEntries.length === 0 && h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400 text-sm text-slate-600' }, 'No ABC entries to check yet.'),
             callGemini && abcEntries.length > 0 && h('button', { type: 'button', onClick: handleCheck, disabled: checking, className: 'w-full min-h-[44px] py-3 bg-emerald-700 text-white rounded-xl font-bold shadow hover:bg-emerald-800 disabled:opacity-40' }, checking ? 'Analyzing disclosed sample...' : report ? 'Hide AI report' : 'Run sampled AI quality review'),
             report && h('div', { className: 'bg-white rounded-xl border border-green-200 p-5 shadow-sm' },
-                reportProvenance && h('p', { className: 'mb-3 rounded-lg bg-slate-50 p-2 text-[11px] font-bold text-slate-700' }, 'AI review provenance: ' + reportProvenance.sampleCount + ' of ' + reportProvenance.totalEntries + ' entries; ' + reportProvenance.sampleStrategy + '; generated ' + new Date(reportProvenance.generatedAt).toLocaleString() + '.'),
+                reportProvenance && h('p', { className: 'mb-3 rounded-lg bg-slate-50 p-2 text-[11px] font-bold text-slate-700' }, 'AI review provenance: ' + reportProvenance.sampleCount + ' of ' + reportProvenance.totalEntries + ' entries; ' + blSampleText(reportProvenance.sampleStrategy) + '; generated ' + new Date(reportProvenance.generatedAt).toLocaleString() + '.'),
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, report),
-                h('button', { type: 'button', onClick: () => { navigator.clipboard.writeText(report); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'mt-4 min-h-[44px] px-3 py-2 bg-green-100 text-green-800 rounded-lg text-xs font-bold hover:bg-green-200' }, 'Copy report')
+                h('button', { type: 'button', onClick: () => { blWriteClipboard(report, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); }, className: 'mt-4 min-h-[44px] px-3 py-2 bg-green-100 text-green-800 rounded-lg text-xs font-bold hover:bg-green-200' }, 'Copy report')
             )
         );
     };
@@ -11665,14 +12439,18 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
         }, [filteredEntries]);
         const heatmapData = useMemo(() => {
             const grid = Array.from({ length: 7 }, () => Array(4).fill(0));
+            let untimed = 0;
             filteredEntries.forEach(entry => {
                 const iso = runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp);
                 if (!iso) return;
-                const date = new Date(iso);
-                const hour = date.getHours();
+                const lp = abcEntryLocalParts(entry);
+                if (lp && lp.hour == null) untimed += 1;
+                if (!lp || lp.hour == null) return;
+                const hour = lp.hour;
                 const block = hour < 9 ? 0 : hour < 12 ? 1 : hour < 15 ? 2 : 3;
-                grid[date.getDay()][block] += 1;
+                grid[lp.dow][block] += 1;
             });
+            grid.untimed = untimed;
             return grid;
         }, [filteredEntries]);
         const selectedRate = useMemo(
@@ -11776,6 +12554,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
             const maximum = Math.max(1, ...heatmapData.flat());
             return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm overflow-x-auto' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, 'Incident count by local day and time block'),
+                heatmapData.untimed > 0 && h('p', { className: 'text-xs text-slate-700 -mt-2 mb-3', 'data-bl-trend-untimed': heatmapData.untimed }, heatmapData.untimed + (heatmapData.untimed === 1 ? ' entry with no time recorded is' : ' entries with no time recorded are') + ' not shown.'),
                 h('table', { className: 'w-full' },
                     h('caption', { className: 'sr-only' }, 'Incident count by local day and time block'),
                     h('thead', null,
@@ -11965,7 +12744,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                                     ),
                                     h('button', {
                                         type: 'button',
-                                        onClick: () => { setNotes(prev => (Array.isArray(prev) ? prev : []).filter(n => n.id !== note.id)); if (announce) announce('Team note deleted'); },
+                                        onClick: async () => { if (!await askBehaviorLensConfirmation(tt('behavior_lens.team_notes.delete_confirm', 'Delete this team note?'), { title: 'Delete team note', confirmText: 'Delete' })) return; setNotes(prev => (Array.isArray(prev) ? prev : []).filter(n => n.id !== note.id)); if (announce) announce('Team note deleted'); },
                                         'aria-label': 'Delete ' + (note.roleLabel || 'team') + ' note', className: 'text-[11px] text-slate-600 hover:text-red-400 transition-colors'
                                     }, '✕')
                                 )
@@ -11980,7 +12759,10 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
     // ─── IEPPrepGenerator ───────────────────────────────────────────────
     // AI generates complete IEP meeting prep packet
     const IEPPrepGenerator = ({ studentName, abcEntries, observationSessions, aiAnalysis, graphExport, effectSizeResults, setActivePanel, callGemini, t, addToast }) => {
-        const [packet, setPacket] = useState('');
+        const [packet, setPacket] = useDurableToolState('iepPrepPacket', '');
+        const packetRef = useRef(null);
+        const focusPacketRef = useRef(false);
+        useEffect(() => { if (focusPacketRef.current && packetRef.current) { focusPacketRef.current = false; packetRef.current.focus(); } });
         const [generating, setGenerating] = useState(false);
         const [preAiPacket, setPreAiPacket] = useState(null);
 
@@ -11992,8 +12774,9 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                 const recentEntries = abcEntriesNewestFirst(abcEntries).slice(0, 10).map((e, i) =>
                     `${i + 1}. B: "${e.behavior}" | A: "${e.antecedent}" | C: "${e.consequence}" | Intensity: ${e.intensity || 'N/A'} | Setting: ${e.setting || 'N/A'}`
                 ).join('\n');
-                const obsSummary = observationSessions.slice(-3).map((s, i) =>
-                    `Session ${i + 1}: ${s.method || 'observation'}, ${s.notes || 'no notes'}`
+                // Sessions are stored newest first; slice(-3) sent the three OLDEST as current.
+                const obsSummary = observationSessionsNewestFirst(observationSessions).slice(0, 3).map((s, i) =>
+                    `Session ${i + 1} (most recent first): ${observationSessionLine(s)}${s.notes ? '; notes: ' + s.notes : ''}`
                 ).join('\n');
 
                 // Build graph data context
@@ -12034,7 +12817,7 @@ ${recentEntries || 'No data collected yet'}
 Observation summaries:
 ${obsSummary || 'No observations recorded'}
 
-${aiAnalysis ? `AI Analysis Summary: ${JSON.stringify(aiAnalysis).substring(0, 500)}` : ''}${graphContext}${effectContext}
+${aiAnalysis ? `AI Analysis Summary: ${aiAnalysisText(aiAnalysis, 1500)}` : ''}${graphContext}${effectContext}
 
 Format the packet with these sections:
 📊 DATA SUMMARY
@@ -12068,6 +12851,8 @@ Keep the language strengths-based and restorative. Use "your child" not the code
 
                 setPreAiPacket(packet);
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
+                focusPacketRef.current = true;
                 setPacket(result);
                 if (addToast) addToast(tt('behavior_lens.toast.iep_prep_packet_generated', 'IEP prep packet generated ✨'), 'success');
             } catch (err) {
@@ -12125,14 +12910,14 @@ Keep the language strengths-based and restorative. Use "your child" not the code
             }, generating ? '⏳ Preparing Packet...' : `🧠 Generate IEP Prep Packet${graphExport || effectSizeResults ? ' (with graph/effect data)' : ''}`),
             abcEntries.length === 0 && h('p', { className: 'text-[11px] text-slate-600 text-center' }, tt('behavior_lens.ui.collect_some_abc_data_first_to_generate_a_meaningf', 'Collect some ABC data first to generate a meaningful packet.')),
             // Packet display
-            packet && h('div', { className: 'bg-white rounded-xl border border-blue-200 p-5 shadow-sm' },
+            packet && h('div', { ref: packetRef, tabIndex: -1, role: 'region', 'aria-label': 'IEP prep packet', className: 'bg-white rounded-xl border border-blue-200 p-5 shadow-sm' },
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, packet),
                 h('div', { className: 'flex gap-2 mt-4 flex-wrap' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(packet); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                        onClick: () => { blWriteClipboard(packet, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                         className: 'px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200'
                     }, '📋 Copy'),
-                    h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '🖨️ Print'),
+                    h('button', { onClick: blPrintPanel, className: 'px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '🖨️ Print'),
                     preAiPacket !== null && h('button', { "aria-label": "Undo AI",
                         onClick: () => { setPacket(preAiPacket); setPreAiPacket(null); if (addToast) addToast(tt('behavior_lens.toast.reverted', 'Reverted'), 'info'); },
                         className: 'px-4 py-2 bg-amber-50 text-amber-700 border border-amber-600 rounded-lg text-sm font-bold hover:bg-amber-100'
@@ -12153,7 +12938,7 @@ Keep the language strengths-based and restorative. Use "your child" not the code
             if (abcEntries.length < 3) return [];
             const patterns = [];
             // Time patterns
-            const hours = abcEntries.map(e => new Date(e.timestamp).getHours()).filter(h => !isNaN(h));
+            const hours = abcEntries.map(e => { const lp = abcEntryLocalParts(e); return lp && lp.hour != null ? lp.hour : NaN; }).filter(h => !isNaN(h));
             if (hours.length > 3) {
                 const morningCount = hours.filter(h => h >= 8 && h < 12).length;
                 const afternoonCount = hours.filter(h => h >= 12 && h < 15).length;
@@ -12162,7 +12947,8 @@ Keep the language strengths-based and restorative. Use "your child" not the code
                 if (afternoonCount > total * 0.6) patterns.push({ icon: '☀️', text: `${Math.round(afternoonCount / total * 100)}% of incidents occur in the afternoon (12pm–3pm)`, type: 'time' });
             }
             // Day patterns
-            const days = abcEntries.map(e => new Date(e.timestamp).getDay());
+            // The recorder's day (it used the viewer's clock and the save time).
+            const days = abcEntries.map(e => { const lp = abcEntryLocalParts(e); return lp ? lp.dow : null; }).filter(d => d != null);
             const dayCounts = {};
             days.forEach(d => { dayCounts[d] = (dayCounts[d] || 0) + 1; });
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -12230,6 +13016,7 @@ Provide a structured prediction report:
 Be specific with percentages where possible. Keep language strengths-based and actionable.`;
 
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setInsights(result);
                 if (addToast) addToast(tt('behavior_lens.toast.predictive_analysis_complete', 'Predictive analysis complete ✨'), 'success');
             } catch (err) {
@@ -12271,7 +13058,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, insights),
                 h('div', { className: 'flex gap-2 mt-4' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(insights); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                        onClick: () => { blWriteClipboard(insights, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                         className: 'px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-[11px] font-bold hover:bg-purple-200'
                     }, '📋 Copy')
                 )
@@ -12281,8 +13068,34 @@ Be specific with percentages where possible. Keep language strengths-based and a
 
     // ─── StudentGamification ────────────────────────────────────────────
     // Streaks, badges, and quests for student self-monitoring
+    // Check-in streak in calendar days on the student's clock, counted back from the
+    // latest check-in, and only "current" if that was today or yesterday. It compared
+    // midnights by elapsed milliseconds, so the 25-hour day when clocks fall back read
+    // 1.04 days and broke a real streak; an old streak also still showed as current.
+    // Badges use the longest run ever, so a badge is not taken away after a missed day.
+    const checkinDayNumbers = checkins => Array.from(new Set((checkins || []).map(c => new Date(c && c.timestamp)).filter(d => !isNaN(d)).map(checkinDayNum))).sort((a, b) => b - a);
+    function checkinDayNum(d) { return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000); }
+    function longestCheckinStreak(checkins) {
+        const days = checkinDayNumbers(checkins);
+        let best = days.length ? 1 : 0, run = 1;
+        for (let k = 1; k < days.length; k++) { run = days[k - 1] - days[k] === 1 ? run + 1 : 1; if (run > best) best = run; }
+        return best;
+    }
+    function checkinStreak(checkins, now) {
+        const dayNum = checkinDayNum;
+        const days = checkinDayNumbers(checkins);
+        if (!days.length) return 0;
+        const today = dayNum(now == null ? new Date() : new Date(now));
+        if (today - days[0] > 1) return 0;
+        let count = 1;
+        for (let k = 1; k < days.length && days[k - 1] - days[k] === 1; k++) count++;
+        return count;
+    }
+    window.AlloModules.BehaviorLensGamification = Object.freeze({ checkinStreak, longestCheckinStreak });
+
     const StudentGamification = ({ abcEntries, t }) => {
-        const [checkins, setCheckins] = useState([]);
+        // Kept with the student's workspace: streaks and badges need past check-ins.
+        const [checkins, setCheckins] = useDurableToolState('gamificationCheckins', []);
         const [selectedMood, setSelectedMood] = useState(null);
         const [reflection, setReflection] = useState('');
 
@@ -12295,20 +13108,8 @@ Be specific with percentages where possible. Keep language strengths-based and a
         ];
 
         // Computed stats
-        const streak = useMemo(() => {
-            if (checkins.length === 0) return 0;
-            let count = 1;
-            for (let i = 0; i < checkins.length - 1; i++) {
-                const d1 = new Date(checkins[i].timestamp).toDateString();
-                const d2 = new Date(checkins[i + 1].timestamp).toDateString();
-                if (d1 !== d2) {
-                    const diff = (new Date(d1) - new Date(d2)) / (1000 * 60 * 60 * 24);
-                    if (diff <= 1) count++;
-                    else break;
-                }
-            }
-            return count;
-        }, [checkins]);
+        const streak = useMemo(() => checkinStreak(checkins), [checkins]);
+        const bestStreak = useMemo(() => longestCheckinStreak(checkins), [checkins]);
 
         const badges = useMemo(() => {
             const earned = [];
@@ -12316,22 +13117,22 @@ Be specific with percentages where possible. Keep language strengths-based and a
             if (checkins.length >= 5) earned.push({ id: 'five', icon: '⭐', title: (tt('behavior_lens.raw.high_five', 'High Five')), desc: '5 check-ins completed!' });
             if (checkins.length >= 10) earned.push({ id: 'ten', icon: '🌟', title: (tt('behavior_lens.raw.star_tracker', 'Star Tracker')), desc: '10 check-ins completed!' });
             if (checkins.length >= 25) earned.push({ id: 'twentyfive', icon: '🏆', title: (tt('behavior_lens.raw.champion', 'Champion')), desc: '25 check-ins!' });
-            if (streak >= 3) earned.push({ id: 'streak3', icon: '🔥', title: '3-Day Streak', desc: 'Checked in 3 days in a row!' });
-            if (streak >= 7) earned.push({ id: 'streak7', icon: '💎', title: (tt('behavior_lens.raw.week_warrior', 'Week Warrior')), desc: '7-day streak!' });
+            if (bestStreak >= 3) earned.push({ id: 'streak3', icon: '🔥', title: '3-Day Streak', desc: 'Checked in 3 days in a row!' });
+            if (bestStreak >= 7) earned.push({ id: 'streak7', icon: '💎', title: (tt('behavior_lens.raw.week_warrior', 'Week Warrior')), desc: '7-day streak!' });
             const hasReflection = checkins.some(c => c.reflection && c.reflection.length > 10);
             if (hasReflection) earned.push({ id: 'reflector', icon: '🪞', title: (tt('behavior_lens.raw.selfreflector', 'Self-Reflector')), desc: 'Wrote a thoughtful reflection!' });
             const positiveCount = checkins.filter(c => c.mood === 'great' || c.mood === 'good').length;
             if (positiveCount >= 5) earned.push({ id: 'positive5', icon: '☀️', title: (tt('behavior_lens.raw.sunshine_collector', 'Sunshine Collector')), desc: '5 positive check-ins!' });
             return earned;
-        }, [checkins, streak]);
+        }, [checkins, bestStreak]);
 
         // Quests
         const quests = useMemo(() => [
             { id: 'q1', title: '🎯 Daily Check-In', desc: 'Check in with your mood today', done: checkins.length > 0 && new Date(checkins[0].timestamp).toDateString() === new Date().toDateString(), reward: '⭐ 1 star' },
-            { id: 'q2', title: '🔥 Build a 3-Day Streak', desc: 'Check in for 3 days in a row', done: streak >= 3, reward: '🔥 Streak Badge' },
+            { id: 'q2', title: '🔥 Build a 3-Day Streak', desc: 'Check in for 3 days in a row', done: bestStreak >= 3, reward: '🔥 Streak Badge' },
             { id: 'q3', title: '🪞 Write a Reflection', desc: 'Tell us what made you feel that way', done: checkins.some(c => c.reflection && c.reflection.length > 10), reward: '🪞 Reflector Badge' },
             { id: 'q4', title: '🌟 10 Total Check-Ins', desc: 'Complete 10 mood check-ins', done: checkins.length >= 10, reward: '🌟 Star Badge' },
-        ], [checkins, streak]);
+        ], [checkins, bestStreak]);
 
         const handleCheckin = () => {
             if (!selectedMood) return;
@@ -12448,8 +13249,20 @@ Be specific with percentages where possible. Keep language strengths-based and a
 
     // ─── CulturalContextReflection ──────────────────────────────────────
     // Pre-analysis checklist promoting cultural humility
+    // Reflection summary. It counted only "Yes", so an N/A lowered the score: 5 Yes and
+    // 3 N/A read "Consider revisiting the Not Yet items" with none marked Not Yet.
+    function culturalReflectionVerdict(responses) {
+        const vals = Object.values(responses || {});
+        const notYet = vals.filter(v => v === 'not yet').length;
+        const applicable = vals.filter(v => v === 'yes' || v === 'not yet').length;
+        const kind = applicable === 0 ? 'none' : notYet === 0 ? 'strong' : notYet * 2 >= applicable ? 'important' : 'revisit';
+        return { kind, notYet, applicable };
+    }
+    window.AlloModules.BehaviorLensCulturalReflection = Object.freeze({ culturalReflectionVerdict });
+
     const CulturalContextReflection = ({ studentName, t }) => {
-        const [responses, setResponses] = useState({});
+        // Kept with the student's workspace (answers were lost on close).
+        const [responses, setResponses] = useDurableToolState('culturalReflection', {});
         const [showSummary, setShowSummary] = useState(false);
 
         const questions = [
@@ -12464,7 +13277,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
         ];
 
         const answeredCount = Object.keys(responses).length;
-        const yesCount = Object.values(responses).filter(v => v === 'yes').length;
+        const verdict = culturalReflectionVerdict(responses);
 
         const handleResponse = (id, val) => {
             setResponses(prev => ({ ...prev, [id]: val }));
@@ -12498,7 +13311,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                                 h('p', { className: 'text-[11px] text-slate-600 mt-1 italic leading-relaxed' }, q.hint),
                                 h('div', { className: 'flex gap-2 mt-3' },
                                     ['yes', 'not yet', 'n/a'].map(opt =>
-                                        h('button', { "aria-label": "Response",
+                                        h('button', { 'aria-pressed': responses[q.id] === opt ? 'true' : 'false',
                                             key: opt,
                                             onClick: () => handleResponse(q.id, opt),
                                             className: `px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${val === opt
@@ -12515,9 +13328,11 @@ Be specific with percentages where possible. Keep language strengths-based and a
             // Summary
             answeredCount === questions.length && h('div', { className: 'bg-teal-50 rounded-xl border border-teal-200 p-5' },
                 h('h3', { className: 'text-sm font-black text-teal-800 mb-2' }, '🎯 Reflection Summary'),
-                yesCount >= 6 && h('p', { className: 'text-xs text-teal-700' }, '💚 Strong cultural awareness. You\'ve thoughtfully considered multiple perspectives before proceeding.'),
-                yesCount >= 3 && yesCount < 6 && h('p', { className: 'text-xs text-teal-700' }, '💛 Good start! Consider revisiting the "Not Yet" items before finalizing your analysis.'),
-                yesCount < 3 && h('p', { className: 'text-xs text-teal-700' }, '🧡 Important reflection needed. Consider connecting with the family and colleagues before interpreting behavior.'),
+                h('p', { 'data-verdict': verdict.kind, className: 'text-xs text-teal-700' },
+                    verdict.kind === 'none' ? tt('behavior_lens.cultural.verdict_none', 'Every question is marked N/A, so there is nothing to summarize yet.')
+                    : verdict.kind === 'strong' ? tt('behavior_lens.cultural.verdict_strong', '💚 Every question that applies is answered Yes. You have considered multiple perspectives before proceeding.')
+                    : verdict.kind === 'revisit' ? tt('behavior_lens.cultural.verdict_revisit', '💛 {n} of {total} questions that apply are marked Not Yet. Revisit them before finalizing your analysis.', { n: verdict.notYet, total: verdict.applicable })
+                    : tt('behavior_lens.cultural.verdict_important', '🧡 {n} of {total} questions that apply are marked Not Yet. Connect with the family and colleagues before interpreting behavior.', { n: verdict.notYet, total: verdict.applicable })),
                 h('p', { className: 'text-[11px] text-teal-600 mt-2 italic' }, tt('behavior_lens.ui.remember_cultural_humility_is_a_lifelong_practice', 'Remember: cultural humility is a lifelong practice. Every reflection makes you a more equitable practitioner.'))
             )
         );
@@ -12566,6 +13381,7 @@ Provide:
 [One actionable strategy that honors the student's agency]`;
 
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setOutput(result);
                 if (addToast) addToast(tt('behavior_lens.toast.reframed_through_strengths_lens', 'Reframed through strengths lens ✨'), 'success');
             } catch (err) {
@@ -12601,7 +13417,7 @@ Provide:
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, output),
                 h('div', { className: 'flex gap-2 mt-3' },
                     h('button', { "aria-label": "Copy Reframe",
-                        onClick: () => { navigator.clipboard.writeText(output); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                        onClick: () => { blWriteClipboard(output, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                         className: 'px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-200'
                     }, '📋 Copy Reframe'),
                     h('button', { "aria-label": "New",
@@ -12637,6 +13453,12 @@ Provide:
 
     // ─── BiasReflectionMonitor ──────────────────────────────────────────
     // Analyzes ABC entries for potential implicit bias patterns
+    // Exclusionary or punitive consequences. "removed" alone counted the preset "Task
+    // removed" (escape: negative reinforcement, not punishment) as punitive.
+    const EXCLUSIONARY_CONSEQUENCE = /\b(sent (to|out|home)|removed from|lost |loss of|detention|suspen|office referral|referred to (the )?office|expelled)/;
+    const consequenceIsExclusionary = c => EXCLUSIONARY_CONSEQUENCE.test(String(c || '').toLowerCase());
+    window.AlloModules.BehaviorLensBias = Object.freeze({ consequenceIsExclusionary });
+
     const BiasReflectionMonitor = ({ abcEntries, callGemini, t, addToast }) => {
         const [aiReport, setAiReport] = useState('');
         const [analyzing, setAnalyzing] = useState(false);
@@ -12657,7 +13479,7 @@ Provide:
             }
             // Consequence consistency
             const consequences = abcEntries.map(e => (e.consequence || '').toLowerCase());
-            const punitiveCount = consequences.filter(c => c.includes('sent to') || c.includes('lost') || c.includes('removed') || c.includes('detention') || c.includes('suspended')).length;
+            const punitiveCount = consequences.filter(consequenceIsExclusionary).length;
             const restorativeCount = consequences.filter(c => c.includes('talked') || c.includes('circle') || c.includes('repair') || c.includes('reflect') || c.includes('choice')).length;
             if (punitiveCount > restorativeCount * 2 && punitiveCount >= 3) {
                 flags.push({ icon: '🔄', text: `Punitive consequences (${punitiveCount}) significantly outnumber restorative ones (${restorativeCount}). Consider diversifying your response strategies.`, type: 'consequence' });
@@ -12708,6 +13530,7 @@ Provide a reflective report structured as:
 Remember: this is about growth, not guilt. Keep the tone supportive and empowering.`;
 
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setAiReport(result);
                 if (addToast) addToast(tt('behavior_lens.toast.bias_reflection_complete', 'Bias reflection complete'), 'success');
             } catch (err) {
@@ -12746,7 +13569,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
             aiReport && h('div', { className: 'bg-white rounded-xl border border-teal-200 p-5 shadow-sm' },
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, aiReport),
                 h('button', { "aria-label": "Copy Report",
-                    onClick: () => { navigator.clipboard.writeText(aiReport); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                    onClick: () => { blWriteClipboard(aiReport, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                     className: 'mt-3 px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg text-[11px] font-bold hover:bg-teal-200'
                 }, '📋 Copy Report')
             )
@@ -12871,7 +13694,9 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         const [selectedPlan, setSelectedPlan] = useState(null);
         const [studentVoice, setStudentVoice] = useState('');
         const [completionSteps, setCompletionSteps] = useState([]);
-        const [savedPlans, setSavedPlans] = useState([]);
+        // Kept with the student's workspace: "Restitution plan saved" and it was gone on close.
+        const [savedPlans, setSavedPlans] = useDurableToolState('restitutionPlans', []);
+        const [openedPlanId, setOpenedPlanId] = useState(null);
 
         const categories = [
             { id: 'direct_repair', emoji: '🔧', label: 'Direct Repair', desc: 'Fix or restore what was damaged or disrupted', color: 'blue' },
@@ -12903,6 +13728,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
   "learning": { "action": "specific learning activity to understand why the action was harmful", "timeEstimate": "e.g., 10 minutes", "developmentalNote": "why this promotes understanding and prevents recurrence" }
 }`;
                 const result = await callGemini(prompt, true);
+                if (result == null) return;
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
@@ -12936,10 +13762,12 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
         const savePlan = () => {
             if (!selectedPlan) return;
             const entry = {
-                id: Date.now(), savedAt: new Date().toISOString(), incident, whoAffected, whatDamaged,
+                id: openedPlanId || Date.now(), savedAt: new Date().toISOString(), incident, whoAffected, whatDamaged,
                 plan: selectedPlan, studentVoice, completionSteps, studentName: studentName || 'Student',
             };
-            setSavedPlans(prev => [entry, ...prev].slice(0, 20));
+            // Saving a reopened plan updates it; the 21st plan no longer drops the oldest.
+            setSavedPlans(prev => [entry, ...prev.filter(p => p.id !== entry.id)]);
+            setOpenedPlanId(entry.id);
             if (addToast) addToast(t('toasts.restitution_plan_saved'), 'success');
         };
 
@@ -12957,7 +13785,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 '', 'COMPLETION STEPS:',
                 ...completionSteps.map(s => `  [${s.done ? 'x' : ' '}] ${s.label}`),
             ].filter(Boolean);
-            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+            blWriteClipboard(lines.join('\n'), addToast).then(() => {
                 if (addToast) addToast(t('toasts.plan_copied_clipboard'), 'success');
             });
         };
@@ -12994,7 +13822,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                     const s = suggestions[cat.id];
                     if (!s) return null;
                     const c = catColors[cat.color];
-                    return h('button', { "aria-label": "Select Plan", key: cat.id, onClick: () => selectPlan(cat.id), className: `w-full text-start p-5 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
+                    return h('button', { key: cat.id, onClick: () => selectPlan(cat.id), className: `w-full text-start p-5 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
                         h('div', { className: 'flex items-center gap-2 mb-2' },
                             h('span', { className: 'text-2xl' }, cat.emoji),
                             h('div', null,
@@ -13060,7 +13888,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                     h('div', { className: 'flex gap-2' },
                         h('button', { onClick: savePlan, className: 'flex-1 py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-sm hover:bg-emerald-800 transition-all' }, '💾 Save Plan'),
                         h('button', { onClick: exportPlan, className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '📋 Copy'),
-                        h('button', { "aria-label": "Print", onClick: () => window.print(), className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '🖨️ Print')
+                        h('button', { "aria-label": "Print", onClick: blPrintPanel, className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '🖨️ Print')
                     )
                 );
             })(),
@@ -13068,8 +13896,8 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
             savedPlans.length > 0 && !selectedPlan && h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
                 h('h4', { className: 'text-xs font-black text-slate-600 uppercase mb-2' }, `📂 Saved Plans (${savedPlans.length})`),
                 h('div', { className: 'space-y-2' },
-                    savedPlans.map(p => h('div', { key: p.id, className: 'bg-white rounded-lg border border-slate-100 p-3' },
-                        h('div', { className: 'text-sm font-semibold text-slate-700' }, p.incident?.slice(0, 60) + (p.incident?.length > 60 ? '…' : '')),
+                    savedPlans.map(p => h('button', { type: 'button', key: p.id, 'data-saved-plan': p.id, onClick: () => { setIncident(p.incident || ''); setWhoAffected(p.whoAffected || ''); setWhatDamaged(p.whatDamaged || ''); setSelectedPlan(p.plan || null); setStudentVoice(p.studentVoice || ''); setCompletionSteps(Array.isArray(p.completionSteps) ? p.completionSteps : []); setOpenedPlanId(p.id); }, className: 'block w-full text-start bg-white rounded-lg border border-slate-100 p-3 hover:border-slate-400' },
+                        h('div', { className: 'text-sm font-semibold text-slate-700' }, (p.incident || '').slice(0, 60) + ((p.incident || '').length > 60 ? '…' : '')),
                         h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, `${fmtDate(p.savedAt)} • ${categories.find(c => c.id === p.plan?.categoryId)?.label || '—'}`)
                     ))
                 )
@@ -13080,7 +13908,8 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
     // ─── RelationshipMap ────────────────────────────────────────────────
     // Visual diagram of student's trusted adults and peer connections
     const RelationshipMap = ({ studentName, t, addToast }) => {
-        const [connections, setConnections] = useState([]);
+        // Kept with the student's workspace (the map was lost on close).
+        const [connections, setConnections] = useDurableToolState('relationshipConnections', []);
         const [newName, setNewName] = useState('');
         const [newRole, setNewRole] = useState('trusted_adult');
         const [newStrength, setNewStrength] = useState('strong');
@@ -13137,7 +13966,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                         className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-300'
                     }),
                     h('button', { onClick: handleAdd,
-                        disabled: !newName.trim(),
+                        disabled: !newName.trim(), 'aria-label': 'Add connection',
                         className: 'px-4 py-2 bg-purple-700 text-white rounded-lg text-sm font-bold hover:bg-purple-600 disabled:opacity-40'
                     }, '+')
                 ),
@@ -13179,7 +14008,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                                         h('span', { className: 'text-xs font-bold text-slate-700' }, p.name),
                                         h('button', {
                                             onClick: () => setConnections(prev => prev.filter(c => c.id !== p.id)),
-                                            'aria-label': 'Close', className: 'text-[11px] text-slate-600 hover:text-red-400'
+                                            'aria-label': 'Remove ' + p.name, className: 'text-[11px] text-slate-600 hover:text-red-400'
                                         }, '✕')
                                     )
                                 )
@@ -13218,7 +14047,8 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
     // ─── FamilyVoiceCollector ────────────────────────────────────────────
     // Structured form for families to share observations and celebrations
     const FamilyVoiceCollector = ({ studentName, callGemini, t, addToast }) => {
-        const [entries, setEntries] = useState([]);
+        // Kept with the student's workspace: the toast said "added" and it vanished on close.
+        const [entries, setEntries] = useDurableToolState('familyVoiceEntries', []);
         const [observation, setObservation] = useState('');
         const [category, setCategory] = useState('strength');
         const [translateLang, setTranslateLang] = useState('');
@@ -13259,6 +14089,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 if (!entry) return;
                 const prompt = `Translate the following family observation into ${translateLang}. Maintain the tone and meaning. Only return the translated text.\n\n"${entry.text}"`;
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setEntries(prev => prev.map(e => e.id === entryId ? { ...e, translated: result } : e));
                 if (addToast) addToast(tt('behavior_lens.toast.translated', 'Translated!'), 'success');
             } catch (err) {
@@ -13329,8 +14160,8 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                                         className: 'text-[11px] text-purple-500 font-bold hover:text-purple-700'
                                     }, translating ? '...' : `🌐 → ${translateLang}`),
                                     h('button', {
-                                        onClick: () => setEntries(prev => prev.filter(e => e.id !== entry.id)),
-                                        'aria-label': 'Close', className: 'text-[11px] text-slate-600 hover:text-red-400'
+                                        onClick: async () => { if (await askBehaviorLensConfirmation(tt('behavior_lens.family_voice.delete_confirm', 'Delete this family entry?'), { title: 'Delete family entry', confirmText: 'Delete' })) setEntries(prev => prev.filter(e => e.id !== entry.id)); },
+                                        'aria-label': 'Delete family entry', className: 'text-[11px] text-slate-600 hover:text-red-400'
                                     }, '✕')
                                 )
                             ),
@@ -13347,8 +14178,11 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
     // ─── TwoWayCommLog ──────────────────────────────────────────────────
     // Family contact tracker with follow-ups
     const TwoWayCommLog = ({ studentName, t, addToast }) => {
-        const [contacts, setContacts] = useState([]);
-        const [form, setForm] = useState({ who: '', method: 'phone', topic: '', outcome: '', followUp: '' });
+        // Kept with the student's workspace (the log was lost on close). A contact has the
+        // day it happened, not only the moment it was typed in.
+        const [contacts, setContacts] = useDurableToolState('familyContacts', []);
+        const blankContact = () => ({ who: '', method: 'phone', topic: '', outcome: '', followUp: '', date: blLocalDateKey(new Date()) });
+        const [form, setForm] = useState(blankContact);
 
         const methods = [
             { id: 'phone', icon: '📞', label: (tt('behavior_lens.raw.phone_call', 'Phone Call')) },
@@ -13368,10 +14202,11 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 topic: form.topic.trim(),
                 outcome: form.outcome.trim(),
                 followUp: form.followUp.trim(),
+                contactDate: /^\d{4}-\d{2}-\d{2}$/.test(form.date || '') ? form.date : blLocalDateKey(new Date()),
                 timestamp: new Date().toISOString(),
                 followUpDone: false,
-            }, ...prev]);
-            setForm({ who: '', method: 'phone', topic: '', outcome: '', followUp: '' });
+            }, ...prev].sort((a, b) => String(b.contactDate || '').localeCompare(String(a.contactDate || ''))));
+            setForm(blankContact());
             if (addToast) addToast(tt('behavior_lens.toast.contact_logged', 'Contact logged'), 'success');
         };
 
@@ -13420,7 +14255,8 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                         className: 'px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-300'
                     },
                         methods.map(m => h('option', { key: m.id, value: m.id }, `${m.icon} ${m.label}`))
-                    )
+                    ),
+                    h('input', { type: 'date', value: form.date || '', max: blLocalDateKey(new Date()), onChange: e => setForm(prev => ({ ...prev, date: e.target.value })), 'aria-label': 'Date of contact', className: 'px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-300' })
                 ),
                 h('textarea', {
                     value: form.topic,
@@ -13470,7 +14306,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                                         h('span', { className: 'text-[11px] text-slate-600' }, m.label)
                                     ),
                                     h('span', { className: 'text-[11px] text-slate-600' },
-                                        new Date(c.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                        new Date(c.contactDate ? c.contactDate + 'T12:00:00' : c.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                                     )
                                 ),
                                 h('p', { className: 'text-[11px] text-slate-600' }, c.topic),
@@ -13574,6 +14410,7 @@ They already have these strategies: ${existing || 'none yet'}
 Suggest 4 NEW, age-appropriate, school-friendly strategies they could try. Return ONLY a JSON array of strings, no explanation.
 Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 const result = await callGemini(prompt, true);
+                if (result == null) { setAiLoading(false); return; }
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 const parsed = JSON.parse(cleaned);
                 if (Array.isArray(parsed)) {
@@ -13594,7 +14431,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                     lines.push(`${q.emoji} ${q.label}`, ...strats.map(s => `  • ${s}`), '');
                 }
             });
-            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+            blWriteClipboard(lines.join('\n'), addToast).then(() => {
                 if (addToast) addToast(t('toasts.toolkit_copied_clipboard'), 'success');
             });
         };
@@ -13622,7 +14459,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                     )
                 ),
                 h('div', { className: 'flex gap-2 print:hidden' },
-                    h('button', { onClick: () => window.print(), className: 'flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all' }, '🖨️ Print Toolkit Card'),
+                    h('button', { onClick: blPrintPanel, className: 'flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all' }, '🖨️ Print Toolkit Card'),
                     h('button', { "aria-label": "Copy Text", onClick: exportToolkit, className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '📋 Copy Text')
                 )
             );
@@ -13904,7 +14741,8 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
     // ─── ReplacementBehaviorPlanner ──────────────────────────────────────
     // Map target behaviors to replacement/expected behaviors with strategies
     const ReplacementBehaviorPlanner = ({ abcEntries, t, addToast, callGemini }) => {
-        const [plans, setPlans] = useState([]);
+        // Kept with the student's workspace (plans and their progress were lost on close).
+        const [plans, setPlans] = useDurableToolState('replacementPlans', []);
         const [aiSuggestLoading, setAiSuggestLoading] = useState(false);
         const [form, setForm] = useState({
             targetBehavior: '',
@@ -14017,6 +14855,8 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 }, '✅ Add Replacement Plan'),
                 // Enhancement #6: AI-powered replacement suggestion
                 callGemini && form.targetBehavior.trim() && h('button', { onClick: async () => {
+                        // It replaced a typed replacement, strategy and reinforcement without asking.
+                        if ([form.replacement, form.teachingStrategy, form.reinforcement].some(v => String(v || '').trim()) && !await askBehaviorLensConfirmation(tt('behavior_lens.replacement_plan.suggest_confirm', 'Replace what you typed with an AI suggestion?'), { title: 'Replace with AI suggestion', confirmText: 'Replace' })) return;
                         setAiSuggestLoading(true);
                         try {
                             const fn = functions.find(f => f.id === form.function);
@@ -14033,10 +14873,14 @@ Respond in valid JSON with these keys:
 
 JSON only, no markdown.`;
                             const result = await callGemini(prompt, true);
+                            if (result == null) return;
                             let parsed;
                             try { parsed = JSON.parse(result); }
                             catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
-                            if (parsed.replacement) setForm(prev => ({ ...prev, replacement: parsed.replacement, teachingStrategy: parsed.teachingStrategy || prev.teachingStrategy, reinforcement: parsed.reinforcement || prev.reinforcement }));
+                            // "AI suggestion applied" showed even when the reply had no replacement.
+                            const str = v => (typeof v === 'string' ? v.trim().slice(0, 600) : '');
+                            if (!str(parsed && parsed.replacement)) throw new Error('No replacement in reply');
+                            setForm(prev => ({ ...prev, replacement: str(parsed.replacement), teachingStrategy: str(parsed.teachingStrategy) || prev.teachingStrategy, reinforcement: str(parsed.reinforcement) || prev.reinforcement }));
                             if (addToast) addToast(tt('behavior_lens.toast.ai_suggestion_applied', 'AI suggestion applied ✨'), 'success');
                         } catch (err) {
                             warnLog('AI suggest failed:', err);
@@ -14061,8 +14905,8 @@ JSON only, no markdown.`;
                             h('div', { className: 'flex items-center justify-between mb-3' },
                                 h('span', { className: 'text-[11px] font-bold px-2 py-0.5 bg-slate-100 rounded-full text-slate-600' }, fn.label),
                                 h('button', {
-                                    onClick: () => setPlans(prev => prev.filter(p => p.id !== plan.id)),
-                                    'aria-label': 'Close', className: 'text-[11px] text-slate-600 hover:text-red-400'
+                                    onClick: async () => { if (await askBehaviorLensConfirmation(tt('behavior_lens.replacement_plan.delete_confirm', 'Delete the replacement plan for "{name}"?', { name: plan.targetBehavior }), { title: 'Delete replacement plan', confirmText: 'Delete' })) setPlans(prev => prev.filter(p => p.id !== plan.id)); },
+                                    'aria-label': 'Delete plan for ' + plan.targetBehavior, className: 'text-[11px] text-slate-600 hover:text-red-400'
                                 }, '✕')
                             ),
                             h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -14134,6 +14978,7 @@ Suggest 6 HIGH-PROBABILITY requests — things this student would very likely co
 Return ONLY a JSON array of strings.
 Example: ["give me a high five", "hand me that pencil", "say your name", "touch your nose", "stand up", "sit down"]`;
                 const result = await callGemini(prompt, true);
+                if (result == null) { setAiLoading(false); return; }
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 const parsed = JSON.parse(cleaned);
                 if (Array.isArray(parsed)) {
@@ -14157,7 +15002,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                 steps: [...selected.map(h => ({ type: 'high', request: h.request })), { type: 'low', request: lowPRequest }],
                 createdAt: new Date().toISOString(),
             };
-            setSequences(prev => [seq, ...prev].slice(0, 10));
+            setSequences(prev => [seq, ...prev]); // the 11th silently deleted the oldest and orphaned its attempts
             setActiveView('sequence');
             if (addToast) addToast(t('toasts.momentum_sequence_generated'), 'success');
         };
@@ -14198,15 +15043,15 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                 h('div', { className: 'bg-red-50 rounded-xl border-2 border-red-200 p-4' },
                     h('h3', { className: 'text-xs font-black text-red-700 uppercase mb-2' }, '🎯 Low-Probability Request (Difficult)'),
                     h('p', { className: 'text-[11px] text-red-600 mb-2' }, 'What does the student typically refuse or resist?'),
-                    h('input', { value: lowPRequest, onChange: e => setLowPRequest(e.target.value), 'aria-label': 'eg, Open your math book to page 42', placeholder: 'e.g., "Open your math book to page 42"', className: 'w-full border border-red-600 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-300 bg-white' })
+                    h('input', { value: lowPRequest, onChange: e => setLowPRequest(e.target.value), 'aria-label': 'Low-probability request', placeholder: 'e.g., "Open your math book to page 42"', className: 'w-full border border-red-600 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-300 bg-white' })
                 ),
                 // High-p bank
                 h('div', { className: 'bg-green-50 rounded-xl border-2 border-green-200 p-4' },
                     h('h3', { className: 'text-xs font-black text-green-700 uppercase mb-2' }, `✅ High-Probability Requests (${highPBank.length})`),
                     h('p', { className: 'text-[11px] text-green-600 mb-2' }, 'Quick, easy requests the student almost always complies with'),
                     h('div', { className: 'flex gap-2 mb-3' },
-                        h('input', { value: newHighP, onChange: e => setNewHighP(e.target.value), onKeyDown: e => { if (e.key === 'Enter') addHighP(); }, 'aria-label': 'eg, Give me a thumbs up', placeholder: 'e.g., "Give me a thumbs up"', className: 'flex-1 border border-green-600 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-green-300 bg-white' }),
-                        h('button', { "aria-label": "Add High P", onClick: addHighP, disabled: !newHighP.trim(), className: 'px-3 py-2 bg-green-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, '+')
+                        h('input', { value: newHighP, onChange: e => setNewHighP(e.target.value), onKeyDown: e => { if (e.key === 'Enter') addHighP(); }, 'aria-label': 'New high-probability request', placeholder: 'e.g., "Give me a thumbs up"', className: 'flex-1 border border-green-600 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-green-300 bg-white' }),
+                        h('button', { "aria-label": "Add high-probability request", onClick: addHighP, disabled: !newHighP.trim(), className: 'px-3 py-2 bg-green-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, '+')
                     ),
                     highPBank.length > 0 && h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
                         highPBank.map(hp => h('span', { key: hp.id, className: 'inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-lg text-[11px] font-bold border border-green-200' },
@@ -14314,8 +15159,9 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
     // ─── ReinforcementInventory ──────────────────────────────────────────
     // Structured survey to identify what motivates each student
     const ReinforcementInventory = ({ studentName, t, addToast }) => {
-        const [responses, setResponses] = useState({});
-        const [customItems, setCustomItems] = useState([]);
+        // Kept with the student's workspace (every rating was lost on close).
+        const [responses, setResponses] = useDurableToolState('reinforcementInventoryResponses', {});
+        const [customItems, setCustomItems] = useDurableToolState('reinforcementInventoryCustom', []);
         const [newCustom, setNewCustom] = useState('');
 
         const categories = [
@@ -14359,13 +15205,22 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
         };
 
         // Top preferences
-        const topPrefs = useMemo(() => {
-            return Object.entries(responses)
-                .filter(([, v]) => v >= 2)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10)
-                .map(([key, val]) => ({ item: key, rating: val }));
-        }, [responses]);
+        // Every Like/Love counts as a favorite; the chips show the first 10. The count was
+        // of the capped list ("10 favorites found" with 14).
+        const allFavorites = useMemo(() => Object.entries(responses).filter(([, v]) => v >= 2).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([key, val]) => ({ item: key, rating: val })), [responses]);
+        const topPrefs = allFavorites.slice(0, 10);
+        // A custom item named like one already listed shared its rating and was counted twice.
+        const allListed = categories.reduce((list, c) => list.concat(c.items), []).concat(customItems);
+        const addCustom = () => {
+            const name = newCustom.trim();
+            if (!name) return;
+            if (allListed.some(x => x.trim().toLowerCase() === name.toLowerCase())) {
+                if (addToast) addToast(tt('behavior_lens.inventory.duplicate', '{name} is already on the list.', { name }), 'warning');
+                return;
+            }
+            setCustomItems(prev => [...prev, name]);
+            setNewCustom('');
+        };
 
         const totalRated = Object.keys(responses).length;
         const totalItems = categories.reduce((sum, c) => sum + c.items.length, 0) + customItems.length;
@@ -14380,7 +15235,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-2' },
                     h('span', { className: 'text-xs font-bold text-slate-600' }, `${totalRated}/${totalItems} items rated`),
-                    topPrefs.length > 0 && h('span', { className: 'text-xs font-bold text-green-600' }, `${topPrefs.length} favorites found`)
+                    allFavorites.length > 0 && h('span', { 'data-favorites': allFavorites.length, className: 'text-xs font-bold text-green-600' }, `${allFavorites.length} favorites found`)
                 ),
                 h('div', { className: 'w-full bg-slate-100 rounded-full h-2' },
                     h('div', { role: 'progressbar', 'aria-label': 'Reinforcer items rated', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round((totalRated / totalItems) * 100), className: 'bg-gradient-to-r from-amber-400 to-green-500 h-2 rounded-full transition-all duration-500', style: { width: `${(totalRated / totalItems) * 100}%` } })
@@ -14424,13 +15279,13 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                     h('input', {
                         value: newCustom,
                         onChange: e => setNewCustom(e.target.value),
-                        onKeyDown: e => { if (e.key === 'Enter' && newCustom.trim()) { setCustomItems(prev => [...prev, newCustom.trim()]); setNewCustom(''); } },
+                        onKeyDown: e => { if (e.key === 'Enter') addCustom(); },
                         placeholder: tt('behavior_lens.ph.add_a_custom_reinforcer', 'Add a custom reinforcer'),
                         'aria-label': 'Add a custom reinforcer',
                         className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-300'
                     }),
                     h('button', { 'aria-label': 'Add custom reinforcer',
-                        onClick: () => { if (newCustom.trim()) { setCustomItems(prev => [...prev, newCustom.trim()]); setNewCustom(''); } },
+                        onClick: addCustom,
                         className: 'px-3 py-2 bg-amber-700 text-white rounded-lg text-sm font-bold'
                     }, '+')
                 ),
@@ -14459,7 +15314,8 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
     const AntecedentModPlanner = ({ abcEntries, callGemini, t, addToast }) => {
         const [aiSuggestions, setAiSuggestions] = useState('');
         const [analyzing, setAnalyzing] = useState(false);
-        const [mods, setMods] = useState([]);
+        // Kept with the student's workspace (modifications and their status were lost on close).
+        const [mods, setMods] = useDurableToolState('antecedentMods', []);
         const [newMod, setNewMod] = useState({ setting: '', change: '', rationale: '' });
 
         // Local antecedent analysis
@@ -14517,6 +15373,7 @@ For each recommendation, provide:
 For each suggestion, rate the effort level (Low/Medium/High) and expected impact (Low/Medium/High).`;
 
                 const result = await callGemini(prompt, false);
+                if (result == null) return;
                 setAiSuggestions(result);
                 if (addToast) addToast(tt('behavior_lens.toast.modification_plan_generated', 'Modification plan generated'), 'success');
             } catch (err) {
@@ -14591,7 +15448,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             aiSuggestions && h('div', { className: 'bg-white rounded-xl border border-amber-200 p-5 shadow-sm' },
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, aiSuggestions),
                 h('button', { "aria-label": "Copy Plan",
-                    onClick: () => { navigator.clipboard.writeText(aiSuggestions); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                    onClick: () => { blWriteClipboard(aiSuggestions, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                     className: 'mt-3 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-[11px] font-bold hover:bg-amber-200'
                 }, '📋 Copy Plan')
             ),
@@ -14634,8 +15491,8 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                         h('div', { className: 'flex items-center justify-between mb-2' },
                             h('span', { className: 'text-[11px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full' }, `📍 ${mod.setting}`),
                             h('button', {
-                                onClick: () => setMods(prev => prev.filter(m => m.id !== mod.id)),
-                                'aria-label': 'Close', className: 'text-[11px] text-slate-600 hover:text-red-400'
+                                onClick: async () => { if (await askBehaviorLensConfirmation(tt('behavior_lens.antecedent_mod.delete_confirm', 'Delete the modification "{name}"?', { name: mod.change }), { title: 'Delete modification', confirmText: 'Delete' })) setMods(prev => prev.filter(m => m.id !== mod.id)); },
+                                'aria-label': 'Delete modification: ' + mod.change, className: 'text-[11px] text-slate-600 hover:text-red-400'
                             }, '✕')
                         ),
                         h('p', { className: 'text-xs font-bold text-slate-700 mb-1' }, mod.change),
@@ -14758,7 +15615,8 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             if (addToast) addToast(tt('behavior_lens.toast.note_added_2', 'Note added ✏️'), 'success');
         };
 
-        const handleDelete = (id) => {
+        const handleDelete = async (id) => {
+            if (!await askBehaviorLensConfirmation(tt('behavior_lens.notes.delete_confirm', 'Delete this note?'), { title: 'Delete note', confirmText: 'Delete' })) return;
             onUpdateNotes((notes || []).filter(n => n.id !== id));
             if (addToast) addToast(tt('behavior_lens.toast.note_deleted', 'Note deleted'), 'info');
         };
@@ -14801,7 +15659,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                     }),
                     h('div', { className: 'flex flex-col gap-2' },
                         // Mic button
-                        h('button', { "aria-label": "Listening... speak now",
+                        h('button', { 'aria-label': isListening ? 'Stop dictation' : 'Start dictation', 'aria-pressed': isListening ? 'true' : 'false',
                             onClick: isListening ? stopMic : startMic,
                             className: `w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${isListening
                                 ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-lg shadow-red-200'
@@ -14810,7 +15668,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                             title: isListening ? 'Stop listening' : 'Start dictation'
                         }, isListening ? '⏹️' : '🎤'),
                         // Add button
-                        h('button', { onClick: handleAdd,
+                        h('button', { onClick: handleAdd, 'aria-label': 'Add note',
                             disabled: !draft.replace(/\s*🎤.*$/, '').trim(),
                             className: 'w-10 h-10 rounded-full bg-teal-700 text-white flex items-center justify-center text-lg hover:bg-teal-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all'
                         }, '➕')
@@ -14854,13 +15712,14 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                 : h('div', null,
                                     h('div', { className: 'flex items-start justify-between' },
                                         h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1 whitespace-pre-wrap' }, note.text),
-                                        h('div', { className: 'flex gap-1 ms-2 opacity-0 group-hover:opacity-100 transition-opacity' },
+                                        // Shown on keyboard focus and on touch too (they were invisible until hovered).
+                                        h('div', { className: 'flex gap-1 ms-2 opacity-70 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity' },
                                             h('button', { 'aria-label': 'Edit note',
                                                 onClick: () => { setEditingId(note.id); setEditText(note.text); },
                                                 className: 'p-1 hover:bg-slate-100 rounded text-xs',
                                                 title: (tt('behavior_lens.raw.edit', 'Edit'))
                                             }, '✏️'),
-                                            h('button', { "aria-label": "Delete",
+                                            h('button', { "aria-label": "Delete note",
                                                 onClick: () => handleDelete(note.id),
                                                 className: 'p-1 hover:bg-red-50 rounded text-xs',
                                                 title: (tt('behavior_lens.raw.delete', 'Delete'))
@@ -14993,6 +15852,7 @@ Session 2: [count]
 Respond ONLY with the three sections above. No preamble.`;
 
                 const result = await callGemini(prompt, false);
+                if (result == null) { setLoading(false); return; }
                 if (!result) throw new Error('Empty response');
 
                 // Parse sections
@@ -15067,6 +15927,7 @@ FEEDBACK:
 ${diffLabel === 'guided' ? '\nHINT FOR NEXT PHASE:\n[A helpful hint for what to focus on next]' : ''}`;
 
                 const result = await callGemini(prompt, false);
+                if (result == null) { setLoading(false); return; }
                 const score = parseCaseStudyScore(result);
 
                 setEvaluations(prev => ({ ...prev, [phase.id]: { text: result, score } }));
@@ -15102,6 +15963,7 @@ Provide a comprehensive but encouraging debrief that includes:
 Keep it encouraging and professional. Under 300 words.`;
 
                 const result = await callGemini(prompt, false);
+                if (result == null) { setLoading(false); return; }
                 setOverallScore({ total: totals.total, totals, debrief: result });
                 setShowResults(true);
                 if (addToast) addToast(tt('behavior_lens.toast.case_study_complete_review_your_debrief', 'Case study complete! Review your debrief.'), 'success');
@@ -15380,8 +16242,9 @@ Keep it encouraging and professional. Under 300 words.`;
             if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }, [messages]);
 
-        const clearChat = () => {
+        const clearChat = async () => {
             if (messages.length === 0) return;
+            if (!await askBehaviorLensConfirmation(tt('behavior_lens.allobot.clear_confirm', 'Clear the saved AlloBot conversation for this student?'), { title: 'Clear AlloBot chat', confirmText: 'Clear' })) return;
             setMessages([]);
             if (addToast) addToast(tt('behavior_lens.toast.chat_cleared', 'Chat cleared'), 'info');
         };
@@ -15394,9 +16257,10 @@ Keep it encouraging and professional. Under 300 words.`;
             setInput('');
             setIsSending(true);
             try {
-                const contextBlock = buildStudentContext ? buildStudentContext() : '';
                 const abcSummary = (abcEntries || []).length > 0
-                    ? `\nABC Data Summary: ${abcEntries.length} entries recorded. Most recent: ${JSON.stringify(abcEntriesNewestFirst(abcEntries)[0] || {}).slice(0, 200)}`
+                    // It sent the newest entry as JSON cut at 200 characters, which ended inside the
+                    // ids and timestamps: no antecedent, behavior or consequence reached the model.
+                    ? `\nABC data: ${abcEntries.length} entries recorded. The 5 most recent:\n` + abcEntriesNewestFirst(abcEntries).slice(0, 5).map(e => `- [${abcEntryDay(e)}${abcEntryClock(e) ? ' ' + abcEntryClock(e) : ''}] A: ${e.antecedent || ''} | B: ${e.behavior || ''} | C: ${e.consequence || ''} | intensity ${intensityForPrompt(e.intensity)}`).join('\n')
                     : '';
                 const analysisSummary = aiAnalysis
                     ? `\nPrevious AI Analysis Summary: ${aiAnalysisText(aiAnalysis).slice(0, 300)}`
@@ -15405,7 +16269,7 @@ Keep it encouraging and professional. Under 300 words.`;
                 const threadHistory = messages.slice(-10).map(m => `${m.role === 'user' ? 'Teacher' : 'AlloBot'}: ${m.content}`).join('\n');
                 const prompt = `You are AlloBot, an AI behavioral analysis assistant specializing in FBA/BIP for educators and behavioral specialists. You provide practical, evidence-based guidance using person-first, strengths-based language.
 ${RESTORATIVE_PREAMBLE}
-${studentName ? `Student: ${studentName}` : ''}${contextBlock}${abcSummary}${analysisSummary}
+${studentName ? `Student: ${studentName}` : ''}${abcSummary}${analysisSummary}
 This is message #${messages.length + 1} in an ongoing conversation. Maintain continuity with prior discussion.
 
 Conversation so far:
@@ -15447,7 +16311,7 @@ Respond helpfully and concisely as AlloBot:`;
                         messages.length > 0 && ` · ${messages.length} messages`
                     )
                 ),
-                messages.length > 0 && h('button', { "aria-label": "Clear",
+                messages.length > 0 && h('button', { "aria-label": "Clear chat history",
                     onClick: clearChat,
                     className: 'text-xs px-3 py-1.5 border border-red-600 text-red-500 rounded-lg hover:bg-red-50 transition-colors font-medium',
                     title: (tt('behavior_lens.raw.clear_chat_history', 'Clear chat history'))
@@ -15580,7 +16444,10 @@ Respond helpfully and concisely as AlloBot:`;
     ];
 
     const PDLearningPath = ({ t, addToast, onOpenTool }) => {
-        const [completedModules, setCompletedModules] = useState([]);
+        // The practitioner's progress, kept on this device like the skill tracker's (it
+        // reset every time the panel opened, so the certificate could never be earned).
+        const [completedModules, setCompletedModules] = useState(() => { try { const v = JSON.parse(localStorage.getItem('bl_pd_learning_path') || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } });
+        useEffect(() => { try { localStorage.setItem('bl_pd_learning_path', JSON.stringify(completedModules)); } catch {} }, [completedModules]);
         const [activeModule, setActiveModule] = useState(null);
         const [quizAnswers, setQuizAnswers] = useState({});
 
@@ -15697,7 +16564,7 @@ Respond helpfully and concisely as AlloBot:`;
                             h('p', { className: 'text-xs font-medium text-indigo-700 mb-3' }, modContent.quiz.q),
                             h('div', { className: 'space-y-2' },
                                 modContent.quiz.options.map((opt, i) =>
-                                    h('button', { "aria-label": "Quiz Answer",
+                                    h('button', {
                                         key: i,
                                         onClick: () => handleQuizAnswer(activeModule, i),
                                         className: `w-full text-start px-3 py-2 rounded-lg text-xs font-medium border transition-all ${quizAnswers[activeModule] === i ? (i === modContent.quiz.answer ? 'bg-green-100 border-green-600 text-green-800' : 'bg-red-100 border-red-600 text-red-800') : 'bg-white border-slate-200 hover:border-indigo-600'}`
@@ -15709,7 +16576,7 @@ Respond helpfully and concisely as AlloBot:`;
                         h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.read_through_the_module_content_above_then_click_c', 'Read through the module content above, then click Complete below.')),
                         h('button', { onClick: () => handleComplete(activeModule), className: 'mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700' }, '✅ Mark Complete')
                     ),
-                    mod?.linkedTool && onOpenTool && h('button', { "aria-label": "On Open Tool",
+                    mod?.linkedTool && onOpenTool && h('button', {
                         onClick: () => onOpenTool(mod.linkedTool),
                         className: 'mt-3 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-all'
                     }, `🔗 Try the ${mod.title} Tool`)
@@ -15808,7 +16675,8 @@ Respond helpfully and concisely as AlloBot:`;
     window.AlloModules.BehaviorLensRiskScreening = Object.freeze({ assess: assessRiskScreening, items: RISK_SCREENING_ITEMS });
 
     const RiskScreening = ({ studentName, abcEntries, callGemini, t, addToast }) => {
-        const [responses, setResponses] = useState({});
+        // Kept with the student's workspace (a completed screening was lost on close).
+        const [responses, setResponses] = useDurableToolState('riskScreeningResponses', {});
         const [aiInsight, setAiInsight] = useState('');
         const [loading, setLoading] = useState(false);
 
@@ -15854,6 +16722,7 @@ Screening responses:\n${screeningData}
 Recent behavioral data: ${abcSummary || 'None collected'}
 
 Respond in 150 words or fewer. Use bullet points.`);
+                if (result == null) { setLoading(false); return; }
                 setAiInsight(result);
             } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.ai_analysis_failed', 'AI analysis failed'), 'error'); }
             setLoading(false);
@@ -16010,6 +16879,7 @@ ${dataAttachments.join('\n')}
 
 Student codename: ${studentName}
 Format as a professional, structured report with clear sections and headers. Keep under 400 words.`);
+                if (result == null) { setLoading(false); return; }
                 setPacket(result);
                 setViewMode('packet');
             } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error'); }
@@ -16037,7 +16907,7 @@ Format as a professional, structured report with clear sections and headers. Kee
             // Tab navigation — 3 tabs now
             h('div', { className: 'flex gap-2' },
                 ['dashboard', 'template', 'packet'].map(mode =>
-                    h('button', { key: mode,
+                    h('button', { key: mode, 'aria-pressed': viewMode === mode ? 'true' : 'false',
                         onClick: () => setViewMode(mode),
                         className: `flex-1 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === mode ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-600'}`
                     }, mode === 'dashboard' ? '📊 Dashboard' : mode === 'template' ? '📝 Template' : '📄 Packet')
@@ -16147,7 +17017,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                     h('label', { className: 'text-xs font-bold text-slate-700' }, '⏰ Urgency Level'),
                     h('div', { className: 'flex gap-2' },
                         ['low', 'moderate', 'high', 'crisis'].map(level =>
-                            h('button', { key: level,
+                            h('button', { key: level, 'aria-pressed': templateFields.urgency === level ? 'true' : 'false',
                                 onClick: () => updateField('urgency', level),
                                 className: `flex-1 py-2 rounded-lg text-[11px] font-bold border transition-all ${templateFields.urgency === level
                                     ? level === 'crisis' ? 'bg-red-600 text-white border-red-600'
@@ -16213,8 +17083,8 @@ Format as a professional, structured report with clear sections and headers. Kee
                 packet && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                     h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, packet),
                     h('div', { className: 'flex gap-2 mt-4 flex-wrap' },
-                        h('button', { onClick: () => { navigator.clipboard.writeText(packet); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200' }, '📋 Copy Packet'),
-                        h('button', { onClick: () => window.print(), className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200' }, '🖨️ Print'),
+                        h('button', { onClick: () => { blWriteClipboard(packet, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); }, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200' }, '📋 Copy Packet'),
+                        h('button', { onClick: blPrintPanel, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200' }, '🖨️ Print'),
                         h('button', { "aria-label": "Re-generate", onClick: () => { setPacket(''); setViewMode('template'); }, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-200' }, '🔄 Re-generate')
                     )
                 )
@@ -16279,7 +17149,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                         onClick: () => {
                             const header = `ABA Knowledge Quiz Results\nScore: ${score}/${QUESTIONS.length} (${pct}%) — ${passed ? 'PASSED ✅' : 'NEEDS REVIEW'}\n${'─'.repeat(40)}`;
                             const rows = QUESTIONS.map((q, i) => `${i + 1}. ${q.q}\n   ${answers[i] === q.answer ? '✅ Correct' : '❌ Incorrect'}: ${q.opts[answers[i]]}${answers[i] !== q.answer ? ` → Correct: ${q.opts[q.answer]}` : ''}`);
-                            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast(t('toasts.quiz_results_copied'), 'success'); });
+                            blWriteClipboard([header, ...rows].join('\n'), addToast).then(() => { if (addToast) addToast(t('toasts.quiz_results_copied'), 'success'); });
                         },
                         className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-100 transition-all'
                     }, '📋 Copy Results'),
@@ -16365,6 +17235,7 @@ Data:
 - Hypothesized functions: ${sortDesc(topFunctions).slice(0, 3).map(([f, c]) => `${f} (${c}x)`).join(', ')}
 
 Fill in clinically appropriate values. replacementBehavior is the ALTERNATIVE behavior that serves the same function as the target behavior, and desiredConsequence is what it earns (the same reinforcer). competingBehavior is the DESIRED behavior staff ultimately want (e.g. finishing the task), and competingConsequence is its typical consequence. Keep each value under 25 words.`);
+                if (result == null) { setLoading(false); return; }
                 try {
                     const cleaned = result.replace(/\x60\x60\x60json?\\n?/g, '').replace(/\x60\x60\x60/g, '').trim();
                     const parsed = JSON.parse(cleaned);
@@ -16399,7 +17270,7 @@ Fill in clinically appropriate values. replacementBehavior is the ALTERNATIVE be
                 `▸ Desired Behavior: ${model.competingBehavior || '(not specified)'}`,
                 `▸ Typical Consequence: ${model.competingConsequence || '(not specified)'}`,
             ];
-            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+            blWriteClipboard(lines.join('\n'), addToast).then(() => {
                 if (addToast) addToast(t('toasts.pathways_model_copied'), 'success');
             });
         };
@@ -16514,8 +17385,8 @@ Fill in clinically appropriate values. replacementBehavior is the ALTERNATIVE be
                     disabled: !filled,
                     className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-100 transition-all disabled:opacity-40'
                 }, '📋 Copy Model'),
-                h('button', { "aria-label": "Clear",
-                    onClick: () => { setModel({ targetBehavior: '', settingEvent: '', antecedent: '', consequence: '', function: '', replacementBehavior: '', desiredConsequence: '', competingBehavior: '', competingConsequence: '' }); setShowDiagram(false); },
+                h('button', { "aria-label": "Clear model",
+                    onClick: async () => { if (!await askBehaviorLensConfirmation(tt('behavior_lens.competing.clear_confirm', 'Clear every box of this competing pathways model?'), { title: 'Clear competing pathways', confirmText: 'Clear' })) return; setModel({ targetBehavior: '', settingEvent: '', antecedent: '', consequence: '', function: '', replacementBehavior: '', desiredConsequence: '', competingBehavior: '', competingConsequence: '' }); setShowDiagram(false); },
                     className: 'px-4 py-2 bg-slate-50 text-slate-600 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-100 transition-all'
                 }, '🗑️ Clear')
             )
@@ -16545,7 +17416,18 @@ Fill in clinically appropriate values. replacementBehavior is the ALTERNATIVE be
             setDraft(previous => Object.assign({}, emptyDraft, previous, patch, { savedAt: null }));
         };
         const targets = Array.isArray(targetBehaviors) ? targetBehaviors : [];
-        const selectTarget = (id) => {
+        // Choosing another target loaded its saved definition over whatever was typed.
+        const draftDiffersFromSaved = () => {
+            const fields = ['label', 'rawDesc', 'definition', 'examples', 'nonExamples'];
+            const cur = draft || {};
+            const tgt = targets.find(item => item.id === cur.targetId);
+            const sv = savedDefs.find(item => item.targetId === cur.targetId);
+            const base = tgt ? { label: tgt.label, rawDesc: sv?.rawDescription || '', definition: tgt.operationalDefinition || '', examples: sv?.examples || '', nonExamples: sv?.nonExamples || '' } : {};
+            return fields.some(k => String(cur[k] || '').trim() !== String(base[k] || '').trim());
+        };
+        const selectTarget = async (id) => {
+            if (id === (draft.targetId || '')) return;
+            if (draftDiffersFromSaved() && !await askBehaviorLensConfirmation(tt('behavior_lens.opdef.switch_confirm', 'Switch targets? What you typed here has not been saved and will be discarded.'), { title: 'Discard unsaved definition', confirmText: 'Switch' })) return;
             const target = targets.find(item => item.id === id);
             const saved = savedDefs.find(item => item.targetId === id);
             update(target ? {
@@ -16753,6 +17635,7 @@ Assessment suggests: ${diagnosis ? diagnosis.label : 'pending'}
 ${abcContext}
 
 Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific intervention recommendations. Be practical and teacher-friendly.`);
+                if (result == null) { setLoadingAi(false); return; }
                 setAiInsight(result);
             } catch { if (addToast) addToast(t('toasts.ai_analysis_failed'), 'error'); }
             setLoadingAi(false);
@@ -16778,7 +17661,7 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
                 '',
                 aiInsight ? `── AI INTERPRETATION ──\n${aiInsight}` : ''
             ];
-            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+            blWriteClipboard(lines.join('\n'), addToast).then(() => {
                 if (addToast) addToast(t('toasts.assessment_copied'), 'success');
             });
         };
@@ -16823,7 +17706,7 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
             return h('svg', { role: 'img', 'aria-label': `Probe results. Baseline ${pctText('baseline')}; with support ${pctText('withSupport')}; with motivation ${pctText('withMotivation')}; with both ${pctText('withBoth')}.`, viewBox: `0 0 ${w} ${h2}`, className: 'w-full', style: { maxHeight: 180 } },
                 // Y axis labels
                 [0, 25, 50, 75, 100].map(v => [
-                    h('text', { key: `yl-${v}`, x: padL - 4, y: 10 + chartH - (v / 100) * chartH + 3, textAnchor: 'end', fontSize: 8, fill: '#94a3b8' }, `${v}`),
+                    h('text', { key: `yl-${v}`, x: padL - 4, y: 10 + chartH - (v / 100) * chartH + 3, textAnchor: 'end', fontSize: 8, fill: '#475569' }, `${v}`),
                     h('line', { key: `yg-${v}`, x1: padL, y1: 10 + chartH - (v / 100) * chartH, x2: w - 10, y2: 10 + chartH - (v / 100) * chartH, stroke: '#e2e8f0', strokeWidth: 0.5 })
                 ]).flat(),
                 // Bars
@@ -16853,11 +17736,11 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', { className: 'space-y-1' },
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'Student Name'),
-                        h('input', { type: 'text', value: student, onChange: e => setStudent(e.target.value), 'aria-label': 'eg, Marcus', placeholder: 'e.g., Marcus', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none' })
+                        h('input', { type: 'text', value: student, onChange: e => setStudent(e.target.value), 'aria-label': 'Student name', placeholder: 'e.g., Marcus', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none' })
                     ),
                     h('div', { className: 'space-y-1' },
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'Target Behavior'),
-                        h('input', { type: 'text', value: behavior, onChange: e => setBehavior(e.target.value), 'aria-label': 'eg, Completing math problems independently', placeholder: 'e.g., Completing math problems independently', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none' })
+                        h('input', { type: 'text', value: behavior, onChange: e => setBehavior(e.target.value), 'aria-label': 'Target behavior', placeholder: 'e.g., Completing math problems independently', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none' })
                     )
                 )
             ),
@@ -16955,6 +17838,7 @@ RULES:
 4. Start with an opening line that reflects the student's current state/attitude.
 
 Respond ONLY as the student. Begin now.`);
+                if (result == null) { setLoading(false); return; }
                 setConversation([{ role: 'student', text: result }]);
             } catch { if (addToast) addToast(t('toasts.failed_start_scenario'), 'error'); }
             setLoading(false);
@@ -16985,6 +17869,7 @@ ${convoHistory}
 
 ${turnNum >= 8 ? 'Note: This conversation is getting long. If the student would naturally start to open up or shift, let that happen. Show some movement.' : ''}
 Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — show gradual change if the counselor is using good MI, remain resistant if they are lecturing or confrontational.`);
+                if (result == null) { setLoading(false); return; }
 
                 // Parse response
                 const studentMatch = result.match(/STUDENT_RESPONSE:\s*(.+?)(?=\nOARS_DETECTED:|$)/s);
@@ -16994,7 +17879,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
                 const studentResponse = studentMatch ? studentMatch[1].trim() : result.split('\n')[0];
                 const oarsStr = oarsMatch ? oarsMatch[1].trim() : 'NONE';
-                const quality = qualityMatch ? parseInt(qualityMatch[1]) : 3;
+                // A reply with no score is not scored (it was counted as 3/5).
+                const quality = qualityMatch && Number(qualityMatch[1]) >= 1 && Number(qualityMatch[1]) <= 5 ? Number(qualityMatch[1]) : null;
                 const tip = tipMatch ? tipMatch[1].trim() : '';
 
                 const detectedSkills = oarsStr === 'NONE' ? [] : oarsStr.split(',').map(s => s.trim().charAt(0).toUpperCase()).filter(s => 'OARS'.includes(s));
@@ -17009,7 +17895,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
         const getOverallScore = () => {
             if (scores.length === 0) return { avg: 0, oarsCounts: { O: 0, A: 0, R: 0, S: 0 } };
-            const avg = scores.reduce((sum, s) => sum + s.quality, 0) / scores.length;
+            const scored = scores.filter(s => s.quality != null);
+            const avg = scored.length ? scored.reduce((sum, s) => sum + s.quality, 0) / scored.length : 0;
             const oarsCounts = { O: 0, A: 0, R: 0, S: 0 };
             scores.forEach(s => s.skills.forEach(sk => { if (oarsCounts[sk] !== undefined) oarsCounts[sk]++; }));
             return { avg, oarsCounts };
@@ -17029,9 +17916,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ...conversation.map(c => `${c.role === 'student' ? selectedScenario.student : 'Counselor'}: ${c.text}`),
                 '',
                 '── TURN-BY-TURN FEEDBACK ──',
-                ...scores.map(s => `Turn ${s.turn}: Quality ${s.quality}/5 | Skills: ${s.skills.length > 0 ? s.skills.join(', ') : 'none'} | ${s.tip}`)
+                ...scores.map(s => `Turn ${s.turn}: Quality ${s.quality == null ? 'not scored' : s.quality + '/5'} | Skills: ${s.skills.length > 0 ? s.skills.join(', ') : 'none'} | ${s.tip}`)
             ];
-            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+            blWriteClipboard(lines.join('\n'), addToast).then(() => {
                 if (addToast) addToast(t('toasts.transcript_copied'), 'success');
             });
         };
@@ -17050,7 +17937,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     )
                 ),
                 h('h3', { className: 'text-xs font-bold text-slate-600' }, 'Choose a Scenario:'),
-                ...scenarios.map(sc => h('button', { "aria-label": "Start Scenario",
+                ...scenarios.map(sc => h('button', {
                     key: sc.id,
                     onClick: () => startScenario(sc),
                     className: 'w-full text-start bg-white rounded-xl border border-slate-400 p-4 shadow-sm hover:shadow-md hover:border-teal-600 transition-all'
@@ -17107,7 +17994,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 // Show latest turn feedback
                 scores.length > 0 && !sessionDone && h('div', { className: 'bg-purple-50 rounded-lg border border-purple-200 p-2 mt-2' },
                     h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: `text-xs font-bold ${scores[scores.length - 1].quality >= 4 ? 'text-green-600' : scores[scores.length - 1].quality >= 3 ? 'text-amber-600' : 'text-red-500'}` }, `MI: ${scores[scores.length - 1].quality}/5`),
+                        h('span', { className: `text-xs font-bold ${scores[scores.length - 1].quality >= 4 ? 'text-green-600' : scores[scores.length - 1].quality >= 3 ? 'text-amber-600' : 'text-red-500'}` }, `MI: ${scores[scores.length - 1].quality == null ? 'not scored' : scores[scores.length - 1].quality + '/5'}`),
                         scores[scores.length - 1].skills.length > 0 && h('span', { className: 'text-[11px] text-purple-600 font-medium' }, `Skills: ${scores[scores.length - 1].skills.join(', ')}`),
                     ),
                     h('p', { className: 'text-[11px] text-purple-700 mt-1' }, scores[scores.length - 1].tip)
@@ -17151,7 +18038,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ...scores.map((s, i) => h('div', { key: i, className: 'flex items-center gap-2 text-[11px]' },
                         h('span', { className: 'text-slate-600 font-mono w-8' }, `T${s.turn}`),
                         h('div', { className: 'flex-1 bg-white rounded px-2 py-1 flex items-center gap-2' },
-                            h('span', { className: `font-bold ${s.quality >= 4 ? 'text-green-600' : s.quality >= 3 ? 'text-amber-600' : 'text-red-500'}` }, `${s.quality}/5`),
+                            h('span', { className: `font-bold ${s.quality >= 4 ? 'text-green-600' : s.quality >= 3 ? 'text-amber-600' : 'text-red-500'}` }, s.quality == null ? 'not scored' : `${s.quality}/5`),
                             h('span', { className: 'text-slate-600' }, s.skills.length > 0 ? s.skills.join(' ') : '—'),
                             h('span', { className: 'text-slate-600 text-[11px] flex-1 text-end' }, s.tip)
                         )
@@ -17168,13 +18055,27 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
     // ─── ReplacementBehavior ──────────────────────────────────────────────
     // Replacement Behavior Tracker
+    // Trend of independent trials: the rate over the last 5 trials against the rate over
+    // the (up to) 5 before. It compared COUNTS from windows of different sizes, so
+    // I,I,I,I,I,F (100% then 80%) read "Trending Up".
+    function trialTrend(trials) {
+        const list = Array.isArray(trials) ? trials : [];
+        if (list.length < 6) return 'none';
+        const rate = xs => xs.filter(x => x.level === 'ind').length / xs.length;
+        const recent = rate(list.slice(-5)), prior = rate(list.slice(-10, -5));
+        return recent > prior ? 'up' : recent < prior ? 'down' : 'flat';
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensTrials = Object.freeze({ trialTrend });
+
     const ReplacementBehavior = ({ t, addToast }) => {
-        const [behaviors, setBehaviors] = useState([]);
+        // Kept with the student's workspace (every trial was lost on close).
+        const [behaviors, setBehaviors] = useDurableToolState('replacementTrialBehaviors', []);
         const [showAdd, setShowAdd] = useState(false);
         const [newProblem, setNewProblem] = useState('');
         const [newReplacement, setNewReplacement] = useState('');
         const [newTeachingStrategy, setNewTeachingStrategy] = useState('');
-        const [trials, setTrials] = useState({});
+        const [trials, setTrials] = useDurableToolState('replacementTrials', {});
         const [selectedBehavior, setSelectedBehavior] = useState(null);
 
         const addBehavior = () => {
@@ -17207,12 +18108,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             const fp = t.filter(x => x.level === 'fp').length;
             const pctInd = Math.round((ind / t.length) * 100);
             // Trend: compare last 5 vs previous 5
-            let trend = 'none';
-            if (t.length >= 6) {
-                const recent = t.slice(-5).filter(x => x.level === 'ind').length;
-                const prior = t.slice(-10, -5).filter(x => x.level === 'ind').length;
-                trend = recent > prior ? 'up' : recent < prior ? 'down' : 'flat';
-            }
+            const trend = trialTrend(t);
             return { total: t.length, ind, pp, fp, pctInd, trend };
         };
 
@@ -17220,15 +18116,18 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             const lines = ['Problem Behavior,Replacement Behavior,Teaching Strategy,Date,Trial Level'];
             behaviors.forEach(b => {
                 (trials[b.id] || []).forEach(t => {
-                    lines.push(`"${b.problem}","${b.replacement}","${b.strategy}","${new Date(t.date).toLocaleString()}","${t.level}"`);
+                    lines.push([b.problem, b.replacement, b.strategy, new Date(t.date).toLocaleString(), t.level].map(csvCell).join(','));
                 });
             });
-            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+            blWriteClipboard(lines.join('\n'), addToast).then(() => {
                 if (addToast) addToast(t('toasts.data_copied_as_csv'), 'success');
             });
         };
 
-        const deleteBehavior = (id) => {
+        const deleteBehavior = async (id) => {
+            const b = behaviors.find(x => x.id === id);
+            const n = (trials[id] || []).length;
+            if (!await askBehaviorLensConfirmation(tt('behavior_lens.replacement.delete_confirm', 'Delete "{name}" and its {n} logged trials?', { name: b ? b.replacement : '', n }), { title: 'Delete replacement behavior', confirmText: 'Delete' })) return;
             setBehaviors(prev => prev.filter(b => b.id !== id));
             setTrials(prev => { const n = { ...prev }; delete n[id]; return n; });
             if (selectedBehavior === id) setSelectedBehavior(null);
@@ -17290,7 +18189,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ),
                     // Trend indicator
                     st.trend !== 'none' && h('div', { className: `text-center text-xs font-bold mb-3 ${st.trend === 'up' ? 'text-green-600' : st.trend === 'down' ? 'text-red-500' : 'text-slate-600'}` },
-                        st.trend === 'up' ? '📈 Trending Up — Independence is increasing!' : st.trend === 'down' ? '📉 Trending Down — May need strategy adjustment' : '➡️ Flat — Consistent performance'
+                        st.trend === 'up' ? tt('behavior_lens.replacement.trend_up', '📈 Independent rate up over the last 5 trials') : st.trend === 'down' ? tt('behavior_lens.replacement.trend_down', '📉 Independent rate down over the last 5 trials: the strategy may need adjusting') : tt('behavior_lens.replacement.trend_flat', '➡️ Independent rate unchanged over the last 5 trials')
                     ),
                     // Daily bar chart
                     dates.length > 0 && h('div', { className: 'mb-3' },
@@ -17344,15 +18243,15 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             showAdd && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm space-y-3' },
                 h('div', null,
                     h('label', { className: 'text-[11px] text-slate-600 font-bold uppercase' }, 'Problem Behavior'),
-                    h('input', { value: newProblem, onChange: e => setNewProblem(e.target.value), 'aria-label': 'eg, Hitting peers when frustrated', placeholder: 'e.g., Hitting peers when frustrated', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs mt-1' })
+                    h('input', { value: newProblem, onChange: e => setNewProblem(e.target.value), 'aria-label': 'Problem behavior', placeholder: 'e.g., Hitting peers when frustrated', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs mt-1' })
                 ),
                 h('div', null,
                     h('label', { className: 'text-[11px] text-slate-600 font-bold uppercase' }, 'Replacement Behavior'),
-                    h('input', { value: newReplacement, onChange: e => setNewReplacement(e.target.value), 'aria-label': 'eg, Using I need a break card', placeholder: 'e.g., Using "I need a break" card', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs mt-1' })
+                    h('input', { value: newReplacement, onChange: e => setNewReplacement(e.target.value), 'aria-label': 'Replacement behavior', placeholder: 'e.g., Using "I need a break" card', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs mt-1' })
                 ),
                 h('div', null,
                     h('label', { className: 'text-[11px] text-slate-600 font-bold uppercase' }, 'Teaching Strategy (optional)'),
-                    h('input', { value: newTeachingStrategy, onChange: e => setNewTeachingStrategy(e.target.value), 'aria-label': 'eg, BST  Model, rehearse, feedback', placeholder: 'e.g., BST — Model, rehearse, feedback', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs mt-1' })
+                    h('input', { value: newTeachingStrategy, onChange: e => setNewTeachingStrategy(e.target.value), 'aria-label': 'Teaching strategy (optional)', placeholder: 'e.g., BST — Model, rehearse, feedback', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs mt-1' })
                 ),
                 h('button', { "aria-label": "Add Behavior Pair", onClick: addBehavior, disabled: !newProblem.trim() || !newReplacement.trim(), className: 'w-full py-2 bg-green-700 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition-all disabled:opacity-50' }, '✓ Add Behavior Pair')
             ),
@@ -17372,7 +18271,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 h('span', { className: 'text-green-600 text-[11px] font-bold' }, '✓ ' + b.replacement)
                             )
                         ),
-                        h('button', { onClick: () => deleteBehavior(b.id), 'aria-label': 'Delete behavior', className: 'text-[11px] text-slate-600 hover:text-red-400' }, '🗑️')
+                        h('button', { onClick: () => deleteBehavior(b.id), 'aria-label': 'Delete ' + b.replacement, className: 'text-[11px] text-slate-600 hover:text-red-400' }, '🗑️')
                     ),
                     // Quick stats
                     h('div', { className: 'flex items-center gap-3 mb-2' },
@@ -17398,19 +18297,77 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
     // ─── SessionDataTracker ─────────────────────────────────────────────
     // Standalone session-based behavioral data collection
-    const SessionDataTracker = ({ abcEntries, t, addToast, onSaveSession }) => {
-        const [targets, setTargets] = useState([{ id: uid(), name: '', type: 'frequency', count: 0, durations: [] }]);
-        const [sessionActive, setSessionActive] = useState(false);
-        const [sessionStart, setSessionStart] = useState(null);
-        const [elapsed, setElapsed] = useState(0);
+    // A session in progress lived only in this panel: opening another tool, Escape or a reload lost
+    // it without asking. It is now kept as a draft for the student (and comes back paused), can be
+    // paused, and its time comes from the wall clock, paused when the page stops running.
+    const SessionDataTracker = ({ abcEntries, t, addToast, onSaveSession, savedSessions, studentDraftId }) => {
+        const [recovered] = useState(() => { const d = readObservationDraft('tracker', studentDraftId); return d && d.sessionActive ? d : null; });
+        const [targets, setTargets] = useState(recovered?.targets || [{ id: uid(), name: '', type: 'frequency', count: 0, durations: [] }]);
+        const [sessionActive, setSessionActive] = useState(!!recovered);
+        const [running, setRunning] = useState(false);
+        const [suspendedFor, setSuspendedFor] = useState(null);
+        const [elapsed, setElapsed] = useState(recovered ? Math.floor((recovered.elapsedMs || 0) / 1000) : 0);
+        const clockRef = useRef({ baseMs: recovered?.elapsedMs || 0, startedAt: null, lastTick: null, spans: Array.isArray(recovered?.spans) ? recovered.spans : [] });
         const [sessionHistory, setSessionHistory] = useState([]);
+        // Sessions are saved with the student's workspace; the history listed only this
+        // visit's, so it read "Session History (0)" after reopening. Other tools' sessions
+        // (latency, counters) are in the same list without per-target data, so skip them.
+        const trackerSessions = useMemo(() => (Array.isArray(savedSessions) ? savedSessions : sessionHistory).filter(x => x && Array.isArray(x.targets)), [savedSessions, sessionHistory]);
         const [viewHistory, setViewHistory] = useState(false);
         const [durationTimers, setDurationTimers] = useState({});
-        const [focusMode, setFocusMode] = useState(false);
-        const [intervalLength, setIntervalLength] = useState(300);
-
+        const [focusMode, setFocusMode] = useState(!!recovered?.focusMode);
+        const [intervalLength, setIntervalLength] = useState(recovered?.intervalLength || 300);
+        const durationTimersRef = useRef(durationTimers); durationTimersRef.current = durationTimers;
+        const liveSpans = () => { const c = clockRef.current; return c.startedAt != null ? c.spans.concat([{ start: new Date(c.startedAt).toISOString(), end: new Date(c.lastTick || c.startedAt).toISOString() }]) : c.spans; };
+        // The draft is written here (not with useObservationRecovery): this panel has no close
+        // request to guard, only a session to keep while the teacher is elsewhere.
+        const trackerDraft = { sessionActive, targets, elapsedMs: sessionActive ? clockRef.current.baseMs + (clockRef.current.startedAt != null ? (clockRef.current.lastTick || clockRef.current.startedAt) - clockRef.current.startedAt : 0) : 0, spans: liveSpans(), focusMode, intervalLength };
+        const trackerDraftRef = useRef(trackerDraft);
+        trackerDraftRef.current = trackerDraft;
+        useEffect(() => { writeObservationDraft('tracker', studentDraftId, sessionActive ? trackerDraft : null); }, [studentDraftId, sessionActive, targets, elapsed, focusMode, intervalLength]);
+        useEffect(() => () => { const d = trackerDraftRef.current; writeObservationDraft('tracker', studentDraftId, d.sessionActive ? d : null); }, [studentDraftId]);
+        useEffect(() => { if (recovered && addToast) addToast('Recovered the session in progress. It is paused: press Resume to go on.', 'info'); }, []);
+        // A pause (or the page stopping) closes open duration timers at that moment.
+        const stopClock = (at, gapSeconds) => {
+            const c = clockRef.current;
+            if (c.startedAt == null) return;
+            c.baseMs += Math.max(0, at - c.startedAt);
+            c.spans = c.spans.concat([{ start: new Date(c.startedAt).toISOString(), end: new Date(at).toISOString() }]);
+            c.startedAt = null;
+            setElapsed(Math.floor(c.baseMs / 1000));
+            const timers = durationTimersRef.current || {};
+            if (Object.keys(timers).length) {
+                setTargets(prev => prev.map(t => timers[t.id] ? { ...t, durations: [...(t.durations || []), Math.max(0, Math.round((at - timers[t.id]) / 1000))], count: t.count + 1 } : t));
+                durationTimersRef.current = {};
+                setDurationTimers({});
+            }
+            if (gapSeconds) { setSuspendedFor(gapSeconds); setRunning(false); }
+        };
+        const stopClockRef = useRef(stopClock); stopClockRef.current = stopClock;
+        // The clock starts and stops in the Start, Resume and Pause handlers; this only ticks.
+        const startClock = () => { const c = clockRef.current; if (c.startedAt == null) { c.startedAt = Date.now(); c.lastTick = c.startedAt; } };
+        const pauseSession = () => { stopClock(Date.now()); setRunning(false); };
+        const resumeSession = () => { startClock(); setSuspendedFor(null); setRunning(true); };
         useEffect(() => {
-            if (focusMode && sessionActive && elapsed > 0 && elapsed % intervalLength === 0) {
+            if (!running) return undefined;
+            const c = clockRef.current;
+            startClock();
+            const id = setInterval(() => {
+                const now = Date.now();
+                if (now - c.lastTick > INTERVAL_GRID_MAX_GAP_MS) { stopClockRef.current(c.lastTick, Math.round((now - c.lastTick) / 1000)); return; }
+                c.lastTick = now;
+                setElapsed(Math.floor((c.baseMs + now - c.startedAt) / 1000));
+            }, 250);
+            return () => clearInterval(id);
+        }, [running]);
+        // The focus signal sounds when a new interval begins (it needed a tick on the exact second,
+        // which a slowed background tab could skip).
+        const signalledRef = useRef(Math.floor(elapsed / intervalLength));
+        useEffect(() => {
+            const boundary = Math.floor(elapsed / intervalLength);
+            if (boundary <= signalledRef.current) return;
+            signalledRef.current = boundary;
+            if (focusMode && running) {
                 try {
                     const ctx = new (window.AudioContext || window.webkitAudioContext)();
                     const osc = ctx.createOscillator();
@@ -17425,7 +18382,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     osc.stop(ctx.currentTime + 1.5);
                 } catch(e) {}
             }
-        }, [elapsed, focusMode, sessionActive, intervalLength]);
+        }, [elapsed, focusMode, running, intervalLength]);
 
         const DATA_TYPES = [
             { id: 'frequency', label: (tt('behavior_lens.raw.frequency_count', 'Frequency Count')), icon: '🔢', unit: 'count' },
@@ -17435,12 +18392,6 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             { id: 'interval', label: (tt('behavior_lens.raw.interval_yn', 'Interval (Y/N)')), icon: '📋', unit: 'intervals' },
         ];
 
-        // Elapsed timer
-        useEffect(() => {
-            if (!sessionActive) return;
-            const id = setInterval(() => setElapsed(Math.floor((Date.now() - sessionStart) / 1000)), 1000);
-            return () => clearInterval(id);
-        }, [sessionActive, sessionStart]);
 
         // Suggest behaviors from ABC entries
         const suggestedBehaviors = useMemo(() => {
@@ -17465,8 +18416,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
         const startSession = () => {
             if (targets.every(t => !t.name.trim())) { if (addToast) addToast(tt('behavior_lens.toast.name_at_least_one_target_behavior', 'Name at least one target behavior'), 'warning'); return; }
+            clockRef.current = { baseMs: 0, startedAt: Date.now(), lastTick: Date.now(), spans: [] };
+            signalledRef.current = 0;
+            setSuspendedFor(null);
             setSessionActive(true);
-            setSessionStart(Date.now());
+            setRunning(true);
             setElapsed(0);
             setDurationTimers({});
             setTargets(prev => prev.map(t => ({ ...t, count: 0, total: 0, durations: [], intervals: [] })));
@@ -17474,7 +18428,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
         const endSession = () => {
             const endedAt = Date.now();
-            const duration = sessionStart == null ? elapsed : Math.max(0, Math.floor((endedAt - sessionStart) / 1000));
+            const c = clockRef.current;
+            const spans = c.startedAt != null ? c.spans.concat([{ start: new Date(c.startedAt).toISOString(), end: new Date(endedAt).toISOString() }]) : c.spans;
+            const observedMs = c.baseMs + (c.startedAt != null ? endedAt - c.startedAt : 0);
+            const duration = Math.round(observedMs / 1000);
+            if (c.startedAt != null) { c.baseMs = observedMs; c.spans = spans; c.startedAt = null; }
             const completedTargets = targets.filter(target => target.name.trim()).map(target => {
                 const startedAt = durationTimers[target.id];
                 return startedAt == null ? target : {
@@ -17485,9 +18443,10 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             });
             const sessionData = {
                 id: uid(),
-                date: new Date(sessionStart == null ? endedAt : sessionStart).toISOString(),
+                date: spans.length ? spans[0].start : new Date(endedAt).toISOString(),
                 endedAt: new Date(endedAt).toISOString(),
                 durationSec: duration,
+                spans,
                 targets: completedTargets.map(t => ({
                     id: t.id,
                     name: t.name,
@@ -17496,7 +18455,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     total: t.total,
                     durations: t.durations || [],
                     intervals: t.intervals || [],
-                    rate: duration > 0 ? parseFloat((t.count / (duration / 60)).toFixed(2)) : 0,
+                    rate: observedMs > 0 ? Math.round(t.count / (observedMs / 60000) * 10000) / 10000 : 0,
                 })),
             };
             setSessionHistory(prev => [sessionData, ...prev]);
@@ -17504,6 +18463,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             setTargets(completedTargets);
             setDurationTimers({});
             setElapsed(duration);
+            setRunning(false);
             setSessionActive(false);
             const responses = completedTargets.reduce((sum, target) => sum + target.count, 0);
             if (addToast) addToast(t('behavior_lens.toast.session_saved_ns_n_total_responses', { duration, responses }) || `Session saved! ${duration}s, ${responses} total responses`, 'success');
@@ -17538,10 +18498,10 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
                 h('button', { "aria-label": "Back to Tracker", onClick: () => setViewHistory(false), className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← Back to Tracker'),
                 h('div', { className: 'text-center py-3' },
-                    h('h2', { className: 'text-lg font-black text-slate-800' }, `📋 Session History (${sessionHistory.length})`),
+                    h('h2', { className: 'text-lg font-black text-slate-800' }, `📋 Session History (${trackerSessions.length})`),
                 ),
-                sessionHistory.length === 0 && h('p', { className: 'text-center text-sm text-slate-600 py-8' }, tt('behavior_lens.ui.no_sessions_recorded_yet', 'No sessions recorded yet.')),
-                sessionHistory.map(s =>
+                trackerSessions.length === 0 && h('p', { className: 'text-center text-sm text-slate-600 py-8' }, tt('behavior_lens.ui.no_sessions_recorded_yet', 'No sessions recorded yet.')),
+                trackerSessions.map(s =>
                     h('div', { key: s.id, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                         h('div', { className: 'flex justify-between items-center mb-2' },
                             h('span', { className: 'text-xs font-bold text-slate-600' }, new Date(s.date).toLocaleString()),
@@ -17593,21 +18553,21 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         )
                     ),
                     targets.map(tgt =>
-                        h('div', { key: tgt.id, className: 'flex items-center gap-2 bg-slate-50 rounded-lg p-2' },
+                        h('div', { key: tgt.id, className: 'flex flex-wrap items-center gap-2 bg-slate-50 rounded-lg p-2' },
                             h('input', {
                                 value: tgt.name,
                                 onChange: e => updateTarget(tgt.id, 'name', e.target.value),
                                 placeholder: tt('behavior_lens.ph.behavior_name', 'Behavior name...'),
                                 'aria-label': 'Target behavior name',
-                                className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300'
+                                className: 'basis-full sm:basis-auto flex-1 min-w-0 text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300'
                             }),
                             h('select', {
                                 value: tgt.type,
                                 onChange: e => updateTarget(tgt.id, 'type', e.target.value),
                                 'aria-label': 'Data collection type for ' + ((tgt.name || '').trim() || 'target behavior'),
-                                className: 'text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white font-medium'
+                                className: 'min-w-0 max-w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white font-medium'
                             }, DATA_TYPES.map(dt => h('option', { key: dt.id, value: dt.id }, `${dt.icon} ${dt.label}`))),
-                            targets.length > 1 && h('button', { onClick: () => removeTarget(tgt.id), title: 'Remove target', 'aria-label': 'Remove target', className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')
+                            targets.length > 1 && h('button', { onClick: () => removeTarget(tgt.id), title: 'Remove target', 'aria-label': 'Remove target ' + ((tgt.name || '').trim() || 'unnamed'), className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')
                         )
                     )
                 ),
@@ -17624,7 +18584,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             'aria-checked': focusMode,
                             className: `w-12 h-6 rounded-full transition-colors relative shrink-0 ${focusMode ? 'bg-indigo-500' : 'bg-slate-300'}`
                         },
-                            h('span', { className: `absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${focusMode ? 'translate-x-6' : ''}` })
+                            h('span', { className: `absolute top-1/2 -translate-y-1/2 left-1 w-4 h-4 rounded-full bg-white transition-transform ${focusMode ? 'translate-x-6' : ''}` })
                         )
                     ),
                     focusMode && h('div', { className: 'flex items-center gap-3 pt-3 border-t border-slate-100' },
@@ -17644,16 +18604,22 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ),
                 h('div', { className: 'flex gap-2' },
                     h('button', { onClick: startSession, className: 'flex-1 py-3 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-700 shadow-lg transition-all' }, '▶ Start Session'),
-                    h('button', { onClick: () => setViewHistory(true), className: 'px-4 py-3 bg-white border border-slate-400 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50' }, `📋 ${sessionHistory.length}`)
+                    h('button', { onClick: () => setViewHistory(true), 'aria-label': 'Session history (' + trackerSessions.length + ')', className: 'px-4 py-3 bg-white border border-slate-400 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50' }, `📋 ${trackerSessions.length}`)
                 )
             ) :
                 // Active session
                 h('div', { className: 'space-y-3' },
                     h('div', { className: 'bg-gradient-to-r from-green-700 to-emerald-700 rounded-xl p-4 text-white text-center shadow-lg' },
                         h('div', { className: 'text-3xl font-black tabular-nums' }, fmtTime(elapsed)),
-                        h('p', { className: 'text-[11px] opacity-80 mt-1' }, tt('behavior_lens.ui.session_active', 'Session Active'))
+                        h('p', { className: 'text-[11px] opacity-80 mt-1' }, running ? tt('behavior_lens.ui.session_active', 'Session Active') : 'Paused: time and recording are stopped'),
+                        h('button', { type: 'button', 'aria-pressed': running ? 'true' : 'false', onClick: running ? pauseSession : resumeSession, className: 'mt-2 min-h-11 rounded-lg bg-white/20 px-4 py-1 text-sm font-bold hover:bg-white/30' }, running ? 'Pause session' : 'Resume session')
                     ),
-                    targets.filter(t => t.name.trim()).map(tgt => {
+                    suspendedFor != null && h('p', { role: 'status', 'data-tracker-suspended': suspendedFor, className: 'text-sm text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2' },
+                        tt('behavior_lens.interval.suspended', 'Recording paused: this page stopped running for {n} seconds (screen locked or another app). That time is not counted. Resume when you are watching again.', { n: suspendedFor })),
+                    // Paused: what was recorded, without the recording controls.
+                    !running && h('ul', { className: 'space-y-1 rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800', 'data-tracker-paused-summary': true },
+                        targets.filter(t => t.name.trim()).map(tgt => h('li', { key: tgt.id }, tgt.name + ': Count: ' + tgt.count + (tgt.type === 'duration' && (tgt.durations || []).length ? ', ' + (tgt.durations || []).reduce((sum, d) => sum + d, 0) + ' s' : '')))),
+                    running && targets.filter(t => t.name.trim()).map(tgt => {
                         const isDurationActive = !!durationTimers[tgt.id];
                         const signalActive = focusMode && tgt.type === 'interval' && elapsed > 0 && (elapsed % intervalLength) < 5;
                         return h('div', { key: tgt.id, className: `bg-white rounded-xl transition-all duration-500 border-2 ${isDurationActive ? 'border-amber-300 bg-amber-50' : signalActive ? 'border-indigo-500 bg-indigo-50 ring-4 ring-indigo-200 scale-105 shadow-indigo-100' : 'border-slate-200'} p-4 shadow-sm` },
@@ -17797,17 +18763,19 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         const [showLevel, setShowLevel] = useState(true);
         const [showAim, setShowAim] = useState(false);
         const [showCeleration, setShowCeleration] = useState(false);
-        const [aimTarget, setAimTarget] = useState('');
+        // Kept with the student's workspace: titles, manual data and the multiple-baseline and
+        // alternating-treatment data were all lost on close.
+        const [aimTarget, setAimTarget] = useDurableToolState('abaGraphAimTarget', '');
         const [jabaMode, setJabaMode] = useState(false); // B&W Publication Mode
         const [selectedBehavior, setSelectedBehavior] = useState(0);
-        const [graphTitle, setGraphTitle] = useState('');
-        const [yAxisLabel, setYAxisLabel] = useState('');
-        const [xAxisLabel, setXAxisLabel] = useState('Sessions');
+        const [graphTitle, setGraphTitle] = useDurableToolState('abaGraphTitle', '');
+        const [yAxisLabel, setYAxisLabel] = useDurableToolState('abaGraphYLabel', '');
+        const [xAxisLabel, setXAxisLabel] = useDurableToolState('abaGraphXLabel', 'Sessions');
         const [goalDirection, setGoalDirection] = useDurableToolState('abaGraphGoalDirection', 'decrease');
 
         // ── Manual Data Entry State ──
-        const [dataMode, setDataMode] = useState('auto'); // 'auto' | 'manual'
-        const [manualData, setManualData] = useState([]);
+        const [dataMode, setDataMode] = useDurableToolState('abaGraphDataMode', 'auto'); // 'auto' | 'manual'
+        const [manualData, setManualData] = useDurableToolState('abaGraphManualData', []);
         const [editingPoint, setEditingPoint] = useState(null); // index being edited on SVG
         const [editValue, setEditValue] = useState('');
         const [csvText, setCsvText] = useState('');
@@ -17815,13 +18783,21 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         const [newPointValue, setNewPointValue] = useState('');
 
         // ── Multiple Baseline Stacked Graph State ──
-        const [mbTierData, setMbTierData] = useState([
+        const [mbTierData, setMbTierData] = useDurableToolState('abaGraphMbTiers', [
             { name: 'Tier 1', label: '', data: [], phaseChange: 6, newVal: '' },
             { name: 'Tier 2', label: '', data: [], phaseChange: 9, newVal: '' },
             { name: 'Tier 3', label: '', data: [], phaseChange: 12, newVal: '' },
         ]);
         const [mbJaba, setMbJaba] = useState(false);
-        const [mbTitle, setMbTitle] = useState('');
+        const [mbTitle, setMbTitle] = useDurableToolState('abaGraphMbTitle', '');
+        // Alternating-treatments state. These hooks sat after the multiple-baseline branch's
+        // early return, so how many hooks ran depended on the design.
+        const [atConditions, setAtConditions] = useDurableToolState('abaGraphAtConditions', [
+            { name: 'Condition A', data: [], newVal: '' },
+            { name: 'Condition B', data: [], newVal: '' },
+        ]);
+        const [atJaba, setAtJaba] = useState(false);
+        const [atTitle, setAtTitle] = useDurableToolState('abaGraphAtTitle', '');
 
 
         // Collect all unique behavior names from sessions. Multi-target
@@ -17903,7 +18879,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         const addManualPoint = () => {
             const val = parseFloat(newPointValue);
             if (isNaN(val) || val < 0) { if (addToast) addToast(tt('behavior_lens.toast.enter_a_valid_number', 'Enter a valid number'), 'warning'); return; }
-            setManualData(prev => [...prev, { session: prev.length + 1, value: val, date: new Date().toISOString().slice(0, 10) }]);
+            setManualData(prev => [...prev, { session: prev.length + 1, value: val, date: blLocalDateKey(new Date()) }]);
             setNewPointValue('');
         };
 
@@ -17917,20 +18893,30 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             setManualData(prev => prev.filter((_, i) => i !== idx).map((d, i) => ({ ...d, session: i + 1 })));
         };
 
-        const handleCsvImport = () => {
+        // Pasted points replaced the graph without asking, and stated session numbers were
+        // thrown away ("3,7 / 5,9 / 4,8" became sessions 1, 2, 3).
+        const handleCsvImport = async () => {
             const lines = csvText.trim().split('\n').map(l => l.trim()).filter(Boolean);
             const parsed = [];
             for (const line of lines) {
                 // Support formats: "5", "Session 1: 5", "1,5", "1\t5"
-                const match = line.match(/^(?:session\s+\d+\s*[:=]\s*|\d+\s*[,\t]\s*)?(\d+(?:\.\d+)?|\.\d+)\s*$/i);
-                if (!match || !Number.isFinite(Number(match[1]))) {
+                const match = line.match(/^(?:session\s+(\d+)\s*[:=]\s*|(\d+)\s*[,\t]\s*)?(\d+(?:\.\d+)?|\.\d+)\s*$/i);
+                if (!match || !Number.isFinite(Number(match[3]))) {
                     if (addToast) addToast('Check row ' + (parsed.length + 1) + ': use a value, Session 1: value, or session,value.', 'warning');
                     return;
                 }
-                parsed.push(Number(match[1]));
+                const stated = match[1] || match[2];
+                parsed.push({ session: stated ? Number(stated) : null, value: Number(match[3]) });
             }
             if (parsed.length === 0) { if (addToast) addToast(tt('behavior_lens.toast.no_valid_data_found_in_csv', 'No valid data found in CSV'), 'warning'); return; }
-            setManualData(parsed.map((v, i) => ({ session: i + 1, value: v, date: new Date().toISOString().slice(0, 10) })));
+            const allStated = parsed.every(p => p.session != null);
+            if (allStated && new Set(parsed.map(p => p.session)).size !== parsed.length) {
+                if (addToast) addToast(tt('behavior_lens.abagraph.duplicate_sessions', 'Two rows have the same session number. Give each session one value.'), 'warning');
+                return;
+            }
+            if (manualData.length && !await askBehaviorLensConfirmation(tt('behavior_lens.abagraph.replace_confirm', 'Replace the {n} points on this graph with the {m} pasted ones?', { n: manualData.length, m: parsed.length }), { title: 'Replace graph data', confirmText: 'Replace' })) return;
+            const points = allStated ? parsed.slice().sort((a, b) => a.session - b.session) : parsed.map((p, i) => ({ session: i + 1, value: p.value }));
+            setManualData(points.map(p => ({ session: p.session, value: p.value, date: blLocalDateKey(new Date()) })));
             setShowCsvImport(false);
             setCsvText('');
             if (addToast) addToast(tt('behavior_lens.toast.imported_n_data_points_v2', 'Imported {v1} data points!', { v1: parsed.length }), 'success');
@@ -18203,7 +19189,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     // Y-axis ticks and grid
                     ...yTicks.map(v => h('g', { key: `yt-${tierIdx}-${v}` },
                         h('line', { x1: MB_PAD_L, y1: toY(v), x2: MB_PAD_L + MB_PLOT_W, y2: toY(v), stroke: '#e2e8f0', strokeWidth: 0.5 }),
-                        h('text', { x: MB_PAD_L - 8, y: toY(v) + 4, textAnchor: 'end', fontSize: 8, fill: '#94a3b8' }, v)
+                        h('text', { x: MB_PAD_L - 8, y: toY(v) + 4, textAnchor: 'end', fontSize: 8, fill: '#475569' }, v)
                     )),
                     // Phase change line (dashed vertical)
                     phaseLineX && h('line', { x1: phaseLineX, y1: yOff + MB_PAD_T - 5, x2: phaseLineX, y2: yOff + MB_PAD_T + plotH, stroke: '#1e293b', strokeWidth: 1.5, strokeDasharray: '6,4' }),
@@ -18234,7 +19220,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('div', { className: 'flex items-center gap-3' },
                         h('div', { className: 'flex-1' },
                             h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Graph Title'),
-                            h('input', { value: mbTitle, onChange: e => setMbTitle(e.target.value), 'aria-label': 'eg Multiple Baseline Across Students', placeholder: 'e.g. Multiple Baseline Across Students', className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                            h('input', { value: mbTitle, onChange: e => setMbTitle(e.target.value), 'aria-label': 'Graph title', placeholder: 'e.g. Multiple Baseline Across Students', className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                         ),
                         h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-slate-700 cursor-pointer bg-slate-100 px-3 py-2 rounded-lg shadow-sm self-end' },
                             h('input', { type: 'checkbox', checked: mbJaba, onChange: () => setMbJaba(!mbJaba), className: 'accent-slate-700' }), '📓 JABA (B&W)'
@@ -18264,7 +19250,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 tier.data.map((d, di) =>
                                     h('div', { key: di, className: 'px-2 py-0.5 bg-slate-50 border border-slate-400 rounded text-[11px] font-mono text-slate-600 flex items-center gap-1' },
                                         `S${d.session}: ${d.value}`,
-                                        h('button', { onClick: () => removeMbTierPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-600 hover:text-red-600 text-[11px] ms-0.5' }, '✕')
+                                        h('button', { onClick: () => removeMbTierPoint(idx, di), title: 'Remove this point', 'aria-label': 'Remove session ' + d.session + ' from ' + tier.name, className: 'text-red-600 hover:text-red-600 text-[11px] ms-0.5' }, '✕')
                                     )
                                 )
                             )
@@ -18286,7 +19272,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             const lastTierY = (mbTitle ? 30 : 0) + (tierCount - 1) * (tierH + gapH) + tierH - 10;
                             return h('g', { key: `xtick-${session}` },
                                 h('line', { x1: mbToX(session), y1: lastTierY, x2: mbToX(session), y2: lastTierY + 4, stroke: '#94a3b8', strokeWidth: 1 }),
-                                h('text', { x: mbToX(session), y: lastTierY + 15, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' }, session)
+                                h('text', { x: mbToX(session), y: lastTierY + 15, textAnchor: 'middle', fontSize: 8, fill: '#475569' }, session)
                             );
                         }),
                         // X-axis label
@@ -18314,12 +19300,6 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
         // ── Alternating Treatments Design (ATD) Graph Renderer ──
         const isAT = designType && designType.id === 'AT';
-        const [atConditions, setAtConditions] = useState([
-            { name: 'Condition A', data: [], newVal: '' },
-            { name: 'Condition B', data: [], newVal: '' },
-        ]);
-        const [atJaba, setAtJaba] = useState(false);
-        const [atTitle, setAtTitle] = useState('');
 
         const updateAtCondition = (idx, key, val) => {
             setAtConditions(prev => prev.map((c, i) => i === idx ? { ...c, [key]: val } : c));
@@ -18366,7 +19346,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('div', { className: 'flex items-center gap-3' },
                         h('div', { className: 'flex-1' },
                             h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Graph Title'),
-                            h('input', { value: atTitle, onChange: e => setAtTitle(e.target.value), 'aria-label': 'eg Alternating Treatments Comparison', placeholder: 'e.g. Alternating Treatments Comparison', className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                            h('input', { value: atTitle, onChange: e => setAtTitle(e.target.value), 'aria-label': 'Graph title', placeholder: 'e.g. Alternating Treatments Comparison', className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                         ),
                         h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-slate-700 cursor-pointer bg-slate-100 px-3 py-2 rounded-lg shadow-sm self-end' },
                             h('input', { type: 'checkbox', checked: atJaba, onChange: () => setAtJaba(!atJaba), className: 'accent-slate-700' }), '📓 JABA (B&W)'
@@ -18390,7 +19370,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 cond.data.map((d, di) =>
                                     h('div', { key: di, className: 'px-2 py-0.5 bg-slate-50 border border-slate-400 rounded text-[11px] font-mono text-slate-600 flex items-center gap-1' },
                                         `S${d.session}: ${d.value}`,
-                                        h('button', { onClick: () => removeAtPoint(idx, di), title: 'Close', 'aria-label': 'Close', className: 'text-red-600 hover:text-red-600 text-[11px] ms-0.5' }, '✕')
+                                        h('button', { onClick: () => removeAtPoint(idx, di), title: 'Remove this point', 'aria-label': 'Remove session ' + d.session + ' from ' + cond.name, className: 'text-red-600 hover:text-red-600 text-[11px] ms-0.5' }, '✕')
                                     )
                                 )
                             )
@@ -18414,14 +19394,14 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         // Y-axis ticks and grid
                         ...atYTicks.map(v => h('g', { key: 'yt-at-' + v },
                             h('line', { x1: AT_PAD_L, y1: atToY(v), x2: AT_PAD_L + AT_PLOT_W, y2: atToY(v), stroke: '#e2e8f0', strokeWidth: 0.5 }),
-                            h('text', { x: AT_PAD_L - 8, y: atToY(v) + 4, textAnchor: 'end', fontSize: 9, fill: '#94a3b8' }, v)
+                            h('text', { x: AT_PAD_L - 8, y: atToY(v) + 4, textAnchor: 'end', fontSize: 9, fill: '#475569' }, v)
                         )),
                         // X-axis ticks
                         ...Array.from({ length: atMaxSession }, (_, i) => {
                             const s = i + 1;
                             return h('g', { key: 'xt-at-' + s },
                                 h('line', { x1: atToX(s), y1: AT_PAD_T + AT_PLOT_H, x2: atToX(s), y2: AT_PAD_T + AT_PLOT_H + 4, stroke: '#94a3b8', strokeWidth: 1 }),
-                                h('text', { x: atToX(s), y: AT_PAD_T + AT_PLOT_H + 16, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' }, s)
+                                h('text', { x: atToX(s), y: AT_PAD_T + AT_PLOT_H + 16, textAnchor: 'middle', fontSize: 8, fill: '#475569' }, s)
                             );
                         }),
                         // Axes
@@ -18479,11 +19459,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             ),
 
             // ── Data Source Toggle ──
-            h('div', { className: 'flex gap-2 justify-center' },
-                h('button', { onClick: () => setDataMode('auto'),
+            h('div', { className: 'flex gap-2 justify-center', role: 'group', 'aria-label': 'Graph data source' },
+                h('button', { 'aria-pressed': dataMode === 'auto' ? 'true' : 'false', onClick: () => setDataMode('auto'),
                     className: `px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataMode === 'auto' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                 }, `📊 Session Data${autoDataSeries.length > 0 ? ` (${autoDataSeries.length})` : ''}`),
-                h('button', { onClick: () => setDataMode('manual'),
+                h('button', { 'aria-pressed': dataMode === 'manual' ? 'true' : 'false', onClick: () => setDataMode('manual'),
                     className: `px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataMode === 'manual' ? 'bg-fuchsia-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                 }, `✏️ Manual Entry${manualData.length > 0 ? ` (${manualData.length})` : ''}`)
             ),
@@ -18502,8 +19482,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         h('button', { 'aria-expanded': String(showCsvImport), onClick: () => setShowCsvImport(!showCsvImport),
                             className: 'px-3 py-1 bg-white border border-fuchsia-600 rounded-lg text-[11px] font-bold text-fuchsia-800 hover:bg-fuchsia-50'
                         }, showCsvImport ? '← Back' : '📋 Paste CSV'),
-                        manualData.length > 0 && h('button', { "aria-label": "Clear",
-                            onClick: () => { setManualData([]); if (addToast) addToast(tt('behavior_lens.toast.data_cleared', 'Data cleared'), 'info'); },
+                        manualData.length > 0 && h('button', { "aria-label": "Clear manual data",
+                            onClick: async () => { if (!await askBehaviorLensConfirmation(tt('behavior_lens.aba_graph.clear_confirm', 'Delete all {n} manually entered data points?', { n: manualData.length }), { title: 'Clear manual graph data', confirmText: 'Clear' })) return; setManualData([]); if (addToast) addToast(tt('behavior_lens.toast.data_cleared', 'Data cleared'), 'info'); },
                             className: 'px-3 py-1 bg-white border border-red-600 rounded-lg text-[11px] font-bold text-red-700 hover:bg-red-50'
                         }, '🗑️ Clear')
                     )
@@ -18553,7 +19533,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 // Data table
                 !showCsvImport && manualData.length > 0 && h('div', { className: 'bg-white rounded-lg border border-fuchsia-100 overflow-hidden' },
                     h('table', { className: 'w-full text-[11px]' },
-                        h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
+                        h('caption', { className: 'sr-only' }, 'Graph data entered by hand'), h('thead', null,
                             h('tr', { className: 'bg-fuchsia-50' },
                                 h('th', { scope: 'col', className: 'px-3 py-1.5 text-start font-bold text-fuchsia-700' }, (tt('behavior_lens.raw.session', 'Session'))),
                                 h('th', { scope: 'col', className: 'px-3 py-1.5 text-start font-bold text-fuchsia-700' }, (tt('behavior_lens.raw.value', 'Value'))),
@@ -18604,7 +19584,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.graph_title', 'Graph Title')),
-                        h('input', { value: graphTitle, onChange: e => setGraphTitle(e.target.value), 'aria-label': 'eg Off-Task Behavior', placeholder: tt('behavior_lens.ph.eg_offtask_behavior_2', 'e.g. Off-Task Behavior'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('input', { value: graphTitle, onChange: e => setGraphTitle(e.target.value), 'aria-label': 'Graph title', placeholder: tt('behavior_lens.ph.eg_offtask_behavior_2', 'e.g. Off-Task Behavior'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.yaxis_label', 'Y-Axis Label')),
@@ -18618,7 +19598,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 dataMode === 'auto' && behaviorNames.length > 1 && h('div', { className: 'flex gap-2 mt-2' },
                     h('span', { className: 'text-[11px] font-bold text-slate-600' }, tt('behavior_lens.ui.behavior', 'Behavior:')),
                     behaviorNames.map((bn, i) =>
-                        h('button', { key: bn, onClick: () => setSelectedBehavior(i), className: `px-2 py-1 rounded-lg text-[11px] font-bold border ${i === selectedBehavior ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, bn)
+                        h('button', { key: bn, 'aria-pressed': i === selectedBehavior ? 'true' : 'false', onClick: () => setSelectedBehavior(i), className: `px-2 py-1 rounded-lg text-[11px] font-bold border ${i === selectedBehavior ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, bn)
                     )
                 ),
                 h('div', { className: 'flex gap-3 mt-3 flex-wrap' },
@@ -18636,7 +19616,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ),
                     showAim && h('div', { className: 'flex items-center gap-1 ms-2' },
                         h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Aim Target:'),
-                        h('input', { type: 'number', value: aimTarget, onChange: e => setAimTarget(e.target.value), 'aria-label': 'eg 2', placeholder: 'e.g. 2', min: 0, step: 'any', className: 'w-16 text-[11px] border border-green-600 rounded px-1.5 py-0.5 bg-green-50' })
+                        h('input', { type: 'number', value: aimTarget, onChange: e => setAimTarget(e.target.value), 'aria-label': 'Aim target', placeholder: 'e.g. 2', min: 0, step: 'any', className: 'w-16 text-[11px] border border-green-600 rounded px-1.5 py-0.5 bg-green-50' })
                     )
                 )
             ),
@@ -18660,7 +19640,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('button', { onClick: confirmSvgEdit, className: 'px-2 py-0.5 bg-yellow-700 text-white rounded text-[11px] font-bold hover:bg-yellow-800' }, '✓ Save'),
                     h('button', { "aria-label": "Cancel", onClick: () => setEditingPoint(null), className: 'px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-[11px] font-bold hover:bg-slate-300' }, '✕ Cancel')
                 ),
-                h('svg', { id: 'aba-graph-svg', role: 'img', 'aria-label': `${graphTitle || 'Behavior graph'}. ${dataSeries.map(point => `session ${point.session}, ${point.value}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { minWidth: '500px', maxHeight: '350px', fontFamily: 'Arial, sans-serif' } },
+                h('svg', { id: 'aba-graph-svg', role: dataMode === 'manual' ? 'group' : 'img', 'aria-label': `${graphTitle || 'Behavior graph'}. ${dataSeries.map(point => `session ${point.session}, ${point.value}`).join('; ')}.` + (resolvedPhases.length ? ' Phases: ' + resolvedPhases.map(phase => (phase.label || phase.condition || 'Phase') + ' from session ' + phase.startSession).join('; ') + '.' : ''), viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { minWidth: '500px', maxHeight: '350px', fontFamily: 'Arial, sans-serif' } },
                     // White background for print
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
                     // Title
@@ -18673,14 +19653,14 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ...yTicks.map(v =>
                         h('g', { key: 'yt' + v },
                             h('line', { x1: padL, y1: toY(v), x2: padL + plotW, y2: toY(v), stroke: '#e2e8f0', strokeWidth: 0.5 }),
-                            h('text', { x: padL - 8, y: toY(v) + 4, textAnchor: 'end', fontSize: 9, fill: '#94a3b8' }, v)
+                            h('text', { x: padL - 8, y: toY(v) + 4, textAnchor: 'end', fontSize: 9, fill: '#475569' }, v)
                         )
                     ),
                     // X-axis ticks
                     ...dataSeries.map(d =>
                         h('g', { key: 'xt' + d.session },
                             h('line', { x1: toX(d.session), y1: padT + plotH, x2: toX(d.session), y2: padT + plotH + 4, stroke: '#94a3b8', strokeWidth: 1 }),
-                            h('text', { x: toX(d.session), y: padT + plotH + 16, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' }, d.session)
+                            h('text', { x: toX(d.session), y: padT + plotH + 16, textAnchor: 'middle', fontSize: 8, fill: '#475569' }, d.session)
                         )
                     ),
                     // Axes
@@ -18890,10 +19870,17 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         { id: 'CC', name: 'Changing Criterion', desc: 'Stepwise criterion changes. Good for shaping behaviors.', phases: ['Baseline', 'Criterion 1', 'Criterion 2', 'Criterion 3'], icon: '🪜' },
     ];
 
-    const SingleCaseDesignManager = ({ sessionHistory, callGemini, t, addToast, onPhasesChange, onDesignChange }) => {
-        const [selectedDesign, setSelectedDesign] = useState(null);
-        const [phases, setPhases] = useState([]);
-        const [currentPhase, setCurrentPhase] = useState(0);
+    const SingleCaseDesignManager = ({ sessionHistory, callGemini, t, addToast, onPhasesChange, onDesignChange, savedDesign, savedPhases }) => {
+        // Start from the design and phases saved with the student. It opened blank, and
+        // choosing the design again replaced the saved phase starts with defaults.
+        const [selectedDesign, setSelectedDesign] = useState(() => (savedDesign && DESIGN_TYPES.find(d => d.id === savedDesign.id)) || null);
+        const [phases, setPhases] = useState(() => Array.isArray(savedPhases) ? savedPhases : []);
+        const [currentPhase, setCurrentPhase] = useState(() => {
+            const next = (sessionHistory || []).length + 1;
+            let idx = 0;
+            (Array.isArray(savedPhases) ? savedPhases : []).forEach((ph, i) => { if (ph && Number(ph.startSession) >= 1 && Number(ph.startSession) <= next) idx = i; });
+            return idx;
+        });
         const [showWizard, setShowWizard] = useState(false);
         const [wizardQ, setWizardQ] = useState('');
         const [wizardResult, setWizardResult] = useState('');
@@ -18954,6 +19941,7 @@ For your recommendation, provide:
 5. Visual analysis criteria to evaluate the results
 
 Keep under 200 words. Use bullet points.`);
+                if (result == null) { setWizardLoading(false); return; }
                 setWizardResult(result);
             } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.wizard_failed', 'Wizard failed'), 'error'); }
             setWizardLoading(false);
@@ -18977,7 +19965,7 @@ Keep under 200 words. Use bullet points.`);
                 // Design cards
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     DESIGN_TYPES.map(d =>
-                        h('button', { "aria-label": "Select Design",
+                        h('button', {
                             key: d.id,
                             onClick: () => selectDesign(d.id),
                             className: 'text-start bg-white rounded-xl border-2 border-slate-200 p-4 hover:border-indigo-600 hover:shadow-md transition-all'
@@ -18998,7 +19986,12 @@ Keep under 200 words. Use bullet points.`);
 
         // Active design view
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
-            h('button', { "aria-label": "Change Design", onClick: () => { setSelectedDesign(null); setPhases([]); }, className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← Change Design'),
+            h('button', { "aria-label": "Change Design", onClick: async () => {
+                if (phases.length && !await askBehaviorLensConfirmation(tt('behavior_lens.scd.change_confirm', 'Choose a different design? The phase lines set for this one are removed.'), { title: 'Change design', confirmText: 'Change design' })) return;
+                setSelectedDesign(null); setPhases([]); setCurrentPhase(0);
+                if (onPhasesChange) onPhasesChange([]);
+                if (onDesignChange) onDesignChange(null);
+            }, className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← Change Design'),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                     h('span', { className: 'text-3xl' }, selectedDesign.icon),
@@ -19053,7 +20046,7 @@ Keep under 200 words. Use bullet points.`);
                     mbTiers.map((tier, i) =>
                         h('div', { key: i, className: 'flex gap-2 items-center' },
                             h('span', { className: 'text-xs font-bold text-slate-600 w-14' }, tier.name),
-                            h('input', { value: tier.behavior, onChange: e => setMbTiers(prev => prev.map((t, j) => j === i ? { ...t, behavior: e.target.value } : t)), 'aria-label': 'eg Off-task behavior in math', placeholder: tt('behavior_lens.ph.eg_offtask_behavior_in_math', 'e.g. Off-task behavior in math'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' })
+                            h('input', { value: tier.behavior, onChange: e => setMbTiers(prev => prev.map((t, j) => j === i ? { ...t, behavior: e.target.value } : t)), 'aria-label': tier.name + ' behavior', placeholder: tt('behavior_lens.ph.eg_offtask_behavior_in_math', 'e.g. Off-task behavior in math'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' })
                         )
                     ),
                     mbTiers.length < 5 && h('button', { "aria-label": "+ Add Tier", onClick: () => setMbTiers(prev => [...prev, { name: `Tier ${prev.length + 1}`, behavior: '' }]), className: 'text-[11px] text-indigo-600 font-bold hover:underline' }, '+ Add Tier')
@@ -19093,7 +20086,7 @@ Keep under 200 words. Use bullet points.`);
             { id: 'DRA', name: 'Differential Reinforcement of Alternative Behavior', icon: '🔄', when: 'When a clear alternative behavior exists that serves the same function', example: 'Instead of hitting to get attention → teach hand-raising', steps: ['Identify the function of the target behavior', 'Choose an alternative behavior that serves the same function', 'Reinforce the alternative behavior consistently', 'Put the target behavior on extinction (if safe)'], color: 'indigo' },
             { id: 'DRI', name: 'Differential Reinforcement of Incompatible Behavior', icon: '🚫', when: 'When a behavior exists that physically prevents the target behavior', example: 'Instead of out-of-seat → reinforce sitting in seat (can\'t do both)', steps: ['Identify a behavior incompatible with the target', 'Reinforce the incompatible behavior on a dense schedule', 'Thin the schedule as the behavior stabilizes', 'Monitor for behavioral contrast'], color: 'emerald' },
             { id: 'DRO', name: 'Differential Reinforcement of Other Behavior', icon: '⏱️', when: 'When ANY behavior besides the target should be reinforced', example: 'Reinforce every 2 minutes that hitting has NOT occurred', steps: ['Set a time interval (start short, e.g. 2 min)', 'If target behavior does NOT occur, reinforce', 'If target behavior DOES occur, reset the timer', 'Gradually increase interval as behavior improves'], color: 'amber' },
-            { id: 'DRL', name: 'Differential Reinforcement of Low Rates', icon: '📉', when: 'When the behavior is acceptable but occurs too frequently', example: 'Student asks questions 30x/class → reinforce when ≤5 questions', steps: ['Set a criterion slightly below current rate', 'Reinforce when behavior occurs at or below criterion', 'Gradually lower the criterion over time', 'Maintain the final criterion with intermittent reinforcement'], color: 'purple' },
+            { id: 'DRL', name: 'Differential Reinforcement of Low Rates', icon: '📉', when: 'When the behavior is acceptable but occurs too frequently', example: 'Student asks questions 30x/class → start by reinforcing 25 or fewer, then lower the limit step by step toward about 5', steps: ['Set a criterion slightly below current rate', 'Reinforce when behavior occurs at or below criterion', 'Gradually lower the criterion over time', 'Maintain the final criterion with intermittent reinforcement'], color: 'purple' },
         ];
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
@@ -19142,10 +20135,12 @@ Keep under 200 words. Use bullet points.`);
 
     // ─── BIPGenerator ───────────────────────────────────────────────────
     const BIPGenerator = ({ studentName, studentKey, abcEntries, callGemini, t, addToast }) => {
-        const [plan, setPlan] = useState('');
+        // Kept with the student's workspace (the plan and its edits were lost on close).
+        const [plan, setPlan] = useDurableToolState('bipDraft', '');
         const [loading, setLoading] = useState(false);
         const [isEditing, setIsEditing] = useState(false);
-        const [editedPlan, setEditedPlan] = useState('');
+        const [editedPlan, setEditedPlan] = useDurableToolState('bipEditedDraft', '');
+        const [prefSummary] = useDurableToolState('preferenceAssessmentSummary', null);
 
         const handleGenerate = async () => {
             setLoading(true);
@@ -19157,7 +20152,7 @@ Keep under 200 words. Use bullet points.`);
                 // Get PrefAssess (prefer studentId-scoped key, fall back to legacy codename key)
                 const _prefIdKey = studentKey ? studentKey('prefassess_') : `prefassess_${studentName}`;
                 const _prefLegacyKey = `prefassess_${studentName}`;
-                const preAssessData = localStorage.getItem(_prefIdKey)
+                const preAssessData = (prefSummary && prefSummary.text) || localStorage.getItem(_prefIdKey)
                     || (_prefIdKey !== _prefLegacyKey ? localStorage.getItem(_prefLegacyKey) : null)
                     || 'No formal preference assessment generated.';
 
@@ -19179,6 +20174,7 @@ The BIP MUST strictly follow these sections:
 Use a clear, professional tone suitable for an IEP team. Keep it structured and actionable. Do NOT fabricate assessment data that was not provided.`;
 
                 const result = await callGemini(prompt, false);
+                if (result == null) { setLoading(false); return; }
                 setPlan(result);
                 setEditedPlan(result);
             } catch (e) {
@@ -19221,8 +20217,8 @@ Use a clear, professional tone suitable for an IEP team. Keep it structured and 
                 ),
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, plan),
                 h('div', { className: 'flex gap-2 mt-6 pt-4 border-t border-slate-100' },
-                    h('button', { onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100' }, '📋 Copy to Clipboard'),
-                    h('button', { "aria-label": "Print Document", onClick: () => window.print(), className: 'px-4 py-2 bg-slate-50 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100' }, '🖨️ Print Document')
+                    h('button', { onClick: () => { blWriteClipboard(plan, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); }, className: 'px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100' }, '📋 Copy to Clipboard'),
+                    h('button', { "aria-label": "Print Document", onClick: blPrintPanel, className: 'px-4 py-2 bg-slate-50 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100' }, '🖨️ Print Document')
                 )
             ),
             isEditing && h('div', { className: 'bg-white rounded-xl border border-indigo-200 p-6 shadow-sm ring-2 ring-indigo-50' },
@@ -19248,7 +20244,7 @@ Use a clear, professional tone suitable for an IEP team. Keep it structured and 
         const [modality, setModality] = useState('');
         const [targetPhrase, setTargetPhrase] = useState('');
         const [currentBehavior, setCurrentBehavior] = useState('');
-        const [plan, setPlan] = useState('');
+        const [plan, setPlan] = useDurableToolState('fctPlan', '');
         const [loading, setLoading] = useState(false);
 
         const FUNCTIONS = [
@@ -19288,6 +20284,7 @@ Provide a structured plan with:
 6. Troubleshooting (what to do if the student doesn't use the communication)
 
 Keep under 250 words. Use clear sections.`);
+                if (result == null) { setLoading(false); return; }
                 setPlan(result);
             } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error'); }
             setLoading(false);
@@ -19302,7 +20299,7 @@ Keep under 250 words. Use clear sections.`);
             // Current behavior
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('label', { className: 'text-xs font-bold text-slate-600' }, '🎯 Current Challenging Behavior'),
-                h('input', { value: currentBehavior, onChange: e => setCurrentBehavior(e.target.value), 'aria-label': 'eg Hitting peers when frustrated', placeholder: tt('behavior_lens.ph.eg_hitting_peers_when_frustrated', 'e.g. Hitting peers when frustrated'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                h('input', { value: currentBehavior, onChange: e => setCurrentBehavior(e.target.value), 'aria-label': 'Current challenging behavior', placeholder: tt('behavior_lens.ph.eg_hitting_peers_when_frustrated', 'e.g. Hitting peers when frustrated'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
             ),
             // Function selection
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -19310,7 +20307,7 @@ Keep under 250 words. Use clear sections.`);
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                     FUNCTIONS.map(f =>
                         h('button', { key: f.id,
-                            onClick: () => { setFunc(f.id); if (!targetPhrase) setTargetPhrase(f.phrase); },
+                            onClick: () => { setFunc(f.id); if (!targetPhrase || FUNCTIONS.some(x => x.phrase === targetPhrase)) setTargetPhrase(f.phrase); },
                             className: `text-start p-3 rounded-xl border-2 transition-all ${func === f.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`
                         },
                             h('div', { className: 'flex items-center gap-2' },
@@ -19342,7 +20339,7 @@ Keep under 250 words. Use clear sections.`);
             // Target phrase
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('label', { className: 'text-xs font-bold text-slate-600' }, '💬 Target Communication Response'),
-                h('input', { value: targetPhrase, onChange: e => setTargetPhrase(e.target.value), 'aria-label': 'eg I need a break', placeholder: tt('behavior_lens.ph.eg_i_need_a_break', 'e.g. "I need a break"'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                h('input', { value: targetPhrase, onChange: e => setTargetPhrase(e.target.value), 'aria-label': 'Target communication response', placeholder: tt('behavior_lens.ph.eg_i_need_a_break', 'e.g. "I need a break"'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
             ),
             // Generate button
             h('button', { onClick: handleGenerate,
@@ -19354,8 +20351,8 @@ Keep under 250 words. Use clear sections.`);
                 h('h3', { className: 'text-sm font-bold text-slate-800 mb-3' }, '📋 FCT Implementation Plan'),
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, plan),
                 h('div', { className: 'flex gap-2 mt-4' },
-                    h('button', { onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '📋 Copy'),
-                    h('button', { "aria-label": "Print", onClick: () => window.print(), className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '🖨️ Print')
+                    h('button', { onClick: () => { blWriteClipboard(plan, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); }, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '📋 Copy'),
+                    h('button', { "aria-label": "Print", onClick: blPrintPanel, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '🖨️ Print')
                 )
             )
         );
@@ -19509,28 +20506,61 @@ Keep under 250 words. Use clear sections.`);
     window.AlloModules.BehaviorLensPreference = Object.freeze({ scoreFreeOperant: scoreFreeOperant });
 
     // Guides through MSWO, Paired Choice, and Free Operant preference assessments
+    // Preference hierarchy for each protocol (shared by the results screen and the summary
+    // the BIP generator reads).
+    function preferenceHierarchy(mode, validItems, mswoRanked, mswoRemaining, pairedResults, msByItem, sessionMs) {
+        if (mode === 'mswo') {
+            const ranked = (mswoRanked || []).map((item, i) => ({ rank: i + 1, item, note: '' }));
+            (mswoRemaining || []).forEach(item => ranked.push({ rank: (mswoRanked || []).length + 1, item, note: '(Tied - Unselected)' }));
+            return ranked;
+        }
+        if (mode === 'paired') {
+            return (validItems || []).map(item => {
+                const data = (pairedResults && pairedResults[item]) || { selected: 0, presented: 0 };
+                const pct = data.presented > 0 ? (data.selected / data.presented) * 100 : 0;
+                return { item, pct, label: `${Math.round(pct)}% (${data.selected}/${data.presented})` };
+            }).sort((a, b) => b.pct - a.pct);
+        }
+        if (mode === 'free') return scoreFreeOperant(validItems || [], msByItem || {}, sessionMs || 0);
+        return [];
+    }
+    function preferenceSummaryText(mode, hierarchy, dayKey) {
+        const name = mode === 'mswo' ? 'MSWO' : mode === 'paired' ? 'Paired stimulus' : 'Free operant';
+        const rows = (hierarchy || []).map((r, i) => mode === 'mswo' ? r.rank + '. ' + r.item + (r.note ? ' ' + r.note : '')
+            : mode === 'paired' ? (i + 1) + '. ' + r.item + ' ' + r.label
+            : (i + 1) + '. ' + r.item + ' ' + Math.round(r.pct || 0) + '% of session');
+        return name + ' preference assessment (' + dayKey + '): ' + rows.join('; ');
+    }
+    window.AlloModules.BehaviorLensPreferenceWizard = Object.freeze({ preferenceHierarchy, preferenceSummaryText });
+
     const PreferenceAssessmentWizard = ({ studentName, callGemini, t, addToast }) => {
-        const [mode, setMode] = useState(null); // 'mswo', 'paired', 'free'
-        const [step, setStep] = useState('setup'); // 'setup', 'run', 'results'
-        const [items, setItems] = useState(['', '', '', '', '']);
-        const [aiAnalysis, setAiAnalysis] = useState(null);
+        // Kept with the student's workspace: a finished assessment, its results and the AI
+        // summary were lost on close, and nothing reached the BIP generator.
+        const [mode, setMode] = useDurableToolState('prefWizardMode', null); // 'mswo', 'paired', 'free'
+        const [step, setStep] = useDurableToolState('prefWizardStep', 'setup'); // 'setup', 'run', 'results'
+        const [items, setItems] = useDurableToolState('prefWizardItems', ['', '', '', '', '']);
+        const [aiAnalysis, setAiAnalysis] = useDurableToolState('prefWizardAnalysis', null);
+        const [, setPrefSummary] = useDurableToolState('preferenceAssessmentSummary', null);
         const [analyzing, setAnalyzing] = useState(false);
         
         // MSWO State
-        const [mswoRemaining, setMswoRemaining] = useState([]);
-        const [mswoRanked, setMswoRanked] = useState([]);
+        const [mswoRemaining, setMswoRemaining] = useDurableToolState('prefWizardMswoRemaining', []);
+        const [mswoRanked, setMswoRanked] = useDurableToolState('prefWizardMswoRanked', []);
 
         // Paired Choice State
-        const [pairedTrials, setPairedTrials] = useState([]);
-        const [currentTrialIdx, setCurrentTrialIdx] = useState(0);
-        const [pairedResults, setPairedResults] = useState({});
+        const [pairedTrials, setPairedTrials] = useDurableToolState('prefWizardPairedTrials', []);
+        const [currentTrialIdx, setCurrentTrialIdx] = useDurableToolState('prefWizardPairedIndex', 0);
+        const [pairedResults, setPairedResults] = useDurableToolState('prefWizardPairedResults', {});
 
         // Free Operant State. Timed from the clock, not by counting 1 s ticks: a locked
         // iPad or background tab stalls ticks and shortened every engagement. The two
         // handlers the run screen calls were never defined, so the screen threw.
         const [activeTimer, setActiveTimer] = useState(null);
         const [, setFoTick] = useState(0);
-        const foClockRef = useRef(null);
+        // The free-operant clock is saved on every change so a reopened session resumes.
+        const [foSaved, setFoSaved] = useDurableToolState('prefWizardFreeClock', null);
+        const foClockRef = useRef(foSaved ? Object.assign({}, foSaved, { ms: Object.assign({}, foSaved.ms) }) : null);
+        const saveFoClock = () => setFoSaved(foClockRef.current ? JSON.parse(JSON.stringify(foClockRef.current)) : null);
         const foNow = () => Date.now();
         const foItemMs = (item) => {
             const c = foClockRef.current;
@@ -19549,6 +20579,7 @@ Keep under 250 words. Use clear sections.`);
             if (c.active === item) { c.active = null; c.since = null; }
             else { c.active = item; c.since = now; }
             setActiveTimer(c.active);
+            saveFoClock();
         };
         const stopFoSession = () => {
             const c = foClockRef.current;
@@ -19557,6 +20588,7 @@ Keep under 250 words. Use clear sections.`);
                 if (c.active != null && c.since != null) c.ms[c.active] = (c.ms[c.active] || 0) + (now - c.since);
                 c.active = null; c.since = null; c.end = now;
             }
+            saveFoClock();
             setActiveTimer(null);
             setStep('results');
         };
@@ -19600,6 +20632,7 @@ Keep under 250 words. Use clear sections.`);
                 const ms = {};
                 validItems.forEach(i => ms[i] = 0);
                 foClockRef.current = { start: foNow(), end: null, active: null, since: null, ms };
+                saveFoClock();
                 setActiveTimer(null);
             }
             setStep('run');
@@ -19611,6 +20644,8 @@ Keep under 250 words. Use clear sections.`);
             const remaining = mswoRemaining.filter(i => i !== item);
             if (remaining.length <= 1) {
                 if (remaining.length === 1) setMswoRanked([...updatedRanked, remaining[0]]);
+                // Cleared: the results listed the last two items again as "Tied - Unselected".
+                setMswoRemaining([]);
                 setStep('results');
             } else {
                 setMswoRemaining(remaining);
@@ -19637,6 +20672,17 @@ Keep under 250 words. Use clear sections.`);
             }
         }, [step, mode]);
 
+        // Results are summarised with the student, where the BIP generator reads them (it read
+        // a storage key only the demo sandbox ever wrote).
+        useEffect(() => {
+            if (step !== 'results' || !mode) return;
+            const valid = items.filter(i => i.trim() !== '');
+            const msByItem = {};
+            if (mode === 'free') valid.forEach(item => { msByItem[item] = foItemMs(item); });
+            const text = preferenceSummaryText(mode, preferenceHierarchy(mode, valid, mswoRanked, mswoRemaining, pairedResults, msByItem, mode === 'free' ? foSessionMs() : 0), blLocalDateKey(new Date()));
+            setPrefSummary(prev => (prev && prev.mode === mode && prev.text && prev.text.replace(/\(\d{4}-\d{2}-\d{2}\)/, '') === text.replace(/\(\d{4}-\d{2}-\d{2}\)/, '')) ? prev : { mode, text, savedAt: new Date().toISOString() });
+        }, [step, mode, items, mswoRanked, mswoRemaining, pairedResults, foSaved]);
+
         const formatTime = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
         const formatMs = (ms) => formatTime(Math.floor((Number(ms) || 0) / 1000));
 
@@ -19651,6 +20697,7 @@ Data: ${JSON.stringify(resultsData)}
 
 Provide a concise, professional summary formatted for an IEP or BIP. Identify highly preferred (primary reinforcers), moderately preferred, and non-preferred items. Suggest how these reinforcers could be used functionally (e.g., token economy vs. immediate reinforcement).
 Keep it under 150 words.`);
+                if (res == null) { setAnalyzing(false); return; }
                 setAiAnalysis(res);
             } catch (e) {
                 if (addToast) addToast(t('toasts.analysis_failed_2'), 'error');
@@ -19761,23 +20808,10 @@ Keep it under 150 words.`);
         }
 
         // RESULTS
-        let hierarchy = [];
-        if (mode === 'mswo') {
-            const tied = mswoRemaining;
-            hierarchy = mswoRanked.map((item, i) => ({ rank: i + 1, item, note: '' }));
-            tied.forEach(item => hierarchy.push({ rank: mswoRanked.length + 1, item, note: '(Tied - Unselected)' }));
-        } else if (mode === 'paired') {
-            hierarchy = validItems.map(item => {
-                const data = pairedResults[item];
-                const pct = data.presented > 0 ? (data.selected / data.presented) * 100 : 0;
-                return { item, pct, label: `${Math.round(pct)}% (${data.selected}/${data.presented})` };
-            }).sort((a, b) => b.pct - a.pct);
-        } else if (mode === 'free') {
-            const msByItem = {};
-            validItems.forEach(item => { msByItem[item] = foItemMs(item); });
-            hierarchy = scoreFreeOperant(validItems, msByItem, foSessionMs()).map(r => (
-                Object.assign(r, { label: `${formatMs(r.ms)} (${Math.round(r.pct)}% ${tt('behavior_lens.pref.of_session', 'of session')})` })));
-        }
+        const msByItemNow = {};
+        if (mode === 'free') validItems.forEach(item => { msByItemNow[item] = foItemMs(item); });
+        let hierarchy = preferenceHierarchy(mode, validItems, mswoRanked, mswoRemaining, pairedResults, msByItemNow, mode === 'free' ? foSessionMs() : 0);
+        if (mode === 'free') hierarchy = hierarchy.map(r => Object.assign(r, { label: `${formatMs(r.ms)} (${Math.round(r.pct)}% ${tt('behavior_lens.pref.of_session', 'of session')})` }));
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-6' },
             h('div', { className: 'bg-white rounded-2xl border-2 border-emerald-200 p-6 shadow-xl' },
@@ -19786,7 +20820,10 @@ Keep it under 150 words.`);
                         h('h3', { className: 'text-2xl font-black text-slate-800 mb-1' }, '📊 Assessment Results'),
                         h('p', { className: 'text-sm font-bold text-emerald-600' }, mode === 'mswo' ? 'MSWO Hierarchy' : mode === 'paired' ? 'Paired Choice Hierarchy' : 'Free Operant Hierarchy')
                     ),
-                    h('button', { "aria-label": "New Assessment", onClick: () => { setStep('setup'); setMode(null); }, className: 'text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-lg hover:bg-indigo-100' }, 'New Assessment')
+                    h('button', { "aria-label": "New Assessment", onClick: async () => {
+                        if (!await askBehaviorLensConfirmation(tt('behavior_lens.pref.new_confirm', 'Start a new assessment? These results stay in the BIP summary until the next assessment finishes.'), { title: 'Start a new preference assessment', confirmText: 'Start new' })) return;
+                        setStep('setup'); setMode(null); setAiAnalysis(null); setFoSaved(null); foClockRef.current = null;
+                    }, className: 'text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-lg hover:bg-indigo-100' }, 'New Assessment')
                 ),
                 h('div', { className: 'space-y-3 mb-6' },
                     mode === 'mswo' ?
@@ -19816,7 +20853,7 @@ Keep it under 150 words.`);
                 }, analyzing ? '🧠 Analyzing...' : '✨ Generate IEP Summary') : h('div', { className: 'bg-indigo-50 p-6 rounded-xl border border-indigo-200 mt-6' },
                     h('h4', { className: 'text-sm font-black text-indigo-900 mb-2 flex items-center gap-2' }, '🧠 AI Summary'),
                     h('div', { className: 'text-sm text-indigo-800 leading-relaxed' }, aiAnalysis),
-                    h('button', { "aria-label": "Copy Summary", onClick: () => { navigator.clipboard.writeText(aiAnalysis); if(addToast) addToast(t('toasts.copied_clipboard'), "success"); }, className: 'mt-3 text-xs font-bold px-3 py-1.5 bg-indigo-200 text-indigo-900 rounded-lg hover:bg-indigo-300' }, '📋 Copy Summary')
+                    h('button', { "aria-label": "Copy Summary", onClick: () => { blWriteClipboard(aiAnalysis, addToast).then(() => { if (addToast) addToast(t('toasts.copied_clipboard'), 'success'); }); }, className: 'mt-3 text-xs font-bold px-3 py-1.5 bg-indigo-200 text-indigo-900 rounded-lg hover:bg-indigo-300' }, '📋 Copy Summary')
                 )
             )
         );
@@ -19846,12 +20883,14 @@ Keep it under 150 words.`);
         if (Object.prototype.hasOwnProperty.call(IOA_OCCURRENCE_MARKS, v)) return IOA_OCCURRENCE_MARKS[v];
         return /^\d+(\.\d+)?$/.test(v) ? parseFloat(v) : null;
     }
-    // Bulk text: commas/semicolons separate intervals (a blank between two
-    // commas is an error, not a skipped interval); with no commas, whitespace does.
+    // Bulk text: commas, semicolons, tabs and line breaks separate intervals (a blank
+    // between two is an error, not a skipped interval); with none of those, spaces do.
+    // Line breaks were read as spaces, so a blank cell in a pasted spreadsheet column
+    // vanished, every later interval shifted, and the shifted lists could score 100%.
     function splitIOAList(text) {
         var s = String(text || '').trim();
         if (!s) return [];
-        var parts = /[,;]/.test(s) ? s.split(/[,;]/).map(function (p) { return p.trim(); }) : s.split(/\s+/);
+        var parts = /[,;\t\r\n]/.test(s) ? s.split(/\r?\n|[,;\t]/).map(function (p) { return p.trim(); }) : s.split(/\s+/);
         if (parts.length > 1 && parts[parts.length - 1] === '') parts.pop();
         return parts;
     }
@@ -19998,6 +21037,8 @@ Keep it under 150 words.`);
             return fmtMin(startMin) + '–' + fmtMin(endMin) + ' min';
         }
         var _re = useState(null), ioaResults = _re[0], setIoaResults = _re[1];
+        var ioaResultsRef = useRef(null), focusIoaResultsRef = useRef(false);
+        useEffect(function () { if (focusIoaResultsRef.current && ioaResultsRef.current) { focusIoaResultsRef.current = false; ioaResultsRef.current.focus(); } });
         var _mf = useState(null), mediaFile = _mf[0], setMediaFile = _mf[1];
         var _mt = useState(null), mediaType = _mt[0], setMediaType = _mt[1];
         var _mu = useState(null), mediaUrl = _mu[0], setMediaUrl = _mu[1];
@@ -20144,6 +21185,7 @@ Keep it under 150 words.`);
                 return;
             }
             // Interval numbers stay the grid's own rows, so labels line up past a skipped row.
+            focusIoaResultsRef.current = true;
             setIoaResults(grid && grid.blankRows ? Object.assign({}, result, { blankRows: grid.blankRows, scoredRows: grid.d1.length,
                 details: Array.isArray(result.details) ? result.details.map(function(d, i) { return Object.assign({}, d, { interval: grid.rowNumbers[i] || d.interval }); }) : result.details }) : result);
             if (addToast) {
@@ -20230,7 +21272,7 @@ Keep it under 150 words.`);
             reader.readAsDataURL(mediaFile);
         }
 
-        // Second Independent AI Pass (Double-Blind)
+        // Second pass of the same model: a consistency check, not a second observer.
         function runSecondAIPass() {
             if (!mediaFile || !callGemini) return;
             setAiProcessing2(true);
@@ -20317,7 +21359,7 @@ Keep it under 150 words.`);
                 aiDetails.push({ interval: i + 1, startTime: ioaFmtTime(startSec), endTime: ioaFmtTime(startSec + aiIntervalSec), ai1: a1, ai2: a2, conf1: c1, conf2: c2, agree: agree });
             }
             var aiPct = maxLen > 0 ? ((aiAgree / maxLen) * 100).toFixed(1) : '0';
-            setAiVsAiComparison({ agreementPct: aiPct, totalIntervals: maxLen, agreements: aiAgree, disagreements: maxLen - aiAgree, interpretation: parseFloat(aiPct) >= 80 ? 'Acceptable (≥80%)' : 'Below threshold', details: aiDetails });
+            setAiVsAiComparison({ agreementPct: aiPct, totalIntervals: maxLen, agreements: aiAgree, disagreements: maxLen - aiAgree, interpretation: parseFloat(aiPct) >= 90 ? 'Consistent (≥90%)' : parseFloat(aiPct) >= 80 ? 'Mostly consistent (80-89%)' : 'Inconsistent (<80%)', details: aiDetails });
 
             // Practitioner vs AI2: only a clean record of the same length is compared.
             var practProblem = practData.length ? ioaRecordProblem('Your record', practRecord, 'the AI coding', p2.intervals.length) : null;
@@ -20422,7 +21464,7 @@ Keep it under 150 words.`);
                     });
                 }
             }
-            navigator.clipboard.writeText(lines.join('\n')).then(function() {
+            blWriteClipboard(lines.join('\n'), addToast).then(function() {
                 if (addToast) addToast(t('toasts.report_copied_clipboard_2'), 'success');
             });
         }
@@ -20556,7 +21598,7 @@ Keep it under 150 words.`);
             }
             lines.push('');
             lines.push('WARNING: AI analysis is supplementary. Clinical decisions require professional judgment.');
-            navigator.clipboard.writeText(lines.join('\n')).then(function() {
+            blWriteClipboard(lines.join('\n'), addToast).then(function() {
                 if (addToast) addToast(t('toasts.interaction_report_copied_clipboard'), 'success');
             });
         }
@@ -20564,10 +21606,10 @@ Keep it under 150 words.`);
         // ── RENDER ──
         return h('div', { className: 'max-w-4xl mx-auto space-y-4' },
             // Mode selector
-            h('div', { className: 'flex gap-2 p-1 bg-slate-100 rounded-xl' },
-                h('button', { onClick: function() { setIoaMode('traditional'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'traditional' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700') }, '📊 Traditional IOA'),
-                h('button', { onClick: function() { setIoaMode('ai'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'ai' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'), title: 'Experimental: an AI second-coder for your media. Output is a model-consistency signal, not true Inter-Observer Agreement (which requires a trained human observer).' }, '🧠 AI Coding Consistency (Experimental)'),
-                h('button', { "aria-label": "Interaction Analysis", onClick: function() { setIoaMode('interaction'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'interaction' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-700') }, '🎥 Interaction Analysis')
+            h('div', { className: 'flex gap-2 p-1 bg-slate-100 rounded-xl', role: 'group', 'aria-label': 'Agreement method' },
+                h('button', { 'aria-pressed': ioaMode === 'traditional' ? 'true' : 'false', onClick: function() { setIoaMode('traditional'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'traditional' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700') }, '📊 Traditional IOA'),
+                h('button', { 'aria-pressed': ioaMode === 'ai' ? 'true' : 'false', onClick: function() { setIoaMode('ai'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'ai' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'), title: 'Experimental: an AI second-coder for your media. Output is a model-consistency signal, not true Inter-Observer Agreement (which requires a trained human observer).' }, '🧠 AI Coding Consistency (Experimental)'),
+                h('button', { "aria-label": "Interaction Analysis", 'aria-pressed': ioaMode === 'interaction' ? 'true' : 'false', onClick: function() { setIoaMode('interaction'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'interaction' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-700') }, '🎥 Interaction Analysis')
             ),
 
             // Traditional Mode
@@ -20576,7 +21618,7 @@ Keep it under 150 words.`);
                     h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📐 Select IOA Method'),
                     h('div', { className: 'grid grid-cols-3 gap-2' },
                         IOA_METHODS_LIST.map(function(m) {
-                            return h('button', { key: m.id, onClick: function() { setIoaMethod(m.id); }, className: 'p-3 rounded-xl border-2 text-start transition-all ' + (ioaMethod === m.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
+                            return h('button', { key: m.id, 'aria-pressed': ioaMethod === m.id ? 'true' : 'false', onClick: function() { setIoaMethod(m.id); }, className: 'p-3 rounded-xl border-2 text-start transition-all ' + (ioaMethod === m.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
                                 h('div', { className: 'text-lg mb-1' }, m.icon),
                                 h('div', { className: 'text-xs font-bold text-slate-800' }, m.label),
                                 h('div', { className: 'text-[11px] text-slate-600' }, m.desc)
@@ -20596,10 +21638,10 @@ Keep it under 150 words.`);
                             h('input', { type: 'number', min: 1, max: 100, value: intervalCount, onChange: function(e) { updateIntervalCount(e.target.value); }, 'aria-label': 'Number of intervals', className: 'w-16 border border-slate-400 rounded-lg px-2 py-1.5 text-xs text-center font-bold focus:ring-2 focus:ring-indigo-400 outline-none' })
                         ),
                         h('div', { className: 'flex items-center gap-2' },
-                            h('label', { className: 'text-[11px] font-bold text-slate-600 whitespace-nowrap' }, '⏱️ Each interval'),
-                            h('div', { className: 'flex gap-1' },
+                            h('span', { id: 'bl-ioa-interval-label', className: 'text-[11px] font-bold text-slate-600 whitespace-nowrap' }, '⏱️ Each interval'),
+                            h('div', { className: 'flex gap-1', role: 'group', 'aria-labelledby': 'bl-ioa-interval-label' },
                                 [1, 2, 5, 10, 15, 30].map(function(min) {
-                                    return h('button', { key: min, onClick: function() { setIntervalDuration(min); }, className: 'px-2 py-1 rounded-md text-[11px] font-bold transition-all ' + (intervalDuration === min ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-slate-100') }, min + ' min');
+                                    return h('button', { key: min, 'aria-pressed': intervalDuration === min ? 'true' : 'false', onClick: function() { setIntervalDuration(min); }, className: 'px-2 py-1 rounded-md text-[11px] font-bold transition-all ' + (intervalDuration === min ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-slate-100') }, min + ' min');
                                 })
                             )
                         ),
@@ -20711,7 +21753,7 @@ Keep it under 150 words.`);
                         h('label', { className: 'text-xs font-bold text-slate-600' }, 'Interval length:'),
                         h('div', { className: 'flex gap-1' },
                             [30, 60, 120, 300, 600].map(function(sec) {
-                                return h('button', { key: sec, onClick: function() { setAiIntervalSec(sec); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ' + (aiIntervalSec === sec ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, sec < 60 ? sec + 's' : (sec / 60) + ' min');
+                                return h('button', { key: sec, 'aria-pressed': aiIntervalSec === sec ? 'true' : 'false', onClick: function() { setAiIntervalSec(sec); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ' + (aiIntervalSec === sec ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, sec < 60 ? sec + 's' : (sec / 60) + ' min');
                             })
                         )
                     )
@@ -20754,16 +21796,16 @@ Keep it under 150 words.`);
                 aiCoding && h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-4 space-y-3' },
                     h('div', { className: 'flex items-center gap-2' },
                         h('div', { className: 'w-6 h-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[11px] font-black' }, '5'),
-                        h('h3', { className: 'text-sm font-black text-violet-800' }, 'Independent Second AI Review (Double-Blind)')
+                        h('h3', { className: 'text-sm font-black text-violet-800' }, 'Second AI Pass (same model, run again)')
                     ),
-                    h('p', { className: 'text-[11px] text-violet-600' }, 'Run a second, independent AI analysis with NO knowledge of the first pass. ' + (practitionerCoding.trim() ? 'Enables three-way comparison: You × AI-1, You × AI-2, and AI-1 × AI-2.' : 'AI-only mode: measures AI reliability by comparing two independent passes (AI-1 × AI-2) — no human coding required.')),
-                    h('button', { "aria-label": "Run Second A I Pass", onClick: runSecondAIPass, disabled: aiProcessing2, className: 'w-full py-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-sm' }, aiProcessing2 ? '🔬 Second review in progress...' : '🔬 Run Independent 2nd Review'),
-                    aiCoding2 && h('div', { className: 'text-[11px] text-emerald-600 font-bold' }, '✅ Second pass complete — ' + (aiCoding2.intervals || []).length + ' intervals coded independently')
+                    h('p', { className: 'text-[11px] text-violet-600' }, 'Runs the same AI model again without showing it its first answer. Agreement between the two runs shows how consistent the model is; it is not agreement between two independent observers. ' + (practitionerCoding.trim() ? 'Enables three-way comparison: You × AI-1, You × AI-2, and AI-1 × AI-2.' : 'AI-only mode: measures AI reliability by comparing two independent passes (AI-1 × AI-2) — no human coding required.')),
+                    h('button', { onClick: runSecondAIPass, disabled: aiProcessing2, className: 'w-full py-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-sm' }, aiProcessing2 ? '🔬 Second review in progress...' : '🔬 Run Independent 2nd Review'),
+                    aiCoding2 && h('div', { className: 'text-[11px] text-emerald-600 font-bold' }, '✅ Second pass complete: ' + (aiCoding2.intervals || []).length + ' intervals coded')
                 )
             ),
 
             // Traditional Results
-            ioaResults && ioaMode === 'traditional' && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
+            ioaResults && ioaMode === 'traditional' && h('div', { ref: ioaResultsRef, tabIndex: -1, role: 'region', 'aria-label': 'Agreement results', className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
                 h('div', { className: 'text-center' },
                     // agreement is null when the method had nothing to compare; show a
                     // dash, never a percentage and never a pass/fail colour.
@@ -20897,7 +21939,7 @@ Keep it under 150 words.`);
                 ),
                 h('div', { className: 'text-[11px] text-slate-600 bg-slate-50 rounded-lg p-3' },
                     h('span', { className: 'font-bold' }, 'Interpretation: '),
-                    parseFloat(aiVsAiComparison.agreementPct) >= 90 ? 'The model produced consistent codings across two independent passes. This is a model-consistency signal, not a reliability metric.' :
+                    parseFloat(aiVsAiComparison.agreementPct) >= 90 ? 'The model produced consistent codings across two passes. This is a model-consistency signal, not a reliability metric.' :
                     parseFloat(aiVsAiComparison.agreementPct) >= 80 ? 'The model was acceptably consistent across passes. Review discrepant intervals; do not rely on the AI alone for clinical decisions.' :
                     'The model produced notably inconsistent codings between passes. Review all intervals manually — and use this as a signal that the recording or behavior definition is ambiguous, not as evidence of "low reliability".'
                 ),
@@ -21162,13 +22204,17 @@ Keep it under 150 words.`);
                 return;
             }
             
+            // Replacing the steps orphans their prompt-level history (mastery is kept per step id).
+            if ((steps || []).some(st => String(st.desc || '').trim()) && !await askBehaviorLensConfirmation(tt('behavior_lens.task_analysis.replace_confirm', 'Replace the current steps with AI-generated ones? Their prompt-level history stays with the old steps.'), { title: 'Replace task steps', confirmText: 'Replace' })) return;
             setGeneratingAi(true);
             try {
                 const prompt = `Break down the skill "${taskName}" for student ${studentName || 'the student'} into a discrete Task Analysis chain. 
 Return ONLY a JSON array of strings, where each string is a single step in chronological order. Keep each step concise, observable, and measurable. Limit to 5-10 steps total. Do not include markdown formatting or extra text.
 Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 10 seconds", "Rinse hands", "Dry hands"]`;
                 
-                const result = await callGemini(prompt, studentName);
+                // The second argument is JSON mode; it was passed the student's name.
+                const result = await callGemini(prompt, true);
+                if (result == null) { setGeneratingAi(false); return; }
                 
                 let parsed = [];
                 try {
@@ -21283,7 +22329,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm space-y-3' },
                 h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.taskskill_name', 'Task/Skill Name')),
-                    h('input', { value: taskName, onChange: e => setTaskName(e.target.value), 'aria-label': 'eg Handwashing, Tying Shoes, Morning Routine', placeholder: tt('behavior_lens.ph.eg_handwashing_tying_shoes_morning_routine', 'e.g. Handwashing, Tying Shoes, Morning Routine'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                    h('input', { value: taskName, onChange: e => setTaskName(e.target.value), 'aria-label': 'Task or skill name', placeholder: tt('behavior_lens.ph.eg_handwashing_tying_shoes_morning_routine', 'e.g. Handwashing, Tying Shoes, Morning Routine'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
                 ),
                 h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2 inline-flex items-center' }, 
@@ -21308,7 +22354,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('div', { className: 'flex items-center justify-between mb-3' },
                     h('h3', { className: 'text-sm font-bold text-slate-700' }, '📋 Steps'),
                     h('div', { className: 'flex items-center gap-2' },
-                        callGemini && h('button', { "aria-label": "Generate Steps With A I", 
+                        callGemini && h('button', { "aria-label": "Auto-generate steps with AI", 
                             onClick: generateStepsWithAI, 
                             disabled: generatingAi || !taskName.trim(),
                             className: 'text-[11px] px-2 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-bold hover:shadow-md disabled:opacity-50 flex items-center gap-1 transition-all' 
@@ -21382,7 +22428,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         }]);
         const [activeProgramRaw, setActiveProgram] = useState('p1');
         const activeProgram = programs.some(p => p.id === activeProgramRaw) ? activeProgramRaw : (programs[0] && programs[0].id);
-        const [sessionTrials, setSessionTrials] = useState([]);
+        // Kept with the student's workspace until the session is saved.
+        const [sessionTrials, setSessionTrials] = useDurableToolState('dttSessionTrials', []);
         const [sessionActive, setSessionActive] = useState(false);
 
         const RESPONSES = [
@@ -21698,7 +22745,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('p', { className: 'text-xs font-bold text-indigo-800' }, `Selection ${trials.length + 1} — Choose most preferred`),
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
-                    mswoRemaining.map(item => h('button', { "aria-label": "Select M S W O", key: item, onClick: () => selectMSWO(item), className: 'py-6 bg-white rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:shadow-md text-sm font-bold text-slate-800 transition-all hover:scale-105 active:scale-95' }, item))
+                    mswoRemaining.map(item => h('button', { key: item, onClick: () => selectMSWO(item), className: 'py-6 bg-white rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:shadow-md text-sm font-bold text-slate-800 transition-all hover:scale-105 active:scale-95' }, item))
                 )
             ),
             // Paired active
@@ -21707,7 +22754,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('p', { className: 'text-xs font-bold text-indigo-800' }, `Trial ${trials.length + 1} — Which does ${studentName || 'the student'} prefer?`)
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-4' },
-                    currentPair.map(item => h('button', { "aria-label": "Select Paired", key: item, onClick: () => selectPaired(item), className: 'py-10 bg-white rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:shadow-lg text-lg font-black text-slate-800 transition-all hover:scale-105 active:scale-95' }, item))
+                    currentPair.map(item => h('button', { key: item, onClick: () => selectPaired(item), className: 'py-10 bg-white rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:shadow-lg text-lg font-black text-slate-800 transition-all hover:scale-105 active:scale-95' }, item))
                 )
             ),
             // Free operant active
@@ -21730,13 +22777,16 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
     // ─── ScatterplotAnalysis ────────────────────────────────────────────
     // Time-of-day × behavior grid with pattern detection
     // Day and hour of an entry on the RECORDER's clock (timezoneOffset), not the viewer's.
+    // hour is null for an entry with a date and no time (a date-only import, or notes that
+    // stated no time): they sat at midnight in every time-of-day view.
     function abcEntryLocalParts(e) {
         const t = Date.parse(e && (e.occurredAt || e.timestamp || e.date));
         if (!Number.isFinite(t)) return null;
+        const untimed = !!(e && e.metadata && e.metadata.timeNotStated);
         const offset = e && e.timezoneOffset != null && e.timezoneOffset !== '' && Number.isFinite(Number(e.timezoneOffset)) ? Number(e.timezoneOffset) : null;
-        if (offset == null) { const d = new Date(t); return { dow: d.getDay(), hour: d.getHours() }; }
+        if (offset == null) { const d = new Date(t); return { dow: d.getDay(), hour: untimed ? null : d.getHours() }; }
         const shifted = new Date(t - offset * 60000);
-        return { dow: shifted.getUTCDay(), hour: shifted.getUTCHours() };
+        return { dow: shifted.getUTCDay(), hour: untimed ? null : shifted.getUTCHours() };
     }
     // Scatterplot auto-fill: none / some / high per weekday-by-hour cell. Codes came
     // from each cell's share of the week's BUSIEST cell, so one incident all week showed
@@ -21744,14 +22794,19 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
     // weekends or outside 7 AM-7 PM vanished unreported; hours were the viewer's. Now:
     // fixed thresholds (1 incident = some, 2 or more = high), counts kept per cell, and
     // what fell outside the grid reported.
-    function scatterplotFromEntries(entries, behaviorFilter) {
+    // weeks: only the weeks up to the newest entry. With a year of data every cell read "high".
+    function scatterplotFromEntries(entries, behaviorFilter, weeks) {
         const counts = {};
-        let included = 0, outside = 0;
+        let included = 0, outside = 0, older = 0, untimed = 0;
         const filter = String(behaviorFilter || '').trim().toLowerCase();
+        const times = (entries || []).map(e => abcEntryTime(e)).filter(Number.isFinite);
+        const since = weeks > 0 && times.length ? Math.max(...times) - weeks * 7 * 86400000 : -Infinity;
         (entries || []).forEach(e => {
             if (filter && !String(e.behavior || '').toLowerCase().includes(filter)) return;
+            if (abcEntryTime(e) < since) { older += 1; return; }
             const parts = abcEntryLocalParts(e);
             if (!parts) { outside += 1; return; }
+            if (parts.hour == null) { untimed += 1; return; }
             const dayIdx = parts.dow - 1;
             if (dayIdx >= 0 && dayIdx < 5 && parts.hour >= 7 && parts.hour <= 18) {
                 const key = dayIdx + '_' + parts.hour;
@@ -21761,16 +22816,18 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         });
         const codes = {};
         Object.keys(counts).forEach(k => { codes[k] = counts[k] >= 2 ? 2 : 1; });
-        return { counts, codes, included, outside };
+        return { counts, codes, included, outside, older, untimed };
     }
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.BehaviorLensScatterplot = Object.freeze({ scatterplotFromEntries, abcEntryLocalParts });
 
     const ScatterplotAnalysis = ({ abcEntries, t, addToast }) => {
-        const [behaviorName, setBehaviorName] = useState('');
-        const [grid, setGrid] = useState({});
+        // Kept with the student's workspace (the hand-tallied grid was lost on close).
+        const [behaviorName, setBehaviorName] = useDurableToolState('scatterplotBehavior', '');
+        const [grid, setGrid] = useDurableToolState('scatterplotGrid', {});
         const [autoCounts, setAutoCounts] = useState({});
         const [autoMeta, setAutoMeta] = useState(null);
+        const [autoWeeks, setAutoWeeks] = useState(4);
         const [days, setDays] = useState(5);
 
         const TIME_SLOTS = Array.from({ length: 12 }, (_, i) => {
@@ -21798,11 +22855,11 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
 
         // Auto-populate from ABC
         const autoPopulate = () => {
-            const result = scatterplotFromEntries(abcEntries, behaviorName);
+            const result = scatterplotFromEntries(abcEntries, behaviorName, autoWeeks);
             setGrid(result.codes);
             setAutoCounts(result.counts);
-            setAutoMeta({ included: result.included, outside: result.outside });
-            if (addToast) addToast(`Placed ${result.included} ABC ${result.included === 1 ? 'entry' : 'entries'} on the grid` + (result.outside ? `; ${result.outside} outside Mon-Fri 7 AM-7 PM` : ''), 'success');
+            setAutoMeta({ included: result.included, outside: result.outside, older: result.older, untimed: result.untimed, weeks: autoWeeks });
+            if (addToast) addToast(`Placed ${result.included} ABC ${result.included === 1 ? 'entry' : 'entries'} on the grid` + (result.outside ? `; ${result.outside} outside Mon-Fri 7 AM-7 PM` : '') + (result.older ? `; ${result.older} older than ${autoWeeks} weeks not used` : ''), 'success');
         };
 
         // Pattern detection
@@ -21834,12 +22891,14 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center gap-2 mb-3' },
                     h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'Behavior name', placeholder: tt('behavior_lens.ph.behavior_name', 'Behavior name...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
+                    abcEntries.length > 0 && h('select', { value: autoWeeks, onChange: e => setAutoWeeks(Number(e.target.value)), 'aria-label': 'Weeks to auto-fill from', className: 'text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white' },
+                        [[2, 'Last 2 weeks'], [4, 'Last 4 weeks'], [8, 'Last 8 weeks'], [0, 'All entries']].map(([value, label]) => h('option', { key: value, value }, label))),
                     abcEntries.length > 0 && h('button', { "aria-label": "Auto-fill from ABC", onClick: autoPopulate, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '🔄 Auto-fill from ABC')
                 ),
                 // Grid
                 h('div', { className: 'overflow-x-auto' },
                     h('table', { className: 'w-full border-collapse' },
-                        h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
+                        h('caption', { className: 'sr-only' }, 'Scatterplot: occurrences by day and time'), h('thead', null,
                             h('tr', null,
                                 h('th', { scope: 'col', className: 'text-[11px] text-slate-600 font-bold p-1 text-start' }, (tt('behavior_lens.raw.time', 'Time'))),
                                 ...DAY_LABELS.slice(0, days).map(d => h('th', { scope: 'col', key: d, className: 'text-[11px] text-slate-600 font-bold p-1 text-center' }, d))
@@ -21848,7 +22907,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         h('tbody', null,
                             TIME_SLOTS.map(slot =>
                                 h('tr', { key: slot.id },
-                                    h('td', { className: 'text-[11px] text-slate-600 font-medium p-1 whitespace-nowrap' }, slot.label),
+                                    h('th', { scope: 'row', className: 'text-[11px] text-slate-600 font-medium p-1 whitespace-nowrap text-start' }, slot.label),
                                     ...Array.from({ length: days }, (_, di) => {
                                         const cellKey = `${di}_${slot.hour}`;
                                         const val = grid[cellKey] || 0;
@@ -21868,8 +22927,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-amber-200 rounded' }), tt('behavior_lens.ui.some', 'Some'), autoMeta ? ' (1 incident)' : ''),
                     h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-red-600 rounded' }), tt('behavior_lens.ui.high', 'High'), autoMeta ? ' (2 or more)' : '')
                 ),
-                autoMeta && h('p', { className: 'text-[11px] text-slate-600 mt-1', 'data-scatter-meta': autoMeta.outside },
-                    `Auto-filled from ${autoMeta.included} ${autoMeta.included === 1 ? 'entry' : 'entries'} on the recorder's clock.` + (autoMeta.outside ? ` ${autoMeta.outside} outside Mon-Fri 7 AM-7 PM are not shown.` : ''))
+                h('p', { role: 'status', className: 'text-xs text-slate-600 mt-1', 'data-scatter-meta': autoMeta ? autoMeta.outside : undefined }, autoMeta &&
+                    `Auto-filled from ${autoMeta.included} ${autoMeta.included === 1 ? 'entry' : 'entries'} on the recorder's clock` + (autoMeta.weeks ? `, in the ${autoMeta.weeks} weeks up to the newest entry.` : '.') + (autoMeta.outside ? ` ${autoMeta.outside} outside Mon-Fri 7 AM-7 PM are not shown.` : '') + (autoMeta.older ? ` ${autoMeta.older} older entries are not used.` : '') + (autoMeta.untimed ? ` ${autoMeta.untimed} with no time recorded are not placed.` : ''))
             ),
             patterns.totalOccurrences > 0 && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-4' },
                 h('h3', { className: 'text-xs font-bold text-amber-800 mb-2' }, '🔍 Pattern Detection'),
@@ -21885,11 +22944,22 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
     // ─── LatencyRecorder ────────────────────────────────────────────────
     // Stimulus-to-response latency measurement with SVG graph, goal line, and export
     const LatencyRecorder = ({ t, addToast, onSaveSession }) => {
-        const [trials, setTrials] = useState([]);
+        // Kept with the student's workspace until saved as a session.
+        const [trials, setTrials] = useDurableToolState('latencyTrials', []);
         const [stimulusTime, setStimulusTime] = useState(null);
         const [waitingForResponse, setWaitingForResponse] = useState(false);
-        const [behaviorName, setBehaviorName] = useState('');
-        const [goalSec, setGoalSec] = useState('');
+        const [latencyAnnouncement, setLatencyAnnouncement] = useState('');
+        // Present Stimulus and Response replace each other, and focus fell to the page.
+        const latencyFocusArmed = useRef(false);
+        useEffect(() => {
+            if (!latencyFocusArmed.current) { latencyFocusArmed.current = true; return; }
+            const active = document.activeElement;
+            if (active && active !== document.body) return;
+            const target = document.querySelector('[data-bl-latency-primary]');
+            if (target) target.focus();
+        }, [waitingForResponse]);
+        const [behaviorName, setBehaviorName] = useDurableToolState('latencyBehavior', '');
+        const [goalSec, setGoalSec] = useDurableToolState('latencyGoalSec', '');
         const svgRef = useRef(null);
 
         const saveToSessionHistory = () => {
@@ -21898,24 +22968,34 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             // A latency record. It carried no measurement type, so the graph plotted
             // `count` (the number of TRIALS) as "Frequency", and all no-response trials
             // saved an average latency of 0 s, an instant response that never happened.
-            const avgLatency = validTrials.length > 0 ? (validTrials.reduce((a, t) => a + t.latency, 0) / validTrials.length) : null;
+            // One record per day, dated by its trials: trials kept over several days were saved as one
+            // record dated the day Save was pressed (9/23's 2 s and 4 s with 9/24's 10 s and 12 s, mean 7 s).
             const savedAt = new Date().toISOString();
-            onSaveSession({
-                date: savedAt,
-                occurredAt: savedAt,
-                behavior: behaviorName || 'Latency Recording',
-                count: trials.length,
-                rate: avgLatency == null ? null : parseFloat(avgLatency.toFixed(2)),
-                value: avgLatency == null ? null : parseFloat(avgLatency.toFixed(2)),
-                unit: 'seconds',
-                measurementType: 'latency',
-                trials: trials.length,
-                noResponseTrials: trials.length - validTrials.length,
-                phase: 'Latency',
-                duration: `${trials.length} trials`,
-                source: 'latency-recorder'
+            const byDay = new Map();
+            trials.forEach(trial => { const day = blLocalDateKey(trial.timestamp || savedAt) || 'undated'; if (!byDay.has(day)) byDay.set(day, []); byDay.get(day).push(trial); });
+            byDay.forEach(dayTrials => {
+                const answered = dayTrials.filter(trial => trial.latency !== null);
+                const avgLatency = answered.length > 0 ? (answered.reduce((a, trial) => a + trial.latency, 0) / answered.length) : null;
+                const firstAt = dayTrials.map(trial => trial.timestamp).filter(Boolean).sort()[0] || savedAt;
+                onSaveSession({
+                    date: firstAt,
+                    occurredAt: firstAt,
+                    behavior: behaviorName || 'Latency Recording',
+                    count: dayTrials.length,
+                    rate: avgLatency == null ? null : parseFloat(avgLatency.toFixed(2)),
+                    value: avgLatency == null ? null : parseFloat(avgLatency.toFixed(2)),
+                    unit: 'seconds',
+                    measurementType: 'latency',
+                    trials: dayTrials.length,
+                    noResponseTrials: dayTrials.length - answered.length,
+                    phase: 'Latency',
+                    duration: `${dayTrials.length} trials`,
+                    source: 'latency-recorder'
+                });
             });
-            if (addToast) addToast(tt('behavior_lens.toast.saved_to_session_history', 'Saved to session history!'), 'success');
+            // Saving did not clear the trials, so a second Save recorded them again.
+            setTrials([]);
+            if (addToast) addToast(tt('behavior_lens.toast.latency_saved_v2', 'Saved {n} trials as a session. The recorder is clear for the next one.', { n: trials.length }), 'success');
         };
 
         const presentStimulus = () => {
@@ -21926,18 +23006,23 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const recordResponse = () => {
             if (!stimulusTime) return;
             const latency = (Date.now() - stimulusTime) / 1000;
+            setLatencyAnnouncement('Trial ' + (trials.length + 1) + ': ' + latency.toFixed(1) + ' seconds');
             setTrials(prev => [...prev, { latency: parseFloat(latency.toFixed(2)), timestamp: new Date().toISOString() }]);
             setWaitingForResponse(false);
             setStimulusTime(null);
         };
 
         const recordNoResponse = () => {
+            setLatencyAnnouncement('Trial ' + (trials.length + 1) + ': no response');
             setTrials(prev => [...prev, { latency: null, noResponse: true, timestamp: new Date().toISOString() }]);
             setWaitingForResponse(false);
             setStimulusTime(null);
         };
 
-        const clearTrials = () => { setTrials([]); if (addToast) addToast(t('toasts.trials_cleared'), 'info'); };
+        const clearTrials = async () => {
+            if (!await askBehaviorLensConfirmation(tt('behavior_lens.latency.clear_confirm', 'Delete {n} unsaved trials?', { n: trials.length }), { title: 'Clear latency trials', confirmText: 'Clear' })) return;
+            setTrials([]); if (addToast) addToast(t('toasts.trials_cleared'), 'info');
+        };
 
         const validTrials = trials.filter(t => t.latency !== null);
         const meanVal = validTrials.length > 0 ? (validTrials.reduce((a, t) => a + t.latency, 0) / validTrials.length) : 0;
@@ -21953,7 +23038,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const sdVal = validTrials.length > 1 ? Math.sqrt(validTrials.reduce((s, tr) => s + Math.pow(tr.latency - meanVal, 2), 0) / (validTrials.length - 1)) : 0;
 
         // SVG graph dimensions
-        const W = 500, H = 200, padL = 45, padR = 15, padT = 25, padB = 30;
+        const W = 500, H = 200, padL = 45, padR = 58, padT = 25, padB = 30;
         const plotW = W - padL - padR, plotH = H - padT - padB;
         const goalNum = parseFloat(goalSec);
         const maxLat = Math.max(5, ...trials.map(tr => tr.latency || 0), isNaN(goalNum) ? 0 : goalNum * 1.2);
@@ -21978,7 +23063,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const copyCSV = () => {
             const header = 'Trial,Latency(s),Response,Timestamp';
             const rows = trials.map((tr, i) => `${i + 1},${tr.noResponse ? 'NR' : tr.latency},${tr.noResponse ? 'No' : 'Yes'},${tr.timestamp}`);
-            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast(t('toasts.data_copied_clipboard'), 'success'); });
+            blWriteClipboard([header, ...rows].join('\n'), addToast).then(() => { if (addToast) addToast(t('toasts.data_copied_clipboard'), 'success'); });
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
@@ -21992,23 +23077,24 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.behavior_2', 'Behavior')),
-                        h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'eg Responding to name', placeholder: tt('behavior_lens.ph.eg_responding_to_name', 'e.g. Responding to name'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                        h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'Behavior', placeholder: tt('behavior_lens.ph.eg_responding_to_name', 'e.g. Responding to name'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Goal (seconds)'),
-                        h('input', { type: 'number', value: goalSec, onChange: e => setGoalSec(e.target.value), 'aria-label': 'eg 3', placeholder: 'e.g. 3', step: '0.5', min: '0', className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                        h('input', { type: 'number', value: goalSec, onChange: e => setGoalSec(e.target.value), 'aria-label': 'Goal (seconds)', placeholder: 'e.g. 3', step: '0.5', min: '0', className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
                     )
                 )
             ),
             // Action buttons
+            h('p', { role: 'status', 'aria-live': 'polite', className: 'bl-sr-only' }, latencyAnnouncement),
             !waitingForResponse ?
-                h('button', { "aria-label": "Present Stimulus", onClick: presentStimulus, className: 'w-full py-6 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl font-black text-lg hover:from-blue-800 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.02] active:scale-95' }, '📢 Present Stimulus') :
+                h('button', { "aria-label": "Present Stimulus", 'data-bl-latency-primary': true, onClick: presentStimulus, className: 'w-full py-6 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl font-black text-lg hover:from-blue-800 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.02] active:scale-95' }, '📢 Present Stimulus') :
                 h('div', { className: 'space-y-3' },
                     h('div', { className: 'bg-amber-50 rounded-xl p-6 border-2 border-amber-300 text-center animate-pulse motion-reduce:animate-none' },
                         h('p', { className: 'text-lg font-black text-amber-800' }, '⏳ Waiting for response...')
                     ),
                     h('div', { className: 'grid grid-cols-2 gap-3' },
-                        h('button', { onClick: recordResponse, className: 'py-6 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform' }, '✓ Response!'),
+                        h('button', { 'data-bl-latency-primary': true, onClick: recordResponse, className: 'py-6 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform' }, '✓ Response!'),
                         h('button', { "aria-label": "No Response", onClick: recordNoResponse, className: 'py-6 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform' }, '✗ No Response')
                     )
                 ),
@@ -22017,34 +23103,35 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('h3', { className: 'text-xs font-bold text-slate-600' }, `📊 Results (${trials.length} trials)`),
                 // Stats cards
                 h('div', { className: 'grid grid-cols-4 gap-2' },
-                    h('div', { className: 'bg-indigo-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-indigo-600' }, tt('behavior_lens.ui.mean', 'Mean')), h('p', { className: 'text-lg font-black text-indigo-800' }, `${mean}s`)),
-                    h('div', { className: 'bg-purple-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-purple-600' }, tt('behavior_lens.ui.median', 'Median')), h('p', { className: 'text-lg font-black text-purple-800' }, `${median}s`)),
-                    h('div', { className: 'bg-emerald-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-emerald-600' }, tt('behavior_lens.ui.range', 'Range')), h('p', { className: 'text-lg font-black text-emerald-800' }, range)),
-                    h('div', { className: 'bg-amber-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-amber-600' }, 'SD'), h('p', { className: 'text-lg font-black text-amber-800' }, `${sdVal.toFixed(2)}s`))
+                    h('div', { className: 'bg-indigo-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-xs text-indigo-700' }, tt('behavior_lens.ui.mean', 'Mean')), h('p', { className: 'text-lg font-black text-indigo-800' }, `${mean}s`)),
+                    h('div', { className: 'bg-purple-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-xs text-purple-700' }, tt('behavior_lens.ui.median', 'Median')), h('p', { className: 'text-lg font-black text-purple-800' }, `${median}s`)),
+                    h('div', { className: 'bg-emerald-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-xs text-emerald-800' }, tt('behavior_lens.ui.range', 'Range')), h('p', { className: 'text-lg font-black text-emerald-800' }, range)),
+                    h('div', { className: 'bg-amber-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-xs text-amber-800' }, 'SD'), h('p', { className: 'text-lg font-black text-amber-800' }, `${sdVal.toFixed(2)}s`))
                 ),
                 // SVG Trial Graph
-                h('svg', { ref: svgRef, role: 'img', 'aria-label': `Latency across ${trials.length} trials for ${behaviorName || 'untitled behavior'}. Mean ${mean} seconds; median ${median} seconds; range ${range}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '230px', fontFamily: 'Arial, sans-serif' } },
+                h('div', { className: 'overflow-x-auto' },
+                h('svg', { ref: svgRef, role: 'img', 'aria-label': `Latency across ${trials.length} trials for ${behaviorName || 'untitled behavior'}. Mean ${mean} seconds; median ${median} seconds; range ${range}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { minWidth: '440px', maxHeight: '230px', fontFamily: 'Arial, sans-serif' } },
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
-                    h('text', { x: W / 2, y: 14, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: '#1e293b' }, `Latency Across Trials — ${behaviorName || 'Untitled'}`),
-                    h('text', { x: 10, y: H / 2, textAnchor: 'middle', fontSize: 9, fill: '#64748b', transform: `rotate(-90, 10, ${H / 2})` }, 'Latency (s)'),
-                    h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 9, fill: '#64748b' }, 'Trials'),
+                    h('text', { x: W / 2, y: 14, textAnchor: 'middle', fontSize: 14, fontWeight: 'bold', fill: '#1e293b' }, `Latency Across Trials — ${behaviorName || 'Untitled'}`),
+                    h('text', { x: 10, y: H / 2, textAnchor: 'middle', fontSize: 12, fill: '#475569', transform: `rotate(-90, 10, ${H / 2})` }, 'Latency (s)'),
+                    h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 12, fill: '#475569' }, 'Trials'),
                     // Axes
                     h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     h('line', { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     // Y-axis ticks
                     ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('g', { key: pct },
                         h('line', { x1: padL - 3, y1: toGY(maxLat * pct), x2: padL + plotW, y2: toGY(maxLat * pct), stroke: '#f1f5f9', strokeWidth: pct === 0 ? 0 : 0.5 }),
-                        h('text', { x: padL - 6, y: toGY(maxLat * pct) + 3, textAnchor: 'end', fontSize: 7, fill: '#94a3b8' }, (maxLat * pct).toFixed(1))
+                        h('text', { x: padL - 6, y: toGY(maxLat * pct) + 3, textAnchor: 'end', fontSize: 11, fill: '#475569' }, (maxLat * pct).toFixed(1))
                     )),
                     // Goal line
                     ...(!isNaN(goalNum) && goalNum > 0 ? [
                         h('line', { key: 'goal', x1: padL, y1: toGY(goalNum), x2: padL + plotW, y2: toGY(goalNum), stroke: '#22c55e', strokeWidth: 1.5, strokeDasharray: '6,3' }),
-                        h('text', { key: 'goal-lbl', x: padL + plotW + 2, y: toGY(goalNum) + 3, fontSize: 7, fontWeight: 'bold', fill: '#22c55e' }, `Goal: ${goalNum}s`)
+                        h('text', { key: 'goal-lbl', x: padL + plotW + 2, y: toGY(goalNum) + 3, fontSize: 11, fontWeight: 'bold', fill: '#22c55e' }, `Goal: ${goalNum}s`)
                     ] : []),
                     // Mean line
                     ...(validTrials.length > 0 ? [
                         h('line', { key: 'mean', x1: padL, y1: toGY(meanVal), x2: padL + plotW, y2: toGY(meanVal), stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '4,2' }),
-                        h('text', { key: 'mean-lbl', x: padL + plotW + 2, y: toGY(meanVal) + 3, fontSize: 7, fontWeight: 'bold', fill: '#6366f1' }, `M: ${mean}s`)
+                        h('text', { key: 'mean-lbl', x: padL + plotW + 2, y: toGY(meanVal) + 3, fontSize: 11, fontWeight: 'bold', fill: '#6366f1' }, `M: ${mean}s`)
                     ] : []),
                     // Bars
                     ...trials.map((tr, i) => {
@@ -22053,18 +23140,18 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                             return h('g', { key: i },
                                 h('rect', { x: toGX(i) - barW / 2, y: padT, width: barW, height: plotH, fill: 'rgba(239, 68, 68, 0.08)', rx: 2 }),
                                 h('text', { x: toGX(i), y: padT + plotH / 2 + 4, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#ef4444' }, '✗'),
-                                h('text', { x: toGX(i), y: padT + plotH + 10, textAnchor: 'middle', fontSize: 7, fill: '#94a3b8' }, i + 1)
+                                h('text', { x: toGX(i), y: padT + plotH + 10, textAnchor: 'middle', fontSize: 11, fill: '#475569' }, i + 1)
                             );
                         }
                         const barH = (tr.latency / maxLat) * plotH;
                         const meetsGoal = !isNaN(goalNum) && goalNum > 0 && tr.latency <= goalNum;
                         return h('g', { key: i },
                             h('rect', { x: toGX(i) - barW / 2, y: padT + plotH - barH, width: barW, height: barH, fill: meetsGoal ? '#22c55e' : '#6366f1', rx: 2, opacity: 0.85 }),
-                            h('text', { x: toGX(i), y: padT + plotH - barH - 4, textAnchor: 'middle', fontSize: 7, fontWeight: 'bold', fill: meetsGoal ? '#16a34a' : '#4f46e5' }, `${tr.latency}s`),
-                            h('text', { x: toGX(i), y: padT + plotH + 10, textAnchor: 'middle', fontSize: 7, fill: '#94a3b8' }, i + 1)
+                            h('text', { x: toGX(i), y: padT + plotH - barH - 4, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: meetsGoal ? '#16a34a' : '#4f46e5' }, `${tr.latency}s`),
+                            h('text', { x: toGX(i), y: padT + plotH + 10, textAnchor: 'middle', fontSize: 11, fill: '#475569' }, i + 1)
                         );
                     })
-                ),
+                )),
                 // Trial badges
                 h('div', { className: 'flex flex-wrap gap-1' },
                     trials.map((t, i) => h('span', { key: i, className: `px-2 py-1 rounded-lg text-[11px] font-bold ${t.noResponse ? 'bg-red-100 text-red-800' : !isNaN(goalNum) && goalNum > 0 && t.latency <= goalNum ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}` }, t.noResponse ? 'NR' : `${t.latency}s`))
@@ -22074,7 +23161,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     onSaveSession && h('button', { onClick: saveToSessionHistory, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-800 hover:to-teal-800 transition-all' }, '💾 Save to Session History'),
                     h('button', { onClick: exportPNG, className: 'px-3 py-2 bg-indigo-50 text-indigo-700 border border-indigo-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 transition-all' }, '📷 PNG'),
                     h('button', { onClick: copyCSV, className: 'px-3 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-lg text-[11px] font-bold hover:bg-slate-100 transition-all' }, '📋 CSV'),
-                    h('button', { "aria-label": "Clear", onClick: clearTrials, className: 'px-3 py-2 bg-red-50 text-red-800 border border-red-600 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-all' }, '🗑️ Clear')
+                    h('button', { "aria-label": "Clear unsaved trials", onClick: clearTrials, className: 'px-3 py-2 bg-red-50 text-red-800 border border-red-600 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-all' }, '🗑️ Clear')
                 ),
                 // Goal summary
                 // Every trial counts: a trial with no response did not meet a latency goal.
@@ -22132,14 +23219,15 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
 
     const SocialValidityMeasures = ({ studentName, callGemini, t, addToast }) => {
         const [measure, setMeasure] = useState('tarf');
-        const [responses, setResponses] = useState({});
+        // Kept with the student's workspace, including the saved results for pre/post comparison.
+        const [responses, setResponses] = useDurableToolState('socialValidityResponses', {});
         const [result, setResult] = useState(null);
         const [aiInterpretation, setAiInterpretation] = useState('');
         const [aiLoading, setAiLoading] = useState(false);
-        const [savedResults, setSavedResults] = useState([]); // for pre/post comparison
+        const [savedResults, setSavedResults] = useDurableToolState('socialValidityResults', []); // for pre/post comparison
         const [showComparison, setShowComparison] = useState(false);
         // Custom survey state
-        const [customItems, setCustomItems] = useState([]);
+        const [customItems, setCustomItems] = useDurableToolState('socialValidityCustomItems', []);
         const [customScaleSize, setCustomScaleSize] = useState(5);
         const [customName, setCustomName] = useState('');
         const [newItemText, setNewItemText] = useState('');
@@ -22232,6 +23320,7 @@ Provide a brief narrative interpretation (3-4 sentences) that:
 3. Recommends 1-2 specific improvements for treatment acceptability
 Keep the language professional but accessible.`;
                 const resp = await callGemini(prompt);
+                if (resp == null) { setAiLoading(false); return; }
                 setAiInterpretation(resp);
             } catch (e) { addToast && addToast(t('toasts.ai_interpretation_failed')); }
             setAiLoading(false);
@@ -22259,7 +23348,7 @@ Keep the language professional but accessible.`;
             const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url;
-            a.download = `social_validity_${new Date().toISOString().split('T')[0]}.txt`;
+            a.download = `social_validity_${blLocalDateKey(new Date())}.txt`;
             a.click(); URL.revokeObjectURL(url);
             addToast && addToast(t('toasts.report_exported'));
         };
@@ -22545,7 +23634,7 @@ Keep the language professional but accessible.`;
             const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = `maintenance_summary_${new Date().toISOString().split('T')[0]}.txt`;
+            a.href = url; a.download = `maintenance_summary_${blLocalDateKey(new Date())}.txt`;
             a.click(); URL.revokeObjectURL(url);
             addToast && addToast(t('toasts.summary_exported'));
         };
@@ -22765,10 +23854,11 @@ Keep the language professional but accessible.`;
     window.AlloModules.BehaviorLensCumulative = Object.freeze({ cumulativeRecordPoints, cumulativeRecordCount, cumulativePhaseSlopes, parseManualCounts });
 
     const CumulativeRecord = ({ sessionHistory, t, addToast }) => {
-        const [behaviorName, setBehaviorName] = useState('');
-        const [manualData, setManualData] = useState('');
+        // Kept with the student's workspace (typed data and phase lines were lost on close).
+        const [behaviorName, setBehaviorName] = useDurableToolState('cumulativeBehavior', '');
+        const [manualData, setManualData] = useDurableToolState('cumulativeManualData', '');
         const [showManual, setShowManual] = useState(false);
-        const [phases, setPhases] = useState([]); // [{ session: 4, label: 'Intervention' }]
+        const [phases, setPhases] = useDurableToolState('cumulativePhases', []); // [{ session: 4, label: 'Intervention' }]
         const [addingPhase, setAddingPhase] = useState(false);
         const [newPhaseSession, setNewPhaseSession] = useState('');
         const [newPhaseLabel, setNewPhaseLabel] = useState('Intervention');
@@ -22833,7 +23923,7 @@ Keep the language professional but accessible.`;
         const copyCSV = () => {
             const header = 'Session,Count,Cumulative';
             const rows = dataPoints.map(d => `${d.session},${d.count},${d.cumulative}`);
-            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast(t('toasts.data_copied_clipboard'), 'success'); });
+            blWriteClipboard([header, ...rows].join('\n'), addToast).then(() => { if (addToast) addToast(t('toasts.data_copied_clipboard'), 'success'); });
         };
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
@@ -22873,7 +23963,7 @@ Keep the language professional but accessible.`;
                     // Y-axis ticks
                     ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('g', { key: pct },
                         h('line', { x1: padL - 4, y1: toY(maxCum * pct), x2: padL, y2: toY(maxCum * pct), stroke: '#94a3b8', strokeWidth: 1 }),
-                        h('text', { x: padL - 8, y: toY(maxCum * pct) + 3, textAnchor: 'end', fontSize: 8, fill: '#94a3b8' }, Math.round(maxCum * pct))
+                        h('text', { x: padL - 8, y: toY(maxCum * pct) + 3, textAnchor: 'end', fontSize: 8, fill: '#475569' }, Math.round(maxCum * pct))
                     )),
                     // Phase change lines
                     ...phases.map((p, idx) => h('g', { key: `phase-${idx}` },
@@ -22909,7 +23999,7 @@ Keep the language professional but accessible.`;
             addingPhase && h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-4 flex items-end gap-3' },
                 h('div', { className: 'flex-1' },
                     h('label', { className: 'text-[11px] font-bold text-red-700 block mb-1' }, 'Session #'),
-                    h('input', { type: 'number', value: newPhaseSession, onChange: e => setNewPhaseSession(e.target.value), min: 2, max: dataPoints.length, 'aria-label': 'eg 4', placeholder: 'e.g. 4', className: 'w-full text-xs border border-red-600 rounded-lg px-2 py-1.5' })
+                    h('input', { type: 'number', value: newPhaseSession, onChange: e => setNewPhaseSession(e.target.value), min: 2, max: dataPoints.length, 'aria-label': 'Phase change at session number', placeholder: 'e.g. 4', className: 'w-full text-xs border border-red-600 rounded-lg px-2 py-1.5' })
                 ),
                 h('div', { className: 'flex-1' },
                     h('label', { className: 'text-[11px] font-bold text-red-700 block mb-1' }, 'Phase Label'),
@@ -23023,7 +24113,7 @@ Keep the language professional but accessible.`;
             // View mode tabs
             abcEntries.length >= 5 && h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
                 [['focused', '🎯 Focused A→B'], ['consequence', '📊 P(C|B) Consequence'], ['matrix', '🗺️ All-Pairs Matrix']].map(([id, label]) =>
-                    h('button', { key: id, onClick: () => setViewMode(id), className: `flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${viewMode === id ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}` }, label)
+                    h('button', { key: id, 'aria-pressed': viewMode === id ? 'true' : 'false', onClick: () => setViewMode(id), className: `flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${viewMode === id ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-700'}` }, label)
                 )
             ),
             abcEntries.length < 5 ? h('div', { className: 'bg-amber-50 rounded-xl p-6 text-center border border-amber-200' },
@@ -23070,7 +24160,7 @@ Keep the language professional but accessible.`;
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-2' }, 'Select Target Behavior'),
                     h('div', { className: 'flex flex-wrap gap-1' },
-                        behaviors.slice(0, 8).map(b => h('button', { key: b, onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
+                        behaviors.slice(0, 8).map(b => h('button', { key: b, 'aria-pressed': selectedBehavior === b ? 'true' : 'false', onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
                     )
                 ),
                 selectedBehavior && consequenceAnalysis.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -23099,13 +24189,13 @@ Keep the language professional but accessible.`;
                         h('div', null,
                             h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.target_behavior', 'Target Behavior')),
                             h('div', { className: 'flex flex-wrap gap-1' },
-                                behaviors.slice(0, 6).map(b => h('button', { key: b, onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
+                                behaviors.slice(0, 6).map(b => h('button', { key: b, 'aria-pressed': selectedBehavior === b ? 'true' : 'false', onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
                             )
                         ),
                         h('div', null,
                             h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.antecedent', 'Antecedent')),
                             h('div', { className: 'flex flex-wrap gap-1' },
-                                antecedents.slice(0, 6).map(a => h('button', { key: a, onClick: () => setSelectedAntecedent(a), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedAntecedent === a ? 'bg-purple-100 border-purple-400 text-purple-700' : 'bg-white border-slate-200 text-slate-600'}` }, a))
+                                antecedents.slice(0, 6).map(a => h('button', { key: a, 'aria-pressed': selectedAntecedent === a ? 'true' : 'false', onClick: () => setSelectedAntecedent(a), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedAntecedent === a ? 'bg-purple-100 border-purple-400 text-purple-700' : 'bg-white border-slate-200 text-slate-600'}` }, a))
                             )
                         )
                     )
@@ -23225,6 +24315,7 @@ Keep the language professional but accessible.`;
         const [interventionName, setInterventionName] = useDurableToolState('integrityIntervention', '');
         const [components, setComponents] = useDurableToolState('integrityComponents', [{ id: 'c1', desc: '', status: null }]);
         const [sessions, setSessions] = useDurableToolState('integrityChecks', []);
+        const [showAllChecks, setShowAllChecks] = useState(false);
 
         const addComponent = () => setComponents(prev => [...prev, { id: uid(), desc: '', status: null }]);
         const removeComponent = (id) => { if (components.length > 1) setComponents(prev => prev.filter(c => c.id !== id)); };
@@ -23294,8 +24385,9 @@ Keep the language professional but accessible.`;
                     avgIntegrity != null && h('span', { 'data-integrity-avg': avgIntegrity, className: `text-xs font-bold px-2 py-0.5 rounded-full ${avgIntegrity >= 80 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}` }, `Avg: ${avgIntegrity}%`)
                 ),
                 others > 0 && h('p', { className: 'text-[11px] text-slate-600 mb-2' }, tt('behavior_lens.integrity.other_checks', '{n} checks of other interventions are not in this average.', { n: others })),
+                mine.length > 10 && h('button', { type: 'button', onClick: () => setShowAllChecks(v => !v), 'data-bl-show-all': 'integrity', className: 'min-h-11 mb-1 text-[11px] font-bold text-slate-800 underline' }, showAllChecks ? 'Show 10' : 'Showing 10 of ' + mine.length + '. Show all'),
                 h('div', { className: 'space-y-1' },
-                    mine.slice(0, 10).map((sess, i) =>
+                    (showAllChecks ? mine : mine.slice(0, 10)).map((sess, i) =>
                         h('div', { key: i, className: 'flex items-center justify-between text-[11px] bg-slate-50 rounded-lg px-3 py-1.5' },
                             h('span', { className: 'text-slate-600' }, new Date(sess.date).toLocaleDateString()),
                             h('span', { className: `font-bold ${sess.integrity >= 80 ? 'text-green-600' : 'text-amber-600'}` }, `${sess.integrity}%`),
@@ -23332,20 +24424,22 @@ Keep the language professional but accessible.`;
         const [parsing, setParsing] = useState(false);
 
         const [editingIdx, setEditingIdx] = useState(null);
+        const [notesDate, setNotesDate] = useState(() => blLocalDateKey(new Date()));
 
 
 
         const handleParse = async () => {
 
-            if (!rawText.trim() || !callGemini) return;
+            if (!rawText.trim() || !callGemini || rawText.length > 3000) return;
 
             setParsing(true);
 
             try {
 
-                const prompt = `You are helping parse observation notes into ABC entries. Preserve an explicitly stated intensity rating from 1 to 5; otherwise use null. Do not infer intensity from narrative.\nParse:\n"${rawText.substring(0, 3000)}"\n\nReturn ONLY valid JSON array:\n[{"antecedent":"...","behavior":"...","consequence":"...","function":"escape|attention|tangible|sensory|unknown","intensity":null,"setting":"...","time":"...","notes":"..."}]`;
+                const prompt = `You are helping parse observation notes into ABC entries. Preserve an explicitly stated intensity rating from 1 to 5; otherwise use null. Do not infer intensity from narrative. Use only what the notes say: leave consequence empty if they do not say what happened right after, give time only as a clock time the notes state (otherwise empty), and use function unknown unless the notes say what the student got or avoided.\nParse:\n"${rawText.substring(0, 3000)}"\n\nReturn ONLY valid JSON array:\n[{"antecedent":"...","behavior":"...","consequence":"...","function":"escape|attention|tangible|sensory|unknown","intensity":null,"setting":"...","time":"clock time stated in the notes, e.g. 9:15 am, or empty","notes":"..."}]`;
 
                 const result = await callGemini(prompt);
+                if (result == null) { setParsing(false); return; } // consent gate declined; it showed its own message
 
                 const jsonMatch = result.match(/\[[\s\S]*\]/);
 
@@ -23353,9 +24447,9 @@ Keep the language professional but accessible.`;
 
                     const entries = JSON.parse(jsonMatch[0]);
 
-                    setParsedEntries(entries.map(e => ({ ...e, intensity: getBehaviorLensWorkspaceRuntime().normalizeIntensity(e.intensity), timestamp: new Date().toISOString(), source: 'natural_language' })));
+                    setParsedEntries(entries.filter(e => e && typeof e === 'object').map(e => ({ antecedent: String(e.antecedent || ''), behavior: String(e.behavior || ''), consequence: String(e.consequence || ''), setting: String(e.setting || ''), notes: String(e.notes || ''), function: ['escape', 'attention', 'tangible', 'sensory'].includes(e.function) ? e.function : 'unknown', intensity: getBehaviorLensWorkspaceRuntime().normalizeIntensity(e.intensity), clock: parseNoteClock(e.time) })));
 
-                    if (addToast) addToast(t('toasts.parsed') + entries.length + ' ABC entries!', 'success');
+                    if (addToast) addToast(tt('behavior_lens.toast.parsed_check_times', 'Parsed {n} ABC entries. Check the date and times before adding.', { n: entries.length }), 'success');
 
                 }
 
@@ -23369,7 +24463,8 @@ Keep the language professional but accessible.`;
 
         const addToLog = (entry) => {
 
-            const newEntry = { ...entry, id: Date.now() + '_' + Math.random().toString(36).substr(2, 5), student: studentName || 'Unknown' };
+            const newEntry = notesEntryToAbc(entry, notesDate, 'natural_language');
+            if (!newEntry) { if (addToast) addToast(tt('behavior_lens.toast.entry_needs_behavior', 'Add the behavior and a valid date and time first.'), 'warning'); return; }
 
             setAbcEntries(prev => [...prev, newEntry]);
 
@@ -23382,17 +24477,13 @@ Keep the language professional but accessible.`;
 
 
         const addAllToLog = () => {
-
-            parsedEntries.forEach(entry => {
-
-                setAbcEntries(prev => [...prev, { ...entry, id: Date.now() + '_' + Math.random().toString(36).substr(2, 5), student: studentName || 'Unknown' }]);
-
-            });
-
-            if (addToast) addToast('All ' + parsedEntries.length + ' entries added!', 'success');
-
-            setParsedEntries([]); setRawText('');
-
+            const ready = parsedEntries.map(entry => notesEntryToAbc(entry, notesDate, 'natural_language'));
+            const added = ready.filter(Boolean);
+            if (added.length) setAbcEntries(prev => [...prev, ...added]);
+            const left = parsedEntries.filter((_, i) => !ready[i]);
+            setParsedEntries(left);
+            if (!left.length) setRawText('');
+            if (addToast) addToast(left.length ? tt('behavior_lens.toast.added_some_entries', 'Added {n} entries. {left} need a behavior or a valid time.', { n: added.length, left: left.length }) : tt('behavior_lens.toast.added_all_entries', 'Added all {n} entries.', { n: added.length }), left.length ? 'warning' : 'success');
         };
 
 
@@ -23425,9 +24516,10 @@ Keep the language professional but accessible.`;
 
                 h('div', { className: 'flex items-center justify-between' },
 
-                    h('span', { className: 'text-[11px] text-slate-600' }, rawText.length + '/3000 characters'),
+                    // Only the first 3,000 characters were read, and "Add all" then cleared the rest.
+                    h('span', { className: 'text-[11px] ' + (rawText.length > 3000 ? 'font-bold text-red-800' : 'text-slate-600'), role: rawText.length > 3000 ? 'alert' : undefined }, rawText.length > 3000 ? rawText.length + '/3000 characters: parse these notes in parts. Only 3,000 characters can be read at once.' : rawText.length + '/3000 characters'),
 
-                    h('button', { onClick: handleParse, disabled: parsing || !rawText.trim(), className: 'px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold rounded-lg text-sm hover:from-violet-700 hover:to-fuchsia-700 transition-all disabled:opacity-40 flex items-center gap-2' }, parsing ? '⏳ Parsing...' : '🤖 Parse with AI')
+                    h('button', { onClick: handleParse, disabled: parsing || !rawText.trim() || rawText.length > 3000, className: 'px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold rounded-lg text-sm hover:from-violet-700 hover:to-fuchsia-700 transition-all disabled:opacity-40 flex items-center gap-2' }, parsing ? '⏳ Parsing...' : '🤖 Parse with AI')
 
                 )
 
@@ -23438,6 +24530,7 @@ Keep the language professional but accessible.`;
                 h('div', { className: 'flex items-center justify-between' },
 
                     h('h4', { className: 'text-sm font-bold text-slate-700' }, '📋 Parsed Entries (' + parsedEntries.length + ')'),
+                    h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-slate-600' }, tt('behavior_lens.nlabc.notes_date', 'Date of these notes'), h('input', { type: 'date', value: notesDate, max: blLocalDateKey(new Date()), onChange: e => setNotesDate(e.target.value), className: 'border border-slate-400 rounded px-1 py-0.5 text-[11px]' })),
 
                     h('button', { "aria-label": "Add All to ABC Log", onClick: addAllToLog, className: 'px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-700 transition-all' }, '✅ Add All to ABC Log')
 
@@ -23455,7 +24548,9 @@ Keep the language professional but accessible.`;
 
                                 h('span', { className: 'text-[11px] text-slate-600' }, 'Intensity: ' + (entry.intensity == null ? 'Not rated' : entry.intensity + '/5')),
 
-                                entry.setting && h('span', { className: 'text-[11px] text-slate-600' }, '📍 ' + entry.setting)
+                                entry.setting && h('span', { className: 'text-[11px] text-slate-600' }, '📍 ' + entry.setting),
+                                h('input', { type: 'time', value: entry.clock || '', onChange: e => updateParsed(idx, 'clock', e.target.value), 'aria-label': 'Time of entry ' + (idx + 1), className: 'border border-slate-400 rounded px-1 text-[11px]' }),
+                                !entry.clock && h('span', { 'data-time-missing': true, className: 'text-[11px] text-amber-800' }, tt('behavior_lens.nlabc.time_not_stated', 'No time in the notes: the time you add it is used'))
 
                             ),
 
@@ -23465,7 +24560,7 @@ Keep the language professional but accessible.`;
 
                                 h('button', { onClick: () => addToLog(entry), className: 'px-2 py-1 text-[11px] font-bold text-emerald-600 hover:bg-emerald-50 rounded' }, '➕ Add'),
 
-                                h('button', { onClick: () => removeParsed(idx), title: 'Close', 'aria-label': 'Close', className: 'px-2 py-1 text-[11px] font-bold text-red-500 hover:bg-red-50 rounded' }, '✕')
+                                h('button', { onClick: () => removeParsed(idx), title: 'Discard this entry', 'aria-label': 'Discard entry ' + (idx + 1), className: 'px-2 py-1 text-[11px] font-bold text-red-500 hover:bg-red-50 rounded' }, '✕')
 
                             )
 
@@ -23529,11 +24624,34 @@ Keep the language professional but accessible.`;
 
     // ─── IEPGoalGenerator ───────────────────────────────────────
 
+    // "Copy All" for IEP goals. It left out each goal's measurement method and schedule,
+    // the objectives' criteria and dates, the progress-monitoring plan and the
+    // interventions, and printed "undefined" for anything missing.
+    function iepGoalsText(result) {
+        const r = result || {};
+        const v = x => (x == null || x === '' ? '' : String(x));
+        const line = (label, x) => v(x) ? label + ': ' + v(x) + '\n' : '';
+        let text = '=== PRESENT LEVEL ===\n' + v(r.presentLevel) + '\n\n=== ANNUAL GOALS ===\n';
+        (r.annualGoals || []).forEach(g => {
+            text += '\nGoal ' + v(g.goalNumber) + ': ' + v(g.goal) + '\n' + line('Baseline', g.baseline) + line('Target', g.targetCriteria) + line('Measured by', g.measurementMethod) + line('Schedule', g.schedule);
+        });
+        text += '\n=== OBJECTIVES ===\n';
+        (r.shortTermObjectives || []).forEach(o => {
+            text += '\nObjective ' + v(o.objectiveNumber) + (o.relatedGoal != null ? ' (goal ' + v(o.relatedGoal) + ')' : '') + ': ' + v(o.objective) + '\n' + line('Criteria', o.criteria) + line('Target date', o.targetDate);
+        });
+        if ((r.accommodations || []).length) text += '\n=== ACCOMMODATIONS ===\n' + r.accommodations.map(a => '- ' + v(a)).join('\n') + '\n';
+        const pm = r.progressMonitoring || {};
+        if (pm.frequency || pm.method || pm.reportingSchedule) text += '\n=== PROGRESS MONITORING ===\n' + line('Frequency', pm.frequency) + line('Method', pm.method) + line('Reporting', pm.reportingSchedule);
+        if ((r.suggestedInterventions || []).length) text += '\n=== SUGGESTED INTERVENTIONS ===\n' + r.suggestedInterventions.map(a => '- ' + v(a)).join('\n') + '\n';
+        return text;
+    }
+    window.AlloModules.BehaviorLensIepGoals = Object.freeze({ iepGoalsText });
+
     const IEPGoalGenerator = ({ abcEntries, observationSessions, studentProfile, studentName, callGemini, t, addToast }) => {
 
         const [generating, setGenerating] = useState(false);
 
-        const [result, setResult] = useState(null);
+        const [result, setResult] = useDurableToolState('iepGoalDraft', null);
 
         const [goalType, setGoalType] = useState('behavior_reduction');
 
@@ -23561,9 +24679,11 @@ Keep the language professional but accessible.`;
 
             try {
 
-                const abcSummary = abcEntriesNewestFirst(abcEntries).slice(0, 15).map((e, i) => `${i + 1}. A:${e.antecedent} B:${e.behavior} C:${e.consequence} Func:${e.function || '?'} Int:${e.intensity}/5`).join('\n');
+                const abcSummary = abcEntriesNewestFirst(abcEntries).slice(0, 15).map((e, i) => `${i + 1}. [${abcEntryDay(e)}${abcEntryClock(e) ? ' ' + abcEntryClock(e) : ''}] A:${e.antecedent} B:${e.behavior} C:${e.consequence} Func:${e.function || '?'} Int:${intensityForPrompt(e.intensity)}`).join('\n');
+                // Only 15 entries were listed under "ABC DATA (N entries)", undated, and the observations counted on screen were never sent.
+                const sessionLines = observationSessionsNewestFirst(observationSessions).slice(0, 5).map(observationSessionLine).join('\n');
 
-                const prompt = `You are an experienced special education consultant creating IEP behavioral goals.\nSTUDENT: ${studentName || 'Student'}\nGOAL TYPE: ${goalType}\nABC DATA (${abcEntries.length} entries):\n${abcSummary || 'No data'}\n${customContext ? 'CONTEXT: ' + customContext : ''}\n\nReturn ONLY valid JSON:\n{"presentLevel":"...","annualGoals":[{"goalNumber":1,"goal":"SMART goal","baseline":"...","targetCriteria":"...","measurementMethod":"...","schedule":"..."}],"shortTermObjectives":[{"objectiveNumber":1,"relatedGoal":1,"objective":"...","targetDate":"...","criteria":"..."}],"accommodations":["..."],"progressMonitoring":{"frequency":"...","method":"...","reportingSchedule":"..."},"suggestedInterventions":["..."]}`;
+                const prompt = `You are an experienced special education consultant creating IEP behavioral goals.\nSTUDENT: ${studentName || 'Student'}\nGOAL TYPE: ${goalType}\nABC DATA (the ${Math.min(15, abcEntries.length)} most recent of ${abcEntries.length} entries):\n${abcSummary || 'No data'}\nOBSERVATION SESSIONS (most recent first):\n${sessionLines || 'None'}\nBase the present level and every baseline only on the dated data above. Where a rate or baseline cannot be worked out from it, say what data is needed instead of estimating.\n${customContext ? 'CONTEXT: ' + customContext : ''}\n\nReturn ONLY valid JSON:\n{"presentLevel":"...","annualGoals":[{"goalNumber":1,"goal":"SMART goal","baseline":"...","targetCriteria":"...","measurementMethod":"...","schedule":"..."}],"shortTermObjectives":[{"objectiveNumber":1,"relatedGoal":1,"objective":"...","targetDate":"...","criteria":"..."}],"accommodations":["..."],"progressMonitoring":{"frequency":"...","method":"...","reportingSchedule":"..."},"suggestedInterventions":["..."]}`;
 
                 const aiResult = await callGemini(prompt);
 
@@ -23578,23 +24698,8 @@ Keep the language professional but accessible.`;
         };
 
         const copyToClipboard = () => {
-
             if (!result) return;
-
-            let text = '=== PRESENT LEVEL ===\n' + result.presentLevel + '\n\n=== ANNUAL GOALS ===\n';
-
-            (result.annualGoals || []).forEach(g => { text += '\nGoal ' + g.goalNumber + ': ' + g.goal + '\nBaseline: ' + g.baseline + '\nTarget: ' + g.targetCriteria + '\n'; });
-
-            text += '\n=== OBJECTIVES ===\n';
-
-            (result.shortTermObjectives || []).forEach(o => { text += '\nObj ' + o.objectiveNumber + ': ' + o.objective + '\n'; });
-
-            text += '\n=== ACCOMMODATIONS ===\n' + (result.accommodations || []).join('\n');
-
-            navigator.clipboard.writeText(text);
-
-            if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success');
-
+            blWriteClipboard(iepGoalsText(result), addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); });
         };
 
         return h('div', { className: 'space-y-4' },
@@ -23619,7 +24724,7 @@ Keep the language professional but accessible.`;
 
                     h('div', { className: 'text-xs text-slate-600' }, '📋 ' + abcEntries.length + ' ABC entries • 🔍 ' + observationSessions.length + ' observations'),
 
-                    h('button', { onClick: handleGenerate, disabled: generating, 'aria-busy': generating, className: 'px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg text-sm hover:from-blue-700 hover:to-indigo-700 disabled:opacity-40' }, generating ? '⏳ Generating...' : '🤖 Generate IEP Goals')
+                    h('button', { onClick: handleGenerate, disabled: generating || abcEntries.length === 0, 'aria-busy': generating, className: 'px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg text-sm hover:from-blue-700 hover:to-indigo-700 disabled:opacity-40' }, generating ? '⏳ Generating...' : '🤖 Generate IEP Goals')
 
                 )
 
@@ -23627,7 +24732,7 @@ Keep the language professional but accessible.`;
 
             result && h('div', { className: 'space-y-3' },
 
-                h('div', { className: 'flex gap-2 justify-end' }, h('button', { "aria-label": "Copy All", onClick: copyToClipboard, className: 'px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200' }, '📋 Copy All'), h('button', { "aria-label": "Print", onClick: () => window.print(), className: 'px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200' }, '🖨️ Print')),
+                h('div', { className: 'flex gap-2 justify-end' }, h('button', { "aria-label": "Copy All", onClick: copyToClipboard, className: 'px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200' }, '📋 Copy All'), h('button', { "aria-label": "Print", onClick: blPrintPanel, className: 'px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200' }, '🖨️ Print')),
 
                 h('div', { className: 'bg-white rounded-xl border border-blue-200 p-4' },
 
@@ -23643,7 +24748,7 @@ Keep the language professional but accessible.`;
 
                     (result.annualGoals || []).map((g, i) => h('div', { key: i, className: 'mb-4 p-3 bg-emerald-50 rounded-lg border border-emerald-100' },
 
-                        h('p', { className: 'text-xs font-bold text-emerald-800 mb-2' }, t('behavior_lens.ui.goal') || 'Goal ' + g.goalNumber + ': ' + g.goal),
+                        h('p', { className: 'text-xs font-bold text-emerald-800 mb-2' }, tt('behavior_lens.ui.goal_n_v2', 'Goal {n}: {goal}', { n: g.goalNumber, goal: g.goal })),
 
                         h('div', { className: 'grid grid-cols-2 gap-2' }, [['Baseline', g.baseline], ['Target', g.targetCriteria], ['Measurement', g.measurementMethod], ['Schedule', g.schedule]].map(([label, val]) => h('div', { key: label, className: 'text-[11px]' }, h('span', { className: 'font-bold text-slate-600' }, label + ': '), h('span', { className: 'text-slate-700' }, val))))
 
@@ -23655,7 +24760,7 @@ Keep the language professional but accessible.`;
 
                     h('h4', { className: 'text-sm font-bold text-amber-700 mb-3' }, '📋 Short-Term Objectives'),
 
-                    (result.shortTermObjectives || []).map((o, i) => h('div', { key: i, className: 'mb-2 p-2 bg-amber-50 rounded-lg text-xs' }, h('p', { className: 'font-bold text-amber-800' }, t('behavior_lens.ui.objective') || 'Objective ' + o.objectiveNumber), h('p', { className: 'text-slate-700' }, o.objective)))
+                    (result.shortTermObjectives || []).map((o, i) => h('div', { key: i, className: 'mb-2 p-2 bg-amber-50 rounded-lg text-xs' }, h('p', { className: 'font-bold text-amber-800' }, tt('behavior_lens.ui.objective_n_v2', 'Objective {n}', { n: o.objectiveNumber })), h('p', { className: 'text-slate-700' }, o.objective)))
 
                 ),
 
@@ -23779,6 +24884,7 @@ Keep the language professional but accessible.`;
                 const prompt = `You are a school BCBA reviewing your caseload. Provide a brief caseload summary.\n\nCASELOAD (${studentCaseData.length} students):\n${dataStr}\n\nProvide 3-5 sentence summary highlighting priority students and recommendations.`;
 
                 const result = await callGemini(prompt);
+                if (result == null) { setSummaryLoading(false); return; }
 
                 setCaseloadSummary(result);
 
@@ -23877,7 +24983,7 @@ Keep the language professional but accessible.`;
         // dropped the 20th student (and orphaned their data) when a 21st was tiered.
         const setTier = (name, tier) => setStudentRoster(previous => {
             const exists = previous.some(item => item.name === name);
-            if (!exists) return [{ id: uid(), name, mtssTier: tier, lastAccessed: new Date().toISOString() }, ...previous];
+            if (!exists) return [{ id: blReusableWorkspaceId(name, previous) || uid(), name, mtssTier: tier, lastAccessed: new Date().toISOString() }, ...previous];
             return previous.map(item => item.name === name ? { ...item, mtssTier: tier } : item);
         });
 
@@ -24009,6 +25115,18 @@ Keep the language professional but accessible.`;
     // are untagged) and every other tag, 'maintenance' and 'return_baseline' included,
     // as intervention; a CSV round trip's 'Baseline' was intervention too. Now tags
     // are matched ignoring case, and what is left out is counted.
+    // Phase badge for the portfolio. Anything but the exact lowercase "baseline",
+    // "intervention" or "maintenance" was badged A' (return to baseline): "Baseline"
+    // after a CSV round trip, "Condition A" and "Intervention (B)" all read A'.
+    function portfolioPhaseLabel(phase) {
+        const tag = String(phase == null ? '' : phase).trim().toLowerCase().replace(/[\s-]+/g, '_');
+        if (/^(return_to_baseline|return_baseline|reversal|a2|second_baseline)/.test(tag)) return { key: 'return_to_baseline', short: "A'" };
+        if (/^baseline|^condition_a\b|^a$|^a1$/.test(tag)) return { key: 'baseline', short: 'A' };
+        if (/^intervention|^treatment|^condition_b\b|^b\d?$/.test(tag)) return { key: 'intervention', short: 'B' };
+        if (/^maintenance|^follow/.test(tag)) return { key: 'maintenance', short: 'M' };
+        return { key: tag, short: String(phase).trim().slice(0, 24) };
+    }
+    window.AlloModules.BehaviorLensPhaseLabel = Object.freeze({ portfolioPhaseLabel });
     const effectSizePhaseTag = (phase) => String(phase == null ? '' : phase).trim().toLowerCase().replace(/[\s-]+/g, '_');
     function effectSizeFromPhaseTags(abcEntries, normalizeIntensity) {
         const byTime = (Array.isArray(abcEntries) ? abcEntries : []).slice().sort((l, r) => (Date.parse(l && (l.occurredAt || l.timestamp)) || 0) - (Date.parse(r && (r.occurredAt || r.timestamp)) || 0));
@@ -24029,11 +25147,15 @@ Keep the language professional but accessible.`;
 
     const EffectSizeCalculator = ({ sessionHistory, designPhases, graphExport, onResultsChange, setActivePanel, abcEntries, t, addToast }) => {
 
-        const [baselineData, setBaselineData] = useState('');
+        // Kept with the student's workspace (typed data was lost on close).
+        const [baselineData, setBaselineData] = useDurableToolState('effectSizeBaseline', '');
 
-        const [interventionData, setInterventionData] = useState('');
+        const [interventionData, setInterventionData] = useDurableToolState('effectSizeIntervention', '');
 
         const [results, setResults] = useState(null);
+        const resultsRef = useRef(null);
+        const focusResultsRef = useRef(false);
+        useEffect(() => { if (focusResultsRef.current && resultsRef.current) { focusResultsRef.current = false; resultsRef.current.focus(); } });
 
         // Goal direction: is the intervention meant to REDUCE the behavior
         // (the typical BIP case) or INCREASE it (e.g., a replacement skill)?
@@ -24215,15 +25337,15 @@ Keep the language professional but accessible.`;
                     className: 'w-full py-2 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-600 transition-all mb-2'
                 }, '📈 Open ABA Graph to enable auto-fill'),
 
-                h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📊 Baseline Phase (A)'), h('input', { value: baselineData, onChange: e => setBaselineData(e.target.value), 'aria-label': 'eg 12, 15, 14, 13, 16', placeholder: tt('behavior_lens.ph.eg_12_15_14_13_16', 'e.g. 12, 15, 14, 13, 16'), className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
+                h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📊 Baseline Phase (A)'), h('input', { value: baselineData, onChange: e => setBaselineData(e.target.value), 'aria-label': 'Baseline phase (A) data, separated by commas', placeholder: tt('behavior_lens.ph.eg_12_15_14_13_16', 'e.g. 12, 15, 14, 13, 16'), className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
 
-                h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📈 Intervention Phase (B)'), h('input', { value: interventionData, onChange: e => setInterventionData(e.target.value), 'aria-label': 'eg 8, 6, 5, 4, 3', placeholder: tt('behavior_lens.ph.eg_8_6_5_4_3', 'e.g. 8, 6, 5, 4, 3'), className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
+                h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📈 Intervention Phase (B)'), h('input', { value: interventionData, onChange: e => setInterventionData(e.target.value), 'aria-label': 'Intervention phase (B) data, separated by commas', placeholder: tt('behavior_lens.ph.eg_8_6_5_4_3', 'e.g. 8, 6, 5, 4, 3'), className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
 
-                h('button', { "aria-label": "Calculate Effect Sizes", onClick: calculate, className: 'px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-700 text-white font-bold rounded-lg text-sm hover:from-indigo-700 hover:to-purple-700 transition-all' }, '📐 Calculate Effect Sizes')
+                h('button', { "aria-label": "Calculate Effect Sizes", onClick: () => { focusResultsRef.current = true; calculate(); }, className: 'px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-700 text-white font-bold rounded-lg text-sm hover:from-indigo-700 hover:to-purple-700 transition-all' }, '📐 Calculate Effect Sizes')
 
             ),
 
-            results && h('div', { className: 'space-y-3' },
+            results && h('div', { ref: resultsRef, tabIndex: -1, role: 'region', 'aria-label': 'Effect size results', className: 'space-y-3' },
 
                 // Direction reminder + small-N caveat
                 h('div', { className: 'text-[11px] text-slate-600 flex flex-wrap items-center gap-x-2' },
@@ -24242,7 +25364,7 @@ Keep the language professional but accessible.`;
 
                         h('div', { key: label, className: 'bg-' + color + '-50 rounded-xl border border-' + color + '-200 p-4 text-center' },
 
-                            h('div', { className: 'text-[11px] font-bold text-' + color + '-500 uppercase' }, label),
+                            h('div', { className: 'text-[11px] font-bold text-' + color + '-700 uppercase' }, label),
 
                             h('div', { className: 'text-2xl font-black text-' + color + '-800 my-1' }, val),
 
@@ -24274,6 +25396,16 @@ Keep the language professional but accessible.`;
 
     // ─── ObservationCoach ───────────────────────────────────────
 
+    // The coach's 1-10 score. It was shown as `score + '/10'`, so a reply of "7/10" read
+    // "7/10/10" and the colour bands compared a string.
+    function coachScore(value) {
+        const m = String(value == null ? '' : value).match(/-?\d+(\.\d+)?/);
+        if (!m) return null;
+        const n = Number(m[0]);
+        return n >= 0 && n <= 10 ? Math.round(n * 10) / 10 : null;
+    }
+    window.AlloModules.BehaviorLensCoach = Object.freeze({ coachScore });
+
     const ObservationCoach = ({ abcEntries, observationSessions, callGemini, t, addToast }) => {
 
         const [coaching, setCoaching] = useState(null);
@@ -24292,7 +25424,7 @@ Keep the language professional but accessible.`;
 
                 const recentAbc = abcEntriesNewestFirst(abcEntries).slice(0, 10);
 
-                const abcStr = recentAbc.map((e, i) => `${i + 1}. A:${e.antecedent || '?'} B:${e.behavior || '?'} C:${e.consequence || '?'} Func:${e.function || '?'} Int:${e.intensity || '?'}/5`).join('\n');
+                const abcStr = recentAbc.map((e, i) => `${i + 1}. A:${e.antecedent || '?'} B:${e.behavior || '?'} C:${e.consequence || '?'} Func:${e.function || '?'} Int:${intensityForPrompt(e.intensity)}`).join('\n');
 
                 const settings = [...new Set(recentAbc.map(e => e.setting).filter(Boolean))];
 
@@ -24342,9 +25474,9 @@ Keep the language professional but accessible.`;
 
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 flex items-center gap-4' },
 
-                    h('div', { className: 'w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black border-4 ' + (coaching.overallScore >= 7 ? 'border-emerald-400 text-emerald-700 bg-emerald-50' : coaching.overallScore >= 4 ? 'border-amber-400 text-amber-700 bg-amber-50' : 'border-red-400 text-red-700 bg-red-50') }, coaching.overallScore + '/10'),
+                    h('div', { className: 'w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black border-4 ' + (coachScore(coaching.overallScore) >= 7 ? 'border-emerald-400 text-emerald-700 bg-emerald-50' : coachScore(coaching.overallScore) >= 4 ? 'border-amber-400 text-amber-700 bg-amber-50' : 'border-red-400 text-red-700 bg-red-50') }, coachScore(coaching.overallScore) == null ? 'n/a' : coachScore(coaching.overallScore) + '/10'),
 
-                    h('div', null, h('h4', { className: 'text-sm font-bold text-slate-800' }, tt('behavior_lens.ui.data_quality_score', 'Data Quality Score')), h('p', { className: 'text-xs text-slate-600' }, coaching.overallFeedback))
+                    h('div', null, h('h4', { className: 'text-sm font-bold text-slate-800' }, tt('behavior_lens.ui.data_quality_score', 'Data Quality Score')), h('p', { className: 'text-xs text-slate-600' }, coaching.overallFeedback), h('p', { 'data-coach-basis': true, className: 'text-[11px] text-slate-600 mt-1' }, tt('behavior_lens.coach.basis', 'Based on the {n} most recent of {total} entries.', { n: Math.min(10, abcEntries.length), total: abcEntries.length })))
 
                 ),
 
@@ -24366,7 +25498,7 @@ Keep the language professional but accessible.`;
 
                             h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-lg' }, tip.icon || '💡'), h('h4', { className: 'text-sm font-bold text-slate-800' }, tip.title), h('span', { className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-' + pc + '-100 text-' + pc + '-700' }, priorityLabels[tip.priority] || 'Medium')),
 
-                            h('button', { onClick: () => setDismissed(prev => new Set([...prev, tip.title])), title: 'Close', 'aria-label': 'Close', className: 'text-slate-600 hover:text-slate-700 text-sm' }, '✕')
+                            h('button', { onClick: () => setDismissed(prev => new Set([...prev, tip.title])), title: 'Dismiss tip', 'aria-label': 'Dismiss tip: ' + tip.title, className: 'text-slate-600 hover:text-slate-700 text-sm' }, '✕')
 
                         ),
 
@@ -24484,6 +25616,7 @@ Keep the language professional but accessible.`;
                 ).join('\n');
                 const prompt = `You are a school BCBA comparing multiple students in your caseload. Analyze the following student data and provide insights:\n\n${data}\n\nProvide: 1) Which students need most urgent attention and why, 2) Common patterns across students, 3) Students who might benefit from group interventions, 4) Data collection recommendations. Keep response concise (150-200 words).`;
                 const result = await callGemini(prompt);
+                if (result == null) { setCompareLoading(false); return; }
                 setCompareAnalysis(result);
             } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_generate_comparison', 'Failed to generate comparison'), 'error'); }
             setCompareLoading(false);
@@ -24616,7 +25749,64 @@ Keep the language professional but accessible.`;
 
 
     // ─── BatchImportPanel ──────────────────────────────────────────────
-    const BatchImportPanel = ({ abcEntries, setAbcEntries, onImportStudentProfiles, addToast, t }) => {
+    // A date, or a date and time, from a spreadsheet, on this computer's clock. new Date()
+    // read "2026-09-10" as UTC midnight (the evening before, west of UTC), a two-digit year or
+    // "Sep 10" as 1950 or 2001, and an Excel serial number as the year 45910; a date with no
+    // time was not marked as having none.
+    function blParseImportedWhen(value) {
+        const text = String(value == null ? '' : value).trim().replace(/\s+/g, ' ');
+        if (!text) return { error: 'provide the date it happened' };
+        const bad = { error: 'use a date like 2026-09-10 or 9/10/2026 (a four-digit year), with an optional time like 13:15 or 1:15 PM' };
+        // An exact moment (with Z or an offset), as Behavior Lens exports write it.
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})$/i.test(text)) {
+            const at = new Date(text);
+            if (!Number.isFinite(at.getTime()) || at.getFullYear() < 2000 || at.getFullYear() > 2100) return bad;
+            return { iso: at.toISOString(), timeStated: true, timezoneOffset: at.getTimezoneOffset() };
+        }
+        let y, mo, d, rest = '', m;
+        if ((m = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](.+))?$/))) { y = +m[1]; mo = +m[2]; d = +m[3]; rest = m[4] || ''; }
+        else if ((m = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,T]+(.+))?$/))) { mo = +m[1]; d = +m[2]; y = +m[3]; rest = m[4] || ''; }
+        else if ((m = text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[ ,T]+(.+))?$/))) { d = +m[1]; mo = +m[2]; y = +m[3]; rest = m[4] || ''; }
+        else if (/^\d{5}(\.\d+)?$/.test(text)) {
+            // A spreadsheet date serial: days since 30 Dec 1899, the fraction the time of day.
+            const serial = Number(text), whole = Math.floor(serial);
+            const day = new Date(1899, 11, 30 + whole);
+            y = day.getFullYear(); mo = day.getMonth() + 1; d = day.getDate();
+            const minutes = Math.round((serial - whole) * 1440);
+            if (minutes > 0) rest = Math.floor(minutes / 60) + ':' + String(minutes % 60).padStart(2, '0');
+        } else return bad;
+        let hh = null, mi = 0, ss = 0;
+        if (rest) {
+            const clock = rest.trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?\s*(?:([ap])\.?\s*m\.?)?$/i);
+            if (!clock) return bad;
+            hh = +clock[1]; mi = +clock[2]; ss = clock[3] ? +clock[3] : 0;
+            const meridiem = clock[4] ? clock[4].toLowerCase() : '';
+            if (meridiem) { if (hh < 1 || hh > 12) return bad; if (meridiem === 'p' && hh < 12) hh += 12; if (meridiem === 'a' && hh === 12) hh = 0; }
+            if (hh > 23 || mi > 59 || ss > 59) return bad;
+        }
+        if (y < 2000 || y > 2100 || mo < 1 || mo > 12 || d < 1 || d > 31) return bad;
+        const at = new Date(y, mo - 1, d, hh == null ? 0 : hh, mi, ss);
+        if (at.getMonth() !== mo - 1 || at.getDate() !== d) return bad;
+        return { iso: at.toISOString(), timeStated: hh != null, timezoneOffset: at.getTimezoneOffset() };
+    }
+    // A column header as a field name ("Duration (s)" became "durations" and was dropped).
+    const BL_IMPORT_HEADER_ALIASES = { duration_seconds: 'duration', occurred_at: 'timestamp', datetime: 'timestamp', date_time: 'timestamp', student_name: 'student' };
+    function blImportHeader(value) {
+        const key = String(value || '').trim().toLowerCase()
+            .replace(/\((?:s|sec|secs|seconds)\)/g, ' seconds').replace(/\((?:m|min|mins|minutes)\)/g, ' minutes')
+            .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        return BL_IMPORT_HEADER_ALIASES[key] || key;
+    }
+    // Behavior Lens exports put an apostrophe before a cell starting with = + - @ so a
+    // spreadsheet will not run it; reading one back kept the apostrophe.
+    const blUnguardCell = value => /^'[=+\-@\t\r]/.test(value) ? value.slice(1) : value;
+    // Same minute, antecedent, behavior and consequence: the same record.
+    const blAbcRecordKey = e => [String((e && (e.occurredAt || e.timestamp)) || '').slice(0, 16), e && e.antecedent, e && e.behavior, e && e.consequence]
+        .map(v => String(v == null ? '' : v).trim().toLowerCase()).join('|');
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensImport = Object.freeze({ blParseImportedWhen, blImportHeader, blUnguardCell, blAbcRecordKey });
+
+    const BatchImportPanel = ({ abcEntries, setAbcEntries, onImportStudentProfiles, addToast, t, studentName, targetBehaviors }) => {
         const [importMode, setImportMode] = useState('abc'); // 'abc' | 'students'
         const [parsedRows, setParsedRows] = useState([]);
         const [errors, setErrors] = useState([]);
@@ -24625,32 +25815,50 @@ Keep the language professional but accessible.`;
 
         const abcHeaders = ['timestamp', 'antecedent', 'behavior', 'consequence', 'intensity', 'setting', 'notes'];
         const studentHeaders = ['name', 'grade', 'diagnosis', 'accommodations', 'notes'];
+        const norm0 = value => String(value || '').trim();
 
         const parseCSV = (text) => {
             const runtime = getBehaviorLensWorkspaceRuntime();
             let records;
+            // Each row keeps its spreadsheet row number: counted after blank rows were removed,
+            // "Row 12" in an error pointed at the wrong row.
             try { records = runtime.parseCsvRows(text).filter(row => row.some(value => value.trim())); }
             catch (error) { return { rows: [], errs: [error.message || 'The CSV file could not be parsed.'] }; }
             if (records.length < 2) return { rows: [], errs: ['File must have a header row and at least one data row.'] };
-            const headers = records[0].map(value => value.trim().toLowerCase().replace(/[^a-z_]/g, ''));
-            const required = importMode === 'abc' ? ['timestamp', 'antecedent', 'behavior', 'consequence'] : ['name'];
+            const headers = records[0].map(blImportHeader);
+            // A toolbar CSV has Date and Time columns instead of one timestamp.
+            const whenColumn = headers.includes('timestamp') ? 'timestamp' : headers.includes('date') ? 'date' : 'timestamp';
+            const required = importMode === 'abc' ? [whenColumn, 'antecedent', 'behavior', 'consequence'] : ['name'];
             const missingHeaders = required.filter(header => !headers.includes(header));
-            if (missingHeaders.length) return { rows: [], errs: ['Missing required columns: ' + missingHeaders.join(', ')] };
+            if (missingHeaders.length) return { rows: [], errs: ['Missing required columns: ' + missingHeaders.join(', ').replace('timestamp', 'timestamp (or date)')] };
             const rows = [], errs = [];
-            records.slice(1).forEach((values, index) => {
+            const norm = value => String(value || '').trim().toLowerCase();
+            const existingKeys = new Set((abcEntries || []).map(blAbcRecordKey));
+            // The export panel's file ends with a second table of sessions; stop there.
+            const sessionTable = records.findIndex((values, index) => index > 0 && norm(values[0]) === 'session timestamp');
+            (sessionTable > 0 ? records.slice(1, sessionTable) : records.slice(1)).forEach((values, index) => {
                 const row = {};
-                headers.forEach((header, column) => { row[header] = values[column] || ''; });
-                const invalid = message => { errs.push('Row ' + (index + 2) + ': ' + message); row._error = true; };
+                headers.forEach((header, column) => { row[header] = blUnguardCell(values[column] || ''); });
+                const invalid = message => { errs.push('Row ' + (values.rowNumber || index + 2) + ': ' + message); row._error = true; };
                 if (values.length !== headers.length) invalid('column count does not match the header');
                 if (importMode === 'abc') {
                     if (!row.antecedent.trim() || !row.behavior.trim() || !row.consequence.trim()) invalid('missing A, B, or C');
-                    const timestamp = runtime.normalizeIsoTimestamp(row.timestamp);
-                    if (!timestamp) invalid('provide a valid observation timestamp');
-                    row.timestamp = timestamp;
+                    const when = blParseImportedWhen(whenColumn === 'date' ? String(row.date || '') + (row.time ? ' ' + row.time : '') : row.timestamp);
+                    if (when.error) invalid(when.error);
+                    else {
+                        row.timestamp = when.iso; row.occurredAt = when.iso; row.timezoneOffset = when.timezoneOffset;
+                        if (!when.timeStated) row.metadata = { timeNotStated: true };
+                        row._when = blLocalDateKey(when.iso) + (when.timeStated ? ' ' + fmtTime(when.iso) : ' (no time given)');
+                    }
                     const rawIntensity = row.intensity == null ? '' : row.intensity.trim();
                     row.intensity = runtime.normalizeIntensity(rawIntensity);
-                    if (rawIntensity && row.intensity === null) invalid('intensity must be between 1 and 5, or blank if unknown');
-                    if (row.duration && (!Number.isFinite(Number(row.duration)) || Number(row.duration) < 0 || Number(row.duration) > 86400)) invalid('duration must be between 0 and 86400 seconds');
+                    if (rawIntensity && (row.intensity === null || !Number.isInteger(row.intensity))) invalid('intensity must be a whole number from 1 to 5, or blank if unknown');
+                    // Seconds unless the column says minutes.
+                    if (row.duration_minutes && !row.duration) row.duration = String(Number(row.duration_minutes) * 60);
+                    if (row.duration && (!Number.isFinite(Number(row.duration)) || Number(row.duration) < 0 || Number(row.duration) > 86400)) invalid('duration must be between 0 and 86400 seconds (24 hours)');
+                    // A class sheet: rows for other students went into the open one.
+                    if (norm(row.student) && norm(row.student) !== norm(studentName)) row._other = true;
+                    else if (!row._error && existingKeys.has(blAbcRecordKey(row))) row._duplicate = true;
                     row.id = 'imp_' + uid();
                     row.source = 'csv-import';
                 } else {
@@ -24665,35 +25873,50 @@ Keep the language professional but accessible.`;
         const handleFile = (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const { rows, errs } = parseCSV(ev.target.result);
-                setParsedRows(rows);
-                setErrors(errs);
-                setImported(false);
+            const read = (encoding) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const text = String(ev.target.result || '');
+                    // A spreadsheet's "CSV (Comma delimited)" is Windows-1252: read as UTF-8,
+                    // "Niño" became "Ni?o" with no warning.
+                    if (!encoding && text.indexOf(String.fromCharCode(0xFFFD)) !== -1) { read('windows-1252'); return; }
+                    const { rows, errs } = parseCSV(text);
+                    setParsedRows(rows);
+                    setErrors(errs);
+                    setImported(false);
+                };
+                if (encoding) reader.readAsText(file, encoding); else reader.readAsText(file);
             };
-            reader.readAsText(file);
+            read('');
             e.target.value = '';
         };
 
+        const importable = parsedRows.filter(row => !row._error && !row._other && !row._duplicate);
+        const otherStudents = Object.entries(parsedRows.filter(row => row._other).reduce((all, row) => { const name = String(row.student).trim(); all[name] = (all[name] || 0) + 1; return all; }, {}));
+        const duplicateCount = parsedRows.filter(row => row._duplicate).length;
+
         const handleImport = () => {
-            const validRows = parsedRows.filter(row => !row._error);
+            const validRows = importable;
             if (!validRows.length) return;
             try {
                 if (importMode === 'abc') {
                     const runtime = getBehaviorLensWorkspaceRuntime();
-                    const newEntries = runtime.normalizeAbcEntries(validRows).items;
+                    const newEntries = runtime.normalizeAbcEntries(validRows, { targetBehaviors: targetBehaviors || [] }).items;
                     setAbcEntries(previous => [...previous, ...newEntries]);
                 } else {
                     if (typeof onImportStudentProfiles !== 'function') throw new Error('Student profile import is unavailable.');
                     onImportStudentProfiles(validRows);
                 }
                 setImported(true);
-                if (addToast) addToast('Imported ' + validRows.length + ' ' + (importMode === 'abc' ? 'ABC entries' : 'student profiles') + '.', 'success');
+                const skipped = [duplicateCount && duplicateCount + ' already here', otherStudents.length && parsedRows.filter(row => row._other).length + ' for other students'].filter(Boolean);
+                if (addToast) addToast('Imported ' + validRows.length + ' ' + (importMode === 'abc' ? 'ABC entries' : 'student profiles') + '.' + (skipped.length ? ' Not imported: ' + skipped.join(', ') + '.' : ''), 'success');
             } catch (error) {
                 if (addToast) addToast('Import could not be completed: ' + error.message, 'error');
             }
         };
+
+        // The student column is shown when the file has one (it was never visible).
+        const previewColumns = importMode === 'abc' ? (parsedRows.some(row => norm0(row.student)) ? ['student'].concat(abcHeaders) : abcHeaders) : studentHeaders;
 
         const downloadTemplate = () => {
             const headers = importMode === 'abc' ? abcHeaders : studentHeaders;
@@ -24733,22 +25956,26 @@ Keep the language professional but accessible.`;
             // Preview table
             parsedRows.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
                 h('div', { className: 'bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between' },
-                    h('span', { className: 'text-xs font-bold text-slate-700' }, `📋 Preview: ${parsedRows.length} rows (${parsedRows.filter(r => r._error).length} errors)`),
-                    !imported && h('button', { onClick: handleImport, disabled: parsedRows.filter(r => !r._error).length === 0,
+                    h('span', { className: 'text-xs font-bold text-slate-700' }, `📋 Preview: ${parsedRows.length} rows (${parsedRows.filter(r => r._error).length} errors)` + (parsedRows.length > 50 ? '; the first 50 are shown, and every row\'s problems are listed above' : '')),
+                    !imported && h('button', { onClick: handleImport, disabled: importable.length === 0,
                         className: 'px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold rounded-lg text-xs hover:from-emerald-700 hover:to-green-700 disabled:opacity-40 transition-all'
-                    }, `✅ Import ${parsedRows.filter(r => !r._error).length} Valid Rows`)
+                    }, `✅ Import ${importable.length} Valid Rows`)
                 ),
+                importMode === 'abc' && (otherStudents.length > 0 || duplicateCount > 0) && h('div', { role: 'status', className: 'px-4 py-2 border-b border-slate-200 bg-amber-50 text-xs text-amber-900 space-y-1', 'data-bl-import-skipped': true },
+                    otherStudents.length > 0 && h('p', null, 'Rows for other students are not imported here (' + otherStudents.map(([name, n]) => name + ': ' + n).join(', ') + '). Open each student to import their rows' + (studentName ? '; this import is for ' + studentName + '.' : '.')),
+                    duplicateCount > 0 && h('p', null, duplicateCount + (duplicateCount === 1 ? ' row is' : ' rows are') + ' already in this student\'s data (same time, antecedent, behavior and consequence) and will be skipped.')),
                 h('div', { className: 'overflow-x-auto max-h-80 overflow-y-auto' },
                     h('table', { className: 'w-full text-xs' },
-                        h('caption', { className: 'sr-only' }, 'Handle Import'), h('thead', null, h('tr', { className: 'bg-slate-50' },
-                            (importMode === 'abc' ? abcHeaders : studentHeaders).map(hdr =>
-                                h('th', { scope: 'col', key: hdr, className: 'px-3 py-2 text-start text-[11px] font-bold text-slate-600 uppercase' }, hdr)
+                        h('caption', { className: 'sr-only' }, 'Rows to import'), h('thead', null, h('tr', { className: 'bg-slate-50' },
+                            previewColumns.map(hdr =>
+                                h('th', { scope: 'col', key: hdr, className: 'px-3 py-2 text-start text-[11px] font-bold text-slate-600 uppercase' }, hdr === 'timestamp' ? 'when (this computer\'s clock)' : hdr)
                             )
                         )),
                         h('tbody', null, parsedRows.slice(0, 50).map((row, i) =>
-                            h('tr', { key: i, className: row._error ? 'bg-red-50' : i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50' },
-                                (importMode === 'abc' ? abcHeaders : studentHeaders).map(hdr =>
-                                    h('td', { key: hdr, className: 'px-3 py-1.5 text-slate-700 border-t border-slate-100 max-w-[150px] truncate' }, String(row[hdr] || ''))
+                            h('tr', { key: i, 'data-bl-import-row': row._error ? 'error' : row._other ? 'other-student' : row._duplicate ? 'duplicate' : 'ok', className: row._error ? 'bg-red-50' : row._other || row._duplicate ? 'bg-amber-50 text-slate-500' : i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50' },
+                                previewColumns.map(hdr =>
+                                    // The preview showed the UTC string, which hid a day shifted by the time zone.
+                                    h('td', { key: hdr, className: 'px-3 py-1.5 text-slate-700 border-t border-slate-100 max-w-[150px] truncate' }, hdr === 'timestamp' && row._when ? row._when : hdr === 'intensity' && row[hdr] == null ? '' : String(row[hdr] == null ? '' : row[hdr]))
                                 )
                             )
                         ))
@@ -24859,9 +26086,9 @@ Keep the language professional but accessible.`;
                 // Grid lines
                 ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('line', { key: 'g' + pct, x1: PAD, x2: W - PAD, y1: yScale(pct * maxCount), y2: yScale(pct * maxCount), stroke: '#e2e8f0', strokeWidth: 1 })),
                 // Y-axis labels
-                ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('text', { key: 'yl' + pct, x: PAD - 8, y: yScale(pct * maxCount) + 4, textAnchor: 'end', fill: '#94a3b8', fontSize: 10 }, Math.round(pct * maxCount))),
+                ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('text', { key: 'yl' + pct, x: PAD - 8, y: yScale(pct * maxCount) + 4, textAnchor: 'end', fill: '#475569', fontSize: 10 }, Math.round(pct * maxCount))),
                 // X-axis labels (first, middle, last)
-                ...[0, Math.floor(dailyData.length / 2), dailyData.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => h('text', { key: 'xl' + i, x: xScale(i), y: H - 10, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, dailyData[i]?.date?.slice(5) || '')),
+                ...[0, Math.floor(dailyData.length / 2), dailyData.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => h('text', { key: 'xl' + i, x: xScale(i), y: H - 10, textAnchor: 'middle', fill: '#475569', fontSize: 9 }, dailyData[i]?.date?.slice(5) || '')),
                 // Phase change lines
                 ...phases.filter(p => p.startDate).map((p, i) => {
                     const day = dayNumber(p.startDate);
@@ -24962,6 +26189,7 @@ Keep the language professional but accessible.`;
         const [interimText, setInterimText] = useState('');
         const [parsedEntries, setParsedEntries] = useState([]);
         const [parsing, setParsing] = useState(false);
+        const [notesDate, setNotesDate] = useState(() => blLocalDateKey(new Date()));
         const recognitionRef = useRef(null);
         const [supported] = useState(() => !!(window.SpeechRecognition || window.webkitSpeechRecognition));
 
@@ -24998,7 +26226,7 @@ Keep the language professional but accessible.`;
             if (!transcript.trim() || !callGemini) return;
             setParsing(true);
             try {
-                const prompt = `You are a school BCBA. Extract ABC (Antecedent-Behavior-Consequence) entries from this observation transcript. For each distinct behavioral incident, identify the antecedent, behavior, consequence, and an explicitly stated intensity rating (1-5), or null when no rating is stated. Do not infer a rating from narrative.\n\nTRANSCRIPT:\n${transcript}\n\nSTUDENT: ${studentName || 'Student'}\n\nReturn ONLY valid JSON array:\n[{"antecedent":"...","behavior":"...","consequence":"...","intensity":null,"notes":"..."}]`;
+                const prompt = `You are a school BCBA. Extract ABC (Antecedent-Behavior-Consequence) entries from this observation transcript. For each distinct behavioral incident, identify the antecedent, behavior, consequence, and an explicitly stated intensity rating (1-5), or null when no rating is stated. Do not infer a rating from narrative. Leave the consequence empty when the transcript does not say what happened right after, and give a time only when a clock time is said.\n\nTRANSCRIPT:\n${transcript}\n\nSTUDENT: ${studentName || 'Student'}\n\nReturn ONLY valid JSON array:\n[{"antecedent":"...","behavior":"...","consequence":"...","intensity":null,"time":"clock time said, e.g. 9:15 am, or empty","notes":"..."}]`;
                 const result = await callGemini(prompt);
                 // Null = consent gate blocked the call — toast came from the gate.
                 if (result == null) { setParsing(false); return; }
@@ -25021,12 +26249,14 @@ Keep the language professional but accessible.`;
                 // Per-entry sanitization: strict types, no nulls/undefined fields,
                 // intensity clamped to 1-5, free-text capped to prevent giant pastes.
                 const CAP = (s, n) => typeof s === 'string' ? s.slice(0, n) : '';
-                const safeEntries = entries
-                    .filter(e => e && typeof e === 'object' && !Array.isArray(e))
-                    .slice(0, 100) // sane cap — a real transcript rarely produces >100 ABC events
+                const valid = entries.filter(e => e && typeof e === 'object' && !Array.isArray(e) && typeof e.behavior === 'string' && e.behavior.trim());
+                // It kept 100 and shortened long fields without a word, and counted after the cap.
+                const kept = valid.slice(0, 100);
+                const shortened = kept.filter(e => ['antecedent', 'behavior', 'consequence'].some(k => typeof e[k] === 'string' && e[k].length > 500) || (typeof e.notes === 'string' && e.notes.length > 1000)).length;
+                const safeEntries = kept
                     .map((e, i) => ({
                         id: 'voice_' + Date.now() + '_' + i,
-                        timestamp: new Date().toISOString(),
+                        clock: parseNoteClock(e.time),
                         antecedent: CAP(e.antecedent, 500),
                         behavior: CAP(e.behavior, 500),
                         consequence: CAP(e.consequence, 500),
@@ -25041,6 +26271,8 @@ Keep the language professional but accessible.`;
                 }
                 setParsedEntries(safeEntries);
                 if (addToast) addToast(t('behavior_lens.toast.parsed_n_abc_entries_from_transcript', { n: safeEntries.length }) || `Parsed ${safeEntries.length} ABC entries from transcript!`, 'success');
+                const leftOut = [valid.length > kept.length && (valid.length - kept.length) + ' more entries were left out (100 are read at a time; parse the rest separately)', shortened && shortened + (shortened === 1 ? ' entry had a field' : ' entries had fields') + ' too long to keep in full (they were shortened; check them before adding)'].filter(Boolean);
+                if (leftOut.length && addToast) addToast(leftOut.join('. ') + '.', 'warning');
             } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_parse_transcript', 'Failed to parse transcript'), 'error'); }
             setParsing(false);
         };
@@ -25048,7 +26280,8 @@ Keep the language professional but accessible.`;
         const addSelectedEntries = () => {
             const selected = parsedEntries.filter(e => e._selected);
             if (selected.length === 0) return;
-            const clean = selected.map(e => ({ id: e.id, timestamp: e.timestamp, antecedent: e.antecedent, behavior: e.behavior, consequence: e.consequence, intensity: getBehaviorLensWorkspaceRuntime().normalizeIntensity(e.intensity), notes: e.notes || '' }));
+            const clean = selected.map(e => notesEntryToAbc(e, notesDate, 'voice')).filter(Boolean);
+            if (!clean.length) return;
             setAbcEntries(prev => [...prev, ...clean]);
             if (addToast) addToast(t('behavior_lens.toast.added_n_entries_to_abc_data', { n: clean.length }) || `Added ${clean.length} entries to ABC data!`, 'success');
             setParsedEntries([]);
@@ -25098,6 +26331,7 @@ Keep the language professional but accessible.`;
             parsedEntries.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
                 h('div', { className: 'bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between' },
                     h('span', { className: 'text-xs font-bold text-slate-700' }, `🔍 Review ${parsedEntries.length} Parsed Entries`),
+                    h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-slate-600' }, tt('behavior_lens.nlabc.notes_date', 'Date of these notes'), h('input', { type: 'date', value: notesDate, max: blLocalDateKey(new Date()), onChange: ev => setNotesDate(ev.target.value), className: 'border border-slate-400 rounded px-1 py-0.5 text-[11px]' })),
                     h('button', { "aria-label": "Add Selected Entries", onClick: addSelectedEntries, className: 'px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-700 transition-all' }, `✅ Add ${parsedEntries.filter(e => e._selected).length} Selected`)
                 ),
                 parsedEntries.map((e, i) => h('div', { key: i, className: `flex items-start gap-3 px-4 py-3 border-b border-slate-100 ${e._selected ? 'bg-emerald-50/30' : 'bg-slate-50/30 opacity-60'}` },
@@ -25108,7 +26342,11 @@ Keep the language professional but accessible.`;
                             h('span', { className: 'px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-bold' }, 'B: ' + e.behavior),
                             h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-bold' }, 'C: ' + e.consequence)
                         ),
-                        h('div', { className: 'text-[11px] text-slate-600' }, `Intensity: ${e.intensity == null ? 'Not rated' : e.intensity + '/5'} ${e.notes ? ' • ' + e.notes : ''}`)
+                        h('div', { className: 'text-[11px] text-slate-600' }, `Intensity: ${e.intensity == null ? 'Not rated' : e.intensity + '/5'} ${e.notes ? ' • ' + e.notes : ''}`),
+                        h('div', { className: 'flex items-center gap-2' },
+                            h('input', { type: 'time', value: e.clock || '', onChange: ev => setParsedEntries(prev => prev.map((p, j) => j === i ? { ...p, clock: ev.target.value } : p)), 'aria-label': 'Time of entry ' + (i + 1), className: 'border border-slate-400 rounded px-1 text-[11px]' }),
+                            !e.clock && h('span', { 'data-time-missing': true, className: 'text-[11px] text-amber-800' }, tt('behavior_lens.nlabc.time_not_stated', 'No time in the notes: the time you add it is used'))
+                        )
                     )
                 ))
             )
@@ -25125,19 +26363,25 @@ Keep the language professional but accessible.`;
         const [showImport, setShowImport] = useState(false);
 
         const roles = [
-            { key: 'bcba', label: '🔬 BCBA (Full)', desc: 'All data, analysis, raw ABC entries' },
-            { key: 'teacher', label: '🏫 Teacher', desc: 'Summary, recommendations, behavior strategies' },
-            { key: 'parent', label: '👪 Parent', desc: 'Strengths, progress, home strategies' },
+            { key: 'bcba', label: '🔬 BCBA (Full)', desc: 'Everything: the profile with staff notes, every ABC entry and session, the analysis', holds: 'the full profile including staff notes, every ABC entry and session, and the AI analysis' },
+            { key: 'teacher', label: '🏫 Teacher', desc: 'Summary, analysis and strategies; the profile without staff notes', holds: 'the profile without staff notes, a summary of the entries, and the AI analysis' },
+            { key: 'parent', label: '👪 Parent', desc: 'Strengths, a summary and strategies; no profile or notes', holds: 'strengths, a summary and suggested strategies' },
         ];
 
         const generateSnapshot = () => {
-            const base = { student: selectedStudent, profile: studentProfile, generatedAt: new Date().toISOString(), role: shareRole };
+            // Every role carried the WHOLE profile (triggers, accommodations, goals and the
+            // staff's free-text notes) whatever the card said. Parent "strengths" read the
+            // analysis, which has none, so they were always empty.
+            const profile = studentProfile || {};
+            const base = { student: selectedStudent, generatedAt: new Date().toISOString(), role: shareRole };
             if (shareRole === 'bcba') {
+                base.profile = profile;
                 base.abcEntries = abcEntries;
                 base.observationSessions = observationSessions;
                 base.sessionHistory = sessionHistory;
                 base.aiAnalysis = aiAnalysis;
             } else if (shareRole === 'teacher') {
+                base.profile = { strengths: profile.strengths || '', interests: profile.interests || '', triggers: profile.triggers || '', goals: profile.goals || '', accommodations: profile.accommodations || '' };
                 base.summary = { totalEntries: abcEntries.length, sessions: observationSessions.length };
                 base.topBehaviors = Object.entries(abcEntries.reduce((acc, e) => { acc[e.behavior] = (acc[e.behavior] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 5);
                 const intensity = getBehaviorLensWorkspaceRuntime().summarizeIntensity(abcEntries);
@@ -25146,15 +26390,19 @@ Keep the language professional but accessible.`;
                 base.missingIntensityCount = intensity.missingCount;
                 base.aiAnalysis = aiAnalysis;
             } else {
-                base.strengths = aiAnalysis?.strengths || [];
-                base.progress = aiAnalysis?.progress || aiAnalysis?.summary || 'No analysis available yet.';
+                base.strengths = String(profile.strengths || '').split(/\n|;/).map(x => x.trim()).filter(Boolean).slice(0, 20);
+                const reviewed = aiAnalysis && aiAnalysis.reviewStatus && aiAnalysis.reviewStatus !== 'unreviewed';
+                base.progress = aiAnalysis?.summary ? (reviewed ? '' : 'AI-generated summary, not reviewed by staff: ') + aiAnalysis.summary : 'No analysis available yet.';
                 base.strategies = aiAnalysis?.recommendations?.slice(0, 3) || [];
                 base.totalEntries = abcEntries.length;
             }
             return base;
         };
 
-        const handleShare = () => {
+        // The code is base64, not encryption; say what leaves the device first.
+        const confirmShare = async () => await askBehaviorLensConfirmation(tt('behavior_lens.share.confirm', 'This share holds {holds}. The code and the file are not encrypted: anyone who gets them can read them. Share?', { holds: (roles.find(r => r.key === shareRole) || roles[0]).holds }), { title: 'Share student data', confirmText: 'Share' });
+        const handleShare = async () => {
+            if (!await confirmShare()) return;
             const snapshot = generateSnapshot();
             try {
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(snapshot))));
@@ -25170,17 +26418,17 @@ Keep the language professional but accessible.`;
                     return;
                 }
                 setShareCode(encoded);
-                navigator.clipboard.writeText(encoded);
-                if (addToast) addToast(tt('behavior_lens.toast.share_code_copied_to_clipboard', 'Share code copied to clipboard!'), 'success');
+                blWriteClipboard(encoded, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.share_code_copied_to_clipboard', 'Share code copied to clipboard!'), 'success'); });
             } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_generate_share_code', 'Failed to generate share code'), 'error'); }
         };
 
-        const handleDownloadShare = () => {
+        const handleDownloadShare = async () => {
+            if (!await confirmShare()) return;
             const snapshot = generateSnapshot();
             const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `behaviorlens_share_${selectedStudent || 'student'}_${shareRole}_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `behaviorlens_share_${selectedStudent || 'student'}_${shareRole}_${blLocalDateKey(new Date())}.json`;
             a.click();
             URL.revokeObjectURL(a.href);
             if (addToast) addToast(tt('behavior_lens.toast.share_file_downloaded', 'Share file downloaded!'), 'success');
@@ -25268,7 +26516,9 @@ Keep the language professional but accessible.`;
             ),
             // Imported data preview
             importedData && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-4 space-y-2' },
-                h('h4', { className: 'text-xs font-bold text-emerald-800 uppercase' }, '✅ Imported Workspace Preview'),
+                h('h4', { className: 'text-xs font-bold text-emerald-800 uppercase' }, 'Shared workspace (view only)'),
+                // It said "Imported" but nothing was added, and the preview went when the panel closed.
+                h('p', { className: 'text-xs text-slate-800', 'data-bl-shared-view-only': true }, 'Nothing from this share has been added to your student data. To add a colleague\'s records, ask them for a snapshot and use Snapshot Exchange.'),
                 h('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
                     h('div', null, h('span', { className: 'text-slate-600' }, tt('behavior_lens.ui.student', 'Student: ')), h('span', { className: 'font-bold text-slate-800' }, importedData.student || 'Unknown')),
                     h('div', null, h('span', { className: 'text-slate-600' }, tt('behavior_lens.ui.role', 'Role: ')), h('span', { className: 'font-bold text-slate-800' }, importedData.role || 'N/A')),
@@ -25279,7 +26529,7 @@ Keep the language professional but accessible.`;
                 ),
                 importedData.aiAnalysis && h('div', { className: 'bg-white rounded-lg p-3 mt-2' },
                     h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '🧠 Analysis'),
-                    h('p', { className: 'text-xs text-slate-700 whitespace-pre-wrap' }, typeof importedData.aiAnalysis === 'string' ? importedData.aiAnalysis : importedData.aiAnalysis.summary || JSON.stringify(importedData.aiAnalysis).substring(0, 500))
+                    h('p', { className: 'text-xs text-slate-700 whitespace-pre-wrap' }, typeof importedData.aiAnalysis === 'string' ? importedData.aiAnalysis : aiAnalysisText(importedData.aiAnalysis) || JSON.stringify(importedData.aiAnalysis).substring(0, 500))
                 ),
                 importedData.strengths && importedData.strengths.length > 0 && h('div', { className: 'bg-white rounded-lg p-3' },
                     h('p', { className: 'text-[11px] font-bold text-emerald-600 uppercase mb-1' }, '💪 Strengths'),
@@ -25407,17 +26657,22 @@ Format as a numbered list. Be concise but specific.`;
             if (data.length === 0) return `<p style="color:#94a3b8;text-align:center;padding:40px;">${t('bl.no_chart_data') || 'No data available for chart'}</p>`;
             const W = 680, H = 280, PAD = 50;
             const maxCount = Math.max(...data.map(d => d.count), 1);
+            // Whole-number ticks. Quarter ticks were rounded for their labels, so with a
+            // peak of 3 the lines at 0.75 and 1.5 read "1" and "2" and points sat beside
+            // the wrong labels (a peak of 1 labelled 0, 0, 1, 1, 1).
+            const tickStep = Math.max(1, Math.ceil(maxCount / 4));
+            const yMax = tickStep * Math.ceil(maxCount / tickStep);
             const chartW = W - PAD * 2, chartH = H - PAD * 2;
             const xS = (i) => PAD + (i / Math.max(data.length - 1, 1)) * chartW;
-            const yS = (v) => PAD + chartH - (v / maxCount) * chartH;
+            const yS = (v) => PAD + chartH - (v / yMax) * chartH;
 
             let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:300px;background:#fafbfc;border:1px solid #e2e8f0;border-radius:8px;" aria-hidden="true">`;
             // Grid
-            [0, 0.25, 0.5, 0.75, 1].forEach(pct => {
-                const y = yS(pct * maxCount);
+            for (let tick = 0; tick <= yMax; tick += tickStep) {
+                const y = yS(tick);
                 svg += `<line x1="${PAD}" x2="${W - PAD}" y1="${y}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
-                svg += `<text x="${PAD - 8}" y="${y + 4}" text-anchor="end" fill="#94a3b8" font-size="10">${Math.round(pct * maxCount)}</text>`;
-            });
+                svg += `<text x="${PAD - 8}" y="${y + 4}" text-anchor="end" fill="#64748b" font-size="10" data-bl-tick="${tick}">${tick}</text>`;
+            }
             // X labels
             const xIdxs = data.length <= 10 ? data.map((_, i) => i) : [0, Math.floor(data.length * 0.25), Math.floor(data.length * 0.5), Math.floor(data.length * 0.75), data.length - 1];
             xIdxs.forEach(i => {
@@ -25551,7 +26806,8 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                     ['Known Triggers', studentProfile.triggers],
                     ['Current Goals', studentProfile.goals],
                     ['Accommodations', studentProfile.accommodations],
-                    ['Additional Notes', studentProfile.notes]
+                    // The staff's free-text notes went to parents by default; the parent share leaves them out too.
+                    audience === 'parent' ? ['Additional Notes', ''] : ['Additional Notes', studentProfile.notes]
                 ].filter(([, v]) => v && v.trim());
                 if (profileItems.length > 0) {
                     html += `<h2>👤 Student Profile</h2><div class="profile-grid">`;
@@ -25634,7 +26890,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 if (audience === 'clinical' && aiAnalysis.patterns) {
                     html += `<h3>${esc(tt('bl.identified_patterns', 'Identified Patterns'))}</h3><ul style="font-size:12px;padding-left:20px;">`;
                     (Array.isArray(aiAnalysis.patterns) ? aiAnalysis.patterns : [aiAnalysis.patterns]).forEach(p => {
-                        html += `<li style="margin-bottom:4px;">${esc(typeof p === 'string' ? p : JSON.stringify(p))}</li>`;
+                        html += `<li style="margin-bottom:4px;">${esc(blPatternText(p))}</li>`;
                     });
                     html += `</ul>`;
                 }
@@ -25735,7 +26991,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-700 uppercase block mb-1' }, '🎓 BCBA / Preparer Name'),
-                        h('input', { type: 'text', value: bcbaName, onChange: e => setBcbaName(e.target.value), 'aria-label': 'Optional', placeholder: tt('behavior_lens.ph.optional', 'Optional'), className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
+                        h('input', { type: 'text', value: bcbaName, onChange: e => setBcbaName(e.target.value), 'aria-label': 'BCBA or preparer name (optional)', placeholder: tt('behavior_lens.ph.optional', 'Optional'), className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
                     )
                 ),
                 dateRange === 'custom' && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2' },
@@ -26026,6 +27282,7 @@ IMPORTANT rules for expert keys:
 - Each expertKeys array must have exactly 10 boolean values`;
 
                 const raw = await callGemini(prompt);
+                if (raw == null) return;
                 // Strip markdown code fences if present
                 const cleaned = raw.replace(/```(?:json)?\s*/gi, '').replace(/```\s*/g, '').trim();
                 const parsed = JSON.parse(cleaned);
@@ -26335,7 +27592,7 @@ IMPORTANT rules for expert keys:
                 id: 'why_data',
                 title: 'How much data do you have?',
                 options: [
-                    { id: 'none', icon: '🧠', label: 'None yet, I want to make a quick guess', target: 'functionquiz' },
+                    { id: 'none', icon: '🧠', label: 'None yet: practice spotting functions with example students first', target: 'functionquiz' },
                     { id: 'abc', icon: '📝', label: 'I need to collect new ABC Data', target: 'abc' },
                     { id: 'scatter', icon: '📅', label: 'I want to see time-of-day patterns', target: 'scatterplot' },
                     { id: 'cond', icon: '📐', label: 'I have some data, want advanced probability', target: 'condprob' }
@@ -26457,15 +27714,21 @@ IMPORTANT rules for expert keys:
         return Number.isFinite(time) ? time : null;
     };
 
+    // The recorder's day (localDate / offset), not the UTC day: a 9 pm entry was grouped
+    // under the next date in AlloSheet summaries.
     const blAlloSheetDate = (record) => {
         const time = blAlloSheetRecordTime(record);
-        return time == null ? '' : new Date(time).toISOString().slice(0, 10);
+        if (time == null) return '';
+        return abcEntryDay(Object.assign({}, record, { occurredAt: record.occurredAt || new Date(time).toISOString() })) || blLocalDateKey(time);
     };
 
     const blAlloSheetFilterByDate = (records, dateRange, nowMs) => {
         const source = Array.isArray(records) ? records : [];
         const days = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : null;
-        const cutoff = days == null ? null : nowMs - (days * 86400000);
+        // Today and the days before it, from local midnight, as in the progress report
+        // (a rolling window brought in part of an eighth day as if it were a whole one).
+        let cutoff = null;
+        if (days != null) { const d = new Date(nowMs); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (days - 1)); cutoff = d.getTime(); }
         return source.filter((record) => {
             if (cutoff == null) return true;
             const time = blAlloSheetRecordTime(record);
@@ -26549,6 +27812,7 @@ IMPORTANT rules for expert keys:
                     intensityTotal: 0,
                     intensityCount: 0,
                     durationTotal: 0,
+                    durationCount: 0,
                     behaviorCounts: {}
                 });
             }
@@ -26557,7 +27821,7 @@ IMPORTANT rules for expert keys:
             const intensity = blAlloSheetNumber(entry && entry.intensity);
             if (intensity != null) { group.intensityTotal += intensity; group.intensityCount += 1; }
             const duration = blAlloSheetNumber(entry && entry.duration);
-            if (duration != null) group.durationTotal += duration;
+            if (duration != null) { group.durationTotal += duration; group.durationCount += 1; }
             const behavior = blAlloSheetText(entry && entry.behavior, 1200);
             if (behavior) group.behaviorCounts[behavior] = (group.behaviorCounts[behavior] || 0) + 1;
         });
@@ -26568,7 +27832,8 @@ IMPORTANT rules for expert keys:
                 phase: group.phase,
                 entry_count: group.count,
                 average_intensity: group.intensityCount ? blAlloSheetRound(group.intensityTotal / group.intensityCount, 2) : null,
-                total_duration_seconds: blAlloSheetRound(group.durationTotal, 2),
+                // No duration recorded is not 0 seconds.
+                total_duration_seconds: group.durationCount ? blAlloSheetRound(group.durationTotal, 2) : null,
                 most_common_behavior: blAlloSheetMostCommon(group.behaviorCounts)
             }, identifierIncluded, studentIdentifier)
         }));
@@ -26618,6 +27883,7 @@ IMPORTANT rules for expert keys:
                     method,
                     sessions: 0,
                     durationTotal: 0,
+                    durationCount: 0,
                     eventTotal: 0,
                     eventCount: 0,
                     rateTotal: 0,
@@ -26633,7 +27899,8 @@ IMPORTANT rules for expert keys:
             const group = groups.get(key);
             const metrics = blAlloSheetObservationMetrics(session);
             group.sessions += 1;
-            group.durationTotal += blAlloSheetNumber(session && session.duration) || 0;
+            const sessionSeconds = blAlloSheetNumber(session && session.duration);
+            if (sessionSeconds != null) { group.durationTotal += sessionSeconds; group.durationCount += 1; }
             if (metrics.count != null) { group.eventTotal += metrics.count; group.eventCount += 1; }
             if (metrics.ratePerMinute != null) { group.rateTotal += metrics.ratePerMinute; group.rateCount += 1; }
             if (metrics.percentage != null) { group.percentageTotal += metrics.percentage; group.percentageCount += 1; }
@@ -26646,7 +27913,7 @@ IMPORTANT rules for expert keys:
                 date: group.date,
                 method: group.method,
                 session_count: group.sessions,
-                total_session_duration_seconds: blAlloSheetRound(group.durationTotal, 2),
+                total_session_duration_seconds: group.durationCount ? blAlloSheetRound(group.durationTotal, 2) : null,
                 event_count: group.eventCount ? blAlloSheetRound(group.eventTotal, 2) : null,
                 average_rate: group.rateCount ? blAlloSheetRound(group.rateTotal / group.rateCount, 2) : null,
                 average_percentage: group.percentageCount ? blAlloSheetRound(group.percentageTotal / group.percentageCount, 2) : null,
@@ -27265,6 +28532,7 @@ IMPORTANT rules for expert keys:
                 ['unavailable', 'deadline-exceeded', 'resource-exhausted', 'aborted'].includes(code);
         }, []);
         const _authAttempted = useRef(false);
+        const _tooLargeReportedRef = useRef({});
 
         // Attempt anonymous sign-in on mount
         useEffect(() => {
@@ -27397,6 +28665,18 @@ IMPORTANT rules for expert keys:
                 return true;
             } catch (err) {
                 warnLog('CloudSync: transactional save failed', err);
+                // Firestore refuses a document over 1 MiB for good; it read as "Offline" while online.
+                const failureCode = String(err && err.code || '').toLowerCase().split('/').pop();
+                if (failureCode === 'invalid-argument' && /size|bytes|too large/i.test(String(err && err.message || ''))) {
+                    delete _pendingCloudSavesRef.current[studentId];
+                    _setSyncStatus('too-large');
+                    setPendingLocalSync(true);
+                    if (!_tooLargeReportedRef.current[studentId] && addToast) {
+                        _tooLargeReportedRef.current[studentId] = true;
+                        addToast('This student\'s data is too large for one cloud copy, so it is no longer syncing to the cloud. It is saved in this browser: export a backup to keep a copy.', 'warning');
+                    }
+                    return false;
+                }
                 if (_isRetryableCloudFailure(err)) {
                     _pendingCloudSavesRef.current[studentId] = {
                         data,
@@ -27423,8 +28703,10 @@ IMPORTANT rules for expert keys:
             if (!_fb.doc || !_fb.getDoc) return null;
             const path = _cloudDocPath(studentId);
             if (!path) return null;
+            // quiet: a background read (the roster) that leaves the sync status and any conflict alone.
+            const quiet = !!options.quiet;
             try {
-                _setSyncStatus('syncing');
+                if (!quiet) _setSyncStatus('syncing');
                 const pathParts = path.split('/');
                 const docRef = _fb.doc(firestore, ...pathParts);
                 const snap = await _fb.getDoc(docRef);
@@ -27432,13 +28714,13 @@ IMPORTANT rules for expert keys:
                 const remote = exists ? snap.data() : null;
                 if (exists) {
                     _cloudRevisionsRef.current[studentId] = getBehaviorLensWorkspaceRuntime().workspaceRevision(remote);
-                    if (!options.reconcile) setCloudConflict(null);
+                    if (!options.reconcile && !quiet) setCloudConflict(null);
                 }
-                if (!options.reconcile) _setSyncStatus(exists ? 'synced' : 'idle');
+                if (!options.reconcile && !quiet) _setSyncStatus(exists ? 'synced' : 'idle');
                 return remote;
             } catch (err) {
                 warnLog('CloudSync: load failed', err);
-                _setSyncStatus('offline');
+                if (!quiet) _setSyncStatus('offline');
                 return null;
             }
         }, [firestore, _cloudUserId, isCanvasEnv, _cloudDocPath]);
@@ -27481,6 +28763,42 @@ IMPORTANT rules for expert keys:
                 if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
             };
         }, []);
+        const activePanelRef = useRef(activePanel);
+        activePanelRef.current = activePanel;
+        // Going back to the tools removed the tool, so focus fell to the page: it goes back to the
+        // control that opened the tool. (openPanel focuses a tool's heading on the way in.)
+        const panelOpenerRef = useRef(null);
+        const panelFocusArmed = useRef(false);
+        // Switching student removed the pressed quick-switch button and said nothing a screen reader
+        // hears (a toast only), risking records kept for the wrong student. It names the student,
+        // and focus stays in the quick switch.
+        const previousStudentRef = useRef(selectedStudent);
+        useEffect(() => {
+            const previous = previousStudentRef.current;
+            previousStudentRef.current = selectedStudent;
+            if (!previous || !selectedStudent || previous === selectedStudent) return undefined;
+            if (blAnnounceToSR) blAnnounceToSR('Now viewing ' + selectedStudent);
+            const timer = window.setTimeout(() => {
+                const dialog = behaviorLensDialogRef.current;
+                const active = document.activeElement;
+                if (!dialog || (active && active !== document.body)) return;
+                (dialog.querySelector('#bl-quick-switch') || dialog).focus();
+            }, 0);
+            return () => window.clearTimeout(timer);
+        }, [selectedStudent]);
+        useEffect(() => {
+            if (!panelFocusArmed.current) { panelFocusArmed.current = true; return undefined; }
+            if (activePanel !== 'hub') return undefined;
+            const timer = window.setTimeout(() => {
+                const dialog = behaviorLensDialogRef.current;
+                const active = document.activeElement;
+                if (!dialog || (active && active !== document.body)) return;
+                const was = panelOpenerRef.current;
+                const target = was && Array.from(dialog.querySelectorAll('button')).find(b => was.label ? b.getAttribute('aria-label') === was.label : !b.getAttribute('aria-label') && (b.textContent || '').trim() === was.text);
+                (target || dialog).focus();
+            }, 0);
+            return () => window.clearTimeout(timer);
+        }, [activePanel]);
         const handleBehaviorLensDialogKeyDown = useCallback((event) => {
             const dialog = behaviorLensDialogRef.current;
             if (!dialog) return;
@@ -27491,6 +28809,7 @@ IMPORTANT rules for expert keys:
             if (event.key === 'Escape') {
                 event.preventDefault();
                 event.stopPropagation();
+                if (activePanelRef.current !== 'hub') { setActivePanel('hub'); return; }
                 onClose();
                 return;
             }
@@ -27582,8 +28901,19 @@ IMPORTANT rules for expert keys:
         const [showFreqCounter, setShowFreqCounter] = useState(false);
         const [showIntervalGrid, setShowIntervalGrid] = useState(false);
         const [showChoiceBoard, setShowChoiceBoard] = useState(false);
-        const [isParentMode, setIsParentMode] = useState(!isTeacherMode && false);
-        const [userRole, setUserRole] = useState(isTeacherMode ? 'teacher' : 'parent');
+        // The role belongs to whoever is at this device, not to the student: it was restored from each
+        // student's saved workspace, so switching student in Family view brought back teacher view.
+        const [userRole, setUserRole] = useState(() => {
+            if (!isTeacherMode) return 'parent';
+            try { return localStorage.getItem('bl_staff_role') === 'bcba' ? 'bcba' : 'teacher'; } catch { return 'teacher'; }
+        });
+        const isParentMode = userRole === 'parent';
+        const lastStaffRoleRef = useRef(userRole === 'parent' ? 'teacher' : userRole);
+        useEffect(() => {
+            if (userRole === 'parent') return;
+            lastStaffRoleRef.current = userRole;
+            try { localStorage.setItem('bl_staff_role', userRole); } catch {}
+        }, [userRole]);
         const [activityRegistry, setActivityRegistry] = useState({});
         const [sessionHistory, setSessionHistory] = useState([]);
         const [designPhases, setDesignPhases] = useState([]);
@@ -27652,8 +28982,6 @@ IMPORTANT rules for expert keys:
         const [abcRecordRequest, setAbcRecordRequest] = useState(null);
         const [measurementLaunch, setMeasurementLaunch] = useState(null);
         const [showStudentSetup, setShowStudentSetup] = useState(false);
-        // Derive parent mode from role
-        useEffect(() => { setIsParentMode(userRole === 'parent'); }, [userRole]);
         const [collapsedCategories, setCollapsedCategories] = useState({});
         const [visitedPanels, setVisitedPanels] = useState(new Set());
         const [showWelcome, setShowWelcome] = useState(() => { try { return !localStorage.getItem('bl_onboarded'); } catch { return true; } });
@@ -27721,6 +29049,9 @@ IMPORTANT rules for expert keys:
         }, []);
         const applyStudentWorkspace = useCallback((data) => {
             const workspace = getBehaviorLensWorkspaceRuntime().normalizeWorkspace(data);
+            // Say when a tool's saved data was too large to load (it was dropped silently).
+            const droppedTools = workspace.normalizationReport && workspace.normalizationReport.toolState && workspace.normalizationReport.toolState.dropped;
+            if (Array.isArray(droppedTools) && droppedTools.length && addToast) addToast(tt('behavior_lens.toast.tool_data_too_large', 'Some saved tool data was too large to load and was left out: {tools}. Export a backup before making changes.', { tools: droppedTools.join(', ') }), 'warning');
             setAbcEntries(workspace.abcEntries);
             setObservationSessions(workspace.observationSessions);
             setIsPracticeMode(data && data.isPracticeMode === true);
@@ -27747,13 +29078,91 @@ IMPORTANT rules for expert keys:
             setDismissedAlerts(new Set(workspace.dismissedAlerts));
             setVisitedPanels(new Set(workspace.visitedPanels));
             if (workspace.favorites) setFavorites(workspace.favorites);
-            if (workspace.userRole) setUserRole(workspace.userRole);
             setLastSavedAt(workspace.savedAt);
             setDataChangedSinceSave(false);
         }, []);
 
+        // Two tabs share the roster. Writing this tab's list whole dropped a student the
+        // other tab had just added, and with it the way back to that student's work.
+        // Students this tab removed on purpose stay removed.
+        // Kept on this device (it was for the session only): the account's roster is now read at
+        // start, and would bring back a student removed here.
+        // id -> name, so adding the name again brings back the same id (and the work saved under it).
+        const removedRosterIdsRef = useRef(null);
+        if (removedRosterIdsRef.current === null) {
+            let saved = [];
+            try { saved = JSON.parse(localStorage.getItem('bl_roster_removed') || '[]'); } catch (e) { saved = []; }
+            removedRosterIdsRef.current = new Map((Array.isArray(saved) ? saved : []).filter(e => e && typeof e.id === 'string').map(e => [e.id, typeof e.name === 'string' ? e.name : '']));
+        }
+        const setRosterRemoved = (entries, removed) => {
+            entries.forEach(e => { if (e && e.id) { if (removed) removedRosterIdsRef.current.set(e.id, e.name || ''); else removedRosterIdsRef.current.delete(e.id); } });
+            try { localStorage.setItem('bl_roster_removed', JSON.stringify(Array.from(removedRosterIdsRef.current, ([id, name]) => ({ id, name })).slice(-1000))); } catch (e) { /* storage full or blocked */ }
+        };
+        // Students from the account's roster that this browser does not have (by id or name).
+        const adoptRosterEntries = (current, incoming) => {
+            const ids = new Set(current.map(r => r && r.id).filter(Boolean));
+            const names = new Set(current.map(r => r && String(r.name || '').trim()));
+            const extra = [];
+            (Array.isArray(incoming) ? incoming : []).forEach(r => {
+                const id = r && typeof r.id === 'string' ? r.id : '';
+                const name = r && typeof r.name === 'string' ? r.name.trim().slice(0, 240) : '';
+                if (!/^[A-Za-z0-9_-]{1,120}$/.test(id) || !name || ids.has(id) || names.has(name) || removedRosterIdsRef.current.has(id)) return;
+                ids.add(id); names.add(name);
+                const entry = { id, name };
+                if (typeof r.lastAccessed === 'string') entry.lastAccessed = r.lastAccessed;
+                if (r.mtssTier != null) entry.mtssTier = r.mtssTier;
+                extra.push(entry);
+            });
+            return extra.length ? current.concat(extra) : current;
+        };
+        const mergeStoredRoster = (current) => {
+            let stored = [];
+            try { stored = JSON.parse(localStorage.getItem('bl_student_roster') || '[]'); } catch (e) { stored = []; }
+            if (!Array.isArray(stored)) return current;
+            const ids = new Set(current.map(r => r && r.id).filter(Boolean));
+            const names = new Set(current.map(r => r && r.name));
+            const extra = stored.filter(r => r && r.id && r.name && !ids.has(r.id) && !names.has(r.name) && !removedRosterIdsRef.current.has(r.id));
+            return extra.length ? current.concat(extra) : current;
+        };
+        useEffect(() => {
+            const onStorage = (event) => {
+                if (event && event.key && event.key !== 'bl_student_roster') return;
+                setStudentRoster(prev => mergeStoredRoster(prev));
+            };
+            window.addEventListener('storage', onStorage);
+            return () => window.removeEventListener('storage', onStorage);
+        }, []);
+
+        // The account's roster is read once after sign-in, and a name new to this browser waits for
+        // it (up to 5 s), so a new browser finds each student's cloud work under the id it was saved
+        // with. It was written on every change and never read: opening a student in a new browser
+        // gave them a new id and an empty workspace.
+        // No wait where there is no cloud to ask: Canvas, no Firebase, or a sign-in that failed
+        // (missing Firebase helpers also report offline).
+        const [cloudRosterRead, setCloudRosterRead] = useState(() => isCanvasEnv || !firestore || !firebaseAuth);
+        const cloudRosterFetchedRef = useRef(false);
+        useEffect(() => {
+            if (cloudRosterRead) return undefined;
+            if (cloudSync.syncStatus === 'offline' && !cloudSync.userId) { setCloudRosterRead(true); return undefined; }
+            const timer = setTimeout(() => setCloudRosterRead(true), 5000);
+            return () => clearTimeout(timer);
+        }, [cloudRosterRead, cloudSync.syncStatus, cloudSync.userId]);
+        useEffect(() => {
+            if (!cloudSync.userId || isCanvasEnv || cloudRosterFetchedRef.current) return;
+            cloudRosterFetchedRef.current = true;
+            Promise.resolve(cloudSync.loadFromCloud('__roster__', { quiet: true }))
+                .then(remote => {
+                    const incoming = remote && Array.isArray(remote.roster) ? remote.roster : [];
+                    if (incoming.length) setStudentRoster(prev => adoptRosterEntries(prev, incoming));
+                })
+                .catch(() => {})
+                .then(() => setCloudRosterRead(true));
+        }, [cloudSync.userId]);
+
         // Persist roster to localStorage + cloud write-through
         useEffect(() => {
+            const merged = mergeStoredRoster(studentRoster);
+            if (merged !== studentRoster) { setStudentRoster(merged); return; }
             try { localStorage.setItem('bl_student_roster', JSON.stringify(studentRoster)); } catch {}
             // Cloud write-through for roster
             if (cloudSync.userId && !isCanvasEnv) {
@@ -27764,7 +29173,7 @@ IMPORTANT rules for expert keys:
         // Auto-add current student to roster when selectedStudent changes.
         // NEW entries always get an immutable `id`; existing ones only refresh lastAccessed.
         useEffect(() => {
-            if (!selectedStudent) return;
+            if (!selectedStudent || !cloudRosterRead) return;
             setStudentRoster(prev => {
                 const existing = prev.find(r => r.name === selectedStudent);
                 if (existing) {
@@ -27772,9 +29181,13 @@ IMPORTANT rules for expert keys:
                         ? { ...r, id: r.id || uid(), lastAccessed: new Date().toISOString() }
                         : r);
                 }
-                return [{ id: uid(), name: selectedStudent, lastAccessed: new Date().toISOString() }, ...prev];
+                const removedIds = Array.from(removedRosterIdsRef.current).filter(([, name]) => name === selectedStudent).map(([id]) => id);
+                const id = blReusableWorkspaceId(selectedStudent, prev) || (removedIds.length === 1 ? removedIds[0] : '') || uid();
+                // Adding the name again brings the student back to this device's list.
+                if (removedRosterIdsRef.current.has(id)) setRosterRemoved([{ id }], false);
+                return [{ id, name: selectedStudent, lastAccessed: new Date().toISOString() }, ...prev];
             });
-        }, [selectedStudent]);
+        }, [selectedStudent, cloudRosterRead]);
 
         // ─── Stable storage-id resolution + studentKey helper ────────────
         // Resolve the active student's immutable id by name lookup. Null
@@ -27866,6 +29279,9 @@ IMPORTANT rules for expert keys:
 
         // Switch to a different student from the comparison workspaces
         const switchToStudent = useCallback((studentName) => {
+            // Already open: "switching" reset or reverted the whole workspace and then saved
+            // that, locally and to the cloud (the name did not change, so nothing reloaded).
+            if (studentName === selectedStudent) { setShowRosterDropdown(false); return; }
             // 1. Save current student first
             saveCurrentToRoster();
             // 2. Find the target workspace
@@ -27877,13 +29293,35 @@ IMPORTANT rules for expert keys:
                 if (addToast) addToast(t('behavior_lens.toast.switched_to_n_no_data_loaded', { name: studentName }) || `Switched to ${studentName} (no data loaded)`, 'info');
                 return;
             }
+            // A row loaded from a file: its data became the open workspace, then the switch reloaded
+            // this device's copy, so a student not saved here opened EMPTY while it said "Switched".
+            if (target.fileName) {
+                const entry = studentRoster.find(r => r.name === studentName);
+                let local = null;
+                try { local = entry ? JSON.parse(localStorage.getItem('behaviorLens_workspace_' + entry.id) || 'null') : null; } catch (e) { local = null; }
+                const hasRecords = !!local && ['abcEntries', 'observationSessions', 'sessionNotes', 'teamNotes'].some(key => Array.isArray(local[key]) && local[key].length);
+                if (!hasRecords) {
+                    try {
+                        stageStudentWorkspaceRef.current(Object.assign({}, target._fullData, { student: studentName }));
+                        setShowRosterDropdown(false);
+                        if (addToast) addToast(tt('behavior_lens.toast.switched_from_file', 'Switched to {studentName}, using the loaded file. It is now saved on this device.', { studentName }), 'success');
+                    } catch (error) {
+                        if (addToast) addToast('Could not switch: ' + (error && error.message ? error.message : 'the file could not be saved.'), 'error');
+                    }
+                    return;
+                }
+                setSelectedStudent(studentName);
+                setShowRosterDropdown(false);
+                if (addToast) addToast(tt('behavior_lens.toast.switched_device_copy', 'Switched to {studentName}. The copy saved on this device is open; to use the loaded file instead, load it with "Load workspace from file".', { studentName }), 'info');
+                return;
+            }
             // 3. Load data from _fullData if available, otherwise use summary
             const data = target._fullData || target;
             applyStudentWorkspace(data);
             setSelectedStudent(data.student || studentName);
             setShowRosterDropdown(false);
             if (addToast) addToast(tt('behavior_lens.toast.switched_to_n_v2', 'Switched to {studentName} ✅', { studentName }), 'success');
-        }, [saveCurrentToRoster, comparisonWorkspaces, addToast, resetStudentScopedState, applyStudentWorkspace]);
+        }, [selectedStudent, saveCurrentToRoster, comparisonWorkspaces, addToast, resetStudentScopedState, applyStudentWorkspace, studentRoster]);
 
         // ─── useBotCoach — context-aware Allobot tips ─────────────────────
         const botCoachFired = useRef({});
@@ -27968,6 +29406,7 @@ IMPORTANT rules for expert keys:
 
         // Resolve the durable destination before changing the active student.
         // Imports and practice never pass through a temporary name-based workspace.
+        const stageStudentWorkspaceRef = useRef(null);
         const stageStudentWorkspace = (incoming) => {
             const runtime = getBehaviorLensWorkspaceRuntime();
             const simulated = incoming.isPracticeMode === true;
@@ -28020,6 +29459,7 @@ IMPORTANT rules for expert keys:
             }
             return workspace;
         };
+        stageStudentWorkspaceRef.current = stageStudentWorkspace;
 
         const handleImportStudentProfiles = (rows) => {
             const runtime = getBehaviorLensWorkspaceRuntime();
@@ -28029,7 +29469,7 @@ IMPORTANT rules for expert keys:
             const imported = [];
             rows.forEach(row => {
                 let student = roster.find(item => item.name === row.name && item.id !== PRACTICE_WORKSPACE_ID);
-                if (!student) { student = { id: uid(), name: row.name, lastAccessed: new Date().toISOString() }; roster.push(student); }
+                if (!student) { student = { id: blReusableWorkspaceId(row.name, roster) || uid(), name: row.name, lastAccessed: new Date().toISOString() }; roster.push(student); }
                 const key = 'behaviorLens_workspace_' + student.id;
                 const raw = localStorage.getItem(key);
                 const previous = raw ? JSON.parse(raw) : {};
@@ -28041,9 +29481,7 @@ IMPORTANT rules for expert keys:
                     abcEntries: previous.abcEntries || [], observationSessions: previous.observationSessions || [],
                     studentProfile: {
                         ...runtime.emptyStudentProfile(), ...previous.studentProfile,
-                        grade: row.grade || '', diagnosis: row.diagnosis || '',
-                        accommodations: row.accommodations || '',
-                        notes: [row.grade ? 'Grade: ' + row.grade : '', row.diagnosis ? 'Diagnosis: ' + row.diagnosis : '', row.notes || ''].filter(Boolean).join('\n')
+                        ...mergeImportedProfile(previous.studentProfile, row)
                     }
                 };
                 const result = runtime.persistLocalWorkspace({ storage: localStorage, workspaceKey: key,
@@ -28109,12 +29547,13 @@ IMPORTANT rules for expert keys:
         const handleSaveWorkspace = () => {
             const now = new Date().toISOString();
             const workspace = { ...buildWorkspaceSnapshot(), savedAt: now };
-            const json = JSON.stringify(workspace, null, 2);
+            // Compact: indented, a 5,000-entry backup was 6.3 MB, over the 4 MB the loader accepted.
+            const json = JSON.stringify(workspace);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `behaviorlens_${(selectedStudent || 'data').replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.json`;
+            a.download = `behaviorlens_${(selectedStudent || 'data').replace(/\s+/g, '_')}_${blLocalDateKey(new Date())}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -28147,19 +29586,57 @@ IMPORTANT rules for expert keys:
                 return;
             }
             const reader = new FileReader();
-            reader.onload = (ev) => {
+            reader.onload = async (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
+                    // A snapshot keeps its records under "behaviorLens", so it read as "no recognized data".
+                    if (data && data.alloflowSnapshot === true) throw new Error('this is a snapshot file. Open Snapshot Exchange to merge its records.');
                     const validation = workspaceRuntime.validateWorkspaceImport(data, { sourceBytes: file.size });
                     const validWorkspace = data && validation.ok;
                     if (!validWorkspace) throw new Error(validation.error || 'Invalid BehaviorLens workspace shape');
+                    // It replaced the saved workspace without asking, so restoring last week's
+                    // backup erased this week's entries (and the cloud then took that copy).
+                    const simulated = data.isPracticeMode === true;
+                    const name = String(data.student || selectedStudent || 'Imported student').trim();
+                    const entry = simulated ? studentRoster.find(item => item.id === PRACTICE_WORKSPACE_ID) : studentRoster.find(item => item.name === name && item.id !== PRACTICE_WORKSPACE_ID);
+                    let saved = null;
+                    try { saved = entry ? JSON.parse(localStorage.getItem('behaviorLens_workspace_' + entry.id) || 'null') : null; } catch (err) { saved = null; }
+                    const count = x => (Array.isArray(x) ? x.length : 0);
+                    const hasSavedWork = !!saved && !!(count(saved.abcEntries) || count(saved.observationSessions) || count(saved.sessionNotes) || count(saved.sessionHistory));
+                    // A report export and a BCBA share file carry entries at the top level too, so either
+                    // one REPLACED the backup: targets, notes, plans, tool data and Recently deleted went
+                    // with it. Only a backup (version or savedAt) replaces; these add their records.
+                    const partialKind = data.version || data.savedAt ? null : data.exportDate ? 'report export' : (data.generatedAt && data.role) ? 'share file' : null;
+                    if (partialKind && hasSavedWork) {
+                        if (entry.name !== selectedStudent || isPracticeMode) throw new Error('this ' + partialKind + ' is for ' + entry.name + ' and is not a backup. Open ' + entry.name + ' first, then load it to add its records.');
+                        const abc = snapshotRecords('abc', data.abcEntries, abcEntries, 'file');
+                        const obs = snapshotRecords('obs', data.observationSessions, observationSessions, 'file');
+                        const skipped = abc.duplicates + obs.duplicates;
+                        if (!abc.fresh.length && !obs.fresh.length) {
+                            if (addToast) addToast(tt('behavior_lens.workspace.partial_nothing_new', 'Nothing added: every record in this {kind} is already in the saved work for {name}.', { kind: partialKind, name: entry.name }), 'info');
+                            return;
+                        }
+                        if (!await askBehaviorLensConfirmation(tt('behavior_lens.workspace.partial_confirm', 'This file is a {kind}, not a backup. It has no targets, notes or plans, so it cannot replace the saved work for {name}. Add its {abc} new ABC entries and {obs} new observation sessions? {skipped} records already here will be skipped.', { kind: partialKind, name: entry.name, abc: abc.fresh.length, obs: obs.fresh.length, skipped }), { title: 'Add records from file', confirmText: 'Add records' })) return;
+                        const byTime = (a, b) => new Date(a.timestamp) - new Date(b.timestamp);
+                        if (abc.fresh.length) setAbcEntries(prev => [...prev, ...abc.fresh].sort(byTime));
+                        if (obs.fresh.length) setObservationSessions(prev => [...prev, ...obs.fresh].sort(byTime));
+                        if (addToast) addToast(tt('behavior_lens.workspace.partial_added', 'Added {abc} ABC entries and {obs} observation sessions from the {kind}.', { abc: abc.fresh.length, obs: obs.fresh.length, kind: partialKind }), 'success');
+                        return;
+                    }
+                    if (hasSavedWork) {
+                        const when = iso => (iso && !isNaN(Date.parse(iso)) ? blLocalDateKey(iso) : 'unknown date');
+                        if (!await askBehaviorLensConfirmation(tt('behavior_lens.workspace.replace_confirm', 'Replace the saved work for {name} with this file? The file has {fileEntries} ABC entries (saved {fileDate}); this device has {localEntries} (saved {localDate}). Anything only on this device is lost.', { name: entry.name, fileEntries: count(data.abcEntries), fileDate: when(data.savedAt), localEntries: count(saved.abcEntries), localDate: when(saved.savedAt) }), { title: 'Replace saved workspace', confirmText: 'Replace' })) return;
+                    }
                     stageStudentWorkspace(data);
+                    if (partialKind && addToast) addToast(tt('behavior_lens.workspace.partial_loaded', 'Loaded from a {kind}: it has entries and sessions only, with no targets, notes or plans.', { kind: partialKind }), 'warning');
                     if (addToast) addToast(t('behavior_lens.toast.workspace_loaded_n_entries_n_notes', {
                         entries: Array.isArray(data.abcEntries) ? data.abcEntries.length : 0,
                         notes: Array.isArray(data.sessionNotes) ? data.sessionNotes.length : 0
                     }) || 'Workspace loaded (' +
                         (Array.isArray(data.abcEntries) ? data.abcEntries.length : 0) + ' entries, ' +
-                        (Array.isArray(data.sessionNotes) ? data.sessionNotes.length : 0) + ' notes) ??', 'success');
+                        (Array.isArray(data.sessionNotes) ? data.sessionNotes.length : 0) + ' notes)', 'success');
+                    // Import warnings were computed and never shown.
+                    if (Array.isArray(validation.warnings) && validation.warnings.length && addToast) addToast(tt('behavior_lens.toast.workspace_warnings', 'Loaded with {n} warnings. First: {first}', { n: validation.warnings.length, first: String(validation.warnings[0]) }), 'warning');
                 } catch (err) {
                     warnLog('Failed to parse workspace file:', err);
                     if (addToast) addToast('Workspace not loaded: ' + (err && err.message ? err.message : 'invalid BehaviorLens JSON.'), 'error');
@@ -28195,13 +29672,20 @@ IMPORTANT rules for expert keys:
             const finishFile = () => {
                 processed += 1;
                 if (processed !== files.length) return;
-                setComparisonWorkspaces(prev => {
-                    const existing = new Set(prev.map(w => w.student));
-                    const newOnes = loaded.filter(w => !existing.has(w.student));
-                    return [...prev, ...newOnes];
+                // One row per student, the newest copy. A newer backup of a student already shown
+                // was dropped (while the toast said "Loaded"), and two files for one student both went in.
+                const savedTime = w => Date.parse(w && w.savedAt) || 0;
+                const next = comparisonWorkspaces.slice();
+                let older = 0;
+                loaded.forEach(w => {
+                    const at = next.findIndex(x => x.student === w.student);
+                    if (at < 0) next.push(w);
+                    else if (savedTime(w) > savedTime(next[at])) next[at] = w;
+                    else older += 1;
                 });
+                setComparisonWorkspaces(next);
                 if (addToast) {
-                    const summary = 'Loaded ' + loaded.length + ' workspace(s) for comparison' + (rejected ? '; skipped ' + rejected + ' unsafe or invalid file(s).' : '.');
+                    const summary = 'Loaded ' + (loaded.length - older) + ' workspace(s) for comparison' + (older ? '; ' + older + ' older than the copy already shown were not used' : '') + (rejected ? '; skipped ' + rejected + ' unsafe or invalid file(s).' : '.');
                     addToast(summary, loaded.length ? 'success' : 'error');
                 }
             };
@@ -28212,30 +29696,11 @@ IMPORTANT rules for expert keys:
                         const data = JSON.parse(ev.target.result);
                         const validation = workspaceRuntime.validateWorkspaceImport(data, { sourceBytes: file.size });
                         if (!validation.ok) throw new Error(validation.error);
-                        const entries = data.abcEntries || [];
-                        const sessions = data.sessionHistory || [];
-                        const behaviorCounts = {};
-                        entries.forEach(entry => { const behavior = (entry.behavior || '').trim(); if (behavior) behaviorCounts[behavior] = (behaviorCounts[behavior] || 0) + 1; });
-                        const intensity = workspaceRuntime.summarizeIntensity(entries);
-                        const avgIntensity = intensity.mean;
-                        const lastEntry = entries.length > 0 ? entries.reduce((latest, entry) => new Date(entry.timestamp || entry.date || 0) > new Date(latest.timestamp || latest.date || 0) ? entry : latest, entries[0]).timestamp : null;
-                        const topBehaviors = Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                        loaded.push({
-                            student: data.student || file.name.replace('.json', ''),
-                            fileName: file.name,
-                            abcCount: entries.length,
-                            sessionCount: sessions.length,
-                            avgIntensity: avgIntensity === null ? null : Number(avgIntensity.toFixed(1)),
-                            avgIntensityN: intensity.ratedCount, missingIntensityCount: intensity.missingCount,
-                            topBehaviors,
-                            lastEntry,
-                            savedAt: data.savedAt,
-                            profile: data.studentProfile || {},
-                            sessionHistory: sessions.slice(0, 20),
-                            designPhases: data.designPhases || [],
-                            effectSizeResults: data.effectSizeResults,
-                            _fullData: data
-                        });
+                        // Counted the way a live row is (canonical behaviors, every count, observation
+                        // sessions): file rows used raw text, only the top 5, and the session history.
+                        const normalizedFile = workspaceRuntime.normalizeWorkspace(data);
+                        loaded.push(Object.assign(buildWorkspaceSummary(Object.assign({}, normalizedFile, { student: data.student || normalizedFile.student || file.name.replace(/\.json$/i, '') })),
+                            { fileName: file.name, savedAt: data.savedAt || null, _fullData: data }));
                     } catch (err) {
                         rejected += 1;
                         warnLog('Failed to validate comparison file:', file.name, err);
@@ -28257,24 +29722,37 @@ IMPORTANT rules for expert keys:
                 requestAnimationFrame(() => behaviorLensDialogRef.current?.querySelector('[aria-label="Choose a student"], [aria-label="Pick codename adjective"]')?.focus());
                 return;
             }
+            // The hub cards were filtered in Family view, but the Overview's edit and report
+            // buttons and the heatmap links still opened staff tools.
+            if (isParentMode && !parentTools.includes(panelId)) {
+                if (addToast) addToast(tt('behavior_lens.toast.staff_tool_in_family_view', 'That tool is for staff. Leave Family view to open it.'), 'info');
+                return;
+            }
             recordWorkflowDiagnostic('panel-open', { toolId: panelId, outcome: 'opened' });
             // AI analysis is a command that renders in the hub, not a separate panel.
             if (panelId === 'analysis') {
-                setVisitedPanels(prev => new Set(prev).add(panelId));
+                setVisitedPanels(prev => prev.has(panelId) ? prev : new Set(prev).add(panelId));
                 blAnnounceToSR('Running AI analysis');
                 handleAiAnalyze();
                 return;
             }
+            if (activePanelRef.current === 'hub') {
+                const opener = document.activeElement;
+                panelOpenerRef.current = opener && opener !== document.body ? { label: opener.getAttribute('aria-label'), text: (opener.textContent || '').trim() } : null;
+            }
             setActivePanel(panelId);
-            setVisitedPanels(prev => new Set(prev).add(panelId));
+            setVisitedPanels(prev => prev.has(panelId) ? prev : new Set(prev).add(panelId));
             setActivityRegistry(prev => ({
                 ...prev,
                 [panelId]: { lastVisited: new Date().toISOString(), visitCount: (prev[panelId]?.visitCount || 0) + 1 }
             }));
-            // Accessibility: announce panel change for screen readers
-            blAnnounceToSR('Opened ' + panelId.replace(/([A-Z])/g, ' $1').trim() + ' panel');
+            // Accessibility: announce the tool by its title (it read internal ids: "Opened ioacalc panel").
+            const cardTitle = document.getElementById('bl-tool-' + panelId + '-title');
+            const textOf = node => node.nodeType === 3 ? node.textContent.trim() : Array.from(node.childNodes).map(textOf).filter(Boolean).join(' ');
+            const toolName = cardTitle ? textOf(cardTitle) : '';
             requestAnimationFrame(() => {
                 const heading = behaviorLensDialogRef.current?.querySelector('[data-bl-panel-content] [data-bl-abc-modal-initial]') || behaviorLensDialogRef.current?.querySelector('[data-bl-panel-content] h2, [data-bl-panel-content] h3') || behaviorLensDialogRef.current?.querySelector('[data-bl-panel-content]');
+                blAnnounceToSR('Opened ' + (toolName || (heading && /^H[23]$/.test(heading.tagName) ? heading.textContent.trim() : 'tool')));
                 if (heading) { if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1'); heading.focus(); }
             });
         };
@@ -28301,7 +29779,8 @@ IMPORTANT rules for expert keys:
             if (sessionNotes?.length > 0) {
                 ctx += '\nRecent Session Notes:\n';
                 sessionNotes.slice(0, 5).forEach(n => {
-                    ctx += `- [${(n.timestamp || '').slice(0, 10)}] ${n.text}\n`;
+                    // The local day: the UTC day put an 8 pm note on the next date.
+                    ctx += `- [${blLocalDateKey(n.timestamp) || 'undated'}] ${n.text}\n`;
                 });
             }
             return ctx.slice(0, 4000);
@@ -28343,6 +29822,8 @@ IMPORTANT rules for expert keys:
             const state = aiRequestContextRef.current;
             return state.mounted && state.generation === token.generation && state.requests[token.kind] === token.request;
         };
+        // null = AI is off (this toasts why) or the request went stale. Tools return quietly on
+        // null: they used to show "generated" over an empty result, or an error after this toast.
         const callGeminiGuarded = useCallback(async (prompt, jsonMode) => {
             if (!callGemini) return null;
             if (!aiConsent) {
@@ -28381,9 +29862,24 @@ IMPORTANT rules for expert keys:
             return callGeminiGuarded(enrichedPrompt, jsonMode);
         }, [callGemini, callGeminiGuarded, buildStudentContext]);
 
+        // Replies a family or the student reads: the full context added staff notes, known
+        // triggers, accommodations and session notes, which the reply could repeat.
+        const callGeminiFamilySafe = useCallback(async (prompt, jsonMode) => {
+            if (!callGemini) return null;
+            const profile = studentProfile || {};
+            const ctx = [profile.interests && '- Interests: ' + profile.interests, profile.strengths && '- Strengths: ' + profile.strengths].filter(Boolean).join('\n').slice(0, 2000);
+            return callGeminiGuarded(ctx ? 'Student Profile:\n' + ctx + '\n\n' + prompt : prompt, jsonMode);
+        }, [callGemini, callGeminiGuarded, studentProfile]);
+
+        // An analysis of data that has since changed. Only the Overview and the progress report
+        // checked: the hub, exports, handoffs, summaries and the Ready badge reused it as current.
+        const analysisStale = useMemo(() => getBehaviorLensWorkspaceRuntime().isAnalysisStale(aiAnalysis, abcEntries, targetBehaviors), [aiAnalysis, abcEntries, targetBehaviors]);
+        const currentAnalysis = analysisStale ? null : aiAnalysis;
+
         // ── Smart Alerts computation ──
-        const smartAlerts = useMemo(() => computeSmartAlerts(abcEntries, { userRole, aiAnalysis })
-            .filter(a => !dismissedAlerts.has(a.id)), [abcEntries, dismissedAlerts, userRole, aiAnalysis]);
+        // A dismissal covers what the alert was about when dismissed (it silenced the alert for good).
+        const smartAlerts = useMemo(() => computeSmartAlerts(abcEntries, { userRole, aiAnalysis: currentAnalysis })
+            .filter(a => !dismissedAlerts.has(a.dismissKey || a.id)), [abcEntries, dismissedAlerts, userRole, currentAnalysis]);
 
         // ── Full Student Summary ──
         const handleFullSummary = async () => {
@@ -28395,8 +29891,9 @@ IMPORTANT rules for expert keys:
                 const abcStr = getBehaviorLensWorkspaceRuntime().selectStratifiedEntries(abcEntries, 10).entries.map(e =>
                     `${new Date(e.timestamp).toLocaleDateString()}: B=${e.behavior}, A=${e.antecedent}, C=${e.consequence}, I=${e.intensity == null ? 'not rated' : e.intensity + '/5'}`
                 ).join('\n');
-                const obsStr = (observationSessions || []).slice(-5).map(s =>
-                    `Method: ${s.method}, Observation duration: ${s.duration == null ? 'not recorded' : s.duration + 's'}, Measurements: ${JSON.stringify(s.data || {})}`
+                // slice(-5) sent the five OLDEST: the list is mostly newest first.
+                const obsStr = observationSessionsNewestFirst(observationSessions).slice(0, 5).map(s =>
+                    `Method: ${s.method}, Observation duration: ${s.duration == null ? 'not recorded' : s.duration + 's'}, Result: ${observationResult(s)}`
                 ).join('\n');
                 const prompt = `You are a special education specialist writing a comprehensive student behavioral profile.
 ${RESTORATIVE_PREAMBLE}
@@ -28408,8 +29905,8 @@ ${abcStr || 'None'}
 Observation sessions (${observationSessions?.length || 0} total):
 ${obsStr || 'None'}
 
-AI Analysis: ${aiAnalysis?.summary || 'Not yet analyzed'}
-Hypothesized Function: ${aiAnalysis?.hypothesizedFunction || 'Not determined'}
+AI Analysis: ${currentAnalysis?.summary || 'Not yet analyzed'}
+Hypothesized Function: ${currentAnalysis?.hypothesizedFunction || 'Not determined'}
 
 Write a unified student behavioral profile that synthesizes all available data. Include:
 1. BEHAVIORAL OVERVIEW — Summary of observed behavioral patterns
@@ -28475,6 +29972,13 @@ Use professional language. Refer to "the student" (not the codename).`;
         const localTabIdRef = useRef(null);
         if (!localTabIdRef.current) localTabIdRef.current = uid();
         const workspaceSnapshotSequenceRef = useRef(0);
+        // Visit times and diagnostics change on every tool open. As snapshot inputs they rewrote the
+        // whole workspace (and saved it to the cloud) each time a tool was opened, told a second tab
+        // the student had changed, and lit the backup reminder. They are read at the next real save.
+        const activityRegistryRef = useRef(activityRegistry);
+        activityRegistryRef.current = activityRegistry;
+        const workflowDiagnosticsRef = useRef(workflowDiagnostics);
+        workflowDiagnosticsRef.current = workflowDiagnostics;
         const buildWorkspaceSnapshot = useCallback(() => ({
             version: getBehaviorLensWorkspaceRuntime().WORKSPACE_VERSION,
             savedAt: new Date().toISOString(),
@@ -28483,18 +29987,18 @@ Use professional language. Refer to "the student" (not the codename).`;
             studentId: activeStudentId || null,
             revision: selectedStudent ? (_cloudRevisionsRef.current[activeStudentId || selectedStudent] || 0) : 0,
             abcEntries, observationSessions, sessionNotes, teamNotes, studentProfile,
-            userRole, activityRegistry, sessionHistory, designPhases, activeDesign,
+            userRole, activityRegistry: activityRegistryRef.current, sessionHistory, designPhases, activeDesign,
             workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
             aiAnalysis, fullSummary, favorites,
             isPracticeMode, practiceScenarioName, practiceReturnStudent,
-            targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
+            targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics: workflowDiagnosticsRef.current,
             dismissedAlerts: Array.from(dismissedAlerts),
             visitedPanels: Array.from(visitedPanels)
         }), [selectedStudent, activeStudentId, abcEntries, observationSessions, sessionNotes, teamNotes,
-            studentProfile, userRole, activityRegistry, sessionHistory, designPhases,
+            studentProfile, userRole, sessionHistory, designPhases,
             activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
             aiAnalysis, fullSummary, favorites, isPracticeMode, practiceScenarioName, practiceReturnStudent,
-            targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics, dismissedAlerts, visitedPanels]);
+            targetBehaviors, toolState, deletedAbcEntries, auditLog, dismissedAlerts, visitedPanels]);
         const cloudLoadAttempted = useRef({});
         const abcHydratedRef = useRef(false);
         const hydrationRef = useRef(null);
@@ -28528,7 +30032,9 @@ Use professional language. Refer to "the student" (not the codename).`;
             if (!context.silent) {
                 _reportWorkspaceCapacity(persistenceResult && persistenceResult.capacity);
                 setPendingLocalSync(!payload.suppressDirtyMark && !payload.localOnly);
-                _clearLocalPersistenceError();
+                // Another student's save may still be failing; one success hid that error.
+                const othersPending = localWorkspaceSaveSchedulerRef.current.pendingValues().some(value => value && value.identity !== payload.identity);
+                if (!othersPending) _clearLocalPersistenceError();
             }
             return persistenceResult;
         };
@@ -28537,8 +30043,17 @@ Use professional language. Refer to "the student" (not the codename).`;
             setPendingLocalSync(!payload.localOnly);
             _reportLocalPersistenceError(storageError);
         };
+        // Opening a tool used to rewrite the workspace, which also retried a save that had failed
+        // (storage full). Tool visits no longer write, so a failed save is retried on navigation.
+        useEffect(() => {
+            const scheduler = localWorkspaceSaveSchedulerRef.current;
+            if (scheduler && scheduler.hasPending()) scheduler.flush({ reason: 'navigation-retry' });
+        }, [activePanel]);
         const handleUseCloudCopy = useCallback(async () => {
             if (!selectedStudent || !cloudSync.userId || isPracticeMode) return;
+            if (cloudSync.cloudConflict && cloudSync.cloudConflict.studentId !== (activeStudentId || selectedStudent)) return;
+            // It replaced local edits without asking (keeping local asks).
+            if (!await askBehaviorLensConfirmation(tt('behavior_lens.cloud.use_cloud_confirm', 'Replace the copy in this browser with the cloud copy for this student? Changes only in this browser are lost.'), { title: 'Use cloud copy', confirmText: 'Use cloud copy' })) return;
             const selection = workspaceSelectionRef.current;
             const remote = await cloudSync.loadFromCloud(activeStudentId || selectedStudent, { reconcile: true });
             if (workspaceSelectionRef.current !== selection) return;
@@ -28555,6 +30070,7 @@ Use professional language. Refer to "the student" (not the codename).`;
 
         const handleKeepLocalCopy = useCallback(() => {
             if (!selectedStudent || !cloudSync.userId) return;
+            if (cloudSync.cloudConflict && cloudSync.cloudConflict.studentId !== (activeStudentId || selectedStudent)) return;
             askBehaviorLensConfirmation('Replace the newer cloud copy with the local workspace for this student?', { title: 'Keep local workspace', confirmText: 'Replace cloud copy' }).then(async (confirmed) => {
                 if (!confirmed) return;
                 const now = new Date().toISOString();
@@ -28670,6 +30186,18 @@ Use professional language. Refer to "the student" (not the codename).`;
                 hydrationCleanIdentityRef.current = identity;
                 return undefined;
             }
+            // A save that failed (storage full) stays pending. Coming back to this student
+            // loaded the older copy from disk, and the next save then replaced the unsaved
+            // edits with it. Reopen the unsaved copy instead; it is saved again from here.
+            const unsavedPayload = localWorkspaceSaveSchedulerRef.current.pendingValues().find(value => value && value.identity === identity);
+            if (unsavedPayload && unsavedPayload.workspace) {
+                latestLocalSnapshotRef.current = unsavedPayload.workspace;
+                applyStudentWorkspace(unsavedPayload.workspace);
+                abcHydratedRef.current = true;
+                hydrationCleanIdentityRef.current = identity;
+                if (addToast) addToast(tt('behavior_lens.toast.unsaved_reopened', 'Reopened unsaved changes for this student. They could not be saved yet: free up browser storage or export a backup.'), 'warning');
+                return undefined;
+            }
 
             const loadKey = activeStudentId || selectedStudent;
             const shouldLoadCloud = !!(cloudSync.userId && !isCanvasEnv && activeStudentId !== PRACTICE_WORKSPACE_ID && !cloudLoadAttempted.current[loadKey]);
@@ -28774,6 +30302,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 const runtime = getBehaviorLensWorkspaceRuntime();
                 const currentWorkspace = latestLocalSnapshotRef.current;
                 if (!runtime.hasWorkspaceData(otherWorkspace) || !currentWorkspace || runtime.sameWorkspaceSnapshot(currentWorkspace, otherWorkspace)) return;
+                // The other tab re-saved the same data (it only opened this student): not a conflict.
+                if (runtime.sameWorkspaceContent && runtime.sameWorkspaceContent(currentWorkspace, otherWorkspace)) return;
                 const existing = localTabConflictRef.current;
                 if (existing && runtime.sameWorkspaceSnapshot(existing.otherWorkspace, otherWorkspace)) return;
                 if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current);
@@ -28865,7 +30395,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             setDataChangedSinceSave(true);
         }, [abcEntries, observationSessions, sessionHistory, sessionNotes, teamNotes, designPhases, studentProfile,
             activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults, aiAnalysis,
-            fullSummary, targetBehaviors, toolState, deletedAbcEntries, auditLog, workflowDiagnostics,
+            fullSummary, targetBehaviors, toolState, deletedAbcEntries, auditLog,
             activeStudentId, selectedStudent]);
 
         // Auto-save reminder toast (every 10 min if unsaved changes exist)
@@ -28911,6 +30441,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             setAnalyzing(true);
             setHubView('tools');
             setActivePanel('hub');
+            if (blAnnounceToSR) blAnnounceToSR('Running AI analysis');
             try {
                 const sample = runtime.selectStratifiedEntries(abcEntries, 24);
                 const provenance = runtime.createAnalysisProvenance(abcEntries, sample, undefined, targetBehaviors);
@@ -28923,9 +30454,10 @@ Use professional language. Refer to "the student" (not the codename).`;
                     'You are a Board Certified Behavior Analyst (BCBA) reviewing ABC behavioral observation data for a student.',
                     RESTORATIVE_PREAMBLE,
                     '',
-                    'DATA COVERAGE: ' + sample.sampleCount + ' of ' + sample.totalCount + ' entries using ' + sample.strategy + '.',
+                    'DATA COVERAGE: ' + sample.sampleCount + ' of ' + sample.totalCount + ' entries (' + blSampleText(sample.strategy) + ').',
                     'Recorded range: ' + (provenance.dateFrom || 'unknown') + ' through ' + (provenance.dateTo || 'unknown') + '.',
                     'Missing intensity means not rated; do not impute a value. Treat repeated entries as observations, not independent proof of function.',
+                    ...(sample.sampleCount < sample.totalCount ? ['', 'COUNTS OVER ALL ' + sample.totalCount + ' ENTRIES (exact wording, so similar wording is counted apart; the entries below are the sample):'].concat(blAbcTallies(abcEntries, targetBehaviors)) : []),
                     '',
                     dataStr,
                     '',
@@ -28934,7 +30466,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     '  "summary": "2-3 sentence high-level summary of patterns and limitations",',
                     '  "hypothesizedFunction": "Attention" | "Escape" | "Tangible" | "Sensory" | "Multiple" | "Unknown",',
                     '  "confidence": <0-100>,',
-                    '  "patterns": [{ "pattern": "description", "frequency": "how often in this sample", "evidence": "sample entry references" }],',
+                    '  "patterns": [{ "pattern": "description", "frequency": "how often (use the counts over all entries when they are given)", "evidence": "sample entry references" }],',
                     '  "recommendations": ["specific, observable, reversible next step"],',
                     '  "notes": "sampling, missing-data, and alternative-explanation caveats"',
                     '}'
@@ -28945,25 +30477,22 @@ Use professional language. Refer to "the student" (not the codename).`;
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch (error) { const object = parseJsonBlobFromText(result); if (object) parsed = object; else throw new Error('Could not parse AI response'); }
-                const normalizedAnalysis = parsed && typeof parsed === 'object' ? {
-                    summary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 4000) : '',
-                    hypothesizedFunction: typeof parsed.hypothesizedFunction === 'string' ? parsed.hypothesizedFunction.slice(0, 120) : 'Unknown',
-                    // Missing stays missing (it read as 0, "Low"); a 0-1 fraction is a percentage.
-                    confidence: (() => { const c = parsed.confidence == null || parsed.confidence === '' ? NaN : Number(parsed.confidence); if (!Number.isFinite(c)) return null; return Math.max(0, Math.min(100, c > 0 && c < 1 ? c * 100 : c)); })(),
-                    patterns: Array.isArray(parsed.patterns) ? parsed.patterns.filter(item => item && typeof item === 'object').slice(0, 20).map(item => ({ pattern: typeof item.pattern === 'string' ? item.pattern.slice(0, 500) : '', frequency: typeof item.frequency === 'string' ? item.frequency.slice(0, 200) : '', evidence: typeof item.evidence === 'string' ? item.evidence.slice(0, 500) : '' })) : [],
-                    recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.filter(item => typeof item === 'string').slice(0, 20).map(item => item.slice(0, 500)) : [],
-                    notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 2000) : '',
-                    provenance,
-                    source: 'ai-assisted',
-                    reviewStatus: 'unreviewed'
-                } : { summary: '', hypothesizedFunction: 'Unknown', confidence: 0, patterns: [], recommendations: [], notes: '', provenance, source: 'ai-assisted', reviewStatus: 'unreviewed' };
+                const normalizedAnalysis = normalizeAiAnalysisReply(parsed, provenance);
+                if (!normalizedAnalysis) throw new Error('The AI reply had no analysis in it');
                 if (aiAnalysis) setToolState(previous => ({ ...previous, aiAnalysisHistory: [aiAnalysis].concat(Array.isArray(previous.aiAnalysisHistory) ? previous.aiAnalysisHistory : []).slice(0, 10) }));
                 setAiAnalysis(normalizedAnalysis);
                 appendAuditEvent(runtime.createAuditEvent('ai-analysis-generated', { entityType: 'analysis', entityId: provenance.sourceFingerprint, actor: userRole, summary: 'Generated an AI-assisted ABC analysis from a disclosed stratified sample.', metadata: { totalEntries: provenance.totalEntries, sampleCount: provenance.sampleCount, sampleStrategy: provenance.sampleStrategy } }));
                 recordWorkflowDiagnostic('ai-analysis', { toolId: 'analysis', durationMs: Date.now() - startedAt, outcome: 'completed' });
                 if (addToast) addToast(tt('behavior_lens.abc.analysis_complete', 'Analysis complete'), 'success');
+                if (blAnnounceToSR) blAnnounceToSR('AI analysis complete');
+                // To the result, unless the user has gone on to another tool meanwhile.
+                window.setTimeout(() => {
+                    const heading = document.getElementById('bl-ai-analysis-title');
+                    if (heading && activePanelRef.current === 'hub') { heading.focus(); if (typeof heading.scrollIntoView === 'function') heading.scrollIntoView({ block: 'start' }); }
+                }, 50);
             } catch (error) {
                 if (!isStudentAiRequestCurrent(request)) return;
+                if (blAnnounceToSR) blAnnounceToSR('AI analysis failed. Try again.');
                 warnLog('AI Analysis failed:', error);
                 recordWorkflowDiagnostic('ai-analysis', { toolId: 'analysis', durationMs: Date.now() - startedAt, outcome: 'failed' });
                 if (addToast) addToast(tt('behavior_lens.abc.analysis_failed', 'Analysis failed - try again'), 'error');
@@ -29284,24 +30813,26 @@ Use professional language. Refer to "the student" (not the codename).`;
             const timestamp = new Date().toLocaleString();
             const lines = [`BehaviorLens Export — ${panelId}`, `Student: ${studentLabel}`, `Date: ${timestamp}`, ''];
             if (['abc', 'overview', 'trends', 'hypothesis', 'condprob', 'scatterplot', 'hotspot', 'nlabc', 'qualitycheck', 'predict', 'triangulation'].includes(panelId)) {
-                lines.push(`ABC Entries (${abcEntries.length}):`);
-                abcEntries.forEach((e, i) => {
-                    lines.push(`  ${i + 1}. [${abcEntryDay(e)}${fmtTime(e.occurredAt || e.timestamp) ? ' ' + fmtTime(e.occurredAt || e.timestamp) : ''}] A: ${e.antecedent || ''} | B: ${e.behavior || ''} | C: ${e.consequence || ''} | Setting: ${e.setting || ''} | Intensity: ${e.intensity || ''}`);
+                lines.push(`ABC Entries (${abcEntries.length}), newest first:`);
+                abcEntriesNewestFirst(abcEntries).forEach((e, i) => {
+                    lines.push(`  ${i + 1}. [${abcEntryDay(e)}${abcEntryClock(e) ? ' ' + abcEntryClock(e) : ''}] A: ${e.antecedent || ''} | B: ${e.behavior || ''} | C: ${e.consequence || ''} | Setting: ${e.setting || ''} | Intensity: ${e.intensity || ''}`);
                 });
             }
             if (['sessiontracker', 'abagraph', 'cumrecord', 'effectsize', 'trends', 'progressreport', 'printreport'].includes(panelId)) {
-                lines.push('', `Session History (${sessionHistory.length}):`);
-                sessionHistory.forEach((s, i) => {
-                    lines.push(`  ${i + 1}. [${s.date || ''}] Behavior: ${s.behavior || ''} | Count: ${s.count ?? ''} | Rate: ${s.rate ?? ''} | Phase: ${s.phase || ''}`);
+                lines.push('', `Session History (${sessionHistory.length}), newest first:`);
+                blAlloSheetSessionMeasurementRows(observationSessionsNewestFirst(sessionHistory), false, '', false).forEach((r, i) => {
+                    const v = r.values || {};
+                    lines.push(`  ${i + 1}. [${v.date || 'undated'}] ${v.behavior || 'Behavior'}: ${v.measurement_value == null ? 'not recorded' : v.measurement_value + ' ' + String(v.measurement_unit || '').replace('_', ' ')} (${v.measurement_type})${v.phase && v.phase !== 'Unspecified' ? ' | Phase: ' + v.phase : ''}`);
                 });
             }
-            if (['analysis', 'overview', 'triangulation'].includes(panelId) && aiAnalysis) {
-                lines.push('', 'AI Analysis (AI-assisted, not a clinical conclusion):', aiAnalysisText(aiAnalysis));
+            if (['analysis', 'overview', 'triangulation'].includes(panelId) && currentAnalysis) {
+                lines.push('', 'AI Analysis (AI-assisted, not a clinical conclusion):', aiAnalysisText(currentAnalysis));
             }
             if (['observation'].includes(panelId)) {
-                lines.push(`Observation Sessions (${observationSessions.length}):`);
-                observationSessions.forEach((s, i) => {
-                    lines.push(`  ${i + 1}. [${s.date || s.timestamp || ''}] Type: ${s.type || ''} | Duration: ${s.duration || ''}`);
+                // Sessions have a `method`, not a `type`: every row read "Type:  |" with no result.
+                lines.push(`Observation Sessions (${observationSessions.length}), newest first:`);
+                observationSessionsNewestFirst(observationSessions).forEach((s, i) => {
+                    lines.push(`  ${i + 1}. ${observationSessionLine(s)}`);
                 });
             }
             return lines.join('\n');
@@ -29309,7 +30840,7 @@ Use professional language. Refer to "the student" (not the codename).`;
 
         const handleCopyToolText = () => {
             const text = getToolExportData(activePanel);
-            navigator.clipboard.writeText(text).then(() => {
+            blWriteClipboard(text, addToast).then(() => {
                 if (addToast) addToast(tt('behavior_lens.toast.copied_to_clipboard', 'Copied to clipboard!'), 'success');
             });
             setShowExportMenu(false);
@@ -29322,16 +30853,20 @@ Use professional language. Refer to "the student" (not the codename).`;
                 csvContent = buildAbcCsv(abcEntries);
             } else if (['sessiontracker', 'abagraph', 'cumrecord', 'effectsize'].includes(activePanel) && sessionHistory.length > 0) {
                 csvContent = buildSessionCsv(sessionHistory);
+            } else if (activePanel === 'observation' && observationSessions.length > 0) {
+                csvContent = buildObservationCsv(observationSessions);
             } else {
-                csvContent = getToolExportData(activePanel);
+                csvContent = null;
             }
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+            // Anything else is plain text: it was saved as .csv, unescaped, and broke columns.
+            const asText = csvContent == null;
+            const blob = new Blob([asText ? getToolExportData(activePanel) : csvContent], { type: asText ? 'text/plain' : 'text/csv' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `behaviorlens-${activePanel}-${studentLabel.replace(/\s+/g, '_')}.csv`;
+            a.download = `behaviorlens-${activePanel}-${studentLabel.replace(/\s+/g, '_')}.${asText ? 'txt' : 'csv'}`;
             a.click();
             URL.revokeObjectURL(a.href);
-            if (addToast) addToast(tt('behavior_lens.toast.csv_downloaded', 'CSV downloaded!'), 'success');
+            if (addToast) addToast(asText ? tt('behavior_lens.toast.text_downloaded', 'Text file downloaded') : tt('behavior_lens.toast.csv_downloaded', 'CSV downloaded!'), 'success');
             setShowExportMenu(false);
         };
 
@@ -29343,6 +30878,10 @@ Use professional language. Refer to "the student" (not the codename).`;
         const [sandboxEntries, setSandboxEntries] = useState(25);
 
                     const launchHubTool = (toolId) => {
+                        if (isParentMode && !parentTools.includes(toolId)) {
+                            if (addToast) addToast(tt('behavior_lens.toast.staff_tool_in_family_view', 'That tool is for staff. Leave Family view to open it.'), 'info');
+                            return;
+                        }
                         setMeasurementLaunch(null);
                         const prerequisite = behaviorLensToolPrerequisite(toolId, selectedStudent, abcEntries.length);
                         if (prerequisite) {
@@ -29401,7 +30940,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     title: tt('behavior_lens.hub.analysis_title', 'AI Pattern Analysis'),
                     desc: tt('behavior_lens.hub.analysis_desc', 'AI-powered functional behavior analysis based on your collected data'),
                     color: 'purple',
-                    badge: aiAnalysis ? 'Ready' : null,
+                    badge: currentAnalysis ? 'Ready' : analysisStale ? 'Out of date' : null,
                     disabled: abcEntries.length < 3,
                 },
                 {
@@ -30219,14 +31758,17 @@ Use professional language. Refer to "the student" (not the codename).`;
                     mockAbc.push({
                         id: Date.now() + i,
                         student: demoName,
-                        date: d.toISOString().split('T')[0],
-                        time: d.toTimeString().slice(0, 5),
+                        // A real timestamp: a date-only value normalized to UTC midnight, so
+                        // every demo incident landed about 8 pm the evening before.
+                        timestamp: d.toISOString(),
+                        occurredAt: d.toISOString(),
+                        timezoneOffset: d.getTimezoneOffset(),
                         antecedent: antecedents[Math.floor(Math.random() * antecedents.length)],
                         behavior: behaviors[Math.floor(Math.random() * behaviors.length)],
                         consequence: consequences[Math.floor(Math.random() * consequences.length)],
                         intensity: Math.floor(Math.random() * 5) + 1,
                         duration: Math.floor(Math.random() * 15) + 1,
-                        perceivedFunction: functions[Math.floor(Math.random() * functions.length)],
+                        function: functions[Math.floor(Math.random() * functions.length)],
                         notes: i % 5 === 0 ? 'Positive engagement observed' : 'Sandbox mock data entry for exploration.'
                     });
                 }
@@ -30274,7 +31816,9 @@ Use professional language. Refer to "the student" (not the codename).`;
                             }, role === 'teacher' ? '👩‍🏫 Teacher' : role === 'parent' ? '👪 Parent' : '📊 BCBA / Specialist')
                         )
                     ),
-                    studentOptions.length > 0
+                    isParentMode && selectedStudent
+                        ? h('p', { className: 'text-sm text-slate-700 mt-2' }, tt('behavior_lens.hub.family_one_student', 'Family view shows one student. Leave Family view to choose another.'))
+                    : studentOptions.length > 0
                         // When dashboard data exists, show a single dropdown of known students
                         ? h('div', { className: 'flex gap-3 items-center' },
                             h('select', {
@@ -30386,7 +31930,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     selectedStudent ? h('header', { className: 'flex flex-wrap items-end justify-between gap-3' },
                         h('div', null, h('p', { className: 'text-sm text-slate-700' }, isParentMode ? 'Family workspace' : 'Student workspace'), h('h2', { className: 'text-2xl font-bold text-slate-900' }, selectedStudent)),
                         h('div', { className: 'flex flex-wrap gap-2 items-end' },
-                            currentNames.length > 1 && h('div', null,
+                            !isParentMode && currentNames.length > 1 && h('div', null,
                                 h('label', { htmlFor: 'bl-today-student', className: 'block text-sm text-slate-700 mb-1' }, 'Switch student'),
                                 h('select', { id: 'bl-today-student', 'aria-label': 'Choose a student', value: selectedStudent, onChange: event => switchToStudent(event.target.value), className: 'min-h-11 max-w-full rounded-lg border border-slate-400 bg-white px-3 text-sm' }, currentNames.map(name => h('option', { key: name, value: name }, name)))),
                             h('button', { type: 'button', 'aria-expanded': showStudentSetup, 'aria-controls': 'bl-today-setup', onClick: () => setShowStudentSetup(value => !value), className: actionClass }, 'Student and role settings'))
@@ -30446,7 +31990,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             h('button', { type: 'button', onClick: () => launchHubTool(isParentMode ? 'familyvoice' : 'intervention'), className: actionClass }, isParentMode ? 'Share family perspectives' : 'Work on a support plan'),
                             !isParentMode && h('button', { type: 'button', onClick: () => { setToolState(previous => ({ ...previous, reviewPresentation: { ...previous.reviewPresentation, mode: 'document' } })); launchHubTool('overview'); }, className: actionClass }, 'Prepare a progress review'))
                     ),
-                    h('details', { className: 'rounded-xl border border-slate-300 bg-white p-4' },
+                    !isParentMode && h('details', { className: 'rounded-xl border border-slate-300 bg-white p-4' },
                         h('summary', { className: 'min-h-11 py-2 text-sm font-bold text-slate-800' }, 'Workspace files and settings'),
                         h('p', { role: 'status', className: 'text-sm text-slate-700 my-2' }, localPersistenceError ? 'Browser save needs attention. Download a backup to keep a file copy.' : 'Changes save automatically in this browser. Download a backup to keep a file copy.'),
                         h('div', { className: 'flex flex-wrap gap-2' },
@@ -30461,13 +32005,22 @@ Use professional language. Refer to "the student" (not the codename).`;
                 hubNavigation,
                 h('details', { className: 'mb-4', open: !selectedStudent }, h('summary', { className: 'min-h-11 py-3 text-sm font-bold text-slate-700' }, 'Student and role settings'), studentSetup),
                 // ── Student Roster Quick-Switch ──────────────────────
-                studentRoster.length > 1 && h('div', { className: 'mb-4 bg-white/80 backdrop-blur rounded-xl border border-slate-400 p-3 shadow-sm' },
+                !isParentMode && studentRoster.length > 1 && h('div', { id: 'bl-quick-switch', tabIndex: -1, role: 'group', 'aria-label': 'Quick switch. Now viewing ' + (selectedStudent || 'no student'), className: 'mb-4 bg-white/80 backdrop-blur rounded-xl border border-slate-400 p-3 shadow-sm' },
                     h('div', { className: 'flex items-center justify-between mb-2' },
                         h('div', { className: 'flex items-center gap-1.5' },
                             h('span', { className: 'text-sm' }, '⇄'),
                             h('span', { className: 'text-[11px] font-black text-slate-600 uppercase tracking-wider' }, tt('behavior_lens.ui.quick_switch', 'Quick Switch'))
                         ),
-                        h('button', { onClick: () => { setStudentRoster([]); if (addToast) addToast(tt('behavior_lens.toast.roster_cleared', 'Roster cleared'), 'info'); },
+                        h('button', { onClick: async () => {
+                            // It emptied the roster: the open student stopped saving (no roster id) and
+                            // every student's saved work became unreachable. Keep the open student.
+                            const others = studentRoster.filter(r => r.name !== selectedStudent).length;
+                            if (!others) return;
+                            if (!await askBehaviorLensConfirmation(tt('behavior_lens.roster.clear_confirm', 'Remove {n} students from quick switch? Their saved work stays on this device and comes back when you add the same name again.', { n: others }), { title: 'Clear quick switch', confirmText: 'Remove' })) return;
+                            setRosterRemoved(studentRoster.filter(r => r.name !== selectedStudent && r.id), true);
+                            setStudentRoster(prev => prev.filter(r => r.name === selectedStudent));
+                            if (addToast) addToast(tt('behavior_lens.toast.roster_cleared', 'Roster cleared'), 'info');
+                        },
                             className: 'text-[11px] text-slate-600 hover:text-red-400 transition-colors'
                         }, (tt('behavior_lens.raw.clear', 'Clear')))
                     ),
@@ -30490,7 +32043,12 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 ),
                                 h('button', {
                                     type: 'button',
-                                    onClick: () => setStudentRoster(prev => prev.filter(x => x.name !== r.name)),
+                                    onClick: () => {
+                                        if (r.id) setRosterRemoved([r], true);
+                                        setStudentRoster(prev => prev.filter(x => x.name !== r.name));
+                                        if (blAnnounceToSR) blAnnounceToSR('Removed ' + r.name + ' from quick switch');
+                                        window.setTimeout(() => { const wrap = document.getElementById('bl-quick-switch'); (wrap || behaviorLensDialogRef.current)?.focus(); }, 0);
+                                    },
                                     'aria-label': `Remove student ${r.name} from quick switch`,
                                     className: 'w-6 h-6 min-w-6 min-h-6 rounded inline-flex items-center justify-center text-violet-700 hover:text-red-700 opacity-70 group-hover:opacity-100 focus:opacity-100 transition-opacity text-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700'
                                 }, h('span', { 'aria-hidden': 'true' }, '✕'))
@@ -30499,7 +32057,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     )
                 ),
                 // Smart Alerts
-                smartAlerts.length > 0 && h('div', { className: 'space-y-2', 'aria-live': 'polite', role: 'status' },
+                !isParentMode && smartAlerts.length > 0 && h('div', { className: 'space-y-2', 'aria-live': 'polite', role: 'status' },
                     smartAlerts.map(alert => {
                         const alertColors = {
                             warning: 'bg-amber-50 border-amber-200 text-amber-800',
@@ -30515,7 +32073,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 h('span', { className: 'text-xs font-bold' }, alert.msg)
                             ),
                             h('button', {
-                                onClick: () => setDismissedAlerts(prev => new Set([...prev, alert.id])),
+                                onClick: () => setDismissedAlerts(prev => new Set([...prev, alert.dismissKey || alert.id])),
                                 'aria-label': 'Close', className: 'text-xs opacity-50 hover:opacity-100 transition-opacity ms-3 shrink-0'
                             }, '✕')
                         );
@@ -30536,7 +32094,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     }, '🗑️ Clear Practice Data')
                 ),
                 // Full Student Summary card
-                callGemini && selectedStudent && (abcEntries.length > 0 || observationSessions?.length > 0) &&
+                !isParentMode && callGemini && selectedStudent && (abcEntries.length > 0 || observationSessions?.length > 0) &&
                 h('div', { className: `rounded-xl border-2 transition-all overflow-hidden ${fullSummary ? 'border-purple-300 bg-purple-50/30' : 'border-dashed border-purple-200 bg-white hover:border-purple-300'}` },
                     h('button', { onClick: handleFullSummary,
                         disabled: summaryLoading,
@@ -30555,11 +32113,11 @@ Use professional language. Refer to "the student" (not the codename).`;
                         h('div', { className: 'bg-white rounded-xl border border-purple-200 p-4 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto' }, fullSummary),
                         h('div', { className: 'flex gap-2 mt-3' },
                             h('button', { "aria-label": "Copy",
-                                onClick: () => { navigator.clipboard.writeText(fullSummary); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
+                                onClick: () => { blWriteClipboard(fullSummary, addToast).then(() => { if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }); },
                                 className: 'px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-[11px] font-bold hover:bg-purple-200'
                             }, '📋 Copy'),
                             h('button', { "aria-label": "Print",
-                                onClick: () => window.print(),
+                                onClick: blPrintPanel,
                                 className: 'px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-[11px] font-bold hover:bg-purple-200'
                             }, '🖨️ Print')
                         )
@@ -30716,10 +32274,10 @@ Use professional language. Refer to "the student" (not the codename).`;
 
                         // ── Workspace Save/Load (Top) ──
                         h('div', { className: 'flex flex-wrap items-center gap-2' },
-                            h('button', { onClick: handleSaveWorkspace,
+                            !isParentMode && h('button', { onClick: handleSaveWorkspace,
                                 className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse motion-reduce:animate-none' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
                             }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.download_backup', 'Download backup')),
-                            h('button', { "aria-label": "Load workspace from file",
+                            !isParentMode && h('button', { "aria-label": "Load workspace from file",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
                             }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
@@ -30743,7 +32301,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         ),
 
                         // ── Student Profile Card ──
-                        h(StudentProfileEditor, { profile: studentProfile, onChange: setStudentProfile, studentName: selectedStudent, t }),
+                        !isParentMode && h(StudentProfileEditor, { profile: studentProfile, onChange: setStudentProfile, studentName: selectedStudent, t }),
 
                         // ── Student Dashboard Card ──
                         selectedStudent && (abcEntries.length > 0 || observationSessions.length > 0) &&
@@ -30784,12 +32342,12 @@ Use professional language. Refer to "the student" (not the codename).`;
                                     h('span', { className: 'text-sm' }, '📅'),
                                     h('span', { className: 'text-[11px] font-black text-slate-600 uppercase tracking-wider' }, '4-Week Activity')
                                 ),
-                                h('button', { "aria-label": "View Full",
+                                !isParentMode && h('button', { "aria-label": "View Full",
                                     onClick: () => handleToolOpen('heatmap'),
                                     className: 'text-[11px] text-indigo-500 font-bold hover:text-indigo-700 transition-colors'
                                 }, 'View Full →')
                             ),
-                            h(BehaviorHeatmap, { abcEntries, mini: true, onOpenTool: (toolId) => handleToolOpen(toolId), t, addToast })
+                            h(BehaviorHeatmap, { abcEntries, mini: true, onOpenTool: isParentMode ? undefined : (toolId) => handleToolOpen(toolId), t, addToast })
                         ),
 
                         // ── Categorized Tool Grid (or search/filter results) ──
@@ -30828,10 +32386,10 @@ Use professional language. Refer to "the student" (not the codename).`;
 
                         // ── Workspace Save/Load (Bottom) ──
                         h('div', { className: 'flex flex-wrap items-center gap-2 pt-2' },
-                            h('button', { onClick: handleSaveWorkspace,
+                            !isParentMode && h('button', { onClick: handleSaveWorkspace,
                                 className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse motion-reduce:animate-none' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
                             }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.download_backup', 'Download backup')),
-                            h('button', { "aria-label": "Load workspace from file",
+                            !isParentMode && h('button', { "aria-label": "Load workspace from file",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
                             }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
@@ -30842,9 +32400,9 @@ Use professional language. Refer to "the student" (not the codename).`;
                     );
                 })(),
                 // AI Analysis results
-                aiAnalysis && h('div', { className: 'mt-6 bg-white rounded-xl border border-purple-200 p-5 shadow-sm animate-in slide-in-from-bottom-4 duration-300' },
+                !isParentMode && aiAnalysis && h('div', { className: 'mt-6 bg-white rounded-xl border border-purple-200 p-5 shadow-sm animate-in slide-in-from-bottom-4 duration-300' },
                     h('div', { className: 'flex items-center justify-between mb-4' },
-                        h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, '🧠 ', tt('behavior_lens.analysis.title_v2', 'AI-Assisted Analysis')),
+                        h('h3', { id: 'bl-ai-analysis-title', tabIndex: -1, className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, '🧠 ', tt('behavior_lens.analysis.title_v2', 'AI-Assisted Analysis')),
                         h('button', { "aria-label": "Dismiss AI analysis",
                             onClick: () => setAiAnalysis(null),
                             className: 'text-xs text-slate-600 hover:text-slate-800 p-1'
@@ -30854,17 +32412,26 @@ Use professional language. Refer to "the student" (not the codename).`;
                     // function hypotheses become reliable. Don't block the AI output
                     // (Lisa needs exploratory use in week 1) — but flag the limitation
                     // so it doesn't get treated as definitive.
-                    abcEntries.length < 10 && h('div', { className: 'mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900' },
+                    analysisStale && h('div', { role: 'status', className: 'mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900' },
+                        h('strong', null, 'Out of date: '),
+                        'the data changed after this analysis ran. Tools, exports and summaries leave it out until you run it again. ',
+                        h('button', { type: 'button', onClick: handleAiAnalyze, disabled: analyzing, className: 'min-h-11 mt-2 rounded-lg border border-amber-700 bg-white px-3 py-1 font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-50' }, 'Run the analysis again')),
+                    // The count when it ran (it showed today's count).
+                    blAnalyzedCount(aiAnalysis, abcEntries.length) < 10 && h('div', { className: 'mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900' },
                         h('strong', null, '⚠️ Small sample: '),
-                        `${abcEntries.length} ABC entries analyzed. BCBA conventions typically want 10+ entries before treating function hypotheses as reliable. Use as exploratory input only; collect more data before sharing with IEP teams.`
+                        `${blAnalyzedCount(aiAnalysis, abcEntries.length)} ABC entries analyzed. BCBA conventions typically want 10+ entries before treating function hypotheses as reliable. Use as exploratory input only; collect more data before sharing with IEP teams.`
                     ),
                     // Summary
                     h('div', { className: 'mb-4 p-4 bg-slate-50 rounded-lg' },
-                        h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, aiAnalysis.summary)
+                        h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, aiAnalysis.summary),
+                        aiAnalysis.provenance && h('p', { className: 'mt-2 text-xs text-slate-700', 'data-bl-analysis-basis': true }, blAnalysisBasisText(aiAnalysis.provenance))
                     ),
+                    // The model's caveats about sampling and missing data were saved and never shown.
+                    aiAnalysis.notes && h('div', { className: 'mb-4 p-3 rounded-lg border border-slate-300 text-xs text-slate-800', 'data-bl-analysis-notes': true },
+                        h('strong', null, 'Limits the analysis noted: '), aiAnalysis.notes),
                     // Hypothesized function
                     aiAnalysis.hypothesizedFunction && (() => {
-                        const fc = FUNCTION_COLORS[aiAnalysis.hypothesizedFunction] || FUNCTION_COLORS['Attention'];
+                        const fc = FUNCTION_COLORS[aiAnalysis.hypothesizedFunction] || FUNCTION_COLOR_OTHER;
                         return h('div', {
                             className: 'mb-4 p-4 rounded-lg border-2 flex items-center justify-between',
                             style: { background: fc.bg, borderColor: fc.border }
@@ -30914,19 +32481,15 @@ Use professional language. Refer to "the student" (not the codename).`;
                         '📊 ', tt('behavior_lens.hub.recent_sessions', 'Recent Observation Sessions')
                     ),
                     h('div', { className: 'space-y-2' },
-                        observationSessions.slice(0, 5).map(session =>
+                        observationSessionsNewestFirst(observationSessions).slice(0, 5).map(session =>
                             h('div', { key: session.id, className: 'flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg text-xs' },
                                 h('div', null,
                                     h('span', { className: 'font-bold text-slate-700' }, fmtDate(session.timestamp)),
                                     h('span', { className: 'text-slate-600 ms-2' }, session.method)
                                 ),
-                                h('div', { className: 'text-slate-600' },
-                                    session.method === 'frequency' ? `${session.data?.count || 0} occurrences` :
-                                        session.method === 'duration' ? `${session.data?.durations?.length || 0} episodes` :
-                                            session.method === 'interval' ? `${session.data?.occurredCount || 0}/${session.data?.totalIntervals || 0} intervals` :
-                                                session.data?.latencyMs ? `${(session.data.latencyMs / 1000).toFixed(1)}s latency` : '',
-                                    ` — ${fmtDuration(session.duration)}`
-                                )
+                                // It divided by the planned intervals (a session stopped at 8 of 20 read "3/20"),
+                                // showed 0 for a multi-counter count and read latency from a field never saved.
+                                h('div', { className: 'text-slate-600' }, observationResult(session))
                             )
                         )
                     )
@@ -30956,7 +32519,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             // Top bar
             h('div', { className: 'bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10' },
                 h('div', { className: 'bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2' },
-                    h('div', { className: 'flex items-center gap-3' },
+                    h('div', { className: 'flex items-center gap-3 min-w-0 flex-1' },
                         activePanel !== 'hub' && h('button', { 'aria-label': 'Back to BehaviorLens tools',
                             onClick: () => setActivePanel('hub'),
                             className: 'p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 me-1 transition-colors'
@@ -30964,11 +32527,11 @@ Use professional language. Refer to "the student" (not the codename).`;
                         h('div', { className: 'bg-gradient-to-br from-indigo-700 to-purple-700 p-2 rounded-xl text-white shadow-md' },
                             h(Eye, { size: 22 })
                         ),
-                        h('div', null,
+                        h('div', { className: 'min-w-0' },
                             h('h2', { id: 'behavior-lens-dialog-title', className: 'text-xl font-black text-slate-800' },
                                 tt('behavior_lens.title', 'BehaviorLens')
                             ),
-                            h('p', { id: 'behavior-lens-dialog-subtitle', className: 'text-xs text-slate-600' },
+                            h('p', { id: 'behavior-lens-dialog-subtitle', className: 'text-xs text-slate-600 truncate' },
                                 ({
                                     hub: tt('behavior_lens.subtitle', 'Behavioral Observation & Analysis'),
                                     abc: DualLabel(tt('behavior_lens.abc.title', 'ABC Data Collection')),
@@ -31055,23 +32618,25 @@ Use professional language. Refer to "the student" (not the codename).`;
                         // Cloud Sync Status Badge
                         !isCanvasEnv && h('div', {
                             role: 'status',
-                            'aria-label': cloudSync.syncStatus === 'conflict' ? 'Cloud sync conflict' : cloudSync.syncStatus === 'offline' ? (cloudSync.pendingSaveCount > 0 ? 'Cloud offline; local changes queued for retry' : 'Cloud offline; local storage active') : 'Cloud sync status',
+                            'aria-label': cloudSync.syncStatus === 'too-large' ? 'Too large for cloud sync; saved in this browser' : cloudSync.syncStatus === 'conflict' ? 'Cloud sync conflict' : cloudSync.syncStatus === 'offline' ? (cloudSync.pendingSaveCount > 0 ? 'Cloud offline; local changes queued for retry' : 'Cloud offline; local storage active') : 'Cloud sync status',
                             className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
                                 cloudSync.syncStatus === 'synced' ? 'bg-sky-50 border-sky-200 text-sky-700' :
                                 cloudSync.syncStatus === 'syncing' ? 'bg-amber-50 border-amber-200 text-amber-700 animate-pulse motion-reduce:animate-none' :
-                                cloudSync.syncStatus === 'conflict' ? 'bg-orange-50 border-orange-300 text-orange-700' :
+                                cloudSync.syncStatus === 'conflict' || cloudSync.syncStatus === 'too-large' ? 'bg-orange-50 border-orange-300 text-orange-700' :
                                 cloudSync.syncStatus === 'offline' ? 'bg-red-50 border-red-200 text-red-800' :
                                 'bg-slate-50 border-slate-200 text-slate-600'
                             }`,
                             title: cloudSync.syncStatus === 'synced' ? 'Data synced to cloud' :
                                    cloudSync.syncStatus === 'syncing' ? 'Syncing...' :
                                    cloudSync.syncStatus === 'conflict' ? 'A newer cloud copy exists; choose which copy to keep' :
+                                   cloudSync.syncStatus === 'too-large' ? 'This student\'s data is larger than one cloud copy can hold (1 MB). It is saved in this browser; export a backup to keep a copy.' :
                                    cloudSync.syncStatus === 'offline' ? (cloudSync.pendingSaveCount > 0 ? 'Cloud offline — local changes queued for retry' : 'Cloud offline — using local storage') :
                                    cloudSync.syncStatus === 'disabled' ? 'Cloud sync disabled' : 'Cloud sync idle'
                         },
                             cloudSync.syncStatus === 'synced' ? '☁️ Synced' :
                             cloudSync.syncStatus === 'syncing' ? 'Syncing' :
                             cloudSync.syncStatus === 'conflict' ? 'Conflict' :
+                            cloudSync.syncStatus === 'too-large' ? 'Too large to sync' :
                             cloudSync.syncStatus === 'offline' ? (cloudSync.pendingSaveCount > 0 ? '⚡ Queued' : '⚡ Offline') :
                             '💾 Local'
                         ),
@@ -31099,13 +32664,13 @@ Use professional language. Refer to "the student" (not the codename).`;
                         }, aiConsent ? '🤖 AI: ON' : '🤖 AI: OFF'),
                         // Parent Mode toggle
                         activePanel === 'hub' && h('button', { 'aria-label': 'Family Mode', 'aria-pressed': isParentMode,
-                            onClick: () => setUserRole(isParentMode ? 'teacher' : 'parent'),
+                            onClick: () => setUserRole(isParentMode ? lastStaffRoleRef.current : 'parent'),
                             className: `px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${isParentMode
                                 ? 'bg-blue-700 text-white border-blue-500 shadow-md'
                                 : 'bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500'}`
                         }, isParentMode ? '👨‍👩‍👧 ' + (tt('behavior_lens.family_mode', 'Family Mode')) : '👨‍👩‍👧 ' + (tt('behavior_lens.family', 'Family'))),
                         // Per-tool export button (all non-hub panels)
-                        activePanel !== 'hub' && h('div', { className: 'relative' },
+                        activePanel !== 'hub' && !isParentMode && h('div', { className: 'relative' },
                             h('button', { 'aria-label': 'Export this tool', 'aria-expanded': showExportMenu,
                                 onClick: () => setShowExportMenu(v => !v),
                                 className: 'p-2 rounded-full text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors',
@@ -31148,7 +32713,11 @@ Use professional language. Refer to "the student" (not the codename).`;
                     h('button', { type: 'button', onClick: handleKeepThisTabWorkspace, className: 'min-h-[44px] rounded-lg bg-violet-700 px-3 py-2 text-xs font-bold text-white hover:bg-violet-800' }, 'Keep this tab copy')
                 )
             ),
-            cloudSync.cloudConflict && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'mx-6 mt-3 rounded-xl border border-orange-300 bg-orange-50 p-4 text-sm text-orange-900 shadow-sm' },
+            // A conflict belongs to one student. It showed (and its buttons acted) on whichever
+            // student was open, so "Replace cloud with local" could overwrite another student.
+            cloudSync.cloudConflict && cloudSync.cloudConflict.studentId !== (activeStudentId || selectedStudent) && h('div', { role: 'status', 'data-bl-other-conflict': true, className: 'mx-6 mt-3 rounded-xl border border-orange-300 bg-orange-50 p-3 text-sm text-orange-900' },
+                tt('behavior_lens.cloud.other_student_conflict', 'The cloud copy for {name} differs from the copy in this browser. Open {name} to choose which to keep.', { name: ((studentRoster || []).find(r => r.id === cloudSync.cloudConflict.studentId) || {}).name || cloudSync.cloudConflict.studentId })),
+            cloudSync.cloudConflict && cloudSync.cloudConflict.studentId === (activeStudentId || selectedStudent) && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'mx-6 mt-3 rounded-xl border border-orange-300 bg-orange-50 p-4 text-sm text-orange-900 shadow-sm' },
                 h('p', { className: 'font-bold' }, cloudSync.cloudConflict.reason === 'recovery' ? 'Unsynced local work and the cloud copy differ.' : 'A newer cloud copy exists for this student.'),
                 h('p', { className: 'mt-1' }, 'Your local changes are still available in this browser. Choose which copy to keep.'),
                 Number.isInteger(cloudSync.cloudConflict.localRevision) && Number.isInteger(cloudSync.cloudConflict.remoteRevision) &&
@@ -31197,13 +32766,14 @@ Use professional language. Refer to "the student" (not the codename).`;
                     addToast
                 }),
                 activePanel === 'overview' && h(OverviewPanel, {
-                    onMeasure: startTargetMeasurement,
-                    onUpdateSession: handleUpdateObsSession,
-                    onReport: () => openPanel('progressreport'),
-                    onSupport: () => openPanel('intervention'),
+                    familyView: isParentMode,
+                    onMeasure: isParentMode ? undefined : startTargetMeasurement,
+                    onUpdateSession: isParentMode ? undefined : handleUpdateObsSession,
+                    onReport: isParentMode ? undefined : () => openPanel('progressreport'),
+                    onSupport: isParentMode ? undefined : () => openPanel('intervention'),
                     key: activeStudentId || selectedStudent,
-                    onRecord: targetId => startAbcObservation(targetId, 'overview'),
-                    onEdit: entryId => {
+                    onRecord: isParentMode ? () => openPanel('homelog') : targetId => startAbcObservation(targetId, 'overview'),
+                    onEdit: isParentMode ? undefined : entryId => {
                         if (!abcEntries.some(entry => entry.id === entryId)) return;
                         setAbcRecordRequest({ entryId, returnTo: 'overview' });
                         openPanel('abc');
@@ -31234,7 +32804,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     abcEntries,
                     observationSessions,
                     studentName: selectedStudent,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     t,
                     onOpenAlloSheetReview: openAlloSheetHandoffReview
                 }),
@@ -31246,7 +32816,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }),
                 activePanel === 'hypothesis' && h(HypothesisDiagram, {
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     studentName: selectedStudent,
                     callGemini: callGeminiWithContext,
                     t,
@@ -31254,7 +32824,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }),
                 activePanel === 'goals' && h(SmartGoalBuilder, {
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     studentName: selectedStudent,
                     studentKey,
                     callGemini: callGeminiWithContext,
@@ -31265,14 +32835,14 @@ Use professional language. Refer to "the student" (not the codename).`;
                     studentName: selectedStudent,
                     studentKey,
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
                 }),
                 activePanel === 'cycle' && h(EscalationCycle, {
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     studentName: selectedStudent,
                     studentKey,
                     callGemini: callGeminiWithContext,
@@ -31282,7 +32852,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'reinforcer' && h(ReinforcerAssessment, {
                     studentName: selectedStudent,
                     studentKey,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
@@ -31296,7 +32866,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'triangulation' && h(TriangulationCheck, {
                     abcEntries,
                     observationSessions,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     studentName: selectedStudent,
                     callGemini: callGeminiWithContext,
                     t,
@@ -31313,15 +32883,15 @@ Use professional language. Refer to "the student" (not the codename).`;
                     studentName: selectedStudent,
                     studentKey,
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
                 }),
                 activePanel === 'traffic' && h(TrafficLightVisual, {
                     studentName: selectedStudent,
-                    aiAnalysis,
-                    callGemini: callGeminiWithContext,
+                    aiAnalysis: currentAnalysis,
+                    callGemini: callGeminiFamilySafe,
                     t,
                     addToast
                 }),
@@ -31334,8 +32904,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'homenote' && h(HomeNoteGenerator, {
                     studentName: selectedStudent,
                     abcEntries,
-                    aiAnalysis,
-                    callGemini: callGeminiWithContext,
+                    aiAnalysis: currentAnalysis,
+                    callGemini: isParentMode ? callGeminiFamilySafe : callGeminiWithContext,
                     t,
                     addToast
                 }),
@@ -31343,7 +32913,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     studentName: selectedStudent,
                     studentKey,
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
@@ -31357,7 +32927,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'gas' && h(GasRubric, {
                     studentName: selectedStudent,
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
@@ -31365,8 +32935,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'pocket' && h(PocketBip, {
                     studentName: selectedStudent,
                     abcEntries,
-                    aiAnalysis,
-                    callGemini: callGeminiWithContext,
+                    aiAnalysis: currentAnalysis,
+                    callGemini: isParentMode ? callGeminiFamilySafe : callGeminiWithContext,
                     t,
                     addToast
                 }),
@@ -31374,15 +32944,17 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'homelog' && h(HomeBehaviorLog, {
                     studentName: selectedStudent,
                     studentKey,
-                    callGemini: callGeminiWithContext,
+                    callGemini: isParentMode ? callGeminiFamilySafe : callGeminiWithContext,
                     setAbcEntries,
+                    abcEntries,
+                    deletedAbcEntries,
                     t,
                     addToast
                 }),
                 activePanel === 'counseling' && h(CounselingSimulation, {
                     studentName: selectedStudent,
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
@@ -31390,12 +32962,13 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'snapshot' && h(SnapshotExchange, {
                     studentName: selectedStudent,
                     studentKey,
+                    familyView: isParentMode,
                     abcEntries,
                     observationSessions,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     setAbcEntries,
                     setObservationSessions,
-                    callGemini: callGeminiWithContext,
+                    callGemini: isParentMode ? callGeminiFamilySafe : callGeminiWithContext,
                     t,
                     addToast
                 }),
@@ -31409,7 +32982,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'selfcheck' && h(StudentSelfCheck, {
                     studentName: selectedStudent,
                     studentKey,
-                    callGemini: callGeminiWithContext,
+                    callGemini: callGeminiFamilySafe,
                     t,
                     addToast
                 }),
@@ -31424,7 +32997,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     studentName: selectedStudent,
                     abcEntries,
                     observationSessions,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
@@ -31433,7 +33006,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     studentName: selectedStudent,
                     abcEntries,
                     observationSessions,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
@@ -31447,10 +33020,13 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }),
                 activePanel === 'glossary' && h(ABAGlossary, { t }),
                 activePanel === 'fbaworkflow' && h(GuidedWorkflowHub, {
-                    setActivePanel,
+                    // Steps name 'observation' / 'analysis', which only launchHubTool opens
+                    // (setActivePanel showed an empty panel) and it checks for a student.
+                    setActivePanel: launchHubTool,
                     abcEntries,
+                    targetBehaviors,
                     observationSessions,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     alloBotRef: null,
                     workflowTrack,
@@ -31486,7 +33062,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     studentName: selectedStudent,
                     abcEntries,
                     observationSessions,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     graphExport,
                     effectSizeResults,
                     setActivePanel: openPanel,
@@ -31529,7 +33105,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }),
                 activePanel === 'familyvoice' && h(FamilyVoiceCollector, {
                     studentName: selectedStudent,
-                    callGemini: callGeminiWithContext,
+                    callGemini: isParentMode ? callGeminiFamilySafe : callGeminiWithContext,
                     t,
                     addToast
                 }),
@@ -31549,7 +33125,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }),
                 activePanel === 'selfregulation' && h(SelfRegulationToolkit, {
                     studentName: selectedStudent,
-                    callGemini: callGeminiWithContext,
+                    callGemini: callGeminiFamilySafe,
                     t,
                     addToast
                 }),
@@ -31585,7 +33161,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     studentProfile,
                     sessionNotes,
                     abcEntries,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     buildStudentContext,
                     t,
                     addToast,
@@ -31601,7 +33177,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'pdpath' && h(PDLearningPath, {
                     t,
                     addToast,
-                    onOpenTool: (toolId) => { setActivePanel(toolId); }
+                    onOpenTool: launchHubTool
                 }),
                 activePanel === 'abaquiz' && h(ABAQuiz, {
                     t,
@@ -31620,7 +33196,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     studentName: selectedStudent,
                     abcEntries,
                     observationSessions,
-                    aiAnalysis,
+                    aiAnalysis: currentAnalysis,
                     callGemini: callGeminiWithContext,
                     userRole,
                     t,
@@ -31646,7 +33222,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                     addToast
                 }),
                 activePanel === 'mipractice' && h(MIPractice, {
-                    callGemini: callGeminiWithContext,
+                    // A fictional role-play: the open student's profile and notes are not sent.
+                    callGemini: callGeminiGuarded,
                     t,
                     addToast
                 }),
@@ -31656,6 +33233,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }),
                 activePanel === 'sessiontracker' && h(SessionDataTracker, {
                     abcEntries,
+                    savedSessions: sessionHistory,
+                    studentDraftId: activeStudentId || selectedStudent,
                     t,
                     addToast,
                     onSaveSession: (session) => setSessionHistory(prev => [session, ...prev])
@@ -31675,7 +33254,9 @@ Use professional language. Refer to "the student" (not the codename).`;
                     t,
                     addToast,
                     onPhasesChange: (p) => setDesignPhases(p),
-                    onDesignChange: (d) => setActiveDesign(d)
+                    onDesignChange: (d) => setActiveDesign(d),
+                    savedDesign: activeDesign,
+                    savedPhases: designPhases
                 }),
                 activePanel === 'bipgen' && h(BIPGenerator, { studentName: selectedStudent, studentKey, abcEntries, callGemini: callGeminiWithContext, t, addToast }),
                 activePanel === 'drstrategy' && h(DRStrategySelector, { t, addToast }),
@@ -31738,7 +33319,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'condprob' && h(ConditionalProbability, { abcEntries, t, addToast }),
                 activePanel === 'treatintegrity' && h(TreatmentIntegrityTracker, { t, addToast }),
                 activePanel === 'batchimport' && h(BatchImportPanel, {
-                    abcEntries, setAbcEntries, onImportStudentProfiles: handleImportStudentProfiles,
+                    abcEntries, setAbcEntries, onImportStudentProfiles: handleImportStudentProfiles, studentName: selectedStudent, targetBehaviors,
                     addToast, t
                 }),
                 activePanel === 'progressmonitor' && h(ProgressMonitorDashboard, {
@@ -31750,7 +33331,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 }),
                 activePanel === 'sharing' && h(WorkspaceSharing, {
                     abcEntries, observationSessions, sessionHistory,
-                    aiAnalysis, targetBehaviors, studentProfile, selectedStudent,
+                    aiAnalysis: currentAnalysis, targetBehaviors, studentProfile, selectedStudent,
                     studentRoster, cloudSync, addToast, t
                 }),
                 activePanel === 'progressreport' && h(ProgressReportGenerator, {
@@ -31764,11 +33345,11 @@ Use professional language. Refer to "the student" (not the codename).`;
                 activePanel === 'practicum' && h(VirtualPracticum, { t, addToast, callGemini: callGeminiWithContext }),
                 activePanel === 'skilltracker' && h(SkillTracker, {
                     t, addToast,
-                    onOpenTool: (toolId) => { setActivePanel(toolId); }
+                    onOpenTool: launchHubTool
                 }),
                 activePanel === 'heatmap' && h(BehaviorHeatmap, {
                     abcEntries, t, addToast,
-                    onOpenTool: (toolId) => { setActivePanel(toolId); }
+                    onOpenTool: launchHubTool
                 }),
                 activePanel === 'wizard' && h(ToolSelectionWizard, {
                     onClose: () => openPanel('hub'),
@@ -32427,7 +34008,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                             { id: 'progressreport', icon: '📊', label: (tt('behavior_lens.raw.progress_reports', 'Progress Reports')) },
                         ],
                     };
-                    const related = relatedToolsMap[activePanel];
+                    // Family view links to family tools only (these opened the ABC data and AI analysis).
+                    const related = (relatedToolsMap[activePanel] || []).filter(rt => !isParentMode || parentTools.includes(rt.id));
                     // ── Intervention Workflow Chain ───────────────────
                     const interventionChain = [
                         { id: 'analysis', icon: '🧠', label: (tt('behavior_lens.raw.analyze', 'Analyze')) },

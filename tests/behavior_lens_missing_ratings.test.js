@@ -26,6 +26,8 @@ describe('Missing ratings in import and sharing paths',()=>{
  it.each([[null,null],[null,4]])('shares rated-only summaries for %j and %j',async(a,b)=>{
   const writeText=vi.fn().mockResolvedValue();Object.defineProperty(navigator,'clipboard',{value:{writeText},configurable:true});
   await mount('WorkspaceSharing',{abcEntries:[{behavior:'Help',intensity:a},{behavior:'Help',intensity:b}]});await click(textButton('Teacher'));await click(textButton('Share Code'));
+  // Sharing asks first (since 2026-09-23); the dialog is outside the host.
+  await click([...document.querySelectorAll('button')].find(button=>button.textContent.trim()==='Share'));
   const snapshot=JSON.parse(decodeURIComponent(escape(atob(writeText.mock.calls[0][0]))));expect(snapshot.avgIntensity).toBe(b);expect(snapshot.ratedIntensityCount).toBe(b===null?0:1);expect(snapshot.missingIntensityCount).toBe(b===null?2:1);
  });
 });

@@ -104,7 +104,7 @@ describe('momentary time sampling', () => {
     await click(button('Start recording'));
     await advance(5000);
     const occurring = () => button('Mark: occurring at the end of this interval');
-    expect(occurring().disabled).toBe(true);
+    expect(occurring().getAttribute('aria-disabled')).toBe('true');     // focusable, so the keyboard stays on it
     expect(document.querySelector('[data-interval-look]').textContent).toBe('Look in 8 s');
     await click(document.querySelectorAll('.bl-interval-cell')[0]);   // the current cell refuses too
     await advance(8250);                                                // 13.25 s: the look window

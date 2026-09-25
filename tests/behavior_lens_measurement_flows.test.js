@@ -132,7 +132,7 @@ describe('Behavior Lens measurement flows', () => {
   it('keeps target edits independent after add/remove/add', () => {
     const q = componentHarness('SessionDataTracker', { t, abcEntries: [] });
     q.label('+ Add').props.onClick(); q.render(); q.label('+ Add').props.onClick(); q.render();
-    q.all(node => node.props['aria-label'] === 'Remove target')[1].props.onClick(); q.render();
+    q.all(node => String(node.props['aria-label'] || '').startsWith('Remove target'))[1].props.onClick(); q.render();
     q.label('+ Add').props.onClick(); q.render();
     q.all(node => node.props['aria-label'] === 'Target behavior name')[2].props.onChange({ target: { value: 'Only final target' } }); q.render();
     expect(q.all(node => node.props['aria-label'] === 'Target behavior name').map(node => node.props.value)).toEqual(['', '', 'Only final target']);
@@ -145,7 +145,8 @@ describe('Behavior Lens measurement flows', () => {
     q.label('Data collection type for Task').props.onChange({ target: { value: 'duration' } }); q.render();
     q.button('Start Session').props.onClick(); q.render(); q.all(n => n.type === 'button' && /^(▶ Start|⏹ Stop)$/.test(q.text(n)))[0].props.onClick(); q.render();
     now += 5500; q.label('End Session & Save').props.onClick(); q.render();
-    expect(saved.targets[0].durations).toEqual([5.5]); expect(saved.targets[0].count).toBe(1); expect(saved.durationSec).toBe(5);
+    // 5.5 s rounds to 6 since 2026-09-24 (it dropped the part-second, as every pause did).
+    expect(saved.targets[0].durations).toEqual([5.5]); expect(saved.targets[0].count).toBe(1); expect(saved.durationSec).toBe(6);
     now += 10000; q.button('Start Session').props.onClick(); q.render();
     expect(q.text(q.all(n => n.type === 'button' && /^(▶ Start|⏹ Stop)$/.test(q.text(n)))[0])).toContain('Start');
   });
@@ -181,7 +182,7 @@ describe('Behavior Lens measurement flows', () => {
     const entries = ['baseline', 'intervention'].flatMap(phase => [null, phase === 'baseline' ? 4 : 2, phase === 'baseline' ? 5 : 1].map((intensity, index) => ({ id: phase + index, phase, intensity, timestamp: `2026-09-0${index + 1}` })));
     const q = componentHarness('EffectSizeCalculator', { t, abcEntries: entries });
     q.button('Auto-fill from Phase-Tagged').props.onClick(); q.render();
-    expect(q.label('eg 12, 15, 14, 13, 16').props.value).toBe('4, 5');
-    expect(q.label('eg 8, 6, 5, 4, 3').props.value).toBe('2, 1');
+    expect(q.label('Baseline phase (A) data, separated by commas').props.value).toBe('4, 5');
+    expect(q.label('Intervention phase (B) data, separated by commas').props.value).toBe('2, 1');
   });
 });

@@ -80,6 +80,8 @@ describe('Behavior Lens connected workspace', () => {
     expect(host.textContent).toContain('A target with that name already exists');
     expect(workspace().targetBehaviors[0].operationalDefinition).toBe('Existing definition');
     await change('#bl-definition-target', 'existing');
+    // Switching away from the unsaved draft asks first (since 2026-09-23); the dialog is outside the host.
+    await click([...document.querySelectorAll('button')].find(el => el.textContent.trim() === 'Switch'));
     await change('#bl-definition-text', 'Reviewed definition'); await click('Save target'); await tick();
     expect(workspace().targetBehaviors[0]).toMatchObject({ id: 'existing', aliases: ['Help request'], operationalDefinition: 'Reviewed definition' });
   });
@@ -166,7 +168,7 @@ it('preserves a new observation draft while editing an existing record', async (
   await mount(); await click('Add observation');
   await change('[aria-label="Behavior narrative"]', 'Unfinished separate observation');
   await click('Keep draft and close');
-  await click(host.querySelector('[aria-label="Edit entry"]'));
+  await click(host.querySelector('[aria-label^="Edit entry"]'));
   await change('[aria-label="Behavior narrative"]', 'Asked for help using a card');
   await click('Save Entry'); await tick();
   expect(workspace().abcEntries).toHaveLength(1);

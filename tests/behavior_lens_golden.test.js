@@ -129,7 +129,10 @@ describe('layer 4 — storage-id migration is wired (ship-blocker #2, 2026-06-02
 
   it('auto-add-on-selectedStudent useEffect tags new roster entries with an id', () => {
     const src = H.BehaviorLens.toString();
-    expect(src).toMatch(/\{\s*id:\s*uid\(\)\s*,\s*name:\s*selectedStudent/);
+    // Since 2026-09-24 the id of saved work for that name is reused first (re-adding a
+    // removed student found an empty workspace under a new id), then a new one.
+    // Then (same day) the id of a student removed from quick switch on this device, by name.
+    expect(src).toMatch(/const id = blReusableWorkspaceId\(selectedStudent, prev\)\s*\|\|[^;]*removedIds[^;]*\|\|\s*uid\(\);[\s\S]{0,400}\{\s*id,\s*name:\s*selectedStudent/);
   });
 
   it('durable data lives only in the version-4 workspace; the legacy migration is deliberately gone', () => {
@@ -260,11 +263,18 @@ describe('layer 6 — should-fix sweep regressions (2026-06-02 pass 2)', () => {
     expect(MODULE_SRC).toMatch(/const\s+\[includeAi,\s*setIncludeAi\]\s*=\s*useState\(false\)/);
   });
 
-  it('destructive and recording-exit actions use the accessible confirmation service (13 sites)', () => {
-    // 13 since 2026-09-23: replacing typed crisis-plan text with an AI draft, and
-    // resetting an edited consent form, now ask first too.
+  it('destructive and recording-exit actions use the accessible confirmation service (41 sites)', () => {
+    // 15 since 2026-09-23: replacing typed crisis-plan text with an AI draft, resetting an
+    // edited consent form, and replacing or resetting a personalized escalation cycle ask first too.
+    // 32 since pass 4 (same day): AI drafts over typed work, deleting saved records, clearing
+    // entered data, changing a design and sharing student data; the a11y test lists them.
+    // 35 since pass 5: an unsaved definition, AI Suggest over typed fields, a new preference assessment.
+    // 38: clearing quick switch, using the cloud copy, replacing saved work with a file.
+    // 40 since pass 7: replacing graph points with pasted ones, importing a consent template.
+    // 41 since pass 8: closing an edited ABC entry with changes.
+    // 42 since pass 9: adding a report export's or share file's records to saved work.
     const confirmations = (MODULE_SRC.match(/await askBehaviorLensConfirmation\(/g) || []).length;
-    expect(confirmations).toBe(13);
+    expect(confirmations).toBe(42);
     expect(MODULE_SRC).not.toMatch(/(?<![\w.])(?:window\.)?confirm\s*\(/);
   });
 
@@ -310,7 +320,8 @@ describe('layer 7 — pass-2 polish regressions (2026-06-03)', () => {
   it('AI analysis card surfaces a small-N warning when abcEntries.length < 10', () => {
     // The warning is non-blocking (exploratory use is fine) but flags that
     // n<10 isn't enough for treating function hypotheses as reliable.
-    expect(MODULE_SRC).toMatch(/abcEntries\.length\s*<\s*10\s*&&\s*h\('div'/);
+    // Since 2026-09-24 it counts the entries the analysis ran on (it counted today's).
+    expect(MODULE_SRC).toMatch(/blAnalyzedCount\(aiAnalysis,\s*abcEntries\.length\)\s*<\s*10\s*&&\s*h\('div'/);
     expect(MODULE_SRC).toMatch(/Small sample/);
   });
 
@@ -388,9 +399,10 @@ describe('layer 8 — pass-3 audit regressions (2026-06-03)', () => {
     expect(MODULE_SRC).toMatch(/_validateAbcEntry\s*=\s*\(e\)/);
     expect(MODULE_SRC).toMatch(/_validateObsSession\s*=\s*\(s\)/);
     expect(MODULE_SRC).toMatch(/SNAPSHOT_MAX_ENTRIES\s*=\s*5000/);
-    // The dupe-count math should be calculated against the VALIDATED set,
-    // not against the raw imported array (the prior bug).
-    expect(MODULE_SRC).toMatch(/validAbc\.length\s*-\s*newAbc\.length/);
+    // Duplicates are counted against the VALIDATED set, not the raw imported array (the prior
+    // bug). Since 2026-09-24 by content (snapshotRecords), not by the minute alone.
+    expect(MODULE_SRC).toMatch(/snapshotRecords\('abc',\s*validAbc,\s*abcEntries/);
+    expect(MODULE_SRC).toMatch(/const dupeCount = abc\.duplicates \+ obs\.duplicates/);
   });
 
   it('Voice-to-ABC parse validates Array, types, and caps at 100 entries', () => {
@@ -403,8 +415,9 @@ describe('layer 8 — pass-3 audit regressions (2026-06-03)', () => {
   it('ABC table action buttons are p-2 (touch target ≥44px on iPad) with focus-visible rings', () => {
     // The 4 ABC-table icon buttons (Restorative, AI Edit, Edit, Delete)
     // were p-1 (~22px square) and lacked focus-visible rings. Both fixed.
-    expect(MODULE_SRC).toMatch(/aria-label":\s*"Restorative Questions"[\s\S]{0,400}focus-visible:ring-2\s+focus-visible:ring-purple-400/);
-    expect(MODULE_SRC).toMatch(/aria-label":\s*"Delete"[\s\S]{0,400}focus-visible:ring-2\s+focus-visible:ring-red-400/);
+    // Pass 9: each names its entry (they were "Restorative Questions" and "Delete" on every row).
+    expect(MODULE_SRC).toMatch(/aria-label":\s*'Restorative questions for ' \+ rowLabel\(entry\)[\s\S]{0,400}focus-visible:ring-2\s+focus-visible:ring-purple-400/);
+    expect(MODULE_SRC).toMatch(/aria-label":\s*'Delete ' \+ rowLabel\(entry\)[\s\S]{0,400}focus-visible:ring-2\s+focus-visible:ring-red-400/);
   });
 
   it('Counseling-sim custom persona is sanitized before splicing into Gemini prompt', () => {

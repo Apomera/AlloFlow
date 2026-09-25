@@ -164,8 +164,11 @@ describe('Behavior Lens improvement contracts', () => {
 
   it('hardens CSV output and names its analytics denominators', () => {
     expect(source).toContain('String.fromCharCode(0xFEFF)');
-    expect(source).toContain('const numeric =');
-    expect(source).toContain("/[\",\\r\\n]/.test(str)");
+    // Since 2026-09-24 the export panel uses the shared csvCell, which also neutralises a
+    // leading tab or carriage return and quotes every cell (its own escaper did neither).
+    expect(source).toContain('const csvEscape = csvCell;');
+    expect(source).toContain("/^[=+\\-@\\t\\r]/.test(s)) s = \"'\" + s;");
+    expect(source).toContain("return '\"' + s.replace(/\"/g, '\"\"') + '\"';");
     expect(source).toContain('runtime.summarizeIntensity');
     expect(source).toContain('intensityN');
     expect(source).toContain('Counts represent logged ABC entries');

@@ -531,6 +531,14 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
         useCloudButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await Promise.resolve();
       });
+      // Replacing this browser's copy asks first (since 2026-09-24); confirm in the dialog.
+      await waitForCondition(() => Array.from(document.querySelectorAll('button')).some((button) =>
+        button.textContent.trim() === 'Use cloud copy' && !recoveryAlert.contains(button)), 'The use-cloud confirmation did not open');
+      await React.act(async () => {
+        Array.from(document.querySelectorAll('button')).find((button) =>
+          button.textContent.trim() === 'Use cloud copy' && !recoveryAlert.contains(button)).click();
+        await Promise.resolve();
+      });
       await waitForCondition(() => abcMetric(host) === '2', 'Cloud recovery choice did not hydrate');
       await waitForCondition(
         () => localStorage.getItem('behaviorLens_workspace_dirty_studenta001') === null,

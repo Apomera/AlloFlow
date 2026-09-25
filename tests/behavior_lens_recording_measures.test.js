@@ -56,13 +56,12 @@ async function mount(Component, props) {
 
 describe('Live Observation latency', () => {
   it('is measured from the cue, not from the start of the recording', async () => {
+    // Since 2026-09-24 the method cannot change once something is recorded (switching discarded
+    // it), so 30 s of frequency followed by a latency can no longer be saved as one latency.
     const onSaveSession = vi.fn();
-    await mount(M.LiveObsOverlay, { onSaveSession });
-    await click(document.querySelector('[aria-label="Start observation timer"]'), 'start');
-    await advance(30000);
-    await click(document.querySelector('[aria-label="Pause observation timer"]'), 'pause');
+    await mount(M.LiveObsOverlay, { onSaveSession, initialMethod: 'latency' });
     await click(button('Latency'), 'latency method');
-    await click(document.querySelector('[aria-label="Start observation timer"]'), 'resume (cue)');
+    await click(document.querySelector('[aria-label="Start observation timer"]'), 'cue');
     await advance(5000);
     await click(button('Response started: stop the latency timer'), 'response');
     await click(button('Save Session'), 'save');
