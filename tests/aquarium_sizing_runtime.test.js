@@ -79,6 +79,154 @@ function act(patch, name) {
 const contributions = [['fish','ammoniaProduced'], ['fish','oxygenConsumed'], ['fish','co2Released'], ['plants','oxygenProduced'], ['plants','co2Consumed'], ['plants','nitrateConsumed'], ['equipment','oxygenAdded'], ['equipment','co2Removed']];
 afterEach(() => vi.restoreAllMocks());
 
+describe('Aquarium filter capacity and the nitrogen cycle', () => {
+  // Runs the real one-hour tick repeatedly, carrying the whole state forward.
+  // The tool is loaded once per run and re-rendered each hour.
+  const hourButton = element => findElement(element, item => item.type === 'button' && item.props?.['aria-label'] === 'Pause and observe one aquarium hour');
+  // feedEvery: flake-feed on that schedule, so multi-day runs do not starve.
+  function runHours(state, hours, feedEvery = 0) {
+    const first = renderTank(state);
+    const store = first.store;
+    const tool = loadTool('stem_lab/stem_tool_aquarium.js', 'aquarium');
+    const history = [];
+    let element = first.element;
+    const rerender = () => {
+      const Capture = () => { element = tool.render(makeCtx({}, store)); return null; };
+      ReactDOMServer.renderToStaticMarkup(React.createElement(Capture));
+    };
+    for (let h = 0; h < hours; h++) {
+      if (h > 0) rerender();
+      if (feedEvery && h % feedEvery === 0 && store.toolData._aquarium.tankFish.length) {
+        findElement(element, item => item.type === 'button' && item.props?.['aria-label'] === 'Flake').props.onClick();
+        rerender();
+      }
+      hourButton(element).props.onClick();
+      history.push({ ...store.toolData._aquarium.waterChem, fish: store.toolData._aquarium.tankFish.length });
+    }
+    return { state: store.toolData._aquarium, history };
+  }
+  // 20 US gal freshwater; its stocking limit is a load of 10.
+  const stocked = (species, filter, extra = {}) => ({
+    tankFish: species, fishInstanceIds: species.map((_, i) => 'fish-' + (i + 1)), nextFishInstanceId: species.length + 1,
+    hungerLevels: Object.fromEntries(species.map((_, i) => ['fish-' + (i + 1), 40])),
+    equipment: { filter, heater: 1, light: 1, airPump: 1 },
+    aquariumTankConfig: { tankId: 'freshwater', volumeGallons: 20, shape: 'standard' }, ...extra
+  });
+  const water = (ammonia, nitrite, nitrate) => ({ waterChem: { temp: 76, pH: 7, ammonia, nitrite, nitrate, salinity: 0, dissolvedO2: 7, co2: 3 } });
+  const SEVENTY = ['neon', 'neon', 'neon', 'cory', 'platy', 'guppy'];                                  // load 7
+  const OVER = ['neon', 'neon', 'neon', 'neon', 'neon', 'cory', 'cory', 'cory', 'platy', 'guppy'];     // load 13
+
+  it('lets a cycled filter within capacity clear ammonia to near zero while nitrate rises', () => {
+    // The old model removed a fixed percentage per hour, so a tank within its
+    // stocking limit could never fall below ~0.6 ppm, even unfed with a sump.
+    const { history } = runHours({ ...stocked(SEVENTY, 1), ...water(0.6, 0, 10) }, 8);
+    const last = history.at(-1);
+    expect(last.ammonia).toBeLessThan(0.05);
+    expect(last.nitrite).toBeLessThan(0.05);
+    // What the bacteria removed went on down the cycle.
+    expect(last.nitrate).toBeGreaterThan(10.5);
+  });
+
+  it('lets ammonia build when the stock outgrows the filter, and a bigger filter carries it', () => {
+    const sponge = runHours({ ...stocked(OVER, 0), ...water(0, 0, 10) }, 12).history;
+    // Load 13 against a sponge filter's ~8: rising hour after hour.
+    expect(sponge.at(-1).ammonia).toBeGreaterThan(0.5);
+    expect(sponge.at(-1).ammonia).toBeGreaterThan(sponge.at(-4).ammonia);
+    const sump = runHours({ ...stocked(OVER, 3), ...water(0, 0, 10) }, 12).history;
+    expect(sump.at(-1).ammonia).toBeLessThan(0.1);
+  });
+
+  it('treats a bigger tank as dilution, not as a bigger filter', () => {
+    // The same colony processes the same waste whatever the water volume, so an
+    // overloaded sponge filter stays overloaded after a move to 40 US gal - the
+    // concentration is just lower. (Load 13 is only 65% of a 40 US gal tank's
+    // stocking limit: the filter has to match the fish, not the glass.)
+    const big = runHours({ ...stocked(OVER, 0, { aquariumTankConfig: { tankId: 'freshwater', volumeGallons: 40, shape: 'standard' } }), ...water(0, 0, 10) }, 12).history;
+    expect(big.at(-1).ammonia).toBeGreaterThan(0.25);
+    expect(big.at(-1).ammonia).toBeGreaterThan(big.at(-4).ammonia);
+    const small = runHours({ ...stocked(OVER, 0), ...water(0, 0, 10) }, 12).history;
+    expect(big.at(-1).ammonia).toBeLessThan(small.at(-1).ammonia);
+  });
+
+  it('lets ammonia climb when the filter fails, even in a tank within its limit', () => {
+    const working = runHours({ ...stocked(SEVENTY, 3), ...water(0, 0, 10) }, 12).history;
+    const failed = runHours({ ...stocked(SEVENTY, 3, { equipmentFaults: { filter: { severity: 1 } } }), ...water(0, 0, 10) }, 12).history;
+    expect(working.at(-1).ammonia).toBeLessThan(0.05);
+    expect(failed.at(-1).ammonia).toBeGreaterThan(0.5);
+  });
+
+  it('conserves nitrogen as it moves from ammonia to nitrite to nitrate', () => {
+    // No fish, no plants: nothing enters or leaves, so the total can only move
+    // between the three forms (within the 0.01 / 0.01 / 0.1 display rounding).
+    const start = { ...stocked([], 1), tankPlants: [], plantHealth: {}, plantBiomass: {}, ...water(1.0, 0.2, 5) };
+    const { history } = runHours(start, 1);
+    const after = history[0];
+    expect(after.ammonia).toBeLessThan(1.0);
+    expect(after.nitrate).toBeGreaterThan(5);
+    expect(after.ammonia + after.nitrite + after.nitrate).toBeCloseTo(6.2, 1);
+  });
+
+  // Gas exchange: CO2 leaves through the surface; pH is buffered and causal.
+  const chem = (co2, pH) => ({ waterChem: { temp: 76, pH, ammonia: 0, nitrite: 0, nitrate: 10, salinity: 0, dissolvedO2: 7, co2 } });
+  const noAir = { equipment: { filter: 1, heater: 1, light: 1, airPump: 0 } };
+  const bare = { tankPlants: [], plantHealth: {}, plantBiomass: {} };
+
+  it('lets CO2 settle in a stocked tank instead of climbing forever', () => {
+    // A fixed 0.1/h escape ceiling let six fish (+0.28/h) outpace it: CO2 passed
+    // 11 mg/L by day three and pH slid from 7.0 to 5.9 in five days.
+    const { history } = runHours({ ...stocked(SEVENTY, 1, noAir), ...chem(3, 7) }, 72, 18);
+    // Every fish still alive - a settled reading from an emptied tank proves nothing.
+    expect(history.at(-1).fish).toBe(SEVENTY.length);
+    expect(history.at(-1).co2).toBeLessThan(10);
+    // Same hour of the day, one day apart (plants swing CO2 between day and
+    // night): nearly settled, where the old model still gained ~2.6 a day.
+    expect(Math.abs(history.at(-1).co2 - history.at(-25).co2)).toBeLessThan(0.5);
+    for (const hour of history) expect(hour.pH).toBeCloseTo(7, 2);
+  });
+
+  it('holds more CO2 in a tank with less surface per gallon', () => {
+    const settle = shape => {
+      const last = runHours({ ...stocked(SEVENTY, 1, { ...noAir, aquariumTankConfig: { tankId: 'freshwater', volumeGallons: 20, shape } }), ...chem(3, 7) }, 48, 18).history.at(-1);
+      expect(last.fish).toBe(SEVENTY.length);
+      return last.co2;
+    };
+    expect(settle('tall')).toBeGreaterThan(settle('long') + 0.5);
+  });
+
+  it('lets a CO2 spike lower pH within carbonate-chemistry bounds, then recover', () => {
+    // No fish, no plants: CO2 only escapes. 40 mg/L can lower the settled pH
+    // by at most log10(40 / 10) = 0.6.
+    const { history } = runHours({ ...stocked([], 1, bare), ...chem(40, 7) }, 72);
+    const lowest = Math.min(...history.map(hour => hour.pH));
+    expect(lowest).toBeLessThan(6.9);
+    expect(lowest).toBeGreaterThan(7 - Math.log10(40 / 10) - 0.01);
+    expect(history.at(-1).co2).toBeLessThan(10);
+    expect(history.at(-1).pH).toBeGreaterThan(6.95);
+  });
+
+  it('buffers pH back toward the tank normal level after a disturbance', () => {
+    const { history } = runHours({ ...stocked(SEVENTY, 1), ...chem(3, 6.0) }, 48);
+    expect(history[0].pH).toBeGreaterThan(6.0);
+    expect(history.at(-1).pH).toBeGreaterThan(6.95);
+  });
+
+  it('settles each tank at its own normal pH, not a shared 7.0', () => {
+    // The planted preset's normal pH is 6.8.
+    const planted = { selectedTank: 'planted', aquariumTankConfig: { tankId: 'planted', volumeGallons: 40, shape: 'standard' } };
+    const { history } = runHours({ ...stocked([], 1, { ...bare, ...planted }), ...chem(3, 7.5) }, 72);
+    expect(history.at(-1).pH).toBeCloseTo(6.8, 1);
+  });
+
+  it('moves pH only for a reason, never by random drift', () => {
+    const run = value => {
+      vi.spyOn(Math, 'random').mockReturnValue(value);
+      try { return runHours({ ...stocked(SEVENTY, 1), ...chem(3, 7) }, 24).history.map(hour => hour.pH); }
+      finally { vi.restoreAllMocks(); }
+    };
+    expect(run(0.01)).toEqual(run(0.99));
+  });
+});
+
 describe('Aquarium breeding at stocking capacity', () => {
   // A 20 US gal tank carries a load of 10; guppies weigh 1 each. Gestation is
   // already complete (started 21 hours before the observed hour), the water is

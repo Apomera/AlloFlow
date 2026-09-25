@@ -233,8 +233,10 @@ describe('Aquarium runtime and chemistry learning contract', () => {
   it('makes equipment upgrades measurable and directly operable', () => {
     expect(source).toContain('function getTickEquipmentDefinition(type)');
     expect(source).toContain("var _filterEquipment = getTickEquipmentDefinition('filter')");
-    expect(source).toContain('_filterEquipment.ammoniaReduction * _equipmentOutput.filter');
-    expect(source).toContain('_filterEquipment.nitriteReduction * _equipmentOutput.filter');
+    // Filter rating and working condition set the colony's CAPACITY.
+    expect(source).toContain('var filterBioScale = _equipmentOutput.filter * volumeScale * colonyMaturity');
+    expect(source).toContain('var ammoniaCapacity = _filterEquipment.ammoniaReduction * 3.2 * filterBioScale');
+    expect(source).toContain('var nitriteCapacity = _filterEquipment.nitriteReduction * 5.33 * filterBioScale');
     expect(source).toContain('var airPumpOxygenAdded = _airPumpEquipment.o2Boost * _equipmentOutput.airPump');
     expect(source).toContain('deltaO2 += airPumpOxygenAdded');
     expect(source).toContain('var lightEff = (0.5 + _lightEquipment.plantBoost) * _equipmentOutput.light');
@@ -276,20 +278,21 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(tutorialStart).toBeGreaterThan(serviceStart);
   });
 
-  it('suspends the colony derate before it can push a tank past the ammonia harm line', () => {
-    // A fixed floor cannot make this safe: a tank already near 2 ppm crosses it
-    // under ANY derate, while a lightly stocked one is fine at 0.15. So the
-    // derate stands down once ammonia is already elevated - the cue exists to
-    // teach, never to be the thing that harms fish.
-    expect(source).toContain('var colonyDerateSafe = _waterChem.ammonia < 1.7');
+  it('suspends the colony derate before it can push fish into the heavy-stress band', () => {
+    // A fixed floor cannot make this safe: a tank already near the line crosses
+    // it under ANY derate. So the derate stands down once ammonia is already
+    // elevated - the cue exists to teach, never to be the thing that harms fish.
+    expect(source).toContain('var colonyDerateSafe = _waterChem.ammonia < 1.0');
     expect(source).toContain('var colonyMaturity = _colonyLag && colonyDerateSafe ? colonyStored : 1');
     // Suspending the effect must not discard the lag: the colony keeps
     // recovering while its effect is held back.
     expect(source).toContain('var colonyStored = _colonyLag ?');
     expect(source).toContain('var colonyRecovered = !_colonyLag || colonyStored >= 0.999 ? null');
     expect(source).toContain('maturity: Math.min(1, colonyStored + 0.03)');
-    // The harm threshold this protects is the one the sim already enforces.
-    expect(source).toContain('if (newAmm > 2) healthDelta -= 1');
+    // The line it protects is the FISH stress rule: from 1 ppm, stress rises 8
+    // an hour instead of 3. (This used to cite 'newAmm > 2', which is the PLANT
+    // health rule - the wrong threshold for a guard about fish.)
+    expect(source).toContain('environmentStressDelta += newChem.ammonia >= 1 ? 8 : 3;');
   });
 
   it('lets medication damage the colony it already says it damages, and spares a hospital tank', () => {

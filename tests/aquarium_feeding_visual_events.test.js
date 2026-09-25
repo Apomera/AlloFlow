@@ -44,9 +44,10 @@ describe('Aquarium feeding actions and visual records',()=>{
     const first=h.state.aquariumFeedingEvent;
     expect(first).toMatchObject({sequence:9,tick:10,foodType:'flake',targetId:null,acceptedIds:['fish-1'],scope:'display'});
     expect(h.state.hungerLevels).toMatchObject({'fish-1':15,'fish-2':0,'fish-3':60});
-    // Azure eats her whole portion (0.15); Pearl is full and leaves hers to rot
-    // (0.15 x 1.4 = 0.21). This was 0.30 - the same as feeding two hungry fish.
-    expect(h.state.waterChem.ammonia).toBeCloseTo(.36);
+    // Azure eats her whole portion - only the post-meal bump reaches the water
+    // now (0.15 x 0.2 = 0.03); Pearl is full and leaves hers to rot (0.15 x 1.4
+    // = 0.21). This was 0.30 - the same as feeding two hungry fish.
+    expect(h.state.waterChem.ammonia).toBeCloseTo(.24);
     h.render();h.click('Flake');
     expect(h.state.aquariumFeedingEvent.sequence).toBe(10);expect(h.state.aquariumFeedingEvent.eventId).not.toBe(first.eventId);
     expect(h.state.aquariumFeedingEvent.tick).toBe(first.tick);
@@ -62,8 +63,9 @@ describe('Aquarium feeding actions and visual records',()=>{
     expect(h.state.feedingLog.avgHungerDrop).toBeCloseTo(20/3);
     // The planted preset is 40 US gal, twice the concentration model's reference volume.
     // Portions eaten: carnivore 12/45, omnivore 8/20, herbivore none - 2/3 of a
-    // portion eaten, 7/3 left to rot at 1.4x: 0.5 x (0.22 x 2/3 + 0.22 x 1.4 x 7/3).
-    expect(h.state.feedingLog.ammoniaAdded).toBeCloseTo(.4327, 3);
+    // portion eaten (a 0.2 post-meal bump), 7/3 left to rot at 1.4x:
+    // 0.5 x (0.22 x 0.2 x 2/3 + 0.22 x 1.4 x 7/3).
+    expect(h.state.feedingLog.ammoniaAdded).toBeCloseTo(.374, 3);
     expect(h.state.feedingLog.uneatenAmmonia).toBeCloseTo(.3593, 3);
     // All three left more than half their portion, so all three are counted
     // (live food used to report 0 here unconditionally).
@@ -94,10 +96,12 @@ describe('Aquarium feeding actions and visual records',()=>{
     const h=renderTank({quarantinedFish:{'fish-2':true}});
     h.click('Feed Azure individually');
     expect(h.state.aquariumFeedingEvent).toMatchObject({foodType:'individual',targetId:'fish-1',acceptedIds:['fish-1'],scope:'display',sequence:1});
-    expect(h.state.hungerLevels['fish-1']).toBe(20);expect(h.state.waterChem.ammonia).toBeCloseTo(.05);
+    // Azure eats the whole 30-point portion: only the post-meal bump, 0.05 x 0.2.
+    expect(h.state.hungerLevels['fish-1']).toBe(20);expect(h.state.waterChem.ammonia).toBeCloseTo(.01,5);
     h.render();h.click('Feed Pearl individually');
     expect(h.state.aquariumFeedingEvent).toMatchObject({foodType:'individual',targetId:'fish-2',acceptedIds:['fish-2'],scope:'hospital',sequence:2});
-    expect(h.state.hungerLevels['fish-2']).toBe(30);expect(h.state.waterChem.ammonia).toBeCloseTo(.05);
+    // Hospital feeding leaves display chemistry untouched.
+    expect(h.state.hungerLevels['fish-2']).toBe(30);expect(h.state.waterChem.ammonia).toBeCloseTo(.01,5);
   });
 
   it('clears the feeding event when a new tank starts',()=>{
@@ -111,10 +115,12 @@ describe('Aquarium feeding actions and visual records',()=>{
   // both group feeds added a flat amount per fish, eaten or not.
   const uneatenNote=h=>h.find(node=>node.type==='div'&&node.props?.role==='note'&&/Uneaten food:/.test(String(node.props?.children)));
 
-  it('leaves a hungry tank with exactly the feeding ammonia it had before',()=>{
+  it('adds only a small post-meal bump when every fish eats its whole portion',()=>{
+    // Eaten food reaches the water mostly as the steady waste already counted in
+    // the stocking load; only 0.2 of the old instant dose (0.30) remains.
     const h=renderTank({hungerLevels:{'fish-1':50,'fish-2':60}});
     h.click('Flake');
-    expect(h.state.waterChem.ammonia).toBeCloseTo(.30,10);
+    expect(h.state.waterChem.ammonia).toBeCloseTo(.06,10);
     expect(h.state.feedingLog.uneatenAmmonia).toBe(0);
     expect(h.state.feedingLog.overfedCount).toBe(0);
     h.render();
@@ -125,7 +131,7 @@ describe('Aquarium feeding actions and visual records',()=>{
     const h=renderTank({hungerLevels:{'fish-1':0,'fish-2':0}});
     h.click('Flake');
     expect(h.state.hungerLevels).toMatchObject({'fish-1':0,'fish-2':0});
-    // 1.4x the hungry-tank figure, all of it from rotting food.
+    // Seven times the hungry-tank figure (0.06), all of it from rotting food.
     expect(h.state.waterChem.ammonia).toBeCloseTo(.42,10);
     expect(h.state.feedingLog.uneatenAmmonia).toBeCloseTo(.42,10);
     expect(h.state.feedingLog.overfedCount).toBe(2);
@@ -141,7 +147,7 @@ describe('Aquarium feeding actions and visual records',()=>{
     // A fish at hunger 21 eats 21 of its 35-point portion and leaves 14.
     const partial=renderTank({hungerLevels:{'fish-1':21,'fish-2':50}});
     partial.click('Flake');
-    const expected=.15*(21/35+1)+.15*1.4*(14/35);
+    const expected=.15*.2*(21/35+1)+.15*1.4*(14/35);
     expect(partial.state.waterChem.ammonia).toBeCloseTo(expected,10);
     // More than half eaten, so it is not counted as already full.
     expect(partial.state.feedingLog.overfedCount).toBe(0);

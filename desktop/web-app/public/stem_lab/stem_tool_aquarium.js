@@ -19854,8 +19854,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // Illustrative: fish keep part of the nitrogen they eat for growth, so
-          // food that rots uneaten releases more ammonia than food that is eaten.
+          // Illustrative. Food a fish eats reaches the water mostly as the steady
+          // waste already counted in its stocking load, so feeding adds only a
+          // small post-meal bump for it. Food left uneaten rots and releases all
+          // of its nitrogen - more than the same food would once eaten, since fish
+          // keep part of what they eat for growth.
+          var EATEN_FOOD_AMMONIA_SHARE = 0.2;
           var UNEATEN_FOOD_AMMONIA_FACTOR = 1.4;
 
           var feedFish = function () {
@@ -19900,7 +19904,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var avgDrop = Math.round(totalDrop / displayFishCount);
             var uneatenAmmonia = 0.15 * UNEATEN_FOOD_AMMONIA_FACTOR * uneatenPortions * aquariumVolumeScale;
-            var feedAmmonia = 0.15 * eatenPortions * aquariumVolumeScale + uneatenAmmonia;
+            var feedAmmonia = 0.15 * EATEN_FOOD_AMMONIA_SHARE * eatenPortions * aquariumVolumeScale + uneatenAmmonia;
             var newChem = Object.assign({}, waterChem, { ammonia: waterChem.ammonia + feedAmmonia });
 
             var tips = [
@@ -19995,7 +19999,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var avgDrop = totalDrop / displayFishCount;
             var liveUneatenAmmonia = 0.22 * UNEATEN_FOOD_AMMONIA_FACTOR * liveUneatenPortions * aquariumVolumeScale;
-            var liveFeedAmmonia = 0.22 * liveEatenPortions * aquariumVolumeScale + liveUneatenAmmonia;
+            var liveFeedAmmonia = 0.22 * EATEN_FOOD_AMMONIA_SHARE * liveEatenPortions * aquariumVolumeScale + liveUneatenAmmonia;
             var newChem = Object.assign({}, waterChem, { ammonia: waterChem.ammonia + liveFeedAmmonia });
             var tipText = acceptedIds.length > 0
               ? 'In this model, live food can reduce hunger in carnivores and omnivores. Inspect each diet and compare pre- and post-feeding hunger.'
@@ -20035,7 +20039,8 @@ var d = (labToolData && labToolData._aquarium) || {};
             var updatedCareLog = Object.assign({}, fishCareLog);
             updatedHunger[fishId] = Math.max(0, currentHunger - hungerDrop);
             updatedCareLog[fishId] = (updatedCareLog[fishId] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: 'Individually fed; hunger reduced by ' + hungerDrop }]).slice(-8);
-            var individualAmmonia = quarantinedFish[fishId] ? 0 : 0.05 * aquariumVolumeScale;
+            var individualEatenShare = hungerDrop / 30;
+            var individualAmmonia = quarantinedFish[fishId] ? 0 : 0.05 * (EATEN_FOOD_AMMONIA_SHARE * individualEatenShare + UNEATEN_FOOD_AMMONIA_FACTOR * (1 - individualEatenShare)) * aquariumVolumeScale;
             var updatedChem = Object.assign({}, waterChem, { ammonia: waterChem.ammonia + individualAmmonia });
             var previousFeedingSequence = Number(d.aquariumFeedingEvent && d.aquariumFeedingEvent.sequence);
             var feedingSequence = Math.max(Number.isFinite(previousFeedingSequence) ? Math.max(0, Math.floor(previousFeedingSequence)) : 0, runtimeRef.current.feedingSequence || 0) + 1;
@@ -20359,11 +20364,11 @@ var d = (labToolData && labToolData._aquarium) || {};
               // Only the biological clearance is derated; the filter's mechanical
               // action is unaffected. Illustrative cue, not a population model.
               var _colonyLag = aq.bioColonyLag && typeof aq.bioColonyLag.maturity === 'number' ? aq.bioColonyLag : null;
-              // The colony cue must never be the thing that pushes a tank over
-              // the ammonia harm threshold. Once ammonia is already elevated the
-              // derate is suspended and full biological clearance resumes, so a
-              // struggling tank is never made lethal by a teaching cue.
-              var colonyDerateSafe = _waterChem.ammonia < 1.7;
+              // The colony cue must never be the thing that pushes fish into the
+              // heavy-stress band: from 1 ppm, ammonia stress rises 8 an hour
+              // instead of 3 (environment stress below). Once ammonia is that high
+              // the derate stands down and full biological capacity resumes.
+              var colonyDerateSafe = _waterChem.ammonia < 1.0;
               var colonyStored = _colonyLag ? Math.max(0.15, Math.min(1, _colonyLag.maturity)) : 1;
               var colonyMaturity = _colonyLag && colonyDerateSafe ? colonyStored : 1;
               var colonyRecovered = !_colonyLag || colonyStored >= 0.999 ? null
@@ -20407,13 +20412,29 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var ammoniaGen = bioload * 0.02 * volumeScale;
 
-              var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * (Math.min(1, 0.05 + _filterEquipment.ammoniaReduction * _equipmentOutput.filter * volumeScale * colonyMaturity)));
+              // Nitrifying bacteria work like a CAPACITY, not a fixed percentage:
+              // a mature colony removes ammonia nearly as fast as it arrives until
+              // the load nears what it can handle (saturation kinetics, half-rate at
+              // 0.02 ppm), so a cycled tank within capacity reads close to 0. A
+              // sponge filter handles about 8 load units in 20 US gal; the rest scale
+              // with each filter's rating. What bacteria remove moves on down the
+              // cycle one-for-one in model units: ammonia -> nitrite -> nitrate. The
+              // first-order terms are bacteria on tank surfaces, which keep working
+              // when the filter stops. Illustrative rates, not a measured colony.
+              var filterBioScale = _equipmentOutput.filter * volumeScale * colonyMaturity;
+              var ammoniaCapacity = _filterEquipment.ammoniaReduction * 3.2 * filterBioScale;
+              var nitriteCapacity = _filterEquipment.nitriteReduction * 5.33 * filterBioScale;
+              var ammoniaAvailable = _waterChem.ammonia + ammoniaGen;
 
-              var nitriteBact = _waterChem.ammonia * 0.15;
+              var nitriteBact = Math.min(ammoniaAvailable, ammoniaAvailable * 0.05 + ammoniaCapacity * ammoniaAvailable / (0.02 + ammoniaAvailable));
 
-              var newNitrite = Math.max(0, _waterChem.nitrite + nitriteBact - _waterChem.nitrite * (Math.min(1, 0.08 + _filterEquipment.nitriteReduction * _equipmentOutput.filter * volumeScale * colonyMaturity)));
+              var newAmm = Math.max(0, ammoniaAvailable - nitriteBact);
 
-              var nitrateBact = _waterChem.nitrite * 0.2;
+              var nitriteAvailable = _waterChem.nitrite + nitriteBact;
+
+              var nitrateBact = Math.min(nitriteAvailable, nitriteAvailable * 0.08 + nitriteCapacity * nitriteAvailable / (0.02 + nitriteAvailable));
+
+              var newNitrite = Math.max(0, nitriteAvailable - nitrateBact);
 
               var newNitrate = Math.max(0, _waterChem.nitrate + nitrateBact);
 
@@ -20591,18 +20612,21 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var newCO2 = Math.max(0, Math.min(50, _co2 + deltaCO2));
 
-              // CO2 atmospheric off-gassing (tendency toward ~3 mg/L)
+              // CO2 leaves through the surface in proportion to how far it sits above
+              // its resting level (~3 mg/L), faster with more surface per gallon. A
+              // fixed 0.1/h ceiling here let six small fish outpace it forever, so CO2
+              // climbed and pH slid in every tank.
 
-              var co2Offgas = newCO2 > 3 ? Math.min(newCO2 - 3, Math.min(0.1, (newCO2 - 3) * 0.05) * surfaceExchangeScale) : 0;
+              var co2Offgas = newCO2 > 3 ? (newCO2 - 3) * Math.min(1, 0.05 * surfaceExchangeScale) : 0;
               newCO2 -= co2Offgas;
 
-              var pHdrift = (random('event-0') - 0.5) * 0.05;
-
-              // CO2 influences pH: high CO2 lowers pH (carbonic acid)
-
-              if (newCO2 > 10) pHdrift -= 0.02;
-
-              if (newCO2 > 25) pHdrift -= 0.03;
+              // pH is buffered toward the tank's normal level (its water hardness)
+              // and lowered by CO2 above 10 mg/L as carbonic acid: each doubling of
+              // CO2 lowers the settled pH by about 0.3. pH moves only for a reason -
+              // CO2, water changes, events - never by random drift.
+              var pHNormal = _equipmentTank && typeof _equipmentTank.pH === 'number' ? _equipmentTank.pH : 7;
+              var pHSettled = pHNormal - Math.max(0, Math.log10(Math.max(newCO2, 0.001) / 10));
+              var pHdrift = (pHSettled - _waterChem.pH) * 0.08;
 
               var ambientTemp = _selectedTank === 'coldwater' ? 68 : 72;
               var desiredTemp = _equipment.heater > 0 && _equipmentTank ? _equipmentTank.temp : ambientTemp;
