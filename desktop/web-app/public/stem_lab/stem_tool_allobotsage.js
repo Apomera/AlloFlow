@@ -112,6 +112,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
   })();
+  // Daily claim and streak use LOCAL calendar dates, as the claim promises.
+  // toISOString() is UTC, which reset the daily bonus at 5 pm in Portland.
+  function sageLocalDate(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function sageIsYesterday(dateStr, now) {
+    if (!dateStr) return false;
+    var n = new Date(now);
+    return sageLocalDate(new Date(n.getFullYear(), n.getMonth(), n.getDate() - 1)) === dateStr;
+  }
+
   function announceSR(msg) {
     var el = document.getElementById('allo-live-allobotsage');
     if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
@@ -1751,16 +1762,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
         // ── Daily essence bonus ──
         // Claimed once per calendar day (local time). Bonus scales with unique source tools mastered.
-        var todayStr = new Date().toISOString().slice(0, 10);
+        var todayStr = sageLocalDate(new Date());
         var lastClaim = d.dailyClaimedOn || null;
         var dailyAvailable = lastClaim !== todayStr;
         var streakState = d.streak || { count: 0, lastDate: null, longest: 0, milestones: {} };
-        function isYesterday(dateStr) {
-          if (!dateStr) return false;
-          var y = new Date();
-          y.setUTCDate(y.getUTCDate() - 1);
-          return y.toISOString().slice(0, 10) === dateStr;
-        }
+        function isYesterday(dateStr) { return sageIsYesterday(dateStr, Date.now()); }
         // Display value: snap to 0 if the saved streak's lastDate is stale
         // (older than yesterday). It'll reset on the next claim anyway.
         var streakDisplay = streakState.count || 0;

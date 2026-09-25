@@ -6776,6 +6776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var newBadges = Object.assign({}, badges);
           newBadges[id] = true;
           upd('_badges', newBadges);
+          badges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
           playSound('badge');
           spawnConfetti();
           if (awardStemXP) awardStemXP(def.xp);

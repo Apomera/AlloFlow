@@ -422,6 +422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var next = Object.assign({}, badges);
         next[id] = { label: label, earnedAt: new Date().toISOString() };
         upd('badges', next);
+        badges = next; // keep this render's copy current: a second award in one handler must add, not replace
         addToast('🏅 Badge: ' + label, 'success');
       }
 

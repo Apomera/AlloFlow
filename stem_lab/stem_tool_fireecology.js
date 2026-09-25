@@ -2243,6 +2243,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           var newBadges = Object.assign({}, badges);
           newBadges[id] = true;
           upd('badges', newBadges);
+          badges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
           var b = BADGES.filter(function(bb) { return bb.id === id; })[0];
           if (b && addToast) {
             playSound('badge');

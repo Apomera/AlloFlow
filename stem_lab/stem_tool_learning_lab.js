@@ -21562,6 +21562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var newBadges = Object.assign({}, badges, {});
         newBadges[id] = { label: label, when: Date.now() };
         upd('badges', newBadges);
+        badges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         addToast('🏅 ' + label);
         llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_badge_earned', 'Badge earned: {value1}'), { value1: label }));
       };

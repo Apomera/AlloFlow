@@ -4862,6 +4862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var nextBadges = Object.assign({}, badges);
           nextBadges[id] = { earned: new Date().toISOString(), label: label };
           upd('badges', nextBadges);
+          badges = nextBadges; // keep this render's copy current: a second award in one handler must add, not replace
           addToast('🏅 Badge: ' + label);
           rnAnnounce('Badge earned: ' + label);
         }, 0);

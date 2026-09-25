@@ -661,8 +661,8 @@ window.StemLab = window.StemLab || {
     questHooks: [
       { id: 'transcribe', label: 'Transcribe DNA to mRNA', icon: '\uD83E\uDDEC', check: function(d) { return !!(d.mRNA && d.mRNA.length > 0); }, progress: function(d) { return d.mRNA ? 'Done!' : 'Not yet'; } },
       { id: 'translate', label: 'Translate mRNA to protein', icon: '\uD83E\uDDAA', check: function(d) { return (d.protein || []).length >= 1; }, progress: function(d) { return (d.protein || []).length >= 1 ? 'Translated!' : 'Not yet'; } },
-      { id: 'mutate', label: 'Create a DNA mutation and observe the effect', icon: '\u26A0\uFE0F', check: function(d) { return d.mutationApplied || false; }, progress: function(d) { return d.mutationApplied ? 'Mutated!' : 'Try mutating'; } },
-      { id: 'explore_3_tabs', label: 'Explore 3 DNA lab modes', icon: '\uD83D\uDD2C', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 modes'; } },
+      { id: 'mutate', label: 'Create a DNA mutation and observe the effect', icon: '\u26A0\uFE0F', check: function(d) { return !!(d.mutationApplied || (Array.isArray(d.mutationLog) && d.mutationLog.length)); }, progress: function(d) { return (d.mutationApplied || (Array.isArray(d.mutationLog) && d.mutationLog.length)) ? 'Mutated!' : 'Try mutating'; } },
+      { id: 'explore_3_tabs', label: 'Explore 3 DNA lab modes', icon: '\uD83D\uDD2C', check: function(d) { return Object.keys(Object.assign({}, d.tabsViewed, d.visitedTabs)).length >= 3; }, progress: function(d) { return Object.keys(Object.assign({}, d.tabsViewed, d.visitedTabs)).length + '/3 modes'; } },
       { id: 'guided_investigation', label: 'Complete the guided DNA investigation', icon: '\uD83E\uDDEC', check: function(d) { return !!d.guidedComplete; }, progress: function(d) { return d.guidedComplete ? 'Complete!' : Math.min(DNA_GUIDED_STEPS.length, (d.guidedStep || 0) + (d.guidedStarted ? 1 : 0)) + '/' + DNA_GUIDED_STEPS.length + ' checkpoints'; } }
     ],
     ready: true,
@@ -1192,12 +1192,16 @@ window.StemLab = window.StemLab || {
       }
 
       // ═══ BADGE HELPER ═══
+      // Badges saved earlier in this handler: d.badges is the render copy, so a second
+      // checkBadge in one handler replaced the first.
+      var dnaBadgesNow = null;
       function checkBadge(id) {
-        var badges = d.badges || {};
+        var badges = dnaBadgesNow || d.badges || {};
         if (badges[id]) return;
         var nb = Object.assign({}, badges);
         nb[id] = true;
         upd('badges', nb);
+        dnaBadgesNow = nb;
         var b = null;
         for (var i = 0; i < DNA_BADGES.length; i++) { if (DNA_BADGES[i].id === id) { b = DNA_BADGES[i]; break; } }
         if (b) addToast(b.icon + ' Badge: ' + b.label + '!', 'success');

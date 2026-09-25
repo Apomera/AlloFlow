@@ -189,7 +189,7 @@
 
     '.rh-world-atlas{--rh-world-accent:#38bdf8;display:grid;gap:14px;}.rh-world-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(56,189,248,.5);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(12,74,110,.78) 55%,rgba(21,94,117,.62));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07);}.rh-world-hero::before{content:"";position:absolute;z-index:-2;right:-82px;top:-132px;width:330px;height:330px;border:1px solid rgba(125,211,252,.25);border-radius:50%;box-shadow:0 0 0 38px rgba(34,211,238,.045),0 0 0 79px rgba(14,165,233,.025);}.rh-world-hero::after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(125,211,252,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(125,211,252,.045) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 6%,#000 76%);}.rh-world-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0;}.rh-world-hero-icon{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(125,211,252,.72);border-radius:18px;background:rgba(2,6,23,.62);color:#e0f2fe;font:950 10px/1.05 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.28);}.rh-world-kicker,.rh-world-section-kicker,.rh-world-detail-kicker{color:var(--rh-world-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase;}.rh-world-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em;}.rh-world-copy{max-width:780px;margin:8px 0 0;color:#dbeafe;font-size:12px;line-height:1.58;}.rh-world-summary{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:7px;}.rh-world-stat{min-width:96px;padding:10px;border:1px solid rgba(125,211,252,.38);border-radius:11px;background:rgba(2,6,23,.54);text-align:center;}.rh-world-stat strong{display:block;color:#ecfeff;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-world-stat span{display:block;margin-top:5px;color:#bae6fd;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
     '.rh-world-controls,.rh-world-map-card,.rh-world-dossier,.rh-world-compare,.rh-world-passport,.rh-world-directory,.rh-world-dispatch{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.76);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-world-controls{display:grid;gap:11px;padding:13px;}.rh-world-control-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:11px;align-items:start;}.rh-world-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-world-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-world-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-world-chip:hover{transform:translateY(-1px);border-color:var(--rh-world-accent);color:#fff;}.rh-world-chip[aria-pressed="true"]{border-color:var(--rh-world-accent);background:rgba(3,105,161,.5);color:#fff;box-shadow:0 0 0 2px rgba(56,189,248,.12);}.rh-world-chip-code{display:grid;place-items:center;min-width:23px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.5);color:#7dd3fc;font:950 7px/1 ui-monospace,Menlo,monospace;}.rh-world-months{display:grid;grid-template-columns:repeat(12,minmax(34px,1fr));gap:5px;}.rh-world-month{min-height:39px;padding:5px 2px;border:1px solid #475569;border-radius:9px;background:rgba(2,6,23,.42);color:#94a3b8;font:900 8px/1 ui-monospace,Menlo,monospace;}.rh-world-month:hover{border-color:#7dd3fc;color:#e0f2fe;}.rh-world-month[aria-pressed="true"]{border-color:#fff;background:#0369a1;color:#fff;box-shadow:0 0 0 2px rgba(56,189,248,.2);}.rh-world-month span{display:block;margin-top:4px;color:inherit;font-size:7px;opacity:.8;}',
-    '.rh-world-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.5fr);gap:12px;align-items:stretch;}.rh-world-map-card{overflow:hidden;}.rh-world-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.94),rgba(15,23,42,.76));}.rh-world-panel-head h3,.rh-world-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12;}.rh-world-route-chip{flex:0 0 auto;max-width:44%;padding:7px 9px;border:1px solid rgba(125,211,252,.52);border-radius:999px;background:rgba(8,47,73,.55);color:#cffafe;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-align:center;}.rh-world-map-stage{position:relative;aspect-ratio:2/1;min-height:360px;overflow:hidden;background:radial-gradient(circle at 68% 26%,rgba(14,116,144,.36),transparent 32%),linear-gradient(165deg,#082f49,#061a2b 57%,#020617);}.rh-world-map-stage>svg{position:absolute;inset:0;display:block;width:100%;height:100%;}.rh-world-graticule{fill:none;stroke:#38bdf8;stroke-width:1;stroke-dasharray:3 8;opacity:.14;vector-effect:non-scaling-stroke;}.rh-world-continent{fill:#164e63;stroke:#67e8f9;stroke-width:1.4;opacity:.8;vector-effect:non-scaling-stroke;}.rh-world-continent-shade{fill:#0f766e;opacity:.22;}.rh-world-continent-label{fill:#a5f3fc;font:850 11px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-anchor:middle;opacity:.62;}.rh-world-route-shadow,.rh-world-route{fill:none;vector-effect:non-scaling-stroke;}.rh-world-route-shadow{stroke:#020617;stroke-width:8;opacity:.58;}.rh-world-route{stroke:#fbbf24;stroke-width:3;stroke-dasharray:9 7;filter:drop-shadow(0 0 5px rgba(251,191,36,.8));}.rh-world-route-arrow{fill:#fbbf24;}.rh-world-marker{--rh-world-pin:#38bdf8;position:absolute;z-index:4;display:grid;place-items:center;width:35px;height:35px;padding:0;border:2px solid #e0f2fe;border-radius:50%;background:#082f49;color:#fff;font:950 7px/1 ui-monospace,Menlo,monospace;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(2,6,23,.78),0 6px 16px rgba(2,6,23,.62);transition:transform .16s,opacity .16s,filter .16s,background-color .16s;}.rh-world-marker:hover{z-index:8;transform:translate(-50%,-50%) scale(1.16);background:#0e7490;}.rh-world-marker[aria-pressed="true"]{z-index:9;border-color:#fff;background:var(--rh-world-pin);color:#020617;box-shadow:0 0 0 4px rgba(255,255,255,.18),0 0 22px var(--rh-world-pin);}.rh-world-marker[data-world-compare="true"]{z-index:7;border-color:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.24),0 7px 18px rgba(2,6,23,.7);}.rh-world-marker[data-world-filtered="true"]{opacity:.22;filter:saturate(.25);}.rh-world-marker[data-world-season="off"]{border-style:dashed;color:#94a3b8;}.rh-world-marker-label{position:absolute;left:50%;top:calc(100% + 7px);display:none;min-width:max-content;max-width:150px;padding:5px 7px;border:1px solid rgba(125,211,252,.48);border-radius:7px;background:rgba(2,6,23,.92);color:#e0f2fe;font:850 8px/1.2 ui-sans-serif,system-ui;transform:translateX(-50%);white-space:nowrap;box-shadow:0 8px 18px rgba(2,6,23,.48);}.rh-world-marker:hover .rh-world-marker-label,.rh-world-marker:focus-visible .rh-world-marker-label,.rh-world-marker[aria-pressed="true"] .rh-world-marker-label{display:block;}.rh-world-map-key{position:absolute;z-index:3;left:12px;bottom:11px;display:flex;flex-wrap:wrap;gap:7px;padding:7px 9px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(2,6,23,.84);color:#cbd5e1;font-size:8px;font-weight:800;}.rh-world-map-key span{display:inline-flex;align-items:center;gap:5px;}.rh-world-map-key i{display:block;width:9px;height:9px;border:2px solid #e0f2fe;border-radius:50%;background:#0e7490;}.rh-world-map-key i[data-key="compare"]{border-color:#fbbf24;background:#082f49;}.rh-world-map-key i[data-key="off"]{border-style:dashed;background:#0f172a;}.rh-world-map-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.32);color:#94a3b8;font-size:9px;line-height:1.45;}',
+    '.rh-world-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.5fr);gap:12px;align-items:stretch;}.rh-world-map-card{overflow:hidden;}.rh-world-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.94),rgba(15,23,42,.76));}.rh-world-panel-head h3,.rh-world-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12;}.rh-world-route-chip{flex:0 0 auto;max-width:44%;padding:7px 9px;border:1px solid rgba(125,211,252,.52);border-radius:999px;background:rgba(8,47,73,.55);color:#cffafe;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-align:center;}.rh-world-map-stage{position:relative;aspect-ratio:2/1;min-height:360px;overflow:hidden;background:radial-gradient(circle at 68% 26%,rgba(14,116,144,.36),transparent 32%),linear-gradient(165deg,#082f49,#061a2b 57%,#020617);}.rh-world-map-stage>svg{position:absolute;inset:0;display:block;width:100%;height:100%;}.rh-world-graticule{fill:none;stroke:#38bdf8;stroke-width:1;stroke-dasharray:3 8;opacity:.14;vector-effect:non-scaling-stroke;}.rh-world-continent{fill:#164e63;stroke:#67e8f9;stroke-width:1.4;opacity:.8;vector-effect:non-scaling-stroke;}.rh-world-land{stroke-width:.8;stroke-linejoin:round;opacity:.86;}.rh-world-continent-shade{fill:#0f766e;opacity:.22;}.rh-world-continent-label{fill:#a5f3fc;font:850 11px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-anchor:middle;opacity:.62;}.rh-world-route-shadow,.rh-world-route{fill:none;vector-effect:non-scaling-stroke;}.rh-world-route-shadow{stroke:#020617;stroke-width:8;opacity:.58;}.rh-world-route{stroke:#fbbf24;stroke-width:3;stroke-dasharray:9 7;filter:drop-shadow(0 0 5px rgba(251,191,36,.8));}.rh-world-route-arrow{fill:#fbbf24;}.rh-world-marker{--rh-world-pin:#38bdf8;position:absolute;z-index:4;display:grid;place-items:center;width:35px;height:35px;padding:0;border:2px solid #e0f2fe;border-radius:50%;background:#082f49;color:#fff;font:950 7px/1 ui-monospace,Menlo,monospace;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(2,6,23,.78),0 6px 16px rgba(2,6,23,.62);transition:transform .16s,opacity .16s,filter .16s,background-color .16s;}.rh-world-marker:hover{z-index:8;transform:translate(-50%,-50%) scale(1.16);background:#0e7490;}.rh-world-marker[aria-pressed="true"]{z-index:9;border-color:#fff;background:var(--rh-world-pin);color:#020617;box-shadow:0 0 0 4px rgba(255,255,255,.18),0 0 22px var(--rh-world-pin);}.rh-world-marker[data-world-compare="true"]{z-index:7;border-color:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.24),0 7px 18px rgba(2,6,23,.7);}.rh-world-marker[data-world-filtered="true"]{opacity:.22;filter:saturate(.25);}.rh-world-marker[data-world-season="off"]{border-style:dashed;color:#94a3b8;}.rh-world-marker-label{position:absolute;left:50%;top:calc(100% + 7px);display:none;min-width:max-content;max-width:150px;padding:5px 7px;border:1px solid rgba(125,211,252,.48);border-radius:7px;background:rgba(2,6,23,.92);color:#e0f2fe;font:850 8px/1.2 ui-sans-serif,system-ui;transform:translateX(-50%);white-space:nowrap;box-shadow:0 8px 18px rgba(2,6,23,.48);}.rh-world-marker:hover .rh-world-marker-label,.rh-world-marker:focus-visible .rh-world-marker-label,.rh-world-marker[aria-pressed="true"] .rh-world-marker-label{display:block;}.rh-world-map-key{position:absolute;z-index:3;left:12px;bottom:11px;display:flex;flex-wrap:wrap;gap:7px;padding:7px 9px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(2,6,23,.84);color:#cbd5e1;font-size:8px;font-weight:800;}.rh-world-map-key span{display:inline-flex;align-items:center;gap:5px;}.rh-world-map-key i{display:block;width:9px;height:9px;border:2px solid #e0f2fe;border-radius:50%;background:#0e7490;}.rh-world-map-key i[data-key="compare"]{border-color:#fbbf24;background:#082f49;}.rh-world-map-key i[data-key="off"]{border-style:dashed;background:#0f172a;}.rh-world-map-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.32);color:#94a3b8;font-size:9px;line-height:1.45;}',
     '.rh-world-dossier{display:flex;flex-direction:column;overflow:hidden;border-color:var(--rh-world-accent);background:linear-gradient(155deg,rgba(30,41,59,.96),rgba(15,23,42,.98));}.rh-world-scene{position:relative;min-height:190px;overflow:hidden;border-bottom:1px solid rgba(100,116,139,.42);background:#082f49;}.rh-world-scene svg{display:block;width:100%;height:100%;min-height:190px;}.rh-world-scene-sky{fill:#0c4a6e;}.rh-world-scene-sun{fill:#fde68a;opacity:.82;}.rh-world-scene-haze{fill:#67e8f9;opacity:.08;}.rh-world-scene-far{fill:#155e75;stroke:#67e8f9;stroke-width:1;opacity:.78;}.rh-world-scene-near{fill:#0f3f46;stroke:#2dd4bf;stroke-width:1.4;}.rh-world-scene-water{fill:#0369a1;opacity:.8;}.rh-world-scene-ice{fill:#dbeafe;stroke:#bae6fd;stroke-width:1;opacity:.9;}.rh-world-scene-tree{fill:#064e3b;stroke:#6ee7b7;stroke-width:1;}.rh-world-scene-trunk{fill:#78350f;}.rh-world-scene-bird{fill:none;stroke:#f8fafc;stroke-width:2.4;stroke-linecap:round;filter:drop-shadow(0 2px 2px #020617);}.rh-world-scene-route{fill:none;stroke:#fbbf24;stroke-width:2;stroke-dasharray:8 6;opacity:.82;}.rh-world-scene-label{fill:#f8fafc;font:950 14px/1 ui-sans-serif,system-ui;paint-order:stroke;stroke:#020617;stroke-width:5;}.rh-world-scene-code{fill:var(--rh-world-accent);font:950 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;paint-order:stroke;stroke:#020617;stroke-width:4;}.rh-world-dossier-body{display:flex;flex:1;flex-direction:column;padding:15px;}.rh-world-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-world-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em;}.rh-world-dossier-code{display:grid;place-items:center;flex:0 0 auto;min-width:47px;height:38px;padding:0 7px;border:1px solid var(--rh-world-accent);border-radius:10px;background:rgba(2,6,23,.52);color:var(--rh-world-accent);font:950 10px/1 ui-monospace,Menlo,monospace;}.rh-world-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}.rh-world-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.48);border-radius:999px;background:rgba(2,6,23,.35);color:#cbd5e1;font:800 8px/1.2 ui-monospace,Menlo,monospace;}.rh-world-reading{margin-top:9px;padding:9px 10px;border:1px solid rgba(100,116,139,.4);border-radius:10px;background:rgba(2,6,23,.3);}.rh-world-reading[data-tone="species"]{border-color:rgba(251,191,36,.4);background:rgba(120,53,15,.16);}.rh-world-reading[data-tone="why"]{border-color:rgba(52,211,153,.38);background:rgba(6,78,59,.15);}.rh-world-reading span{display:block;color:var(--rh-world-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}.rh-world-reading[data-tone="species"] span{color:#fcd34d;}.rh-world-reading[data-tone="why"] span{color:#6ee7b7;}.rh-world-reading p{margin:5px 0 0;color:#e2e8f0;font-size:9px;line-height:1.48;}.rh-world-passport-button{min-height:41px;margin-top:auto;padding:8px 10px;border:1px solid var(--rh-world-accent);border-radius:10px;background:rgba(3,105,161,.28);color:#e0f2fe;font-size:10px;font-weight:900;}.rh-world-passport-button[aria-pressed="true"]{border-color:#86efac;background:rgba(6,95,70,.52);color:#dcfce7;}',
     '.rh-world-planning-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:12px;}.rh-world-compare,.rh-world-passport{padding:14px;}.rh-world-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-world-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-world-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center;}.rh-world-compare-select select{width:100%;min-height:41px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850;}.rh-world-compare-route{padding:8px 10px;border:1px solid rgba(251,191,36,.42);border-radius:9px;background:rgba(120,53,15,.18);color:#fde68a;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-world-compare-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;}.rh-world-compare-metric{min-width:0;padding:10px 7px;border:1px solid rgba(100,116,139,.42);border-radius:10px;background:rgba(2,6,23,.32);text-align:center;}.rh-world-compare-metric span{display:block;color:#94a3b8;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}.rh-world-compare-metric strong{display:block;margin-top:6px;color:#f8fafc;font:950 11px/1.2 ui-monospace,Menlo,monospace;}.rh-world-compare-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45;}.rh-world-passport-track{height:9px;overflow:hidden;border-radius:999px;background:#020617;box-shadow:inset 0 0 0 1px rgba(100,116,139,.5);}.rh-world-passport-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#22d3ee);transition:width .22s;}.rh-world-stamps{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-top:11px;}.rh-world-stamp{display:grid;place-items:center;aspect-ratio:1;border:1px dashed #64748b;border-radius:50%;background:rgba(2,6,23,.3);color:#64748b;font:900 6px/1 ui-monospace,Menlo,monospace;}.rh-world-stamp[data-stamped="true"]{border-style:solid;border-color:#86efac;background:rgba(6,95,70,.45);color:#dcfce7;box-shadow:0 0 10px rgba(74,222,128,.16);}.rh-world-passport-copy{margin:9px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42;}',
     '.rh-world-directory{padding:14px;}.rh-world-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.rh-world-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:84px;padding:10px;border:1px solid rgba(100,116,139,.5);border-radius:11px;background:rgba(2,6,23,.32);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-world-card:hover{transform:translateY(-2px);border-color:var(--rh-world-accent);background:rgba(30,41,59,.72);}.rh-world-card[data-active="true"]{border-color:var(--rh-world-accent);box-shadow:inset 3px 0 var(--rh-world-accent);}.rh-world-card-code{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--rh-world-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-world-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-world-card-copy{min-width:0;}.rh-world-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.22;}.rh-world-card-copy span{display:block;margin-top:4px;color:#94a3b8;font-size:8px;line-height:1.25;}.rh-world-card-season{color:#fde68a;font:900 7px/1.3 ui-monospace,Menlo,monospace;text-align:right;white-space:pre-line;}.rh-world-empty{padding:25px;border:1px dashed #64748b;border-radius:11px;color:#cbd5e1;text-align:center;font-size:10px;}',
@@ -746,6 +746,8 @@
     ".rh-flight-pause{z-index:30;align-items:flex-start;padding:16px;box-sizing:border-box;background:rgba(2,6,23,.16);backdrop-filter:none}.rh-flight-pause-card{width:340px;max-width:100%;box-sizing:border-box;border:1px solid #93bcb7;border-radius:14px;padding:16px;background:#0c1d24;pointer-events:auto}.rh-pause-title{display:block;font:700 17px/1.4 system-ui;color:#fff0cf}.rh-flight-pause-card p{margin:7px 0;color:#d4e3e1;font:12px/1.45 system-ui}.rh-flight-pause-card .rh-pause-hint{font-size:11px;color:#b7d2cf}.rh-flight-pause-card button{min-height:42px;border:1px solid #668788;border-radius:8px;padding:8px 12px;font:600 12px/1.35 system-ui;background:#203b43;color:#f0f6f4;cursor:pointer}.rh-flight-pause-card .rh-pause-resume{width:100%;margin-top:6px;background:#f2cd88;color:#182d33;border-color:#f2cd88}.rh-pause-views{display:flex;gap:8px;margin-top:8px}.rh-pause-views button{flex:1}.rh-pause-views button[aria-pressed=true]{border-color:#f2cd88;color:#ffe5af}.rh-flight-pause-card button:focus-visible{outline:3px solid #fff;outline-offset:3px}.rh-flight-pause-card button:hover{filter:brightness(1.1)}@media(forced-colors:active){.rh-flight-pause-card,.rh-flight-pause-card button,.rh-flight-pause-card .rh-pause-resume{background:Canvas;color:CanvasText;border-color:CanvasText}.rh-flight-pause-card p,.rh-pause-title,.rh-flight-pause-card .rh-pause-hint,.rh-pause-views button[aria-pressed=true]{color:CanvasText}.rh-flight-pause-card button:focus-visible{outline-color:Highlight}}",
     '.rh-flight-mission-meter-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;color:#cbd5e1;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}.rh-flight-mission-meter-label-value{color:#fef3c7;font-variant-numeric:tabular-nums;letter-spacing:.04em;}.rh-flight-mission-meter-label[data-progress-state="success"] .rh-flight-mission-meter-label-value{color:#6ee7b7;}.rh-flight-mission-meter-label[data-progress-state="failed"] .rh-flight-mission-meter-label-value{color:#fca5a5;}.rh-flight-mission-phase{display:block;margin-top:4px;color:#a5f3fc;font:800 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-flight-mission-phase[data-phase-state="success"]{color:#6ee7b7;}.rh-flight-mission-phase[data-phase-state="failed"]{color:#fca5a5;}.rh-flight-mission-meter{display:block;height:4px;margin-top:4px;border-radius:999px;background:#0f172a;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(148,163,184,.18);}.rh-flight-mission-meter-fill{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#34d399);transition:width .22s ease,background-color .22s ease;}.rh-flight-mission-meter[data-progress-state="success"] .rh-flight-mission-meter-fill{background:#34d399;}.rh-flight-mission-meter[data-progress-state="failed"] .rh-flight-mission-meter-fill{background:#f87171;}'
     ,'.rh-flight-btn[data-raptor-cue="primary"]{border-color:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.55);color:#fef3c7;}.rh-flight-btn[data-raptor-cue="secondary"]{border-color:rgba(103,232,249,.85);box-shadow:0 0 0 1px rgba(103,232,249,.3);}@media(forced-colors:active){.rh-flight-btn[data-raptor-cue="primary"],.rh-flight-btn[data-raptor-cue="secondary"]{border-color:Highlight;box-shadow:none;}}'
+    // Stoop impact scale (visual pass 2026-09-24): text was 6-9 px and the marker line ran through "Current".
+    ,'.rh-stoop-impact-panel{gap:12px;padding:14px 16px;}.rh-stoop-impact-kicker{font-size:11px;}.rh-stoop-impact-title{font-size:15px;margin-top:4px;}.rh-stoop-impact-value{font-size:18px;}.rh-stoop-impact-track{height:58px;margin:28px 0 28px;overflow:visible;}.rh-stoop-impact-track::before{inset:0;}.rh-stoop-impact-fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px 0 0 8px;background:linear-gradient(90deg,rgba(251,191,36,.06),rgba(249,115,22,.30) 72%,rgba(239,68,68,.46));pointer-events:none;}.rh-stoop-impact-current{top:-6px;bottom:-6px;}.rh-stoop-impact-current-dot{top:50%;width:14px;height:14px;}.rh-stoop-impact-current-label{top:-26px;padding:3px 9px;border-radius:999px;background:#f97316;color:#1c0a02;font:900 11px/1 ui-sans-serif,system-ui;letter-spacing:.06em;box-shadow:0 2px 8px rgba(0,0,0,.45);}.rh-stoop-impact-marker{bottom:0;height:100%;background:rgba(148,163,184,.75);}.rh-stoop-impact-marker-label,.rh-stoop-impact-marker[data-impact-marker] .rh-stoop-impact-marker-label{bottom:auto;top:calc(100% + 7px);font:800 11px/1.1 ui-sans-serif,system-ui;}.rh-stoop-impact-marker[data-impact-marker="baseball"] .rh-stoop-impact-marker-label{transform:translateX(calc(-100% - 3px));}.rh-stoop-impact-marker[data-impact-marker="bullet"] .rh-stoop-impact-marker-label{transform:translateX(3px);}.rh-stoop-impact-marker[data-impact-marker="harpy"] .rh-stoop-impact-marker-label{transform:translateX(calc(-100% + 1px));}.rh-stoop-impact-axis{font-size:11px;}.rh-stoop-impact-note{font-size:12px;font-weight:600;line-height:1.4;}@media(max-width:430px){.rh-stoop-impact-marker-label,.rh-stoop-impact-marker[data-impact-marker] .rh-stoop-impact-marker-label{font-size:10px;}.rh-stoop-impact-axis{font-size:10px;}.rh-stoop-impact-title{font-size:13px;}.rh-stoop-impact-value{font-size:15px;}}@media(forced-colors:active){.rh-stoop-impact-fill{background:Highlight;opacity:.35;}.rh-stoop-impact-current-label{background:Canvas;color:CanvasText;border:1px solid CanvasText;}}'
   ].join('');
   if (document.head) document.head.appendChild(st);
 })();
@@ -1828,6 +1830,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ───────────────────────────────────────────────────────────
   // MIGRATION — flyways, watch sites, banding, irruptions
   // ───────────────────────────────────────────────────────────
+  // ── World land outline for the flyway map and the World Tour atlas ──
+  // DERIVED, not authored: the Natural Earth 50m land mask (public domain), downsampled to half a
+  // degree and simplified to about 0.7 degrees, as stem_tool_migration.js carries it (GEO_WORLD).
+  // Both maps drew 5-15-point continents, and the flyway map put Hawk Mountain 16 degrees south
+  // of its latitude. Rings include enclosed seas, so fill with fill-rule evenodd. [lon, lat].
+  var RH_WORLD_LAND = [[[95,81.5],[97.5,81],[97.5,80],[100,80],[99.5,78.5],[103,79.5],[105,79],[104.5,77.5],[107,76.5],[113.5,76.5],[113.5,75],[112,75],[113.5,73.5],[129,73.5],[129.5,71],[132,71],[132.5,72],[139.5,71.5],[139.5,72.5],[142.5,72.5],[140.5,73.5],[141,74.5],[144,72.5],[149,72.5],[152,71],[159.5,71],[160.5,69.5],[179.5,69.5],[180,65],[178.5,64.5],[179.5,62.5],[176,62.5],[170.5,60],[163.5,60],[162,58.5],[163.5,56],[162,56],[162,54.5],[158.5,53],[157.5,51],[156.5,51],[155.5,56.5],[161.5,60.5],[164,61],[164,62.5],[161,60.5],[159.5,62],[156.5,61.5],[154.5,60],[155,59],[143,59.5],[135.5,54.5],[140,54.5],[141.5,52.5],[143,54.5],[144.5,49.5],[142.5,48.5],[143.5,46.5],[142,46],[142,51.5],[141,52],[140.5,48.5],[135.5,43.5],[133.5,42.5],[131.5,43],[129,40],[127.5,40],[129.5,37.5],[129.5,35],[126.5,34.5],[126.5,37.5],[125,38],[125.5,39.5],[123.5,40],[121.5,39],[122,41],[117.5,39],[119,37],[120.5,38],[122.5,37.5],[119.5,35.5],[122,32],[121.5,28],[117.5,23.5],[110.5,21.5],[111,19.5],[110,18],[108.5,18.5],[108.5,19.5],[110,20],[109.5,21.5],[107.5,21.5],[106,20],[106,18],[109,15.5],[109.5,12],[105.5,8.5],[102.5,12.5],[100,13.5],[99.5,9.5],[100.5,7],[103.5,5.5],[104,1.5],[102,1.5],[105,-2.5],[105.5,-1.5],[107,-2.5],[105,-6],[101,-3],[99,1.5],[95,5],[97.5,5.5],[100.5,2],[102,2.5],[98,8.5],[98.5,13.5],[97.5,16.5],[95.5,15.5],[94,16],[94.5,18.5],[92,21],[92,22.5],[87,21.5],[82.5,16.5],[80.5,16],[80,10.5],[77,8],[73,16.5],[72.5,21.5],[70.5,20.5],[69,22],[70,23],[68.5,23],[66.5,25.5],[57.5,25.5],[57,27],[53.5,26.5],[51,28],[50.5,30],[48,30],[50,25.5],[51.5,26],[51.5,24],[54,24],[56.5,26],[56.5,24.5],[60,22],[55.5,17],[53.5,17],[51.5,15],[43,12],[44,10.5],[51,12],[51,9],[48,4],[43.5,1],[39,-5],[39.5,-9.5],[40.5,-10],[40.5,-16],[35,-19.5],[35.5,-24.5],[33,-25.5],[32.5,-28.5],[28.5,-33],[20,-35],[18.5,-34.5],[18,-31],[15,-27.5],[14.5,-22],[11.5,-18],[12.5,-13],[13.5,-12.5],[13.5,-8],[12,-4.5],[9,-1.5],[10,3.5],[9,4.5],[5.5,4.5],[4.5,6.5],[-0.5,5],[-8.5,4.5],[-12.5,7],[-13,9],[-17,12.5],[-16.5,14],[-17.5,15],[-16,17.5],[-17,22],[-14.5,26.5],[-9.5,30],[-9.5,32.5],[-6,35],[-6.5,37],[-9,37],[-9,43.5],[-1.5,43.5],[-1,46],[-4.5,48.5],[-1.5,48.5],[-1.5,49.5],[4,51.5],[4.5,53],[8.5,53.5],[8,56.5],[9.5,57.5],[12.5,56],[11,54],[20,54.5],[21.5,57.5],[24.5,57.5],[23.5,59.5],[29,60],[21.5,60.5],[21,63],[25.5,65],[22.5,66],[21.5,64],[17.5,62.5],[17.5,60.5],[19,59.5],[16.5,58],[17,56.5],[16,56],[13,55.5],[11,59.5],[8.5,58],[5.5,58.5],[5,62],[12,65],[15,67.5],[14.5,69],[17,68.5],[17,69.5],[18.5,70],[29.5,71],[41,68],[41.5,67],[40,66],[44,66],[44,68.5],[46.5,68.5],[45.5,67],[52.5,69],[60,68.5],[60.5,69.5],[59.5,70],[69,68.5],[67,69.5],[67,71.5],[71.5,73.5],[73,72.5],[72.5,69],[73.5,68.5],[71.5,66.5],[73,66.5],[74.5,67.5],[73.5,72],[75,72],[75,73],[75.5,71.5],[79,73],[82,72],[80.5,72.5],[80.5,73.5],[82,74],[86.5,74],[86.5,75],[88,75.5],[98.5,76],[104,77.5],[91.5,79.5],[91.5,80.5],[95,81.5]],
+    [[-124.5,74.5],[-117.5,74.5],[-111.5,72.5],[-109,73],[-108,71.5],[-108,73.5],[-105,74],[-104.5,73],[-105.5,72.5],[-104.5,71],[-101,70],[-103,68.5],[-105.5,69],[-104.5,68],[-98.5,68],[-99,69.5],[-98,70],[-95.5,69],[-96.5,68.5],[-96,67.5],[-94.5,68],[-94.5,69.5],[-96.5,70],[-95.5,74],[-90.5,74],[-92,72.5],[-94,72.5],[-94,71.5],[-93,71.5],[-92,69.5],[-90.5,69.5],[-90.5,68.5],[-89.5,69.5],[-88,69],[-88,67.5],[-85.5,68.5],[-85.5,70],[-88,70],[-90,71.5],[-88,74],[-78.5,74],[-74,71.5],[-67.5,70.5],[-67,69],[-68,68.5],[-61.5,67],[-63.5,65],[-66.5,66.5],[-68,66],[-64.5,64],[-65,62.5],[-67,63],[-66,62],[-71,62.5],[-73,64.5],[-77.5,64],[-77.5,65.5],[-74,65.5],[-74.5,66.5],[-72.5,67.5],[-74.5,67.5],[-73.5,68.5],[-75,68.5],[-75.5,67],[-77,67],[-77.5,68],[-75.5,69],[-77.5,69],[-77.5,70],[-79,70.5],[-79.5,69.5],[-82.5,70],[-81.5,69.5],[-81.5,67],[-84.5,66],[-80.5,63.5],[-87,63.5],[-86,66],[-85,66],[-86,66.5],[-88,64],[-93,62.5],[-94.5,61],[-94.5,59],[-93.5,59],[-92.5,57],[-90.5,57.5],[-86,55.5],[-83,55.5],[-82,55],[-82,52.5],[-79,51.5],[-79.5,55],[-76.5,56],[-76.5,57.5],[-78.5,58.5],[-77.5,59.5],[-78,62.5],[-73,62.5],[-71.5,61],[-69.5,61],[-69.5,59],[-68.5,58.5],[-66.5,58.5],[-64.5,60.5],[-61.5,57.5],[-61.5,56],[-57.5,55],[-57.5,54],[-56,53.5],[-55.5,51],[-56.5,50],[-53.5,49.5],[-54,48.5],[-52.5,47.5],[-53,46.5],[-54,47.5],[-59.5,47.5],[-57,51.5],[-60,50],[-63,50],[-62,49],[-67,50],[-67.5,49],[-64,49],[-65,47],[-62.5,46],[-60.5,47],[-60,45.5],[-64.5,44.5],[-65,43.5],[-66,43.5],[-65,45.5],[-69,44.5],[-70.5,43.5],[-70.5,41.5],[-74,40.5],[-75.5,37.5],[-76.5,38.5],[-75.5,35.5],[-81.5,31.5],[-80,27.5],[-80.5,25],[-82,26],[-82.5,29],[-83.5,30],[-85.5,29.5],[-86,30.5],[-89,30.5],[-89,29],[-95,29.5],[-97.5,27.5],[-97.5,21],[-96.5,19.5],[-95.5,18.5],[-91.5,18.5],[-90,21.5],[-87,21.5],[-88.5,16],[-84,16],[-83,15],[-84,11],[-82,9],[-78,9.5],[-76.5,8.5],[-75.5,11],[-72.5,11.5],[-72,12.5],[-71,12.5],[-72,11],[-70.5,12],[-65.5,10],[-63,11],[-61,8.5],[-58.5,8],[-57.5,6],[-52.5,5.5],[-50,2],[-50,0],[-48.5,0],[-48.5,-1],[-47,-0.5],[-42,-3],[-40,-2.5],[-35,-5.5],[-35,-9],[-37,-10.5],[-37.5,-12.5],[-39,-13],[-39,-18],[-41,-22],[-47,-24],[-48.5,-25.5],[-48.5,-28.5],[-50.5,-31],[-51.5,-30.5],[-54,-35],[-58,-34.5],[-56.5,-36.5],[-57.5,-38.5],[-62,-39],[-62.5,-41],[-65,-41],[-63.5,-43],[-65,-43],[-65,-44.5],[-67.5,-45.5],[-66,-48.5],[-69,-50.5],[-68.5,-53.5],[-65.5,-55],[-71.5,-55],[-73.5,-54],[-73,-53],[-74,-53],[-75,-51],[-74,-49.5],[-75.5,-50.5],[-75.5,-48],[-74.5,-48],[-75,-45.5],[-74.5,-44.5],[-73.5,-45],[-72.5,-42.5],[-73.5,-42],[-73.5,-43.5],[-74.5,-43.5],[-74.5,-42.5],[-73.5,-37],[-71.5,-33],[-72,-30.5],[-70.5,-26.5],[-70,-19.5],[-70.5,-18],[-76,-15],[-79.5,-7],[-81,-6.5],[-81.5,-5],[-81.5,-4],[-80,-3.5],[-81,-1],[-77.5,3],[-77.5,7],[-78.5,8.5],[-79.5,9],[-81,7],[-84,9.5],[-85.5,9.5],[-86,11.5],[-85,11.5],[-86.5,11.5],[-87.5,13.5],[-89,13],[-92,14],[-93.5,16],[-97,15.5],[-103.5,18],[-105.5,19.5],[-105.5,22.5],[-109.5,25.5],[-113.5,31.5],[-115,31.5],[-114.5,30],[-109.5,24],[-109.5,23],[-111.5,24],[-112,26],[-115,27.5],[-114,28.5],[-116,30],[-117.5,33.5],[-120.5,34.5],[-124,39],[-124.5,48.5],[-128,50],[-127.5,51.5],[-130.5,53.5],[-130.5,55],[-132.5,54.5],[-133.5,56.5],[-135,56.5],[-134.5,57.5],[-136,57],[-136.5,58.5],[-139,59.5],[-146.5,61],[-152,59],[-152,61],[-154,59.5],[-154,58],[-152,58.5],[-153,57],[-155.5,58],[-159.5,55.5],[-163,55],[-157.5,57.5],[-157.5,58.5],[-162,58.5],[-162,60],[-164,59.5],[-166,61],[-164.5,63.5],[-161,63.5],[-161,65],[-166.5,64.5],[-168,66],[-162,66],[-162,67],[-166.5,68.5],[-157,71.5],[-138,69],[-128,70.5],[-126.5,69.5],[-121,70],[-116,69],[-117,69.5],[-116.5,70.5],[-119,71.5],[-118.5,72.5],[-122,71],[-125.5,72],[-124,73.5],[-124.5,74.5]],
+    [[131,-11],[131.5,-12],[137,-12],[135.5,-15],[139.5,-17.5],[141,-17.5],[141.5,-12],[143,-11],[143.5,-14],[145.5,-15],[146,-18.5],[149,-20],[149.5,-22.5],[151,-22.5],[151,-23.5],[153.5,-25],[153,-32],[151.5,-33],[149.5,-38],[146.5,-39],[145,-38],[144,-39],[141,-38.5],[138.5,-34.5],[137.5,-35],[138,-33],[135.5,-35],[133.5,-32],[131.5,-31.5],[125,-32.5],[124,-34],[115,-34.5],[115.5,-31],[113.5,-27],[113.5,-22.5],[116.5,-20.5],[121.5,-19.5],[122,-17],[124.5,-16.5],[126,-14],[129.5,-15],[131,-11]],
+    [[-44,83.5],[-26,83.5],[-22,83],[-23,82],[-21,81.5],[-12.5,82],[-12,81],[-16.5,80.5],[-21,78.5],[-20.5,77.5],[-18.5,77.5],[-18.5,76],[-21,77],[-19.5,76],[-19.5,74],[-22,73.5],[-21.5,70.5],[-24,70.5],[-23.5,69.5],[-26,68.5],[-32.5,68],[-35,66],[-40,65.5],[-42.5,60.5],[-45.5,60],[-46,61],[-49,61],[-52,64],[-54,67.5],[-51,69.5],[-55,69.5],[-54.5,71],[-53,71.5],[-55.5,71.5],[-55,73],[-57,75],[-59,76],[-69,76],[-72.5,78.5],[-66,79],[-65,80],[-67,80.5],[-61.5,81],[-61,82],[-51,82],[-44,83.5]],
+    [[100.5,-65.5],[108.5,-67],[112.5,-65.5],[115.5,-67],[129.5,-67],[130,-66],[142,-66.5],[146.5,-67.5],[147,-68.5],[158.5,-69],[161.5,-71],[167.5,-70.5],[171,-72],[71,-72],[71.5,-70.5],[77,-69.5],[78.5,-68],[88,-66.5],[101,-66.5],[100.5,-65.5]],
+    [[13,45.5],[12.5,44],[13.5,44],[14.5,42],[18.5,40.5],[16.5,40],[17,38.5],[15.5,38],[15,36.5],[12.5,38],[15,38],[16,39.5],[8.5,44.5],[6.5,43],[3.5,43.5],[3.5,42],[0,40],[-0.5,37.5],[-5,36.5],[-5.5,35.5],[-1.5,35],[0.5,36.5],[10,37.5],[11,37],[11,34.5],[10,34],[15.5,32.5],[15.5,31.5],[18.5,30.5],[20,30.5],[20,32.5],[21,33],[27.5,31],[34.5,31.5],[36,36.5],[28,36.5],[26,38],[27,38.5],[26,39],[26,41],[23,40],[24,38],[22,36.5],[21,37.5],[21.5,38.5],[19.5,40],[19.5,42],[13,45.5]],
+    [[51,-66],[56,-66],[59,-67.5],[69.5,-67.5],[69.5,-69.5],[67.5,-70],[69,-70.5],[68,-72],[-12,-72],[-10.5,-71],[-7.5,-71.5],[-7.5,-70.5],[0.5,-71.5],[3.5,-71],[4,-70],[12.5,-70.5],[15.5,-69.5],[16.5,-69.5],[16.5,-70.5],[19,-70],[19,-71],[27.5,-71],[33,-70],[33,-68.5],[39,-70],[40,-68.5],[46.5,-67],[48.5,-68],[48.5,-67],[50.5,-67],[51,-66]],
+    [[-81,83],[-63.5,83],[-61.5,82],[-74.5,79.5],[-75.5,78],[-79,77.5],[-78,76.5],[-81,76],[-79.5,75.5],[-80,74.5],[-92,74.5],[-93,76.5],[-90.5,76.5],[-91,77.5],[-90,77.5],[-89.5,75.5],[-81,76.5],[-89.5,76.5],[-87.5,77],[-87.5,78.5],[-92.5,78],[-94,79.5],[-96.5,79.5],[-96,81],[-92,81.5],[-89,80.5],[-91,82],[-82.5,82],[-81,83]],
+    [[131.5,-0.5],[134,-0.5],[135,-3.5],[137.5,-1.5],[144.5,-3.5],[146,-5.5],[148,-6],[147,-7.5],[150.5,-10.5],[147.5,-10],[145,-7.5],[143.5,-8],[143,-9.5],[141,-9.5],[140,-8],[137.5,-8.5],[138.5,-6],[134,-3.5],[133,-4],[132,-3],[132.5,-2],[131,-1.5],[131.5,-0.5]],
+    [[116.5,7],[119,5.5],[117.5,4],[119,1],[117.5,0.5],[116.5,-4],[110,-3],[109,2],[111,1.5],[111,2.5],[115.5,5],[116.5,7]],
+    [[49,-12],[50,-12.5],[50.5,-16],[47.5,-24.5],[44.5,-25.5],[43,-22.5],[44.5,-20],[44,-17],[47,-15.5],[49,-12]],
+    [[37.5,47],[35,46.5],[35,45.5],[36.5,45.5],[35,44.5],[30.5,46.5],[28,43.5],[28,41.5],[31.5,41],[32.5,42],[35.5,42],[37,41],[41,41],[41.5,42.5],[37,45],[38.5,46.5],[37.5,47]],
+    [[-5.5,58.5],[-2,58],[-3,56],[1.5,53],[1.5,51],[-5.5,50],[-4,51],[-5,51.5],[-4,52.5],[-4.5,53.5],[-3,53.5],[-3.5,55],[-5,54.5],[-5,55.5],[-6,55.5],[-5.5,54],[-6.5,52],[-10,51.5],[-10,54.5],[-6,55.5],[-5.5,56.5],[-6.5,57.5],[-5.5,57.5],[-5.5,58.5]],
+    [[51,47],[47.5,45.5],[47,44],[50,40.5],[49,37.5],[52.5,36.5],[54,37],[54,39],[52.5,40.5],[54.5,41.5],[52.5,41.5],[52.5,43],[50.5,44],[51.5,45.5],[53,45.5],[53,47],[51,47]],
+    [[141.5,45.5],[143.5,44],[145.5,44],[145.5,43],[143.5,42],[140.5,42.5],[142,40.5],[140.5,35],[136.5,35],[136,33.5],[134.5,34.5],[133.5,33],[131,34],[132,32.5],[130.5,31],[130.5,33],[129.5,33.5],[132.5,35.5],[136,35.5],[136.5,37],[139.5,38],[140,41],[141,41],[140,43],[141.5,43.5],[141.5,45.5]],
+    [[34,28],[35.5,23],[37,22],[37.5,18.5],[38.5,18.5],[39.5,15.5],[43.5,12.5],[42.5,17.5],[39,21],[39,23],[37,24.5],[35.5,28],[34,28]],
+    [[19.5,80.5],[26.5,80.5],[27,79.5],[24.5,79],[19.5,79.5],[24.5,78],[23,77],[19,78.5],[16,76.5],[11,79],[11,80],[18.5,79.5],[19.5,80.5]],
+    [[-58,-63],[-57,-63],[-57,-64.5],[-62,-65],[-61.5,-66.5],[-62.5,-66],[-65.5,-67.5],[-63.5,-68.5],[-61,-72],[-67.5,-71.5],[-68.5,-70],[-67,-69.5],[-67.5,-67],[-64.5,-66],[-64,-64.5],[-62.5,-65],[-62.5,-64],[-61,-64.5],[-58,-63]],
+    [[66,77],[69,77],[68,76],[61.5,75.5],[56.5,73.5],[55.5,71.5],[57.5,70.5],[51.5,71.5],[56.5,75.5],[66,77]],
+    [[-180,69],[-175.5,68],[-174.5,66.5],[-171.5,67],[-170,66],[-172.5,64.5],[-175.5,64.5],[-178.5,66],[-180,65],[-180,69]],
+    [[-119.5,77.5],[-116,77.5],[-116,76.5],[-114,77],[-111.5,75.5],[-109.5,75.5],[-110,76.5],[-108.5,77],[-105.5,75.5],[-114,74.5],[-117.5,75],[-116,76.5],[-118,75.5],[-119,75.5],[-118,76.5],[-122.5,76],[-119.5,77.5]],
+    [[-23,66.5],[-21.5,65.5],[-15,66.5],[-13.5,65],[-17,63.5],[-22.5,63.5],[-22,64.5],[-23,65],[-22,65.5],[-24,65.5],[-23,66.5]],
+    [[172,-40.5],[174.5,-41],[173,-44],[171.5,-44],[170,-46.5],[167,-46.5],[166.5,-45.5],[171,-43],[172,-40.5]],
+    [[121,1.5],[124.5,1],[124,0],[120,0],[120.5,-1.5],[123.5,-0.5],[122,-1.5],[123,-5.5],[122.5,-4.5],[121.5,-5],[121,-2.5],[120.5,-5.5],[119.5,-5.5],[119,-1.5],[121,1.5]],
+    [[173,-35],[174.5,-35],[176.5,-38],[178.5,-37.5],[176,-41.5],[175,-41.5],[174,-39.5],[175,-37.5],[173,-35]],
+    [[106,-6],[109,-7],[112,-6.5],[115.5,-8.5],[108,-8],[105.5,-7],[106,-6]],
+    [[34.5,66.5],[34.5,65],[36,64],[38,64],[36.5,65],[40,64.5],[40,66],[34.5,66.5]],
+    [[-87.5,49],[-91.5,47],[-90,46.5],[-88,47.5],[-87.5,46.5],[-84.5,46.5],[-85,48],[-87.5,49]],
+    [[125.5,9.5],[126.5,9],[125.5,5.5],[124,6],[124,7.5],[122,7],[122,8],[125.5,9.5]],
+    [[-101,74],[-97,74],[-97.5,73],[-96.5,73],[-96.5,72],[-101.5,72],[-102.5,73],[-101,73],[-101,74]],
+    [[-84,23],[-79.5,23],[-74.5,20],[-77.5,20],[-78.5,21.5],[-82,22.5],[-84.5,22],[-84,23]],
+    [[120.5,18.5],[122.5,18.5],[121.5,15],[124,13],[122,14],[121.5,12.5],[120.5,13],[120.5,18.5]],
+    [[138.5,76.5],[140.5,75.5],[144.5,76],[145,75],[138,74.5],[137,75.5],[138.5,76.5]],
+    [[-71,-68.5],[-68,-72],[-75.5,-72],[-71,-71],[-70.5,-70],[-72,-70],[-71,-68.5]],
+    [[144.5,-41],[148.5,-41],[148.5,-42],[147.5,-43.5],[146,-43.5],[144.5,-41]],
+    [[-105.5,79.5],[-100,79],[-99.5,77.5],[-104.5,78],[-104,79],[-105,78.5],[-105.5,79.5]],
+    [[-104.5,76.5],[-97.5,76.5],[-97.5,75.5],[-100.5,75],[-104.5,76.5]],
+    [[-73.5,20],[-70,20],[-68.5,18.5],[-74.5,18],[-72.5,18.5],[-73.5,20]],
+    [[-84,46],[-82.5,43],[-81.5,45],[-80,44.5],[-80.5,46],[-84,46]],
+    [[80,9.5],[81,9.5],[82,7.5],[81.5,6],[79.5,7],[80,9.5]],
+    [[-86,46],[-87.5,45.5],[-87.5,41.5],[-86.5,42],[-86.5,44.5],[-85,45.5],[-86,46]]];
+  // Equirectangular: longitude -180..180 across w, latitude latTop..latBottom down h.
+  function rhWorldLandPath(w, h, latTop, latBottom) {
+    var key = [w, h, latTop, latBottom].join('|');
+    if (rhWorldLandPath.cache[key]) return rhWorldLandPath.cache[key];
+    var kx = w / 360, ky = h / (latTop - latBottom);
+    var d = RH_WORLD_LAND.map(function(ring) {
+      return 'M' + ring.map(function(p) { return ((p[0] + 180) * kx).toFixed(1) + ' ' + ((latTop - p[1]) * ky).toFixed(1); }).join('L') + 'Z';
+    }).join('');
+    rhWorldLandPath.cache[key] = d;
+    return d;
+  }
+  rhWorldLandPath.cache = {};
+  // A smooth curve through points (Catmull-Rom as cubic Beziers).
+  function rhSmoothPath(pts) {
+    var f = function(v) { return v.toFixed(1); };
+    var d = 'M' + f(pts[0][0]) + ' ' + f(pts[0][1]);
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      d += ' C' + f(p1[0] + (p2[0] - p0[0]) / 6) + ' ' + f(p1[1] + (p2[1] - p0[1]) / 6) + ' ' + f(p2[0] - (p3[0] - p1[0]) / 6) + ' ' + f(p2[1] - (p3[1] - p1[1]) / 6) + ' ' + f(p2[0]) + ' ' + f(p2[1]);
+    }
+    return d;
+  }
+
   var MIGRATION = {
     overview: 'Every fall, ~5 million raptors funnel through the Western Hemisphere\'s migration corridors. Sites like Hawk Mountain (PA), Cape May (NJ), Veracruz (Mexico), Eilat (Israel), and Batumi (Georgia) sit at geographic bottlenecks where soaring raptors converge — and where standardized counts have built the longest continuous wildlife datasets in conservation history. A broad-winged hawk hatched in Maine in July may winter in Bolivia, fly through the Veracruz River of Raptors in late September with 4 million companions, and never flap its wings for hundreds of miles — riding thermals + ridge lift from cold front to cold front.',
 
@@ -2352,28 +2423,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ───────────────────────────────────────────────────────────
   // ANATOMY DATA — labeled raptor body-part reference
   // ───────────────────────────────────────────────────────────
-  // Each label has: id, x, y (SVG coords in 800x500 canvas),
-  // line endpoint (lx, ly) where the label sits, label text + description.
+  // Each part has: id, the point on the drawing (x, y) in the 800x500 plate, the numbered
+  // marker (mx, my) its leader line runs to, label text + description.
   var ANATOMY = {
     intro: 'Raptor anatomy is a study in optimization: every body part has been reshaped by tens of millions of years of selection for predatory life. The eye, larger than a human eye in a head the size of a tennis ball. The hooked beak with a tomial tooth that snips vertebrae cleanly. Talons curved to a specific arc, lengthened to penetrate, hardened with extra keratin. Wing primaries slotted to reduce induced drag. Every feature trackable to its functional pressure.',
     parts: [
-      { id: 'eye', x: 615, y: 175, lx: 700, ly: 60, label: 'Eye', desc: 'Massive relative to body — golden eagle eye = human eye in a tennis-ball skull. 4-8× human visual acuity. Spherical (diurnal) or tubular (owls).' },
-      { id: 'beak', x: 685, y: 215, lx: 770, ly: 200, label: 'Beak (cere + maxilla)', desc: 'Sharp downward hook for tearing flesh. Cere = the soft skin patch at the base (often yellow). Beak grows continuously; raptors "feak" (wipe + sharpen) on perches.' },
-      { id: 'tomial', x: 670, y: 230, lx: 770, ly: 295, label: 'Tomial Tooth (falcons only)', desc: 'A pointed projection on the upper beak edge — fits into a notch on the lower beak. Falcons use this to sever the cervical vertebrae of prey in a single bite. Hawks + eagles + owls lack it.' },
-      { id: 'nare', x: 660, y: 195, lx: 770, ly: 110, label: 'Nare (nostril)', desc: 'Hole in the cere. In peregrines, contains a bony tubercle that disrupts airflow during a 240 mph stoop so high-pressure air doesn\'t collapse the lungs.' },
-      { id: 'crown', x: 540, y: 105, lx: 280, ly: 60, label: 'Crown / Crest', desc: 'Top of head feathers. Many raptors have erectile feather crests used in display. Harpy eagles have a distinctive divided black crest.' },
-      { id: 'nape', x: 480, y: 165, lx: 240, ly: 120, label: 'Nape', desc: 'Back of the neck. Many species have a distinctive nape patch (e.g. golden eagle\'s "golden" nape, white-headed peregrine subspecies).' },
-      { id: 'scapulars', x: 380, y: 200, lx: 200, ly: 200, label: 'Scapulars', desc: 'Shoulder feathers covering the shoulder joint. Many species have distinct scapular markings used in field ID.' },
-      { id: 'breast', x: 510, y: 280, lx: 270, ly: 320, label: 'Breast', desc: 'Often patterned with bars/streaks for species ID — barred (broadwing), spotted (peregrine juvenile), unmarked white (bald eagle adult).' },
-      { id: 'primaries', x: 195, y: 175, lx: 80, ly: 140, label: 'Primary Feathers (P1-P10)', desc: 'The outermost 10 wing feathers — the propulsion + steering surface. Slotted gaps in eagles + buteos reduce induced drag. Comb-edged in owls for silent flight.' },
-      { id: 'secondaries', x: 295, y: 210, lx: 120, ly: 320, label: 'Secondary Feathers', desc: 'Inner wing feathers attached to the ulna — provide lift, not propulsion. The "soft" inner wing.' },
-      { id: 'alula', x: 250, y: 175, lx: 110, ly: 80, label: 'Alula (bastard wing)', desc: 'Small set of feathers on the "thumb" — deployed at slow speed/high angle of attack to disrupt turbulence at the leading edge. Functions like a leading-edge slat on an airliner.' },
-      { id: 'rectrices', x: 145, y: 305, lx: 60, ly: 380, label: 'Tail Rectrices (R1-R6 pairs)', desc: 'Tail feathers — provide steering + braking. Red-tailed hawk\'s namesake rusty tail; long banded in accipiters; fan-shaped in buteos.' },
-      { id: 'thigh', x: 480, y: 385, lx: 280, ly: 430, label: 'Thigh + Tarsus', desc: 'Feathered thigh leads into a bare or feathered "leg" (tarsus). Eagles + rough-legged hawks have feathered tarsi for cold; most raptors have bare scaly tarsi.' },
-      { id: 'foot', x: 545, y: 450, lx: 660, ly: 470, label: 'Foot — anisodactyl', desc: 'Three forward toes + one back toe (hallux). Hallux is the killing weapon — drives the longest talon through vital organs.' },
-      { id: 'osprey-toe', x: 555, y: 460, lx: 720, ly: 410, label: 'Reversible Outer Toe (osprey only)', desc: 'Ospreys can rotate the 4th toe backward to grip wet fish in a 2-and-2 zygodactyl grip. Footpads have spicules (barbed scales) for additional traction on slippery scales.' },
-      { id: 'hallux', x: 530, y: 462, lx: 380, ly: 480, label: 'Hallux Talon', desc: 'Longest talon, on the rear toe. The kill weapon — penetrates vital organs. Harpy eagle hallux talon: 12.5 cm (longer than a grizzly bear\'s claw).' },
-      { id: 'gular', x: 575, y: 255, lx: 690, ly: 350, label: 'Crop (gular pouch)', desc: 'Bulging food storage under the throat skin. After a big kill, the bird may carry 200-400 g of food in the crop, slowly digesting it over hours. Owls lack a crop (food goes straight to gizzard).' }
+      { id: 'eye', x: 590, y: 132, mx: 612, my: 70, label: 'Eye', desc: 'Massive relative to body — golden eagle eye = human eye in a tennis-ball skull. 4-8× human visual acuity. Spherical (diurnal) or tubular (owls).' },
+      { id: 'beak', x: 635, y: 151, mx: 696, my: 140, label: 'Beak (cere + maxilla)', desc: 'Sharp downward hook for tearing flesh. Cere = the soft skin patch at the base (often yellow). Beak grows continuously; raptors "feak" (wipe + sharpen) on perches.' },
+      { id: 'tomial', x: 628, y: 158, mx: 690, my: 184, label: 'Tomial Tooth (falcons only)', desc: 'A pointed projection on the upper beak edge — fits into a notch on the lower beak. Falcons use this to sever the cervical vertebrae of prey in a single bite. Hawks + eagles + owls lack it.' },
+      { id: 'nare', x: 614, y: 134, mx: 668, my: 96, label: 'Nare (nostril)', desc: 'Hole in the cere. In peregrines, contains a bony tubercle that disrupts airflow during a 240 mph stoop so high-pressure air doesn\'t collapse the lungs.' },
+      { id: 'crown', x: 566, y: 102, mx: 546, my: 60, label: 'Crown / Crest', desc: 'Top of head feathers. Many raptors have erectile feather crests used in display. Harpy eagles have a distinctive divided black crest.' },
+      { id: 'nape', x: 531, y: 160, mx: 482, my: 118, label: 'Nape', desc: 'Back of the neck. Many species have a distinctive nape patch (e.g. golden eagle\'s "golden" nape, white-headed peregrine subspecies).' },
+      { id: 'scapulars', x: 497, y: 214, mx: 428, my: 178, label: 'Scapulars', desc: 'Shoulder feathers covering the shoulder joint. Many species have distinct scapular markings used in field ID.' },
+      { id: 'breast', x: 613, y: 262, mx: 694, my: 268, label: 'Breast', desc: 'Often patterned with bars/streaks for species ID — barred (broadwing), spotted (peregrine juvenile), unmarked white (bald eagle adult).' },
+      { id: 'primaries', x: 390, y: 414, mx: 304, my: 388, label: 'Primary Feathers (P1-P10)', desc: 'The outermost 10 wing feathers — the propulsion + steering surface. Slotted gaps in eagles + buteos reduce induced drag. Comb-edged in owls for silent flight.' },
+      { id: 'secondaries', x: 462, y: 332, mx: 378, my: 300, label: 'Secondary Feathers', desc: 'Inner wing feathers attached to the ulna — provide lift, not propulsion. The "soft" inner wing.' },
+      { id: 'alula', x: 545, y: 252, mx: 660, my: 318, label: 'Alula (bastard wing)', desc: 'Small set of feathers on the "thumb" — deployed at slow speed/high angle of attack to disrupt turbulence at the leading edge. Functions like a leading-edge slat on an airliner.' },
+      { id: 'rectrices', x: 348, y: 462, mx: 266, my: 466, label: 'Tail Rectrices (R1-R6 pairs)', desc: 'Tail feathers — provide steering + braking. Red-tailed hawk\'s namesake rusty tail; long banded in accipiters; fan-shaped in buteos.' },
+      { id: 'thigh', x: 568, y: 386, mx: 652, my: 382, label: 'Thigh + Tarsus', desc: 'Feathered thigh leads into a bare or feathered "leg" (tarsus). Eagles + rough-legged hawks have feathered tarsi for cold; most raptors have bare scaly tarsi.' },
+      { id: 'foot', x: 604, y: 446, mx: 642, my: 480, label: 'Foot — anisodactyl', desc: 'Three forward toes + one back toe (hallux). Hallux is the killing weapon — drives the longest talon through vital organs.' },
+      { id: 'osprey-toe', x: 612, y: 452, mx: 704, my: 462, label: 'Reversible Outer Toe (osprey only)', desc: 'Ospreys can rotate the 4th toe backward to grip wet fish in a 2-and-2 zygodactyl grip. Footpads have spicules (barbed scales) for additional traction on slippery scales.' },
+      { id: 'hallux', x: 556, y: 452, mx: 530, my: 480, label: 'Hallux Talon', desc: 'Longest talon, on the rear toe. The kill weapon — penetrates vital organs. Harpy eagle hallux talon: 12.5 cm (longer than a grizzly bear\'s claw).' },
+      { id: 'gular', x: 606, y: 196, mx: 670, my: 224, label: 'Crop (gular pouch)', desc: 'Bulging food storage under the throat skin. After a big kill, the bird may carry 200-400 g of food in the crop, slowly digesting it over hours. Owls lack a crop (food goes straight to gizzard).' }
     ]
   };
 
@@ -20371,6 +20442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               'aria-valuenow': Math.max(0, Math.min(impactScaleMax, ke)),
               'aria-valuetext': ke.toFixed(0) + ' joules at impact'
             },
+              h('span', { className: 'rh-stoop-impact-fill', 'aria-hidden': 'true', style: { width: impactScalePct(ke) + '%' } }),
               h('span', { className: 'rh-stoop-impact-current', style: { left: impactScalePct(ke) + '%' } },
                 h('span', { className: 'rh-stoop-impact-current-dot', 'aria-hidden': 'true' }),
                 h('span', { className: 'rh-stoop-impact-current-label' }, 'Current')
@@ -20439,23 +20511,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               if (alt < 0) alt = 0;
               t += dt;
             }
-            // SVG plot
-            var pw = 600, ph = 200, pad = 35;
+            // The plot. Its dashed "terminal" line was drawn at the peak speed this fall happened to
+            // reach, so from 600 m the "90% terminal" marker was 90% of 197 mph while the terminal
+            // velocity above says 255. Terminal is now the calculator's own vTerminal; the legend
+            // sits outside the plot (it covered the marker's label); both axes carry a scale.
+            var pw = 900, ph = 300, padL = 60, padR = 66, padT = 24, padB = 38;
             var tMax = pts.length > 0 ? pts[pts.length - 1].t : 1;
             var altMax = v.altitudeM || 600;
             var velMax = Math.max.apply(null, pts.map(function(p) { return p.velMph; }));
-            function xAt(t) { return pad + (t / tMax) * (pw - 2 * pad); }
-            function yAltAt(a) { return ph - pad - (a / altMax) * (ph - 2 * pad); }
-            function yVelAt(vp) { return ph - pad - (vp / velMax) * (ph - 2 * pad); }
+            var termMph = vTerminalMph;
+            var velStep = Math.max(termMph, velMax) > 300 ? 100 : Math.max(termMph, velMax) > 150 ? 50 : 25;
+            var velTop = Math.ceil(Math.max(termMph, velMax) * 1.04 / velStep) * velStep;
+            function xAt(t) { return padL + (t / tMax) * (pw - padL - padR); }
+            function yAltAt(a) { return ph - padB - (a / altMax) * (ph - padT - padB); }
+            function yVelAt(vp) { return ph - padB - (vp / velTop) * (ph - padT - padB); }
             var altPath = pts.map(function(p, i) { return (i === 0 ? 'M ' : 'L ') + xAt(p.t).toFixed(1) + ' ' + yAltAt(p.alt).toFixed(1); }).join(' ');
             var velPath = pts.map(function(p, i) { return (i === 0 ? 'M ' : 'L ') + xAt(p.t).toFixed(1) + ' ' + yVelAt(p.velMph).toFixed(1); }).join(' ');
-            // Find time to terminal (90% of max v)
-            var v90 = 0.9 * velMax;
-            var t90 = pts.find(function(p) { return p.velMph >= v90; });
-            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-2' },
+            var velArea = velPath + ' L ' + xAt(tMax).toFixed(1) + ' ' + (ph - padB) + ' L ' + padL + ' ' + (ph - padB) + ' Z';
+            // First moment at 90% of TERMINAL velocity (none if the ground comes first).
+            var t90 = pts.find(function(p) { return p.velMph >= 0.9 * termMph; });
+            var velTicks = [];
+            for (var vt = 0; vt <= velTop + 0.001; vt += velStep) velTicks.push(vt);
+            var altTicks = [0, 0.25, 0.5, 0.75, 1].map(function(f) { return Math.round(altMax * f); });
+            var timeStep = tMax > 16 ? 4 : 2;
+            var timeTicks = [];
+            for (var tt = 0; tt <= tMax + 0.001; tt += timeStep) timeTicks.push(tt);
+            var markX = t90 ? xAt(t90.t) : 0, markY = t90 ? yVelAt(t90.velMph) : 0;
+            var markLeft = markX > pw * 0.6;
+            var plotLabel = __alloT('stem.raptorhunt.fall_curve_plot', 'Fall curve plot') + ': from ' + altMax + ' m, speed reaches ' + velMax.toFixed(0) + ' mph after ' + tMax.toFixed(1) + ' s; terminal velocity ' + termMph.toFixed(0) + ' mph' + (t90 ? '; 90% of terminal at ' + t90.t.toFixed(1) + ' s' : '; the ground comes before 90% of terminal') + '.';
+            var small = { fontSize: 11, fontFamily: 'ui-monospace, Menlo, monospace' };
+            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-2', 'data-raptor-fall-curve': 'true' },
               h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.fall_curve_time_domain_physics', '📉 Fall Curve (time-domain physics)')),
-              h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.numerical_integration_of_the_drag_equa', 'Numerical integration of the drag equation with your current slider values. Altitude (orange) plummets while velocity (red) builds toward terminal — and then plateaus when drag = weight.')),
-              h('div', { className: 'bg-slate-950/60 rounded-lg p-2' },
+              h('div', { className: 'text-xs text-slate-300 italic' }, __alloT('stem.raptorhunt.numerical_integration_of_the_drag_equa', 'Numerical integration of the drag equation with your current slider values. Altitude (orange) plummets while velocity (red) builds toward terminal — and then plateaus when drag = weight.')),
+              h('div', { className: 'bg-slate-950/60 rounded-lg p-3' },
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-xs text-amber-300 flex items-center justify-between' },
                     h('span', null, __alloT('stem.raptorhunt.stoop_start_altitude_m', 'Stoop start altitude (m)')),
@@ -20465,35 +20553,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { altitudeM: parseInt(e.target.value) }) }); },
                     className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.altitude_m', 'Altitude m') })
                 ),
-                h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.fall_curve_plot', 'Fall curve plot') },
-                  h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
-                  // Axes
-                  h('line', { x1: pad, y1: ph - pad, x2: pw - pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
-                  h('line', { x1: pad, y1: pad, x2: pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
-                  // Time grid
-                  [0, 2, 4, 6, 8, 10].filter(function(tk) { return tk <= tMax + 0.5; }).map(function(tk, i) {
-                    var x = xAt(tk);
-                    return h('g', { key: 'tg' + i },
-                      h('line', { x1: x, y1: pad, x2: x, y2: ph - pad, stroke: '#1e293b', strokeWidth: 1 }),
-                      h('text', { x: x, y: ph - pad + 12, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, tk + 's')
-                    );
-                  }),
-                  // Curves
-                  h('path', { d: altPath, fill: 'none', stroke: '#f97316', strokeWidth: 2.5 }),
-                  h('path', { d: velPath, fill: 'none', stroke: '#dc2626', strokeWidth: 2.5 }),
-                  // Terminal-velocity asymptote line
-                  h('line', { x1: pad, y1: yVelAt(velMax), x2: pw - pad, y2: yVelAt(velMax), stroke: '#dc2626', strokeWidth: 1, strokeDasharray: '4,4', opacity: 0.55 }),
-                  // Marker at 95% terminal
-                  t90 && h('g', null,
-                    h('circle', { cx: xAt(t90.t), cy: yVelAt(t90.velMph), r: 5, fill: '#fde047', stroke: '#92400e', strokeWidth: 1.5 }),
-                    h('text', { x: xAt(t90.t), y: yVelAt(t90.velMph) - 10, fontSize: 10, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, '90% terminal @ ' + t90.t.toFixed(1) + 's')
-                  ),
-                  // Legend
-                  h('rect', { x: pw - 165, y: 8, width: 155, height: 50, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
-                  h('line', { x1: pw - 155, y1: 22, x2: pw - 140, y2: 22, stroke: '#f97316', strokeWidth: 3 }),
-                  h('text', { x: pw - 135, y: 25, fontSize: 10, fill: '#fdba74' }, __alloT('stem.raptorhunt.altitude_m_2', 'Altitude (m)')),
-                  h('line', { x1: pw - 155, y1: 40, x2: pw - 140, y2: 40, stroke: '#dc2626', strokeWidth: 3 }),
-                  h('text', { x: pw - 135, y: 43, fontSize: 10, fill: '#fca5a5' }, __alloT('stem.raptorhunt.velocity_mph', 'Velocity (mph)'))
+                // Legend, outside the plot.
+                h('div', { className: 'flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-200 mb-1', 'aria-hidden': 'true' },
+                  h('span', { className: 'inline-flex items-center gap-2' }, h('span', { style: { display: 'inline-block', width: 20, height: 3, borderRadius: 2, background: '#f97316' } }), __alloT('stem.raptorhunt.altitude_m_2', 'Altitude (m)')),
+                  h('span', { className: 'inline-flex items-center gap-2' }, h('span', { style: { display: 'inline-block', width: 20, height: 3, borderRadius: 2, background: '#ef4444' } }), __alloT('stem.raptorhunt.velocity_mph', 'Velocity (mph)')),
+                  h('span', { className: 'inline-flex items-center gap-2' }, h('span', { style: { display: 'inline-block', width: 20, height: 0, borderTop: '2px dashed #fca5a5' } }), 'Terminal velocity ' + termMph.toFixed(0) + ' mph')
+                ),
+                h('div', { className: 'overflow-x-auto' },
+                  h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', minWidth: '560px', height: 'auto', display: 'block' }, role: 'img', 'aria-label': plotLabel },
+                    h('defs', null,
+                      h('linearGradient', { id: 'rh-fall-vel-area', x1: 0, y1: 0, x2: 0, y2: 1 },
+                        h('stop', { offset: '0%', stopColor: '#ef4444', stopOpacity: 0.28 }), h('stop', { offset: '100%', stopColor: '#ef4444', stopOpacity: 0 }))
+                    ),
+                    h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0b1322', rx: 6 }),
+                    // Grid: velocity rows, time columns
+                    velTicks.map(function(vt) {
+                      var y = yVelAt(vt);
+                      return h('g', { key: 'vg' + vt },
+                        h('line', { x1: padL, y1: y, x2: pw - padR, y2: y, stroke: '#1e2a3d', strokeWidth: 1 }),
+                        h('text', Object.assign({ x: pw - padR + 8, y: y + 4, fill: '#fca5a5' }, small), String(vt))
+                      );
+                    }),
+                    altTicks.map(function(a) {
+                      return h('text', Object.assign({ key: 'at' + a, x: padL - 8, y: yAltAt(a) + 4, fill: '#fdba74', textAnchor: 'end' }, small), String(a));
+                    }),
+                    timeTicks.map(function(tk) {
+                      var x = xAt(tk);
+                      return h('g', { key: 'tg' + tk },
+                        h('line', { x1: x, y1: padT, x2: x, y2: ph - padB, stroke: '#1e2a3d', strokeWidth: 1 }),
+                        h('text', Object.assign({ x: x, y: ph - padB + 18, fill: '#94a3b8', textAnchor: 'middle' }, small), tk + ' s')
+                      );
+                    }),
+                    h('text', { x: padL - 8, y: padT - 8, fontSize: 11, fill: '#fdba74', textAnchor: 'end', fontWeight: 'bold' }, 'm'),
+                    h('text', { x: pw - padR + 8, y: padT - 8, fontSize: 11, fill: '#fca5a5', fontWeight: 'bold' }, 'mph'),
+                    // Axes
+                    h('line', { x1: padL, y1: ph - padB, x2: pw - padR, y2: ph - padB, stroke: '#64748b', strokeWidth: 1.2 }),
+                    h('line', { x1: padL, y1: padT, x2: padL, y2: ph - padB, stroke: '#64748b', strokeWidth: 1.2 }),
+                    h('line', { x1: pw - padR, y1: padT, x2: pw - padR, y2: ph - padB, stroke: '#64748b', strokeWidth: 1.2 }),
+                    // Terminal velocity (the calculator's), dashed, labelled at its right end
+                    h('line', { x1: padL, y1: yVelAt(termMph), x2: pw - padR, y2: yVelAt(termMph), stroke: '#fca5a5', strokeWidth: 1.4, strokeDasharray: '6 5', opacity: 0.85 }),
+                    // Curves
+                    h('path', { d: velArea, fill: 'url(#rh-fall-vel-area)' }),
+                    h('path', { d: altPath, fill: 'none', stroke: '#f97316', strokeWidth: 3, strokeLinejoin: 'round' }),
+                    h('path', { d: velPath, fill: 'none', stroke: '#ef4444', strokeWidth: 3, strokeLinejoin: 'round' }),
+                    // 90% of terminal, labelled in a pill on the side away from the plot edge
+                    t90 ? h('g', null,
+                      h('line', { x1: markX, y1: markY, x2: markX, y2: ph - padB, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }),
+                      h('circle', { cx: markX, cy: markY, r: 6, fill: '#fde047', stroke: '#92400e', strokeWidth: 2 }),
+                      h('rect', { x: markLeft ? markX - 176 : markX + 12, y: markY + 10, width: 164, height: 24, rx: 12, fill: '#1c1917', stroke: '#fde047', strokeWidth: 1.2, opacity: 0.95 }),
+                      h('text', { x: markLeft ? markX - 94 : markX + 94, y: markY + 26, fontSize: 12, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, '90% terminal @ ' + t90.t.toFixed(1) + 's')
+                    ) : h('g', null,
+                      h('rect', { x: pw - padR - 372, y: yVelAt(termMph) + 8, width: 362, height: 26, rx: 13, fill: '#1c1917', stroke: '#fde68a', strokeWidth: 1, opacity: 0.95 }),
+                      h('text', { x: pw - padR - 191, y: yVelAt(termMph) + 25, fontSize: 12, fill: '#fde68a', textAnchor: 'middle', fontWeight: 'bold' }, 'The ground comes before 90% of terminal: start higher')
+                    )
+                  )
                 ),
                 // Time/alt/vel summary
                 h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-center' },
@@ -21429,89 +21542,145 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, MIGRATION.overview)
           ),
 
-          // Interactive World Map (NEW v0.7)
-          h('div', { className: 'bg-slate-950/60 border border-cyan-700/40 rounded-xl p-3' },
-            h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.world_map_5_flyways_famous_watch_sites', '🗺 World Map — 5 Flyways + Famous Watch Sites')),
-            h('div', { className: 'text-[10px] text-slate-400 mb-2 italic' }, __alloT('stem.raptorhunt.hover_a_flyway_color_or_a_star_to_lear', 'Hover a flyway color or a star to learn more. Arrows show fall migration direction (NE → SW for most North American species).')),
-            h('svg', { viewBox: '0 0 700 360', style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.world_map_showing_the_5_major_raptor_m', 'World map showing the 5 major raptor migration flyways and famous hawk-watch site locations') },
-              // Ocean background
-              h('rect', { x: 0, y: 0, width: 700, height: 360, fill: '#082f49' }),
-              // ── Continental masses (simplified equirectangular) ──
-              // North America
-              h('path', { d: 'M 60 80 L 180 60 L 210 90 L 230 130 L 240 165 L 195 220 L 145 230 L 100 195 L 70 150 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
-              // Greenland
-              h('path', { d: 'M 245 60 L 280 65 L 285 100 L 260 110 L 250 90 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
-              // South America
-              h('path', { d: 'M 175 235 L 215 240 L 230 290 L 215 340 L 190 350 L 175 320 L 165 280 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
-              // Europe
-              h('path', { d: 'M 330 75 L 410 70 L 420 110 L 395 140 L 360 150 L 335 125 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
-              // Africa
-              h('path', { d: 'M 340 155 L 420 160 L 430 220 L 415 285 L 380 305 L 355 280 L 345 220 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
-              // Asia
-              h('path', { d: 'M 420 75 L 600 80 L 640 130 L 625 175 L 580 200 L 510 195 L 450 175 L 425 140 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
-              // India
-              h('path', { d: 'M 500 180 L 540 175 L 555 215 L 530 240 L 510 220 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
-              // Australia
-              h('path', { d: 'M 590 270 L 660 270 L 655 320 L 610 330 L 590 305 Z', fill: '#1e3a2a', stroke: '#475569', strokeWidth: 1 }),
-              // Equator + meridian guides
-              h('line', { x1: 0, y1: 200, x2: 700, y2: 200, stroke: '#1e293b', strokeWidth: 1, strokeDasharray: '2,4' }),
-              h('text', { x: 5, y: 197, fontSize: 9, fill: '#475569' }, __alloT('stem.raptorhunt.equator', 'Equator')),
-
-              // ── Flyway paths + arrows (defs for marker arrowheads) ──
-              h('defs', null,
-                ['#fbbf24', '#10b981', '#f97316', '#3b82f6', '#a855f7'].map(function(c, i) {
-                  return h('marker', { key: i, id: 'arr' + i, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
-                    h('path', { d: 'M 0 0 L 10 5 L 0 10 Z', fill: c })
-                  );
+          // Interactive World Map. The continents were 5-8-point polygons, the stars sat at made-up
+          // positions and the arrows ended in open ocean, and the "hover to learn more" hint had
+          // nothing to hover. Now real coastlines, stars placed from each site's own latLon, flyways
+          // that follow the routes their cards describe, and hover/focus details for both.
+          (function() {
+            var W = 700, LT = 82, LB = -58, K = W / 360, H = Math.round((LT - LB) * K);
+            function at(lon, lat) { return [(lon + 180) * K, (LT - lat) * K]; }
+            function parseLatLon(text) {
+              var m = String(text || '').match(/([\d.]+)°\s*([NS]),\s*([\d.]+)°\s*([EW])/);
+              return m ? [(m[4] === 'W' ? -1 : 1) * Number(m[3]), (m[2] === 'S' ? -1 : 1) * Number(m[1])] : null;
+            }
+            var hover = rh.migrationMapHover || null, pinned = rh.migrationMapPinned || null;
+            var focus = hover || pinned;
+            function setHover(v) { if (hover !== v) setRH({ migrationMapHover: v }); }
+            function togglePin(v) { setRH({ migrationMapPinned: pinned === v ? null : v }); }
+            var COLORS = { atlantic: '#fbbf24', mississippi: '#34d399', central: '#fb923c', pacific: '#60a5fa', eurasian: '#c084fc' };
+            // [lon, lat] waypoints for fall migration, following each flyway's "path" text.
+            var ROUTES = {
+              pacific: [[[-150, 64], [-138, 59], [-128, 52], [-123, 45], [-121, 38], [-116, 31], [-110, 25], [-104, 20]]],
+              central: [[[-110, 55], [-104, 48], [-100, 40], [-99, 31], [-97, 23], [-90, 15], [-83, 9.5], [-76, 3], [-68, -10], [-63, -24], [-62, -33]]],
+              mississippi: [[[-92, 54], [-91, 46], [-90, 38], [-92, 31], [-96, 25], [-96.5, 20.5]]],
+              atlantic: [[[-68, 48], [-73, 43.5], [-76.5, 40.2], [-78.5, 35.5], [-80.5, 30.5], [-80.5, 26], [-77.5, 22], [-71, 18.5], [-66.5, 10.5]]],
+              eurasian: [
+                [[6, 56], [3, 48], [-2, 41], [-5.6, 36], [-7, 28], [-8, 19], [-5, 12]],
+                [[22, 57], [26.5, 49], [29, 41], [33, 36], [34.9, 29.6], [33, 21], [34, 10], [34, 0], [30, -14]],
+                [[46, 55], [43, 47], [41.6, 41.6], [43, 33], [44, 22], [43.4, 12.6], [40, 3]]
+              ]
+            };
+            // Short labels, in the order of MIGRATION.watchSites; Hawk Mountain and Cape May sit
+            // 2 px apart at this scale, so their labels are pulled apart on leader lines.
+            var SITE_LABELS = [
+              { short: __alloT('stem.raptorhunt.hawk_mtn', 'Hawk Mtn'), dx: -16, dy: -16, anchor: 'end' },
+              { short: __alloT('stem.raptorhunt.cape_may', 'Cape May'), dx: 16, dy: 12, anchor: 'start' },
+              { short: __alloT('stem.raptorhunt.veracruz', 'Veracruz'), dx: -9, dy: 4, anchor: 'end' },
+              { short: __alloT('stem.raptorhunt.eilat', 'Eilat'), dx: -9, dy: 9, anchor: 'end' },
+              { short: __alloT('stem.raptorhunt.batumi', 'Batumi'), dx: 9, dy: -5, anchor: 'start' },
+              { short: 'GGRO', dx: -9, dy: 3, anchor: 'end' }
+            ];
+            var sites = MIGRATION.watchSites.map(function(w, i) { return { w: w, i: i, pos: parseLatLon(w.latLon), label: SITE_LABELS[i] || { short: w.name, dx: 9, dy: 3, anchor: 'start' } }; }).filter(function(x) { return x.pos; });
+            var focusFlyway = focus && focus.indexOf('site:') !== 0 ? MIGRATION.flyways.filter(function(f) { return f.id === focus; })[0] : null;
+            var focusSite = focus && focus.indexOf('site:') === 0 ? MIGRATION.watchSites[Number(focus.slice(5))] : null;
+            var halo = { paintOrder: 'stroke', stroke: '#04121f', strokeWidth: 3, strokeLinejoin: 'round' };
+            return h('div', { className: 'bg-slate-950/60 border border-cyan-700/40 rounded-xl p-3', 'data-raptor-flyway-map': 'true' },
+              h('div', { className: 'text-sm font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.world_map_5_flyways_famous_watch_sites', '🗺 World Map — 5 Flyways + Famous Watch Sites')),
+              h('div', { className: 'text-xs text-slate-300 mb-2' }, __alloT('stem.raptorhunt.hover_a_flyway_color_or_a_star_to_lear', 'Hover a flyway color or a star to learn more. Arrows show fall migration direction (NE → SW for most North American species).')),
+              h('div', { className: 'rounded-lg overflow-x-auto overflow-y-hidden border border-cyan-900/60' },
+                h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', minWidth: '620px', height: 'auto', display: 'block' }, role: 'group', 'aria-labelledby': 'rh-flyway-map-title', 'data-flyway-focus': focus || 'none' },
+                  h('title', { id: 'rh-flyway-map-title' }, __alloT('stem.raptorhunt.world_map_showing_the_5_major_raptor_m', 'World map showing the 5 major raptor migration flyways and famous hawk-watch site locations')),
+                  h('defs', null,
+                    h('linearGradient', { id: 'rh-flyway-ocean', x1: 0, y1: 0, x2: 0, y2: 1 },
+                      h('stop', { offset: '0%', stopColor: '#0c2a47' }), h('stop', { offset: '55%', stopColor: '#0a2139' }), h('stop', { offset: '100%', stopColor: '#07182b' })),
+                    h('linearGradient', { id: 'rh-flyway-land', x1: 0, y1: 0, x2: 0, y2: 1 },
+                      h('stop', { offset: '0%', stopColor: '#35513d' }), h('stop', { offset: '50%', stopColor: '#2b4634' }), h('stop', { offset: '100%', stopColor: '#314a33' })),
+                    Object.keys(COLORS).map(function(id) {
+                      return h('marker', { key: id, id: 'rh-flyway-arrow-' + id, viewBox: '0 0 10 10', refX: 7, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' },
+                        h('path', { d: 'M0 0 L10 5 L0 10 Z', fill: COLORS[id] }));
+                    })
+                  ),
+                  h('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#rh-flyway-ocean)' }),
+                  // Graticule every 30 degrees, then the Equator at its true latitude.
+                  h('g', { 'aria-hidden': 'true' },
+                    [-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150].map(function(lon) { var x = at(lon, 0)[0]; return h('line', { key: 'lon' + lon, x1: x, y1: 0, x2: x, y2: H, stroke: '#1d4266', strokeWidth: 0.5 }); }),
+                    [60, 30, -30].map(function(lat) { var y = at(0, lat)[1]; return h('line', { key: 'lat' + lat, x1: 0, y1: y, x2: W, y2: y, stroke: '#1d4266', strokeWidth: 0.5 }); })
+                  ),
+                  h('path', { d: rhWorldLandPath(W, H, LT, LB), fill: 'url(#rh-flyway-land)', fillRule: 'evenodd', stroke: '#7fa58a', strokeWidth: 0.6, strokeLinejoin: 'round', 'aria-hidden': 'true' }),
+                  h('g', { 'aria-hidden': 'true' },
+                    h('line', { x1: 0, y1: at(0, 0)[1], x2: W, y2: at(0, 0)[1], stroke: '#5b8fb3', strokeWidth: 0.8, strokeDasharray: '4 4', opacity: 0.7 }),
+                    h('text', { x: 6, y: at(0, 0)[1] - 4, fontSize: 9, fill: '#94c5e6', style: halo }, __alloT('stem.raptorhunt.equator', 'Equator'))
+                  ),
+                  // Flyways: a soft glow under a dashed line with an arrowhead; hovering either shows the details.
+                  MIGRATION.flyways.map(function(f) {
+                    var color = COLORS[f.id] || '#e2e8f0';
+                    var dim = focusFlyway && focusFlyway.id !== f.id;
+                    return h('g', { key: f.id, 'data-flyway': f.id, opacity: dim ? 0.22 : 1, onMouseEnter: function() { setHover(f.id); }, onMouseLeave: function() { setHover(null); } },
+                      (ROUTES[f.id] || []).map(function(route, r) {
+                        var d = rhSmoothPath(route.map(function(p) { return at(p[0], p[1]); }));
+                        return h('g', { key: r },
+                          h('path', { d: d, fill: 'none', stroke: color, strokeWidth: focusFlyway && focusFlyway.id === f.id ? 10 : 7, strokeLinecap: 'round', opacity: 0.2 }),
+                          h('path', { d: d, fill: 'none', stroke: color, strokeWidth: 2.4, strokeLinecap: 'round', strokeDasharray: '7 4', markerEnd: 'url(#rh-flyway-arrow-' + f.id + ')' })
+                        );
+                      })
+                    );
+                  }),
+                  // Watch sites: stars on their real coordinates, focusable.
+                  sites.map(function(site) {
+                    var p = at(site.pos[0], site.pos[1]);
+                    var lx = p[0] + site.label.dx, ly = p[1] + site.label.dy;
+                    var key = 'site:' + site.i;
+                    var active = focus === key;
+                    var far = Math.abs(site.label.dx) + Math.abs(site.label.dy) > 20;
+                    return h('g', {
+                      key: key, role: 'button', tabIndex: 0, 'data-flyway-site': site.i, 'aria-pressed': pinned === key,
+                      'aria-label': site.w.name + ', ' + site.w.annualCount,
+                      style: { cursor: 'pointer', outline: 'none' },
+                      onMouseEnter: function() { setHover(key); }, onMouseLeave: function() { setHover(null); },
+                      onFocus: function() { setHover(key); }, onBlur: function() { setHover(null); },
+                      onClick: function() { togglePin(key); },
+                      onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePin(key); } }
+                    },
+                      far && h('line', { x1: p[0], y1: p[1], x2: lx + (site.label.anchor === 'end' ? 2 : -2), y2: ly - 3, stroke: '#fde68a', strokeWidth: 0.7, opacity: 0.8 }),
+                      active && h('circle', { cx: p[0], cy: p[1], r: 9, fill: 'none', stroke: '#fde047', strokeWidth: 1.5 }),
+                      h('circle', { cx: p[0], cy: p[1], r: 4.8, fill: '#fde047', stroke: '#78350f', strokeWidth: 1.2 }),
+                      h('text', { x: p[0], y: p[1] + 2.3, fontSize: 6.5, fill: '#451a03', textAnchor: 'middle', fontWeight: 'bold', 'aria-hidden': 'true' }, '★'),
+                      h('text', { x: lx, y: ly, fontSize: 10, fill: active ? '#ffffff' : '#fde68a', fontWeight: 'bold', textAnchor: site.label.anchor, style: halo }, site.label.short)
+                    );
+                  })
+                )
+              ),
+              // Legend: each flyway is a control; hovering or focusing it lights its route.
+              h('div', { className: 'flex flex-wrap gap-2 mt-3', role: 'group', 'aria-label': __alloT('stem.raptorhunt.the_5_major_flyways', '🌎 The 5 Major Flyways') },
+                MIGRATION.flyways.map(function(f) {
+                  var on = focus === f.id;
+                  return h('button', {
+                    key: f.id, type: 'button', 'aria-pressed': pinned === f.id, 'data-flyway-legend': f.id,
+                    onMouseEnter: function() { setHover(f.id); }, onMouseLeave: function() { setHover(null); },
+                    onFocus: function() { setHover(f.id); }, onBlur: function() { setHover(null); },
+                    onClick: function() { togglePin(f.id); },
+                    className: 'inline-flex items-center gap-2 min-h-9 px-3 rounded-full border text-xs font-bold transition-colors ' + (on ? 'bg-slate-800 border-cyan-400 text-white' : 'bg-slate-900/70 border-slate-600 text-slate-200 hover:border-slate-400')
+                  },
+                    h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 18, height: 4, borderRadius: 2, background: COLORS[f.id] || '#e2e8f0' } }),
+                    f.name);
                 })
               ),
-              // 1. Atlantic Flyway (yellow)
-              h('path', { d: 'M 180 100 Q 200 140 200 175 Q 195 210 210 240', stroke: '#fbbf24', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr0)', opacity: 0.85 }),
-              // 2. Mississippi Flyway (green)
-              h('path', { d: 'M 160 110 Q 168 150 170 190 Q 175 215 220 245', stroke: '#10b981', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr1)', opacity: 0.85 }),
-              // 3. Central Flyway (orange) — extends to Argentina!
-              h('path', { d: 'M 140 110 Q 145 165 160 200 Q 175 240 200 290 Q 205 320 200 345', stroke: '#f97316', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr2)', opacity: 0.85 }),
-              // 4. Pacific Flyway (blue)
-              h('path', { d: 'M 95 100 Q 110 145 130 175 Q 145 200 165 235', stroke: '#3b82f6', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr3)', opacity: 0.85 }),
-              // 5. European-African Flyway (purple)
-              h('path', { d: 'M 370 90 Q 380 130 380 165 Q 380 210 395 260', stroke: '#a855f7', strokeWidth: 3, fill: 'none', strokeDasharray: '6,3', markerEnd: 'url(#arr4)', opacity: 0.85 }),
-
-              // ── Famous watch sites (yellow stars) ──
-              [
-                { name: __alloT('stem.raptorhunt.hawk_mtn', 'Hawk Mtn'), x: 195, y: 132 },
-                { name: __alloT('stem.raptorhunt.cape_may', 'Cape May'), x: 200, y: 142 },
-                { name: __alloT('stem.raptorhunt.veracruz', 'Veracruz'), x: 188, y: 195 },
-                { name: 'GGRO', x: 105, y: 152 },
-                { name: __alloT('stem.raptorhunt.eilat', 'Eilat'), x: 415, y: 165 },
-                { name: __alloT('stem.raptorhunt.batumi', 'Batumi'), x: 425, y: 122 }
-              ].map(function(site, i) {
-                return h('g', { key: i },
-                  h('circle', { cx: site.x, cy: site.y, r: 6, fill: '#fde047', stroke: '#92400e', strokeWidth: 1.5 }),
-                  h('text', { x: site.x, y: site.y + 2, fontSize: 8, fill: '#1c1917', textAnchor: 'middle', fontWeight: 'bold' }, '★'),
-                  h('text', { x: site.x + 9, y: site.y + 3, fontSize: 9, fill: '#fde047', fontWeight: 'bold' }, site.name)
-                );
-              }),
-
-              // ── Legend ──
-              h('rect', { x: 10, y: 305, width: 200, height: 50, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
-              h('text', { x: 15, y: 318, fontSize: 9, fill: '#fde047', fontWeight: 'bold' }, 'FLYWAYS'),
-              [
-                { c: '#fbbf24', l: 'Atlantic' },
-                { c: '#10b981', l: 'Mississippi' },
-                { c: '#f97316', l: 'Central' },
-                { c: '#3b82f6', l: 'Pacific' },
-                { c: '#a855f7', l: 'EU-Africa' }
-              ].map(function(le, i) {
-                var col = i % 3, row = Math.floor(i / 3);
-                return h('g', { key: i },
-                  h('line', { x1: 18 + col * 65, y1: 332 + row * 12, x2: 30 + col * 65, y2: 332 + row * 12, stroke: le.c, strokeWidth: 2.5 }),
-                  h('text', { x: 33 + col * 65, y: 335 + row * 12, fontSize: 9, fill: '#e5e7eb' }, le.l)
-                );
-              })
-            ),
-            // Map footer
-            h('div', { className: 'text-[10px] text-slate-500 mt-2 italic' }, __alloT('stem.raptorhunt.map_equirectangular_projection_contine', 'Map: equirectangular projection, continents simplified for clarity. Flyway paths shown as fall-migration direction. Stars mark major hawk-watch sites with documented annual counts.'))
-          ),
+              // What the hovered or chosen flyway or site is.
+              // Collapsed until something is hovered or focused (it only repeated the hint above).
+              h('div', { className: focusFlyway || focusSite ? 'mt-3 rounded-lg border border-slate-700/60 bg-slate-900/60 p-3 text-xs leading-relaxed' : 'sr-only', role: 'status', 'data-flyway-detail': focusFlyway ? focusFlyway.id : focusSite ? 'site' : 'none' },
+                focusFlyway ? h('div', null,
+                  h('div', { className: 'text-sm font-bold', style: { color: COLORS[focusFlyway.id] } }, focusFlyway.emoji + ' ' + focusFlyway.name),
+                  h('div', { className: 'text-slate-200 mt-1' }, h('span', { className: 'text-slate-400' }, 'Path: '), focusFlyway.path),
+                  h('div', { className: 'text-slate-200' }, h('span', { className: 'text-slate-400' }, 'Bottleneck: '), focusFlyway.bottleneck)
+                ) : focusSite ? h('div', null,
+                  h('div', { className: 'text-sm font-bold text-amber-300' }, '★ ' + focusSite.name),
+                  h('div', { className: 'text-slate-400 mt-0.5 font-mono' }, focusSite.latLon + ' · ' + focusSite.annualCount),
+                  h('div', { className: 'text-slate-200 mt-1' }, focusSite.highlight)
+                ) : null
+              ),
+              h('div', { className: 'text-[11px] text-slate-400 mt-2 italic' }, __alloT('stem.raptorhunt.map_equirectangular_projection_contine', 'Map: equirectangular projection, continents simplified for clarity. Flyway paths shown as fall-migration direction. Stars mark major hawk-watch sites with documented annual counts.'))
+            );
+          })(),
 
           // Flyways
           h('div', { className: 'space-y-3' },
@@ -22806,9 +22975,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var pick = ANATOMY.parts[pickIdx];
             var wrong = rhShuffle(ANATOMY.parts.filter(function(p) { return p.id !== pick.id; })).slice(0, 3);
             var opts = rhShuffle([pick].concat(wrong));
-            setRH({ anatomyMode: 'quiz', anatomyQuizPart: pick.id, anatomyQuizOptions: opts.map(function(p) { return p.id; }), anatomyQuizResult: null, anatomyHover: null });
+            setRH({ anatomyMode: 'quiz', anatomyQuizPart: pick.id, anatomyQuizOptions: opts.map(function(p) { return p.id; }), anatomyQuizResult: null, anatomyHover: null, anatomySelected: null });
           } else {
-            setRH({ anatomyMode: 'explore', anatomyHover: null });
+            setRH({ anatomyMode: 'explore', anatomyHover: null, anatomySelected: null });
           }
         }
         function nextQuiz() {
@@ -22831,14 +23000,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           rhAnnounce(correct ? 'Correct — ' + part.label : 'Incorrect. Answer was ' + part.label);
           if (correct && ctx.awardXP) ctx.awardXP(2, 'Anatomy quiz: ' + part.label);
         }
-        var hovered = hoveredId ? ANATOMY.parts.filter(function(p) { return p.id === hoveredId; })[0] : null;
+        var shownPartId = hoveredId || rh.anatomySelected || null;
+        var hovered = shownPartId ? ANATOMY.parts.filter(function(p) { return p.id === shownPartId; })[0] : null;
         // For quiz mode: the target part anchor we highlight
         var quizTargetPart = quizPart ? ANATOMY.parts.filter(function(p) { return p.id === quizPart; })[0] : null;
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-4' },
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
-              h('div', { className: 'flex-1' },
+              h('div', { className: 'flex-1 min-w-0 basis-full sm:basis-0' },
                 h('div', { className: 'text-lg font-bold text-amber-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.raptor_anatomy', '🦴 Raptor Anatomy')),
                 h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, ANATOMY.intro)
               ),
@@ -22892,110 +23062,134 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ),
 
-          // Interactive SVG
-          h('div', { className: 'bg-slate-900/60 border border-amber-700/40 rounded-xl p-3' },
-            h('div', { className: 'text-xs text-slate-400 mb-2 italic' }, anatomyMode === 'explore'
-              ? '👆 Hover or tap a label to read about each body part'
-              : '🎯 The pulsing red anchor is the target. Pick the right name from the options above.'),
-            h('svg', {
-              viewBox: '0 0 800 500',
-              role: 'img',
-              'aria-label': __alloT('stem.raptorhunt.labeled_raptor_anatomy_diagram_with_in', 'Labeled raptor anatomy diagram with interactive hover labels'),
-              style: { width: '100%', height: 'auto', maxHeight: '500px', display: 'block' }
-            },
-              // Background sky
-              h('rect', { x: 0, y: 0, width: 800, height: 500, fill: '#1e293b' }),
-              // Stylized bird silhouette (procedural raptor profile facing right)
-              // Body (ellipse)
-              h('ellipse', { cx: 450, cy: 280, rx: 180, ry: 100, fill: '#78350f', stroke: '#a16207', strokeWidth: 2 }),
-              // Head
-              h('circle', { cx: 615, cy: 195, r: 75, fill: '#a16207', stroke: '#c2410c', strokeWidth: 2 }),
-              // Beak
-              h('path', { d: 'M 680 200 L 720 215 L 685 232 Z', fill: '#fbbf24', stroke: '#92400e', strokeWidth: 2 }),
-              // Eye
-              h('circle', { cx: 625, cy: 175, r: 18, fill: '#fefce8', stroke: '#92400e', strokeWidth: 1.5 }),
-              h('circle', { cx: 628, cy: 178, r: 9, fill: '#1c1917' }),
-              // Wing (left, large, fanned)
-              h('path', { d: 'M 380 220 Q 250 140 110 180 Q 80 200 130 240 Q 220 260 360 290 Z', fill: '#92400e', stroke: '#78350f', strokeWidth: 2 }),
-              // Primary feather "fingers"
-              h('path', { d: 'M 180 175 L 80 165 L 120 195 Z', fill: '#78350f', stroke: '#451a03', strokeWidth: 1.5 }),
-              h('path', { d: 'M 195 170 L 100 145 L 130 188 Z', fill: '#78350f', stroke: '#451a03', strokeWidth: 1.5 }),
-              h('path', { d: 'M 215 168 L 130 130 L 145 178 Z', fill: '#78350f', stroke: '#451a03', strokeWidth: 1.5 }),
-              h('path', { d: 'M 240 170 L 165 122 L 165 175 Z', fill: '#78350f', stroke: '#451a03', strokeWidth: 1.5 }),
-              // Alula
-              h('path', { d: 'M 245 180 L 220 165 L 240 195 Z', fill: '#fcd34d', stroke: '#92400e', strokeWidth: 1 }),
-              // Tail
-              h('path', { d: 'M 290 320 Q 160 310 110 380 Q 180 360 295 360 Z', fill: '#9a3412', stroke: '#7c2d12', strokeWidth: 2 }),
-              // Tail bands
-              h('path', { d: 'M 130 365 L 285 350', stroke: '#451a03', strokeWidth: 2 }),
-              h('path', { d: 'M 160 372 L 280 360', stroke: '#451a03', strokeWidth: 2 }),
-              // Leg + foot
-              h('path', { d: 'M 480 370 Q 490 410 510 445', stroke: '#fbbf24', strokeWidth: 8, fill: 'none' }),
-              // Talons
-              h('path', { d: 'M 510 445 L 545 460 L 560 480', stroke: '#1c1917', strokeWidth: 3, fill: 'none' }),
-              h('path', { d: 'M 510 445 L 525 470 L 530 490', stroke: '#1c1917', strokeWidth: 3, fill: 'none' }),
-              h('path', { d: 'M 510 445 L 500 475 L 495 495', stroke: '#1c1917', strokeWidth: 3, fill: 'none' }),
-              h('path', { d: 'M 510 445 L 480 460 L 470 490', stroke: '#1c1917', strokeWidth: 3, fill: 'none' }), // hallux (back)
-              // Breast streaks
-              h('path', { d: 'M 470 260 Q 480 280 475 305', stroke: '#451a03', strokeWidth: 2, fill: 'none' }),
-              h('path', { d: 'M 500 265 Q 510 285 505 310', stroke: '#451a03', strokeWidth: 2, fill: 'none' }),
-              h('path', { d: 'M 530 265 Q 540 285 535 310', stroke: '#451a03', strokeWidth: 2, fill: 'none' }),
-
-              // Labels — in explore mode show all; in quiz mode only show target as red pulsing dot
-              anatomyMode === 'explore' ? ANATOMY.parts.map(function(p, i) {
-                var isHovered = hoveredId === p.id;
-                return h('g', { key: p.id },
-                  // Connector line
-                  h('line', {
-                    x1: p.x, y1: p.y, x2: p.lx, y2: p.ly,
-                    stroke: isHovered ? '#fbbf24' : '#475569',
-                    strokeWidth: isHovered ? 2 : 1,
-                    strokeDasharray: '4,3'
-                  }),
-                  // Anchor dot
-                  h('circle', {
-                    cx: p.x, cy: p.y, r: isHovered ? 6 : 4,
-                    fill: isHovered ? '#fbbf24' : '#fde047',
-                    stroke: '#451a03', strokeWidth: 1.5
-                  }),
-                  // Label background
-                  h('rect', {
-                    x: p.lx < 400 ? p.lx - 130 : p.lx,
-                    y: p.ly - 10, width: 130, height: 22, rx: 4,
-                    fill: isHovered ? 'rgba(251,191,36,0.85)' : 'rgba(15,23,42,0.75)',
-                    stroke: '#92400e', strokeWidth: 1,
-                    style: { cursor: 'pointer' },
-                    onMouseEnter: function() { setHover(p.id); },
-                    onMouseLeave: function() { setHover(null); },
-                    onClick: function() { setHover(p.id); }
-                  }),
-                  // Label text
-                  h('text', {
-                    x: p.lx < 400 ? p.lx - 65 : p.lx + 65,
-                    y: p.ly + 5,
-                    fontSize: 11, fontWeight: 'bold',
-                    fill: isHovered ? '#1c1917' : '#fcd34d',
-                    textAnchor: 'middle',
-                    style: { pointerEvents: 'none', userSelect: 'none' }
-                  }, p.label)
-                );
-              }) :
-              // Quiz mode: show target anchor only, pulsing
-              (quizTargetPart && h('g', null,
-                // Outer pulsing ring (3 concentric)
-                h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 18, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.4 }),
-                h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 12, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.7 }),
-                h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 7, fill: '#dc2626', stroke: '#fff', strokeWidth: 2 }),
-                // Question-mark label in quiz mode (revealed only on answered)
-                quizResult && h('text', {
-                  x: quizTargetPart.x, y: quizTargetPart.y - 25,
-                  fontSize: 14, fontWeight: 'bold',
-                  fill: quizResult.correct ? '#10b981' : '#dc2626',
-                  textAnchor: 'middle'
-                }, '★ ' + quizTargetPart.label)
-              ))
-            )
-          ),
+          // Interactive plate. It was a cartoon (a circle head on an ellipse body, the primaries
+          // standing up like a crest), several leader lines ended in empty air, four labels ran
+          // out of their boxes, and the labels only answered a mouse. Now a perched falcon with
+          // numbered markers on leader lines, a part list, and keyboard access to both.
+          (function() {
+            var selectedId = rh.anatomySelected || null;
+            var shownId = hoveredId || selectedId;
+            function selectPart(id) { setRH({ anatomySelected: selectedId === id ? null : id, anatomyHover: null }); }
+            var ink = '#1c2530';
+            return h('div', { className: 'bg-slate-900/60 border border-amber-700/40 rounded-xl p-3', 'data-raptor-anatomy-plate': 'true' },
+              h('div', { className: 'text-xs text-slate-300 mb-2' }, anatomyMode === 'explore'
+                ? '👆 Hover or tap a label to read about each body part'
+                : '🎯 The pulsing red anchor is the target. Pick the right name from the options above.'),
+              h('div', { className: 'grid grid-cols-1 lg:grid-cols-3 gap-3' },
+                h('div', { className: 'lg:col-span-2 self-start lg:sticky lg:top-2 rounded-lg overflow-hidden border border-slate-700/60' },
+                  h('svg', {
+                    viewBox: '220 40 530 460',
+                    role: 'group',
+                    'aria-labelledby': 'rh-anatomy-plate-title',
+                    style: { width: '100%', height: 'auto', display: 'block' }
+                  },
+                    h('title', { id: 'rh-anatomy-plate-title' }, __alloT('stem.raptorhunt.labeled_raptor_anatomy_diagram_with_in', 'Labeled raptor anatomy diagram with interactive hover labels')),
+                    h('defs', null,
+                      h('radialGradient', { id: 'rh-ana-bg', cx: '58%', cy: '48%', r: '70%' },
+                        h('stop', { offset: '0%', stopColor: '#1d2c40' }), h('stop', { offset: '100%', stopColor: '#0b1320' })),
+                      h('linearGradient', { id: 'rh-ana-body', x1: 0, y1: 0, x2: 0, y2: 1 },
+                        h('stop', { offset: '0%', stopColor: '#f4ebdb' }), h('stop', { offset: '100%', stopColor: '#e2d2b8' })),
+                      h('linearGradient', { id: 'rh-ana-back', x1: 0, y1: 0, x2: 0, y2: 1 },
+                        h('stop', { offset: '0%', stopColor: '#4a5a6c' }), h('stop', { offset: '100%', stopColor: '#627386' })),
+                      h('linearGradient', { id: 'rh-ana-wing', gradientUnits: 'userSpaceOnUse', x1: 520, y1: 190, x2: 350, y2: 450 },
+                        h('stop', { offset: '0%', stopColor: '#7a8ca0' }), h('stop', { offset: '55%', stopColor: '#56687c' }), h('stop', { offset: '100%', stopColor: '#323f4d' })),
+                      h('linearGradient', { id: 'rh-ana-branch', x1: 0, y1: 0, x2: 0, y2: 1 },
+                        h('stop', { offset: '0%', stopColor: '#8a6a4f' }), h('stop', { offset: '100%', stopColor: '#4a3627' }))
+                    ),
+                    h('rect', { x: 0, y: 0, width: 800, height: 500, fill: 'url(#rh-ana-bg)' }),
+                    h('g', { 'aria-hidden': 'true' },
+                      // Branch the falcon grips
+                      h('path', { d: 'M120 452 C300 436 520 438 760 454', stroke: 'url(#rh-ana-branch)', strokeWidth: 24, strokeLinecap: 'round', fill: 'none' }),
+                      h('path', { d: 'M130 445 C300 430 520 432 750 447', stroke: '#a88566', strokeWidth: 3, strokeLinecap: 'round', fill: 'none', opacity: 0.6 }),
+                      h('path', { d: 'M240 452 l18 -6 M430 446 l22 4 M660 452 l20 -5', stroke: '#3a2a1e', strokeWidth: 2, strokeLinecap: 'round' }),
+                      // Tail, behind the branch, with bands
+                      h('path', { d: 'M404 366 L438 390 L364 482 C352 488 334 484 324 472 Z', fill: '#4e5e70', stroke: ink, strokeWidth: 1.5, strokeLinejoin: 'round' }),
+                      h('path', { d: 'M396 390 L424 404 M380 412 L408 426 M364 434 L392 448 M348 456 L374 470', stroke: '#2b3642', strokeWidth: 4, strokeLinecap: 'round', opacity: 0.8 }),
+                      h('path', { d: 'M324 472 C334 484 352 488 364 482', stroke: '#e8dcc8', strokeWidth: 3, fill: 'none', strokeLinecap: 'round' }),
+                      // Far leg
+                      h('path', { d: 'M556 398 L560 432', stroke: '#c79a2c', strokeWidth: 8, strokeLinecap: 'round' }),
+                      // Body: slate back, pale barred front
+                      h('path', { d: 'M604 112 C590 96 556 92 540 108 C526 120 524 142 530 160 C508 178 488 198 476 224 C458 262 430 312 408 356 L398 378 L432 392 C470 396 520 392 548 386 C574 376 600 352 614 322 C628 288 630 240 620 206 C614 188 608 172 606 158 L610 132 C610 124 608 116 604 112 Z', fill: 'url(#rh-ana-body)', stroke: ink, strokeWidth: 1.6, strokeLinejoin: 'round' }),
+                      h('path', { d: 'M571 222 q3.5 2.6 7 0 M582 222 q3.5 2.6 7 0 M593 222 q3.5 2.6 7 0 M604 222 q3.5 2.6 7 0 M615 222 q3.5 2.6 7 0 M562 236 q3.5 2.6 7 0 M573 236 q3.5 2.6 7 0 M584 236 q3.5 2.6 7 0 M595 236 q3.5 2.6 7 0 M606 236 q3.5 2.6 7 0 M571 250 q3.5 2.6 7 0 M582 250 q3.5 2.6 7 0 M593 250 q3.5 2.6 7 0 M604 250 q3.5 2.6 7 0 M615 250 q3.5 2.6 7 0 M560 264 q3.5 2.6 7 0 M571 264 q3.5 2.6 7 0 M582 264 q3.5 2.6 7 0 M593 264 q3.5 2.6 7 0 M604 264 q3.5 2.6 7 0 M615 264 q3.5 2.6 7 0 M559 278 q3.5 2.6 7 0 M570 278 q3.5 2.6 7 0 M581 278 q3.5 2.6 7 0 M592 278 q3.5 2.6 7 0 M603 278 q3.5 2.6 7 0 M614 278 q3.5 2.6 7 0 M548 292 q3.5 2.6 7 0 M559 292 q3.5 2.6 7 0 M570 292 q3.5 2.6 7 0 M581 292 q3.5 2.6 7 0 M592 292 q3.5 2.6 7 0 M603 292 q3.5 2.6 7 0 M545 306 q3.5 2.6 7 0 M556 306 q3.5 2.6 7 0 M567 306 q3.5 2.6 7 0 M578 306 q3.5 2.6 7 0 M589 306 q3.5 2.6 7 0 M600 306 q3.5 2.6 7 0 M611 306 q3.5 2.6 7 0 M530 320 q3.5 2.6 7 0 M541 320 q3.5 2.6 7 0 M552 320 q3.5 2.6 7 0 M563 320 q3.5 2.6 7 0 M574 320 q3.5 2.6 7 0 M585 320 q3.5 2.6 7 0 M596 320 q3.5 2.6 7 0 M525 334 q3.5 2.6 7 0 M536 334 q3.5 2.6 7 0 M547 334 q3.5 2.6 7 0 M558 334 q3.5 2.6 7 0 M569 334 q3.5 2.6 7 0 M580 334 q3.5 2.6 7 0 M591 334 q3.5 2.6 7 0 M512 348 q3.5 2.6 7 0 M523 348 q3.5 2.6 7 0 M534 348 q3.5 2.6 7 0 M545 348 q3.5 2.6 7 0 M556 348 q3.5 2.6 7 0 M567 348 q3.5 2.6 7 0 M578 348 q3.5 2.6 7 0 M525 362 q3.5 2.6 7 0 M536 362 q3.5 2.6 7 0 M547 362 q3.5 2.6 7 0 M558 362 q3.5 2.6 7 0 M569 362 q3.5 2.6 7 0', stroke: '#5b4a3c', strokeWidth: 2, strokeLinecap: 'round', fill: 'none', opacity: 0.85 }),
+                      // Slate back along the dorsal edge (a horizontal gradient drew a vertical seam down the neck)
+                      h('path', { d: 'M531 158 C508 178 488 198 476 224 C458 262 430 312 408 356 L398 378 L412 384 C420 360 428 336 430 318 C452 280 474 236 490 210 C496 198 504 190 512 186 C522 178 536 170 548 164 Z', fill: 'url(#rh-ana-back)' }),
+                      // Feathered thigh ("trousers") with bars
+                      h('path', { d: 'M546 368 C560 362 580 366 588 380 C592 396 580 406 568 408 C556 406 546 396 544 384 Z', fill: '#e2d3ba', stroke: ink, strokeWidth: 1.2 }),
+                      h('path', { d: 'M552 378 q4 3 8 0 M564 376 q4 3 8 0 M556 390 q4 3 8 0 M570 390 q4 3 8 0 M562 400 q4 3 8 0', stroke: '#5b4a3c', strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round' }),
+                      // Near leg and foot gripping the branch; the hallux wraps behind
+                      h('path', { d: 'M572 402 L580 434', stroke: '#f2c14e', strokeWidth: 9, strokeLinecap: 'round' }),
+                      h('path', { d: 'M580 434 C594 430 606 434 612 442 M580 436 C592 442 600 448 602 456 M576 436 C566 440 558 444 556 452', stroke: '#f2c14e', strokeWidth: 6, fill: 'none', strokeLinecap: 'round' }),
+                      h('path', { d: 'M612 442 C616 448 615 455 609 459 M602 456 C603 463 600 468 594 470 M556 452 C552 458 552 464 557 468', stroke: '#15110e', strokeWidth: 3, fill: 'none', strokeLinecap: 'round' }),
+                      // Folded wing over the flank: coverts, secondaries, long primaries
+                      h('path', { d: 'M512 186 C540 200 552 228 546 252 C536 290 500 340 460 380 C428 408 392 434 350 452 L342 446 C372 410 404 360 430 318 C452 280 474 236 490 210 C496 198 504 190 512 186 Z', fill: 'url(#rh-ana-wing)', stroke: ink, strokeWidth: 1.6, strokeLinejoin: 'round' }),
+                      h('path', { d: 'M500 204 q10 8 20 4 M492 224 q12 8 24 4 M484 246 q12 8 26 4 M522 226 q8 6 18 2 M516 248 q9 7 20 3', stroke: '#9fb0c2', strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round', opacity: 0.8 }),
+                      h('path', { d: 'M470 290 q14 10 34 2 M458 312 q16 10 36 2 M446 334 q16 10 34 0', stroke: '#8597ab', strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round', opacity: 0.8 }),
+                      h('path', { d: 'M446 352 L352 446 M458 360 L362 448 M470 366 L374 446 M482 370 L390 440', stroke: '#27313c', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.9 }),
+                      h('path', { d: 'M540 244 q6 -4 9 2 q-4 6 -10 4', fill: '#9fb0c2', stroke: ink, strokeWidth: 1 }),
+                      // Dark "helmet" and malar stripe
+                      h('path', { d: 'M604 112 C590 96 556 92 540 108 C528 120 526 140 532 158 C544 162 560 160 572 166 C580 180 584 196 592 206 C602 198 602 184 598 170 C602 160 606 150 610 132 C610 124 608 116 604 112 Z', fill: '#253140', stroke: ink, strokeWidth: 1.2 }),
+                      // Beak: hooked maxilla with the tomial tooth, lower mandible; yellow cere with nostril
+                      h('path', { d: 'M610 128 C626 124 640 136 639 152 C638 160 634 165 629 166 C630 161 629 158 627 156 L624 158 C620 154 614 152 608 150 Z', fill: '#6f7f94', stroke: ink, strokeWidth: 1.4, strokeLinejoin: 'round' }),
+                      h('path', { d: 'M629 166 C634 165 638 160 639 152 C640 158 637 166 629 170 Z', fill: '#1d2530' }),
+                      h('path', { d: 'M608 150 C614 152 620 155 624 159 C618 162 612 162 606 160 Z', fill: '#8a99ab', stroke: ink, strokeWidth: 1 }),
+                      h('path', { d: 'M604 124 C610 122 616 124 618 130 C618 138 614 146 608 150 C605 142 603 132 604 124 Z', fill: '#f2c14e', stroke: ink, strokeWidth: 1 }),
+                      h('circle', { cx: 613, cy: 134, r: 2.4, fill: '#3b2a18' }),
+                      h('circle', { cx: 613.6, cy: 133.4, r: 0.9, fill: '#d9b44a' }),
+                      // Eye: dark, yellow eye-ring, catchlight
+                      h('circle', { cx: 590, cy: 132, r: 10.5, fill: '#2a1c12', stroke: '#f2c14e', strokeWidth: 3.2 }),
+                      h('circle', { cx: 593, cy: 128.5, r: 2.8, fill: '#ffffff', opacity: 0.9 })
+                    ),
+                    // Explore: an anchor dot on each part, a leader line, a numbered marker (a button).
+                    anatomyMode === 'explore' ? ANATOMY.parts.map(function(p, i) {
+                      var on = shownId === p.id;
+                      var activate = function() { selectPart(p.id); };
+                      return h('g', {
+                        key: p.id, role: 'button', tabIndex: 0, 'aria-label': (i + 1) + '. ' + p.label, 'aria-pressed': selectedId === p.id,
+                        'data-anatomy-marker': p.id,
+                        style: { cursor: 'pointer', outline: 'none' },
+                        onMouseEnter: function() { setHover(p.id); }, onMouseLeave: function() { setHover(null); },
+                        onFocus: function() { setHover(p.id); }, onBlur: function() { setHover(null); },
+                        onClick: activate,
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } }
+                      },
+                        h('line', { x1: p.x, y1: p.y, x2: p.mx, y2: p.my, stroke: on ? '#fbbf24' : '#94a3b8', strokeWidth: on ? 2 : 1.1, opacity: on ? 1 : 0.75 }),
+                        h('circle', { cx: p.x, cy: p.y, r: on ? 4.5 : 3.2, fill: on ? '#fbbf24' : '#fde68a', stroke: '#1c1917', strokeWidth: 1.2 }),
+                        on && h('circle', { cx: p.mx, cy: p.my, r: 15, fill: 'none', stroke: '#fbbf24', strokeWidth: 2, opacity: 0.6 }),
+                        h('circle', { cx: p.mx, cy: p.my, r: 11, fill: on ? '#fbbf24' : '#0f172a', stroke: on ? '#fef3c7' : '#f59e0b', strokeWidth: 1.8 }),
+                        h('text', { x: p.mx, y: p.my + 3.9, fontSize: 11, fontWeight: 'bold', textAnchor: 'middle', fill: on ? '#1c1917' : '#fde68a', style: { pointerEvents: 'none', userSelect: 'none' } }, String(i + 1))
+                      );
+                    }) :
+                    // Quiz: the target part only, pulsing
+                    (quizTargetPart && h('g', null,
+                      h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 18, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.4 }),
+                      h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 12, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.7 }),
+                      h('circle', { cx: quizTargetPart.x, cy: quizTargetPart.y, r: 7, fill: '#dc2626', stroke: '#fff', strokeWidth: 2 }),
+                      quizResult && h('text', {
+                        x: quizTargetPart.x, y: quizTargetPart.y - 25,
+                        fontSize: 14, fontWeight: 'bold',
+                        fill: quizResult.correct ? '#10b981' : '#dc2626',
+                        textAnchor: 'middle', style: { paintOrder: 'stroke', stroke: '#0b1320', strokeWidth: 4 }
+                      }, '★ ' + quizTargetPart.label)
+                    ))
+                  )
+                ),
+                // The numbered part list (the same controls as the markers).
+                anatomyMode === 'explore' && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-0.5 content-start', role: 'group', 'aria-label': __alloT('stem.raptorhunt.raptor_anatomy', '🦴 Raptor Anatomy') },
+                  ANATOMY.parts.map(function(p, i) {
+                    var on = shownId === p.id;
+                    return h('button', {
+                      key: p.id, type: 'button', 'aria-pressed': selectedId === p.id, 'data-anatomy-list-item': p.id,
+                      onMouseEnter: function() { setHover(p.id); }, onMouseLeave: function() { setHover(null); },
+                      onClick: function() { selectPart(p.id); },
+                      className: 'flex items-center gap-2 py-1 px-2 rounded-lg text-left text-xs font-semibold border transition-colors ' + (on ? 'bg-amber-900/50 border-amber-500 text-amber-100' : 'bg-slate-900/40 border-slate-700/60 text-slate-200 hover:border-amber-700')
+                    },
+                      h('span', { 'aria-hidden': 'true', className: 'flex-none inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-black ' + (on ? 'bg-amber-400 text-slate-900' : 'bg-slate-800 text-amber-200 border border-amber-600/70') }, String(i + 1)),
+                      h('span', null, p.label));
+                  })
+                )
+              )
+            );
+          })(),
 
           // Hovered description panel
           hovered ? h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded-xl p-4' },
@@ -23028,22 +23222,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     var lenPct = (s.talonLengthMm / maxLen) * 80;
                     var forcePct = (s.talonForcePsi / maxForce) * 100;
                     var color = s.talonForcePsi >= 600 ? '#dc2626' : s.talonForcePsi >= 400 ? '#f97316' : '#fbbf24';
-                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex items-center gap-3' },
+                    // The talon was a 4 px near-black stroke on a dark row (barely visible): now a filled,
+                    // tapering claw on a toe, its length to scale.
+                    var L = 18 + lenPct * 1.3;
+                    var claw = 'M 22 32 C ' + (22 + L * 0.55) + ' 2 ' + (22 + L * 0.95) + ' 6 ' + (22 + L) + ' 36'
+                      + ' C ' + (22 + L * 0.84) + ' 18 ' + (22 + L * 0.45) + ' 22 22 46 Z';
+                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex flex-wrap items-center gap-x-3 gap-y-1' },
                       h('div', { className: 'flex-shrink-0 w-32 text-xs' },
                         h('span', { className: 'mr-1' }, s.emoji),
                         h('span', { className: 'text-amber-200 font-bold' }, s.name)
                       ),
-                      // Talon SVG (curved hook)
-                      h('svg', { viewBox: '0 0 200 60', style: { width: '200px', height: '60px', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' talon' },
-                        // Curved talon path scaled
-                        h('path', {
-                          d: 'M 10 50 Q ' + (10 + lenPct * 0.7) + ' 5 ' + (10 + lenPct) + ' 30',
-                          fill: 'none', stroke: '#1c1917', strokeWidth: 4, strokeLinecap: 'round'
-                        }),
-                        h('text', { x: 10 + lenPct + 6, y: 33, fontSize: 10, fill: '#fbbf24', fontWeight: 'bold' }, s.talonLengthMm + ' mm')
+                      h('svg', { viewBox: '0 0 200 60', style: { width: '200px', maxWidth: '100%', height: 'auto', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' talon' },
+                        h('defs', null, h('linearGradient', { id: 'rh-claw-' + s.id, x1: 0, y1: 0, x2: 1, y2: 0 },
+                          h('stop', { offset: '0%', stopColor: '#57534e' }), h('stop', { offset: '100%', stopColor: '#e7e5e4' }))),
+                        h('rect', { x: 4, y: 32, width: 24, height: 16, rx: 7, fill: '#eab308', stroke: '#713f12', strokeWidth: 1 }),
+                        h('path', { d: claw, fill: 'url(#rh-claw-' + s.id + ')', stroke: '#1c1917', strokeWidth: 1, strokeLinejoin: 'round' }),
+                        h('text', { x: Math.min(22 + L + 6, 150), y: 44, fontSize: 12, fill: '#fcd34d', fontWeight: 'bold' }, s.talonLengthMm + ' mm')
                       ),
                       // Grip force bar
-                      h('div', { className: 'flex-1 flex items-center gap-2' },
+                      h('div', { className: 'flex-1 min-w-0 basis-40 flex items-center gap-2' },
                         h('div', { className: 'flex-1 bg-slate-700/50 rounded h-4 overflow-hidden' },
                           h('div', { style: { width: forcePct + '%', backgroundColor: color }, className: 'h-full' })
                         ),
@@ -23062,15 +23259,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     var spanPct = (s.wingspanM / maxSpan) * 70;
                     var loadingX = (s.wingLoading / 18) * 100;
                     var arX = (s.aspectRatio / 12) * 100;
-                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex items-center gap-3' },
+                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex flex-wrap items-center gap-x-3 gap-y-1' },
                       h('div', { className: 'flex-shrink-0 w-32 text-xs' },
                         h('span', { className: 'mr-1' }, s.emoji),
                         h('span', { className: 'text-amber-200 font-bold' }, s.name)
                       ),
-                      h('svg', { viewBox: '0 0 300 50', style: { width: '300px', height: '50px', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' wing stats' },
+                      h('svg', { viewBox: '0 0 300 50', style: { width: '300px', maxWidth: '100%', height: 'auto', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' wing stats' },
                         // Wingspan bar
                         h('rect', { x: 5, y: 20, width: spanPct * 2.8, height: 10, fill: '#fbbf24', rx: 2 }),
-                        h('text', { x: 5 + spanPct * 2.8 + 4, y: 28, fontSize: 9, fill: '#fcd34d', fontWeight: 'bold' }, s.wingspanM + ' m'),
+                        h('text', { x: 5 + spanPct * 2.8 + 4, y: 29, fontSize: 11, fill: '#fcd34d', fontWeight: 'bold' }, s.wingspanM + ' m'),
                         // Loading dot
                         h('circle', { cx: 5 + loadingX * 2.7, cy: 42, r: 5, fill: '#dc2626' }),
                         h('text', { x: 5 + loadingX * 2.7, y: 49, fontSize: 7, fill: '#fca5a5', textAnchor: 'middle' }, s.wingLoading),
@@ -23089,12 +23286,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   sorted.map(function(s, i) {
                     var eyeR = 4 + s.visualAcuityX * 3;
                     var fovDeg = s.visualFieldDeg;
-                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex items-center gap-3' },
+                    return h('div', { key: s.id, className: 'bg-slate-800/40 rounded p-2 flex flex-wrap items-center gap-x-3 gap-y-1' },
                       h('div', { className: 'flex-shrink-0 w-32 text-xs' },
                         h('span', { className: 'mr-1' }, s.emoji),
                         h('span', { className: 'text-amber-200 font-bold' }, s.name)
                       ),
-                      h('svg', { viewBox: '0 0 200 60', style: { width: '200px', height: '60px', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' eye + field' },
+                      h('svg', { viewBox: '0 0 200 60', style: { width: '200px', maxWidth: '100%', height: 'auto', flexShrink: 0 }, role: 'img', 'aria-label': s.name + ' eye + field' },
                         // FOV arc
                         (function() {
                           var halfFov = fovDeg / 2;
@@ -23591,18 +23788,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   if (t > T) t = T;
                   var u = t / T; // 0..1
 
-                  // Background sky gradient
-                  var grad = ctx2.createLinearGradient(0, 0, 0, H);
-                  grad.addColorStop(0, '#bae6fd');
-                  grad.addColorStop(0.7, '#fbbf24');
-                  grad.addColorStop(1, '#92400e');
-                  ctx2.fillStyle = grad;
-                  ctx2.fillRect(0, 0, W, H);
-                  // Ground
-                  ctx2.fillStyle = '#365314';
-                  ctx2.fillRect(0, H - 60, W, 60);
-                  ctx2.fillStyle = '#1e293b';
-                  ctx2.fillRect(0, H - 60, W, 3);
+                  // Scene: a painted sky and landscape, built once per canvas and copied each frame.
+                  // (It was a flat three-stop gradient with a green strip.)
+                  if (!canvasEl._rhSpiralBg || canvasEl._rhSpiralBg.width !== W) {
+                    var bg = document.createElement('canvas');
+                    bg.width = W; bg.height = H;
+                    var b = bg.getContext('2d');
+                    if (b) {
+                      var sky = b.createLinearGradient(0, 0, 0, H - 60);
+                      sky.addColorStop(0, '#12326b'); sky.addColorStop(0.45, '#4f8fd1'); sky.addColorStop(0.78, '#f3d6a4'); sky.addColorStop(1, '#f2a45c');
+                      b.fillStyle = sky; b.fillRect(0, 0, W, H);
+                      var sunX = W * 0.8, sunY = H - 118;
+                      var sun = b.createRadialGradient(sunX, sunY, 4, sunX, sunY, 120);
+                      sun.addColorStop(0, 'rgba(255,248,220,0.95)'); sun.addColorStop(0.12, 'rgba(255,236,179,0.8)'); sun.addColorStop(1, 'rgba(255,200,120,0)');
+                      b.fillStyle = sun; b.beginPath(); b.arc(sunX, sunY, 120, 0, Math.PI * 2); b.fill();
+                      [[150, 70, 1.1], [420, 46, 0.8], [600, 110, 1.3], [300, 150, 0.7]].forEach(function(c) {
+                        b.fillStyle = 'rgba(255,255,255,0.28)';
+                        for (var k = 0; k < 5; k++) { b.beginPath(); b.ellipse(c[0] + (k - 2) * 26 * c[2], c[1] + Math.abs(k - 2) * 5, 34 * c[2], 12 * c[2], 0, 0, Math.PI * 2); b.fill(); }
+                      });
+                      function ridge(y0, amp, color, seed) {
+                        b.fillStyle = color; b.beginPath(); b.moveTo(0, H);
+                        for (var x = 0; x <= W; x += 12) b.lineTo(x, y0 - amp * (0.55 + 0.45 * Math.sin(x * 0.011 + seed) * Math.cos(x * 0.004 + seed * 2)));
+                        b.lineTo(W, H); b.closePath(); b.fill();
+                      }
+                      ridge(H - 88, 34, 'rgba(96,118,160,0.55)', 1.3);
+                      ridge(H - 70, 22, 'rgba(62,92,78,0.85)', 4.1);
+                      var ground = b.createLinearGradient(0, H - 60, 0, H);
+                      ground.addColorStop(0, '#46661d'); ground.addColorStop(1, '#253a0e');
+                      b.fillStyle = ground; b.fillRect(0, H - 60, W, 60);
+                      b.fillStyle = '#1f3310';
+                      for (var tx = 6; tx < W; tx += 17) { var th = 8 + ((tx * 37) % 11); b.beginPath(); b.ellipse(tx, H - 60, 9, th, 0, Math.PI, 0); b.fill(); }
+                      b.strokeStyle = 'rgba(255,255,255,0.07)'; b.lineWidth = 1;
+                      for (var fy = H - 50; fy < H; fy += 12) { b.beginPath(); b.moveTo(0, fy); b.lineTo(W, fy + 6); b.stroke(); }
+                    }
+                    canvasEl._rhSpiralBg = bg;
+                  }
+                  ctx2.drawImage(canvasEl._rhSpiralBg, 0, 0);
 
                   // Prey moves forward
                   var preyX = preyStartX + preyV * t;
@@ -23629,10 +23850,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   var falconX = bez(u, falconStartX, cp1x, cp2x, preyXend);
                   var falconY = bez(u, falconStartY, cp1y, cp2y, preyY - 8);
 
-                  // Draw trail (log spiral) up to current u
-                  ctx2.strokeStyle = 'rgba(220, 38, 38, 0.6)';
-                  ctx2.lineWidth = 2;
-                  ctx2.setLineDash([3, 3]);
+                  // Draw trail (log spiral) up to current u, with a soft glow under it
+                  ctx2.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                  ctx2.lineWidth = 6;
+                  ctx2.beginPath();
+                  ctx2.moveTo(falconStartX, falconStartY);
+                  for (var gi = 1; gi <= 50; gi++) {
+                    var gu = (gi / 50) * u;
+                    ctx2.lineTo(bez(gu, falconStartX, cp1x, cp2x, preyXend), bez(gu, falconStartY, cp1y, cp2y, preyY - 8));
+                  }
+                  ctx2.stroke();
+                  ctx2.strokeStyle = 'rgba(185, 28, 28, 0.85)';
+                  ctx2.lineWidth = 2.2;
+                  ctx2.setLineDash([6, 4]);
                   ctx2.beginPath();
                   ctx2.moveTo(falconStartX, falconStartY);
                   for (var i = 1; i <= 50; i++) {
@@ -23654,53 +23884,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   ctx2.stroke();
                   ctx2.setLineDash([]);
 
-                  // Falcon glyph
-                  ctx2.save();
-                  ctx2.translate(falconX, falconY);
-                  // Rotate to direction of travel
+                  // Falcon: a tucked stoop (teardrop body, wings folded along it), with speed streaks.
                   var dx = preyX - falconX, dy = preyY - falconY;
                   var ang = Math.atan2(dy, dx);
+                  ctx2.save();
+                  ctx2.translate(falconX, falconY);
                   ctx2.rotate(ang);
-                  // Body
-                  ctx2.fillStyle = '#451a03';
-                  ctx2.beginPath();
-                  ctx2.ellipse(0, 0, 12, 5, 0, 0, Math.PI * 2);
-                  ctx2.fill();
-                  // Wings (tucked)
-                  ctx2.fillStyle = '#78350f';
-                  ctx2.beginPath();
-                  ctx2.moveTo(-2, -2);
-                  ctx2.lineTo(-10, -10);
-                  ctx2.lineTo(-6, 0);
-                  ctx2.closePath();
-                  ctx2.fill();
-                  ctx2.beginPath();
-                  ctx2.moveTo(-2, 2);
-                  ctx2.lineTo(-10, 10);
-                  ctx2.lineTo(-6, 0);
-                  ctx2.closePath();
-                  ctx2.fill();
-                  // Beak
+                  ctx2.scale(1.35, 1.35);
+                  ctx2.strokeStyle = 'rgba(255,255,255,0.55)';
+                  ctx2.lineWidth = 1;
+                  [[-26, -4, 18], [-30, 0, 24], [-26, 4, 16]].forEach(function(st) { ctx2.beginPath(); ctx2.moveTo(st[0], st[1]); ctx2.lineTo(st[0] - st[2] * (0.4 + u), st[1]); ctx2.stroke(); });
+                  ctx2.fillStyle = '#e2e8f0';
+                  ctx2.beginPath(); ctx2.moveTo(15, 1); ctx2.quadraticCurveTo(4, 7, -10, 4); ctx2.lineTo(-20, 1.5); ctx2.lineTo(-20, 0); ctx2.closePath(); ctx2.fill();
+                  ctx2.fillStyle = '#334155';
+                  ctx2.beginPath(); ctx2.moveTo(16, 0); ctx2.quadraticCurveTo(6, -7, -8, -5); ctx2.lineTo(-19, -2.5); ctx2.lineTo(-24, 0); ctx2.lineTo(-19, 2); ctx2.lineTo(-8, 2); ctx2.quadraticCurveTo(6, 3, 16, 0); ctx2.fill();
+                  ctx2.fillStyle = '#1e293b';
+                  ctx2.beginPath(); ctx2.moveTo(8, -3); ctx2.lineTo(-22, -5.5); ctx2.lineTo(-12, -1); ctx2.closePath(); ctx2.fill();
+                  ctx2.fillStyle = '#111827';
+                  ctx2.beginPath(); ctx2.arc(12, -0.5, 4.2, 0, Math.PI * 2); ctx2.fill();
                   ctx2.fillStyle = '#fbbf24';
-                  ctx2.beginPath();
-                  ctx2.moveTo(12, 0);
-                  ctx2.lineTo(16, -2);
-                  ctx2.lineTo(16, 2);
-                  ctx2.closePath();
-                  ctx2.fill();
+                  ctx2.beginPath(); ctx2.moveTo(15.5, -1.5); ctx2.lineTo(19.5, 0.5); ctx2.lineTo(15.5, 1.5); ctx2.closePath(); ctx2.fill();
                   ctx2.restore();
 
-                  // Prey
-                  ctx2.fillStyle = '#9ca3af';
-                  ctx2.beginPath();
-                  ctx2.ellipse(preyX, preyY, 8, 4, 0, 0, Math.PI * 2);
-                  ctx2.fill();
-                  // Prey wings
-                  ctx2.fillStyle = '#6b7280';
-                  ctx2.beginPath();
-                  ctx2.ellipse(preyX - 4, preyY - 1, 5, 2, -0.3, 0, Math.PI * 2);
-                  ctx2.ellipse(preyX - 4, preyY + 1, 5, 2, 0.3, 0, Math.PI * 2);
-                  ctx2.fill();
+                  // Prey: a pigeon, flapping, facing its direction of travel.
+                  var flap = Math.sin(now * 0.025) * 5;
+                  ctx2.save();
+                  ctx2.translate(preyX, preyY);
+                  ctx2.fillStyle = '#64748b';
+                  ctx2.beginPath(); ctx2.moveTo(-3, 0); ctx2.lineTo(-8, -6 - flap); ctx2.lineTo(3, -1); ctx2.closePath(); ctx2.fill();
+                  ctx2.fillStyle = '#94a3b8';
+                  ctx2.beginPath(); ctx2.ellipse(0, 0, 9, 4.2, 0, 0, Math.PI * 2); ctx2.fill();
+                  ctx2.beginPath(); ctx2.moveTo(-8, 0); ctx2.lineTo(-13, -3); ctx2.lineTo(-13, 3); ctx2.closePath(); ctx2.fill();
+                  ctx2.fillStyle = '#475569';
+                  ctx2.beginPath(); ctx2.arc(8, -2, 3, 0, Math.PI * 2); ctx2.fill();
+                  ctx2.fillStyle = '#cbd5e1';
+                  ctx2.beginPath(); ctx2.moveTo(-3, 0); ctx2.lineTo(-7, 6 + flap); ctx2.lineTo(3, 1); ctx2.closePath(); ctx2.fill();
+                  ctx2.restore();
 
                   // Speed readout (falcon speed via parametric derivative)
                   var falconV = Math.sqrt(
@@ -23709,12 +23928,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   // Project visual to physical: 100 px ≈ 30 m (approx)
                   var falconMps = falconV * 0.3;
                   var falconMph = falconMps * 2.237;
-                  // Overlay text
-                  ctx2.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                  ctx2.fillRect(10, 10, 200, 65);
-                  ctx2.strokeStyle = '#fbbf24';
-                  ctx2.lineWidth = 1;
-                  ctx2.strokeRect(10, 10, 200, 65);
+                  // Overlay text, in a rounded panel
+                  ctx2.fillStyle = 'rgba(15, 23, 42, 0.82)';
+                  ctx2.strokeStyle = 'rgba(251, 191, 36, 0.9)';
+                  ctx2.lineWidth = 1.2;
+                  ctx2.beginPath();
+                  ctx2.moveTo(20, 10); ctx2.arcTo(214, 10, 214, 76, 10); ctx2.arcTo(214, 76, 10, 76, 10); ctx2.arcTo(10, 76, 10, 10, 10); ctx2.arcTo(10, 10, 214, 10, 10); ctx2.closePath();
+                  ctx2.fill(); ctx2.stroke();
                   ctx2.fillStyle = '#fbbf24';
                   ctx2.font = 'bold 11px ui-monospace, Menlo, monospace';
                   ctx2.fillText('STOOP TIME ' + t.toFixed(1) + 's / ' + T + 's', 18, 28);
@@ -23748,7 +23968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           (function() {
             // For each of 3 reference species, draw a trajectory curve from start altitude
             // to a fixed prey position. Stoop steepness + travel distance differ by species.
-            var pw = 600, ph = 280, pad = 35;
+            var pw = 900, ph = 360, pad = 44;
             var specs = [
               { id: 'peregrine', name: __alloT('stem.raptorhunt.peregrine_falcon_2', 'Peregrine Falcon'), color: '#dc2626', stoopMph: 242, stoopBonus: 3.5, startAltScale: 1.0, cdCurve: 0.18 },
               { id: 'goldenEagle', name: __alloT('stem.raptorhunt.golden_eagle_2', 'Golden Eagle'), color: '#fbbf24', stoopMph: 200, stoopBonus: 3.0, startAltScale: 1.0, cdCurve: 0.22 },
@@ -23766,10 +23986,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var e = { x: endX, y: endY };
               // Control point: shifts toward direct line for high stoop speed (peregrine = direct dive),
               // and arcs more for low stoop speed (goshawk = forest chase curve)
+              var c = controlPoint(spec, s, e);
+              return 'M ' + s.x + ' ' + s.y + ' Q ' + c.x + ' ' + c.y + ' ' + e.x + ' ' + e.y;
+            }
+            function controlPoint(spec, s, e) {
               var directness = spec.stoopMph / 250;
-              var cx = s.x + (e.x - s.x) * 0.4;
-              var cy = s.y + (e.y - s.y) * (1 - directness * 0.5);
-              return 'M ' + s.x + ' ' + s.y + ' Q ' + cx + ' ' + cy + ' ' + e.x + ' ' + e.y;
+              return { x: s.x + (e.x - s.x) * 0.4, y: s.y + (e.y - s.y) * (1 - directness * 0.5) };
+            }
+            // A point along a species' curve (the quadratic Bezier at parameter t).
+            function curvePoint(spec, t) {
+              var s = { x: startX, y: startY + (1 - spec.startAltScale) * (ph - 2 * pad) };
+              var e = { x: endX, y: endY };
+              var c = controlPoint(spec, s, e);
+              var a = (1 - t) * (1 - t), bq = 2 * (1 - t) * t, cq = t * t;
+              return { x: a * s.x + bq * c.x + cq * e.x, y: a * s.y + bq * c.y + cq * e.y };
             }
             return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 mt-3' },
               h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.multi_species_trajectory_comparison', '⚡ Multi-Species Trajectory Comparison')),
@@ -23787,27 +24017,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       ),
                       h('rect', { key: 'sky', x: 0, y: 0, width: pw, height: ph, fill: 'url(#multiSky)' }),
                       // Ground
-                      h('rect', { key: 'ground', x: 0, y: ph - 20, width: pw, height: 20, fill: '#365314' })
+                      h('rect', { key: 'ground', x: 0, y: ph - 26, width: pw, height: 26, fill: '#365314' })
                     ];
                   })(),
                   // Trajectories
                   specs.map(function(spec, i) {
                     var pStart = { x: startX, y: startY + (1 - spec.startAltScale) * (ph - 2 * pad) };
+                    var sharedBefore = specs.slice(0, i).filter(function(o) { return o.startAltScale === spec.startAltScale; }).length;
+                    var mid = curvePoint(spec, 0.5 + i * 0.08);
+                    var labelText = spec.stoopMph + ' mph';
                     return h('g', { key: spec.id },
-                      h('path', { d: trajectoryPath(spec), fill: 'none', stroke: spec.color, strokeWidth: 2.5, strokeDasharray: '4,3' }),
-                      // Start bird emoji
-                      h('text', { x: pStart.x - 15, y: pStart.y + 5, fontSize: 18 }, '🦅'),
-                      h('text', { x: pStart.x - 15, y: pStart.y + 22, fontSize: 9, fill: spec.color, fontWeight: 'bold' }, spec.name.split(' ')[0]),
-                      // Speed annotation midway
-                      h('text', { x: startX + (endX - startX) * 0.55, y: pStart.y + (ph - 2 * pad) * 0.25 + i * 20, fontSize: 10, fill: spec.color, fontWeight: 'bold' }, spec.stoopMph + ' mph')
+                      h('path', { d: trajectoryPath(spec), fill: 'none', stroke: 'rgba(15,23,42,0.35)', strokeWidth: 5.5 }),
+                      h('path', { d: trajectoryPath(spec), fill: 'none', stroke: spec.color, strokeWidth: 3, strokeDasharray: '7 4', strokeLinecap: 'round' }),
+                      // One start marker per starting height; names stack beside it
+                      sharedBefore === 0 && h('circle', { cx: pStart.x, cy: pStart.y, r: 6, fill: '#0f172a', stroke: '#fef3c7', strokeWidth: 2 }),
+                      h('text', { x: pStart.x + 12, y: pStart.y + 4 + sharedBefore * 16, fontSize: 13, fill: spec.color, fontWeight: 'bold', style: { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 3.5, strokeLinejoin: 'round' } }, spec.name),
+                      // Its speed, on its own curve
+                      h('rect', { x: mid.x - 34, y: mid.y - 11, width: 68, height: 22, rx: 11, fill: '#0f172a', stroke: spec.color, strokeWidth: 1.5 }),
+                      h('text', { x: mid.x, y: mid.y + 4.5, fontSize: 12, fill: spec.color, fontWeight: 'bold', textAnchor: 'middle' }, labelText)
                     );
                   }),
                   // Prey (shared target)
-                  h('circle', { cx: endX, cy: endY, r: 6, fill: '#9ca3af', stroke: '#1c1917', strokeWidth: 1 }),
-                  h('text', { x: endX, y: endY - 12, fontSize: 9, fill: '#1c1917', fontWeight: 'bold', textAnchor: 'middle' }, __alloT('stem.raptorhunt.prey_2', '🐦 prey')),
+                  h('circle', { cx: endX, cy: endY, r: 7, fill: '#e2e8f0', stroke: '#0f172a', strokeWidth: 2 }),
+                  h('text', { x: endX, y: endY - 14, fontSize: 13, fill: '#0f172a', fontWeight: 'bold', textAnchor: 'middle' }, __alloT('stem.raptorhunt.prey_2', '🐦 prey')),
                   // Legend
-                  h('rect', { x: pad, y: ph - 18, width: pw - 2 * pad, height: 14, fill: 'none' }),
-                  h('text', { x: pad, y: ph - 7, fontSize: 9, fill: '#1c1917' }, __alloT('stem.raptorhunt.altitude_horizontal_distance_ground_im', '↑ altitude — →  horizontal distance — →  ground impact'))
+                  h('text', { x: pad, y: ph - 8, fontSize: 12, fill: '#f8fafc', fontWeight: 'bold' }, __alloT('stem.raptorhunt.altitude_horizontal_distance_ground_im', '↑ altitude — →  horizontal distance — →  ground impact'))
                 )
               ),
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-xs' },
@@ -28928,14 +29162,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var costGap = Math.abs(visual.costTier - compareVisual.costTier);
         var route = routePath(visual, compareVisual);
         var lensInfo = lensOptions.filter(function(item) { return item.id === lens; })[0];
+        // Label positions only (the outline is RH_WORLD_LAND).
         var continents = [
-          { id: 'north-america', label: 'N. AMERICA', d: 'M72 76 L125 48 L204 55 L262 91 L318 96 L346 134 L316 173 L277 168 L250 208 L210 217 L183 181 L139 174 L105 139 L73 126 Z', tx: 198, ty: 121 },
-          { id: 'south-america', label: 'S. AMERICA', d: 'M271 218 L324 208 L369 239 L384 285 L361 334 L347 394 L318 452 L294 424 L286 368 L267 324 L247 271 Z', tx: 319, ty: 310 },
-          { id: 'europe', label: 'EUROPE', d: 'M435 85 L481 67 L537 78 L568 112 L548 145 L511 151 L488 136 L454 143 L427 119 Z', tx: 501, ty: 111 },
-          { id: 'africa', label: 'AFRICA', d: 'M466 167 L535 148 L607 177 L636 230 L613 297 L572 369 L528 348 L499 295 L473 237 L440 201 Z', tx: 545, ty: 243 },
-          { id: 'asia', label: 'ASIA', d: 'M557 72 L638 45 L738 55 L823 73 L913 112 L930 161 L881 196 L826 184 L774 216 L713 192 L667 157 L602 151 L558 121 Z', tx: 741, ty: 120 },
-          { id: 'oceania', label: 'OCEANIA', d: 'M807 304 L873 287 L933 317 L944 369 L910 401 L846 391 L807 354 Z M946 402 L971 389 L990 421 L970 450 L947 438 Z', tx: 882, ty: 346 },
-          { id: 'greenland', label: '', d: 'M358 42 L407 25 L449 49 L430 97 L390 108 L356 79 Z', tx: 0, ty: 0 }
+          // Placed clear of the station markers (the labels sat under SKG, FAL, BAY and MAN).
+          { id: 'north-america', label: 'N. AMERICA', lon: -100, lat: 61 },
+          { id: 'south-america', label: 'S. AMERICA', lon: -60, lat: -33 },
+          { id: 'europe', label: 'EUROPE', lon: 38, lat: 60 },
+          { id: 'africa', label: 'AFRICA', lon: 18, lat: 9 },
+          { id: 'asia', label: 'ASIA', lon: 100, lat: 64 },
+          { id: 'oceania', label: 'OCEANIA', lon: 134, lat: -24 }
         ];
         var graticuleX = [125, 250, 375, 500, 625, 750, 875];
         var graticuleY = [83, 166, 249, 332, 415];
@@ -29022,11 +29257,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('title', { id: 'rh-world-map-title' }, 'Global raptor expedition map'),
                   h('desc', { id: 'rh-world-map-desc' }, 'A schematic world map with fifteen expedition stations. The selected station is connected to the comparison station.'),
                   h('g', null, graticuleX.map(function(x) { return h('path', { key: 'x' + x, d: 'M' + x + ' 0 V500', className: 'rh-world-graticule' }); }), graticuleY.map(function(y) { return h('path', { key: 'y' + y, d: 'M0 ' + y + ' H1000', className: 'rh-world-graticule' }); })),
+                  h('path', { d: rhWorldLandPath(1000, 500, 90, -90), className: 'rh-world-continent rh-world-land', fillRule: 'evenodd', 'data-world-land': 'true' }),
                   h('g', null, continents.map(function(continent) {
-                    return h('g', { key: continent.id, 'data-world-continent': continent.id },
-                      h('path', { d: continent.d, className: 'rh-world-continent' }),
-                      continent.label && h('text', { x: continent.tx, y: continent.ty, className: 'rh-world-continent-label' }, continent.label)
-                    );
+                    return continent.label && h('text', { key: continent.id, x: (continent.lon + 180) * 1000 / 360, y: (90 - continent.lat) * 500 / 180, className: 'rh-world-continent-label', 'data-world-continent': continent.id }, continent.label);
                   })),
                   h('g', { 'data-world-map-route': 'true' },
                     h('path', { d: route, className: 'rh-world-route-shadow' }),

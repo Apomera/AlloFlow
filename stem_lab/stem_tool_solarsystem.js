@@ -272,6 +272,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
     ctx.strokeStyle='#5eead4';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(360,286,150,25,0,-Math.PI/2,-Math.PI/2+Math.PI*2*reveal);ctx.stroke();
     ctx.fillStyle='#a7f3d0';ctx.font='700 16px system-ui';ctx.textAlign='center';ctx.fillText('SEALED · READY TO REVIEW',360,333);ctx.restore();
   }
+  // Earth's ocean in the drone scene. The zone table is set in scene units (its floors
+  // at y = 0, -5, -12 and -20 are the real 200, 1,000, 4,000 and 6,000 m boundaries),
+  // but the readouts turned y into metres at 50 or 100 m a unit measured from y = 0, so
+  // the sub just under the surface read "Depth 500 m" in the sunlight zone and its depth
+  // record was double the depth shown. This maps y through those same boundaries (the
+  // sea surface just above the sub's y = 8 ceiling; the deepest trench, 11,000 m, at the
+  // scene floor), then pressure (1 atm plus 1 for each 10.06 m of seawater) and sunlight
+  // (clear ocean water: 1% left at 200 m, which is what makes that the sunlight zone's floor).
+  var SOLAR_OCEAN_DEPTH_KNOTS = [[8.5, 0], [0, 200], [-5, 1000], [-12, 4000], [-20, 6000], [-30, 11000]];
+  function solarOceanConditions(y) {
+    var k = SOLAR_OCEAN_DEPTH_KNOTS, depth = k[k.length - 1][1];
+    if (y >= k[0][0]) depth = 0;
+    else {
+      for (var i = 1; i < k.length; i++) {
+        if (y >= k[i][0]) { depth = k[i - 1][1] + (k[i - 1][0] - y) / (k[i - 1][0] - k[i][0]) * (k[i][1] - k[i - 1][1]); break; }
+      }
+    }
+    return { depthM: depth, pressureAtm: 1 + depth / 10.06, lightFrac: Math.exp(-depth * Math.log(100) / 200) };
+  }
+  // Saturn's rings seen from above its cloud tops. For an observer at latitude lat, a
+  // ring point at radius r (Saturn radii) and ring longitude t lies along P - O, with
+  // P = (r cos t, r sin t, 0) and O = (cos lat, 0, sin lat) (z the pole, y east).
+  // Returned as a local sky direction [east, up, south], or null below the horizon
+  // (nothing above the local horizon can be behind the planet). Due south of a northern
+  // observer the elevation is atan2(r cos lat - 1, r sin lat): an arch from horizon to
+  // horizon, 22 degrees up for the inner B ring and 40 for the outer A ring at 30 N.
+  function solarRingSkyDir(r, t, latDeg) {
+    var L = latDeg * Math.PI / 180, cl = Math.cos(L), sl = Math.sin(L);
+    var up = r * Math.cos(t) * cl - 1, south = r * Math.cos(t) * sl, east = r * Math.sin(t);
+    if (up <= 0) return null;
+    var n = Math.sqrt(up * up + south * south + east * east);
+    return [east / n, up / n, south / n];
+  }
+  // The drone sky's ring bands: the same radii and opacities as PLANET_RING_SYSTEMS.Saturn
+  // in the 3D view (D, C, inner and outer B, A to the Encke gap, A beyond it, F).
+  var SOLAR_DRONE_SATURN_RINGS = [
+    { inner: 1.200, outer: 1.236, opacity: 0.10, color: 0xb9a880 },
+    { inner: 1.239, outer: 1.527, opacity: 0.40, color: 0xc3ac7d },
+    { inner: 1.527, outer: 1.760, opacity: 0.95, color: 0xefe0b4 },
+    { inner: 1.760, outer: 1.951, opacity: 0.86, color: 0xe6d5a6 },
+    { inner: 2.025, outer: 2.214, opacity: 0.66, color: 0xddc9a0 },
+    { inner: 2.219, outer: 2.265, opacity: 0.62, color: 0xd6c398 },
+    { inner: 2.324, outer: 2.330, opacity: 0.34, color: 0xefe6cc }
+  ];
+  function solarOceanLightText(frac) {
+    var pct = frac * 100;
+    return pct >= 0.995 ? Math.round(pct) + '%' : pct >= 0.01 ? pct.toFixed(2) + '%' : '<0.01%';
+  }
   // Read existing evidence without awarding progress or rewriting activity state.
   function solarMissionDashboardState(data, worlds) {
     var d=data||{},entries=(Array.isArray(d.journalEntries)?d.journalEntries:[]).filter(function(e){return e&&typeof e.observation==='string'&&e.observation.trim();});
@@ -1245,8 +1293,11 @@ const d = labToolData.solarSystem || {};
 
           // ── Field Journal Template ──
           var journalEntries = Array.isArray(d.journalEntries) ? d.journalEntries : [];
+          // Samples are saved as journal entries of kind 'Sample' (recordDroneJournal).
+          // collectedSamples is an earlier record nothing writes now, so counts read 0.
+          var savedSamples = (Array.isArray(d.collectedSamples) ? d.collectedSamples : []).concat(journalEntries.filter(function(j) { return j && j.kind === 'Sample'; }));
           function addJournalEntry(planet, prediction, observation, surprise, question, investigation, synthesis) {
-            var entry = { planet: planet, prediction: prediction, observation: observation, surprise: surprise, question: question, timestamp: Date.now(), samples: (d.collectedSamples || []).filter(function(s) { return s.planet === planet; }).length };
+            var entry = { planet: planet, prediction: prediction, observation: observation, surprise: surprise, question: question, timestamp: Date.now(), samples: savedSamples.filter(function(s) { return s.planet === planet; }).length };
             if (investigation && ['compare', 'seasons', 'signal', 'gravity', 'moon'].indexOf(investigation.id) >= 0) {
               entry.investigation = { id: investigation.id, explanation: typeof investigation.explanation === 'string' ? investigation.explanation.trim() : '' };
             }
@@ -1264,7 +1315,7 @@ const d = labToolData.solarSystem || {};
             rows.push(['Quiz Score', (d.quiz ? d.quiz.score : 0) + '', 'Best streak: ' + (d.quiz ? d.quiz.streak : 0)]);
             rows.push(['Research Points', researchPoints + '', totalRP + ' total earned']);
             rows.push(['Challenges Completed', completedChallenges.length + '/' + CHALLENGES.length, completedChallenges.join(', ')]);
-            rows.push(['Samples Collected', (d.collectedSamples || []).length + '', '']);
+            rows.push(['Samples Collected', savedSamples.length + '', '']);
             rows.push(['Journal Entries', journalEntries.length + '', '']);
             rows.push(['Misconceptions Checked', (d.misconceptionsSeen || []).length + '/' + MISCONCEPTIONS.length, '']);
             rows.push(['POE Prompts Seen', (d.poeSeen || []).length + '/9', '']);
@@ -1275,7 +1326,7 @@ const d = labToolData.solarSystem || {};
             // Per-planet detail
             PLANETS.forEach(function(p) {
               var visited = planetsVisited.indexOf(p.name) !== -1;
-              var samples = (d.collectedSamples || []).filter(function(s) { return s.planet === p.name; }).length;
+              var samples = savedSamples.filter(function(s) { return s.planet === p.name; }).length;
               var journal = journalEntries.filter(function(j) { return j.planet === p.name; }).length;
               rows.push([p.name, visited ? 'Visited' : 'Not visited', 'Samples: ' + samples + ', Journal: ' + journal]);
             });
@@ -3976,7 +4027,7 @@ const d = labToolData.solarSystem || {};
           var droneImmersive = !d.orreryMode && !!sel && d.viewTab === 'drone';
           var nextWorld = PLANETS.find(function(p) { return planetsVisited.indexOf(p.name) === -1; }) || PLANETS[0];
           var visitProgress = Math.round((planetsVisited.length / Math.max(PLANETS.length, 1)) * 100);
-          var sampleCount = (d.collectedSamples || []).length;
+          var sampleCount = savedSamples.length;
           var journalCount = journalEntries.length;
           var challengeProgress = completedChallenges.length + '/' + CHALLENGES.length;
           var vocabProgress = (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length;
@@ -17046,6 +17097,19 @@ const d = labToolData.solarSystem || {};
                             sCtx.fill();
                           }
                           sCtx.globalAlpha = 1;
+                        } else if (isGas) {
+                          // From the cloud tops only a tenth of a bar of air is left overhead,
+                          // so the sky darkens toward the zenith (as Earth's does 16 km up) and
+                          // the haze glows only near the horizon. It was the planet's amber
+                          // from zenith to horizon, fogged paler still, so neither the rings
+                          // nor the cloud banding had anything to stand against.
+                          var gsGrad = sCtx.createLinearGradient(0, 0, 0, 256);
+                          gsGrad.addColorStop(0, '#070b1c');
+                          gsGrad.addColorStop(0.3, '#1c2442');
+                          gsGrad.addColorStop(0.46, sel.skyColor || '#c9a36a');
+                          gsGrad.addColorStop(0.52, sel.skyColor || '#c9a36a');
+                          gsGrad.addColorStop(1, sel.terrainColor || '#8a6a3a');
+                          sCtx.fillStyle = gsGrad; sCtx.fillRect(0, 0, 512, 256);
                         } else {
                           var sGrad = sCtx.createLinearGradient(0, 0, 0, 256);
 
@@ -17075,11 +17139,16 @@ const d = labToolData.solarSystem || {};
                         }
 
                         var skyTex = new THREE.CanvasTexture(skyCv);
+                        if (isGas && THREE.sRGBEncoding !== undefined) skyTex.encoding = THREE.sRGBEncoding;   // keep the dark zenith dark
 
                         // Background color must not populate the depth buffer: the authored
                         // rocky silhouette sits beyond this compact dome but still belongs in
                         // the camera view. It is added later and remains depth-tested itself.
                         var skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, depthWrite: false });
+                        // On a giant planet the dome is the sky at infinity: 200 units of the local haze
+                        // mixed 30% pale blue into it and erased the dark zenith. Deep in the clouds the
+                        // decks stacked overhead hide it anyway.
+                        if (isGas) skyMat.fog = false;
 
                         scene.add(new THREE.Mesh(skyGeo, skyMat));
 
@@ -18133,6 +18202,9 @@ const d = labToolData.solarSystem || {};
                               }
                             }
                             var clTex = new THREE.CanvasTexture(clCv); clTex.wrapS = THREE.RepeatWrapping; clTex.repeat.set(4, 1);
+                            // Painted in sRGB like the rocky terrain textures: untagged, the renderer's
+                            // sRGB output read these golds as linear and lifted them to cream.
+                            if (THREE.sRGBEncoding !== undefined) clTex.encoding = THREE.sRGBEncoding;
                             // The eight decks used to run from y=-3 down to y=-38 at even
                             // 5-unit spacing, which put every one of them BELOW the probe and
                             // none of them in the two zones the HUD names while you fly. The
@@ -18149,8 +18221,8 @@ const d = labToolData.solarSystem || {};
                             // dense layers below. Descending on Q now costs you the sky one
                             // layer at a time, which is the whole point of a descent probe.
                             var deckPlan = [
-                              { y: 15, op: 0.16, tint: 0xdfe9ff },  // upper haze
-                              { y: 8, op: 0.24, tint: 0xd2e2ff },   // upper haze
+                              { y: 15, op: 0.07, tint: 0xdfe9ff },  // upper haze: thin, so the dark sky shows
+                              { y: 8, op: 0.12, tint: 0xd2e2ff },   // upper haze
                               { y: 2.4, op: 0.62, tint: 0xffffff }, // cloud deck: the banded tops
                               { y: 0.4, op: 0.70, tint: 0xf6e6cf }, // cloud deck
                               { y: -3, op: 0.55, tint: 0xe6c79a },  // deep troposphere: water cloud
@@ -18216,6 +18288,7 @@ const d = labToolData.solarSystem || {};
                             stormCx.fillStyle = eye; stormCx.beginPath(); stormCx.arc(128, 128, 30, 0, Math.PI * 2); stormCx.fill();
                             stormCx.restore();
                             var stormTex = new THREE.CanvasTexture(stormCv);
+                            if (THREE.sRGBEncoding !== undefined) stormTex.encoding = THREE.sRGBEncoding;
                             var stormMat = new THREE.MeshBasicMaterial({ map: stormTex, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false });
                             var stormMesh = new THREE.Mesh(stormGeo, stormMat);
                             stormMesh.rotation.x = -Math.PI / 2; stormMesh.position.set(30, -4, -20);
@@ -19155,11 +19228,11 @@ const d = labToolData.solarSystem || {};
                         var oceanWarningTimer = 0;
                         if (isOcean) {
                           var oceanZones = [
-                            { name: __alloT('stem.solarsystem.sunlight_zone_epipelagic', 'Sunlight Zone (Epipelagic)'), minY: 0, maxY: 999, pressure: '1-2 atm', temp: '15-25\u00B0C', color: '#0a7ab5', life: ['Dolphins', 'Sea turtles', 'Coral reefs', 'Phytoplankton'], lightLevel: 1.0, fogDensity: 0.008, hazard: null, science: 'Sunlight penetrates to ~200m. This is where 90% of ocean life exists. Photosynthesis drives the food web.' },
+                            { name: __alloT('stem.solarsystem.sunlight_zone_epipelagic', 'Sunlight Zone (Epipelagic)'), minY: 0, maxY: 999, pressure: '1-21 atm', temp: '15-25\u00B0C', color: '#0a7ab5', life: ['Dolphins', 'Sea turtles', 'Coral reefs', 'Phytoplankton'], lightLevel: 1.0, fogDensity: 0.008, hazard: null, science: 'Sunlight penetrates to ~200m. This is where 90% of ocean life exists. Photosynthesis drives the food web.' },
                             { name: __alloT('stem.solarsystem.twilight_zone_mesopelagic', 'Twilight Zone (Mesopelagic)'), minY: -5, maxY: 0, pressure: '20-100 atm', temp: '5-15\u00B0C', color: '#064f7a', life: ['Lanternfish', 'Jellyfish', 'Squid', 'Swordfish'], lightLevel: 0.3, fogDensity: 0.015, hazard: null, science: 'Only 1% of surface light reaches here. Many creatures migrate up at night to feed, then descend at dawn.' },
                             { name: __alloT('stem.solarsystem.midnight_zone_bathypelagic', 'Midnight Zone (Bathypelagic)'), minY: -12, maxY: -5, pressure: '100-400 atm', temp: '2-4\u00B0C', color: '#032b4a', life: ['Anglerfish', 'Giant squid', 'Viperfish', 'Bioluminescent jellies'], lightLevel: 0.0, fogDensity: 0.02, hazard: 'pressure', science: 'Total darkness. 75% of creatures here produce their own light (bioluminescence). Food is scarce \u2014 marine snow drifts down from above.' },
-                            { name: __alloT('stem.solarsystem.abyssal_zone_abyssopelagic', 'Abyssal Zone (Abyssopelagic)'), minY: -20, maxY: -12, pressure: '400-700 atm', temp: '1-2\u00B0C', color: '#011a30', life: ['Giant isopods', 'Zombie worms', 'Sea cucumbers', 'Tube worms'], lightLevel: 0.0, fogDensity: 0.025, hazard: 'crush', science: 'The abyssal plains cover 65% of Earth\u2019s surface. Hydrothermal vents here support life without sunlight \u2014 chemosynthesis!' },
-                            { name: __alloT('stem.solarsystem.hadal_zone_trenches', 'Hadal Zone (Trenches)'), minY: -999, maxY: -20, pressure: '700-1100 atm', temp: '1-4\u00B0C', color: '#000a15', life: ['Snailfish', 'Amphipods', 'Xenophyophores', 'Unknown species'], lightLevel: 0.0, fogDensity: 0.035, hazard: 'lethal', science: 'The deepest trenches (11 km). Pressure would crush a human instantly. Yet life thrives here \u2014 even at the bottom of the Mariana Trench!' }
+                            { name: __alloT('stem.solarsystem.abyssal_zone_abyssopelagic', 'Abyssal Zone (Abyssopelagic)'), minY: -20, maxY: -12, pressure: '400-600 atm', temp: '1-2\u00B0C', color: '#011a30', life: ['Giant isopods', 'Zombie worms', 'Sea cucumbers', 'Tube worms'], lightLevel: 0.0, fogDensity: 0.025, hazard: 'crush', science: 'The abyssal plains cover 65% of Earth\u2019s surface. Hydrothermal vents here support life without sunlight \u2014 chemosynthesis!' },
+                            { name: __alloT('stem.solarsystem.hadal_zone_trenches', 'Hadal Zone (Trenches)'), minY: -999, maxY: -20, pressure: '600-1,100 atm', temp: '1-4\u00B0C', color: '#000a15', life: ['Snailfish', 'Amphipods', 'Xenophyophores', 'Unknown species'], lightLevel: 0.0, fogDensity: 0.035, hazard: 'lethal', science: 'The deepest trenches (11 km). Pressure would crush a human instantly. Yet life thrives here \u2014 even at the bottom of the Mariana Trench!' }
                           ];
                           oceanAtmo = {
                             zones: oceanZones,
@@ -19316,44 +19389,51 @@ const d = labToolData.solarSystem || {};
 
                         // ═══ PLANET-SPECIFIC LANDMARK FEATURES ═══
 
-                        // ── Saturn: Visible ring arcs overhead ──
+                        // -- Saturn: the rings across the sky --
+                        // They were five flat circles 80-128 units round the scene origin, so
+                        // they read as a halo round the whole horizon, stayed behind when the
+                        // probe flew off, and were cream on a cream sky. From the cloud tops the
+                        // rings are an ARCH: from one horizon over to the other, highest toward
+                        // the equator (solarRingSkyDir). The probe flies at 30 degrees south, so
+                        // the arch stands in the northern sky, ahead of the starting heading.
+                        // Built from the real band radii, it rides with the camera (the rings are
+                        // at infinity for this purpose) and fades as the probe drops below the
+                        // cloud tops. Scene axes: +x east, +y up, +z south.
                         var saturnRingMeshes = [];
+                        var saturnRingSky = null;
+                        var SATURN_SKY_LAT = -30, SATURN_SKY_R = 150;
                         if (sel.hasRings && isGas) {
-                          var ringColors = [0xeab308, 0xd4a017, 0xc9a04a, 0xb89030, 0xa88020];
-                          for (var sri = 0; sri < 5; sri++) {
-                            var ringR = 80 + sri * 12;
-                            var ringW = 3 + sri * 1.5;
-                            var rGeo = new THREE.RingGeometry(ringR - ringW, ringR + ringW, 64);
-                            // Create ring texture with gaps
-                            var rCv = document.createElement('canvas'); rCv.setAttribute('aria-hidden', 'true'); rCv.width = 256; rCv.height = 1;
-                            var rCtx = rCv.getContext('2d');
-                            for (var rpx = 0; rpx < 256; rpx++) {
-                              // Saturn's rings were being drawn at a texture alpha of ~0.15
-                              // multiplied by a material opacity of ~0.25, so their EFFECTIVE
-                              // opacity was about 4% — against Saturn's own gold sky that is
-                              // not faint, it is invisible. The tool builds the planet's most
-                              // famous feature, arcs it overhead, animates its drift and even
-                              // models its shadow dimming the ground, and then nobody has ever
-                              // seen it. Raised to ~40% effective.
-                              //
-                              // Colour moved off the saturated amber too: ring particles are
-                              // mostly water ice, so they read as bright cream, and amber on
-                              // an amber sky has no contrast to spend even at full opacity.
-                              var alpha = 0.55 + Math.sin(rpx * 0.3 + sri) * 0.22 + Math.random() * 0.05;
-                              if (rpx % 17 < 2) alpha *= 0.18; // Cassini-like gaps
-                              rCtx.fillStyle = 'rgba(248,240,214,' + alpha + ')';
-                              rCtx.fillRect(rpx, 0, 1, 1);
+                          saturnRingSky = new THREE.Group();
+                          var ringHorizon = function (r, t) {           // the direction clipped onto the horizon
+                            var dir = solarRingSkyDir(r, t, SATURN_SKY_LAT);
+                            if (dir) return dir;
+                            var L = SATURN_SKY_LAT * Math.PI / 180, e = r * Math.sin(t), s = r * Math.cos(t) * Math.sin(L), n = Math.sqrt(e * e + s * s) || 1;
+                            return [e / n, 0, s / n];
+                          };
+                          SOLAR_DRONE_SATURN_RINGS.forEach(function (band) {
+                            var tMax = Math.acos(Math.min(1, 1 / (band.outer * Math.cos(SATURN_SKY_LAT * Math.PI / 180))));
+                            var steps = 96, verts = [], idx = [];
+                            for (var rs = 0; rs <= steps; rs++) {
+                              var rt = -tMax + (2 * tMax) * rs / steps;
+                              [band.inner, band.outer].forEach(function (rr) {
+                                var dd = ringHorizon(rr, rt);
+                                verts.push(dd[0] * SATURN_SKY_R, dd[1] * SATURN_SKY_R, dd[2] * SATURN_SKY_R);
+                              });
+                              if (rs > 0) { var q = (rs - 1) * 2; idx.push(q, q + 1, q + 2, q + 1, q + 3, q + 2); }
                             }
-                            var rTex = new THREE.CanvasTexture(rCv);
-                            var rMat = new THREE.MeshBasicMaterial({
-                              map: rTex, side: THREE.DoubleSide, transparent: true, opacity: 0.82 - sri * 0.06, depthWrite: false
-                            });
-                            var ringMesh2 = new THREE.Mesh(rGeo, rMat);
-                            ringMesh2.rotation.x = Math.PI / 2 + 0.3; // tilted overhead
-                            ringMesh2.position.y = 30 + sri * 4;
-                            scene.add(ringMesh2);
-                            saturnRingMeshes.push(ringMesh2);
-                          }
+                            var rbGeo = new THREE.BufferGeometry();
+                            rbGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+                            rbGeo.setIndex(idx);
+                            // Faint rings stay faint against the sky: the C ring is mostly empty space (optical
+                            // depth about 0.1), and at the 3D view's 0.40 it hung a grey veil over the lower sky.
+                            var rbMat = new THREE.MeshBasicMaterial({ color: band.color, transparent: true, opacity: Math.pow(band.opacity, 1.6) * 0.9, side: THREE.DoubleSide, depthWrite: false, fog: false });
+                            rbMat._baseOpacity = rbMat.opacity;
+                            var rbMesh = new THREE.Mesh(rbGeo, rbMat);
+                            rbMesh.renderOrder = -1;                    // over the sky dome, under everything else
+                            saturnRingSky.add(rbMesh);
+                            saturnRingMeshes.push(rbMesh);
+                          });
+                          scene.add(saturnRingSky);
                         }
 
                         // ── Mars: Dust devil columns ──
@@ -20496,9 +20576,8 @@ const d = labToolData.solarSystem || {};
                         function updateDroneScienceFocus(altitude) {
                           if (!scienceReadingEl) return;
                           if (isOcean && oceanAtmo) {
-                            var oceanScienceZone = oceanAtmo.getZone(playerPos.y);
-                            var lightPercent = Math.round((oceanScienceZone.lightLevel || 0) * 100);
-                            scienceReadingEl.textContent = 'Depth ' + Math.abs(playerPos.y * scaleFactor).toFixed(0) + ' m \u2022 ' + oceanScienceZone.pressure + ' \u2022 light ' + lightPercent + '%';
+                            var oceanNow = solarOceanConditions(playerPos.y);
+                            scienceReadingEl.textContent = 'Depth ' + Math.round(oceanNow.depthM) + ' m \u2022 ' + Math.round(oceanNow.pressureAtm) + ' atm \u2022 light ' + solarOceanLightText(oceanNow.lightFrac);
                             return;
                           }
                           if (isGas && gasAtmo) {
@@ -21700,7 +21779,8 @@ const d = labToolData.solarSystem || {};
                             scanTitle = oz.name;
                             scanEvidence = oz.temp + ', ' + oz.pressure + ', life signs: ' + (oz.life || []).join(', ');
                             scanDetail = oz.science;
-                            scanSnapshot = { mode: 'ocean', zone: oz.name, level: Math.round(Math.abs(playerPos.y * scaleFactor)), light: Math.round((oz.lightLevel || 0) * 100), pressure: oz.pressure, temp: oz.temp };
+                            var ozNow = solarOceanConditions(playerPos.y);
+                            scanSnapshot = { mode: 'ocean', zone: oz.name, level: Math.round(ozNow.depthM), light: Math.round(ozNow.lightFrac * 10000) / 100, pressure: Math.round(ozNow.pressureAtm) + ' atm', temp: oz.temp };
                             scanHTML = '<div style="color:#00b4ff;font-weight:bold;margin-bottom:4px">' + oz.name + '</div>' +
                               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\uD83C\uDF21 ' + oz.temp + '</div><div>\uD83D\uDCA8 ' + oz.pressure + '</div>' +
@@ -22525,7 +22605,7 @@ const d = labToolData.solarSystem || {};
                               vehicleHeading:currentHeadingLabel,
                               capturedAt:new Date().toISOString(), width:snapshot.width, height:snapshot.height,
                               vehicleLevelLabel:isOcean ? 'Depth' : isGas ? 'Relative altitude' : 'Elevation',
-                              vehicleLevelMeters:Math.round((isOcean ? Math.abs(playerPos.y) : isGas ? playerPos.y : playerPos.y - 1.6) * scaleFactor)
+                              vehicleLevelMeters:Math.round(isOcean ? solarOceanConditions(playerPos.y).depthM : (isGas ? playerPos.y : playerPos.y - 1.6) * scaleFactor)
                             };
                             photo.context = context;
                             var viewText = context.cameraView === 'survey' ? 'Survey view, north up; ' + context.surveyFraming + '× framing.' : context.cameraView === 'pilot' ? 'Pilot view.' : 'Follow view.';
@@ -24062,7 +24142,11 @@ const d = labToolData.solarSystem || {};
                               // Fluid modes keep their familiar fixed chase composition.
                               var behind = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiplyScalar(6);
                               camera.position.set(playerPos.x + behind.x, playerPos.y + 3, playerPos.z + behind.z);
-                              camera.lookAt(playerPos.x, playerPos.y, playerPos.z);
+                              // The look keys tilt this view as well (they reached only the pilot
+                              // view, so the HUD's up/down "look" did nothing on the sub or probe),
+                              // and the probe is framed a little higher: on a giant planet the sky
+                              // and, on Saturn, the ring arch are the scenery.
+                              camera.lookAt(playerPos.x, playerPos.y + (isGas ? 2.2 : 0) + Math.tan(pitch) * 6, playerPos.z);
                             }
 
                           } else {
@@ -24346,28 +24430,12 @@ const d = labToolData.solarSystem || {};
                           // for ICE GIANTS — so it was a no-op behind a typeof guard on every
                           // world. Removed with the cloud it referenced.)
 
-                          // Saturn rings shimmer + slow rotation + shadow bands
-                          if (typeof saturnRingMeshes !== 'undefined' && saturnRingMeshes.length > 0) {
-                            saturnRingMeshes.forEach(function(rm, ri2) {
-                              // This line is why raising the build-time opacity alone changed
-                              // nothing: it ASSIGNS rather than modulates, so whatever the
-                              // rings were built with was overwritten back to ~0.2 on the very
-                              // next frame. Shimmer around the per-ring base instead of
-                              // replacing it. (Stash the base on the mesh — the material is
-                              // per-ring already, but reading opacity back would compound the
-                              // shimmer into a drift.)
-                              if (rm._baseOpacity == null) rm._baseOpacity = rm.material.opacity;
-                              rm.material.opacity = rm._baseOpacity + Math.sin(tick3d * 0.005 + ri2 * 0.5) * 0.06;
-                              // Slow orbital rotation — rings drift across the sky
-                              rm.rotation.z += 0.0001 + ri2 * 0.00003;
-                              // Subtle tilt oscillation (precession effect)
-                              rm.rotation.x = Math.PI / 2 + 0.3 + Math.sin(tick3d * 0.0003 + ri2) * 0.02;
-                            });
-                            // Ring shadow bands on terrain — periodic light dimming
-                            if (sunDir && tick3d % 4 === 0) {
-                              var ringShadow = Math.abs(Math.sin(tick3d * 0.001)) * 0.15;
-                              sunDir.intensity = Math.max(0.5, 1.0 - ringShadow);
-                            }
+                          // Saturn's ring arch rides with the camera and fades below the cloud tops
+                          if (saturnRingSky) {
+                            saturnRingSky.position.copy(camera.position);
+                            var ringSeen = Math.max(0, Math.min(1, playerPos.y / 3));
+                            saturnRingMeshes.forEach(function (rm) { rm.material.opacity = rm.material._baseOpacity * ringSeen; });
+                            saturnRingSky.visible = ringSeen > 0;
                           }
 
                           // Mars dust devils spin and wander
@@ -24701,7 +24769,7 @@ const d = labToolData.solarSystem || {};
                                 if (sListEl) {
                                   var card = document.createElement('div');
                                   card.style.cssText = 'background:rgba(5,25,50,0.8);border:1px solid rgba(0,180,255,0.2);border-radius:10px;padding:10px 12px;margin-bottom:8px';
-                                  card.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:18px">' + sd.icon + '</span><div><div style="font-weight:bold;font-size:13px;color:#00b4ff">' + sd.name + '</div><div style="font-size:10px;color:#94a3b8">' + sd.type + ' \u2022 Depth: ' + Math.abs(playerPos.y * 100).toFixed(0) + 'm \u2022 ' + oZone.name + '</div></div></div>' +
+                                  card.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:18px">' + sd.icon + '</span><div><div style="font-weight:bold;font-size:13px;color:#00b4ff">' + sd.name + '</div><div style="font-size:10px;color:#94a3b8">' + sd.type + ' \u2022 Depth: ' + Math.round(solarOceanConditions(playerPos.y).depthM) + 'm \u2022 ' + oZone.name + '</div></div></div>' +
                                     '<div style="font-size:11px;color:#cbd5e1;line-height:1.4">' + sd.fact + '</div>';
                                   sListEl.appendChild(card);
                                 }
@@ -24711,7 +24779,7 @@ const d = labToolData.solarSystem || {};
                             // Depth record tracking
                             if (playerPos.y < oceanAtmo.deepestY) {
                               oceanAtmo.deepestY = playerPos.y;
-                              oceanAtmo.depthRecord = Math.abs(playerPos.y * 100);
+                              oceanAtmo.depthRecord = solarOceanConditions(playerPos.y).depthM;
                             }
                             var curOceanZone = oZone.name;
                             if (!oceanAtmo.zonesVisited[curOceanZone]) {
@@ -25231,7 +25299,7 @@ const d = labToolData.solarSystem || {};
 
                             var dscEl = document.getElementById('hud-disc');
 
-                            var altitude = isOcean ? (Math.abs(playerPos.y) * scaleFactor).toFixed(0) : ((playerPos.y - (isGas ? 0 : 1.6)) * scaleFactor).toFixed(0);
+                            var altitude = isOcean ? solarOceanConditions(playerPos.y).depthM.toFixed(0) : ((playerPos.y - (isGas ? 0 : 1.6)) * scaleFactor).toFixed(0);
 
                             if (altEl) altEl.textContent = altitude + ' m';
 

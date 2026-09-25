@@ -1420,6 +1420,12 @@ window.StemLab = window.StemLab || {
       // is assigned further down and `var` hoists the declaration, not the value.
       var TAB_IDS = ['battle', 'challenge', 'contacttrace', 'history', 'inquiry', 'interventions', 'learn', 'outbreak', 'outbreakmap', 'r0explorer', 'scenarios', 'seir', 'sir', 'vaccination'];
       var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'sir';
+      // The "Explore 3 epidemic model views" quest counts tabsViewed, which nothing
+      // wrote. Record each view once, however it was opened. Deferred because this
+      // runs during render; the updater reads stored state, so a repeat is a no-op.
+      if (!(d.tabsViewed || {})[tab]) {
+        setTimeout(function() { upd('tabsViewed', function(cur) { if (cur && cur[tab]) return cur; var seen = Object.assign({}, cur || {}); seen[tab] = true; return seen; }); }, 0);
+      }
       var r0 = (typeof d.r0 === 'number' && isFinite(d.r0)) ? d.r0 : 2.5;
       var vaccRate = (typeof d.vaccRate === 'number' && isFinite(d.vaccRate)) ? d.vaccRate : 0;
       var infectPeriod = (typeof d.infectPeriod === 'number' && isFinite(d.infectPeriod)) ? d.infectPeriod : 10;

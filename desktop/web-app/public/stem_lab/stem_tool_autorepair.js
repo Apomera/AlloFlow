@@ -5288,7 +5288,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var odoText = String(input.odo == null ? '' : input.odo).trim();
     var costText = String(input.cost == null ? '' : input.cost).trim();
     var notes = String(input.notes == null ? '' : input.notes).trim();
-    var today = todayIso || new Date().toISOString().slice(0, 10);
+    // Local date: the UTC one is tomorrow on a US evening and yesterday on a morning east of UTC.
+    var now = new Date();
+    var today = todayIso || (now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'));
 
     function isRealIsoDate(value) {
       var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
@@ -11255,6 +11257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var newBadges = Object.assign({}, badges, { });
         newBadges[id] = { label: label, when: Date.now() };
         upd('badges', newBadges);
+        badges = newBadges; // keep this render's copy current: a second award in one handler must add, not replace
         addToast('🏅 ' + label);
         arAnnounce(__alloFill(__alloT('stem.autorepair.sr_badge_earned', 'Badge earned: {value1}'), { value1: label }));
       };
@@ -18292,7 +18295,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var undoEntry = d.logUndoEntry && typeof d.logUndoEntry === 'object'
           ? arNormalizeServiceEntries([d.logUndoEntry])[0] || null
           : null;
-        var todayIso = new Date().toISOString().slice(0, 10);
+        var todayNow = new Date();
+        var todayIso = todayNow.getFullYear() + '-' + String(todayNow.getMonth() + 1).padStart(2, '0') + '-' + String(todayNow.getDate()).padStart(2, '0');
 
         function updateDraft(key, val) {
           var newDraft = Object.assign({}, draft);

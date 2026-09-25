@@ -262,8 +262,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
     category: 'science',
     questHooks: [
       { id: 'calculate_footprint', label: 'Calculate your carbon footprint', icon: '\uD83D\uDC63', check: function(d) { return (d.ccTransport || 0) + (d.ccFood || 0) + (d.ccEnergy || 0) > 0; }, progress: function(d) { return (d.ccTransport || 0) + (d.ccFood || 0) + (d.ccEnergy || 0) > 0 ? 'Calculated!' : 'Adjust sliders'; } },
-      { id: 'explore_renewables', label: 'Design a renewable energy mix', icon: '\u2600\uFE0F', check: function(d) { return d.renewablesDesigned || false; }, progress: function(d) { return d.renewablesDesigned ? 'Designed!' : 'Not yet'; } },
-      { id: 'view_all_tabs', label: 'Explore all Climate Explorer sections', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 sections'; } }
+      { id: 'explore_renewables', label: 'Design a renewable energy mix', icon: '\u2600\uFE0F', check: function(d) { return !!(d.renewablesDesigned || ['rsSolar', 'rsWind', 'rsHydro', 'rsNuclear'].some(function(k) { return typeof d[k] === 'number'; })); }, progress: function(d) { return (d.renewablesDesigned || ['rsSolar', 'rsWind', 'rsHydro', 'rsNuclear'].some(function(k) { return typeof d[k] === 'number'; })) ? 'Designed!' : 'Not yet'; } },
+      { id: 'view_all_tabs', label: 'Explore 3 Climate Explorer sections', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(Object.assign({}, d.tabsViewed, d.tabsVisited)).length >= 3; }, progress: function(d) { return Object.keys(Object.assign({}, d.tabsViewed, d.tabsVisited)).length + '/3 sections'; } }
     ],
     render: function(ctx) {
       // The accent literals (#4ade80/#fbbf24/#a5b4fc) are dark-substrate shades, but
@@ -656,7 +656,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // ── Track tab visits ──
       function visitTab(tid) {
         upd('tab', tid);
-        playSound('tab'); if (announceToSR) announceToSR(t.label + ' section.');
+        // t is the translator in this scope; t.label read undefined, so screen
+        // readers heard "undefined section." Name the section instead.
+        var ceSectionNames = {
+          carbon: t('stem.climateExplorer.carbon_calculator', 'Carbon Calculator'), renewables: t('stem.climateExplorer.renewables', 'Renewables'),
+          keeling: t('stem.climateExplorer.keeling_curve', 'Keeling Curve'), tipping: t('stem.climateExplorer.tipping_points', 'Tipping Points'),
+          justice: t('stem.climateExplorer.climate_justice', 'Climate Justice'), solutions: t('stem.climateExplorer.solutions', 'Solutions'),
+          pathways: t('stem.climateExplorer.policy_pathways', 'Policy Pathways'), forceHunt: t('stem.climateExplorer.radiative_forcing', 'Radiative Forcing')
+        };
+        playSound('tab'); if (announceToSR) announceToSR((ceSectionNames[tid] || tid) + ' section.');
         if (!tabsVisited[tid]) {
           var nv = Object.assign({}, tabsVisited);
           nv[tid] = true;
