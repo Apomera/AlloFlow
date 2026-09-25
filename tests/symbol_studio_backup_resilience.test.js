@@ -221,7 +221,7 @@ describe('Symbol Studio cloud and hidden-session resilience', () => {
   it('installs no keyboard listener, focus timer, or scanner timer while closed', () => {
     const listeners = vi.fn(); const timer = vi.fn();
     const deps = {
-      useEffect: (effect) => effect(), isOpen: false, sessionDebrief: null, mulberryOpen: false, useBoardId: 'board', scanBoardId: 'board',
+      useEffect: (effect) => effect(), isOpen: false, sessionDebrief: null, mulberryOpen: false, photoOpen: false, useBoardId: 'board', scanBoardId: 'board',
       window: { addEventListener: listeners }, setTimeout: timer, setInterval: timer,
       clearInterval: vi.fn(), scanIntervalRef: { current: null }, scanPaused: false, scanManual: false,
       scanSpeed: 1500, savedBoards: [],

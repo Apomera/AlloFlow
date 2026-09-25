@@ -2586,6 +2586,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 </div>
 </div>
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+<button aria-label="Find a photo" title="Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety" style="padding:8px 14px;background:#f0f9ff;color:#075985;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷 Find photo</button>
 <button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
 <p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
@@ -2861,6 +2862,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 </div>
 </div>
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+<button aria-label="Find a photo" title="Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety" style="padding:8px 14px;background:#f0f9ff;color:#075985;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷 Find photo</button>
 <button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
 <p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
@@ -3136,6 +3138,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 </div>
 </div>
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+<button aria-label="Find a photo" title="Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety" style="padding:8px 14px;background:#f0f9ff;color:#075985;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷 Find photo</button>
 <button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
 <p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
@@ -3411,6 +3414,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 </div>
 </div>
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
+<button aria-label="Find a photo" title="Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety" style="padding:8px 14px;background:#f0f9ff;color:#075985;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷 Find photo</button>
 <button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
 <p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>

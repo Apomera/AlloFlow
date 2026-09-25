@@ -112,7 +112,8 @@ export function setupSymbolStudio() {
     // eslint-disable-next-line no-new-func
     new Function(audioStoreSrc)();
   }
-  const src = readFileSync(resolve(process.cwd(), 'symbol_studio_module.js'), 'utf8');
+  // Mutation runs point this at a scratch copy so a mutant never reaches the shared file.
+  const src = readFileSync(resolve(process.cwd(), process.env.ALLO_SYMBOL_STUDIO_CANDIDATE || 'symbol_studio_module.js'), 'utf8');
   // eslint-disable-next-line no-new-func
   new Function(src)();
 

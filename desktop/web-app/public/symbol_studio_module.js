@@ -952,6 +952,18 @@
     var escaped = phrase; // Normalized labels contain no regular-expression operators.
     return new RegExp('(^|[^\\p{L}\\p{M}\\p{N}])' + escaped + '($|[^\\p{L}\\p{M}\\p{N}])', 'u').test(normalizeSymbolLabel(text));
   }
+  // Mulberry's own requested credit (mulberrysymbols.org): CC BY-SA 4.0 by
+  // Steve Lee. Earlier saves carried a shorter credit with no author or licence
+  // version; only that exact app-written legacy credit is upgraded on load.
+  var MULBERRY_ATTRIBUTION = { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', via: 'Global Symbols', url: 'https://mulberrysymbols.org' };
+  function upgradeLegacyMulberryAttribution(attribution) {
+    var a = attribution && typeof attribution === 'object' ? attribution : null;
+    if (a && a.set === 'Mulberry Symbols' && a.license === 'CC BY-SA' && a.via === 'Global Symbols' && !a.author) {
+      return Object.assign({}, MULBERRY_ATTRIBUTION);
+    }
+    return attribution;
+  }
   function normalizeBankAsset(asset) {
     var source = asset && typeof asset === 'object' ? asset : {};
     var id = String(source.id || uid());
@@ -979,7 +991,7 @@
       reviewNote: String(source.reviewNote || '').slice(0, 500),
       updatedAt: Number(source.updatedAt || source.createdAt || Date.now()),
       isPreferred: source.isPreferred === true
-    });
+    }, source.attribution ? { attribution: upgradeLegacyMulberryAttribution(source.attribution) } : {});
   }
   function normalizeBank(assets) {
     return (Array.isArray(assets) ? assets : []).filter(isStoredRecord).map(normalizeBankAsset);
@@ -1666,15 +1678,56 @@
       + ' | 1-switch and 2-switch scanning | High contrast | Screen reader support | RTL | 44px targets</div></footer>'
       + '<script>' + runtime + '<\/script></body></html>';
   }
+  // OBF lets each image carry its own licence. A picture from the Symbol Bank
+  // with a credit (a Mulberry symbol, a Commons photo) exports with it, and a
+  // board holding share-alike pictures is not labelled plain CC BY.
+  function obfImageLicenseFor(gallery, img, word) {
+    // By the cell's own asset first (its picture may have been replaced since),
+    // then by the picture itself, then by a credit the cell carries.
+    var bank = Array.isArray(gallery) ? gallery : [];
+    var credited = function (entry) { return entry && entry.attribution && entry.attribution.license; };
+    var assetId = word && word.assetId != null ? String(word.assetId) : '';
+    var asset = (assetId && bank.find(function (entry) { return credited(entry) && String(entry.id) === assetId; }))
+      || bank.find(function (entry) { return credited(entry) && entry.image === img; })
+      || (word && credited(word) ? word : null);
+    if (!asset) return null;
+    var a = asset.attribution;
+    var license = { type: String(a.license).slice(0, 120) };
+    if (/^https:\/\//i.test(a.licenseUrl || '')) license.copyright_notice_url = String(a.licenseUrl).slice(0, 500);
+    if (/^https:\/\//i.test(a.url || '')) license.source_url = String(a.url).slice(0, 500);
+    if (a.author) license.author_name = String(a.author).slice(0, 160);
+    return license;
+  }
+  function obfBoardLicense(images) {
+    return (images || []).some(function (image) { return image.license && /\bSA\b/i.test(image.license.type); }) ? { type: 'CC By-Sa' } : { type: 'CC By' };
+  }
+  // Regenerated art replaces a picked symbol or photo: its credit, source and
+  // validated status belonged to that picture, not to the new AI one.
+  function withoutPickedCredit(asset) {
+    if (!asset || (!asset.attribution && asset.source !== 'mulberry' && asset.source !== 'wikimedia')) return asset;
+    var next = Object.assign({}, asset, { source: 'ai-symbol-studio', validated: false });
+    delete next.attribution;
+    return next;
+  }
   function packAttributionForShare(attribution) {
     var source = attribution && typeof attribution === 'object' ? attribution : null;
     if (!source) return null;
-    return {
+    var packed = {
       set: String(source.set || '').slice(0, 120),
       license: String(source.license || '').slice(0, 120),
       via: String(source.via || '').slice(0, 120),
       url: /^https?:\/\//i.test(String(source.url || '')) ? String(source.url).slice(0, 500) : ''
     };
+    // Author and licence link travel only when present, so older credits share
+    // exactly as they always did.
+    var author = String(source.author || '').slice(0, 120);
+    var title = String(source.title || '').slice(0, 160);
+    if (title) packed.title = title;
+    if (source.modified === true) packed.modified = true;
+    var licenseUrl = /^https:\/\//i.test(String(source.licenseUrl || '')) ? String(source.licenseUrl).slice(0, 500) : '';
+    if (author) packed.author = author;
+    if (licenseUrl) packed.licenseUrl = licenseUrl;
+    return packed;
   }
   function packWordForShare(word) {
     var source = word && typeof word === 'object' ? word : {};
@@ -2423,7 +2476,7 @@
     }
     useEffect(function () {
       setBoardGenerating(false); setBoardLoading({});
-      setSymLoading({}); setMulberryLoading(false); setMulberryAdding(null); setMulberryOpen(false);
+      setSymLoading({}); setMulberryLoading(false); setMulberryAdding(null); setMulberryOpen(false); setPhotoOpen(false);
       setSelectedId(null);
       return function () { symbolWorkRef.current.epoch += 1; symbolWorkRef.current.pending = {}; };
     }, [activeProfileId, isOpen]);
@@ -2614,6 +2667,48 @@
     var mulberryOpenerRef = useRef(null);
     var mulberrySearchEpochRef = useRef(0);
     var _mulSearched = useState(false); var mulberrySearched = _mulSearched[0]; var setMulberrySearched = _mulSearched[1];
+    // Photo picker: freely licensed Wikimedia Commons photos through the shared
+    // ClassroomImagePicker, which shows only photos an AI check confirmed as
+    // classroom-appropriate and writes their description. Photos are NOT a
+    // validated AAC set, so they are never marked validated.
+    var _photoOpen = useState(false); var photoOpen = _photoOpen[0]; var setPhotoOpen = _photoOpen[1];
+    var photoDialogRef = useRef(null);
+    var photoOpenerRef = useRef(null);
+    // A photo belongs to the learner whose bank the dialog was opened for.
+    var photoProfileRef = useRef(null);
+    var openPhotoPicker = function () { photoOpenerRef.current = document.activeElement; photoProfileRef.current = activeProfileIdRef.current; setPhotoOpen(true); };
+    var addPhotoToGallery = function (choice) {
+      if (!choice || !safeImgUrl(choice.dataUrl)) return;
+      if (photoProfileRef.current !== activeProfileIdRef.current) return;
+      var work = startSymbolWork('photo');
+      if (!work) return;
+      var label = String(symLabel || '').trim() || String(choice.alt || 'photo').slice(0, 60);
+      // A board cell is small and browser storage is shared, so keep a 400px copy,
+      // with the photo's credit drawn under it: printed boards and exports copy only the picture.
+      var A = window.AlloModules && window.AlloModules.AltText;
+      var prepare = A && A.shrinkImageDataUrl && A.bakeCreditIntoImage
+        ? A.shrinkImageDataUrl(choice.dataUrl, 400, { kind: 'photo', fitWidth: true }).then(function (small) {
+            return choice.creditLine ? A.bakeCreditIntoImage(small, choice.creditLine, { kind: 'photo', attribution: choice.attribution }) : small;
+          })
+        : Promise.resolve(choice.dataUrl);
+      return prepare.then(function (image) {
+        if (!symbolWorkIsCurrent(work)) return;
+        var entry = normalizeBankAsset({
+          id: uid(), label: label, description: String(choice.alt || '').slice(0, 250), image: safeImgUrl(image),
+          style: 'photo', category: symWordType, topicTags: symCategory ? [symCategory] : [], isFavorite: false, createdAt: Date.now(),
+          source: 'wikimedia', validated: false, attribution: choice.attribution ? Object.assign({}, choice.attribution) : undefined
+        });
+        var saved = commitSymbolBank(function (current) { return [entry].concat(current); }, work);
+        setSelectedId(entry.id);
+        finishSymbolWork(work);
+        setPhotoOpen(false);
+        saved && addToast && addToast('Added photo "' + label + '" (Wikimedia Commons). Its credit is drawn under it. Review it before classroom use.', 'success');
+      }).catch(function () {
+        if (!symbolWorkIsCurrent(work)) return;
+        finishSymbolWork(work);
+        addToast && addToast('Could not add that photo. Try another one.', 'error');
+      });
+    };
     var openMulberryPicker = function () {
       mulberryOpenerRef.current = document.activeElement;
       mulberrySearchEpochRef.current += 1;
@@ -2647,7 +2742,7 @@
           id: uid(), label: label, description: '', image: safeImgUrl(img) || result.svgUrl,
           style: 'mulberry', category: symWordType, topicTags: symCategory ? [symCategory] : [], isFavorite: false, createdAt: Date.now(),
           source: 'mulberry', validated: true,
-          attribution: { set: 'Mulberry Symbols', license: 'CC BY-SA', via: 'Global Symbols', url: 'https://globalsymbols.com' }
+          attribution: Object.assign({}, MULBERRY_ATTRIBUTION)
         });
         var saved = commitSymbolBank(function (current) { return [entry].concat(current); }, work);
         setSelectedId(entry.id); setMulberryAdding(null);
@@ -3617,6 +3712,17 @@
         if (opener && opener.isConnected) opener.focus();
       };
     }, [mulberryOpen, isOpen]);
+    useEffect(function () {
+      if (!photoOpen || !isOpen || !photoDialogRef.current) return;
+      var restore = isolateStudioDialog(photoDialogRef.current);
+      var field = photoDialogRef.current.querySelector('input');
+      if (field) field.focus();
+      return function () {
+        restore();
+        var opener = photoOpenerRef.current;
+        if (opener && opener.isConnected) opener.focus();
+      };
+    }, [photoOpen, isOpen]);
 
     // Move focus into the primary dialog on open and return it to the invoking
     // control when the studio closes (WCAG 2.4.3 / 2.4.11).
@@ -3822,7 +3928,7 @@
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
         if (!symbolWorkIsCurrent(work)) return;
         if (!imageUrl) throw new Error('No image returned');
-        var updated = galleryStateRef.current.map(function (i) { return i.id === id && !i.locked ? Object.assign({}, i, { image: imageUrl, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }) : i; });
+        var updated = galleryStateRef.current.map(function (i) { return i.id === id && !i.locked ? withoutPickedCredit(Object.assign({}, i, { image: imageUrl, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() })) : i; });
         commitSymbolBank(function () { return updated; }, work);
       } catch (e) {
         if (!symbolWorkIsCurrent(work)) return;
@@ -4306,7 +4412,8 @@
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 300);
         if (!symbolWorkIsCurrent(work) || requestedDraftEpoch !== boardDraftEpochRef.current || !imageUrl) return;
         setBoardWords(function (prev) { return prev.map(function (w) {
-          return w.id === id && w.label === word.label && w.image === word.image && !w.locked ? Object.assign({}, w, { image: imageUrl }) : w;
+          // New AI art is no longer the bank picture, so it leaves that picture's link and credit behind.
+          return w.id === id && w.label === word.label && w.image === word.image && !w.locked ? Object.assign({}, w, { image: imageUrl, assetId: null, attribution: undefined }) : w;
         }); });
       } catch (e) {
         if (symbolWorkIsCurrent(work) && requestedDraftEpoch === boardDraftEpochRef.current) addToast && addToast(t('toasts.image_failed') + (word.label || ''), 'error');
@@ -5313,6 +5420,7 @@
     // student's own vocabulary) and run it as a live speaking board in Cboard.
     // Single-board .obf; a multi-page board exports its FIRST page (an .obz set
     // export is a future add). Colors → rgb(); images kept as their data:/URL.
+    var obfImageLicense = function (img, word) { return obfImageLicenseFor(gallery, img, word); };
     var exportBoardOBF = useCallback(function (board) {
       var _hexToRgb = function (hex) {
         if (!hex) return null;
@@ -5351,6 +5459,8 @@
               var ctMatch = /^data:([^;,]+)[;,]/.exec(img);
               var imgObj = { id: iid, width: 300, height: 300, content_type: ctMatch ? ctMatch[1] : 'image/png' };
               if (/^data:/i.test(img)) imgObj.data = img; else imgObj.url = img;
+              var imgLicense = obfImageLicense(img, w);
+              if (imgLicense) imgObj.license = imgLicense;
               images.push(imgObj);
               btn.image_id = iid;
             }
@@ -5373,7 +5483,7 @@
         grid: { rows: rows, columns: cols, order: order },
         images: images,
         sounds: [],
-        license: { type: 'CC By' }
+        license: obfBoardLicense(images)
       };
       var json = JSON.stringify(obf, null, 2);
       var blob = new Blob([json], { type: 'application/obf' });
@@ -5386,7 +5496,7 @@
       document.body.removeChild(a); URL.revokeObjectURL(url);
       var multi = board.pages && board.pages.length > 1;
       addToast && addToast('Exported "' + (board.title || 'Board') + '" as Open Board Format (.obf)' + (multi ? ' — first page only (use .obz for all pages); import into Cboard or another AAC app.' : ' — import into Cboard or another AAC app.'), 'success');
-    }, [addToast, boardLang]);
+    }, [addToast, boardLang, gallery]);
 
     // ── OBF/OBZ helpers: one page → one OBF object (shared by .obz export) ──
     // Mirrors exportBoardOBF's per-page logic but returns the object instead of
@@ -5420,6 +5530,8 @@
               var ctMatch = /^data:([^;,]+)[;,]/.exec(img);
               var imgObj = { id: iid, width: 300, height: 300, content_type: ctMatch ? ctMatch[1] : 'image/png' };
               if (/^data:/i.test(img)) imgObj.data = img; else imgObj.url = img;
+              var imgLicense = obfImageLicense(img, w);
+              if (imgLicense) imgObj.license = imgLicense;
               images.push(imgObj); btn.image_id = iid;
             }
             buttons.push(btn); rowArr.push(bid); idx++;
@@ -5431,7 +5543,7 @@
         name: page.title || board.title || 'AlloFlow Board',
         description_html: 'Created with AlloFlow Symbol Studio.',
         buttons: buttons, grid: { rows: rows, columns: cols, order: order },
-        images: images, sounds: [], license: { type: 'CC By' } };
+        images: images, sounds: [], license: obfBoardLicense(images) };
     };
 
     var _ensureJSZip = function () {
@@ -11136,6 +11248,43 @@
     // Mulberry validated-symbol picker (modal overlay). Search the Global
     // Symbols API for the current label, show matching hand-designed SVGs, and
     // add the chosen one to the gallery. CC BY-SA attribution shown + carried.
+    function renderPhotoPicker() {
+      var Picker = window.AlloModules && window.AlloModules.ClassroomImagePicker;
+      return e('div', {
+        ref: photoDialogRef, tabIndex: -1,
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': t('symbol_studio.find_a_photo','Find a photo'),
+        onKeyDown: function (ev) {
+          if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); setPhotoOpen(false); return; }
+          if (ev.key !== 'Tab') return;
+          ev.stopPropagation();
+          var controls = Array.prototype.slice.call(ev.currentTarget.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]'));
+          var first = controls[0]; var last = controls[controls.length - 1];
+          if (!first) { ev.preventDefault(); ev.currentTarget.focus(); return; }
+          if (ev.shiftKey && (document.activeElement === first || controls.indexOf(document.activeElement) < 0)) { ev.preventDefault(); last.focus(); }
+          else if (!ev.shiftKey && (document.activeElement === last || controls.indexOf(document.activeElement) < 0)) { ev.preventDefault(); first.focus(); }
+        },
+        onClick: function () { setPhotoOpen(false); },
+        style: { position: 'fixed', inset: 0, zIndex: 2147483000, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }
+      },
+        e('div', {
+          onClick: function (ev) { ev.stopPropagation(); },
+          style: { background: '#fff', borderRadius: '14px', width: 'min(680px, 100%)', maxHeight: '86vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }
+        },
+          e('div', { style: { padding: '14px 16px 8px', display: 'flex', alignItems: 'center', gap: '10px' } },
+            e('div', { style: { flex: 1 } },
+              e('div', { style: { fontWeight: 800, fontSize: '16px', color: '#075985' } }, '\uD83D\uDCF7 Find a photo'),
+              e('div', { style: { fontSize: '11px', color: '#475569', marginTop: '2px' } }, 'Freely licensed photos from Wikimedia Commons. Photos are not a validated AAC symbol set: review each one before use.')
+            ),
+            e('button', { onClick: function () { setPhotoOpen(false); }, 'aria-label': 'Close', style: { border: 'none', background: '#f3f4f6', borderRadius: '8px', width: '30px', height: '30px', cursor: 'pointer', fontSize: '15px', color: '#374151' } }, '\u2715')
+          ),
+          e('div', { style: { padding: '0 16px 16px' } },
+            Picker
+              ? e(Picker, { idPrefix: 'symbol-photo', initialQuery: symLabel || '', language: boardLang, sources: ['photos'], t: t, onChoose: addPhotoToGallery })
+              : e('p', { role: 'status', style: { fontSize: '13px', color: '#374151' } }, 'Photo search is still loading. Try again in a moment.')
+          )
+        )
+      );
+    }
     function renderMulberryPicker() {
       return e('div', {
         ref: mulberryDialogRef, tabIndex: -1,
@@ -11201,8 +11350,8 @@
           ),
           // Footer / attribution
           e('div', { style: { padding: '8px 16px 14px', borderTop: '1px solid #f1f5f9', fontSize: '10px', color: '#9ca3af', lineHeight: 1.4 } },
-            'Symbols: Mulberry Symbols (Open AAC) via Global Symbols, licensed ',
-            e('a', { href: 'https://creativecommons.org/licenses/by-sa/2.0/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#0e7490' } }, 'CC BY-SA'),
+            'Symbols: Mulberry Symbols by Steve Lee (Open AAC) via Global Symbols, licensed ',
+            e('a', { href: 'https://creativecommons.org/licenses/by-sa/4.0/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#0e7490' } }, 'CC BY-SA 4.0'),
             '. Added symbols carry this credit. Needs an internet connection.'
           )
         )
@@ -11291,6 +11440,7 @@
           ),
           // Validated alternative to AI generation: search the Mulberry set (a
           // hand-designed, CC BY-SA AAC symbol library) for the current label.
+          e('button', { onClick: openPhotoPicker, 'aria-label': t('symbol_studio.find_a_photo','Find a photo'), title: 'Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety', style: S.btn('#f0f9ff', '#075985', false) }, '\uD83D\uDCF7 Find photo'),
           e('button', { onClick: openMulberryPicker, disabled: symMode === 'single' && !symLabel.trim(), 'aria-label': t('symbol_studio.find_a_validated_mulberry_symbol_2','Find a validated Mulberry symbol'), title: 'Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)', style: S.btn('#ecfeff', '#0e7490', symMode === 'single' && !symLabel.trim()) }, '🔎 Find validated symbol'),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use ', e('b', { style: { color: '#0e7490' } }, 'Find validated symbol'), ' for hand-designed Mulberry symbols.'),
           gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
@@ -13234,7 +13384,8 @@
             )
           )
         ),
-        mulberryOpen && renderMulberryPicker()
+        mulberryOpen && renderMulberryPicker(),
+        photoOpen && renderPhotoPicker()
       )
     );
   });
@@ -13272,6 +13423,9 @@
     packBoardForShare: packBoardForShare,
     packScheduleForShare: packScheduleForShare,
     packAssetForShare: packAssetForShare,
+    withoutPickedCredit: withoutPickedCredit,
+    obfImageLicenseFor: obfImageLicenseFor,
+    obfBoardLicense: obfBoardLicense,
     buildVisualPackEnvelope: buildVisualPackEnvelope,
     collectBoardSpeechCells: collectBoardSpeechCells,
     withoutDeviceSpeechReference: withoutDeviceSpeechReference
