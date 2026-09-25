@@ -227,9 +227,16 @@ describe('actual RosterKeyPanel safe update workflow', () => {
     await mountRoster();
     expect(button('Update roster safely')).toBeTruthy();
     expect(button('Import / replace roster')).toBeTruthy();
-    const link = [...container.querySelectorAll('a')].find(item => item.textContent === 'Google Classroom setup');
+    // The helper opens as a named same-origin window so it can hand the roster back (2026-09-25).
+    // With pop-ups blocked the panel falls back to the plain no-data link it always offered.
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    expect([...container.querySelectorAll('a')].some(item => item.textContent === 'Google Classroom setup')).toBe(false);
+    await click(button('Google Classroom setup'));
+    expect(open).toHaveBeenCalledWith('https://alloflow-cdn.pages.dev/classroom-import.html', 'alloflow-classroom-import');
+    const link = [...container.querySelectorAll('a')].find(item => item.textContent.includes('Open the Classroom helper'));
     expect(link.href).toBe('https://alloflow-cdn.pages.dev/classroom-import.html');
     expect(link.rel).toContain('noopener');
+    open.mockRestore();
     expect(readFileSync('teacher_module.js', 'utf8')).toBe(readFileSync('desktop/web-app/public/teacher_module.js', 'utf8'));
   });
 

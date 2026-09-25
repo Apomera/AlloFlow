@@ -84,6 +84,7 @@ function harness(overrides = {}) {
         allowedOrigins: [w.location.origin], allowedAccountIds: [], ...overrides.config
     };
     if (overrides.framed) dom.reconfigure({ windowTop: {} });
+    if (overrides.opener) Object.defineProperty(w, 'opener', { configurable: true, value: overrides.opener });
     w.eval(app);
     const googleScript = w.document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
     function ready() { if (googleScript) googleScript.dispatchEvent(new w.Event('load')); }
@@ -317,5 +318,82 @@ describe('shipped Classroom teacher helper UI', () => {
         expect(h.$('roster-preview').textContent).toContain(PRIVATE_NAME);
         expect(h.$('import-status').textContent).toContain('could not start');
         expect(h.w.document.body.textContent).not.toContain(SECRET);
+    });
+});
+
+describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
+    const sameOrigin = 'https://alloflow.example.test';
+    function opener(origin = sameOrigin, extra = {}) {
+        const location = {};
+        Object.defineProperty(location, 'origin', { get() { if (origin === 'throw') throw new Error('SecurityError'); return origin; } });
+        return { closed: false, location, postMessage: vi.fn(), focus: vi.fn(), ...extra };
+    }
+    async function reviewed(h) { await h.connect(); await h.read(); h.acknowledge(); }
+    function reply(h, target, data, origin = sameOrigin) {
+        const event = new h.w.MessageEvent('message', { data, origin });
+        Object.defineProperty(event, 'source', { value: target });
+        h.w.dispatchEvent(event);
+    }
+
+    it('offers no send button without a same-origin opener', async () => {
+        for (const o of [undefined, opener('https://other.example.test'), opener('throw'), opener(sameOrigin, { closed: true })]) {
+            const h = harness({ opener: o });
+            await reviewed(h);
+            expect(h.$('send-classroom').hidden).toBe(true);
+            expect(h.$('handoff-note').hidden).toBe(true);
+            expect(h.$('download-classroom').disabled).toBe(false);
+            if (o) expect(o.postMessage).not.toHaveBeenCalled();
+        }
+    });
+
+    it('posts only the codename JSON to its own origin after review and confirmation, then reports the reply', async () => {
+        const o = opener();
+        const h = harness({ opener: o });
+        h.ready();
+        expect(h.$('send-classroom').hidden).toBe(false);
+        expect(h.$('send-classroom').disabled).toBe(true);
+        h.click('send-classroom');
+        expect(o.postMessage).not.toHaveBeenCalled();
+        await h.connect(); await h.read();
+        expect(h.$('send-classroom').disabled).toBe(true);
+        h.acknowledge();
+        expect(h.$('send-classroom').disabled).toBe(false);
+        h.click('send-classroom');
+        expect(o.postMessage).toHaveBeenCalledTimes(1);
+        const [message, targetOrigin] = o.postMessage.mock.calls[0];
+        expect(targetOrigin).toBe(sameOrigin);
+        expect(message).toEqual({ type: 'alloflow-classroom-roster', json: prepared().json });
+        expect(JSON.stringify(message)).not.toContain(PRIVATE_NAME);
+        expect(JSON.stringify(message)).not.toContain(SECRET);
+        expect(o.focus).toHaveBeenCalled();
+        expect(h.$('confirm-new-class').checked).toBe(false);
+        expect(h.$('import-status').textContent).toContain('Roster sent');
+        expect(h.$('roster-preview').children).toHaveLength(1);
+        expect(h.blobs).toHaveLength(0);
+        reply(h, {}, { type: 'alloflow-classroom-roster-received', ok: true, message: 'ignored: wrong source' });
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, message: 'ignored: wrong origin' }, 'https://other.example.test');
+        expect(h.$('import-status').textContent).toContain('Roster sent');
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: false, message: 'Roster replacement cancelled. Nothing changed.' });
+        expect(h.$('import-status').textContent).toBe('AlloFlow did not import the roster. Roster replacement cancelled. Nothing changed.');
+        h.acknowledge(); h.click('send-classroom');
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, message: 'Roster imported: 0 groups and 1 codenames. Legacy real-name fields were removed.' });
+        expect(h.$('import-status').textContent).toContain('AlloFlow imported the roster. Roster imported: 0 groups and 1 codenames.');
+        expect(h.$('import-status').textContent).not.toContain('<');
+    });
+
+    it('tells the teacher to download instead when AlloFlow never confirms, and cannot be spoofed by markup', async () => {
+        const o = opener();
+        const h = harness({ opener: o });
+        await reviewed(h);
+        h.click('send-classroom');
+        const pending = [...h.timers.values()].find(timer => timer.ms === 20000);
+        expect(pending).toBeTruthy();
+        pending.fn();
+        expect(h.$('import-status').textContent).toContain('download the roster instead');
+        h.acknowledge(); h.click('send-classroom');
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, message: '<img src=x onerror="alert(1)">' + 'x'.repeat(1000) });
+        expect(h.$('import-status').querySelector('img')).toBeNull();
+        expect(h.$('import-status').textContent.length).toBeLessThan(420);
+        expect(h.logs.every(spy => spy.mock.calls.every(call => !JSON.stringify(call).includes(PRIVATE_NAME) && !JSON.stringify(call).includes(SECRET)))).toBe(true);
     });
 });
