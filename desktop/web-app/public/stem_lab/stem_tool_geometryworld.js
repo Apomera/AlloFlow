@@ -79,7 +79,7 @@
       '.gw-tutorial-shell{bottom:150px!important;box-sizing:border-box;max-height:calc(100% - 170px);overflow:auto;scrollbar-width:thin}.gw-tutorial-card{padding:16px 18px!important;text-align:left!important}.gw-tutorial-kicker{margin-bottom:4px;color:#c4b5fd;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}.gw-tutorial-title{margin:0;color:#f8fafc;font-size:16px;font-weight:850;letter-spacing:-.01em;line-height:1.25}.gw-tutorial-instruction{margin:7px 0 12px;color:#cbd5e1;font-size:12px;font-weight:600;line-height:1.5}.gw-tutorial-progress{display:flex;align-items:center;gap:6px;margin-bottom:12px}.gw-tutorial-track{display:flex;flex:1;gap:5px}.gw-tutorial-dot{height:4px;flex:1;border-radius:999px;background:rgba(100,116,139,.38);transition:background 180ms ease,box-shadow 180ms ease}.gw-tutorial-dot[data-complete="true"]{background:#22c55e}.gw-tutorial-dot[data-current="true"]{background:#a78bfa;box-shadow:0 0 10px rgba(167,139,250,.55)}.gw-tutorial-count{color:#a8b3c7;font-size:9px;font-weight:750;white-space:nowrap}.gw-tutorial-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}.gw-tutorial-skip,.gw-tutorial-next{min-height:38px;padding:7px 13px!important;border-radius:9px!important;font-size:11px!important;font-weight:750!important;cursor:pointer}.gw-tutorial-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.54)!important;color:#cbd5e1!important}.gw-tutorial-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}@media(max-width:520px){.gw-tutorial-shell{bottom:150px!important;width:calc(100vw - 16px)!important;max-height:calc(100% - 166px)}.gw-tutorial-card{padding:14px!important}.gw-tutorial-actions{align-items:stretch}.gw-tutorial-skip,.gw-tutorial-next{min-height:44px;flex:1}}@media(prefers-reduced-motion:reduce){.gw-tutorial-dot{transition:none!important}}',
       '.gw-intro-card{box-sizing:border-box;width:min(520px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px);overflow:auto;text-align:left!important;scrollbar-width:thin}.gw-intro-heading{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:14px;margin-bottom:16px}.gw-intro-icon{display:flex;width:52px;height:52px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.28);border-radius:16px;background:linear-gradient(145deg,rgba(124,58,237,.26),rgba(34,211,238,.1));font-size:28px}.gw-intro-title{margin:0;color:#f8fafc;font-size:22px;font-weight:850;letter-spacing:-.02em;line-height:1.18}.gw-intro-description{margin:5px 0 0;color:#a8b3c7;font-size:12px;line-height:1.55}.gw-intro-objectives{margin-bottom:12px;padding:12px 14px;border:1px solid rgba(167,139,250,.24);border-radius:12px;background:rgba(124,58,237,.09)}.gw-intro-section-title{margin:0 0 7px;color:#c4b5fd;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.gw-intro-objectives ol{display:grid;gap:5px;margin:0;padding-left:20px;color:#dbeafe}.gw-intro-objectives li{padding-left:2px;font-size:11px;line-height:1.45}.gw-intro-objectives li::marker{color:#a78bfa;font-weight:800}.gw-intro-formula{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.22);border-radius:10px;background:rgba(120,53,15,.16);color:#fde68a;font-family:monospace;font-size:12px;font-weight:750;text-align:center}.gw-intro-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:18px}.gw-intro-meta span{padding:4px 8px;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:rgba(15,23,42,.46);color:#a8b3c7;font-size:10px;font-weight:700}.gw-intro-actions{display:flex;align-items:stretch;gap:8px}.gw-intro-start,.gw-intro-secondary{min-height:46px;flex:1;border-radius:11px!important;font-size:12px!important;font-weight:800!important;cursor:pointer}.gw-intro-secondary{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.58)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-intro-heading{grid-template-columns:42px minmax(0,1fr);gap:10px}.gw-intro-icon{width:42px;height:42px;border-radius:13px;font-size:23px}.gw-intro-title{font-size:18px}.gw-intro-actions{flex-direction:column}.gw-intro-start,.gw-intro-secondary{width:100%;min-height:48px}}',
       '.gw-reflection-dialog{box-sizing:border-box;width:min(430px,calc(100% - 24px))!important;max-width:none!important;padding:22px!important;text-align:left!important}.gw-reflection-heading{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:11px;margin-bottom:13px}.gw-reflection-icon{display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.26);border-radius:13px;background:rgba(124,58,237,.14);font-size:22px}.gw-reflection-title{margin:0;color:#f8fafc;font-size:17px;font-weight:850;line-height:1.2}.gw-reflection-description{margin:3px 0 0;color:#a8b3c7;font-size:11px;line-height:1.45}.gw-reflection-prompt{margin-bottom:10px;padding:9px 10px;border:1px solid rgba(34,211,238,.24);border-radius:9px;background:rgba(14,116,144,.14);color:#cffafe;font-size:11px;line-height:1.5}.gw-reflection-label{display:block;margin-bottom:5px;color:#ddd6fe;font-size:10px;font-weight:800}.gw-reflection-textarea{box-sizing:border-box;width:100%!important;min-height:92px;padding:9px!important;border:1px solid rgba(148,163,184,.34)!important;border-radius:9px!important;background:rgba(2,6,23,.66)!important;color:#f8fafc!important;font:12px/1.5 inherit!important;resize:vertical}.gw-reflection-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:#94a3b8;font-size:9px}.gw-reflection-readiness[data-ready="true"]{color:#86efac;font-weight:750}.gw-reflection-actions{display:flex;align-items:stretch;justify-content:flex-end;gap:8px;margin-top:14px}.gw-reflection-save,.gw-reflection-skip{min-height:42px;padding:8px 14px!important;border-radius:9px!important;font-size:11px!important;font-weight:800!important}.gw-reflection-save{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important}.gw-reflection-save:disabled{cursor:not-allowed;filter:saturate(.55);opacity:.55}.gw-reflection-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.52)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-reflection-dialog{padding:16px!important}.gw-reflection-actions{flex-direction:column}.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}}',
-      '.gw-completion-dialog{box-sizing:border-box;width:min(460px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px)!important;overflow:auto;padding:24px!important;border-color:rgba(251,191,36,.46)!important;background:linear-gradient(155deg,rgba(69,26,3,.9),rgba(15,23,42,.97))!important;text-align:center!important;scrollbar-width:thin}.gw-completion-icon{display:flex;width:68px;height:68px;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid rgba(251,191,36,.32);border-radius:21px;background:linear-gradient(145deg,rgba(245,158,11,.24),rgba(124,58,237,.12));box-shadow:0 14px 34px rgba(2,6,23,.3);font-size:35px}.gw-completion-title{margin:0;color:#fde68a;font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.15}.gw-completion-description{margin:6px 0 13px;color:#cbd5e1;font-size:12px;line-height:1.5}.gw-completion-metrics{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:16px}.gw-completion-metric{padding:5px 9px;border:1px solid rgba(251,191,36,.18);border-radius:999px;background:rgba(120,53,15,.18);color:#fde68a;font-size:10px;font-weight:750}.gw-completion-actions{display:flex;align-items:stretch;justify-content:center;gap:8px;flex-wrap:wrap}.gw-completion-next,.gw-completion-replay{min-height:44px;padding:9px 16px!important;border-radius:10px!important;font-size:11px!important;font-weight:800!important;cursor:pointer}.gw-completion-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#4f46e5)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}.gw-completion-replay{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.56)!important;color:#cbd5e1!important}.gw-completion-journey{flex-basis:100%;margin-top:8px;padding-top:14px;border-top:1px solid rgba(251,191,36,.18)}.gw-journey-icon{font-size:28px}.gw-journey-title{margin:5px 0;color:#fde68a;font-size:16px;font-weight:850}.gw-journey-description{margin:0 0 10px;color:#a8b3c7;font-size:11px;line-height:1.5}.gw-journey-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gw-journey-stat{padding:8px;border:1px solid rgba(148,163,184,.16);border-radius:9px;background:rgba(15,23,42,.42);color:#cbd5e1;font-size:9px}.gw-journey-value{display:block;margin-bottom:2px;color:#f8fafc;font-size:18px;font-weight:850}.gw-journey-quote{margin:10px 0 0;color:#c4b5fd;font-size:10px;font-style:italic;line-height:1.45}@media(max-width:520px){.gw-completion-dialog{padding:18px!important}.gw-completion-icon{width:56px;height:56px;border-radius:18px;font-size:29px}.gw-completion-actions{flex-direction:column}.gw-completion-next,.gw-completion-replay{width:100%;min-height:48px}.gw-journey-stats{gap:5px}}',
+      '.gw-completion-dialog{box-sizing:border-box;width:min(460px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px)!important;overflow:auto;padding:24px!important;border-color:rgba(251,191,36,.46)!important;background:linear-gradient(155deg,rgba(69,26,3,.9),rgba(15,23,42,.97))!important;text-align:center!important;scrollbar-width:thin}.gw-completion-icon{display:flex;width:68px;height:68px;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid rgba(251,191,36,.32);border-radius:21px;background:linear-gradient(145deg,rgba(245,158,11,.24),rgba(124,58,237,.12));box-shadow:0 14px 34px rgba(2,6,23,.3);font-size:35px}.gw-completion-title{margin:0;color:#fde68a;font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.15}.gw-completion-description{margin:6px 0 13px;color:#cbd5e1;font-size:12px;line-height:1.5}.gw-completion-metrics{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:16px}.gw-completion-metric{padding:5px 9px;border:1px solid rgba(251,191,36,.18);border-radius:999px;background:rgba(120,53,15,.18);color:#fde68a;font-size:10px;font-weight:750}.gw-completion-actions{display:flex;align-items:stretch;justify-content:center;gap:8px;flex-wrap:wrap}.gw-completion-next,.gw-completion-practice,.gw-completion-replay{min-height:44px;padding:9px 16px!important;border-radius:10px!important;font-size:11px!important;font-weight:800!important;cursor:pointer}.gw-completion-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#4f46e5)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}.gw-completion-practice{border:1px solid rgba(251,191,36,.45)!important;background:linear-gradient(135deg,#b45309,#92400e)!important;color:#fff!important;box-shadow:0 8px 20px rgba(120,53,15,.32)}.gw-completion-replay{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.56)!important;color:#cbd5e1!important}.gw-completion-journey{flex-basis:100%;margin-top:8px;padding-top:14px;border-top:1px solid rgba(251,191,36,.18)}.gw-journey-icon{font-size:28px}.gw-journey-title{margin:5px 0;color:#fde68a;font-size:16px;font-weight:850}.gw-journey-description{margin:0 0 10px;color:#a8b3c7;font-size:11px;line-height:1.5}.gw-journey-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gw-journey-stat{padding:8px;border:1px solid rgba(148,163,184,.16);border-radius:9px;background:rgba(15,23,42,.42);color:#cbd5e1;font-size:9px}.gw-journey-value{display:block;margin-bottom:2px;color:#f8fafc;font-size:18px;font-weight:850}.gw-journey-quote{margin:10px 0 0;color:#c4b5fd;font-size:10px;font-style:italic;line-height:1.45}@media(max-width:520px){.gw-completion-dialog{padding:18px!important}.gw-completion-icon{width:56px;height:56px;border-radius:18px;font-size:29px}.gw-completion-actions{flex-direction:column}.gw-completion-next,.gw-completion-practice,.gw-completion-replay{width:100%;min-height:48px}.gw-journey-stats{gap:5px}}',
       '@keyframes gw-state-drift{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}@keyframes gw-loading-sweep{0%{transform:translateX(-130%)}100%{transform:translateX(310%)}}',
       '.gw-state-screen{position:relative;box-sizing:border-box;display:flex;flex:1;min-height:0;align-items:center;justify-content:center;overflow:auto;padding:clamp(18px,4vw,48px);color:var(--allo-stem-text,#e2e8f0);background:radial-gradient(circle at 50% 14%,rgba(124,58,237,.24),transparent 34%),linear-gradient(160deg,var(--allo-stem-canvas,#0f172a),#171433 60%,#090b18)}.gw-state-screen--inline{margin:8px 10px 10px;border:1px solid rgba(148,163,184,.18);border-radius:16px}.gw-state-card{box-sizing:border-box;width:min(520px,100%);padding:clamp(24px,5vw,38px);text-align:center;border:1px solid rgba(167,139,250,.28);border-radius:24px;background:linear-gradient(155deg,rgba(30,27,75,.78),rgba(15,23,42,.9));box-shadow:0 30px 90px rgba(2,6,23,.56),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(18px) saturate(125%)}.gw-state-kicker{margin-bottom:9px;color:#c4b5fd;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.gw-state-icon{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;margin-bottom:18px;border:1px solid rgba(167,139,250,.3);border-radius:24px;background:linear-gradient(145deg,rgba(124,58,237,.3),rgba(34,211,238,.12));box-shadow:0 16px 40px rgba(2,6,23,.34);font-size:38px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-state-icon--error{background:linear-gradient(145deg,rgba(244,63,94,.2),rgba(124,58,237,.2));border-color:rgba(251,113,133,.32)}.gw-state-title{margin:0;color:var(--allo-stem-text,#f8fafc);font-size:clamp(21px,4vw,28px);font-weight:850;letter-spacing:-.025em;line-height:1.15}.gw-state-copy{max-width:430px;margin:12px auto 0;color:var(--allo-stem-text-soft,#a8b3c7);font-size:13px;line-height:1.65}.gw-state-note{margin-top:14px;padding:10px 12px;border:1px solid rgba(103,232,249,.16);border-radius:12px;background:rgba(8,47,73,.2);color:#cbd5e1;font-size:11px;line-height:1.55}.gw-state-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin-top:22px}.gw-state-primary,.gw-state-secondary{min-height:44px;padding:9px 18px;border-radius:11px;font-size:13px;font-weight:750;cursor:pointer}.gw-state-primary{border:1px solid rgba(196,181,253,.34);background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff}.gw-state-secondary{border:1px solid rgba(148,163,184,.3);background:rgba(15,23,42,.62);color:#dbeafe}',
       '.gw-loading-mark{display:flex;justify-content:center;gap:8px;margin-bottom:18px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-loading-mark span{font-size:30px;filter:drop-shadow(0 8px 12px rgba(2,6,23,.35))}.gw-loading-track{height:6px;margin:22px auto 0;overflow:hidden;border:1px solid rgba(167,139,250,.15);border-radius:999px;background:rgba(2,6,23,.55)}.gw-loading-sweep{width:38%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7c3aed,#a78bfa,#22d3ee);box-shadow:0 0 18px rgba(167,139,250,.7);animation:gw-loading-sweep 1.45s cubic-bezier(.4,0,.2,1) infinite}.gw-state-tip{margin-top:18px;padding-top:16px;border-top:1px solid rgba(148,163,184,.14);color:#a8b3c7;font-size:11px;line-height:1.55}.gw-recovery-details{margin-top:18px;padding:10px 12px;text-align:left;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(2,6,23,.34);color:#a8b3c7;font-size:11px}.gw-recovery-details summary{cursor:pointer;text-align:center;font-weight:700;color:#cbd5e1}.gw-recovery-details code{display:block;max-height:120px;margin-top:10px;padding:10px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:8px;background:rgba(2,6,23,.7);color:#fecdd3}.gw-recovery-summary{margin-top:14px;padding:10px 12px;border:1px solid rgba(167,139,250,.2);border-radius:10px;background:rgba(76,29,149,.14);color:#ddd6fe;font-size:11px;line-height:1.45}.gw-recovery-checklist{display:flex;flex-direction:column;gap:6px;margin:12px 0 0;padding:0;list-style:none;text-align:left}.gw-recovery-check{position:relative;padding:7px 8px 7px 24px;border:1px solid rgba(148,163,184,.14);border-radius:8px;background:rgba(15,23,42,.4);color:#cbd5e1;font-size:10px;line-height:1.4}.gw-recovery-check::before{content:"";position:absolute;left:9px;top:11px;width:7px;height:7px;border:1px solid rgba(167,139,250,.6);border-radius:50%;background:rgba(124,58,237,.45)}.gw-recovery-retry-status{margin-top:12px;color:#a7f3d0;font-size:11px;font-weight:800}.gw-recovery-actions{flex-wrap:wrap}.gw-recovery-actions button:disabled{cursor:wait;opacity:.62}#gw-webgl-recovery:focus-visible{outline:3px solid #f8fafc;outline-offset:3px}',
@@ -677,6 +677,10 @@
     }));
   }
 
+  // Room for the world (2026-09-24): the Blocks drawer, Hide controls (U), the docked
+  // character dialog and its Look strip, and the phone More sheet. Rendered last in
+  // the workspace so it wins ties with the head stylesheet.
+  var GW_ROOM_CSS = '.gw-build-tools{display:contents}.gw-root .gw-action-bar .gw-build-toggle .gw-material-swatch{width:18px;height:18px;flex:none}.gw-root .gw-action-bar .gw-build-toggle .gw-utility-content{display:inline-flex;align-items:center;gap:6px}.gw-root .gw-action-bar .gw-build-toggle[aria-expanded="true"]{background:#d4e8ca!important;color:#173b35!important;border-color:#f1f7e8!important}#geoworld-fs-workspace.gw-root[data-build-tools="closed"] .gw-action-bar.gw-action-bar{bottom:10px!important}@media(max-width:800px),(max-height:520px){#geoworld-fs-workspace.gw-root[data-build-tools="closed"] .gw-action-feedback{bottom:64px!important}}@media(min-width:801px) and (min-height:521px){#geoworld-fs-workspace.gw-root[data-build-tools="closed"] .gw-feedback-stack{bottom:70px}}#geoworld-fs-workspace.gw-root[data-build-tools="closed"] .gw-touch-controls>[role="img"],#geoworld-fs-workspace.gw-root[data-build-tools="closed"] .gw-touch-controls>.gw-touch-actions{bottom:calc(20px + env(safe-area-inset-bottom))!important}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root[data-build-tools="closed"] .gw-touch-controls>.gw-touch-actions{bottom:calc(12px + env(safe-area-inset-bottom))!important}}#geoworld-fs-workspace.gw-root[data-hud-hidden="true"]>:not(style):not(#geoworld-fs-wrap):not([role="dialog"]):not(.gw-hud-restore){display:none!important}#geoworld-fs-workspace.gw-root[data-hud-hidden="true"] #geoworld-fs-wrap>.gw-viewport-control{display:none!important}.gw-hud-restore{position:absolute;top:10px;right:10px;z-index:130;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px;border:1px solid #d4e8ca66;border-radius:12px;background:#112d2bee;color:#eef5e6;font:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 8px 22px #02061759}.gw-hud-restore .gw-workspace-icon{width:18px;height:18px}#geoworld-fs-workspace.gw-root .gw-dialog.gw-dialog--npc{left:12px!important;right:auto!important;top:64px!important;bottom:auto!important;transform:none!important;width:min(400px,calc(100% - 24px))!important;max-width:min(400px,calc(100% - 24px))!important;max-height:calc(100% - 190px)!important}#geoworld-fs-workspace.gw-root[data-fullscreen="true"] .gw-dialog.gw-dialog--npc,#geoworld-fs-workspace.gw-root[data-toolbar-collapsed="true"] .gw-dialog.gw-dialog--npc{top:54px!important}@media(max-width:600px) and (orientation:portrait){#geoworld-fs-workspace.gw-root .gw-dialog.gw-dialog--npc{left:8px!important;right:8px!important;top:auto!important;bottom:8px!important;width:auto!important;max-width:none!important;max-height:58%!important}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root .gw-dialog.gw-dialog--npc{top:8px!important;bottom:8px!important;left:8px!important;width:min(380px,55%)!important;max-width:min(380px,55%)!important;max-height:none!important}}.gw-root .gw-dialog--npc .gw-npc-speech{margin:0 0 8px!important;padding:0!important;border:0!important;background:transparent!important;gap:4px!important}@media(pointer:fine){.gw-root .gw-dialog--npc .gw-npc-speech button{min-height:30px;padding:3px 9px}}.gw-root .gw-dialog--npc .gw-npc-speech-status:not([data-speech-status="loading"]):not([data-speech-status="speaking"]):not([data-speech-status="error"]):not([data-speech-status="unavailable"]){position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0);white-space:nowrap;margin:0!important;padding:0!important}.gw-npc-look{display:inline-flex;align-items:center;gap:4px;min-height:32px;padding:4px 10px;border:1px solid #aec9b659;border-radius:8px;background:#173b35;color:#e4edd9;font:inherit;font-size:11px;font-weight:700;cursor:pointer}@media(pointer:coarse){.gw-npc-look{min-height:44px}}.gw-npc-peek{position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:31;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:min(560px,calc(100% - 24px));padding:7px 8px 7px 12px;border:1px solid #aec9b659;border-radius:12px;background:#112d2bf2;color:#edf2e3;box-shadow:0 10px 26px #02061755;font-size:12px}.gw-npc-peek-name{flex:none;font-weight:800;color:#d4e8ca}.gw-npc-peek-text{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gw-npc-peek button{flex:none;min-height:36px;padding:5px 10px;border:1px solid #aec9b659;border-radius:8px;background:#1c4036;color:#eef5e6;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.gw-npc-peek .gw-npc-peek-back{background:#d4e8ca;color:#173b35;border-color:#f1f7e8}@media(pointer:coarse){.gw-npc-peek button{min-height:44px}}@media(max-height:520px) and (orientation:landscape){.gw-npc-peek{top:8px}}@media(max-width:600px) and (orientation:portrait){.gw-npc-peek{top:auto;bottom:8px}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root .gw-measure-card{top:8px!important;right:8px!important;left:auto!important;width:min(340px,48%)!important;max-height:calc(100% - 16px)!important}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root[data-touch-active="true"]>.gw-toolbar{display:none!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"]>.gw-fullscreen-quickbar{display:flex!important;top:6px;left:8px;right:auto;transform:none}#geoworld-fs-workspace.gw-root[data-touch-active="true"][data-npc-dialog="open"]>.gw-fullscreen-quickbar{display:none!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"]>.gw-toolbar-reveal{display:none!important}}.gw-root .gw-touch-more{position:absolute;right:88px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:9;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,64px);gap:6px;padding:8px;border:1px solid #afc7b659;border-radius:14px;background:#112d2bf2;box-shadow:0 10px 26px #02061755;pointer-events:auto}#geoworld-fs-workspace.gw-root[data-build-tools="open"] .gw-touch-more{bottom:calc(132px + env(safe-area-inset-bottom))}.gw-root .gw-touch-more button{box-sizing:border-box;width:64px;height:48px;min-width:64px;min-height:48px;padding:3px;border:1px solid #afc7b677;border-radius:13px;background:#153d34;color:#f5f0e5;font:inherit;cursor:pointer}.gw-root .gw-touch-more button:disabled{opacity:.44;cursor:default}.gw-root .gw-touch-more button[aria-pressed="true"],.gw-root .gw-touch-more button[aria-expanded="true"]{background:#d4e8ca;color:#173b35}.gw-root .gw-touch-more button[data-gw-touch-action="clear"]{color:#ffd3bd}@media(max-height:520px) and (orientation:landscape){.gw-root .gw-touch-more{right:12px;bottom:calc(70px + env(safe-area-inset-bottom));grid-template-columns:repeat(6,58px)}.gw-root .gw-touch-more button{width:58px;min-width:58px;height:44px;min-height:44px}}#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gw-coordinate-hud{top:112px!important;bottom:auto!important;left:8px!important}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gw-coordinate-hud{top:52px!important}}.gw-settings-look{display:grid;gap:6px;margin:6px 0 10px}.gw-settings-look label{display:flex;justify-content:space-between;font-size:12px;font-weight:700}.gw-settings-look input{width:100%;min-height:32px;accent-color:#b1d3a6}.gw-settings-free-build{display:inline-flex;align-items:center;gap:6px;min-height:40px;margin:4px 0 10px;padding:8px 14px;border:1px solid #d4e8ca66;border-radius:10px;background:#1c4036;color:#eef5e6;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.theme-contrast .gw-root :is(.gw-npc-peek,.gw-touch-more,.gw-hud-restore),[data-stem-theme="contrast"] .gw-root :is(.gw-npc-peek,.gw-touch-more,.gw-hud-restore){background:#000!important;border-color:#ffff00!important;color:#fff!important}.theme-contrast .gw-root :is(.gw-npc-peek button,.gw-touch-more button,.gw-npc-look,.gw-settings-free-build),[data-stem-theme="contrast"] .gw-root :is(.gw-npc-peek button,.gw-touch-more button,.gw-npc-look,.gw-settings-free-build){background:#000!important;border-color:#00ff00!important;color:#00ff00!important}#geoworld-fs-workspace.gw-root[data-build-tools="closed"][data-touch-active="true"] .gw-action-feedback{bottom:calc(132px + env(safe-area-inset-bottom))!important}@media(min-width:801px){#geoworld-fs-workspace.gw-root:has(>.gwe-builder-dock[data-collapsed="false"]) :is(.gw-action-bar.gw-action-bar,.gw-hotbar,.gw-shape-tray){left:calc(50% - 185px)!important;right:auto!important;transform:translateX(-50%)!important;max-width:calc(100% - 400px)!important}#geoworld-fs-workspace.gw-root:has(>.gwe-builder-dock[data-collapsed="false"]) .gw-feedback-stack{left:calc(50% - 185px)!important;max-width:calc(100% - 420px)!important}}.gw-completion-still{margin:0 0 14px;padding:10px 12px;border:1px solid #fbbf2440;border-radius:12px;background:#78350f26;text-align:left}.gw-completion-still-title{margin:0 0 6px!important;color:#fde68a;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.gw-completion-still ul{margin:0;padding:0 0 0 16px;display:grid;gap:4px}.gw-completion-still li{color:#e2e8f0;font-size:11px;line-height:1.4}.gw-completion-still small{display:block;color:#cbd5e1;font-size:10px}.gw-completion-still-more{margin:6px 0 0!important;color:#cbd5e1;font-size:10px}.theme-contrast .gw-root .gw-completion-still,[data-stem-theme="contrast"] .gw-root .gw-completion-still{background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root .gw-completion-still :is(li,small,p),[data-stem-theme="contrast"] .gw-root .gw-completion-still :is(li,small,p){color:#fff!important}';
   var WORKSPACE_ICON_PATHS={
       up:'M12 20V4M5 11l7-7 7 7', down:'M12 4v16M5 13l7 7 7-7',
       place:'M3 7l9-5 9 5v10l-9 5-9-5ZM3 7l9 5 9-5M12 12v10',
@@ -688,12 +692,26 @@
       fly:'M12 3v18M6 9l6-6 6 6M4 14l8 7 8-7',
       match:'M16 3l5 5M14 5l5 5M4 16L14 6l4 4L8 20H4v-4ZM4 20l-1 1',
       home:'M3 11l9-8 9 8M5 9v12h5v-7h4v7h5V9',
+      ruler:'M5 19L19 5M3 17l4 4M17 3l4 4M9 13l1.5 1.5M12 10l1.5 1.5',
+      angle:'M4 20h16M4 20L15 5M9 20a5 5 0 0 0-1.5-3.6',
+      net:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6ZM9 9h6v6H9Z',
+      tools:'M4 6h16M4 12h16M4 18h10',
       clear:'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
+      blocks:'M3 8l5-3 5 3v6l-5 3-5-3ZM3 8l5 3 5-3M8 11v6M11 14l5-3 5 3v6l-5 3-5-3',
+      eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z',
+      hide:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM4 4l16 16',
+      more:'M5 11a1 1 0 1 0 0 2 1 1 0 1 0 0-2ZM12 11a1 1 0 1 0 0 2 1 1 0 1 0 0-2ZM19 11a1 1 0 1 0 0 2 1 1 0 1 0 0-2Z',
       award:'M8 15l-2 7 6-3 6 3-2-7M19 9a7 7 0 1 1-14 0 7 7 0 0 1 14 0ZM12 5l1.2 2.4 2.6.4-1.9 1.9.4 2.6-2.3-1.2-2.3 1.2.4-2.6-1.9-1.9 2.6-.4Z'
     };
   function renderWorkspaceIcon(el, icon) {
     return el('svg',{className:'gw-workspace-icon',viewBox:'0 0 24 24','aria-hidden':'true',focusable:'false',fill:'none',stroke:'currentColor',strokeWidth:1.6,strokeLinecap:'round',strokeLinejoin:'round'},el('path',{d:WORKSPACE_ICON_PATHS[icon] || WORKSPACE_ICON_PATHS.place}));
   }
+  // Pointer and touch entry points for the measuring tools on T, V and N.
+  var MEASURING_TOOLS = [
+    { id: 'ruler', key: 'T', label: 'Ruler', action: 'useRuler', title: 'Ruler: aim at a point and use it, then aim at a second point and use it again (T)' },
+    { id: 'angle', key: 'V', label: 'Angle', action: 'useAngleTool', title: 'Angle: aim at three blocks in turn; the middle one is the vertex (V)' },
+    { id: 'net', key: 'N', label: 'Net', action: 'useNetTool', title: 'Net: unfold the aimed prism and see its surface area (N)' }
+  ];
   function renderWorkspaceAction(el, icon, label, count) {
     return el('span',{className:'gw-utility-content'},renderWorkspaceIcon(el,icon),el('span',{className:'gw-utility-label'},label),typeof count==='number' && el('span',{className:'gw-utility-count','aria-hidden':'true'},count));
   }
@@ -1724,11 +1742,12 @@
     { id: 'perfect_lesson', name: 'Perfect Score', icon: '\uD83C\uDF1F', desc: 'Answered every question in a lesson correctly with no mistakes', check: geometryPerfectLessonInLog },
     { id: 'npc_chatter', name: 'Curious Mind', icon: '\uD83D\uDCAC', desc: 'Had a conversation with an NPC', check: function(log) { return log.some(function(e) { return e.type === 'npc_chat'; }); } },
     { id: 'world_creator', name: 'World Creator', icon: '\uD83C\uDFA8', desc: 'Created an NPC in Creator Mode', check: function(log) { return log.some(function(e) { return e.type === 'npc_created'; }); } },
-    { id: 'printer_3d', name: '3D Printer', icon: '\uD83E\uDE78', desc: 'Exported a structure for 3D printing', check: function(log) { return log.some(function(e) { return e.type === 'stl_export'; }); } },
+    { id: 'printer_3d', name: '3D Printer', icon: '\uD83E\uDE78', desc: 'Exported a structure for 3D printing', check: function(log) { return log.some(function(e) { return e.type === 'stl_export' || e.type === 'print_lab_handoff'; }); } },
     { id: 'world_sharer', name: 'Teacher at Heart', icon: '\uD83C\uDF0D', desc: 'Shared a world with classmates', check: function(log) { return log.some(function(e) { return e.type === 'world_shared'; }); } },
     { id: 'peer_learner', name: 'Peer Learner', icon: '\uD83D\uDCDA', desc: 'Loaded a classmate\'s world', check: function(log) { return log.some(function(e) { return e.type === 'peer_world_loaded'; }); } },
     { id: 'persistence', name: 'Growth Mindset', icon: '\uD83E\uDDE0', desc: 'Got an answer wrong 3+ times and kept trying', check: function(log) { var streak = 0, maxStreak = 0; log.forEach(function(e) { if (e.type === 'answer_wrong') { streak++; maxStreak = Math.max(maxStreak, streak); } else if (e.type === 'answer_correct') { streak = 0; } }); return maxStreak >= 3 && log.some(function(e) { return e.type === 'answer_correct'; }); } },
-    { id: 'five_lessons', name: 'Explorer', icon: '\uD83E\uDDED', desc: 'Tried 5 different lessons', check: function(log) { var lessons = {}; log.forEach(function(e) { if (e.type === 'lesson_load') lessons[e.data.title || 'unknown'] = true; }); return Object.keys(lessons).length >= 5; } },
+    { id: 'five_lessons', name: 'Explorer', icon: '\uD83E\uDDED', desc: 'Tried 5 different lessons', check: function(log) { var lessons = {}; log.forEach(function(e) { if (e.type === 'lesson_load') lessons[e.data && e.data.practiceRound ? 'practice' : (e.data && e.data.title) || 'unknown'] = true; }); return Object.keys(lessons).length >= 5; } },
+    { id: 'practice_3', name: 'Practice Pro', icon: '\uD83C\uDFB2', desc: 'Finished 3 different practice rounds', check: function(log) { var rounds = {}; log.forEach(function(e) { if (e.type === 'lesson_complete' && e.data && e.data.practiceRound) rounds[e.data.practiceRound] = true; }); return Object.keys(rounds).length >= 3; } },
   ];
 
   function checkAchievements(sessionLog, previousBadges) {
@@ -1750,7 +1769,7 @@
       description: 'Measure and calculate the volume of 3D shapes by exploring, building, and counting blocks.',
       spawnPoint: [2, 3, 2],
       objectives: [
-        'Find the volume of the blue rectangular prism (5\u00d73\u00d74)',
+        'Find the volume of the blue rectangular prism',
         'Fill the empty pool with blocks and count them',
         'Calculate the volume of the L-block'
       ],
@@ -1776,7 +1795,7 @@
         { position: [4, 1, 4], name: 'Professor Block', color: 0x7c3aed,
           dialogue: 'Welcome! Volume = Length \u00d7 Width \u00d7 Height. Explore the structures and solve problems!', question: null },
         { position: [12, 5, 3], name: 'Quiz Master', color: 0x2563eb,
-          dialogue: 'The blue prism is 5 long, 3 wide, 4 tall. Let\u2019s measure step by step!',
+          dialogue: 'Count the length, width and height of the blue prism, or face it and press M to measure. Let\u2019s go step by step!',
           question: { text: 'How many blocks LONG is this prism?', choices: ['5 blocks', '3 blocks', '4 blocks'], correct: 0,
             followUp: [
               { text: 'Good! How many blocks WIDE?', choices: ['3 blocks', '5 blocks', '2 blocks'], correct: 0 },
@@ -1809,10 +1828,10 @@
         -1
       ],
       "objectives": [
-        "Connect the blue prism’s base area to its 72 cubic units",
+        "Connect the blue prism’s base area to its volume",
         "Compare equal volumes built with different base areas and heights",
-        "Explain all four layers of the striped 100-unit prism",
-        "Compare the full surface areas of the two 72-unit prisms",
+        "Explain every layer of the striped prism",
+        "Compare the full surface areas of the blue and gold prisms",
         "Build and explain a layered 24-unit model on the sand work pad"
       ],
       "ground": {
@@ -1949,7 +1968,7 @@
           ],
           "name": "Flat Prism Quiz",
           "color": 2450411,
-          "dialogue": "The blue prism beside me is 6 blocks long, 4 wide and 3 high. Its base has 24 square units. Predict the total, then use Measure on the model to compare your reasoning with its occupied volume.",
+          "dialogue": "The blue prism beside me is 6 blocks long, 4 wide and 3 high. Find its base area, predict the total, then use Measure on the model to compare your reasoning with its occupied volume.",
           "question": {
             "text": "What is the base area? (6 × 4)",
             "choices": [
@@ -1988,7 +2007,7 @@
           ],
           "name": "Tall Prism Quiz",
           "color": 16096779,
-          "dialogue": "This gold prism is 3 by 3 by 8. It holds the same 72 cubic units as the blue prism across the aisle. A smaller base needs more layers. Does equal volume also guarantee equal surface area? The activity guide includes a face-by-face comparison.",
+          "dialogue": "This gold prism is 3 by 3 by 8: a smaller base than the blue prism across the aisle, with more layers. Find its volume and compare the two. If two prisms hold the same volume, do they need the same surface area? The activity guide includes a face-by-face comparison.",
           "question": {
             "text": "What is 3 × 3 × 8?",
             "choices": [
@@ -2018,7 +2037,7 @@
           ],
           "name": "Layer Counter",
           "color": 1483594,
-          "dialogue": "Each striped layer is 5 by 5 blocks. Two sand layers and two wood layers make four layers in all. Measure treats the touching colors as one model: 100 cubic units. The color breakdown is 50 sand and 50 wood; it does not mean there are only two layers.",
+          "dialogue": "Each striped layer is 5 by 5 blocks, and every sand or wood stripe is its own layer. Count the layers from the ground up. Measure treats the touching colors as one model, so it counts every cube whatever its color; two colors do not mean only two layers.",
           "question": {
             "text": "Area of one layer? (5 × 5)",
             "choices": [
@@ -2199,7 +2218,7 @@
       "objectives": [
         "Find how many small boxes fit in the shipping container",
         "Calculate the wasted space in a partially filled crate",
-        "Design a package that holds exactly 36 cubic units"
+        "Design a package that exactly fills the container"
       ],
       "ground": {
         "xMin": -2,
@@ -2408,7 +2427,7 @@
           ],
           "name": "Packing Expert",
           "color": 2450411,
-          "dialogue": "Look through the open front of the shipping container. Its usable interior is 6 units long, 2 high, and 3 deep. Each small cube-shaped box is 2 by 2 by 2. Keep the boxes aligned with the container edges. Three fit along the length, one fits in the height, and one fits in the depth: 3 times 1 times 1 gives three boxes. The narrow space at the front remains empty. Volume alone cannot tell us whether a whole box fits.",
+          "dialogue": "Look through the open front of the shipping container. Its usable interior is 6 units long, 2 high, and 3 deep. Each small cube-shaped box is 2 by 2 by 2. Keep the boxes aligned with the container edges. How many whole boxes fit along the length, the height and the depth? Volume alone cannot tell us whether a whole box fits.",
           "question": {
             "text": "What is the container interior volume? (6 by 2 by 3)",
             "choices": [
@@ -2511,6 +2530,9 @@
       ]
     },
     geometryGarden: {
+      "explore": true,
+      "exploreName": "Geometry Garden",
+      "exploreBlurb": "Cubes, layers and a hidden monument",
       "title": "The Geometry Garden — A Place to Discover",
       "description": "An ungraded garden of eight discoveries: follow a level path from one unit cube to layers, equal volumes, composite shapes, nested cubes, and a hidden stepped monument. Use Activities for optional hints, travel, and a reflection journal. No quiz answers or scores are required. Explore at your own pace.",
       "spawnPoint": [
@@ -3176,8 +3198,8 @@
         10
       ],
       "objectives": [
-        "Decompose the two-color T into 48 and 20 cubic units",
-        "Explain the stepped pyramid as 36 + 16 + 4 cubic units",
+        "Decompose the two-color T into two prisms and add them",
+        "Explain the stepped pyramid layer by layer",
         "Distinguish the U’s 64 occupied cubic units from its 144-unit bounding box",
         "Design and measure a connected composite shape with exactly 50 cubic units"
       ],
@@ -3313,7 +3335,7 @@
           ],
           "name": "T-Shape Quiz",
           "color": 2450411,
-          "dialogue": "The blue top bar contains 8 × 2 × 3 = 48 cubes. The shorter gold stem contains 2 × 5 × 2 = 20. They touch without overlapping, so the complete T contains 68 cubic units. Measure either color to check the entire connected model.",
+          "dialogue": "The blue top bar is 8 by 2 by 3, and the shorter gold stem is 2 by 5 by 2. They touch without overlapping, so find each part and add them. Measure either color to check the entire connected model.",
           "question": {
             "text": "Top bar is 8×2×3. Volume?",
             "choices": [
@@ -3520,7 +3542,7 @@
       description: 'What happens when dimensions aren\u2019t whole numbers? Explore how half-blocks change volume calculations.',
       spawnPoint: [3, 2, 3],
       objectives: [
-        'Compare a 4\u00d73\u00d72 prism to a 4\u00d73\u00d72.5 prism',
+        'Compare a 4\u00d73\u00d72 prism with one whose height is not a whole number',
         'Calculate volume when one dimension is a fraction',
         'Understand that volume can be a non-whole number',
         'Estimate the volume of a partially filled container'
@@ -3548,7 +3570,7 @@
         { position: [12, 5, 3], name: 'Between Quiz', color: 0x2563eb,
           // Halfway between the heights 2 and 4 is 3, so the old key (2.5) marked the
           // true midpoint wrong. The fraction this lesson needs is halfway to the NEXT unit.
-          dialogue: 'The blue prism = 24. The gold = 48. What about a height of 2.5, halfway between 2 and 3?',
+          dialogue: 'The blue prism = 24. The gold = 48. What about a height halfway between 2 and 3?',
           question: { text: 'Blue is 4\u00d73\u00d72 = 24. Gold is 4\u00d73\u00d74 = 48. What height is halfway between 2 and 3?', choices: ['2.5', '3', '5'], correct: 0,
             followUp: [
               { text: 'Volume of 4 \u00d7 3 \u00d7 2.5?', choices: ['30 cubic units', '24 cubic units', '36 cubic units'], correct: 0 },
@@ -3688,7 +3710,7 @@
       spawnPoint: [5, 2, 5],
       objectives: [
         'Identify units (1), tens (10), and hundreds (100) blocks',
-        'Build the number 234 using base-10 blocks',
+        'Read the number a base-10 model shows',
         'Compare two numbers by counting their blocks',
         'Understand that 10 ones = 1 ten, 10 tens = 1 hundred'
       ],
@@ -3741,20 +3763,20 @@
               { text: 'How many unit cubes = 5 ten-rods?', choices: ['50 cubes', '5 cubes', '15 cubes'], correct: 0 }
             ] } },
         { position: [6, 2, 6], name: 'Hundreds Hero', color: 0x16a34a,
-          dialogue: 'This 10\u00d710 flat is a HUNDRED-FLAT. It has 10 ten-rods, or 100 unit cubes! Use M to measure it.',
+          dialogue: 'This 10\u00d710 flat is a HUNDRED-FLAT, made of 10 ten-rods. How many unit cubes is that? Use M to measure it.',
           question: { text: 'How many unit cubes in this 10\u00d710 flat?', choices: ['100 cubes', '10 cubes', '20 cubes'], correct: 0,
             followUp: [
               { text: '10 ten-rods = 1 hundred-flat. What is 10 \u00d7 10?', choices: ['100', '20', '1000'], correct: 0 }
             ] } },
         { position: [20, 3, 15], name: 'Number Builder', color: 0xdc2626,
-          dialogue: 'This structure represents the number 234: 2 hundred-flats (blue) + 3 ten-rods (red) + 4 unit cubes (beige). 200 + 30 + 4 = 234!',
+          dialogue: 'This structure represents a number. Count the hundred-flats (blue), the ten-rods (red) and the unit cubes (beige), then put the digits together.',
           question: { text: '2 hundreds + 3 tens + 4 ones = ?', choices: ['234', '2034', '432'], correct: 0,
             followUp: [
               { text: 'What is the value of the digit 3 in 234?', choices: ['30 (3 tens)', '3 (3 ones)', '300 (3 hundreds)'], correct: 0 },
               { text: 'How many total unit cubes would you need to build 234?', choices: ['234 cubes', '9 cubes (2+3+4)', '23 cubes'], correct: 0 }
             ] } },
         { position: [7, 1, 22], name: 'Build Challenge', color: 0x7c3aed,
-          dialogue: 'Your turn! Use the sand platform to build the number 156. That\u2019s 1 hundred-flat + 5 ten-rods + 6 unit cubes. Measure with M to check!',
+          dialogue: 'Your turn! Use the sand platform to build the number 156 from hundred-flats, ten-rods and unit cubes. Measure with M to check!',
           question: { text: 'In the number 156, what does the 5 represent?', choices: ['5 tens (50)', '5 ones (5)', '5 hundreds (500)'], correct: 0,
             followUp: [
               { text: '1 hundred + 5 tens + 6 ones = ?', choices: ['156', '516', '165'], correct: 0 }
@@ -5008,7 +5030,7 @@
         ],
         "name": "1. Sora - Arrival Quay",
         "color": 1013358,
-        "dialogue": "Start with the cyan cargo sample beside the quay: it is three cubes long, two wide, and one layer tall. Look down at the sand practice pad beside the arrival path. Use Place or B to build your own six-cube copy, then measure it with M. Remove only your own cubes and reshape them into a row of six. What changed, and what stayed the same? The sample is protected so everyone can compare their work.",
+        "dialogue": "Start with the cyan cargo sample beside the quay: it is three cubes long, two wide, and one layer tall. Look down at the sand practice pad beside the arrival path. Use Place or B to build your own copy, then measure it with M. Remove only your own cubes and reshape them into a single row. What changed, and what stayed the same? The sample is protected so everyone can compare their work.",
         "question": {
           "text": "How many unit cubes are in one 3 by 2 layer?",
           "choices": [
@@ -5281,7 +5303,7 @@
           2
         ],
         "color": 3636098,
-        "dialogue": "Our community needs a small stepped seating model. Start with a complete six-by-four layer of 24 unit cubes. Put a six-by-two layer of 12 cubes on one end. That makes 36 cubes with a step. Measure and record the model before revising it into a six-by-three-by-two prism. Both versions use 36 cubes, yet their exposed surfaces differ. Include the underside in your comparison. The southern sand court has space to keep both models side by side if you prefer. Measure each separately and explain which design better serves the community.",
+        "dialogue": "Our community needs a small stepped seating model. Start with a complete six-by-four layer of unit cubes. Put a six-by-two layer on one end to make a step. Measure and record the model before revising it into a six-by-three-by-two prism. Both versions use the same number of cubes, yet their exposed surfaces differ. Include the underside in your comparison. The southern sand court has space to keep both models side by side if you prefer. Measure each separately and explain which design better serves the community.",
         "question": {
           "text": "A 24-cube lower layer plus a 12-cube upper layer has what occupied volume?",
           "choices": [
@@ -5495,8 +5517,1098 @@
     ]
   };
 
+  // ── Scale Up (2026-09-24) ──
+  // Doubling every edge of a prism makes 8 copies of it; tripling makes 27.
+  // The scaled prisms and cubes are built from copies of the small ones in two
+  // alternating colors, so a student can count the copies as well as compute them.
+  // Keys: tests/geometry_world_lesson_answer_keys.test.js. Layout and dialogue:
+  // tests/geometry_world_new_worlds.test.js.
+  SAMPLE_LESSONS.scaleUp = (function () {
+    // n by n by n copies of a piece (pL long, pW deep, pH tall) from (x0, 1, z0);
+    // copies that touch are different materials.
+    function copies(x0, z0, pL, pW, pH, n, a, b) {
+      var out = [];
+      for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) for (var k = 0; k < n; k++) {
+        out.push({ type: 'fill', x1: x0 + i * pL, y1: 1 + j * pH, z1: z0 + k * pW, x2: x0 + (i + 1) * pL - 1, y2: (j + 1) * pH, z2: z0 + (k + 1) * pW - 1, block: (i + j + k) % 2 ? b : a });
+      }
+      return out;
+    }
+    return {
+      title: 'Scale Up: Double Every Edge',
+      description: 'Double every edge of a prism. Does it hold twice as much? Does it need twice the paint? Count the copies inside a doubled and a tripled prism, unfold their nets, find the rule for any scale, then build a doubled prism yourself.',
+      estimatedMinutes: 15,
+      spawnPoint: [5, 2.6, -3],
+      objectives: [
+        'Count the copies of prism A inside prism B, which doubles every edge',
+        'Unfold prism B with the Net tool (N)',
+        'Compare the paint that prisms A and B need',
+        'Find the volume and paint of prism C, which triples every edge',
+        'Use the scale rule on a box you cannot see',
+        'Build prism A doubled from unit cubes on the sand pad'
+      ],
+      // The pad leaves room east of it for the net of the student's own build.
+      ground: { xMin: -4, xMax: 40, zMin: -4, zMax: 24, y: 0, type: 'grass' },
+      structures: [].concat(
+        copies(2, 2, 2, 1, 1, 1, 'gold', 'gold'),
+        copies(2, 8, 2, 1, 1, 2, 'gold', 'diamond'),
+        copies(2, 16, 2, 1, 1, 3, 'gold', 'wood'),
+        copies(16, 2, 1, 1, 1, 1, 'gold', 'gold'),
+        copies(18, 2, 1, 1, 1, 2, 'gold', 'diamond'),
+        copies(21, 2, 1, 1, 1, 3, 'gold', 'wood'),
+        [{ id: 'build-pad', type: 'fill', x1: 22, y1: 0, z1: 6, x2: 27, y2: 0, z2: 11, block: 'sand', measurementLayer: 'ground' }]
+      ),
+      npcs: [
+        { position: [4, 1, -1], name: 'Scale Guide', color: 0x7c3aed,
+          dialogue: 'Welcome to Scale Up! Prism A is the small gold prism: 2 long, 1 wide, 1 tall. Walk past it to prism B, which doubles every edge of A, and prism C, which triples them. B and C are built from copies of A in two colors, so you can count the copies. Guess first: when every edge doubles, how many times bigger is the prism? The three cubes past the prisms show the same pattern. When you know the rule, build prism A doubled on the sand pad beyond the cubes.',
+          question: null },
+        { position: [0, 1, 9], name: 'Scale Scout', color: 0x2563eb,
+          dialogue: 'Prism B, beside me, doubles every edge of prism A. Each gold or blue piece of B is one copy of A. Count the pieces, or face B and press M to measure it.',
+          question: {
+            text: 'Prism A is 2 blocks long. B doubles every edge. How long is B?',
+            choices: ['4 blocks', '6 blocks', '8 blocks'],
+            correct: 0,
+            followUp: [
+              { text: 'Each gold or blue piece of B is a copy of A. How many copies of A make B?', choices: ['8 copies', '2 copies', '4 copies'], correct: 0 },
+              { text: 'Prism A holds 2 cubic units. What is the volume of B?', choices: ['16 cubic units', '8 cubic units', '64 cubic units'], correct: 0 }
+            ]
+          } },
+        { position: [0, 1, 4], name: 'Surface Sage', color: 0xd97706,
+          dialogue: 'Surface area is the paint that covers every face. Face a prism and press N, or the Net button, to unfold its net. Unfold small prism A first, then prism B. Does the paint double when the edges double?',
+          question: {
+            text: 'Unfold prism A (2 by 1 by 1). What is its surface area?',
+            choices: ['10 square units', '5 square units', '8 square units'],
+            correct: 0,
+            followUp: [
+              { text: 'Now unfold prism B. What is its surface area?', choices: ['40 square units', '48 square units', '80 square units'], correct: 0 },
+              { text: 'Prism A needs 10 square units of paint and B needs 40. How many times as much paint does B need?', choices: ['4 times', '2 times', '8 times'], correct: 0 }
+            ]
+          } },
+        { position: [0, 1, 17], name: 'Triple Tester', color: 0x059669,
+          dialogue: 'Prism C, beside me, triples every edge of prism A: 6 long, 3 wide, 3 tall. Each gold or brown piece is one copy of A. What happens to the volume and the paint when the scale is 3?',
+          question: {
+            text: 'How many copies of A make prism C?',
+            choices: ['27 copies', '3 copies', '9 copies'],
+            correct: 0,
+            followUp: [
+              { text: 'Each copy of A holds 2 cubic units. What is the volume of C?', choices: ['54 cubic units', '27 cubic units', '216 cubic units'], correct: 0 },
+              { text: 'Unfold prism C with N. What is its surface area?', choices: ['90 square units', '108 square units', '270 square units'], correct: 0 }
+            ]
+          } },
+        { position: [20, 1, -1], name: 'Pattern Pro', color: 0xdb2777,
+          dialogue: 'My three cubes have edges of 1, 2 and 3. Each one is built from unit cubes in two colors. Count the unit cubes in each and look for the pattern, then use it on a box you cannot see.',
+          question: {
+            text: 'The middle cube doubles every edge of the unit cube. How many unit cubes make it?',
+            choices: ['8 cubes', '4 cubes', '6 cubes'],
+            correct: 0,
+            followUp: [
+              { text: 'Scale any shape by k: every edge is multiplied by k. What happens to its volume?', choices: ['k cubed times as much', 'k times as much', 'k squared times as much'], correct: 0 },
+              { text: 'A model box holds 5 cubic units. A copy doubles every edge. How much does the copy hold?', choices: ['40 cubic units', '10 cubic units', '125 cubic units'], correct: 0 }
+            ]
+          } }
+      ]
+    };
+  })();
+
+  // ── Skyline City (2026-09-24) ──
+  // A second place to explore, ungraded like the Garden. Six stations along one
+  // street: equal volumes that need different glass, floors that stack into volume, a
+  // bridge whose box is mostly air, a stepped building, a house and its double, and a
+  // yard for packing 24 cubes. explore: true puts it on the Explore page, not Learn.
+  SAMPLE_LESSONS.skylineCity = (function () {
+    var floors = [];
+    for (var y = 1; y <= 10; y++) floors.push({ id: 'skyscraper-floor-' + y, type: 'fill', x1: 18, y1: y, z1: 10, x2: 20, y2: y, z2: 12, block: y % 2 ? 'glass' : 'stone' });
+    var houses = [];
+    for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) for (var k = 0; k < 2; k++) houses.push({ id: 'double-house-' + i + j + k, type: 'fill', x1: 17 + 2 * i, y1: 1 + 2 * j, z1: 2 * k, x2: 18 + 2 * i, y2: 2 + 2 * j, z2: 1 + 2 * k, block: (i + j + k) % 2 ? 'brick' : 'wood' });
+    return {
+      title: 'Skyline City: A Place to Discover',
+      explore: true,
+      exploreName: 'Skyline City',
+      exploreBlurb: 'Towers, a bridge and a packing yard',
+      description: 'An ungraded city of six discoveries along one street: towers that hold the same volume but need different glass, a skyscraper built floor by floor, a bridge that is mostly air, a stepped building, a house and its double, and a yard for packing 24 cubes. Use Activities for hints and travel. No quiz answers or scores are required.',
+      depth: 'discovery',
+      estimatedMinutes: 25,
+      landscapeTheme: 'meadow',
+      spawnPoint: [-3, 2.6, 2],
+      objectives: [
+        'Visit six city discoveries at your own pace',
+        'Compare buildings with equal volume and different surface area',
+        'Measure composite buildings: a bridge and a stepped building',
+        'Pack 24 cubes into the box that needs the least wrap'
+      ],
+      ground: { xMin: -6, xMax: 38, zMin: -6, zMax: 18, y: 0, type: 'grass' },
+      structures: [
+        { id: 'main-street', type: 'fill', x1: -6, y1: 0, z1: 6, x2: 38, y2: 0, z2: 7, block: 'stone', measurementLayer: 'ground' },
+        { id: 'packing-yard', type: 'fill', x1: 25, y1: 0, z1: -2, x2: 32, y2: 0, z2: 3, block: 'sand', measurementLayer: 'ground' },
+        { id: 'glass-tower', type: 'fill', x1: 2, y1: 1, z1: 10, x2: 3, y2: 6, z2: 11, block: 'glass' },
+        { id: 'brick-tower', type: 'fill', x1: 6, y1: 1, z1: 10, x2: 7, y2: 4, z2: 12, block: 'brick' },
+        { id: 'marble-plaza', type: 'fill', x1: 10, y1: 1, z1: 9, x2: 13, y2: 1, z2: 14, block: 'marble' }
+      ].concat(floors, [
+        { id: 'bridge-west-pillar', type: 'fill', x1: 25, y1: 1, z1: 10, x2: 25, y2: 3, z2: 11, block: 'stone' },
+        { id: 'bridge-east-pillar', type: 'fill', x1: 32, y1: 1, z1: 10, x2: 32, y2: 3, z2: 11, block: 'stone' },
+        { id: 'bridge-deck', type: 'fill', x1: 25, y1: 4, z1: 10, x2: 32, y2: 4, z2: 11, block: 'wood' },
+        { id: 'stepped-base', type: 'fill', x1: 3, y1: 1, z1: 0, x2: 7, y2: 1, z2: 4, block: 'sand' },
+        { id: 'stepped-middle', type: 'fill', x1: 4, y1: 2, z1: 1, x2: 6, y2: 2, z2: 3, block: 'copper' },
+        { id: 'stepped-top', type: 'fill', x1: 5, y1: 3, z1: 2, x2: 5, y2: 3, z2: 2, block: 'gold' },
+        { id: 'small-house', type: 'fill', x1: 13, y1: 1, z1: 2, x2: 14, y2: 2, z2: 3, block: 'wood' }
+      ], houses),
+      npcs: [
+        { position: [-1, 1, 5], name: 'City Planner', color: 0x0ea5e9, question: null,
+          dialogue: 'Welcome to Skyline City! Walk along the stone street to six discoveries: three towers, a skyscraper, a bridge, a stepped building, a house and its double, and a packing yard. Open Activities for challenges, hints and travel. Nothing here is graded: measure with M, unfold nets with N, and build on the sand yard.' },
+        { position: [6, 1, 8], name: 'Tower Guide', color: 0x6366f1, question: null,
+          dialogue: 'These three buildings each hold 24 cubic units: a glass tower, a brick tower and a flat marble plaza. Measure each one, then unfold each net with N. Which one needs the least material to cover it?' },
+        { position: [19, 1, 8], name: 'Skyscraper Guide', color: 0x64748b, question: null,
+          dialogue: 'My skyscraper has glass and stone floors. Count the cubes in one floor, count the floors, and predict the volume before you measure the whole tower.' },
+        { position: [29, 1, 8], name: 'Bridge Guide', color: 0x92400e, question: null,
+          dialogue: 'This bridge is two stone pillars and a wooden deck. Measure it: how many cubes does it use, and how big is the box that just fits around it? Most of that box is air.' },
+        { position: [9, 1, 4], name: 'Stepped Guide', color: 0xca8a04, question: null,
+          dialogue: 'This stepped building has three layers, each smaller than the one below. Find the cubes in each layer, then add them. Measure to check.' },
+        { position: [16, 1, 5], name: 'Scale Model Guide', color: 0xb91c1c, question: null,
+          dialogue: 'The small wooden house is 2 by 2 by 2. The building beside it doubles every edge. Each wood or brick block of 2 by 2 by 2 is one house: how many houses fit inside?' },
+        { position: [24, 1, 1], name: 'Packing Guide', color: 0x0d9488, question: null,
+          dialogue: 'Use the sand yard to pack 24 cubes into a box. Try different boxes. Which one needs the least wrap? Unfold each with N to compare.' }
+      ],
+      activities: [
+        { id: 'city-towers', title: 'Same volume, different glass', npcName: 'Tower Guide', position: [6, 2.6, 8],
+          challenge: 'Measure the glass tower, the brick tower and the marble plaza. Each holds 24 cubic units. Unfold each with N and compare how much material covers it.',
+          hint: 'The glass tower is 2 by 2 by 6, the brick tower 2 by 3 by 4 and the plaza 4 by 6 by 1. Surface area adds all six faces.',
+          successCriteria: ['I found 24 cubic units in all three buildings.', 'I compared surface areas of 56, 52 and 68 square units.', 'I explained why the most cube-like building needs the least covering.'],
+          reflection: 'A builder wants to save glass. Which shape would you choose for 24 cubic units, and why?' },
+        { id: 'city-skyscraper', title: 'Floors make volume', npcName: 'Skyscraper Guide', position: [19, 2.6, 8],
+          challenge: 'The glass and stone stripes are floors. Count the cubes in one floor, count the floors and predict the volume. Then measure the whole tower with M to check.',
+          hint: 'One floor is 3 by 3. Count the floors from the ground up, glass and stone alike.',
+          successCriteria: ['I found 9 cubes in one floor.', 'I counted 10 floors.', 'I predicted and checked 90 cubic units.'],
+          reflection: 'How would the volume change if the city added 2 more floors? Predict before you calculate.' },
+        { id: 'city-bridge', title: 'A bridge and the air around it', npcName: 'Bridge Guide', position: [29, 2.6, 8],
+          challenge: 'Measure the bridge. Compare the cubes it uses with the volume of the box that would just fit around it.',
+          hint: 'Each pillar is 1 by 2 by 3 and the deck is 8 by 2 by 1. The box around the bridge is 8 long, 2 wide and 4 tall.',
+          successCriteria: ['I found 28 cubic units: 6 + 6 + 16.', 'I found that the box around it holds 64 cubic units.', 'I explained why the bridge uses less than half of its box.'],
+          reflection: 'Why do bridge builders leave space under the deck? How many blocks would a solid bridge of the same size need?' },
+        { id: 'city-stepped', title: 'A stepped building', npcName: 'Stepped Guide', position: [9, 2.6, 4],
+          challenge: 'Find the cubes in each layer of the stepped building, add them, then measure it to check.',
+          hint: 'The layers are 5 by 5, 3 by 3 and 1 by 1.',
+          successCriteria: ['I found 25, 9 and 1 cubes in the three layers.', 'I found 35 cubic units in all.', 'I compared it with the 5 by 5 by 3 box around it, which holds 75.'],
+          reflection: 'If you added a 7 by 7 layer underneath, how many cubes would the building have?' },
+        { id: 'city-scale', title: 'A house and its double', npcName: 'Scale Model Guide', position: [16, 2.6, 5],
+          challenge: 'The big building doubles every edge of the small wooden house. Count how many houses fit inside it, then measure both.',
+          hint: 'Each wood or brick block of 2 by 2 by 2 is one house. Look for two layers of houses.',
+          successCriteria: ['I found that the house holds 8 cubic units and its double holds 64.', 'I counted 8 houses inside the double.', 'I explained why doubling every edge gives 2 \u00d7 2 \u00d7 2 = 8 times the volume.'],
+          reflection: 'The Scale Up lesson asks the same question about prisms. What would tripling every edge of the house give?' },
+        { id: 'city-packing', title: 'Pack 24 cubes', npcName: 'Packing Guide', position: [24, 2.6, 1],
+          buildGoal: { metric: 'occupiedVolume', comparator: 'eq', target: 24, unitCubesOnly: true },
+          challenge: 'On the sand yard, build a box of exactly 24 unit cubes. Unfold its net with N. Rebuild it as a different box and compare the wrap.',
+          hint: 'Try 2 by 3 by 4, 2 by 2 by 6 and 1 by 4 by 6. All hold 24 cubes, but their surface areas differ.',
+          successCriteria: ['My box holds exactly 24 unit cubes.', 'I unfolded two different boxes and recorded their surface areas.', 'I found the box that needs the least wrap.'],
+          reflection: 'Why do shipping companies like boxes that are close to cubes?' }
+      ]
+    };
+  })();
+
   // The authored lessons put the correct choice first in 82 of 83 questions,
   // so a student could clear a lesson by always tapping the top button.
+  // ── Answer coaching and objective evidence (2026-09-24) ──
+  // GW_LESSON_COACHING[lesson][npc] = { after, steps:[{ hint, why:{ '<wrong choice text>': note } }] }
+  // in question-sequence order. Feedback is keyed by choice TEXT, so the rotation
+  // below cannot misalign it. tests/geometry_world_answer_coaching.test.js checks
+  // every key against the choices.
+  var GW_LESSON_COACHING = {
+    volumeExplorer: {
+      'Quiz Master': {
+        after: 'You did it: 5 \u00d7 3 \u00d7 4 = 60 cubic units. Any box, from a fish tank to a shoebox, works the same way: length \u00d7 width \u00d7 height.',
+        steps: [
+          { hint: 'Length is the longest edge along the ground: count the blocks from one end to the other.',
+            why: {
+              '3 blocks': 'That is the width, the shorter edge along the ground. Length runs along the longest edge: count the blocks there.',
+              '4 blocks': 'That is the height, counted up from the ground. Length lies flat along the ground on the longest edge.'
+            } },
+          { hint: 'Width is the shorter edge along the ground: count across the front of the prism.',
+            why: {
+              '2 blocks': 'Looks like one block got missed. Count across the short edge again, touching each block once, including both corners.',
+              '5 blocks': 'That is the length, the long edge. Width runs across the short side along the ground.'
+            } },
+          { hint: 'Height counts layers from the ground up: count the blocks in one corner column.',
+            why: {
+              '3 blocks': 'That matches the width, not the height. Count the layers straight up one corner, starting with the bottom layer.',
+              '5 blocks': 'That is the length, which lies flat. Height goes straight up: count the layers from the bottom block to the top.'
+            } },
+          { hint: 'Multiply in two steps: 5 \u00d7 3 gives one layer, then multiply that by the 4 layers.',
+            why: {
+              '12 cubic units': 'It looks like you added 5 + 3 + 4. Volume multiplies the edges: find 5 \u00d7 3 for one layer, then times 4 layers.',
+              '35 cubic units': 'That looks like 5 \u00d7 7, from adding 3 + 4 first. Multiply all three: 5 \u00d7 3 is one layer, then times the 4 layers.'
+            } }
+        ]
+      },
+      'Builder Bot': {
+        after: 'The pool holds 12 blocks: a 6-square-unit floor stacked 2 layers deep. Real pools are measured the same way, floor area times depth.',
+        steps: [
+          { hint: 'Area of a rectangle is length \u00d7 width: measure the inside floor, not the walls.',
+            why: {
+              '20 square units': 'That is the whole outside, walls included (5 \u00d7 4). The pool floor is only the empty space inside: 3 long and 2 wide.',
+              '5 square units': 'You added 3 + 2, which walks along two edges. Area covers the whole floor, so multiply: 3 rows of 2.'
+            } },
+          { hint: 'Each layer has 6 blocks: multiply one layer by how many layers deep the pool is.',
+            why: {
+              '8 blocks': 'You added 6 + 2. Two layers means 6 blocks on the bottom and 6 more on top, so multiply 6 \u00d7 2.',
+              '18 blocks': 'That is 3 layers of 6, the height of the outside walls. The inside is only 2 layers deep, so multiply 6 \u00d7 2.'
+            } }
+        ]
+      },
+      'L-Block Sage': {
+        after: 'Breaking the L into two boxes works: 45 + 27 = 72 cubic units. Architects split L-shaped rooms into rectangles the same way.',
+        steps: [
+          { hint: 'Multiply all three edges: find 5 \u00d7 3 for one layer, then multiply by the 3 layers.',
+            why: {
+              '15 cubic units': '15 is just one layer (5 \u00d7 3). Part A is 3 layers tall, so multiply that layer by 3.',
+              '30 cubic units': '30 is only 2 layers of 15. Count the layers again: Part A is 3 tall, so multiply 15 by 3.'
+            } },
+          { hint: 'A 3 by 3 layer has 9 cubes: multiply it by the number of layers.',
+            why: {
+              '9 cubic units': '9 is one 3 \u00d7 3 layer. Part B is a cube, 3 layers tall, so multiply 9 by 3.',
+              '18 cubic units': '18 is only 2 layers of 9. Part B is 3 layers tall: multiply 9 by 3.'
+            } },
+          { hint: 'Add the two parts: 45 + 20 first, then add the last 7.',
+            why: {
+              '45 cubic units': '45 is Part A alone. The L also includes Part B, so add its 27 cubes too.',
+              '54 cubic units': '54 is 27 + 27, Part B counted twice. Use each part once: add Part A\'s 45 and Part B\'s 27.'
+            } }
+        ]
+      }
+    },
+    areaSurface: {
+      'Flat Prism Quiz': {
+        after: '24 square units per layer \u00d7 3 layers = 72 cubic units. Square units measure the floor; cubic units measure the space it fills.',
+        steps: [
+          { hint: 'Base area is length \u00d7 width of the bottom layer: multiply 6 by 4.',
+            why: {
+              '10 square units': 'You added 6 + 4. Area covers the whole base, so multiply: 4 rows of 6 squares.',
+              '18 square units': 'That is 6 \u00d7 3, which uses the height. The base lies on the ground: use the length and the width, 6 and 4.'
+            } },
+          { hint: 'Count the layers straight up, from the ground to the top of the prism.',
+            why: {
+              '6 layers': '6 is the length along the ground. Layers stack upward: count from the bottom layer to the top.',
+              '4 layers': '4 is the width along the ground. Layers stack upward: count them from the ground to the top.'
+            } },
+          { hint: 'Multiply the base by the layers: 24 \u00d7 3 is 20 \u00d7 3 plus 4 \u00d7 3.',
+            why: {
+              '48 cubic units': '48 is only 2 layers of 24. The prism has 3 layers, so add one more 24.',
+              '27 cubic units': 'You added 24 + 3. Each layer holds 24 cubes, so 3 layers means 24 three times: multiply.'
+            } }
+        ]
+      },
+      'Tall Prism Quiz': {
+        after: 'Both prisms hold 72 cubic units. Same volume, different shape: a tall narrow box and a flat wide box can store the same amount.',
+        steps: [
+          { hint: 'Find the base first, 3 \u00d7 3, then multiply by the 8 layers.',
+            why: {
+              '64 cubic units': '64 is 8 \u00d7 8. The base is 3 \u00d7 3, which is 9 cubes, so multiply 9 by the 8 layers.',
+              '48 cubic units': '48 is 6 \u00d7 8, from adding 3 + 3 for the base. The base is 3 \u00d7 3, so multiply, then times 8 layers.'
+            } },
+          { hint: 'Compare the two numbers: equal numbers of cubes mean equal volume.',
+            why: {
+              'Blue is bigger': 'Blue looks wider, but volume counts cubes, not how big a shape looks. Compare the two totals.',
+              'Gold is bigger': 'Gold looks taller, but volume counts cubes, not height alone. Compare the two totals.'
+            } }
+        ]
+      },
+      'Layer Counter': {
+        after: '25 cubes per layer \u00d7 4 layers = 100 cubic units. The colors show the layers; volume counts every cube, whatever its color.',
+        steps: [
+          { hint: 'Area is rows times columns: a 5 by 5 layer has 5 rows of 5.',
+            why: {
+              '10 square units': 'You added 5 + 5. Area covers the whole layer, so multiply: 5 rows with 5 squares in each.',
+              '20 square units': '20 is the distance around the edge (5 + 5 + 5 + 5), which is perimeter. Area fills the inside: 5 rows of 5.'
+            } },
+          { hint: 'Count from the ground up: each sand layer and each wood layer is one layer.',
+            why: {
+              '5 layers': '5 is the side length of each layer. Count upward instead: every sand and wood layer, from the bottom to the top.',
+              '3 layers': 'One layer may have been missed. Start with the bottom layer on the ground and touch each layer once, sand and wood alike.'
+            } },
+          { hint: 'Four groups of 25: think of four quarters making a dollar.',
+            why: {
+              '80 cubic units': '80 is 20 \u00d7 4. Each layer has 25 cubes, not 20: multiply 25 by 4.',
+              '125 cubic units': '125 is 5 layers of 25. This model has 4 layers, so multiply 25 by 4.'
+            } }
+        ]
+      }
+    },
+    buildChallenge: {
+      'Room Inspector': {
+        after: 'The inside is 4 \u00d7 4 \u00d7 4 = 64 cubic units. Walls take space at both ends, which is why a room\'s inside is smaller than its outside.',
+        steps: [
+          { hint: 'Walls stand at BOTH ends of the length: subtract one block for each wall.',
+            why: {
+              '5 blocks': 'You took away one wall. The room has a wall at each end, so subtract 1 block twice.',
+              '6 blocks': '6 is the outside length, walls included. The walls use space at both ends, so take them away.'
+            } },
+          { hint: 'Multiply the inside edges: 4 \u00d7 4 for the floor, then times the 4 layers.',
+            why: {
+              '48 cubic units': '48 is 4 \u00d7 4 \u00d7 3, only 3 layers. The inside is 4 tall, so multiply the 16-block floor by 4.',
+              '32 cubic units': '32 is only 2 layers of 16. The inside is 4 layers tall: multiply 16 by 4.'
+            } }
+        ]
+      },
+      'Volume Coach': {
+        after: 'The inside is 6 \u00d7 4 \u00d7 4 = 96 cubic units, far less than the 192 of the whole 8 \u00d7 6 \u00d7 4 room. Builders plan furniture around inside space.',
+        steps: [
+          { hint: 'Subtract one wall at each end: take 2 blocks away from the outside length.',
+            why: {
+              '7 blocks': 'You removed one wall. There is a wall at each end of the length, so subtract 2 blocks, not 1.',
+              '8 blocks': '8 is the outside length, walls included. Subtract a wall at each end to find the inside.'
+            } },
+          { hint: 'Take 2 blocks, one for each side wall, away from the outside width of 6.',
+            why: {
+              '5 blocks': 'That subtracts only one wall. Both side walls use a block, so subtract 2 from 6.',
+              '6 blocks': '6 is the outside width. The walls use one block on each side, so subtract 2.'
+            } },
+          { hint: 'Multiply the inside edges: 6 \u00d7 4 for the floor, then times the 4 layers.',
+            why: {
+              '64 cubic units': '64 is 4 \u00d7 4 \u00d7 4, the other room. This inside is 6 long, so start with 6 \u00d7 4 for the floor.',
+              '72 cubic units': '72 is 6 \u00d7 4 \u00d7 3, only 3 layers. The inside is 4 tall, so multiply the 24-block floor by 4.'
+            } }
+        ]
+      }
+    },
+    realWorld: {
+      'Packing Expert': {
+        after: 'Only 3 boxes fit, leaving 12 cubic units empty. Shippers check every edge, not just volume, because a box has to fit whole.',
+        steps: [
+          { hint: 'Multiply the inside edges: 6 by 2 for one layer, then by 3 for the depth.',
+            why: {
+              '48 cubic units': '48 would need a bigger edge, like the outside length of 8. Use the interior edges only: 6 by 2, then by 3.',
+              '24 cubic units': '24 uses only 2 for the depth (6 by 2 by 2). The interior is 3 deep, so multiply 6 by 2, then by 3.'
+            } },
+          { hint: 'Check each edge: how many whole 2-unit boxes fit along the length, the height and the depth?',
+            why: {
+              '4 boxes because 36 divided by 8 is more than 4': 'Dividing volumes ignores shape. Boxes cannot bend, so count how many whole 2-unit boxes fit along each edge.',
+              '6 boxes because the length is 6': 'Each box is 2 units long, not 1. Count how many 2-unit boxes fit along the 6-unit length, then check height and depth.'
+            } },
+          { hint: 'Subtract the boxes\' space from the whole interior: 36 minus 24.',
+            why: {
+              '4 cubic units': '4 is the leftover from 36 divided by 8, which counts boxes, not space. Subtract the boxes\' space from the whole interior.',
+              'No empty space': 'The boxes leave a strip at the front. Subtract the boxes\' 24 cubic units from the 36-unit interior.'
+            } },
+          { hint: 'Compare how deep the strip is with how deep one box is.',
+            why: {
+              'A container can never hold more than three boxes': 'A bigger container could hold more boxes. Look at this strip: compare how deep it is with how deep a box is.',
+              'The fourth box would have no volume': 'Every box has volume, 2 by 2 by 2. The problem is shape: is the strip deep enough for a box that is 2 units deep?'
+            } }
+        ]
+      },
+      'Inventory Checker': {
+        after: 'The crate holds 32 cubic units; 16 are sand, so 16 are empty. Movers use this idea to see how much more a box can hold.',
+        steps: [
+          { hint: 'Find one layer, 4 \u00d7 4, then multiply by the 2 layers.',
+            why: {
+              '16 cubic units': '16 is one layer (4 \u00d7 4), the sand layer. The crate is 2 layers deep, so multiply by 2.',
+              '24 cubic units': '24 would come from a 4 \u00d7 3 floor. This floor is 4 \u00d7 4, so find that layer and double it for 2 layers.'
+            } },
+          { hint: 'Subtract the sand from the whole capacity: 32 minus the sand.',
+            why: {
+              '8 cubic units': '8 would be half the sand. Empty space is the whole crate minus the sand: work out 32 - 16.',
+              '32 cubic units': '32 is the whole crate. The sand already fills part of it, so subtract the sand blocks.'
+            } }
+        ]
+      },
+      'Design Challenge': {
+        after: '6 \u00d7 3 \u00d7 2, 6 \u00d7 6 \u00d7 1 and 4 \u00d7 3 \u00d7 3 all make 36. Packages with the same volume can have very different shapes.',
+        steps: [
+          { hint: 'Multiply each set of three numbers and compare the product with 36.',
+            why: {
+              '3\u00d73\u00d73 = 27': '3 \u00d7 3 \u00d7 3 makes 27, which is 9 short of 36. Check the other choices by multiplying.',
+              '5\u00d74\u00d72 = 40': '5 \u00d7 4 \u00d7 2 makes 40, which is 4 more than 36. Keep checking the other choices.'
+            } },
+          { hint: 'Multiply each choice yourself: more than one arrangement might work.',
+            why: {
+              '6\u00d76\u00d71 = 36': '6 \u00d7 6 \u00d7 1 does make 36, and so does 4 \u00d7 3 \u00d7 3! Look for the choice that includes both.',
+              '4\u00d73\u00d73 = 36': '4 \u00d7 3 \u00d7 3 does make 36, and so does 6 \u00d7 6 \u00d7 1! Look for the choice that includes both.'
+            } }
+        ]
+      }
+    },
+    compositeVolume: {
+      'T-Shape Quiz': {
+        after: '48 + 20 = 68 cubic units. Splitting a shape into boxes that do not overlap is how builders estimate concrete for L and T walls.',
+        steps: [
+          { hint: 'Find one layer, 8 \u00d7 2, then multiply by the 3 layers.',
+            why: {
+              '24 cubic units': '24 is 8 \u00d7 3, which skips the width of 2. Multiply all three edges: 8 \u00d7 2 for one layer, then times 3.',
+              '36 cubic units': '36 is too small for 3 layers of 8 \u00d7 2. Find one layer first, 8 \u00d7 2 = 16, then multiply by 3.'
+            } },
+          { hint: 'Find one layer, 2 \u00d7 5, then multiply by the 2 layers.',
+            why: {
+              '30 cubic units': '30 uses 3 layers, the height of the top bar. The stem is only 2 high, so multiply 2 \u00d7 5 by 2.',
+              '10 cubic units': '10 is one layer (2 \u00d7 5). The stem is 2 layers high, so double it.'
+            } },
+          { hint: 'Add the two parts, once each: 48 + 20.',
+            why: {
+              '48 cubic units': '48 is only the blue top bar. The T also has the gold stem, so add its 20 cubes.',
+              '96 cubic units': '96 is 48 + 48, the top bar counted twice. Add each part once: the bar\'s 48 and the stem\'s 20.'
+            } }
+        ]
+      },
+      'Pyramid Guide': {
+        after: '36 + 16 + 4 = 56 cubic units, far less than its 6 \u00d7 6 \u00d7 3 bounding box of 108. Stadium steps are counted layer by layer the same way.',
+        steps: [
+          { hint: 'A 6 by 6 layer that is 1 block tall has 6 rows of 6.',
+            why: {
+              '24 cubic units': '24 is 6 + 6 + 6 + 6, the distance around the edge. Volume fills the layer: 6 rows of 6.',
+              '12 cubic units': '12 is 6 + 6, from adding the edges. Multiply instead: 6 rows with 6 cubes in each.'
+            } },
+          { hint: 'A 4 by 4 layer has 4 rows of 4.',
+            why: {
+              '8 cubic units': '8 is 4 + 4. The layer is a square: multiply, 4 rows of 4 cubes.',
+              '12 cubic units': '12 is only 3 rows of 4. The middle layer is 4 by 4, so count 4 rows of 4.'
+            } },
+          { hint: 'A 2 by 2 layer has 2 rows of 2.',
+            why: {
+              '2 cubic units': '2 counts just one row. The top layer is 2 by 2, so it has 2 rows of 2.',
+              '8 cubic units': '8 is 2 \u00d7 2 \u00d7 2, as if the top were 2 layers tall. It is only 1 layer, so multiply 2 \u00d7 2 \u00d7 1.'
+            } },
+          { hint: 'Add in steps: 36 + 16 first, then add the 4.',
+            why: {
+              '36 cubic units': '36 is the bottom layer alone. Add the middle and top layers too: 36 + 16, then + 4.',
+              '64 cubic units': '64 is more than the three layers hold. Add again in steps: 36 + 16 first, then the 4 on top.'
+            } }
+        ]
+      },
+      'U-Shape Sage': {
+        after: 'The 144-unit bounding box minus the 80-unit opening leaves 64 cubic units. Subtracting empty space works for hollow things too, like a U-shaped desk.',
+        steps: [
+          { hint: 'Picture the box drawn around the U: does the U fill every space inside it?',
+            why: {
+              'More \u2014 the U has extra corners': 'The U sits inside its bounding box, so nothing pokes outside it. The open middle is empty, which makes the U smaller.',
+              'Same \u2014 the box counts all space': 'The box counts all space, but the U does not fill it. The open middle is empty, so the U holds fewer cubes.'
+            } },
+          { hint: 'Start with the full box, then take away the empty part.',
+            why: {
+              'V = outer + inner': 'Adding the hollow counts empty space as if it were filled. Start with the full box and take the empty part away.',
+              'V = outer \u00d7 inner': 'Multiplying two volumes does not give a volume. Start with the full box and take away the empty part.'
+            } }
+        ]
+      },
+      'Design Challenge': {
+        after: '6 \u00d7 4 \u00d7 2 = 48, two short of 50. 5 \u00d7 5 \u00d7 2 and 10 \u00d7 5 \u00d7 1 both make 50: one volume can be built in many shapes.',
+        steps: [
+          { hint: 'Multiply each set of three numbers and find the one whose product is not 50.',
+            why: {
+              '5\u00d75\u00d72 = 50 \u2713': '5 \u00d7 5 \u00d7 2 does make 50, so it is one that works. The question asks for the one that does NOT make 50.',
+              '10\u00d75\u00d71 = 50 \u2713': '10 \u00d7 5 \u00d7 1 does make 50, so it works. Look for the choice whose product misses 50.'
+            } }
+        ]
+      }
+    },
+    fractionVolume: {
+      'Between Quiz': {
+        after: '4 \u00d7 3 \u00d7 2.5 = 30 cubic units: 2 full layers of 12 plus half a layer of 6. Water 2.5 feet deep in a tank works the same way.',
+        steps: [
+          { hint: 'Halfway between two whole numbers lands on a half: picture a number line from 2 to 3.',
+            why: {
+              '3': '3 is halfway between the blue height 2 and the gold height 4. This question asks for halfway between 2 and 3.',
+              '5': '5 is 2 + 3, the sum. Halfway sits between the two numbers on a number line: more than 2 but less than 3.'
+            } },
+          { hint: 'One layer is 4 \u00d7 3 = 12: take 2 full layers, then add half a layer.',
+            why: {
+              '24 cubic units': '24 uses a height of 2 and drops the half. Add half a layer too: half of 12 more cubes.',
+              '36 cubic units': '36 uses a height of 3, rounding the half up. Use 2 full layers plus half of one 12-cube layer.'
+            } },
+          { hint: 'Check whether 30 is more than 24 and less than 48.',
+            why: {
+              'No': '30 is more than 24 and less than 48, so it does fall between them. A height between 2 and 4 gives a volume in between.',
+              'Only sometimes': 'With the same base, a taller prism always holds more. 30 is more than 24 and less than 48, so it is between them.'
+            } }
+        ]
+      },
+      'Container Challenge': {
+        after: '24 cubic units of sand leaves 12 empty, one full 4 \u00d7 3 layer on top. Filling a fish tank partway works the same way.',
+        steps: [
+          { hint: 'The sand fills 2 layers: find one 4 \u00d7 3 layer, then double it.',
+            why: {
+              '36 cubic units': '36 is the whole container, 3 layers tall. Sand fills only the bottom 2 layers, so use 4 \u00d7 3 \u00d7 2.',
+              '12 cubic units': '12 is one layer (4 \u00d7 3). The sand is 2 layers deep, so double it.'
+            } },
+          { hint: 'Subtract the sand from the whole container, or count the empty top layer: 4 \u00d7 3.',
+            why: {
+              '24 more': '24 is the sand you already have. The empty space is what is left: 36 minus 24.',
+              '6 more': '6 is too small. The empty part is one whole layer on top, 4 \u00d7 3, so work out 36 minus 24 again.'
+            } }
+        ]
+      },
+      'Height Detective': {
+        after: '45 \u00f7 27 = 5/3, about 1.67 times. With the same base, the volume ratio matches the height ratio: 5 layers over 3 layers.',
+        steps: [
+          { hint: 'One 3 by 3 layer has 9 cubes: multiply it by the 3 layers.',
+            why: {
+              '18 cubic units': '18 is only 2 layers of 9. The short tower is 3 tall, so multiply 9 by 3.',
+              '9 cubic units': '9 is one layer (3 \u00d7 3). The tower is 3 layers tall: multiply 9 by 3.'
+            } },
+          { hint: 'Same 9-cube base: multiply it by the 5 layers.',
+            why: {
+              '30 cubic units': '30 is 6 \u00d7 5, from adding 3 + 3 for the base. The base is 3 \u00d7 3 = 9 cubes: multiply that by 5.',
+              '27 cubic units': '27 is the short tower. The tall tower has the same base but 5 layers, so multiply 9 by 5.'
+            } },
+          { hint: 'Both towers share a base, so compare the heights: 5 layers versus 3 layers.',
+            why: {
+              'Exactly 2\u00d7': '2 \u00d7 27 is 54, more than 45. The tall tower has 5 layers to the short tower\'s 3, which is less than double.',
+              'About 1.5\u00d7': '1.5 \u00d7 27 is 40.5, short of 45. Compare the heights instead: 5 layers versus 3 layers.'
+            } }
+        ]
+      }
+    },
+    volumeEstimation: {
+      'Small Quiz': {
+        after: '3 \u00d7 2 \u00d7 2 = 12 cubic units. Estimating edges first lets you guess a box\'s size at a glance, before you measure.',
+        steps: [
+          { hint: 'Compare the longest edge with the gold 1-block reference, then count along it.',
+            why: {
+              '4 blocks': 'That is one block too many. Count along the long edge again, touching each block once.',
+              '2 blocks': '2 matches the short edges. Length runs along the longest edge: count the blocks there.'
+            } },
+          { hint: 'Count across the short edge on the ground, then count the layers up one corner.',
+            why: {
+              '2 wide, 3 tall': 'The width is right, but check the height. Count the layers straight up one corner, starting at the ground.',
+              '3 wide, 2 tall': '3 is the length you already counted. Width is the shorter edge along the ground: count across it.'
+            } },
+          { hint: 'Multiply in two steps: 3 \u00d7 2 for one layer, then times the 2 layers.',
+            why: {
+              '24 cubic units': '24 doubles one time too many. 3 \u00d7 2 is one layer, and there are 2 layers, so multiply by 2 just once.',
+              '6 cubic units': '6 is one layer (3 \u00d7 2). The structure is 2 layers tall, so double it.'
+            } }
+        ]
+      },
+      'Medium Quiz': {
+        after: '5 \u00d7 3 \u00d7 3 = 45 cubic units. With practice, you can estimate a bookshelf or a box just by eyeing its edges.',
+        steps: [
+          { hint: 'Pick the longest edge along the ground and count the blocks from end to end.',
+            why: {
+              '4 blocks': 'Close! Count the long edge again, from one end block to the other, and include both ends.',
+              '6 blocks': 'That is one block too many. Count the long edge again, touching each block only once.'
+            } },
+          { hint: 'Find one layer, 5 \u00d7 3, then multiply by the 3 layers.',
+            why: {
+              '60 cubic units': '60 is 4 layers of 15. This structure is 3 layers tall: multiply 5 \u00d7 3 by 3.',
+              '30 cubic units': '30 is only 2 layers of 15. The structure is 3 layers tall: multiply 15 by 3.'
+            } }
+        ]
+      },
+      'Large Quiz': {
+        after: '7 \u00d7 4 \u00d7 3 = 84 cubic units. L \u00d7 W \u00d7 H beats counting one by one: imagine counting every brick in a wall!',
+        steps: [
+          { hint: 'Count along the longest edge in small groups, such as pairs, to keep your place.',
+            why: {
+              '6 blocks': 'Just one short. Count the long edge again, including both end blocks.',
+              '8 blocks': 'One block too many. Count the long edge again, touching each block only once.'
+            } },
+          { hint: 'Find one layer, 7 \u00d7 4, then multiply by the 3 layers.',
+            why: {
+              '72 cubic units': '72 is 6 \u00d7 4 \u00d7 3, using a length of 6. The length is 7, so start with 7 \u00d7 4 for one layer.',
+              '96 cubic units': '96 is 8 \u00d7 4 \u00d7 3, using a length of 8. The length is 7: find 7 \u00d7 4, then multiply by 3.'
+            } }
+        ]
+      },
+      'Shape Illusion': {
+        after: 'The slab holds 50 cubic units and the tower 32. Tall shapes look bigger, which is why a tall thin glass can fool your eyes.',
+        steps: [
+          { hint: 'The base is 2 \u00d7 2 = 4 cubes: multiply by the 8 layers.',
+            why: {
+              '64 cubic units': '64 is 8 \u00d7 8. The base is 2 \u00d7 2, only 4 cubes per layer, so multiply 4 by 8.',
+              '16 cubic units': '16 uses only two edges (2 \u00d7 8). Multiply all three: 2 \u00d7 2 for the base, then times 8.'
+            } },
+          { hint: 'The slab is just 1 layer, so its volume is 10 \u00d7 5.',
+            why: {
+              '15 cubic units': '15 is 10 + 5, from adding. Multiply instead: 5 rows of 10 in one layer.',
+              '100 cubic units': '100 would be 2 layers, or a 10 by 10 top. The slab is 10 by 5 and just 1 layer: multiply 10 \u00d7 5.'
+            } },
+          { hint: 'Compare the two numbers, not how tall the shapes look.',
+            why: {
+              'The tall tower': 'The tower looks bigger because it is tall. Compare the counts: 32 cubes versus 50 cubes.',
+              'Same': 'The shapes hold different counts: 32 cubes and 50 cubes. Compare which number is larger.'
+            } }
+        ]
+      }
+    },
+    fractionBuilder: {
+      'Half Quiz': {
+        after: '6 halves make 3 whole cubes, because every 2 halves fill one cube. Recipes use the same idea: 2 half cups make 1 cup.',
+        steps: [
+          { hint: 'Two half-blocks fill one whole cube: how much is each one?',
+            why: {
+              '\u00bc cubic unit': '\u00bc is the quarter-wedge, which takes 4 to fill a cube. A half-block takes only 2.',
+              '1 cubic unit': '1 is a whole cube. A half-block fills only part of it: 2 halves make 1 cube.'
+            } },
+          { hint: 'Put two halves side by side: do they fill a whole cube?',
+            why: {
+              '2 cubic units': 'That counts each half as a whole cube. Each half-block is \u00bd, so 2 halves make \u00bd + \u00bd.',
+              '\u00bd cubic unit': '\u00bd is just one half-block. You have 2 of them, so add \u00bd + \u00bd.'
+            } },
+          { hint: 'Pair the halves: every 2 halves make 1 whole cube.',
+            why: {
+              '6 cubic units': 'That counts each half-block as a whole cube. Pair them up: 2 halves make 1 cube.',
+              '2 cubic units': 'Pair the halves again: every 2 halves make 1 whole. How many pairs can you make from 6?'
+            } }
+        ]
+      },
+      'Whole Quiz': {
+        after: '4 whole cubes + 4 half-blocks = 4 + 2 = 6 cubic units. Swapping cubes for halves shrinks the volume, even with 8 pieces.',
+        steps: [
+          { hint: 'Start with 8 whole cubes and take away the ones you swapped out.',
+            why: {
+              '2 cubes': 'The 4 halves are worth 2 cubes of volume, but the question asks how many whole cubes are left. Take 4 away from 8.',
+              '8 cubes': '8 is before any swap. Replacing 4 cubes removes them, so subtract 4 from 8.'
+            } },
+          { hint: 'Add the wholes to the halves: 4 half-blocks make 2 wholes.',
+            why: {
+              '8 cubic units': 'That counts each half-block as a whole cube. Each half is \u00bd, so 4 halves make 2, not 4.',
+              '4 cubic units': '4 counts only the whole cubes. The 4 half-blocks add volume too: 4 \u00d7 \u00bd more.'
+            } }
+        ]
+      },
+      'Challenge Master': {
+        after: '2 quarters make \u00bd and 4 make a whole. For 3\u00bd, try 3 cubes plus 1 half-block, or 3 cubes plus 2 quarter-wedges.',
+        steps: [
+          { hint: 'A whole cube takes 4 quarters: half a cube needs half as many.',
+            why: {
+              '4 quarters': '4 quarters fill a whole cube. You need only half a cube, so use half as many quarters.',
+              '1 quarter': '1 quarter is \u00bc, only half of a half. Add quarters until they make \u00bd.'
+            } },
+          { hint: 'Count by quarters, \u00bc at a time, until you reach one whole cube.',
+            why: {
+              '8 quarters': '8 quarters would make 2 whole cubes. Count \u00bc at a time until you reach just 1 cube.',
+              '2 quarters': '2 quarters make only \u00bd. A whole cube needs twice as many.'
+            } }
+        ]
+      },
+      'Pizza Professor': {
+        after: '3 wholes plus 2 quarters is 3\u00bd. Two slices of a 4-slice pizza are half a pizza, just like 2 quarter-wedges make \u00bd a cube.',
+        steps: [
+          { hint: 'One whole pizza is one whole cube: count the wholes.',
+            why: {
+              '6': '6 is double the pizzas. Each whole pizza is 1 cubic unit, so count 1 for each pizza.',
+              '3\u00bd': 'No halves yet: you have only whole pizzas. Each whole pizza is one whole cube, so count the wholes.'
+            } },
+          { hint: 'Two quarters make one half: add that half to the 3 wholes.',
+            why: {
+              '3\u00bc pizzas': 'That adds only one quarter. You have 2 quarter-slices, and \u00bc + \u00bc makes \u00bd.',
+              '5 pizzas': 'That counts each slice as a whole pizza. Each slice is \u00bc, so 2 slices make \u00bd of a pizza.'
+            } }
+        ]
+      }
+    },
+    base10Blocks: {
+      'Ones Expert': {
+        after: 'One cube is 1, and 7 cubes show the number 7. The ones place counts single cubes, like single pennies.',
+        steps: [
+          { hint: 'A unit is one single cube, all by itself.',
+            why: {
+              '100 cubes': '100 cubes make a hundred-flat. One unit is just a single cube.',
+              '10 cubes': '10 cubes make a ten-rod. One unit is just a single cube.'
+            } },
+          { hint: 'Each unit cube is worth 1: count the cubes.',
+            why: {
+              '70': '70 would be 7 ten-rods. These are single cubes, each worth just 1.',
+              '700': '700 would be 7 hundred-flats. These are single cubes, each worth just 1.'
+            } }
+        ]
+      },
+      'Tens Teacher': {
+        after: '5 ten-rods are 50, built from 50 cubes. Counting by tens is like counting dimes: 10, 20, 30, 40, 50.',
+        steps: [
+          { hint: 'Count the cubes in the rod, one at a time.',
+            why: {
+              '1 cube': 'The rod is one piece, but it is made of many cubes. Count each cube along the rod.',
+              '100 cubes': '100 cubes make a hundred-flat. Count the cubes in just this one rod.'
+            } },
+          { hint: 'Count by tens, one ten for each rod.',
+            why: {
+              '5': '5 counts the rods, but each rod is worth 10. Count by tens, once for each rod.',
+              '500': '500 would be 5 hundred-flats. Each rod is worth 10, so count by tens, once for each rod.'
+            } },
+          { hint: 'Each rod has 10 cubes: count by tens, once for each of the 5 rods.',
+            why: {
+              '5 cubes': '5 counts the rods. Each rod holds 10 cubes, so count by tens.',
+              '15 cubes': '15 adds 10 + 5. Each of the 5 rods holds 10 cubes, so count by tens five times.'
+            } }
+        ]
+      },
+      'Hundreds Hero': {
+        after: '10 rows of 10 make 100. A hundred-flat is 10 ten-rods side by side, like 10 dimes making a dollar.',
+        steps: [
+          { hint: 'The flat has 10 rows with 10 cubes in each: count by tens, one ten for each row.',
+            why: {
+              '10 cubes': '10 is just one row, a ten-rod. The flat has 10 rows: count by tens, one ten for each row.',
+              '20 cubes': '20 is 10 + 10, only two edges. Count every row: 10 rows of 10 cubes.'
+            } },
+          { hint: '10 \u00d7 10 means 10 groups of 10: count by tens ten times.',
+            why: {
+              '20': '20 is 10 + 10. Times means groups: 10 groups of 10, so count by tens ten times.',
+              '1000': '1000 is 10 \u00d7 10 \u00d7 10, a big cube made of flats. 10 \u00d7 10 is just 10 groups of 10.'
+            } }
+        ]
+      },
+      'Number Builder': {
+        after: '234 is 2 hundreds, 3 tens and 4 ones: 234 cubes in all. Each place is worth 10 times the place to its right.',
+        steps: [
+          { hint: 'Write the hundreds digit first, then the tens, then the ones.',
+            why: {
+              '432': 'The digits got reversed. Start with the hundreds on the left, then tens, then ones on the right.',
+              '2034': '2034 has an extra 0 in it. Each place gets one digit: hundreds, then tens, then ones, so 200 + 30 + 4 uses three places.'
+            } },
+          { hint: 'Find the place the 3 sits in: ones, tens, or hundreds?',
+            why: {
+              '3 (3 ones)': 'The ones place is on the right, and it holds the 4. The 3 is one place to the left, so it counts tens.',
+              '300 (3 hundreds)': 'The hundreds place is on the left, and it holds the 2. The 3 is in the middle place, the tens.'
+            } },
+          { hint: 'Every flat is 100 cubes and every rod is 10: add up all the cubes.',
+            why: {
+              '23 cubes': '23 drops the ones digit and counts flats and rods as single cubes. Each flat is 100 cubes and each rod is 10: add them all up.',
+              '9 cubes (2+3+4)': '2 + 3 + 4 counts blocks, not cubes. A flat holds 100 cubes and a rod holds 10, so add up their cubes.'
+            } }
+        ]
+      },
+      'Build Challenge': {
+        after: '156 is 1 hundred-flat, 5 ten-rods and 6 cubes. Moving a digit changes its value: 516 and 165 are different numbers.',
+        steps: [
+          { hint: 'Find which place the 5 sits in, counting places from the right: ones, tens, hundreds.',
+            why: {
+              '5 ones (5)': 'The ones place is on the far right, and it holds the 6. The 5 is one place to the left.',
+              '5 hundreds (500)': 'The hundreds place is on the far left, and it holds the 1. The 5 is in the middle place.'
+            } },
+          { hint: 'Write one digit per place: hundreds, then tens, then ones.',
+            why: {
+              '165': 'The tens and ones switched places. Tens go in the middle and ones go on the right.',
+              '516': 'The 5 tens landed in the hundreds place. Put hundreds first, then tens, then ones.'
+            } }
+        ]
+      }
+    },
+    fluencyMaze: {
+      'Junction 1': {
+        after: '3 \u00d7 2 \u00d7 2 = 12, so the left path it is. Quick, accurate L \u00d7 W \u00d7 H checks any box, from a moving box to a lunchbox.',
+        steps: [
+          { hint: 'Multiply all three edges: 3 \u00d7 2 for one layer, then times the 2 layers.',
+            why: {
+              '6 \u2014 go RIGHT (east)': '6 is one layer (3 \u00d7 2). The structure is 2 layers tall, so double it before you pick a path.',
+              '8 \u2014 go RIGHT (east)': 'That looks like 3 \u00d7 2 + 2, mixing multiplying and adding. Multiply all three: 3 \u00d7 2, then times 2.'
+            } },
+          { hint: '6 \u00d7 2 means 2 groups of 6.',
+            why: {
+              '8': '8 is 6 + 2. Times 2 means two groups of 6: one layer of 6 and another layer of 6.',
+              '10': '10 is too small for two layers of 6. Add 6 + 6 to check.'
+            } }
+        ]
+      },
+      'Junction 2': {
+        after: '3 \u00d7 3 \u00d7 2 = 18 cubic units. Counting edges instead of every block is what makes you fast and accurate.',
+        steps: [
+          { hint: 'Count the gold prism\'s length, width and height, then multiply the three numbers.',
+            why: {
+              '8 cubic units': '8 looks like adding the three edges. Volume multiplies them: find one layer (length \u00d7 width), then multiply by the height.',
+              '24 cubic units': '24 means one edge was counted too long. Count only the gold blocks along each edge, not the brick wall, then multiply.'
+            } }
+        ]
+      },
+      'Junction 3': {
+        after: '3 \u00d7 2 \u00d7 3 = 18 cubic units, and the finish is north. You measured three structures quickly and accurately: that is fluency.',
+        steps: [
+          { hint: 'Multiply 3 \u00d7 2 for one layer, then multiply by the 3 layers.',
+            why: {
+              '12: go EAST': '12 uses 2 layers, like Junction 1. This one is 3 tall: multiply 3 \u00d7 2, then times 3.',
+              '8: go EAST': '8 is 3 + 2 + 3, adding the edges. Volume multiplies: 3 \u00d7 2 for a layer, then times 3.'
+            } },
+          { hint: '6 \u00d7 3 means 3 groups of 6: count by sixes three times.',
+            why: {
+              '9': '9 is 6 + 3, from adding. Times 3 means three layers of 6 each.',
+              '36': '36 is 6 \u00d7 6. The structure has 3 layers, so multiply 6 by 3.'
+            } }
+        ]
+      },
+      'Finish!': {
+        after: 'Fluency frees your brain for harder problems, like planning a garden or packing a moving truck. Great work in the maze!',
+        steps: [
+          { hint: 'Think about how quick multiplying in the maze helped you choose a path.',
+            why: {
+              'It only matters for tests': 'Fluency helps far beyond tests. In the maze, fast multiplying let you think about which path to take.',
+              'It\u2019s not important': 'Quick facts matter: in the maze, fast multiplying left your mind free to plan the path.'
+            } }
+        ]
+      }
+    },
+    geometryHarbor: {
+      '1. Sora - Arrival Quay': {
+        after: 'One 3 by 2 layer holds 6 cubes: 6 cubic units. As a row it is still 6, because moving cubes changes the shape, not the volume.',
+        steps: [
+          { hint: 'A 3 by 2 layer has 2 rows of 3: count them or multiply.',
+            why: {
+              '9 cubes': '9 would be a 3 by 3 layer. This layer is 3 by 2, so it has 2 rows of 3.',
+              '5 cubes': '5 is 3 + 2, from adding the edges. The layer has 2 rows with 3 cubes in each, so multiply.'
+            } },
+          { hint: 'For one layer of cubes, the volume is the number of cubes, in cubic units.',
+            why: {
+              '6 square units': 'The count is right, but square units measure a flat surface. The cargo is made of cubes, so use cubic units.',
+              '3 cubic units': '3 counts just one row along the length. The layer has 2 rows of 3, so count both rows.'
+            } },
+          { hint: 'Moving cubes keeps the same number of cubes: what does that number measure?',
+            why: {
+              'The length is still 3 units': 'The shape changes: a 6 by 1 by 1 row is 6 long. The number of cubes is what stays the same.',
+              'The volume becomes 8 cubic units': 'No cubes were added, so the volume cannot grow. You still have the same six cubes.'
+            } }
+        ]
+      },
+      '2. Ada - Garden Area': {
+        after: '4 rows of 6 tiles cover 24 square units, room for 24 plants. Gardeners and flooring installers both measure area in square units.',
+        steps: [
+          { hint: 'Multiply rows by tiles in each row, and measure a flat surface in square units.',
+            why: {
+              '24 cubic units': 'The number is right, but cubic units measure solid space. Tiles cover a flat surface, so area uses square units.',
+              '10 square units': '10 is 6 + 4, from adding the edges. Area counts every tile: 4 rows of 6, so multiply.'
+            } },
+          { hint: 'One plant per tile: count the tiles, which is the area you just found.',
+            why: {
+              '20 plants': '20 is the perimeter, the distance around the edge. Plants fill every tile, including the inside ones: 4 rows of 6.',
+              '48 plants': '48 counts each tile twice. With one plant per tile, the number of plants matches the number of tiles.'
+            } },
+          { hint: 'Think about whether you are covering a flat surface or filling up a space.',
+            why: {
+              'Every shape must use cubic units': 'Cubic units are for filling solid space. A planting surface is flat, so it is covered by squares.',
+              'The number of rows is the perimeter': 'Perimeter is the distance around the edge, not the rows. Square units count the flat tiles that cover the surface.'
+            } }
+        ]
+      },
+      '3. Rowan - Garden Design': {
+        after: 'Same area, different fences: 6 by 4 needs 20 units, 8 by 3 needs 22 and 12 by 2 needs 28. The more square the garden, the less fencing.',
+        steps: [
+          { hint: 'Area is length times width: 3 rows of 8 tiles.',
+            why: {
+              '11 square units': '11 is 8 + 3, from adding the edges. Area covers every tile: 3 rows of 8, so multiply.',
+              '22 square units': '22 is the perimeter, the distance around the edge. Area counts the tiles inside: 3 rows of 8.'
+            } },
+          { hint: 'Walk all the way around: add all four sides, two of 8 and two of 3.',
+            why: {
+              '24 units: 8 times 3': '8 times 3 is the area, the tiles inside. Perimeter adds the four sides around the outside.',
+              '11 units: 8 + 3': '8 + 3 covers only two sides. A rectangle has four sides: add the other 8 and 3 too.'
+            } },
+          { hint: 'Less fencing means the smaller perimeter: compare 20 with the cyan garden\'s perimeter.',
+            why: {
+              'The cyan garden, by 2 units': 'The cyan perimeter is the larger one. Less fencing means the smaller perimeter, so compare 20 and 22.',
+              'Both need the same fencing': 'Equal area does not mean equal perimeter. Compare the two fence lengths: 20 for gold and 22 for cyan.'
+            } },
+          { hint: 'Add all four sides: 12 + 2 + 12 + 2.',
+            why: {
+              '14 units': '14 is 12 + 2, only two sides. Add the other two sides as well.',
+              '24 units': '24 is the area. Perimeter adds the four sides: 12 + 2 + 12 + 2.'
+            } }
+        ]
+      },
+      '4. Nia - Reservoir Works': {
+        after: '12 cubes per layer, 2 layers: 24 cubic units of capacity. Water engineers find a tank\'s capacity the same way, base area times depth.',
+        steps: [
+          { hint: 'Count only the inside space: 3 rows of 4 cubes.',
+            why: {
+              '7 cubes': '7 is 4 + 3, from adding the edges. One layer covers the floor: 3 rows of 4, so multiply.',
+              '24 cubes': '24 fills both layers. The question asks for one layer only: 3 rows of 4.'
+            } },
+          { hint: 'Multiply one layer by the number of layers.',
+            why: {
+              '14 cubic units': '14 is 12 + 2, from adding. Two layers means 12 cubes and 12 more: multiply 12 by 2.',
+              '12 square units': '12 square units is the floor area of one layer. Capacity fills space, so count cubic units for both layers.'
+            } },
+          { hint: 'Each layer is the same size: how many cubes did the first layer take?',
+            why: {
+              '2 more cubes': '2 is the number of layers. The second layer is the same size as the first, 4 by 3.',
+              '24 more cubes': '24 fills the whole reservoir. One layer is already done, so you need only one more layer.'
+            } }
+        ]
+      },
+      '5. Ivo - Equal Capacity': {
+        after: 'Both hold 24 cubic units: base area 12 and 2 layers each. Shorter but wider can match longer but narrower, like two different shelves.',
+        steps: [
+          { hint: 'Find one layer, 6 by 2, then multiply by the 2 layers.',
+            why: {
+              '12 cubic units': '12 is one layer (6 by 2). The model is 2 layers high, so double it.',
+              '10 cubic units': '10 is 6 + 2 + 2, adding the edges. Volume multiplies: 6 times 2 for one layer, then times 2.'
+            } },
+          { hint: 'Find one layer, 4 by 3, then multiply by the 2 layers.',
+            why: {
+              '9 cubic units': '9 is 4 + 3 + 2, adding the edges. Volume multiplies: 4 times 3 for one layer, then times 2.',
+              '12 cubic units': '12 is one layer (4 by 3). The model is 2 layers high, so double it.'
+            } },
+          { hint: 'Compare each model\'s base area and its number of layers.',
+            why: {
+              'The taller-looking color holds more cubes': 'Looks and color do not change the count. Compare base areas and layers: both multiply to the same total.',
+              'They have the same length and width': 'Their edges differ: 6 by 2 and 4 by 3. What matches is the base area, and both have the same number of layers.'
+            } }
+        ]
+      },
+      '6. Mira - Makers Pavilion': {
+        after: '3 by 4 by 2 and 2 by 3 by 4 both use 24 cubes. Designers swap dimensions like this to fit a room into the space they have.',
+        steps: [
+          { hint: 'Find one layer, 3 by 4, then multiply by the 2 layers.',
+            why: {
+              '12 cubes': '12 is one layer (3 by 4). The room is 2 layers high, so double it.',
+              '9 cubes': '9 is 3 + 4 + 2, adding the edges. Volume multiplies: 3 times 4, then times 2.'
+            } },
+          { hint: 'Multiply each choice\'s three numbers and look for the product that matches the first room.',
+            why: {
+              '2 by 3 by 3': '2 by 3 by 3 makes 18 cubes, fewer than the first room. Multiply each choice to find the one that matches.',
+              '3 by 3 by 3': '3 by 3 by 3 makes 27 cubes, more than the first room. Multiply each choice to find a match.'
+            } },
+          { hint: 'Volume needs all three dimensions, plus a cube count that checks the product.',
+            why: {
+              'Only the length of one edge': 'One edge cannot show volume. You need all three measured dimensions and a cube count that matches.',
+              'Only its color and a nice name': 'Colors and names do not measure space. Show the measured dimensions and a cube count that matches them.'
+            } }
+        ]
+      },
+      '7. Tess - Arcade Patterns': {
+        after: '3 arches of 9 cubes make 27, spread over 11 columns with the gaps. Gaps take up room on the ground, but they hold no volume.',
+        steps: [
+          { hint: 'Count only cubes, not gaps: 3 modules with 9 cubes each.',
+            why: {
+              '30 cubes including the gaps': 'Gaps are empty space, so they add no cubes. Count only the cubes in the 3 arches: 9 in each.',
+              '36 cubes': '36 would be 4 arches, or 3 arches with their openings filled in. Each of the 3 arches uses 9 cubes: multiply 3 by 9.'
+            } },
+          { hint: 'Add the columns in order: arch, gap, arch, gap, arch.',
+            why: {
+              '9 columns': '9 counts the arches but skips the gaps. Add the 2 one-cell gaps between the arches.',
+              '12 columns': '12 counts three gaps. Between 3 arches there are only 2 gaps: arch, gap, arch, gap, arch.'
+            } }
+        ]
+      },
+      '8. Eli - Community Studio': {
+        after: 'Both hold 36 cubic units, but the prism needs 72 square units of covering and the steps need 84. Compact shapes use less paint or wrap.',
+        steps: [
+          { hint: 'Add the cubes in both layers; empty space does not count.',
+            why: {
+              '12 cubic units': '12 is only the upper layer. Add the 24 cubes in the lower layer too.',
+              '48 cubic units, the bounding box': '48 counts the empty space beside the step. Occupied volume counts only real cubes: add the two layers.'
+            } },
+          { hint: 'Add the three different faces, 18 + 12 + 6, then double for the matching opposite faces.',
+            why: {
+              '36 square units': '36 is 18 + 12 + 6, just three faces. Each face has a matching face on the opposite side, so double it.',
+              '84 square units': '84 is the stepped model\'s surface. For this prism, add 18 + 12 + 6 and then double it.'
+            } },
+          { hint: 'Less covering means fewer exposed faces: compare 84 and 72.',
+            why: {
+              'The stepped model, by 12 square units': 'The stepped model has more exposed faces, 84. Less covering means the smaller number of faces.',
+              'They use equal covering': 'Equal volume does not mean equal surface area. Compare the face counts: 84 and 72 are different.'
+            } }
+        ]
+      }
+    },
+    scaleUp: {
+      'Scale Scout': {
+        after: 'Double every edge and you get 2 \u00d7 2 \u00d7 2 = 8 copies. Prism A holds 2 cubic units, so B holds 8 \u00d7 2 = 16.',
+        steps: [
+          { hint: 'Doubling a length means times 2. Count along the long edge of B, or measure it with M.',
+            why: {
+              '6 blocks': '6 blocks is the length of prism C, which triples A. B doubles A: 2 \u00d7 2.',
+              '8 blocks': '8 is 2 \u00d7 2 \u00d7 2, the factor for volume. One length only doubles: 2 \u00d7 2 = 4.'
+            } },
+          { hint: 'Count the pieces in one layer of B, then count the layers.',
+            why: {
+              '2 copies': '2 copies would only double the length. B is also twice as wide and twice as tall: 2 \u00d7 2 \u00d7 2.',
+              '4 copies': '4 copies fill one layer of B. B has two layers of copies: 4 \u00d7 2.'
+            } },
+          { hint: 'B is 8 copies of A, and each copy holds 2 cubic units. Or multiply the edges of B.',
+            why: {
+              '8 cubic units': '8 is the number of copies. Each copy of A holds 2 cubic units, so 8 copies hold 8 \u00d7 2.',
+              '64 cubic units': '64 is 4 \u00d7 4 \u00d7 4, a cube with the length of B on every edge. B is 4 by 2 by 2.'
+            } }
+        ]
+      },
+      'Surface Sage': {
+        after: 'Each face doubled in two directions, so the paint grew 2 \u00d7 2 = 4 times: 10 became 40. The volume grew 8 times.',
+        steps: [
+          { hint: 'Add all six faces: top 2, bottom 2, front 2, back 2 and two square ends of 1.',
+            why: {
+              '5 square units': '5 counts three faces: top, front and one end. Each face has a twin on the opposite side, so double it.',
+              '8 square units': '8 counts the four long faces. Add the two square ends, 1 square unit each.'
+            } },
+          { hint: 'Top and bottom are 4 \u00d7 2, front and back are 4 \u00d7 2, and the two ends are 2 \u00d7 2. Add all six.',
+            why: {
+              '48 square units': '48 treats all six faces as 4 \u00d7 2. The two ends are only 2 \u00d7 2 = 4 square units each.',
+              '80 square units': '80 is 10 \u00d7 8, the volume factor. Each face grows only 2 \u00d7 2 = 4 times.'
+            } },
+          { hint: 'Divide: 40 \u00f7 10. Each face doubled in two directions, length and width.',
+            why: {
+              '2 times': 'The edges double, but each face doubles in two directions, length and width: 2 \u00d7 2.',
+              '8 times': '8 times is how the volume grows. Paint covers flat faces, and each face grows 2 \u00d7 2 = 4 times.'
+            } }
+        ]
+      },
+      'Triple Tester': {
+        after: 'Scale 3: each face grows 3 \u00d7 3 = 9 times (10 became 90) and the volume grows 3 \u00d7 3 \u00d7 3 = 27 times (2 became 54).',
+        steps: [
+          { hint: 'Count the copies in one layer of C, then multiply by the 3 layers.',
+            why: {
+              '3 copies': '3 copies would only triple the length. C is also 3 times as wide and 3 times as tall: 3 \u00d7 3 \u00d7 3.',
+              '9 copies': '9 copies fill one layer of C. C has 3 layers of copies: 9 \u00d7 3.'
+            } },
+          { hint: 'Multiply the 27 copies by 2 cubic units each, or multiply the edges of C: 6 \u00d7 3 \u00d7 3.',
+            why: {
+              '27 cubic units': '27 is the number of copies. Each copy holds 2 cubic units: 27 \u00d7 2.',
+              '216 cubic units': '216 is 6 \u00d7 6 \u00d7 6, a cube with the length of C on every edge. C is 6 by 3 by 3.'
+            } },
+          { hint: 'Top and bottom are 6 \u00d7 3, front and back are 6 \u00d7 3, and the two ends are 3 \u00d7 3. Add all six.',
+            why: {
+              '108 square units': '108 treats all six faces as 6 \u00d7 3. The two ends are only 3 \u00d7 3 = 9 square units each.',
+              '270 square units': '270 is 10 \u00d7 27, the volume factor. Each face grows only 3 \u00d7 3 = 9 times: 10 \u00d7 9.'
+            } }
+        ]
+      },
+      'Pattern Pro': {
+        after: 'Scale by k: lengths grow k times, faces k \u00d7 k times and volume k \u00d7 k \u00d7 k times. That is why a doubled box holds 8 times as much.',
+        steps: [
+          { hint: 'Count one layer of 2 by 2, then count the layers.',
+            why: {
+              '4 cubes': '4 cubes make one layer of 2 by 2. The cube is 2 layers tall: 4 \u00d7 2.',
+              '6 cubes': 'A cube has 6 faces, but faces are not cubes. Count the cubes: 2 \u00d7 2 \u00d7 2.'
+            } },
+          { hint: 'Look at the cubes: scale 2 gave 8 = 2 \u00d7 2 \u00d7 2, and scale 3 gave 27 = 3 \u00d7 3 \u00d7 3.',
+            why: {
+              'k times as much': 'Only one length grows k times. Volume grows in three directions: k \u00d7 k \u00d7 k, which is k cubed.',
+              'k squared times as much': 'k squared is how a face, or the paint, grows. Volume grows in three directions: k \u00d7 k \u00d7 k.'
+            } },
+          { hint: 'Doubling every edge makes 2 \u00d7 2 \u00d7 2 copies of the box. How much do they hold together?',
+            why: {
+              '10 cubic units': '10 only doubles the volume. Doubling every edge makes 2 \u00d7 2 \u00d7 2 = 8 copies: 5 \u00d7 8.',
+              '125 cubic units': '125 is 5 \u00d7 5 \u00d7 5: you cubed the volume. Cube the scale instead: 2 \u00d7 2 \u00d7 2 = 8, then 5 \u00d7 8.'
+            } }
+        ]
+      }
+    }
+  };
+  // One rule per objective (same order), naming the evidence that shows it is met.
+  // Objectives used to tick by answer COUNT (objective i done once i questions were
+  // answered, in any order), so they rarely described what the student had done.
+  var GW_OBJECTIVE_EVIDENCE = {
+    volumeExplorer: [{ npc: 'Quiz Master' }, { npc: 'Builder Bot' }, { npc: 'L-Block Sage' }],
+    buildChallenge: [{ buildHeight: 4 }, { npcs: ['Room Inspector', 'Volume Coach'] }, { self: true }, { self: true }],
+    realWorld: [{ npc: 'Packing Expert' }, { npc: 'Inventory Checker' }, { npc: 'Design Challenge' }],
+    fractionVolume: [{ npc: 'Between Quiz' }, { npc: 'Height Detective' }, { npc: 'Between Quiz' }, { npc: 'Container Challenge' }],
+    volumeEstimation: [{ predict: 1 }, { measure: 1 }, { npcs: ['Small Quiz', 'Medium Quiz', 'Large Quiz'] }, { complete: true }],
+    fractionBuilder: [{ place: { shapes: ['halfA', 'halfB'], count: 2 } }, { npc: 'Half Quiz' }, { measureVolume: 3.5 }, { shapes: 3 }],
+    base10Blocks: [{ npcs: ['Ones Expert', 'Tens Teacher', 'Hundreds Hero'] }, { npc: 'Number Builder' }, { measure: 2 }, { npc: 'Build Challenge' }],
+    fluencyMaze: [{ npcs: ['Junction 1', 'Junction 2', 'Junction 3'] }, { npc: 'Junction 3' }, { npc: 'Finish!' }, { complete: true }],
+    scaleUp: [{ npc: 'Scale Scout' }, { net: 1, netDims: [4, 2, 2] }, { npc: 'Surface Sage' }, { npc: 'Triple Tester' }, { npc: 'Pattern Pro' }, { build: { dims: [4, 2, 2], label: 'prism A doubled' } }]
+  };
+  (function attachLessonCoaching() {
+    Object.keys(SAMPLE_LESSONS).forEach(function (key) {
+      var lesson = SAMPLE_LESSONS[key], coaching = GW_LESSON_COACHING[key] || {};
+      if (!lesson || !Array.isArray(lesson.npcs)) return;
+      if (GW_OBJECTIVE_EVIDENCE[key] && Array.isArray(lesson.objectives) && GW_OBJECTIVE_EVIDENCE[key].length === lesson.objectives.length) lesson.objectiveEvidence = GW_OBJECTIVE_EVIDENCE[key];
+      lesson.npcs.forEach(function (npc) {
+        var entry = npc && npc.question && coaching[npc.name];
+        if (!entry) return;
+        if (typeof entry.after === 'string') npc.after = entry.after;
+        geometryQuestionSequence(npc.question).forEach(function (step, i) {
+          var c = entry.steps && entry.steps[i];
+          if (!c) return;
+          if (typeof c.hint === 'string') step.hint = c.hint;
+          if (c.why && typeof c.why === 'object') step.why = c.why;
+        });
+      });
+    });
+  })();
+
   // Rotate each question by a per-question offset.
   //
   // Questions form a TREE: npcs[].question plus a recursive followUp chain,
@@ -5505,8 +6617,8 @@
   // re-read by index on every render (a Math.random() there would re-deal the
   // choices under the student mid-question).
   //
-  // Grading is `ci === curQ.correct` (INDEX) and there is no per-option
-  // feedback array, so only choices + correct move. validateLesson() is NOT a
+  // Grading is `ci === curQ.correct` (INDEX) and per-choice feedback (`why`) is
+  // keyed by choice text, so only choices + correct move. validateLesson() is NOT a
   // hook point: it sanitises AI-generated lessons, not this authored data.
   function gwRotateQuestionTree(node, counter) {
     if (!node || !Array.isArray(node.choices) || typeof node.correct !== "number") return node;
@@ -5541,7 +6653,7 @@
   // is not in it: it has no questions, so it can never complete, and routing a
   // student into it from a completion dialog implied a finish it cannot give. It
   // stays on Home as optional exploration.
-  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze', 'geometryHarbor'];
+  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze', 'geometryHarbor', 'scaleUp'];
 
   // Lesson progress in localStorage. gw_progress_<title> holds a lesson's answers (a
   // finished lesson's score equals its question count). When a finished lesson's
@@ -5870,6 +6982,606 @@
     }
     visit(question);
     return result;
+  }
+
+  // The quantity a choice or a typed answer states: "60 cubic units" -> 60,
+  // "3½" or "3 1/2" -> 3.5, "4 blocks (6 - 1 - 1)" -> 4 (brackets are notes).
+  // More digits after the number ("6×3×2 = 36") or a leading word means it is
+  // not a quantity, and null comes back.
+  var GW_FRACTION_GLYPHS = { '\u00BD': 0.5, '\u00BC': 0.25, '\u00BE': 0.75 };
+  function geometryParseQuantity(text) {
+    var s = String(text == null ? '' : text).replace(/\([^)]*\)/g, ' ').replace(/(\d),(?=\d{3}\b)/g, '$1').trim();
+    var m = /^(\d+)\s*\/\s*(\d+)/.exec(s), value;
+    if (m) {
+      if (!Number(m[2])) return null;
+      value = Number(m[1]) / Number(m[2]);
+    } else {
+      m = /^(\d*\.\d+|\d+)?\s*(?:(\d+)\s*\/\s*(\d+)|([\u00BD\u00BC\u00BE]))?/.exec(s);
+      if (!m || (!m[1] && !m[2] && !m[4]) || (m[2] && !Number(m[3]))) return null;
+      value = (m[1] ? Number(m[1]) : 0) + (m[4] ? GW_FRACTION_GLYPHS[m[4]] : m[2] ? Number(m[2]) / Number(m[3]) : 0);
+    }
+    return /\d/.test(s.slice(m[0].length)) || !isFinite(value) ? null : value;
+  }
+  // A step can be answered by typing when its correct choice states a quantity no
+  // other choice shares ("6 square units" beside "6 cubic units" needs the choices).
+  function geometryStepTypeable(step) {
+    if (!step || !Array.isArray(step.choices)) return false;
+    var target = geometryParseQuantity(step.choices[step.correct]);
+    return target != null && step.choices.every(function (choice, i) {
+      var v = i === step.correct ? null : geometryParseQuantity(choice);
+      return v == null || Math.abs(v - target) > 1e-9;
+    });
+  }
+  // A typed answer is read as the choice with the same quantity, so a typed
+  // distractor gets that distractor's own feedback.
+  function geometryTypedAnswer(step, typed) {
+    var value = geometryParseQuantity(typed);
+    if (value == null) return { status: 'invalid' };
+    for (var i = 0; i < ((step && step.choices) || []).length; i++) {
+      var v = geometryParseQuantity(step.choices[i]);
+      if (v != null && Math.abs(v - value) < 1e-9) return { status: i === step.correct ? 'correct' : 'choice', choiceIndex: i, value: value };
+    }
+    return { status: 'other', value: value };
+  }
+  // What a wrong attempt says: the note written for that choice; the step's hint
+  // when there is none (or from the third try); else the caller's generic nudge.
+  function geometryWrongFeedback(step, answerText, attempt, fallback) {
+    var why = step && step.why && typeof step.why === 'object' && Object.prototype.hasOwnProperty.call(step.why, answerText) && typeof step.why[answerText] === 'string' ? step.why[answerText].slice(0, 240) : '';
+    var hint = step && typeof step.hint === 'string' ? step.hint.slice(0, 240) : '';
+    var parts = why ? [why] : [];
+    if (!why || attempt >= 3) parts.push(hint || fallback || 'Look at the structure again and check each number you use.');
+    return parts.join(' ');
+  }
+  // The student's own blocks as connected groups (faces touching), largest first: each
+  // group's box, and whether it is a solid box of whole unit cubes. cells: [{x,y,z,shape}].
+  function geometryStudentBuilds(cells) {
+    var byKey = {}, seen = {}, out = [], dirs = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+    (cells || []).slice(0, 3000).forEach(function (c) { if (c && isFinite(c.x) && isFinite(c.y) && isFinite(c.z)) byKey[c.x + ',' + c.y + ',' + c.z] = c; });
+    Object.keys(byKey).forEach(function (start) {
+      if (seen[start]) return;
+      var stack = [start], group = [];
+      seen[start] = true;
+      while (stack.length) {
+        var c = byKey[stack.pop()];
+        group.push(c);
+        dirs.forEach(function (d) { var k = (c.x + d[0]) + ',' + (c.y + d[1]) + ',' + (c.z + d[2]); if (byKey[k] && !seen[k]) { seen[k] = true; stack.push(k); } });
+      }
+      var span = function (a) { var lo = Infinity, hi = -Infinity; group.forEach(function (c) { lo = Math.min(lo, c[a]); hi = Math.max(hi, c[a]); }); return hi - lo + 1; };
+      var L = span('x'), W = span('z'), H = span('y');
+      out.push({ L: L, W: W, H: H, count: group.length, solid: group.length === L * W * H, cubes: group.every(function (c) { return (c.shape || 'cube') === 'cube'; }) });
+    });
+    return out.sort(function (a, b) { return b.count - a.count; });
+  }
+  // Whether one objective's evidence is in. state: { answered: {npcName:true},
+  // measurements: complete records, placements: [{shape}], nets: net_unfold data,
+  // builds: geometryStudentBuilds, studentHeight, complete, selfChecked }.
+  function geometryObjectiveStatus(rule, state) {
+    rule = rule || {}; state = state || {};
+    var answered = state.answered || {}, measurements = state.measurements || [], placements = state.placements || [];
+    function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+    // Finishing the questions ticks only what they cover. A building or measuring
+    // objective still needs its own evidence: Fraction Builder used to show "Place two
+    // half-blocks" done with no block placed.
+    if (rule.complete) return state.complete ? { done: true, evidence: 'Lesson complete' } : { done: false, evidence: 'Finish the lesson' };
+    if (rule.npc || rule.npcs) {
+      var names = rule.npcs || [rule.npc], solved = names.filter(function (n) { return answered[n]; }).length;
+      return { done: solved === names.length, evidence: names.length === 1 ? (solved ? rule.npc + ' solved' : 'Answer ' + rule.npc + '\u2019s question') : solved + ' of ' + names.length + ' guides solved', npcs: names };
+    }
+    if (rule.measure) return { done: measurements.length >= rule.measure, evidence: Math.min(measurements.length, rule.measure) + ' of ' + plural(rule.measure, 'measurement') };
+    if (rule.measureVolume != null) {
+      var hit = measurements.some(function (m) { return Math.abs(Number(m.occupiedVolume) - rule.measureVolume) < 1e-9; });
+      return { done: hit, evidence: hit ? 'Measured ' + formatVolume(rule.measureVolume) + ' cubic units' : 'Measure a build of ' + formatVolume(rule.measureVolume) + ' cubic units' };
+    }
+    if (rule.predict) {
+      var predicted = measurements.filter(function (m) { return typeof m.prediction === 'number'; }).length;
+      return { done: predicted >= rule.predict, evidence: Math.min(predicted, rule.predict) + ' of ' + plural(rule.predict, 'estimate') + ' checked by measuring' };
+    }
+    if (rule.place) {
+      var placed = placements.filter(function (p) { return !rule.place.shapes || rule.place.shapes.indexOf(p.shape || 'cube') >= 0; }).length;
+      return { done: placed >= rule.place.count, evidence: Math.min(placed, rule.place.count) + ' of ' + rule.place.count + ' placed' };
+    }
+    if (rule.shapes) {
+      var kinds = {}; placements.forEach(function (p) { kinds[p.shape || 'cube'] = true; });
+      var used = Object.keys(kinds).length;
+      return { done: used >= rule.shapes, evidence: Math.min(used, rule.shapes) + ' of ' + rule.shapes + ' shapes used' };
+    }
+    if (rule.buildHeight) {
+      var h = Number(state.studentHeight) || 0;
+      return { done: h >= rule.buildHeight, evidence: Math.min(h, rule.buildHeight) + ' of ' + rule.buildHeight + ' layers high' };
+    }
+    if (rule.net) {
+      var dims = Array.isArray(rule.netDims) ? rule.netDims.slice().sort(function (a, b) { return a - b; }).join('x') : '';
+      var nets = (state.nets || []).filter(function (n) { return n && (!dims || [n.L, n.W, n.H].sort(function (a, b) { return a - b; }).join('x') === dims); }).length;
+      return { done: nets >= rule.net, evidence: nets >= rule.net ? 'Net unfolded' : 'Face the prism and use the Net tool (N)' };
+    }
+    if (rule.build) {
+      // A solid box of whole unit cubes with these edges, standing any way up. With a
+      // label ("prism A doubled") the size stays unsaid until it is built: working it
+      // out is the lesson, and Scale Scout asks for the length.
+      var byNumber = function (a, b) { return a - b; }, want = (rule.build.dims || []).slice().sort(byNumber).join('x'), dims = (rule.build.dims || []).join(' by ');
+      var label = typeof rule.build.label === 'string' ? rule.build.label : '', builds = state.builds || [];
+      if (builds.some(function (b) { return b.solid && b.cubes && [b.L, b.W, b.H].sort(byNumber).join('x') === want; })) return { done: true, evidence: label ? 'You built ' + label + ': ' + dims : 'You built a ' + dims + ' prism' };
+      var best = builds[0];
+      if (!best) return { done: false, evidence: label ? 'Build ' + label + ' from unit cubes' : 'Build a solid ' + dims + ' prism from unit cubes' };
+      var sizeNow = best.L + ' by ' + best.W + ' by ' + best.H;
+      return { done: false, evidence: !best.solid ? 'Your build (' + sizeNow + ') has gaps. Fill it in.' : !best.cubes ? 'Use whole unit cubes, not part blocks' : label ? 'Your build is ' + sizeNow + '. Check each edge of ' + label + '.' : 'Your build is ' + sizeNow + '. Aim for ' + dims + '.' };
+    }
+    if (rule.self) return { done: !!state.selfChecked, evidence: state.selfChecked ? 'You marked this done' : 'Mark it done when you have', self: true };
+    return state.complete ? { done: true, evidence: 'Lesson complete' } : { done: false, evidence: 'Finish the lesson' };
+  }
+
+  // ── Practice rounds ──
+  // A new world every round: four stations whose prisms, numbers and answer choices
+  // all come from one round number, so Round 4821 is the same world on every screen
+  // and a class can play one round together. Each wrong choice is a named mistake
+  // with its own note, built from the same numbers. A stretch round (S4821) uses
+  // bigger numbers, a box with no lid, a crate's missing depth and an L-shape whose
+  // parts differ in height.
+  // tests/geometry_world_practice_round.test.js rebuilds the world for every round
+  // number at both levels and measures each keyed answer from it.
+  var GW_PRACTICE_STATIONS = ['Counting Coach', 'Net Maker', 'Crate Builder', 'L-Shape Scout'];
+  // The skill each station practises, for the tracker on the Home card.
+  var GW_PRACTICE_SKILLS = { 'Counting Coach': 'Volume in layers', 'Net Maker': 'Surface area from nets', 'Crate Builder': 'Missing dimensions', 'L-Shape Scout': 'Composite shapes' };
+  var GW_PRACTICE_KEY = 'gw_practice';
+  var GW_PRACTICE_CACHE = {};
+  function geometryPracticeRandom(seed) {
+    var a = (Number(seed) >>> 0) || 1;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = Math.imul(a ^ (a >>> 15), a | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  // A round number a student can type: 1 to 9999, else 0.
+  function geometryPracticeSeed(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!/^\d{1,4}$/.test(text)) return 0;
+    var n = Number(text);
+    return n >= 1 && n <= 9999 ? n : 0;
+  }
+  // practice_42 is round 42; practice_s42 is stretch round 42.
+  function geometryPracticeKey(seed, level) { return 'practice_' + (level === 'stretch' ? 's' : '') + seed; }
+  function geometryPracticeRound(key) {
+    var m = /^practice_(s?)([1-9]\d{0,3})$/.exec(String(key || '')), seed = m ? geometryPracticeSeed(m[2]) : 0;
+    if (!seed) return null;
+    var level = m[1] ? 'stretch' : 'core';
+    return { seed: seed, level: level, key: geometryPracticeKey(seed, level) };
+  }
+  // What a student types to join a class round: 42, or S42 for a stretch round.
+  function geometryPracticeParseRound(text, level) {
+    var t = String(text == null ? '' : text).trim(), m = /^s\s*(\d{1,4})$/i.exec(t);
+    var seed = geometryPracticeSeed(m ? m[1] : t);
+    return seed ? { seed: seed, level: m || level === 'stretch' ? 'stretch' : 'core' } : null;
+  }
+  function geometryPracticeLabel(round) { return (round && round.level === 'stretch' ? 'Stretch round ' : 'Round ') + (round ? round.seed : ''); }
+  function geometryPracticeLesson(seed, level) {
+    seed = geometryPracticeSeed(seed);
+    if (!seed) return null;
+    var stretch = level === 'stretch';
+    // Core rounds keep their own stream, so adding stretch rounds changed none of them.
+    var rand = geometryPracticeRandom(seed * 7919 + (stretch ? 104729 : 0));
+    function int(lo, hi) { return lo + Math.floor(rand() * (hi - lo + 1)); }
+    var X = ' \u00d7 ', DIV = ' \u00f7 ';
+    function unitText(n, unit) {
+      var one = { 'cubic units': 'cubic unit', 'square units': 'square unit', cubes: 'cube', layers: 'layer', walls: 'wall' }[unit];
+      return n + ' ' + (n === 1 && one ? one : unit);
+    }
+    // candidates are [value, note], most common mistake first. Choices are listed
+    // smallest first, and the round picks whether the answer is the smallest, middle
+    // or largest; misconceptions mostly undercount, so taking the first two would
+    // make the middle choice right almost every time.
+    function step(text, truth, unit, candidates, hint) {
+      var pool = [];
+      candidates.forEach(function (c) {
+        if (c[0] > 0 && Math.round(c[0]) === c[0] && c[0] !== truth && !pool.some(function (p) { return p[0] === c[0]; })) pool.push(c);
+      });
+      var below = pool.filter(function (c) { return c[0] < truth; }), above = pool.filter(function (c) { return c[0] > truth; });
+      // rank = how many wrong choices sit below the answer; pick among the possible ones.
+      var ranks = [0, 1, 2].filter(function (r) { return below.length >= r && above.length >= 2 - r; });
+      var rank = ranks.length ? ranks[int(0, ranks.length - 1)] : 1;
+      var wrong = below.slice(0, rank).concat(above.slice(0, 2 - rank));
+      pool.forEach(function (c) { if (wrong.length < 2 && wrong.indexOf(c) < 0) wrong.push(c); });
+      var values = [truth].concat(wrong.map(function (c) { return c[0]; })).sort(function (a, b) { return a - b; });
+      var why = {};
+      wrong.forEach(function (c) { why[unitText(c[0], unit)] = c[1]; });
+      return { text: text, choices: values.map(function (v) { return unitText(v, unit); }), correct: values.indexOf(truth), hint: hint, why: why };
+    }
+    function tree(steps) { return Object.assign({}, steps[0], { followUp: steps.slice(1) }); }
+
+    // Station 1: a blue prism to count in layers.
+    var aL = stretch ? int(4, 7) : int(3, 5), aW = stretch ? int(3, 5) : int(2, 4), aH = stretch ? int(3, 5) : int(2, 4);
+    var aLayer = aL * aW, aVol = aLayer * aH, aSurface = 2 * (aL * aW + aL * aH + aW * aH);
+    // Station 2: a gold prism for the Net tool. At most 3 wide, so its net clears it.
+    var bL = stretch ? int(3, 6) : int(3, 5), bW = int(2, 3), bH = stretch ? int(2, 5) : int(2, 4);
+    if (bL === bW && bW === bH) bH = 2;
+    var bTop = bL * bW, bFront = bL * bH, bSide = bW * bH, bSurface = 2 * (bTop + bFront + bSide);
+    // Station 3: a crate with one part built. Core: the bottom layer (find the height).
+    // Stretch: the front wall, cL long and cH tall (find the depth, cW walls).
+    var cL = stretch ? int(3, 5) : int(2, 4), cW = stretch ? int(3, 5) : int(2, 4), cH = stretch ? int(2, 4) : int(3, 5);
+    var cLayer = cL * cW, cWall = cL * cH, cVol = cLayer * cH;
+    // Station 4: an L-shape, a gold part and a shorter blue part. Stretch parts differ in height.
+    var dA = int(3, 5), dB = int(2, 3), dC = int(2, dA - 1), dD = int(2, 3), dH = stretch ? int(2, 4) : int(2, 3), dH2 = dH;
+    if (stretch) { dH2 = int(2, 3); if (dH2 >= dH) dH2 += 1; }
+    var dTall = Math.max(dH, dH2), dGold = dA * dB * dH, dBlue = dC * dD * dH2, dBox = dA * (dB + dD) * dTall;
+
+    var counting = tree([
+      step('How many cubes are in the bottom layer of the blue prism?', aLayer, 'cubes', [
+        [2 * (aL + aW) - 4, 'That counts only the cubes around the edge. A layer is filled in: ' + aW + ' rows of ' + aL + ' cubes.'],
+        [aL + aW, 'You added one row and one column. A layer is ' + aW + ' rows of ' + aL + ', so multiply: ' + aL + X + aW + '.'],
+        [aL * aH, 'That is the front face (' + aL + X + aH + '). The bottom layer is ' + aL + ' long and ' + aW + ' wide.'],
+        [aL, 'That is one row. The bottom layer has ' + aW + ' rows of ' + aL + '.'],
+        [aVol, 'That is every cube in the prism. Count just the bottom layer.'],
+        [(aL + 1) * (aW + 1), 'That counts the corner points of the grid. Count the cubes instead: ' + aW + ' rows of ' + aL + '.']
+      ], 'Count the cubes in one row, then count the rows.'),
+      step('How many layers tall is the blue prism?', aH, 'layers', [
+        [aL, 'That is its length along the grass. Count the layers going up.'],
+        [aW, 'That is its width along the grass. Count the layers going up.'],
+        [aH + 1, 'Count again from the bottom. The grass is not part of the prism.'],
+        [aH - 1, 'Count again, and include the bottom layer.'],
+        [aH + 2, 'Count again, one layer at a time from the bottom up.'],
+        [aH - 2, 'Count again, one layer at a time from the bottom up.']
+      ], 'Look at one corner and count the cubes going up.'),
+      step('So what is the volume of the blue prism?', aVol, 'cubic units', [
+        [aLayer + aH, 'You added the layers on. Each of the ' + aH + ' layers holds ' + aLayer + ' cubes, so multiply: ' + aLayer + X + aH + '.'],
+        [aSurface, 'That is the surface area, the squares on the outside. Volume counts the cubes: ' + aLayer + X + aH + '.'],
+        [aL + aW + aH, 'You added the three edges. Volume multiplies them: ' + aL + X + aW + X + aH + '.'],
+        [aLayer, 'That is one layer. The prism has ' + aH + ' layers.'],
+        [aLayer * (aH + 1), 'That counts one layer too many. The grass is not part of the prism: ' + aLayer + X + aH + '.']
+      ], 'Cubes in one layer times the number of layers.')
+    ]);
+    var topFace = step('What is the area of the top face?', bTop, 'square units', [
+      [bL + bW, 'You added two edges. Area counts the squares: ' + bL + X + bW + '.'],
+      [2 * (bL + bW), 'That is the perimeter, the distance around the top. Area counts the squares inside: ' + bL + X + bW + '.'],
+      [bFront, 'That is the front face (' + bL + X + bH + '). The top is ' + bL + ' by ' + bW + '.'],
+      [bSide, 'That is a side face (' + bW + X + bH + '). The top is ' + bL + ' by ' + bW + '.'],
+      [bL * bW * bH, 'That is the volume of the whole prism. The top face is one flat rectangle: ' + bL + X + bW + '.'],
+      [bL, 'That is the length of one edge. Area counts the squares: ' + bL + X + bW + '.'],
+      [(bL + 1) * (bW + 1), 'That counts the corner points of the grid. Area counts the squares: ' + bL + X + bW + '.']
+    ], 'Top face: length times width.');
+    // The closed surface area; a stretch round asks it with the lid on, and leaves
+    // "one face missing" for the no-lid step that follows.
+    var closedCandidates = [
+      [bTop + bFront + bSide, 'That is three faces: one top, one front and one side. Each has a twin on the opposite side, so double it.'],
+      [bL * bW * bH, 'That is the volume, the cubes inside. Surface area adds up the six faces outside.'],
+      [6 * bTop, 'That is six copies of the top, but the front and sides are different sizes. Add top, front and side, then double.'],
+      [2 * (bTop + bFront), 'That leaves out the two side faces (' + bW + X + bH + ' each).'],
+      [bSurface - bTop, 'That leaves out one face. A closed box has six: top and bottom, front and back, and two sides.'],
+      [6 * bL * bW * bH, 'That counts all six faces of every cube, even the faces hidden inside. Surface area counts only the outside.'],
+      [(2 * bL + 2 * bW) * (bH + 2 * bW), 'That is the whole rectangle of paper around the net. The net covers only its six faces: 2' + X + '(' + bTop + ' + ' + bFront + ' + ' + bSide + ').']
+    ];
+    var net = tree(stretch ? [
+      topFace,
+      step('Unfold it. What is the total surface area with the lid on?', bSurface, 'square units', closedCandidates.filter(function (c) { return c[0] !== bSurface - bTop; }), 'Add top, front and side, then double for the opposite faces.'),
+      step('My box has no lid. How much cardboard does it need?', bSurface - bTop, 'square units', [
+        [bSurface, 'That includes the lid. A box with no lid has five faces, so take the top away.'],
+        [bSurface - 2 * bTop, 'That takes away the bottom too. Only the lid is missing.'],
+        [bSurface - bFront, 'You took away a front face. The lid is the top: ' + bL + X + bW + '.'],
+        [bSurface - bSide, 'You took away a side face. The lid is the top: ' + bL + X + bW + '.'],
+        [bTop + bFront + bSide, 'That is three faces. A box with no lid has five: the bottom, two fronts and two sides.'],
+        [bSurface + bTop, 'That adds the lid again. A box with no lid has one face fewer than a closed box.'],
+        [bL * bW * bH, 'That is the volume, the cubes inside. Cardboard covers the faces outside.']
+      ], 'Closed surface area, then take away the lid: the top face.')
+    ] : [
+      topFace,
+      step('What is the area of the front face?', bFront, 'square units', [
+        [bL + bH, 'You added two edges. Area counts the squares: ' + bL + X + bH + '.'],
+        [bTop, 'That is the top face. The front is ' + bL + ' long and ' + bH + ' tall.'],
+        [2 * (bL + bH), 'That is the perimeter of the front. Area counts the squares inside: ' + bL + X + bH + '.'],
+        [bSide, 'That is a side face (' + bW + X + bH + '). The front is ' + bL + ' long and ' + bH + ' tall.'],
+        [bL * bW * bH, 'That is the volume of the whole prism. The front face is one flat rectangle: ' + bL + X + bH + '.'],
+        [bL, 'That is the length of one edge. Area counts the squares: ' + bL + X + bH + '.']
+      ], 'Front face: length times height.'),
+      step('Each face has a twin on the opposite side. What is the total surface area?', bSurface, 'square units', closedCandidates, 'Add top, front and side, then double for the opposite faces.')
+    ]);
+    var crate = tree(stretch ? [
+      step('How many cubes are in the front wall?', cWall, 'cubes', [
+        [cL + cH, 'You added one row and one column. The wall is ' + cH + ' rows of ' + cL + ': ' + cL + X + cH + '.'],
+        [2 * (cL + cH) - 4, 'That counts only the cubes around the edge. The wall is filled in: ' + cL + X + cH + '.'],
+        [cVol, 'That is the whole crate when it is full. Count just the front wall.'],
+        [cL, 'That is one row. The wall has ' + cH + ' rows of ' + cL + '.'],
+        [(cL + 1) * (cH + 1), 'That counts the corner points of the grid. Count the cubes of the wall instead: ' + cL + X + cH + '.']
+      ], 'Count one row, then count the rows.'),
+      step('The crate must hold ' + cVol + ' cubes. How many walls like this, front to back, make the crate?', cW, 'walls', [
+        [cVol - cWall, 'You took away one wall. Divide instead: how many walls of ' + cWall + ' make ' + cVol + '?'],
+        [cVol / cL, 'You divided by the length only. One wall holds ' + cWall + ' cubes, so divide ' + cVol + ' by ' + cWall + '.'],
+        [cVol / cH, 'You divided by the height only. One wall holds ' + cWall + ' cubes, so divide ' + cVol + ' by ' + cWall + '.'],
+        [cW + 1, 'Check it: ' + (cW + 1) + ' walls of ' + cWall + ' is ' + ((cW + 1) * cWall) + ' cubes, more than ' + cVol + '.'],
+        [cW - 1, 'Check it: ' + (cW - 1) + ' walls of ' + cWall + ' is ' + ((cW - 1) * cWall) + ' cubes, fewer than ' + cVol + '.'],
+        [cL, 'That is the length of the wall. The depth is how many walls of ' + cWall + ' make ' + cVol + '.'],
+        [cH, 'That is the height of the wall. The depth is how many walls of ' + cWall + ' make ' + cVol + '.'],
+        [cW + 2, 'Check it: ' + (cW + 2) + ' walls of ' + cWall + ' is ' + ((cW + 2) * cWall) + ' cubes, more than ' + cVol + '.'],
+        [cW - 2, 'Check it: ' + (cW - 2) + ' walls of ' + cWall + ' is ' + ((cW - 2) * cWall) + ' cubes, fewer than ' + cVol + '.']
+      ], 'Walls = cubes in the crate' + DIV + 'cubes in one wall.')
+    ] : [
+      step('How many cubes fit in the bottom layer?', cLayer, 'cubes', [
+        [cL + cW, 'You added one row and one column. The layer is ' + cW + ' rows of ' + cL + ': ' + cL + X + cW + '.'],
+        [2 * (cL + cW) - 4, 'That counts only the cubes around the edge. The bottom layer is filled in: ' + cL + X + cW + '.'],
+        [cVol, 'That is the whole crate when it is full. Count just the bottom layer.'],
+        [cL, 'That is one row. The bottom layer has ' + cW + ' rows of ' + cL + '.'],
+        [(cL + 1) * (cW + 1), 'That counts the corner points of the grid. Count the squares of the layer instead: ' + cL + X + cW + '.']
+      ], 'Count one row, then count the rows.'),
+      step('The crate must hold ' + cVol + ' cubes. How many layers tall must it be?', cH, 'layers', [
+        [cVol - cLayer, 'You took away one layer. Divide instead: how many layers of ' + cLayer + ' make ' + cVol + '?'],
+        [cVol / cL, 'You divided by the length only. One layer holds ' + cLayer + ' cubes, so divide ' + cVol + ' by ' + cLayer + '.'],
+        [cVol / cW, 'You divided by the width only. One layer holds ' + cLayer + ' cubes, so divide ' + cVol + ' by ' + cLayer + '.'],
+        [cH + 1, 'Check it: ' + (cH + 1) + ' layers of ' + cLayer + ' is ' + ((cH + 1) * cLayer) + ' cubes, more than ' + cVol + '.'],
+        [cH - 1, 'Check it: ' + (cH - 1) + ' layers of ' + cLayer + ' is ' + ((cH - 1) * cLayer) + ' cubes, fewer than ' + cVol + '.'],
+        [cL, 'That is the length of the base. The height is how many layers of ' + cLayer + ' make ' + cVol + '.'],
+        [cW, 'That is the width of the base. The height is how many layers of ' + cLayer + ' make ' + cVol + '.'],
+        [cH + 2, 'Check it: ' + (cH + 2) + ' layers of ' + cLayer + ' is ' + ((cH + 2) * cLayer) + ' cubes, more than ' + cVol + '.'],
+        [cH - 2, 'Check it: ' + (cH - 2) + ' layers of ' + cLayer + ' is ' + ((cH - 2) * cLayer) + ' cubes, fewer than ' + cVol + '.']
+      ], 'Layers = cubes in the crate' + DIV + 'cubes in one layer.')
+    ]);
+    var lShape = tree([
+      step('What is the volume of the gold part?', dGold, 'cubic units', [
+        [dA * dB, 'That is one layer of the gold part. It is ' + dH + ' layers tall: ' + dA + X + dB + X + dH + '.'],
+        [dA + dB + dH, 'You added the edges. Multiply them: ' + dA + X + dB + X + dH + '.'],
+        [dGold + dBlue, 'That is the whole L. Find just the gold part first.'],
+        [dBox, 'That is the box around the whole L. The gold part is ' + dA + X + dB + X + dH + '.']
+      ], 'Gold part: length times width times height.'),
+      step('What is the volume of the blue part?', dBlue, 'cubic units', [
+        [dC * dD, 'That is one layer of the blue part. It is ' + dH2 + ' layers tall: ' + dC + X + dD + X + dH2 + '.'],
+        [dC + dD + dH2, 'You added the edges. Multiply them: ' + dC + X + dD + X + dH2 + '.'],
+        [dC * dD * dH, 'That uses the gold part\u2019s height. The blue part is ' + dH2 + ' layers tall: ' + dC + X + dD + X + dH2 + '.'],
+        [dA * dD * dH2, 'The blue part is shorter than the gold part. Count its length again: it is ' + dC + ' long.'],
+        [dGold, 'That is the gold part. Now find the blue part.'],
+        [dGold + dBlue, 'That is the whole L. Find just the blue part.']
+      ], 'Blue part: length times width times height.'),
+      step('Add the parts. What is the volume of the whole L-shape?', dGold + dBlue, 'cubic units', [
+        [dBox, 'That is the full box around the L (' + dA + X + (dB + dD) + X + dTall + '). Part of that box is empty, so add the two parts instead.'],
+        [dGold, 'That is only the gold part. Add the blue part too.'],
+        [dBlue, 'That is only the blue part. Add the gold part too.'],
+        [dGold * 2, 'That is the gold part twice. The blue part is a different size, so add its own volume.'],
+        [dGold + dC * dD * dH, 'That gives the blue part the gold part\u2019s height. It is ' + dH2 + ' layers tall.']
+      ], 'Split the L into two boxes, find each volume, then add.')
+    ]);
+
+    return {
+      title: (stretch ? 'Stretch Round ' : 'Practice Round ') + seed,
+      description: stretch
+        ? 'Four harder stations: count a big prism, find the cardboard for a box with no lid, work out how deep a crate must be and split an L-shape whose parts differ in height. Stretch round ' + seed + ' (S' + seed + ') builds the same world on every screen.'
+        : 'Four stations with new numbers every round: count a prism, unfold a net, plan a crate and split an L-shape. Round ' + seed + ' builds the same world on every screen, so a class can play it together.',
+      practice: { seed: seed, level: stretch ? 'stretch' : 'core', key: geometryPracticeKey(seed, stretch ? 'stretch' : 'core') },
+      estimatedMinutes: stretch ? 15 : 12,
+      spawnPoint: [7, 2.6, -3],
+      objectives: stretch ? [
+        'Count the big blue prism in layers and find its volume',
+        'Unfold the gold box with the Net tool (N)',
+        'Find the cardboard for the box with no lid',
+        'Work out how deep the crate must be',
+        'Split the L-shape and find its volume'
+      ] : [
+        'Count the blue prism in layers and find its volume',
+        'Unfold the gold prism with the Net tool (N)',
+        'Find the gold prism\u2019s surface area from its net',
+        'Work out how tall the crate must be',
+        'Split the L-shape and find its volume'
+      ],
+      objectiveEvidence: [{ npc: 'Counting Coach' }, { net: 1, netDims: [bL, bW, bH] }, { npc: 'Net Maker' }, { npc: 'Crate Builder' }, { npc: 'L-Shape Scout' }],
+      ground: { xMin: -4, xMax: 36, zMin: -6, zMax: 22, y: 0, type: 'grass' },
+      structures: [
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 1 + aL, y2: aH, z2: 1 + aW, block: 'diamond' },
+        { type: 'fill', x1: 12, y1: 1, z1: 2, x2: 11 + bL, y2: bH, z2: 1 + bW, block: 'gold' },
+        stretch
+          ? { type: 'fill', x1: 2, y1: 1, z1: 12, x2: 1 + cL, y2: cH, z2: 12, block: 'wood' }
+          : { type: 'fill', x1: 2, y1: 1, z1: 12, x2: 1 + cL, y2: 1, z2: 11 + cW, block: 'wood' },
+        { type: 'fill', x1: 12, y1: 1, z1: 12, x2: 11 + dA, y2: dH, z2: 11 + dB, block: 'gold' },
+        { type: 'fill', x1: 12, y1: 1, z1: 12 + dB, x2: 11 + dC, y2: dH2, z2: 11 + dB + dD, block: 'diamond' }
+      ],
+      npcs: [
+        { position: [0, 1, 1], name: 'Counting Coach', color: 0x2563eb,
+          dialogue: 'Count my blue prism in layers! Walk around it, or face it and press M to measure.',
+          after: 'You counted it the way builders do: ' + aH + ' layers of ' + aLayer + ' cubes is ' + aVol + ' cubic units.',
+          question: counting },
+        { position: [10, 1, 1], name: 'Net Maker', color: 0xd97706,
+          dialogue: stretch
+            ? 'Pretend my gold prism is a box with no lid. Unfold it with the Net tool (N, or the Net button) and read each face.'
+            : 'Unfold me! Face my gold prism and press N, or use the Net button. Its six faces lie flat on the grass so you can read each one.',
+          after: stretch
+            ? 'A box with no lid has five faces: ' + bSurface + ' - ' + bTop + ' = ' + (bSurface - bTop) + ' square units of cardboard.'
+            : 'That is my net: six rectangles in three matching pairs. 2' + X + '(' + bTop + ' + ' + bFront + ' + ' + bSide + ') = ' + bSurface + ' square units.',
+          question: net },
+        { position: [0, 1, 11], name: 'Crate Builder', color: 0xb45309,
+          dialogue: stretch
+            ? 'I am building a crate that holds exactly ' + cVol + ' cubes. The wooden front wall is done. How deep does the crate need to be?'
+            : 'I am building a crate that holds exactly ' + cVol + ' cubes. The wooden bottom layer is done. How tall do the walls need to be?',
+          after: stretch
+            ? cVol + DIV + cWall + ' = ' + cW + '. The crate is ' + cW + ' walls deep, front to back.'
+            : cVol + DIV + cLayer + ' = ' + cH + '. Stack the crate ' + cH + ' layers high to check it if you like.',
+          question: crate },
+        { position: [10, 1, 11], name: 'L-Shape Scout', color: 0x16a34a,
+          dialogue: stretch
+            ? 'My L-shape is two boxes of different heights: a gold part and a blue part. Find each part, then add them.'
+            : 'My L-shape is two boxes stuck together: a gold part and a blue part. Find each part, then add them.',
+          after: 'Split, measure, add: ' + dGold + ' + ' + dBlue + ' = ' + (dGold + dBlue) + ' cubic units. That works for any shape made of boxes.',
+          question: lShape }
+      ]
+    };
+  }
+  // Steps answered with no wrong answer first, since the lesson last loaded.
+  function geometryFirstTrySteps(log, lesson) {
+    var start = 0, missed = {}, total = 0;
+    ((lesson && lesson.npcs) || []).forEach(function (n) { if (n && n.question) total += geometryQuestionSequence(n.question).length; });
+    log = Array.isArray(log) ? log : [];
+    for (var i = log.length - 1; i >= 0; i--) if (log[i] && log[i].type === 'lesson_load') { start = i; break; }
+    for (var j = start; j < log.length; j++) { var e = log[j]; if (e && e.type === 'answer_wrong' && e.data) missed[e.data.npc + '#' + e.data.step] = true; }
+    return { total: total, firstTry: Math.max(0, total - Object.keys(missed).length) };
+  }
+  // Whether any answer to this station was wrong since the lesson last loaded.
+  function geometryPracticeStationMissed(log, station) {
+    var start = 0;
+    log = Array.isArray(log) ? log : [];
+    for (var i = log.length - 1; i >= 0; i--) if (log[i] && log[i].type === 'lesson_load') { start = i; break; }
+    for (var j = start; j < log.length; j++) if (log[j] && log[j].type === 'answer_wrong' && log[j].data && log[j].data.npc === station) return true;
+    return false;
+  }
+  function geometryPracticeLessonForKey(key) {
+    var round = geometryPracticeRound(key);
+    if (!round) return null;
+    return GW_PRACTICE_CACHE[round.key] || (GW_PRACTICE_CACHE[round.key] = geometryPracticeLesson(round.seed, round.level));
+  }
+  // gw_practice in localStorage: { rounds finished, done (the last 30 finished round
+  // keys), current round key, skills: { station: last 6 results, true = right first time } }.
+  function geometryPracticeRecord(storage) {
+    var rec = geometryReadStored(storage, GW_PRACTICE_KEY);
+    rec = rec && typeof rec === 'object' && !Array.isArray(rec) ? rec : {};
+    var skills = {}, current = geometryPracticeRound(rec.current);
+    GW_PRACTICE_STATIONS.forEach(function (name) {
+      var list = rec.skills && Array.isArray(rec.skills[name]) ? rec.skills[name] : [];
+      skills[name] = list.filter(function (v) { return typeof v === 'boolean'; }).slice(-6);
+    });
+    return {
+      rounds: Math.max(0, Math.floor(Number(rec.rounds)) || 0),
+      done: Array.isArray(rec.done) ? rec.done.map(geometryPracticeRound).filter(Boolean).map(function (r) { return r.key; }).slice(-30) : [],
+      current: current ? current.key : '',
+      skills: skills
+    };
+  }
+  function geometryPracticeSave(storage, rec) {
+    try { if (storage) storage.setItem(GW_PRACTICE_KEY, JSON.stringify(rec)); } catch (e) {}
+  }
+  // Starting a round drops the unfinished answers of the round it replaces.
+  function geometryPracticeBegin(storage, key) {
+    var rec = geometryPracticeRecord(storage), round = geometryPracticeRound(key);
+    if (!round) return rec;
+    if (rec.current && rec.current !== round.key) geometryClearLessonProgress(storage, geometryPracticeLessonForKey(rec.current));
+    rec.current = round.key;
+    geometryPracticeSave(storage, rec);
+    return rec;
+  }
+  // Counted once per round, so Replay does not inflate it.
+  function geometryPracticeFinish(storage, key) {
+    var rec = geometryPracticeRecord(storage), round = geometryPracticeRound(key);
+    if (round && rec.done.indexOf(round.key) < 0) { rec.rounds += 1; rec.done = rec.done.concat([round.key]).slice(-30); }
+    geometryPracticeSave(storage, rec);
+    return rec;
+  }
+  // A station solved: right first time unless one of its answers was wrong.
+  function geometryPracticeSkill(storage, station, firstTry) {
+    var rec = geometryPracticeRecord(storage);
+    if (!Object.prototype.hasOwnProperty.call(rec.skills, station)) return rec;
+    rec.skills[station] = rec.skills[station].concat([!!firstTry]).slice(-6);
+    geometryPracticeSave(storage, rec);
+    return rec;
+  }
+  // The skill to practise next: the lowest first-try share among the skills tried.
+  function geometryPracticeFocus(skills) {
+    var best = null;
+    GW_PRACTICE_STATIONS.forEach(function (name) {
+      var list = (skills && skills[name]) || [];
+      if (!list.length) return;
+      var share = list.filter(Boolean).length / list.length;
+      if (share < 1 && (!best || share < best.share)) best = { station: name, skill: GW_PRACTICE_SKILLS[name], share: share };
+    });
+    return best;
+  }
+  function geometryPracticeNewSeed(storage, level, random) {
+    var rec = geometryPracticeRecord(storage), avoid = rec.done.concat([rec.current]);
+    random = random || Math.random;
+    for (var i = 0; i < 12; i++) { var s = 1 + Math.floor(random() * 9999); if (avoid.indexOf(geometryPracticeKey(s, level)) < 0) return s; }
+    return 1 + Math.floor(random() * 9999);
+  }
+  // For the Home card: rounds finished, an unfinished round to continue, and skills.
+  function geometryPracticeSummary(storage) {
+    var rec = geometryPracticeRecord(storage), round = geometryPracticeRound(rec.current);
+    var lesson = round ? geometryPracticeLessonForKey(round.key) : null;
+    var total = geometryQuestionCount(lesson), saved = lesson ? geometryReadStored(storage, geometryProgressKey(lesson)) : null;
+    var unfinished = !!(saved && saved.score > 0 && saved.score < total);
+    return {
+      rounds: rec.rounds, current: unfinished ? round.key : '', currentLabel: unfinished ? geometryPracticeLabel(round) : '',
+      answered: unfinished ? saved.score : 0, total: total,
+      skills: GW_PRACTICE_STATIONS.map(function (name) {
+        var list = rec.skills[name];
+        return { station: name, skill: GW_PRACTICE_SKILLS[name], results: list.slice(), firstTry: list.filter(Boolean).length, tries: list.length };
+      }),
+      focus: (geometryPracticeFocus(rec.skills) || {}).skill || ''
+    };
+  }
+
+  // The student's own calendar day. toISOString() is UTC, so after 5 pm in California a
+  // report or a file dated with it says tomorrow.
+  function geometryLocalDay(date) {
+    date = date instanceof Date ? date : new Date(date);
+    if (isNaN(date.getTime())) return '';
+    var two = function (n) { return (n < 10 ? '0' : '') + n; };
+    return date.getFullYear() + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate());
+  }
+  // Day and clock time for a file name: 2026-09-24T21-05-09 in the student's own zone.
+  function geometryLocalStamp(date) {
+    date = date instanceof Date ? date : new Date(date);
+    var day = geometryLocalDay(date);
+    if (!day) return '';
+    var two = function (n) { return (n < 10 ? '0' : '') + n; };
+    return day + 'T' + two(date.getHours()) + '-' + two(date.getMinutes()) + '-' + two(date.getSeconds());
+  }
+
+  // ── Practice results for the teacher (2026-09-24) ──
+  // In a live session the student's device sends two reports. Neither carries typed
+  // text: only round keys, fixed station names and counts.
+  // 1. roster.<uid>.activityProgress on the session document: the app's universal
+  //    seven-field receipt, which the Command Center shows as "geometry practice 2/4".
+  //    window.__alloWriteToSession validates it, and firestore.rules lets a student
+  //    write only their own roster entry.
+  // 2. geometryPractice on the student's studentProgress document: skill results for
+  //    the Geometry World teacher dashboard. firestore.rules has no rule for that path
+  //    (default deny) and the app skips it on Canvas, so this detail appears only where
+  //    that dashboard already works.
+  function geometryPracticeReceipt(key, solved, finished, now) {
+    var round = geometryPracticeRound(key), total = GW_PRACTICE_STATIONS.length;
+    if (!round || !(now > 0)) return null;
+    return { version: 1, activityId: 'geometry-practice:' + round.key, kind: 'geometry_practice', status: finished ? 'complete' : 'working', completed: Math.max(0, Math.min(total, Math.floor(Number(solved)) || 0)), total: total, at: now };
+  }
+  function geometryPracticeTeacherSummary(rec, key, now, solved) {
+    var round = geometryPracticeRound(key), total = GW_PRACTICE_STATIONS.length;
+    return {
+      version: 1, rounds: rec.rounds, round: round ? round.key : '', at: now,
+      solved: round ? Math.max(0, Math.min(total, Math.floor(Number(solved)) || 0)) : 0, finished: !!(round && rec.done.indexOf(round.key) >= 0),
+      skills: GW_PRACTICE_STATIONS.map(function (name) { var list = rec.skills[name] || []; return { station: name, firstTry: list.filter(Boolean).length, tries: list.length }; })
+    };
+  }
+  // A studentProgress document is written by a student's browser, so the teacher reads
+  // it through this: known stations and bounded counts only, or nothing.
+  function geometryPracticeReadTeacherSummary(value) {
+    if (!value || typeof value !== 'object' || value.version !== 1 || !Array.isArray(value.skills)) return null;
+    var count = function (n, max) { return typeof n === 'number' && Math.floor(n) === n && n >= 0 && n <= max; };
+    if (!count(value.rounds, 100000)) return null;
+    var skills = GW_PRACTICE_STATIONS.map(function (name) {
+      var hit = value.skills.filter(function (sk) { return sk && sk.station === name; })[0];
+      var ok = hit && count(hit.tries, 6) && count(hit.firstTry, 6) && hit.firstTry <= hit.tries;
+      return { station: name, skill: GW_PRACTICE_SKILLS[name], firstTry: ok ? hit.firstTry : 0, tries: ok ? hit.tries : 0 };
+    });
+    var round = geometryPracticeRound(value.round);
+    return { rounds: value.rounds, round: round ? round.key : '', roundLabel: round ? geometryPracticeLabel(round) : '', solved: round && count(value.solved, GW_PRACTICE_STATIONS.length) ? value.solved : 0, finished: !!round && value.finished === true, skills: skills, focus: geometryPracticeWeakest(skills) };
+  }
+  // The skill with the lowest right-first-time share among those tried (ties: station order).
+  function geometryPracticeWeakest(skills) {
+    var best = null;
+    skills.forEach(function (sk) {
+      if (!sk.tries || sk.firstTry >= sk.tries) return;
+      var share = sk.firstTry / sk.tries;
+      if (!best || share < best.share) best = { skill: sk.skill, share: share };
+    });
+    return best ? best.skill : '';
+  }
+  // The class view: each skill's first-try results summed over students, and the focus.
+  function geometryPracticeClassSummary(progressMap) {
+    var totals = GW_PRACTICE_STATIONS.map(function (name) { return { station: name, skill: GW_PRACTICE_SKILLS[name], firstTry: 0, tries: 0, students: 0 }; });
+    var students = 0;
+    Object.keys(progressMap || {}).slice(0, 250).forEach(function (id) {
+      var entry = progressMap[id], read = geometryPracticeReadTeacherSummary(entry && entry.geometryPractice);
+      if (!read || !read.skills.some(function (sk) { return sk.tries > 0; })) return;
+      students++;
+      read.skills.forEach(function (sk, i) { if (!sk.tries) return; totals[i].firstTry += sk.firstTry; totals[i].tries += sk.tries; totals[i].students++; });
+    });
+    return { students: students, skills: totals, focus: geometryPracticeWeakest(totals) };
+  }
+  // The app's own gate (canWriteLiveActivityProgress): an older Class Mailbox cannot relay it.
+  function geometryCanWriteActivityProgress() {
+    try {
+      var mailbox = (window.__alloQrStudentMode && window.__alloQrStudentMode.type === 'mailbox-live') || new URLSearchParams(window.location.search || '').has('allo_mb');
+      return !mailbox || Number(window.__alloMailboxParticipantVersion || 0) >= 19;
+    } catch (e) { return true; }
   }
 
   // Validate the complete question tree at import/generation time. The live
@@ -6393,8 +8105,23 @@
   // ── Tool Registration ──
   // ══════════════════════════════════════════════════════════════
 
-  window.StemLab.geometryWorldLessonChecks = {normalizeBuildGoal:normalizeGeometryBuildGoal};
+  window.StemLab.geometryWorldLessonChecks = {normalizeBuildGoal:normalizeGeometryBuildGoal, localDay:geometryLocalDay, localStamp:geometryLocalStamp};
   window.StemLab.geometryWorldWorksheets = {model:geometryWorksheetModel, html:generateWorksheetHTML, questions:geometryQuestionSequence, normalizeQuestion:normalizeGeometryQuestion, presets:function(){return JSON.parse(JSON.stringify(SAMPLE_LESSONS));}};
+  window.StemLab.geometryWorldAnswerCoaching = {
+    parseQuantity: geometryParseQuantity, stepTypeable: geometryStepTypeable, typedAnswer: geometryTypedAnswer,
+    wrongFeedback: geometryWrongFeedback, objectiveStatus: geometryObjectiveStatus, studentBuilds: geometryStudentBuilds,
+    coaching: GW_LESSON_COACHING, objectiveEvidence: GW_OBJECTIVE_EVIDENCE
+  };
+  // The Home card (builder module) reads summary(); tests read the rest.
+  window.StemLab.geometryWorldPractice = {
+    lesson: geometryPracticeLesson, seed: geometryPracticeSeed, key: geometryPracticeKey, round: geometryPracticeRound,
+    parseRound: geometryPracticeParseRound, label: geometryPracticeLabel, stations: GW_PRACTICE_STATIONS.slice(),
+    skills: Object.assign({}, GW_PRACTICE_SKILLS), firstTry: geometryFirstTrySteps, stationMissed: geometryPracticeStationMissed,
+    record: geometryPracticeRecord, begin: geometryPracticeBegin, finish: geometryPracticeFinish, skill: geometryPracticeSkill,
+    focus: geometryPracticeFocus, newSeed: geometryPracticeNewSeed,
+    receipt: geometryPracticeReceipt, teacherSummary: geometryPracticeTeacherSummary, readTeacherSummary: geometryPracticeReadTeacherSummary, classSummary: geometryPracticeClassSummary,
+    summary: function() { try { return geometryPracticeSummary(geometryStorage()); } catch (e) { return { rounds: 0, current: '', currentLabel: '', answered: 0, total: 0, skills: [], focus: '' }; } }
+  };
   // For the Home chooser (builder module): has this built-in lesson been completed?
   // Uses geometryLessonCompleted, so it survives Replay (which clears gw_progress_* but
   // keeps gw_completed_lessons). False for an unknown key; never throws.
@@ -6942,6 +8669,31 @@
         }
       }, [touchMode]);
 
+      // An objective met by doing (a build, a measurement, a net) ticks in a panel that is
+      // usually closed, so say so when it turns done. Questions already say "Correct", so
+      // character, self-check and completion objectives stay quiet. The first look at a
+      // lesson (restored progress) is the baseline, not news. Placed above every early
+      // return so the hook order never changes; currentLesson is unset on those renders.
+      var objectiveNewsRef = React.useRef({ lesson: null, sig: '', done: {} });
+      React.useEffect(function() {
+        var news = objectiveNewsRef.current, eng = window[engineKey];
+        if (!worldActive || !eng || !currentLesson || !Array.isArray(currentLesson.objectiveEvidence)) return;
+        var lessonId = activeLesson + '|' + (currentLesson.title || '');
+        var sig = lessonId + '|' + score + '|' + measureHistory.length + '|' + (eng.sessionLog ? eng.sessionLog.length : 0);
+        if (sig === news.sig) return;
+        news.sig = sig;
+        var statuses = lessonObjectiveStatuses(), done = {};
+        statuses.forEach(function(o) { if (o.status.done) done[o.index] = true; });
+        if (news.lesson !== lessonId) { news.lesson = lessonId; news.done = done; return; }
+        statuses.forEach(function(o) {
+          var rule = currentLesson.objectiveEvidence[o.index] || {};
+          if (!o.status.done || news.done[o.index] || rule.npc || rule.npcs || rule.self || rule.complete) return;
+          if (addToast) addToast('\u2705 Objective done: ' + o.text, 'success');
+          announceToSR('Objective done: ' + o.text + '. ' + (o.status.evidence || ''));
+        });
+        news.done = done;
+      });
+
       function toggleTeacherView() {
         if (showTeacherView) {
           // Turn off
@@ -6962,6 +8714,29 @@
         });
         upd({ showTeacherView: true, teacherUnsub: unsub });
         if (addToast) addToast('\uD83D\uDCCA Teacher view active \u2014 monitoring student progress', 'success');
+      }
+
+      // A practice station solved or a round finished: tell the teacher (see
+      // geometryPracticeReceipt). Fire and forget: a failed write never touches practice.
+      function reportPracticeToTeacher(key, solved, finished) {
+        if (isTeacher || !sessionCode || !fbDb || !fbAppId || typeof fb.doc !== 'function') return;
+        var now = Date.now();
+        try {
+          var uid = fb.auth && fb.auth.currentUser && fb.auth.currentUser.uid;
+          var writer = window.__alloWriteToSession, receipt = geometryPracticeReceipt(key, solved, finished, now);
+          if (uid && receipt && typeof writer === 'function' && geometryCanWriteActivityProgress()) {
+            var patch = {};
+            patch['roster.' + uid + '.activityProgress'] = receipt;
+            Promise.resolve(writer(fb.doc(fbDb, 'artifacts', fbAppId, 'public', 'data', 'sessions', sessionCode), patch)).catch(function() {});
+          }
+        } catch (e) {}
+        try {
+          var nickname = ctx.studentNickname;
+          if (nickname && typeof fb.setDoc === 'function') {
+            var progressRef = fb.doc(fbDb, 'artifacts', fbAppId, 'public', 'data', 'sessions', sessionCode, 'studentProgress', String(nickname).replace(/[^a-zA-Z0-9_-]/g, '_'));
+            Promise.resolve(fb.setDoc(progressRef, { studentNickname: nickname, geometryPractice: geometryPracticeTeacherSummary(geometryPracticeRecord(geometryStorage()), key, now, solved) }, { merge: true })).catch(function() {});
+          }
+        } catch (e) {}
       }
 
       // ── Achievement Badges state ──
@@ -9515,7 +11290,7 @@
           if(engine.clearBuildBatchPreview)engine.clearBuildBatchPreview();
           engine._drawMode='single';upd('drawMode','single');
           engine._builderSelection = null;
-          if (engine.logEvent) engine.logEvent('lesson_load', { title: lesson.title || 'unknown', npcCount: (lesson.npcs || []).length, questionCount: (lesson.npcs || []).filter(function(n) { return n.question; }).length });
+          if (engine.logEvent) engine.logEvent('lesson_load', { title: lesson.title || 'unknown', npcCount: (lesson.npcs || []).length, questionCount: (lesson.npcs || []).filter(function(n) { return n.question; }).length, practiceRound: lesson.practice ? lesson.practice.key : undefined });
           engine._currentLesson = lesson;
           engine._activityWaypoint = null; // remember for returnToSpawn
           if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
@@ -9591,10 +11366,10 @@
           // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           engine._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFeedback: {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFeedback: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
           }
           engine._progressKey = progressKey;
         };
@@ -9956,6 +11731,207 @@
           engine.camera.quaternion.setFromEuler(engine.euler);
         });
 
+        // T (ruler), V (angle) and N (net) as engine actions, so the on-screen tool
+        // buttons reach them too; they were keyboard-only, so touch users never had them.
+        engine.useRuler = function() {
+          var rHit = engine.blockUnderCrosshair();
+          if (rHit && rHit.point) {
+            var rp = rHit.point;
+            if (!engine._rulerA) {
+              // Set point A
+              engine._rulerA = rp.clone();
+              upd('actionFeedback', '\uD83D\uDCCF Ruler: point A set. Aim at a second point and use the ruler again (T).');
+              setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+            } else {
+              // Set point B, draw line, show distance
+              var rA = engine._rulerA;
+              var rDist = rA.distanceTo(rp);
+              // Draw 3D line
+              if (engine._rulerLine) { engine.scene.remove(engine._rulerLine); engine._rulerLine.geometry.dispose(); engine._rulerLine.material.dispose(); }
+              if (engine._rulerLabel) { engine.scene.remove(engine._rulerLabel); }
+              var rGeo = new THREE.BufferGeometry().setFromPoints([rA, rp]);
+              var rMat = new THREE.LineBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.8, linewidth: 2 });
+              engine._rulerLine = new THREE.LineSegments(rGeo, rMat);
+              engine.scene.add(engine._rulerLine);
+              // Distance label at midpoint
+              var rLabel = makeDimLabel(rDist.toFixed(1) + ' blocks', '#22d3ee');
+              rLabel.position.set((rA.x + rp.x) / 2, (rA.y + rp.y) / 2 + 0.5, (rA.z + rp.z) / 2);
+              rLabel.scale.set(2, 0.6, 1);
+              engine.scene.add(rLabel);
+              engine._rulerLabel = rLabel;
+              upd('actionFeedback', '\uD83D\uDCCF Distance: ' + rDist.toFixed(1) + ' blocks');
+              setTimeout(function() { upd('actionFeedback', ''); }, 3000);
+              // Auto-clear after 15s
+              setTimeout(function() {
+                if (engine._rulerLine) { engine.scene.remove(engine._rulerLine); engine._rulerLine.geometry.dispose(); engine._rulerLine.material.dispose(); engine._rulerLine = null; }
+                if (engine._rulerLabel) { engine.scene.remove(engine._rulerLabel); engine._rulerLabel = null; }
+              }, 15000);
+              engine._rulerA = null; // Reset for next measurement
+            }
+          } else if (engine._rulerA) {
+            // Cancel ruler if no hit
+            engine._rulerA = null;
+            upd('actionFeedback', '\uD83D\uDCCF Ruler cancelled');
+            setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+          }
+        };
+        engine.useAngleTool = function() {
+          var vHit = engine.blockUnderCrosshair();
+          if (vHit && vHit.object.userData.gridPos) {
+            var vp = vHit.object.userData.gridPos;
+            // Use block center as the geometric point for the angle calc.
+            var vPoint = new THREE.Vector3(vp.x + 0.5, vp.y + 0.5, vp.z + 0.5);
+            if (!engine._anglePoints) engine._anglePoints = [];
+            engine._anglePoints.push(vPoint);
+            if (engine._anglePoints.length === 1) {
+              upd('actionFeedback', '\uD83D\uDCD0 Angle: A set. Aim at the vertex and use the angle tool again (V).');
+              announceToSR(__alloT('stem.geometryworld.sr_angle_point_a_set_aim_at_the_vertex_and_press_v', 'Angle point A set. Aim at the vertex and press V.'));
+              setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+            } else if (engine._anglePoints.length === 2) {
+              upd('actionFeedback', '\uD83D\uDCD0 Angle: vertex set. Aim at the third point and use the angle tool again (V).');
+              announceToSR(__alloT('stem.geometryworld.sr_angle_vertex_set_aim_at_the_third_point_and_press', 'Angle vertex set. Aim at the third point and press V.'));
+              setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+            } else {
+              // Three points collected: compute angle at the middle point (the vertex).
+              var aPt = engine._anglePoints[0];
+              var bPt = engine._anglePoints[1];
+              var cPt = engine._anglePoints[2];
+              var ba = new THREE.Vector3().subVectors(aPt, bPt);
+              var bc = new THREE.Vector3().subVectors(cPt, bPt);
+              var deg = 0;
+              if (ba.length() > 0.0001 && bc.length() > 0.0001) {
+                var cosang = ba.dot(bc) / (ba.length() * bc.length());
+                cosang = Math.max(-1, Math.min(1, cosang));
+                deg = Math.acos(cosang) * (180 / Math.PI);
+              }
+              var degStr = deg.toFixed(1);
+              // Clear any prior angle helpers, then draw two lines (A→B, B→C) and a label at B.
+              if (engine._angleHelpers) {
+                engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+              }
+              engine._angleHelpers = [];
+              var aMat = new THREE.LineBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.9, linewidth: 2 });
+              var aGeo1 = new THREE.BufferGeometry().setFromPoints([bPt, aPt]);
+              var aGeo2 = new THREE.BufferGeometry().setFromPoints([bPt, cPt]);
+              var aLine1 = new THREE.LineSegments(aGeo1, aMat);
+              var aLine2 = new THREE.LineSegments(aGeo2, aMat.clone());
+              engine.scene.add(aLine1); engine.scene.add(aLine2);
+              engine._angleHelpers.push(aLine1); engine._angleHelpers.push(aLine2);
+              var aLbl = makeDimLabel(degStr + '\u00b0', '#f472b6');
+              aLbl.position.set(bPt.x, bPt.y + 0.7, bPt.z);
+              aLbl.scale.set(1.8, 0.7, 1);
+              engine.scene.add(aLbl);
+              engine._angleHelpers.push(aLbl);
+              var kind = deg < 89.5 ? 'acute' : (deg > 90.5 ? (deg > 179.5 ? 'straight' : 'obtuse') : 'right');
+              upd('actionFeedback', '\uD83D\uDCD0 Angle: ' + degStr + '\u00b0 (' + kind + ')');
+              announceToSR(__alloFill(__alloT('stem.geometryworld.sr_angle_measured_degrees_angle', 'Angle measured. {value1} degrees. {value2} angle.'), { value1: degStr, value2: kind }));
+              if (engine.logEvent) engine.logEvent('angle_measure', { degrees: parseFloat(degStr), kind: kind });
+              setTimeout(function() { upd('actionFeedback', ''); }, 3500);
+              // Auto-clear helpers after 20s so the scene stays tidy.
+              if (engine._angleClearTimer) clearTimeout(engine._angleClearTimer);
+              engine._angleClearTimer = setTimeout(function() {
+                if (engine._angleHelpers) {
+                  engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  engine._angleHelpers = [];
+                }
+              }, 20000);
+              engine._anglePoints = [];
+            }
+          } else if (engine._anglePoints && engine._anglePoints.length > 0) {
+            // Cancel in-progress angle if no hit.
+            engine._anglePoints = [];
+            upd('actionFeedback', '\uD83D\uDCD0 Angle cancelled');
+            setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+          }
+        };
+        engine.useNetTool = function() {
+          // N reveals exact dimensions/surface evidence, so it must travel through
+          // the same pre-evidence commitment gate as M. This records the target as
+          // observed and compares a matching estimate that was already committed.
+          var nm = engine.performMeasurement('surface');
+          if (nm) {
+              if (nm.isComplete === false) {
+                var incompleteSurfaceMessage = 'Measurement limit reached. Surface area and a net are unavailable until the full structure is measured.';
+                upd('actionFeedback', '\uD83D\uDCCB ' + incompleteSurfaceMessage);
+                announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + incompleteSurfaceMessage);
+                if (engine.logEvent) engine.logEvent('surface_analysis', { shape: 'incomplete', surfaceArea: null, blocks: nm.count, measurementLimit: nm.measurementLimit });
+                setTimeout(function() { upd('actionFeedback', ''); }, 5500);
+                return;
+              }
+              if (!nm.isSolidPrism) {
+                if (engine._netHelpers) {
+                  engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  engine._netHelpers = [];
+                }
+                var compositeSurfaceMessage = nm.surfaceAreaExact
+                  ? 'Composite shape: no six-rectangle net. Count exposed unit faces for surface area = ' + nm.exposedSurfaceArea + ' square units.'
+                  : 'Partial blocks do not use the six-rectangle prism net. Surface area depends on each partial face shape.';
+                upd('actionFeedback', '\uD83D\uDCCB ' + compositeSurfaceMessage);
+                announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + compositeSurfaceMessage);
+                if (engine.logEvent) engine.logEvent('surface_analysis', { shape: nm.surfaceAreaExact ? 'composite_cubes' : 'partial_blocks', surfaceArea: nm.exposedSurfaceArea, blocks: nm.count });
+                setTimeout(function() { upd('actionFeedback', ''); }, 5500);
+                return;
+              }
+              // Clear any prior net helpers.
+              if (engine._netHelpers) {
+                engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+              }
+              engine._netHelpers = [];
+              var L = nm.L, W = nm.W, H = nm.H;
+              var areaTop = L * W, areaFront = L * H, areaSide = W * H;
+              var surface = 2 * (areaTop + areaFront + areaSide);
+              // Lay out the classic cross-shape net on the ground 2 blocks east of the structure.
+              // Centered vertically on the structure's midline; each face is a flat quad with a label.
+              var baseX = nm.minX + L + 3;
+              var baseY = 0.02; // just above ground to avoid z-fighting
+              var baseZ = nm.minZ;
+              function addQuad(ox, oz, w, h, color, label) {
+                // Quad: lying flat on XZ plane, with width = w (X) and depth = h (Z).
+                var g = new THREE.PlaneGeometry(w, h);
+                var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false });
+                var mesh = new THREE.Mesh(g, mat);
+                mesh.rotation.x = -Math.PI / 2;
+                mesh.position.set(baseX + ox + w / 2, baseY, baseZ + oz + h / 2);
+                engine.scene.add(mesh); engine._netHelpers.push(mesh);
+                var edgeGeo = new THREE.EdgesGeometry(g);
+                var edgeMat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
+                var edges = new THREE.LineSegments(edgeGeo, edgeMat);
+                edges.rotation.x = -Math.PI / 2;
+                edges.position.copy(mesh.position);
+                engine.scene.add(edges); engine._netHelpers.push(edges);
+                var lbl = makeDimLabel(label, '#f8fafc');
+                lbl.position.set(mesh.position.x, baseY + 0.8, mesh.position.z);
+                lbl.scale.set(1.2, 0.5, 1);
+                engine.scene.add(lbl); engine._netHelpers.push(lbl);
+              }
+              // Cross layout: middle row = [left W×H, front L×H, right W×H, back L×H]
+              // with top L×W above the front, bottom L×W below the front.
+              // Origin (0,0) is the front face's NW corner.
+              addQuad(-W, 0, W, H, 0x60a5fa, 'Left ' + W + '\u00d7' + H + '=' + areaSide);
+              addQuad(0, 0, L, H, 0x22d3ee, 'Front ' + L + '\u00d7' + H + '=' + areaFront);
+              addQuad(L, 0, W, H, 0x60a5fa, 'Right ' + W + '\u00d7' + H + '=' + areaSide);
+              addQuad(L + W, 0, L, H, 0x22d3ee, 'Back ' + L + '\u00d7' + H + '=' + areaFront);
+              addQuad(0, -W, L, W, 0x34d399, 'Top ' + L + '\u00d7' + W + '=' + areaTop);
+              addQuad(0, H, L, W, 0xfbbf24, 'Bottom ' + L + '\u00d7' + W + '=' + areaTop);
+              // Total surface area label floating above the net.
+              var totalLbl = makeDimLabel('SA = ' + surface, '#a78bfa');
+              totalLbl.position.set(baseX + L / 2, 2.4, baseZ + H / 2 - W);
+              totalLbl.scale.set(2.4, 0.9, 1);
+              engine.scene.add(totalLbl); engine._netHelpers.push(totalLbl);
+              upd('actionFeedback', '\uD83D\uDCCB Net: SA = 2(' + areaTop + '+' + areaFront + '+' + areaSide + ') = ' + surface);
+              announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + 'Net unfolded. Surface area equals ' + surface + ' square units. Two times top ' + areaTop + ' plus front ' + areaFront + ' plus side ' + areaSide + '.');
+              if (engine.logEvent) engine.logEvent('net_unfold', { L: L, W: W, H: H, surfaceArea: surface });
+              setTimeout(function() { upd('actionFeedback', ''); }, 4000);
+              // Auto-clear after 30s so the scene doesn't get cluttered.
+              if (engine._netClearTimer) clearTimeout(engine._netClearTimer);
+              engine._netClearTimer = setTimeout(function() {
+                if (engine._netHelpers) {
+                  engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  engine._netHelpers = [];
+                }
+              }, 30000);
+          }
+        };
         document.addEventListener('keydown', _docH.keydown = function(ev) {
           if(engine._modalState && engine._modalState.showGeometryHome){if(ev.code==='Escape' && engine.closeGeometryHome){ev.preventDefault();engine.closeGeometryHome();}return;}
           if(engine._showcase){if(ev.code==='Escape' && engine.endShowcase){ev.preventDefault();engine.endShowcase();}return;}
@@ -9970,6 +11946,7 @@
           )) return;
           switch (ev.code) {
             case 'Escape':
+              if(engine._hudHidden && engine._toggleHud){ev.preventDefault();engine._toggleHud();break;}
               if(engine._drawStart && engine.isDrawingAllowed && engine.isDrawingAllowed()){ev.preventDefault();engine.cancelDrawing();break;}
               // Shift+Esc: close every overlay at once. Unconditional dispatch so it works
               // regardless of closure staleness (keydown handler was attached once).
@@ -9983,6 +11960,7 @@
               // Plain Esc: close the top-priority open dialog/overlay one at a time.
               // Read from engine._modalState (updated each React render) to avoid stale closure.
               var ms = (engine && engine._modalState) || {};
+              if (ms.touchMoreOpen) { upd('touchMoreOpen', false); break; }
               if (ms.showNpcDialog) { upd('showNpcDialog', false); focusWorldSurface(); break; }
               if (ms.showGameSettings) { upd('showGameSettings', false); focusGameSettingsTrigger(); break; }
               if (ms.showPredictionPanel) { upd('showPredictionPanel', false); focusWorldSurface(); break; }
@@ -10072,7 +12050,7 @@
                 var dist = engine.camera.position.distanceTo(n.body.position);
                 if (dist < minD) { minD = dist; nearest = i; }
               });
-              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); var ts1 = engine._tutorialState || {}; if (ts1.step === 1 && !ts1.dismissed) upd('tutorialStep', 2); }
+              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, npcDialogPeek: false, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); var ts1 = engine._tutorialState || {}; if (ts1.step === 1 && !ts1.dismissed) upd('tutorialStep', 2); }
               break;
             case 'KeyM':
               engine.performMeasurement('key');
@@ -10121,46 +12099,7 @@
               setBuildShape('rotate');
               break;
             case 'KeyT': // Point-to-point ruler: set point A, then point B
-              var rHit = engine.blockUnderCrosshair();
-              if (rHit && rHit.point) {
-                var rp = rHit.point;
-                if (!engine._rulerA) {
-                  // Set point A
-                  engine._rulerA = rp.clone();
-                  upd('actionFeedback', '\uD83D\uDCCF Ruler: Point A set \u2014 press T on second point');
-                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
-                } else {
-                  // Set point B, draw line, show distance
-                  var rA = engine._rulerA;
-                  var rDist = rA.distanceTo(rp);
-                  // Draw 3D line
-                  if (engine._rulerLine) { engine.scene.remove(engine._rulerLine); engine._rulerLine.geometry.dispose(); engine._rulerLine.material.dispose(); }
-                  if (engine._rulerLabel) { engine.scene.remove(engine._rulerLabel); }
-                  var rGeo = new THREE.BufferGeometry().setFromPoints([rA, rp]);
-                  var rMat = new THREE.LineBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.8, linewidth: 2 });
-                  engine._rulerLine = new THREE.LineSegments(rGeo, rMat);
-                  engine.scene.add(engine._rulerLine);
-                  // Distance label at midpoint
-                  var rLabel = makeDimLabel(rDist.toFixed(1) + ' blocks', '#22d3ee');
-                  rLabel.position.set((rA.x + rp.x) / 2, (rA.y + rp.y) / 2 + 0.5, (rA.z + rp.z) / 2);
-                  rLabel.scale.set(2, 0.6, 1);
-                  engine.scene.add(rLabel);
-                  engine._rulerLabel = rLabel;
-                  upd('actionFeedback', '\uD83D\uDCCF Distance: ' + rDist.toFixed(1) + ' blocks');
-                  setTimeout(function() { upd('actionFeedback', ''); }, 3000);
-                  // Auto-clear after 15s
-                  setTimeout(function() {
-                    if (engine._rulerLine) { engine.scene.remove(engine._rulerLine); engine._rulerLine.geometry.dispose(); engine._rulerLine.material.dispose(); engine._rulerLine = null; }
-                    if (engine._rulerLabel) { engine.scene.remove(engine._rulerLabel); engine._rulerLabel = null; }
-                  }, 15000);
-                  engine._rulerA = null; // Reset for next measurement
-                }
-              } else if (engine._rulerA) {
-                // Cancel ruler if no hit
-                engine._rulerA = null;
-                upd('actionFeedback', '\uD83D\uDCCF Ruler cancelled');
-                setTimeout(function() { upd('actionFeedback', ''); }, 1200);
-              }
+              engine.useRuler();
               break;
             case 'KeyC': // Toggle coordinate announcements for screen-reader users
               engine._coordAnnounce = !engine._coordAnnounce;
@@ -10171,161 +12110,13 @@
               setTimeout(function() { upd('actionFeedback', ''); }, 1500);
               break;
             case 'KeyV': // 3-point angle tool: click 3 blocks (A, vertex B, C), get the angle at B
-              var vHit = engine.blockUnderCrosshair();
-              if (vHit && vHit.object.userData.gridPos) {
-                var vp = vHit.object.userData.gridPos;
-                // Use block center as the geometric point for the angle calc.
-                var vPoint = new THREE.Vector3(vp.x + 0.5, vp.y + 0.5, vp.z + 0.5);
-                if (!engine._anglePoints) engine._anglePoints = [];
-                engine._anglePoints.push(vPoint);
-                if (engine._anglePoints.length === 1) {
-                  upd('actionFeedback', '\uD83D\uDCD0 Angle: A set \u2014 press V on the vertex');
-                  announceToSR(__alloT('stem.geometryworld.sr_angle_point_a_set_aim_at_the_vertex_and_press_v', 'Angle point A set. Aim at the vertex and press V.'));
-                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
-                } else if (engine._anglePoints.length === 2) {
-                  upd('actionFeedback', '\uD83D\uDCD0 Angle: Vertex set \u2014 press V on the third point');
-                  announceToSR(__alloT('stem.geometryworld.sr_angle_vertex_set_aim_at_the_third_point_and_press', 'Angle vertex set. Aim at the third point and press V.'));
-                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
-                } else {
-                  // Three points collected: compute angle at the middle point (the vertex).
-                  var aPt = engine._anglePoints[0];
-                  var bPt = engine._anglePoints[1];
-                  var cPt = engine._anglePoints[2];
-                  var ba = new THREE.Vector3().subVectors(aPt, bPt);
-                  var bc = new THREE.Vector3().subVectors(cPt, bPt);
-                  var deg = 0;
-                  if (ba.length() > 0.0001 && bc.length() > 0.0001) {
-                    var cosang = ba.dot(bc) / (ba.length() * bc.length());
-                    cosang = Math.max(-1, Math.min(1, cosang));
-                    deg = Math.acos(cosang) * (180 / Math.PI);
-                  }
-                  var degStr = deg.toFixed(1);
-                  // Clear any prior angle helpers, then draw two lines (A→B, B→C) and a label at B.
-                  if (engine._angleHelpers) {
-                    engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-                  }
-                  engine._angleHelpers = [];
-                  var aMat = new THREE.LineBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.9, linewidth: 2 });
-                  var aGeo1 = new THREE.BufferGeometry().setFromPoints([bPt, aPt]);
-                  var aGeo2 = new THREE.BufferGeometry().setFromPoints([bPt, cPt]);
-                  var aLine1 = new THREE.LineSegments(aGeo1, aMat);
-                  var aLine2 = new THREE.LineSegments(aGeo2, aMat.clone());
-                  engine.scene.add(aLine1); engine.scene.add(aLine2);
-                  engine._angleHelpers.push(aLine1); engine._angleHelpers.push(aLine2);
-                  var aLbl = makeDimLabel(degStr + '\u00b0', '#f472b6');
-                  aLbl.position.set(bPt.x, bPt.y + 0.7, bPt.z);
-                  aLbl.scale.set(1.8, 0.7, 1);
-                  engine.scene.add(aLbl);
-                  engine._angleHelpers.push(aLbl);
-                  var kind = deg < 89.5 ? 'acute' : (deg > 90.5 ? (deg > 179.5 ? 'straight' : 'obtuse') : 'right');
-                  upd('actionFeedback', '\uD83D\uDCD0 Angle: ' + degStr + '\u00b0 (' + kind + ')');
-                  announceToSR(__alloFill(__alloT('stem.geometryworld.sr_angle_measured_degrees_angle', 'Angle measured. {value1} degrees. {value2} angle.'), { value1: degStr, value2: kind }));
-                  if (engine.logEvent) engine.logEvent('angle_measure', { degrees: parseFloat(degStr), kind: kind });
-                  setTimeout(function() { upd('actionFeedback', ''); }, 3500);
-                  // Auto-clear helpers after 20s so the scene stays tidy.
-                  if (engine._angleClearTimer) clearTimeout(engine._angleClearTimer);
-                  engine._angleClearTimer = setTimeout(function() {
-                    if (engine._angleHelpers) {
-                      engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-                      engine._angleHelpers = [];
-                    }
-                  }, 20000);
-                  engine._anglePoints = [];
-                }
-              } else if (engine._anglePoints && engine._anglePoints.length > 0) {
-                // Cancel in-progress angle if no hit.
-                engine._anglePoints = [];
-                upd('actionFeedback', '\uD83D\uDCD0 Angle cancelled');
-                setTimeout(function() { upd('actionFeedback', ''); }, 1200);
-              }
+              engine.useAngleTool();
+              break;
+            case 'KeyU': // Hide or show the controls
+              if (engine._toggleHud) { ev.preventDefault(); engine._toggleHud(); }
               break;
             case 'KeyN': // Net unfolding for prisms; exposed-face analysis for composite structures
-              // N reveals exact dimensions/surface evidence, so it must travel through
-              // the same pre-evidence commitment gate as M. This records the target as
-              // observed and compares a matching estimate that was already committed.
-              var nm = engine.performMeasurement('surface');
-              if (nm) {
-                  if (nm.isComplete === false) {
-                    var incompleteSurfaceMessage = 'Measurement limit reached. Surface area and a net are unavailable until the full structure is measured.';
-                    upd('actionFeedback', '\uD83D\uDCCB ' + incompleteSurfaceMessage);
-                    announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + incompleteSurfaceMessage);
-                    if (engine.logEvent) engine.logEvent('surface_analysis', { shape: 'incomplete', surfaceArea: null, blocks: nm.count, measurementLimit: nm.measurementLimit });
-                    setTimeout(function() { upd('actionFeedback', ''); }, 5500);
-                    break;
-                  }
-                  if (!nm.isSolidPrism) {
-                    if (engine._netHelpers) {
-                      engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-                      engine._netHelpers = [];
-                    }
-                    var compositeSurfaceMessage = nm.surfaceAreaExact
-                      ? 'Composite shape: no six-rectangle net. Count exposed unit faces for surface area = ' + nm.exposedSurfaceArea + ' square units.'
-                      : 'Partial blocks do not use the six-rectangle prism net. Surface area depends on each partial face shape.';
-                    upd('actionFeedback', '\uD83D\uDCCB ' + compositeSurfaceMessage);
-                    announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + compositeSurfaceMessage);
-                    if (engine.logEvent) engine.logEvent('surface_analysis', { shape: nm.surfaceAreaExact ? 'composite_cubes' : 'partial_blocks', surfaceArea: nm.exposedSurfaceArea, blocks: nm.count });
-                    setTimeout(function() { upd('actionFeedback', ''); }, 5500);
-                    break;
-                  }
-                  // Clear any prior net helpers.
-                  if (engine._netHelpers) {
-                    engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-                  }
-                  engine._netHelpers = [];
-                  var L = nm.L, W = nm.W, H = nm.H;
-                  var areaTop = L * W, areaFront = L * H, areaSide = W * H;
-                  var surface = 2 * (areaTop + areaFront + areaSide);
-                  // Lay out the classic cross-shape net on the ground 2 blocks east of the structure.
-                  // Centered vertically on the structure's midline; each face is a flat quad with a label.
-                  var baseX = nm.minX + L + 3;
-                  var baseY = 0.02; // just above ground to avoid z-fighting
-                  var baseZ = nm.minZ;
-                  function addQuad(ox, oz, w, h, color, label) {
-                    // Quad: lying flat on XZ plane, with width = w (X) and depth = h (Z).
-                    var g = new THREE.PlaneGeometry(w, h);
-                    var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false });
-                    var mesh = new THREE.Mesh(g, mat);
-                    mesh.rotation.x = -Math.PI / 2;
-                    mesh.position.set(baseX + ox + w / 2, baseY, baseZ + oz + h / 2);
-                    engine.scene.add(mesh); engine._netHelpers.push(mesh);
-                    var edgeGeo = new THREE.EdgesGeometry(g);
-                    var edgeMat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
-                    var edges = new THREE.LineSegments(edgeGeo, edgeMat);
-                    edges.rotation.x = -Math.PI / 2;
-                    edges.position.copy(mesh.position);
-                    engine.scene.add(edges); engine._netHelpers.push(edges);
-                    var lbl = makeDimLabel(label, '#f8fafc');
-                    lbl.position.set(mesh.position.x, baseY + 0.8, mesh.position.z);
-                    lbl.scale.set(1.2, 0.5, 1);
-                    engine.scene.add(lbl); engine._netHelpers.push(lbl);
-                  }
-                  // Cross layout: middle row = [left W×H, front L×H, right W×H, back L×H]
-                  // with top L×W above the front, bottom L×W below the front.
-                  // Origin (0,0) is the front face's NW corner.
-                  addQuad(-W, 0, W, H, 0x60a5fa, 'Left ' + W + '\u00d7' + H + '=' + areaSide);
-                  addQuad(0, 0, L, H, 0x22d3ee, 'Front ' + L + '\u00d7' + H + '=' + areaFront);
-                  addQuad(L, 0, W, H, 0x60a5fa, 'Right ' + W + '\u00d7' + H + '=' + areaSide);
-                  addQuad(L + W, 0, L, H, 0x22d3ee, 'Back ' + L + '\u00d7' + H + '=' + areaFront);
-                  addQuad(0, -W, L, W, 0x34d399, 'Top ' + L + '\u00d7' + W + '=' + areaTop);
-                  addQuad(0, H, L, W, 0xfbbf24, 'Bottom ' + L + '\u00d7' + W + '=' + areaTop);
-                  // Total surface area label floating above the net.
-                  var totalLbl = makeDimLabel('SA = ' + surface, '#a78bfa');
-                  totalLbl.position.set(baseX + L / 2, 2.4, baseZ + H / 2 - W);
-                  totalLbl.scale.set(2.4, 0.9, 1);
-                  engine.scene.add(totalLbl); engine._netHelpers.push(totalLbl);
-                  upd('actionFeedback', '\uD83D\uDCCB Net: SA = 2(' + areaTop + '+' + areaFront + '+' + areaSide + ') = ' + surface);
-                  announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + 'Net unfolded. Surface area equals ' + surface + ' square units. Two times top ' + areaTop + ' plus front ' + areaFront + ' plus side ' + areaSide + '.');
-                  if (engine.logEvent) engine.logEvent('net_unfold', { L: L, W: W, H: H, surfaceArea: surface });
-                  setTimeout(function() { upd('actionFeedback', ''); }, 4000);
-                  // Auto-clear after 30s so the scene doesn't get cluttered.
-                  if (engine._netClearTimer) clearTimeout(engine._netClearTimer);
-                  engine._netClearTimer = setTimeout(function() {
-                    if (engine._netHelpers) {
-                      engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-                      engine._netHelpers = [];
-                    }
-                  }, 30000);
-              }
+              engine.useNetTool();
               break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
             case 'KeyH':
@@ -10496,7 +12287,7 @@
             var hit = hits[0];
             if (hit.object.userData.isNPC) {
               if (document.pointerLockElement) document.exitPointerLock();
-              upd({ showNpcDialog: true, dialogNpcIdx: hit.object.userData.npcIndex, npcTypewriterPos: 0, npcTypewriterNpc: hit.object.userData.npcIndex });
+              upd({ showNpcDialog: true, npcDialogPeek: false, dialogNpcIdx: hit.object.userData.npcIndex, npcTypewriterPos: 0, npcTypewriterNpc: hit.object.userData.npcIndex });
               sfxNpcChime();
               return;
             }
@@ -10568,6 +12359,9 @@
               if (!engine._blockMilestones) engine._blockMilestones = {};
               if (engine.blocksPlaced >= 10 && !engine._blockMilestones.ten && typeof awardXP === 'function') { awardXP('geometryWorld', 5, '10 blocks placed'); engine._blockMilestones.ten = true; }
               if (engine.blocksPlaced >= 50 && !engine._blockMilestones.fifty && typeof awardXP === 'function') { awardXP('geometryWorld', 5, '50 blocks placed'); engine._blockMilestones.fifty = true; }
+              // Builder (10) and Master Builder (100): check while either is still unearned.
+              var heldBadges = engine._badgesRef || {};
+              if (engine._runAchievementCheck && ((engine.blocksPlaced >= 10 && !heldBadges.builder_10) || (engine.blocksPlaced >= 100 && !heldBadges.builder_100))) setTimeout(engine._runAchievementCheck, 100);
               var ts3 = engine._tutorialState || {}; if (ts3.step === 3 && !ts3.dismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
               if (ps.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
               return placedMesh;
@@ -10966,6 +12760,7 @@
               engine.euler.y -= dx * engine._touchLookSensitivity;
               engine.euler.x -= dy * engine._touchLookSensitivity;
               updateTouchLookFeedback(dx, dy);
+              if (!engine._touchLookLearned && Math.abs(dx) + Math.abs(dy) > 4) { engine._touchLookLearned = true; upd('touchLookLearned', true); }
               engine.euler.x = Math.max(-Math.PI * 0.49, Math.min(Math.PI * 0.49, engine.euler.x));
               engine.camera.quaternion.setFromEuler(engine.euler);
               engine._touchLookStart = { x: touch.clientX, y: touch.clientY };
@@ -12226,13 +14021,14 @@
           // Each NPC's main question (step 0) is scored on the student's FIRST
           // attempt, which is what makes it probe-like rather than a persistence
           // measure. Keyed by npc + question text so one NPC re-asked across a
-          // reload is not counted twice.
+          // reload is not counted twice. Practice rounds reuse character names and
+          // question wording with new numbers, so the round number is part of the key.
           var mainAttempts = log.filter(function(e) {
             return (e.type === 'answer_correct' || e.type === 'answer_wrong') && e.data && e.data.step === 0;
           });
           var firstAttemptByQuestion = {};
           mainAttempts.forEach(function(e) {
-            var key = String(e.data.npc || '') + '|' + String(e.data.question || '');
+            var key = String(e.data.npc || '') + '|' + String(e.data.question || '') + (e.data.practiceRound ? '|' + e.data.practiceRound : '');
             if (!Object.prototype.hasOwnProperty.call(firstAttemptByQuestion, key)) {
               firstAttemptByQuestion[key] = (e.type === 'answer_correct');
             }
@@ -12268,6 +14064,7 @@
           var report = {
             // Session metadata
             sessionDate: new Date().toISOString(),
+            sessionLocalDate: geometryLocalDay(new Date()),
             sessionDuration: Math.round(sessionDuration) + 's',
             lessonsAttempted: lessons.length,
             lessonsCompleted: completions.length,
@@ -12312,7 +14109,12 @@
             // Growth indicators
             npcConversations: log.filter(function(e) { return e.type === 'npc_chat'; }).length,
             worldsCreated: log.filter(function(e) { return e.type === 'npc_created'; }).length,
+            // Kept for comparison with earlier exports, but nothing logs 'worksheet_print': a
+            // print happens in the browser's own tab. What the tool sees is a worksheet opened.
             worksheetsPrinted: log.filter(function(e) { return e.type === 'worksheet_print'; }).length,
+            worksheetsOpened: log.filter(function(e) { return e.type === 'worksheet_preview'; }).length,
+            // worldsCreated (kept) counts characters placed in the Lesson Creator, not worlds.
+            charactersCreated: log.filter(function(e) { return e.type === 'npc_created'; }).length,
 
             // Detail for longitudinal tracking
             learningEvidence: learningEvidence,
@@ -12335,7 +14137,7 @@
           var blob = new Blob([json], { type: 'application/json' });
           var a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
-          a.download = 'geometry_progress_' + new Date().toISOString().slice(0, 10) + '.json';
+          a.download = 'geometry_progress_' + geometryLocalDay(new Date()) + '.json';
           document.body.appendChild(a); a.click(); document.body.removeChild(a);
           URL.revokeObjectURL(a.href);
 
@@ -12353,7 +14155,7 @@
             + '.footer{margin-top:24px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}'
             + '@media print{body{margin:12px}}</style></head><body>';
           h += '<h1>\uD83D\uDCCB MTSS Progress Monitoring Report</h1>';
-          h += '<p><strong>Tool:</strong> ' + r.tool + ' v' + r.version + ' &bull; <strong>Date:</strong> ' + r.sessionDate.slice(0, 10) + ' &bull; <strong>Duration:</strong> ' + r.sessionDuration + '</p>';
+          h += '<p><strong>Tool:</strong> ' + r.tool + ' v' + r.version + ' &bull; <strong>Date:</strong> ' + r.sessionLocalDate + ' &bull; <strong>Duration:</strong> ' + r.sessionDuration + '</p>';
           h += '<div class="tier">' + r.rtiTierSuggestion + '</div>';
 
           h += '<h2>Performance Metrics</h2><div>';
@@ -12372,8 +14174,8 @@
 
           h += '<h2>Growth Indicators</h2><div>';
           h += '<div class="metric"><div class="val">' + r.npcConversations + '</div><div class="lbl">NPC Chats</div></div>';
-          h += '<div class="metric"><div class="val">' + r.worldsCreated + '</div><div class="lbl">Worlds Created</div></div>';
-          h += '<div class="metric"><div class="val">' + r.worksheetsPrinted + '</div><div class="lbl">Worksheets</div></div>';
+          h += '<div class="metric"><div class="val">' + r.charactersCreated + '</div><div class="lbl">Characters made</div></div>';
+          h += '<div class="metric"><div class="val">' + r.worksheetsOpened + '</div><div class="lbl">Worksheets opened</div></div>';
           h += '</div>';
           if (r.learningEvidence && (r.learningEvidence.explainedPredictions || r.learningEvidence.revisionsMade || r.learningEvidence.reflectionsCompleted || r.learningEvidence.retrievalAttempts || r.learningEvidence.representationViews || r.learningEvidence.representationConnections || r.learningEvidence.misconceptions.length || (r.estimateComparison && r.estimateComparison.compared))) {
             var le = r.learningEvidence;
@@ -12846,6 +14648,9 @@
         }
         if (eng && SAMPLE_LESSONS[lessonKey]) {
           eng.loadLesson(SAMPLE_LESSONS[lessonKey]);
+        } else if (eng && geometryPracticeLessonForKey(lessonKey)) {
+          geometryPracticeBegin(geometryStorage(), lessonKey);
+          eng.loadLesson(geometryPracticeLessonForKey(lessonKey));
         } else if (lessonKey && lessonKey.indexOf('ai_') === 0) {
           var myL = getMyLessons();
           var found = myL.filter(function(l) { return l._id === lessonKey; })[0];
@@ -13049,7 +14854,7 @@
           if (dist < minD) { minD = dist; nearest = i; }
         });
         if (nearest >= 0) {
-          upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest });
+          upd({ showNpcDialog: true, npcDialogPeek: false, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest });
           sfxNpcChime();
         } else if (addToast) {
           addToast('No NPC nearby - walk closer!', 'info');
@@ -13086,6 +14891,8 @@
       // must preview a newly picked lesson that has not been loaded into the engine yet.
       var currentLesson = (function () {
         if (SAMPLE_LESSONS[activeLesson]) return SAMPLE_LESSONS[activeLesson];
+        var practiceLesson = geometryPracticeLessonForKey(activeLesson);
+        if (practiceLesson) return practiceLesson;
         if (activeLesson && activeLesson.indexOf('ai_') === 0) {
           var saved = getMyLessons().filter(function (l) { return l && l._id === activeLesson; })[0];
           if (saved) return saved;
@@ -13093,6 +14900,101 @@
         }
         return (engine && engine._currentLesson) || SAMPLE_LESSONS.volumeExplorer;
       })();
+      // Blocks drawer: the material palette and shape tray fold into one Blocks button
+      // in guided lessons, where most time goes to walking, measuring and talking. Free
+      // Build opens with them. A student's own choice is kept for each of the two.
+      var inFreeBuild = !!(currentLesson && currentLesson.sandbox) || activeLesson === 'builderSandbox';
+      var buildToolsKey = inFreeBuild ? 'buildToolsOpenSandbox' : 'buildToolsOpenLesson';
+      // A lesson whose objectives ask for building (placing, shapes, height) opens it too.
+      var lessonBuilds = !!(currentLesson && Array.isArray(currentLesson.objectiveEvidence) && currentLesson.objectiveEvidence.some(function(r) { return r && (r.place || r.shapes || r.buildHeight || r.build); }));
+      var buildToolsOpen = gwHasOwn(d, buildToolsKey) ? !!d[buildToolsKey] : (inFreeBuild || lessonBuilds);
+      function setBuildToolsOpen(open) {
+        var patch = { touchMoreOpen: false }; patch[buildToolsKey] = !!open; upd(patch);
+        announceToSR(open ? 'Blocks and shapes shown.' : 'Blocks and shapes hidden. Number keys still choose a block.');
+      }
+      // Hide controls (U): everything but the world, the crosshair and open dialogs.
+      var hudHidden = !!d.hudHidden;
+      function setHudHidden(hidden) {
+        upd({ hudHidden: !!hidden, touchMoreOpen: false });
+        announceToSR(hidden ? 'Controls hidden. Press U or Show controls to bring them back.' : 'Controls shown.');
+        focusWorldSurface();
+      }
+      // A character's question folded to one line (Look), so the student can see what it asks about.
+      var npcPeek = !!(showNpcDialog && d.npcDialogPeek);
+      function toggleFlyMode() {
+        var eng = window[engineKey];
+        if (!eng) return;
+        eng.flyMode = !eng.flyMode; eng.velocity.y = 0;
+        if (!eng.flyMode) { eng.moveState.flyUp = false; eng.moveState.flyDown = false; }
+        upd('flyMode', eng.flyMode);
+        if (addToast) addToast(eng.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON \u2014 Space=up, Shift=down, double-tap Space to land' : '\uD83D\uDC63 Walk mode', 'info');
+      }
+      function returnToSpawnPoint() {
+        var eng = window[engineKey];
+        if (eng && eng.returnToSpawn) { eng.returnToSpawn(); if (addToast) addToast('\uD83C\uDFE0 Teleported to spawn', 'info'); }
+      }
+      async function clearMyPlacedBlocks() {
+        var eng = window[engineKey];
+        if (!eng || !eng.clearPlayerBlocks) return;
+        var count = 0;
+        Object.keys(eng.blocks || {}).forEach(function(k) { var m = eng.blocks[k]; if (m && m.userData && !m.userData._lessonBlock) count++; });
+        if (count === 0) { if (addToast) addToast('Nothing to clear \u2014 you haven\u2019t placed any blocks.', 'info'); return; }
+        // Accessible dialog rather than window.confirm, and fails CLOSED:
+        // with no dialog service the blocks are kept, not silently cleared.
+        var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+        var unavailable = 'Clearing is unavailable right now, so your blocks were kept.';
+        if (typeof confirmApi !== 'function') { if (addToast) addToast(unavailable, 'warning'); return; }
+        var okToClear = false;
+        try {
+          okToClear = await confirmApi('Clear all ' + count + ' of your placed blocks? The lesson\u2019s structures and NPCs will stay. This cannot be undone.',
+            { title: 'Clear your placed blocks', confirmText: 'Clear ' + count + ' block' + (count === 1 ? '' : 's'), cancelText: 'Keep my blocks', tone: 'warning' });
+        } catch (e) { if (addToast) addToast(unavailable, 'warning'); return; }
+        if (okToClear) {
+          var cleared = eng.clearPlayerBlocks();
+          upd('blocksPlaced', 0);
+          if (addToast) addToast('\uD83D\uDDD1\uFE0F Cleared ' + cleared + ' block' + (cleared === 1 ? '' : 's') + '. Lesson structures preserved.', 'success');
+        }
+      }
+      // Touch buttons, shared by the action column and the More sheet.
+      function touchActionButton(action, icon, label, ariaLabel, fn, extra) {
+        return el('button', Object.assign({ key: 'touch-' + action, type: 'button', className: 'gw-focusable', 'aria-label': ariaLabel, title: ariaLabel, 'data-gw-touch-action': action,
+          onTouchStart: function(ev) { runMobileButtonAction(action, fn, ev); },
+          onClick: function(ev) { runMobileButtonAction(action, fn, ev); } }, extra || {}), renderTouchAction(el, icon, label));
+      }
+      function fromMore(fn) { return function() { upd('touchMoreOpen', false); fn(); }; }
+      // Every objective with its evidence (GW_OBJECTIVE_EVIDENCE), for the Objectives panel
+      // and the completion dialog's Still to try. One without a rule ticks at completion.
+      function lessonObjectiveStatuses() {
+        var eng = window[engineKey], rules = currentLesson.objectiveEvidence || [];
+        function needs(key) { return rules.some(function(r) { return r && r[key]; }); }
+        var answeredNames = {};
+        if (eng && eng.npcs) eng.npcs.forEach(function(n, idx) { if (answeredNpcs[idx] && n && n.data) answeredNames[n.data.name] = true; });
+        var placements = [], nets = [];
+        if (eng && eng.sessionLog && (needs('place') || needs('shapes') || needs('net'))) {
+          var logStart = 0;
+          for (var li = eng.sessionLog.length - 1; li >= 0; li--) if (eng.sessionLog[li].type === 'lesson_load') { logStart = li; break; }
+          for (var lj = logStart; lj < eng.sessionLog.length; lj++) {
+            if (eng.sessionLog[lj].type === 'block_place') placements.push(eng.sessionLog[lj].data || {});
+            else if (eng.sessionLog[lj].type === 'net_unfold') nets.push(eng.sessionLog[lj].data || {});
+          }
+        }
+        var studentHeight = 0;
+        if (eng && eng.blocks && needs('buildHeight')) {
+          var minY = Infinity, maxY = -Infinity;
+          Object.keys(eng.blocks).forEach(function(k) { var u = eng.blocks[k] && eng.blocks[k].userData; if (!u || u._lessonBlock || !u.gridPos || (u._measurementLayer && u._measurementLayer !== 'student')) return; minY = Math.min(minY, u.gridPos.y); maxY = Math.max(maxY, u.gridPos.y); });
+          studentHeight = maxY >= minY ? maxY - minY + 1 : 0;
+        }
+        var checks = ((d.objectiveChecks || {})[activeLesson]) || {}, lessonDone = totalQ > 0 && score >= totalQ;
+        var builds = [];
+        if (eng && eng.blocks && needs('build')) {
+          builds = geometryStudentBuilds(Object.keys(eng.blocks).map(function(k) { var u = eng.blocks[k] && eng.blocks[k].userData; return u && !u._lessonBlock && u.gridPos && (!u._measurementLayer || u._measurementLayer === 'student') ? { x: u.gridPos.x, y: u.gridPos.y, z: u.gridPos.z, shape: u.shape } : null; }).filter(Boolean));
+        }
+        var evidenceState = { answered: answeredNames, measurements: completeMeasurementRecords(measureHistory), placements: placements, nets: nets, builds: builds, studentHeight: studentHeight, complete: lessonDone };
+        return (currentLesson.objectives || []).map(function(obj, i) {
+          var rule = rules[i];
+          return { index: i, text: obj && obj.text ? obj.text : obj, status: rule ? geometryObjectiveStatus(rule, Object.assign({ selfChecked: !!checks[i] }, evidenceState)) : { done: lessonDone, evidence: lessonDone ? 'Lesson complete' : '' } };
+        });
+      }
 
       function openGeometryWorksheet(mode) {
         var eng = window[engineKey], options = {mode:mode};
@@ -13115,12 +15017,23 @@
       // Expose current React state to the engine so the compass rAF loop reads live data
       if (engine) {
         engine.openGeometryHome = openGeometryHome;
-        engine.geometryHomeLessons = Object.keys(SAMPLE_LESSONS).map(function(id){var l=SAMPLE_LESSONS[id];return {id:id,title:l.title,description:l.description,objectives:l.objectives || [],ground:l.ground,structures:l.structures || [],activities:l.activities || [],npcs:l.npcs || [],estimatedMinutes:l.estimatedMinutes,depth:l.depth,landscapeTheme:l.landscapeTheme};}).concat(getMyLessons().map(function(l){return {id:l._id,title:l.title || 'Saved lesson',description:l.description || '',objectives:l.objectives || [],ground:l.ground,structures:l.structures || [],activities:l.activities || [],npcs:l.npcs || [],estimatedMinutes:l.estimatedMinutes,depth:l.depth,landscapeTheme:l.landscapeTheme};}));
+        engine.geometryHomeLessons = Object.keys(SAMPLE_LESSONS).map(function(id){var l=SAMPLE_LESSONS[id];return {id:id,title:l.title,description:l.description,objectives:l.objectives || [],ground:l.ground,structures:l.structures || [],activities:l.activities || [],npcs:l.npcs || [],estimatedMinutes:l.estimatedMinutes,depth:l.depth,landscapeTheme:l.landscapeTheme,explore:!!l.explore,exploreName:l.exploreName || null,exploreBlurb:l.exploreBlurb || null};}).concat(getMyLessons().map(function(l){return {id:l._id,title:l.title || 'Saved lesson',description:l.description || '',objectives:l.objectives || [],ground:l.ground,structures:l.structures || [],activities:l.activities || [],npcs:l.npcs || [],estimatedMinutes:l.estimatedMinutes,depth:l.depth,landscapeTheme:l.landscapeTheme};}));
         engine.startHomeLesson = function(id){
           if(!engine.geometryHomeLessons.some(function(l){return l.id===id;}))return false;
           loadLessonByKey(id);
           upd({activeLesson:id,showGeometryHome:false,_geometryHomeInitial:false,showLessonIntro:false,creatorMode:false,showGameSettings:false,builderPanel:'build',hudPreset:'learning',hudPanel:'',sandboxDockCollapsed:false});
           focusWorldSurface();return true;
+        };
+        // A practice round: a round key (practice_s42), a round number (a class
+        // sharing one round) at a level, or a new round at that level.
+        engine.startPracticeRound = function(round, level){
+          var parsed = geometryPracticeRound(round);
+          level = parsed ? parsed.level : level === 'stretch' ? 'stretch' : 'core';
+          var seed = parsed ? parsed.seed : geometryPracticeSeed(round) || geometryPracticeNewSeed(geometryStorage(), level);
+          var key = geometryPracticeKey(seed, level);
+          loadLessonByKey(key);
+          upd({activeLesson:key,showGeometryHome:false,_geometryHomeInitial:false,showLessonIntro:false,creatorMode:false,showGameSettings:false,builderPanel:'build',hudPreset:'learning',hudPanel:'',sandboxDockCollapsed:false,reflectionText:''});
+          focusWorldSurface();return seed;
         };
         engine._answeredRef = answeredNpcs;
         engine._worldActive = worldActive;
@@ -13135,7 +15048,7 @@
           showPeerWorlds: showPeerWorlds, showTeacherView: showTeacherView,
           showMyLessons: showMyLessons, showLessonEditor: showLessonEditor,
           showGeometryHome: showGeometryHome, showLessonIntro: showLessonIntro, showReflection: showReflection,
-          showCreatorPanel: showCreatorPanel, creatorMode: creatorMode
+          showCreatorPanel: showCreatorPanel, creatorMode: creatorMode, touchMoreOpen: !!d.touchMoreOpen
         };
         // Tutorial state bridge — same staleness issue; tutorial advancement checks
         // must read from here or they compare against the first-render value (usually 0).
@@ -13148,6 +15061,12 @@
         // Badges bridge — runAchievementCheck called via setTimeout from stale closures
         // needs to read the LATEST earned-badges object to avoid re-awarding duplicates.
         engine._badgesRef = earnedBadges;
+        // Lets placement and the Free Build print paths check badges too; they were
+        // only checked after a measurement or an answer, so Builder, Master Builder and
+        // 3D Printer never appeared for a student who only built.
+        engine._runAchievementCheck = runAchievementCheck;
+        engine._hudHidden = hudHidden;
+        engine._toggleHud = function() { setHudHidden(!hudHidden); };
         // Collab bridges — animate loop renders peer avatars per-frame but its closure
         // captured first-render empty values. Sync live data so avatars appear/update.
         engine._collabPlayersRef = collabPlayers;
@@ -13160,7 +15079,7 @@
         { flag: !!(objectivesOpen && currentLesson.activities && currentLesson.activities.length), key:'objectivesOpen',label:'Activity guide',emoji:'◇' },
         { flag: showGeometryHome, key: 'showGeometryHome', label: 'Geometry World home', emoji: '◇' },
         { flag: showGameSettings, key: 'showGameSettings', label: 'Game Settings', emoji: '\u2699\uFE0F' },
-        { flag: showNpcDialog,    key: 'showNpcDialog',    label: __alloT('stem.geometryworld.npc_dialog', 'NPC Dialog'),            emoji: '💬' },
+        { flag: showNpcDialog && !npcPeek, key: 'showNpcDialog',    label: __alloT('stem.geometryworld.npc_dialog', 'NPC Dialog'),            emoji: '💬' },
         { flag: showMyLessons,    key: 'showMyLessons',    label: __alloT('stem.geometryworld.my_lessons', 'My Lessons'),            emoji: '📚' },
         { flag: showLessonEditor, key: 'showLessonEditor', label: __alloT('stem.geometryworld.lesson_editor', 'Lesson Editor'),         emoji: '✏️' },
         { flag: showLessonIntro,  key: 'showLessonIntro',  label: __alloT('stem.geometryworld.lesson_intro', 'Lesson Intro'),          emoji: '📖' },
@@ -13231,7 +15150,7 @@
       // and the workspace collapsed to its toolbar plus the canvas's intrinsic 150px (a 164px world and a 220px home
       // chooser on a phone in the live shell, 2026-09-14). The calc keeps landscape phones sane; a host that gives a
       // real height is never capped.
-      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-hud-preset': hudPreset, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 'min(640px, calc(100vh - 270px))', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-build-tools': buildToolsOpen ? 'open' : 'closed', 'data-hud-hidden': hudHidden ? 'true' : 'false', 'data-npc-dialog': showNpcDialog ? (npcPeek ? 'peek' : 'open') : 'closed', 'data-hud-preset': hudPreset, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 'min(640px, calc(100vh - 270px))', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen>.gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen>.gw-toolbar{display:none!important}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0;margin:0!important;border:0!important;border-radius:0!important}'),
         // Top bar — glass style
         el('header', { className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
@@ -13280,6 +15199,9 @@
           )
         ),
 
+        el('style', { 'data-gw-room': 'true' }, GW_ROOM_CSS),
+        hudHidden && el('button', { type: 'button', className: 'gw-hud-restore gw-focusable', 'aria-keyshortcuts': 'U', 'aria-label': 'Show controls. Shortcut U', onClick: function() { setHudHidden(false); } },
+          renderWorkspaceIcon(el, 'eye'), 'Show controls'),
         toolbarCollapsed && !isWorkspaceFullscreen && el('button', {
           type: 'button', className: 'gw-toolbar-reveal gw-focusable',
           'aria-label': __alloT('stem.geometryworld.a11y_show_the_geometry_world_game_bar', 'Show the Geometry World game bar'),
@@ -13407,7 +15329,7 @@
               el('span', null, predictionScaffold.cue)
             )
           ),
-          measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'data-measurement-compact': isMobile ? 'true' : 'false', 'data-details-open': !isMobile || measurementDetailsOpen ? 'true' : 'false', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector'), style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
+          measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'data-measurement-compact': 'true', 'data-details-open': measurementDetailsOpen ? 'true' : 'false', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector'), style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
             el('div', { className: 'gw-measure-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' } },
               el('div', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 800, color: '#cffafe' } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
               el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector'), title: __alloT('stem.geometryworld.close_measurement_inspector','Close measurement inspector'), onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); setMeasurementDetailsOpen(false); upd('measureResult', null); } }, '\u00D7')
@@ -13424,8 +15346,8 @@
               el('span', null, measureResult.isComplete === false ? 'Occupied volume, at least' : 'Occupied volume'),
               el('span', { className: 'gw-measure-volume-value' }, el('strong', null, measureResult.formattedOccupiedVolume), el('span', null, ' cubic units'))
             ),
-            el('details', { className: 'gw-measure-details', open: !isMobile || measurementDetailsOpen,
-              onToggle: function(ev) { if (isMobile && ev.currentTarget.open !== measurementDetailsOpen) setMeasurementDetailsOpen(ev.currentTarget.open); }
+            el('details', { className: 'gw-measure-details', open: measurementDetailsOpen,
+              onToggle: function(ev) { if (ev.currentTarget.open !== measurementDetailsOpen) setMeasurementDetailsOpen(ev.currentTarget.open); }
             },
               el('summary', { className: 'gw-measure-details-toggle gw-focusable' }, __alloT('stem.geometryworld.explore_measurement_details', 'Explore measurement details')),
               el('div', { className: 'gw-measure-details-content' },
@@ -13775,6 +15697,15 @@
                   }, el('span', { 'aria-hidden': 'true' }, panel.icon), active ? 'Hide ' + panel.label : panel.label);
                 }),
                 el('h3', { className: 'gw-settings-section-title' }, 'Lesson & accessibility'),
+                !inFreeBuild && engine && engine.openFreeBuildLauncher && el('button', { type: 'button', className: 'gw-settings-free-build gw-focusable', 'data-gw-open-free-build': 'true',
+                  onClick: function() { var eng = window[engineKey]; if (eng && eng.openFreeBuildLauncher) eng.openFreeBuildLauncher(); } }, el('span', { 'aria-hidden': 'true' }, '\u2728'), 'Open Free Build'),
+                isMobile && touchMode && el('div', { className: 'gw-settings-look', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_settings', 'Touch look settings') },
+                  el('label', { htmlFor: 'gw-touch-look-sensitivity' }, el('span', null, 'Look speed'), el('output', { htmlFor: 'gw-touch-look-sensitivity' }, Math.round(touchLookSensitivity / 0.004 * 100) + '%')),
+                  el('input', { id: 'gw-touch-look-sensitivity', type: 'range', min: 0.002, max: 0.008, step: 0.001, value: touchLookSensitivity, 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_sensitivity', 'Touch look sensitivity'), 'aria-valuetext': 'Look speed ' + Math.round(touchLookSensitivity / 0.004 * 100) + ' percent', onChange: function(ev) {
+                    var next = Math.max(0.002, Math.min(0.008, Number(ev.target.value)));
+                    upd('touchLookSensitivity', next);
+                    if (engine && engine.setTouchLookSensitivity) engine.setTouchLookSensitivity(next);
+                  } })),
 
           // Lesson selector (built-in + AI-generated)
           el('select', {
@@ -13782,6 +15713,7 @@
             value: activeLesson,
             onChange: function(ev) {
               var lessonKey = ev.target.value;
+              if (lessonKey === 'practice_new' || lessonKey === 'practice_new_s') { var newLevel = lessonKey === 'practice_new_s' ? 'stretch' : 'core'; lessonKey = geometryPracticeKey(geometryPracticeNewSeed(geometryStorage(), newLevel), newLevel); }
               upd({ activeLesson: lessonKey, showLessonIntro: true, showReflection: false, showGameSettings: false });
             },
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
@@ -13792,13 +15724,20 @@
               el('option', { value: 'buildChallenge' }, '\uD83C\uDFD7\uFE0F Build Challenge'),
               el('option', { value: 'realWorld' }, '\uD83D\uDCE6 Packing & Shipping'),
               el('option', { value: 'geometryGarden' }, '\uD83C\uDF3F The Geometry Garden'),
+              el('option', { value: 'skylineCity' }, '\uD83C\uDFD9\uFE0F Skyline City'),
               el('option', { value: 'compositeVolume' }, '\uD83E\uDDE9 Composite Volume'),
               el('option', { value: 'fractionVolume' }, '\u00BD Fractional Dimensions'),
               el('option', { value: 'volumeEstimation' }, '\uD83C\uDFAF Volume Estimation'),
               el('option', { value: 'fractionBuilder' }, '\u00BD Fraction Builder'),
               el('option', { value: 'base10Blocks' }, '\uD83E\uDDF1 Base 10 Place Value'),
               el('option', { value: 'fluencyMaze' }, '\uD83C\uDFAF Volume Fluency Maze'),
-              el('option', { value: 'geometryHarbor' }, '\u2693 Geometry Harbor Expedition')
+              el('option', { value: 'geometryHarbor' }, '\u2693 Geometry Harbor Expedition'),
+              el('option', { value: 'scaleUp' }, '\uD83D\uDCC8 Scale Up')
+            ),
+            el('optgroup', { label: 'Practice' },
+              geometryPracticeRound(activeLesson) ? el('option', { value: activeLesson }, '\uD83C\uDFB2 ' + geometryPracticeLabel(geometryPracticeRound(activeLesson))) : null,
+              el('option', { value: 'practice_new' }, '\uD83C\uDFB2 New practice round (new numbers)'),
+              el('option', { value: 'practice_new_s' }, '\uD83C\uDFB2 New stretch round (harder)')
             ),
             getMyLessons().length > 0 && el('optgroup', { label: '\uD83E\uDD16 AI-Generated (' + getMyLessons().length + ')' },
               getMyLessons().slice(0, 5).map(function(ml) {
@@ -13886,7 +15825,7 @@
               var json = JSON.stringify(worldData, null, 2);
               var blob = new Blob([json], { type: 'application/json' });
               var a = document.createElement('a');
-              a.href = URL.createObjectURL(blob); a.download = 'geometry_world_' + new Date().toISOString().slice(0, 10) + '.json';
+              a.href = URL.createObjectURL(blob); a.download = 'geometry_world_' + geometryLocalDay(new Date()) + '.json';
               document.body.appendChild(a); a.click(); document.body.removeChild(a);
               URL.revokeObjectURL(a.href);
               if (addToast) addToast('\uD83D\uDCBE Saved ' + checkedWorld.summary.blockCount + ' editable student blocks', 'success');
@@ -13990,7 +15929,7 @@
               var blob = new Blob([buffer], { type: 'application/octet-stream' });
               var a = document.createElement('a');
               a.href = URL.createObjectURL(blob);
-              a.download = 'geometry_world_' + new Date().toISOString().slice(0, 10) + '.stl';
+              a.download = 'geometry_world_' + geometryLocalDay(new Date()) + '.stl';
               document.body.appendChild(a); a.click(); document.body.removeChild(a);
               URL.revokeObjectURL(a.href);
               if (addToast) addToast('\uD83E\uDE78 STL exported! ' + blockKeys.length + ' blocks \u2192 ' + numTriangles + ' triangles'
@@ -14011,7 +15950,7 @@
                 if (eng.composer && eng._postFxEnabled !== false) { try { eng.composer.render(); } catch (e) { eng.renderer.render(eng.scene, eng.camera); } } else { eng.renderer.render(eng.scene, eng.camera); }
                 var dataUrl = eng.renderer.domElement.toDataURL('image/png');
                 // Filename includes the lesson title so students can recognize their work later
-                var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                var stamp = geometryLocalStamp(new Date());
                 var safeTitle = (currentLesson.title || 'geometry-world').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40).replace(/^-|-$/g, '');
                 var a = document.createElement('a');
                 a.href = dataUrl;
@@ -14105,7 +16044,7 @@
               var csv = eng.exportSessionCSV();
               var blob = new Blob([csv], { type: 'text/csv' });
               var a = document.createElement('a');
-              a.href = URL.createObjectURL(blob); a.download = 'geometry_session_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.csv';
+              a.href = URL.createObjectURL(blob); a.download = 'geometry_session_' + geometryLocalStamp(new Date()) + '.csv';
               document.body.appendChild(a); a.click(); document.body.removeChild(a);
               URL.revokeObjectURL(a.href);
               if (addToast) addToast('\uD83D\uDCCA Session data exported (' + eng.sessionLog.length + ' events)', 'success');
@@ -14377,7 +16316,8 @@
         // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
         // Lets students instantly dismiss all overlays and return to the 3D world.
         // Positioned bottom-center so it doesn't collide with any modal, high z-index so always visible.
-        openModals.length > 0 && el('div', { className: 'gw-return-dock',
+        // A character dialog has its own close button (and Esc), so it gets no Back to Game dock.
+        openModals.length > 0 && !(openModals.length === 1 && openModals[0].key === 'showNpcDialog') && el('div', { className: 'gw-return-dock',
           style: { position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', pointerEvents: 'none' }
         },
           // Status pill: list of open overlays
@@ -14661,39 +16601,42 @@
           totalQ > 0 && el('div', { className: 'gw-objective-progress', role: 'progressbar', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_question_progress', 'Lesson question progress'), 'aria-valuemin': 0, 'aria-valuemax': totalQ, 'aria-valuenow': Math.min(score, totalQ), 'aria-valuetext': score + ' of ' + totalQ + ' questions completed' },
             el('div', { className: 'gw-objective-progress-fill', style: { width: Math.min(100, Math.round((score / totalQ) * 100)) + '%', background: score >= totalQ ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'linear-gradient(90deg, #7c3aed, #a78bfa)' }, 'aria-hidden': 'true' })
           ),
-          currentLesson.objectives && el('div', { className: 'gw-objective-list' },
-            currentLesson.objectives.map(function(obj, i) {
-            var isDone = i < score;
-            var objectiveText = obj && obj.text ? obj.text : obj;
-            return el(isDone ? 'div' : 'button', { key: 'obj-' + i + '-' + String(objectiveText).slice(0, 24),
-              onClick: function() {
-                if (isDone) return;
-                // Navigate camera toward the NPC that corresponds to this objective
-                var eng = window[engineKey];
-                if (!eng || !eng.npcs) return;
-                // Find the i-th NPC with a question (objectives map 1:1 to question NPCs)
-                var qNpcs = eng.npcs.filter(function(n) { return n.data.question; });
-                var targetNpc = qNpcs[i];
-                if (targetNpc && targetNpc.body) {
-                  // Teleport camera near the NPC (but not on top of them)
-                  var np = targetNpc.data.position;
+          currentLesson.objectives && (function() {
+            // Each objective ticks on its own evidence (GW_OBJECTIVE_EVIDENCE). It used
+            // to tick by answer count, in any order; one without a rule now ticks when
+            // the lesson is complete.
+            var eng = window[engineKey];
+            return el('div', { className: 'gw-objective-list' }, lessonObjectiveStatuses().map(function(entry) {
+              var i = entry.index, objectiveText = entry.text, status = entry.status;
+              var isDone = status.done, canToggle = !!status.self;
+              var target = !isDone && status.npcs && eng && eng.npcs ? eng.npcs.filter(function(n, idx) { return n && n.data && n.body && status.npcs.indexOf(n.data.name) >= 0 && !answeredNpcs[idx]; })[0] : null;
+              var interactive = canToggle || !!target;
+              return el(interactive ? 'button' : 'div', { key: 'obj-' + i + '-' + String(objectiveText).slice(0, 24),
+                onClick: interactive ? function() {
+                  if (canToggle) { var all = Object.assign({}, d.objectiveChecks || {}), mine = Object.assign({}, all[activeLesson] || {}); if (mine[i]) delete mine[i]; else mine[i] = true; all[activeLesson] = mine; upd('objectiveChecks', all); return; }
+                  // Face the character this objective depends on (not the i-th one).
+                  var np = target.data.position;
                   eng.camera.position.set(np[0] - 2, np[1] + 2, np[2] - 2);
                   eng.camera.lookAt(np[0] + 0.5, np[1] + 1, np[2] + 0.5);
-                  upd('actionFeedback', '\uD83D\uDCCD Navigate to: ' + (targetNpc.data.name || 'NPC'));
+                  if (eng.euler) eng.euler.setFromQuaternion(eng.camera.quaternion);
+                  upd('actionFeedback', '\uD83D\uDCCD Navigate to: ' + (target.data.name || 'NPC'));
                   setTimeout(function() { upd('actionFeedback', ''); }, 2000);
                   sfxNpcChime();
-                }
+                } : undefined,
+                type: interactive ? 'button' : undefined,
+                className: 'gw-objective-item gw-focusable',
+                'data-complete': isDone ? 'true' : 'false',
+                'aria-pressed': canToggle ? (isDone ? 'true' : 'false') : undefined,
+                'aria-label': canToggle ? (isDone ? 'Marked done: ' : 'Mark done: ') + objectiveText : target ? 'Go to ' + target.data.name + ' for: ' + objectiveText : undefined,
+                title: isDone ? 'Completed' : canToggle ? 'Mark this done when you have finished it' : target ? 'Go to ' + target.data.name : undefined
               },
-              type: isDone ? undefined : 'button',
-              className: 'gw-objective-item gw-focusable',
-              'data-complete': isDone ? 'true' : 'false',
-              'aria-label': isDone ? undefined : 'Navigate to objective: ' + objectiveText,
-              title: isDone ? 'Completed' : 'Navigate to this objective'
-            },
-              el('span', { className: 'gw-objective-marker', 'aria-hidden': 'true' }, isDone ? '\u2705' : '\u25CB'),
-              el('span', { className: 'gw-objective-copy', style: { textDecoration: isDone ? 'line-through' : 'none' } }, objectiveText)
-            );
-          })),
+                el('span', { className: 'gw-objective-marker', 'aria-hidden': 'true' }, isDone ? '\u2705' : '\u25CB'),
+                el('span', { className: 'gw-objective-copy' },
+                  el('span', { style: { textDecoration: isDone ? 'line-through' : 'none' } }, objectiveText),
+                  status.evidence && el('small', { className: 'gw-objective-evidence', style: { display: 'block', marginTop: '2px', fontSize: '10px', opacity: 0.85 } }, status.evidence))
+              );
+            }));
+          })(),
           // Reset button
           el('button', {
             type: 'button',
@@ -14703,7 +16646,7 @@
               var eng = window[engineKey];
               if (eng) eng.loadLesson(currentLesson);
               if (eng) eng._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
-              upd({ score: 0, answeredNpcs: {}, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+              upd({ score: 0, answeredNpcs: {}, npcFeedback: {}, objectiveChecks: Object.assign({}, d.objectiveChecks || {}, (function(o) { o[activeLesson] = {}; return o; })({})), measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             },
             title: __alloT('stem.geometryworld.reset_lesson_progress_and_reload_the_world','Reset lesson progress and reload the world')
           }, '\u21BB Reset World')
@@ -14833,7 +16776,8 @@
           style: { overflow: 'hidden' }
           })
         ),
-        // Shape selector (above block toolbar) — matching glass style
+        // Blocks drawer: shape selector above the block toolbar.
+        buildToolsOpen && el('div', { id: 'gw-build-tools', className: 'gw-build-tools', role: 'group', 'aria-label': 'Blocks and shapes' },
         el('div', { className: 'gw-shape-tray', style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
           // The heading is the visible home of the Q shortcut: click it or press Q
           // to cycle shapes. Every shape stays directly clickable below.
@@ -14898,7 +16842,7 @@
               el('span', {className:'gw-material-key','aria-hidden':'true'}, shortcut)
             );
           })
-        ),
+        )),
         // ── Coordinate & Compass HUD (bottom-left) ──
         engine && engine.camera && el('details', { className:'gw-coordinate-hud', open:typeof window === 'undefined' || window.innerWidth > 800,
           style: { position: 'absolute', bottom: '10px', left: '8px', zIndex: 20, background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '5px 10px', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'monospace', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 }
@@ -14960,12 +16904,18 @@
         // ── Unified action bar (mode toggles, undo/redo, world actions) ──
         // All pills live in one wrapping flex row so they align regardless of which are
         // visible, and wrap gracefully on narrow viewports instead of colliding.
-        engine && el('div', { className: 'gw-action-bar',
+        engine && !(isMobile && touchMode) && el('div', { className: 'gw-action-bar',
           // Centred and shrink-wrapped like the shape tray and hotbar below it.
           // Pinned left AND right, this glass panel spanned almost the whole width
           // to hold three small buttons, reading as an empty band across the world.
           style: { position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', width: 'max-content', maxWidth: 'calc(100% - 24px)', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', justifyContent: 'center' }
         },
+          // Blocks and shapes fold into this button, which names what B will place.
+          el('button', { type: 'button', className: 'gw-focusable gw-build-toggle', 'data-gw-utility': 'blocks', 'aria-expanded': buildToolsOpen ? 'true' : 'false', 'aria-controls': 'gw-build-tools',
+            'aria-label': (buildToolsOpen ? 'Hide blocks and shapes' : 'Show blocks and shapes') + '. Building with ' + (BLOCK_TYPES[selectedBlock] || BLOCK_TYPES[0]).name + ', ' + (BLOCK_SHAPES[selectedShape] || BLOCK_SHAPES[0]).name + ' shape',
+            title: buildToolsOpen ? 'Hide blocks and shapes' : 'Choose a block and shape (number keys still pick blocks)',
+            onClick: function() { setBuildToolsOpen(!buildToolsOpen); } },
+            el('span', { className: 'gw-utility-content' }, renderBlockSwatch(el, (BLOCK_TYPES[selectedBlock] || BLOCK_TYPES[0]).id), el('span', { className: 'gw-utility-label' }, buildToolsOpen ? 'Blocks' : (BLOCK_TYPES[selectedBlock] || BLOCK_TYPES[0]).name), el('span', { className: 'gw-build-toggle-caret', 'aria-hidden': 'true' }, buildToolsOpen ? '\u25BE' : '\u25B4'))),
           el('button', {
             type:'button',className:'gw-focusable','aria-label':__alloT('stem.geometryworld.match_aimed_block','Match aimed block'),'aria-keyshortcuts':'I','data-gw-utility':'match',
             disabled:openModals.length>0 || !worldActive || !!d.showcaseActive || !!engine._destroyed,
@@ -14976,17 +16926,18 @@
           // Fly mode toggle (always visible)
           el('button', {
             type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode'), 'aria-pressed':engine.flyMode ? 'true':'false', 'data-gw-utility':'fly',
-            onClick: function() {
-              var eng = window[engineKey];
-              if (!eng) return;
-              eng.flyMode = !eng.flyMode; eng.velocity.y = 0;
-              if (!eng.flyMode) { eng.moveState.flyUp=false; eng.moveState.flyDown=false; }
-              upd('flyMode', eng.flyMode);
-              if (addToast) addToast(eng.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON — Space=up, Shift=down, double-tap Space to land' : '\uD83D\uDC63 Walk mode', 'info');
-            },
+            onClick: toggleFlyMode,
             title: __alloT('stem.geometryworld.toggle_fly_mode_or_double_tap_space', 'Toggle fly mode (or double-tap Space)'),
             style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#94a3b8', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
           }, renderWorkspaceAction(el,'fly','Fly')),
+          // Ruler, angle and net were keyboard-only (T, V, N); these reach them by pointer.
+          !(isMobile && touchMode) && MEASURING_TOOLS.map(function(tool) {
+            return el('button', { key: 'tool-' + tool.id, type: 'button', className: 'gw-focusable', 'data-gw-utility': tool.id, 'aria-keyshortcuts': tool.key, title: tool.title,
+              disabled: openModals.length > 0 || !worldActive || !!d.showcaseActive || !!engine._destroyed,
+              onClick: function() { var live = window[engineKey]; if (live && live[tool.action]) live[tool.action](); },
+              style: { background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#d4e8ca', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
+            }, renderWorkspaceAction(el, tool.id, tool.label));
+          }),
           engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
           // Undo — conditional
           engine._undoStack && engine._undoStack.length > 0 && el('button', {
@@ -15044,25 +16995,15 @@
               }
             },
             title: __alloT('stem.geometryworld.clear_only_your_placed_blocks_lesson_s', 'Clear only YOUR placed blocks (lesson structures stay). Useful for restarting an experiment.')
-          }, renderWorkspaceAction(el,'clear','Clear'))
+          }, renderWorkspaceAction(el,'clear','Clear')),
+          el('button', { type: 'button', className: 'gw-focusable', 'data-gw-utility': 'hide', 'aria-keyshortcuts': 'U', 'aria-label': 'Hide controls. Shortcut U', title: 'Hide controls to see the whole world (U)', onClick: function() { setHudHidden(true); } }, renderWorkspaceAction(el, 'hide', 'Hide'))
         ),
         // ── Mobile touch controls overlay (visible on touch devices) ──
         isMobile && touchMode && worldActive && engine && el('div', { className: 'gw-touch-controls', style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },
-          el('div', { className: 'gw-touch-mode-hint', role: 'status', 'aria-live': 'polite' }, 'Swipe on the right to look'),
+          !d.touchLookLearned && el('div', { className: 'gw-touch-mode-hint', role: 'status', 'aria-live': 'polite' }, 'Swipe on the right to look'),
           el('div', { className: 'gw-touch-look-zone', role: 'img', 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_area_swipe_on_the_right_side_to_look', 'Touch look area: swipe on the right side to look around'), style: { position: 'absolute', top: '50%', right: '18px', width: '120px', height: '120px', borderRadius: '50%', border: '1px dashed rgba(196,181,253,0.2)', background: 'rgba(124,58,237,0.04)', pointerEvents: 'none' } },
             el('div', { className: 'gw-touch-look-reticle', style: { position: 'absolute', top: '50%', left: '50%', width: '42px', height: '42px', borderRadius: '50%', border: '1px solid rgba(196,181,253,0.42)', background: 'rgba(124,58,237,0.14)', transform: 'translate(calc(-50% + var(--gw-touch-look-x, 0px)), calc(-50% + var(--gw-touch-look-y, 0px)))' } }),
             el('div', { className: 'gw-touch-look-label' }, 'LOOK')
-          ),
-          el('div', { className: 'gw-touch-look-panel', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_settings', 'Touch look settings'), style: { position: 'absolute', top: '82px', right: '12px', width: '134px', pointerEvents: 'auto' }, onTouchStart: function(ev) { ev.stopPropagation(); } },
-            el('label', { className: 'gw-touch-look-label', htmlFor: 'gw-touch-look-sensitivity' },
-              el('span', null, 'Look speed'),
-              el('output', { htmlFor: 'gw-touch-look-sensitivity' }, Math.round(touchLookSensitivity / 0.004 * 100) + '%')
-            ),
-            el('input', { id: 'gw-touch-look-sensitivity', type: 'range', min: 0.002, max: 0.008, step: 0.001, value: touchLookSensitivity, 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_sensitivity', 'Touch look sensitivity'), 'aria-valuetext': 'Look speed ' + Math.round(touchLookSensitivity / 0.004 * 100) + ' percent', onChange: function(ev) {
-              var next = Math.max(0.002, Math.min(0.008, Number(ev.target.value)));
-              upd('touchLookSensitivity', next);
-              if (engine && engine.setTouchLookSensitivity) engine.setTouchLookSensitivity(next);
-            } })
           ),
           // Left side: virtual joystick zone indicator
           el('div', { className:'gw-touch-joystick', role: 'img', 'aria-label': __alloT('stem.geometryworld.a11y_touch_joystick_drag_on_the_left_side_to_move', 'Touch joystick: drag on the left side to move'), style: { position: 'absolute', bottom: '80px', left: '20px', width: '100px', height: '100px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' } },
@@ -15072,7 +17013,9 @@
             el('div', { style: { position: 'absolute', left: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25C0'),
             el('div', { style: { position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#cbd5e1' } }, '\u25B6')
           ),
-          // Right side: action buttons
+          // Right side: a short column. While building: Place and Break; otherwise Measure.
+          // Talk stays out wherever there are characters (a building lesson still has them).
+          // Everything else is one tap away in More.
           el('div', { className: 'gw-touch-actions', onTouchEnd: finishMobileButtonTouch, onTouchCancel: finishMobileButtonTouch, role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_touch_actions', 'Touch actions'), style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
             // Jump button
             el('button', {
@@ -15088,41 +17031,22 @@
               onTouchEnd:stopMobileDescent,onTouchCancel:stopMobileDescent,onBlur:stopMobileDescent,
               onClick:function(ev){runMobileButtonAction('down',activateMobileDescent,ev);}
             },renderTouchAction(el,'down','Down')),
-            // Place block button
-            el('button', {
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block'), title: __alloT('stem.geometryworld.place_block','Place block'), 'data-gw-touch-action':'place',
-              onTouchStart: function(ev) { runMobileButtonAction('place', placeMobileBlock, ev); },
-              onClick: function(ev) { runMobileButtonAction('place', placeMobileBlock, ev); },
-              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(34,197,94,0.4)', border: '2px solid rgba(34,197,94,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-            }, renderTouchAction(el,'place','Place')),
-            // Break block button
-            el('button', {
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_break_block', 'Break block'), title: __alloT('stem.geometryworld.break_block','Break block'), 'data-gw-touch-action':'break',
-              onTouchStart: function(ev) { runMobileButtonAction('break', breakMobileBlock, ev); },
-              onClick: function(ev) { runMobileButtonAction('break', breakMobileBlock, ev); },
-              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.4)', border: '2px solid rgba(239,68,68,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-            }, renderTouchAction(el,'break','Break')),
-            // Measure button
-            el('button', {
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure'), title: __alloT('stem.geometryworld.measure_structure','Measure structure'),
-              onTouchStart: function(ev) { runMobileButtonAction('measure', measureMobileStructure, ev); },
-              onClick: function(ev) { runMobileButtonAction('measure', measureMobileStructure, ev); },
-              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(251,191,36,0.4)', border: '2px solid rgba(251,191,36,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-            }, renderTouchAction(el,'measure','Measure')),
-            // Talk is available in worlds with characters.
-            engine.npcs && engine.npcs.length > 0 && el('button', {
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_talk_to_nearby_character', 'Talk to nearby character'), title: __alloT('stem.geometryworld.talk_to_nearby_character','Talk to nearby character'),
-              onTouchStart: function(ev) { runMobileButtonAction('talk', talkToNearbyNpc, ev); },
-              onClick: function(ev) { runMobileButtonAction('talk', talkToNearbyNpc, ev); },
-              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(124,58,237,0.4)', border: '2px solid rgba(124,58,237,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-            }, renderTouchAction(el,'talk','Talk')),
-            // Keep the action column stable while Undo becomes available.
-            el('button', { disabled:!engine._undoStack || engine._undoStack.length === 0,
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action'), title: __alloT('stem.geometryworld.undo_last_block_action','Undo last block action'),
-              onTouchStart: function(ev) { runMobileButtonAction('undo', undoMobileBlockAction, ev); },
-              onClick: function(ev) { runMobileButtonAction('undo', undoMobileBlockAction, ev); },
-              style: { width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(251,191,36,0.3)', border: '2px solid rgba(251,191,36,0.5)', color: '#fff', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-            }, renderTouchAction(el,'undo','Undo'))
+            buildToolsOpen ? touchActionButton('place', 'place', 'Place', __alloT('stem.geometryworld.a11y_place_block', 'Place block'), placeMobileBlock) : touchActionButton('measure', 'measure', 'Measure', __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure'), measureMobileStructure),
+            buildToolsOpen ? touchActionButton('break', 'break', 'Break', __alloT('stem.geometryworld.a11y_break_block', 'Break block'), breakMobileBlock) : null,
+            (engine.npcs && engine.npcs.length > 0 ? touchActionButton('talk', 'talk', 'Talk', __alloT('stem.geometryworld.a11y_talk_to_nearby_character', 'Talk to nearby character'), talkToNearbyNpc) : null),
+            touchActionButton('more', 'more', 'More', 'More actions', function() { upd('touchMoreOpen', !d.touchMoreOpen); }, { 'aria-expanded': d.touchMoreOpen ? 'true' : 'false', 'aria-controls': 'gw-touch-more' })
+          ),
+          d.touchMoreOpen && el('div', { id: 'gw-touch-more', className: 'gw-touch-more', role: 'group', 'aria-label': 'More actions', onTouchEnd: finishMobileButtonTouch, onTouchCancel: finishMobileButtonTouch },
+            buildToolsOpen ? touchActionButton('measure', 'measure', 'Measure', __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure'), fromMore(measureMobileStructure)) : touchActionButton('place', 'place', 'Place', __alloT('stem.geometryworld.a11y_place_block', 'Place block'), fromMore(placeMobileBlock)),
+            buildToolsOpen ? null : touchActionButton('break', 'break', 'Break', __alloT('stem.geometryworld.a11y_break_block', 'Break block'), fromMore(breakMobileBlock)),
+            touchActionButton('blocks', 'blocks', buildToolsOpen ? 'Hide blocks' : 'Blocks', buildToolsOpen ? 'Hide blocks and shapes' : 'Show blocks and shapes', function() { setBuildToolsOpen(!buildToolsOpen); }, { 'aria-expanded': buildToolsOpen ? 'true' : 'false' }),
+            MEASURING_TOOLS.map(function(tool) { return touchActionButton(tool.id, tool.id, tool.label, tool.title, fromMore(function() { var live = window[engineKey]; if (live && live[tool.action]) live[tool.action](); })); }),
+            touchActionButton('match', 'match', 'Match', __alloT('stem.geometryworld.match_aimed_block', 'Match aimed block'), fromMore(function() { var live = window[engineKey]; if (live && live.matchAimedBlock) live.matchAimedBlock(); })),
+            touchActionButton('fly', 'fly', engine.flyMode ? 'Walk' : 'Fly', __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode'), fromMore(toggleFlyMode), { 'aria-pressed': engine.flyMode ? 'true' : 'false' }),
+            touchActionButton('undo', 'undo', 'Undo', __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action'), fromMore(undoMobileBlockAction), { disabled: !engine._undoStack || engine._undoStack.length === 0 }),
+            touchActionButton('home', 'home', 'Home', __alloT('stem.geometryworld.a11y_return_to_spawn_point', 'Return to spawn point'), fromMore(returnToSpawnPoint)),
+            touchActionButton('clear', 'clear', 'Clear', __alloT('stem.geometryworld.a11y_clear_my_placed_blocks', 'Clear my placed blocks'), fromMore(clearMyPlacedBlocks)),
+            touchActionButton('hide', 'hide', 'Hide', 'Hide controls', function() { setHudHidden(true); })
           )
         ),
         // ── Water submersion blue tint ──
@@ -15132,7 +17056,9 @@
           el('div', { className: 'gw-environment-warning', role: 'alert', 'aria-live': 'assertive', 'aria-atomic': 'true' }, '\uD83D\uDD25 In lava \u2014 move to safety')
         ),
         el('div',{className:'gw-feedback-stack'},
-        worldActive && !d.showcaseActive && openModals.length === 0 && (!d.drawMode || d.drawMode==='single') && d.placementHint && el('div', {
+        // Shown while building: the Blocks drawer is open, or a block has been placed in this
+        // world (B places the current block with the drawer closed, and X must stay findable).
+        worldActive && (buildToolsOpen || (engine && engine.blocksPlaced > 0)) && !d.showcaseActive && openModals.length === 0 && (!d.drawMode || d.drawMode==='single') && d.placementHint && el('div', {
           className:'gw-placement-hint','data-allowed':d.placementHint.allowed ? 'true':'false',
           'data-placement-state':d.placementHint.code === 'no_target' ? 'aim' : d.placementHint.allowed ? 'ready' : 'blocked',
           'data-placement-code':d.placementHint.code,role:'status','aria-live':'polite','aria-atomic':'true'
@@ -15450,10 +17376,36 @@
           el('div', { className: 'gw-completion-icon', 'aria-hidden': 'true' }, '\uD83C\uDFC6'),
           el('h2', { id: 'gw-completion-title', className: 'gw-completion-title' }, 'Lesson complete!'),
           el('p', { id: 'gw-completion-description', className: 'gw-completion-description' }, currentLesson.title + ' \u2014 ' + score + ' of ' + totalQ + ' questions answered.'),
+          currentLesson.practice && (function() {
+            var tries = geometryFirstTrySteps(engine && engine.sessionLog, currentLesson), rounds = geometryPracticeRecord(geometryStorage()).rounds;
+            return el('p', { className: 'gw-completion-practice-stats', 'data-first-try': tries.firstTry, 'data-steps': tries.total, style: { margin: '-6px 0 12px', color: '#fde68a', fontSize: '12px', fontWeight: 700 } },
+              tries.firstTry + ' of ' + tries.total + ' steps right first time. ' + rounds + ' practice round' + (rounds === 1 ? '' : 's') + ' finished.');
+          })(),
+          currentLesson.practice && (function() {
+            // Each station is a skill: right first time, or it needed another try.
+            var focus = geometryPracticeSummary(geometryStorage()).focus;
+            return el('div', { className: 'gw-completion-skills' },
+              el('ul', { 'aria-label': 'Skills this round', style: { listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' } },
+                GW_PRACTICE_STATIONS.map(function(station) {
+                  var missed = geometryPracticeStationMissed(engine && engine.sessionLog, station);
+                  return el('li', { key: station, 'data-station': station, 'data-first-try': missed ? 'false' : 'true', style: { padding: '4px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 750, border: '1px solid ' + (missed ? 'rgba(251,191,36,.45)' : 'rgba(74,222,128,.45)'), color: missed ? '#fde68a' : '#bbf7d0', background: missed ? 'rgba(120,53,15,.25)' : 'rgba(20,83,45,.3)' } },
+                    (missed ? '\u21BB ' : '\u2713 ') + GW_PRACTICE_SKILLS[station] + (missed ? ': took another try' : ': right first time'));
+                })),
+              focus && el('p', { className: 'gw-completion-focus', style: { margin: '0 0 12px', color: '#cbd5e1', fontSize: '11px' } }, 'Focus next: ' + focus + '.'));
+          })(),
           el('div', { className: 'gw-completion-metrics', role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_activity_summary', 'Lesson activity summary') },
             el('span', { className: 'gw-completion-metric', role: 'listitem' }, (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed'),
             el('span', { className: 'gw-completion-metric', role: 'listitem' }, completedMeasurements.length + ' complete measurements')
           ),
+          // Objectives the questions do not cover and nobody has done yet: a nudge, not a failure.
+          (function() {
+            var open = currentLesson.objectives ? lessonObjectiveStatuses().filter(function(o) { return !o.status.done; }) : [];
+            if (!open.length) return null;
+            return el('div', { className: 'gw-completion-still', role: 'note', 'aria-label': 'Still to try' },
+              el('p', { className: 'gw-completion-still-title' }, 'Still to try'),
+              el('ul', null, open.slice(0, 3).map(function(o) { return el('li', { key: 'still-' + o.index }, el('span', null, o.text), o.status.evidence && el('small', null, o.status.evidence)); })),
+              open.length > 3 && el('p', { className: 'gw-completion-still-more' }, '+ ' + (open.length - 3) + ' more in Objectives'));
+          })(),
           // Next Lesson button
           (function() {
             // "All complete" was shown whenever the lesson was last in (or absent from)
@@ -15461,7 +17413,14 @@
             var journey = geometryLessonJourney(geometryStorage(), LESSON_ORDER, SAMPLE_LESSONS, activeLesson);
             var nextKey = journey.nextKey;
             var nextLesson = nextKey ? SAMPLE_LESSONS[nextKey] : null;
+            var offerPractice = !!currentLesson.practice || journey.allComplete;
             return el('div', { className: 'gw-completion-actions' },
+              offerPractice && el('button', { type: 'button', className: 'gw-completion-practice gw-focusable', 'aria-label': 'Start a new practice round with new numbers',
+                onClick: function() {
+                  upd({ measureHistory: [], reflectionText: '', npcWrongCount: {}, npcLastWrong: {}, consecutiveWrong: 0 });
+                  var eng = window[engineKey]; if (eng && eng.startPracticeRound) eng.startPracticeRound(undefined, currentLesson.practice ? currentLesson.practice.level : 'core');
+                },
+              }, '\uD83C\uDFB2 ' + (currentLesson.practice ? 'New round' : 'Practice round')),
               nextLesson && el('button', { type: 'button', className: 'gw-completion-next gw-focusable', 'aria-label': 'Continue to next lesson: ' + (nextLesson.title || 'Next lesson'),
                 onClick: function() {
                   upd({ activeLesson: nextKey, measureHistory: [], reflectionText: '' });
@@ -15473,7 +17432,7 @@
                   // Clear the saved answers first or loadLesson restores them and this
                   // dialog returns at once. The lesson stays recorded as completed.
                   var store = geometryStorage();
-                  geometryMarkLessonCompleted(store, geometryProgressKey(currentLesson));
+                  if (!currentLesson.practice) geometryMarkLessonCompleted(store, geometryProgressKey(currentLesson));
                   geometryClearLessonProgress(store, currentLesson);
                   var eng = window[engineKey]; if (eng) eng.loadLesson(currentLesson);
                   upd({ measureHistory: [], reflectionText: '' });
@@ -15514,7 +17473,16 @@
           ? '\u26A0\uFE0F Block limit reached (' + MAX_BLOCKS + ') \u2014 remove some blocks for performance'
           : '\u26A0\uFE0F ' + (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length) + '/' + MAX_BLOCKS + ' blocks \u2014 approaching limit'),
         // NPC Dialog overlay
-        showNpcDialog && engine && engine.npcs[dialogNpcIdx] && (function() {
+        npcPeek && engine && engine.npcs[dialogNpcIdx] && (function() {
+          var peekData = engine.npcs[dialogNpcIdx].data || {};
+          var peekStep = peekData.question && !answeredNpcs[dialogNpcIdx] ? geometryQuestionSequence(peekData.question)[npcFollowUpStep[dialogNpcIdx] || 0] : null;
+          return el('div', { className: 'gw-npc-peek', role: 'region', 'aria-label': peekData.name + '\u2019s question, folded away' },
+            el('span', { className: 'gw-npc-peek-name' }, peekData.name),
+            el('span', { className: 'gw-npc-peek-text' }, peekStep ? peekStep.text : (peekData.dialogue || '')),
+            el('button', { type: 'button', className: 'gw-npc-peek-back gw-focusable', onClick: function() { upd('npcDialogPeek', false); announceToSR('Question reopened.'); setTimeout(function() { var dlg = document.querySelector('.gw-dialog--npc'); if (dlg) dlg.focus(); }, 0); } }, 'Back to question'),
+            el('button', { type: 'button', className: 'gw-npc-peek-close gw-focusable', 'aria-label': 'Close ' + peekData.name + '\u2019s question', onClick: function() { upd({ showNpcDialog: false, npcDialogPeek: false }); focusWorldSurface(); } }, '\u00D7'));
+        })(),
+        showNpcDialog && !npcPeek && engine && engine.npcs[dialogNpcIdx] && (function() {
           var npc = engine.npcs[dialogNpcIdx];
           var data = npc.data;
           var isAnswered = !!answeredNpcs[dialogNpcIdx];
@@ -15567,8 +17535,10 @@
               ref: gwDialogRef,
               style: {
               position: 'absolute',
-              // On mobile the dialog sits a bit higher so it doesn't overlap the touch-action buttons
-              bottom: isMobile ? '160px' : '60px',
+              // On mobile the dialog sits a bit higher so it doesn't overlap the touch-action buttons.
+              // On desktop it clears the Back to Game dock (bottom 20px, about 90px tall),
+              // which used to cover the dialog's last choice or its answer note.
+              bottom: isMobile ? '160px' : '118px',
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 30,
@@ -15580,7 +17550,7 @@
               maxWidth: '440px',
               width: isMobile ? '94%' : '90%',
               // Clamp vertical size on mobile so it never eats the whole screen
-              maxHeight: isMobile ? 'calc(100vh - 220px)' : '70vh',
+              maxHeight: isMobile ? 'calc(100vh - 220px)' : 'calc(100% - 132px)',
               overflow: 'auto',
               boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
             } },
@@ -15592,6 +17562,8 @@
                 el('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, data.name),
                 data.question && !isAnswered && el('div', { style: { display: 'inline-flex', marginTop: '2px', padding: '2px 6px', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '999px', background: 'rgba(15,23,42,0.92)', color: '#fde68a', fontSize: '10px', fontWeight: 800, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
+              el('button', { type: 'button', className: 'gw-npc-look gw-focusable', 'aria-label': 'Look around: fold this question away. Back to question brings it back.', title: 'Look at the world, then come back to the question',
+                onClick: function() { upd('npcDialogPeek', true); announceToSR('Question folded away. Look around, then choose Back to question.'); focusWorldSurface(); } }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDC41'), 'Look'),
               el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content
@@ -15654,6 +17626,142 @@
               if (!curQ) return el('p', {role:'status'}, 'This question needs teacher review before it can be answered.');
               var isLastStep = curStep >= totalSteps - 1;
 
+              // One grading path for choice buttons and typed answers. `choice` is the
+              // answer text (a choice, or what the student typed); `via` is 'choice' or 'typed'.
+              // Typing works where the answer is one quantity; the note from the last
+              // wrong try stays under the question until the step is solved.
+              var typeable = geometryStepTypeable(curQ), typeMode = !!d.gwTypeAnswers;
+              var feedbackNote = (d.npcFeedback || {})[dialogNpcIdx];
+              if (!feedbackNote || feedbackNote.step !== curStep || typeof feedbackNote.text !== 'string') feedbackNote = null;
+              function renderTypedAnswer() {
+                var inputId = 'gw-typed-answer-' + dialogNpcIdx;
+                return el('form', { className: 'gw-typed-answer', style: { margin: '2px 0 4px' }, onSubmit: function(ev) {
+                  ev.preventDefault();
+                  var input = ev.currentTarget.querySelector('input'), text = input ? input.value : '';
+                  var result = geometryTypedAnswer(curQ, text);
+                  if (result.status === 'invalid') {
+                    var note = 'Type a number, like 12, 2.5 or 3 1/2.', map = Object.assign({}, d.npcFeedback || {});
+                    map[dialogNpcIdx] = { step: curStep, answer: '', text: note };
+                    upd('npcFeedback', map); announceToSR(note); return;
+                  }
+                  if (input) input.value = '';
+                  if (result.status === 'other') submitAnswer(-1, String(text).trim().slice(0, 40), 'typed');
+                  else submitAnswer(result.choiceIndex, curQ.choices[result.choiceIndex], 'typed');
+                } },
+                  el('label', { htmlFor: inputId, style: { display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, 'Your answer'),
+                  el('div', { style: { display: 'flex', gap: '6px' } },
+                    el('input', { id: inputId, type: 'text', inputMode: 'decimal', autoComplete: 'off', maxLength: 24, className: 'gw-focusable', 'aria-describedby': feedbackNote ? 'gw-answer-feedback-' + dialogNpcIdx : undefined,
+                      style: { flex: 1, minWidth: 0, minHeight: '34px', padding: '6px 10px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid #64748b', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '13px', fontFamily: 'inherit' } }),
+                    el('button', { type: 'submit', className: 'gw-focusable', style: { minHeight: '34px', padding: '6px 14px', background: '#7c3aed', border: 'none', borderRadius: '7px', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' } }, 'Check')));
+              }
+              function submitAnswer(ci, choice, via) {
+                if (ci === curQ.correct) {
+                  sfxCorrect();
+                  // Clear wrongs lesson-wide + this NPC's wrong count
+                  var clearedWrongs = Object.assign({}, d.npcWrongCount || {}), clearedFeedback = Object.assign({}, d.npcFeedback || {});
+                  delete clearedWrongs[dialogNpcIdx]; delete clearedFeedback[dialogNpcIdx];
+                  upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs, npcFeedback: clearedFeedback });
+                  if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
+                  // Working out the number instead of recognising it earns a little more.
+                  if (via === 'typed' && typeof awardXP === 'function') awardXP('geometryWorld', 1, 'Typed answer: ' + data.name);
+                  var eng = window[engineKey];
+                  if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, practiceRound: currentLesson.practice ? currentLesson.practice.key : undefined, step: curStep, isFinalStep: !!isLastStep, mode: via });
+                  // Check if there are more follow-up steps
+                  if (!isLastStep) {
+                    // Advance to next follow-up
+                    var newFU = Object.assign({}, npcFollowUpStep);
+                    newFU[dialogNpcIdx] = curStep + 1;
+                    upd('npcFollowUpStep', newFU);
+                    if (addToast) addToast('\u2705 Correct! Next step...', 'success');
+                  } else {
+                    // Final step — mark NPC as answered, award full score
+                    var newAnswered = Object.assign({}, answeredNpcs);
+                    newAnswered[dialogNpcIdx] = true;
+                    var newScore = score + 1;
+                    upd({ score: newScore, answeredNpcs: newAnswered, _scorePulse: Date.now() });
+                    if (currentLesson.practice) geometryPracticeSkill(geometryStorage(), data.name, !geometryPracticeStationMissed(eng && eng.sessionLog, data.name));
+                    // The last station reports once the round is counted, below.
+                    if (currentLesson.practice && newScore < totalQ) reportPracticeToTeacher(currentLesson.practice.key, newScore, false);
+                    // Auto-save progress to localStorage
+                    try { var pk = eng && eng._progressKey; if (pk) localStorage.setItem(pk, JSON.stringify({ score: newScore, answeredNpcs: newAnswered, npcFollowUpStep: npcFollowUpStep })); } catch(e) {}
+                    if (addToast) addToast('\u2705 Correct! +1', 'success');
+                    if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
+                    announceToSR(__alloFill(__alloT('stem.geometryworld.sr_correct_score_is_now_of', 'Correct! Score is now {value1} of {value2}'), { value1: newScore, value2: totalQ }));
+                if (window._alloHaptic) window._alloHaptic('correct');
+                    // 3D confetti from NPC + celebration bounce
+                    if (eng && npc.body) {
+                      try { spawnPlaceParticles(eng, npc.body.position.x, npc.body.position.y + 1.5, npc.body.position.z); } catch(e) {}
+                      npc._celebrateUntil = (eng.clock ? eng.clock.getElapsedTime() : 0) + 0.8;
+                    }
+                    // Check lesson completion
+                    if (newScore >= totalQ && totalQ > 0) {
+                      sfxComplete();
+                      if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
+                      announceToSR(__alloFill(__alloT('stem.geometryworld.sr_lesson_complete_you_answered_all_questions_correc', 'Lesson complete! You answered all {value1} questions correctly. The sun is setting \u2014 look up to see the celebration.'), { value1: totalQ }));
+                        // Trigger reflection prompt after a delay
+                        setTimeout(function() { upd({ showReflection: true, reflectionText: '' }); }, 5000);
+                      if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);
+                      if (eng && !eng.completionTriggered) {
+                        eng.completionTriggered = true; eng.completionProgress = 0;
+                        if (currentLesson.practice) { geometryPracticeFinish(geometryStorage(), currentLesson.practice.key); reportPracticeToTeacher(currentLesson.practice.key, newScore, true); }
+                        if (eng.logEvent) eng.logEvent('lesson_complete', { score: newScore, totalQuestions: totalQ, timeToComplete: ((Date.now() - eng.sessionStart) / 1000).toFixed(1) + 's', blocksPlaced: eng.blocksPlaced || 0, practiceRound: currentLesson.practice ? currentLesson.practice.key : undefined });
+                        // Confetti burst from camera position
+                        var camP = eng.camera.position;
+                        var confettiColors = [0xfbbf24, 0x22c55e, 0x3b82f6, 0xef4444, 0xa78bfa, 0xf472b6, 0x06b6d4];
+                        for (var ci = 0; ci < 40; ci++) {
+                          try {
+                            // Flat flakes, not cubes, so they catch the light as they turn.
+                            var cGeo = new THREE.BoxGeometry(0.14, 0.02, 0.09);
+                            var cMat = new THREE.MeshBasicMaterial({ color: confettiColors[ci % confettiColors.length], transparent: true, opacity: 1 });
+                            var cMesh = new THREE.Mesh(cGeo, cMat);
+                            cMesh.position.set(camP.x + (Math.random() - 0.5) * 3, camP.y + Math.random() * 2, camP.z + (Math.random() - 0.5) * 3);
+                            cMesh.userData._age = 0; cMesh.userData._life = 2 + Math.random();
+                            cMesh.userData._vel = { x: (Math.random() - 0.5) * 4, y: 3 + Math.random() * 3, z: (Math.random() - 0.5) * 4 };
+                            cMesh.userData._spin = new THREE.Vector3((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
+                            eng.scene.add(cMesh); eng._particles.push(cMesh);
+                          } catch(e) {}
+                        }
+                      }
+                    }
+                  }
+                  setTimeout(runAchievementCheck, 100);
+                } else {
+                  sfxWrong(); if (window._alloHaptic) window._alloHaptic('wrong');
+                  // NPC shake animation
+                  var eng2 = window[engineKey];
+                  if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
+                  if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct], practiceRound: currentLesson.practice ? currentLesson.practice.key : undefined, step: curStep, isFinalStep: !!isLastStep, mode: via });
+                  // Track per-NPC wrong count (not global) so hint escalation is scoped.
+                  // Previously `consecutiveWrong` was lesson-wide, letting wrongs on NPC A
+                  // trigger level-3 hints on the first wrong answer at NPC B. Also prevents
+                  // "farming" — wrong 3× on NPC A used to REVEAL the correct answer, which
+                  // students could exploit to bypass learning.
+                  var npcWrongMap = Object.assign({}, d.npcWrongCount || {});
+                  npcWrongMap[dialogNpcIdx] = (npcWrongMap[dialogNpcIdx] || 0) + 1;
+                  var newWrong = npcWrongMap[dialogNpcIdx];
+                  // Remember this NPC's last wrong choice so the gated AI-hint
+                  // button (shown at >=2 wrongs) can pass it to ctx.getHint.
+                  var npcLastWrongMap = Object.assign({}, d.npcLastWrong || {});
+                  npcLastWrongMap[dialogNpcIdx] = choice;
+                  var totalConsecutive = consecutiveWrong + 1;
+                  upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap, npcLastWrong: npcLastWrongMap });
+                  checkFrustration(totalConsecutive);
+                  setTimeout(runAchievementCheck, 100);
+                  // Escalate scaffolding WITHOUT revealing the correct answer choice. The
+                  // note written for this exact answer comes first; the old volume nudges
+                  // stay as the fallback for lessons without coaching (AI and custom).
+                  var fallbackHint = newWrong >= 3 ? 'Try measuring with M first. Then count carefully: how many blocks long, wide, and tall?'
+                    : newWrong >= 2 ? (data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply!')
+                    : 'Hint: think about ' + (data.dialogue.indexOf('layer') >= 0 ? 'counting the layers' : data.dialogue.indexOf('L-block') >= 0 ? 'splitting into two prisms' : 'L \u00d7 W \u00d7 H') + '.';
+                  var feedback = geometryWrongFeedback(curQ, choice, newWrong, fallbackHint);
+                  var feedbackMap = Object.assign({}, d.npcFeedback || {});
+                  feedbackMap[dialogNpcIdx] = { step: curStep, answer: String(choice).slice(0, 80), text: feedback };
+                  upd('npcFeedback', feedbackMap);
+                  if (addToast) addToast('\u274C Not quite. ' + feedback, 'error');
+                  announceToSR('Not quite right. ' + feedback);
+                }
+              }
+
               return el('div', null,
                 // Progress dots for multi-step questions
                 totalSteps > 1 && el('div', { style: { display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '6px' } },
@@ -15663,113 +17771,18 @@
                 ),
                 el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
                 homeLang !== 'en' && translation && translation.question && curStep === 0 && el('div', { style: { fontSize: '11px', color: '#fbbf24', marginBottom: '6px', fontStyle: 'italic' } }, translation.question),
-                curQ.choices.map(function(choice, ci) {
+                typeMode && typeable ? renderTypedAnswer() : curQ.choices.map(function(choice, ci) {
                   return el('button', {
                     key: 'choice-' + ci + '-' + String(choice).slice(0, 24),
                     'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_answer_option', 'Answer option {value1}: {value2}'), { value1: (ci + 1), value2: choice }),
-                    onClick: function() {
-                      if (ci === curQ.correct) {
-                        sfxCorrect();
-                        // Clear wrongs lesson-wide + this NPC's wrong count
-                        var clearedWrongs = Object.assign({}, d.npcWrongCount || {});
-                        delete clearedWrongs[dialogNpcIdx];
-                        upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs });
-                        if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
-                        var eng = window[engineKey];
-                        if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep, isFinalStep: !!isLastStep });
-                        // Check if there are more follow-up steps
-                        if (!isLastStep) {
-                          // Advance to next follow-up
-                          var newFU = Object.assign({}, npcFollowUpStep);
-                          newFU[dialogNpcIdx] = curStep + 1;
-                          upd('npcFollowUpStep', newFU);
-                          if (addToast) addToast('\u2705 Correct! Next step...', 'success');
-                        } else {
-                          // Final step — mark NPC as answered, award full score
-                          var newAnswered = Object.assign({}, answeredNpcs);
-                          newAnswered[dialogNpcIdx] = true;
-                          var newScore = score + 1;
-                          upd({ score: newScore, answeredNpcs: newAnswered, _scorePulse: Date.now() });
-                          // Auto-save progress to localStorage
-                          try { var pk = eng && eng._progressKey; if (pk) localStorage.setItem(pk, JSON.stringify({ score: newScore, answeredNpcs: newAnswered, npcFollowUpStep: npcFollowUpStep })); } catch(e) {}
-                          if (addToast) addToast('\u2705 Correct! +1', 'success');
-                          if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
-                          announceToSR(__alloFill(__alloT('stem.geometryworld.sr_correct_score_is_now_of', 'Correct! Score is now {value1} of {value2}'), { value1: newScore, value2: totalQ }));
-                      if (window._alloHaptic) window._alloHaptic('correct');
-                          // 3D confetti from NPC + celebration bounce
-                          if (eng && npc.body) {
-                            try { spawnPlaceParticles(eng, npc.body.position.x, npc.body.position.y + 1.5, npc.body.position.z); } catch(e) {}
-                            npc._celebrateUntil = (eng.clock ? eng.clock.getElapsedTime() : 0) + 0.8;
-                          }
-                          // Check lesson completion
-                          if (newScore >= totalQ && totalQ > 0) {
-                            sfxComplete();
-                            if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
-                            announceToSR(__alloFill(__alloT('stem.geometryworld.sr_lesson_complete_you_answered_all_questions_correc', 'Lesson complete! You answered all {value1} questions correctly. The sun is setting \u2014 look up to see the celebration.'), { value1: totalQ }));
-                              // Trigger reflection prompt after a delay
-                              setTimeout(function() { upd({ showReflection: true, reflectionText: '' }); }, 5000);
-                            if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);
-                            if (eng && !eng.completionTriggered) {
-                              eng.completionTriggered = true; eng.completionProgress = 0;
-                              if (eng.logEvent) eng.logEvent('lesson_complete', { score: newScore, totalQuestions: totalQ, timeToComplete: ((Date.now() - eng.sessionStart) / 1000).toFixed(1) + 's', blocksPlaced: eng.blocksPlaced || 0 });
-                              // Confetti burst from camera position
-                              var camP = eng.camera.position;
-                              var confettiColors = [0xfbbf24, 0x22c55e, 0x3b82f6, 0xef4444, 0xa78bfa, 0xf472b6, 0x06b6d4];
-                              for (var ci = 0; ci < 40; ci++) {
-                                try {
-                                  // Flat flakes, not cubes, so they catch the light as they turn.
-                                  var cGeo = new THREE.BoxGeometry(0.14, 0.02, 0.09);
-                                  var cMat = new THREE.MeshBasicMaterial({ color: confettiColors[ci % confettiColors.length], transparent: true, opacity: 1 });
-                                  var cMesh = new THREE.Mesh(cGeo, cMat);
-                                  cMesh.position.set(camP.x + (Math.random() - 0.5) * 3, camP.y + Math.random() * 2, camP.z + (Math.random() - 0.5) * 3);
-                                  cMesh.userData._age = 0; cMesh.userData._life = 2 + Math.random();
-                                  cMesh.userData._vel = { x: (Math.random() - 0.5) * 4, y: 3 + Math.random() * 3, z: (Math.random() - 0.5) * 4 };
-                                  cMesh.userData._spin = new THREE.Vector3((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
-                                  eng.scene.add(cMesh); eng._particles.push(cMesh);
-                                } catch(e) {}
-                              }
-                            }
-                          }
-                        }
-                        setTimeout(runAchievementCheck, 100);
-                      } else {
-                        sfxWrong(); if (window._alloHaptic) window._alloHaptic('wrong');
-                        // NPC shake animation
-                        var eng2 = window[engineKey];
-                        if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
-                        if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct], step: curStep, isFinalStep: !!isLastStep });
-                        // Track per-NPC wrong count (not global) so hint escalation is scoped.
-                        // Previously `consecutiveWrong` was lesson-wide, letting wrongs on NPC A
-                        // trigger level-3 hints on the first wrong answer at NPC B. Also prevents
-                        // "farming" — wrong 3× on NPC A used to REVEAL the correct answer, which
-                        // students could exploit to bypass learning.
-                        var npcWrongMap = Object.assign({}, d.npcWrongCount || {});
-                        npcWrongMap[dialogNpcIdx] = (npcWrongMap[dialogNpcIdx] || 0) + 1;
-                        var newWrong = npcWrongMap[dialogNpcIdx];
-                        // Remember this NPC's last wrong choice so the gated AI-hint
-                        // button (shown at >=2 wrongs) can pass it to ctx.getHint.
-                        var npcLastWrongMap = Object.assign({}, d.npcLastWrong || {});
-                        npcLastWrongMap[dialogNpcIdx] = choice;
-                        var totalConsecutive = consecutiveWrong + 1;
-                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap, npcLastWrong: npcLastWrongMap });
-                        checkFrustration(totalConsecutive);
-                        setTimeout(runAchievementCheck, 100);
-                        var hintText = '\u274C Not quite. ';
-                        // Escalate scaffolding WITHOUT revealing the correct answer choice.
-                        if (newWrong >= 3) {
-                          hintText += 'Try measuring with M first. Then count carefully: how many blocks long, wide, and tall?';
-                        } else if (newWrong >= 2) {
-                          hintText += data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply!';
-                        } else {
-                          hintText += 'Hint: think about ' + (data.dialogue.indexOf('layer') >= 0 ? 'counting the layers' : data.dialogue.indexOf('L-block') >= 0 ? 'splitting into two prisms' : 'L \u00d7 W \u00d7 H');
-                        }
-                        if (addToast) addToast(hintText, 'error');
-                        announceToSR('Not quite right. ' + hintText.replace(/^❌\s*Not quite\.\s*/, ''));
-                      }
-                    },
+                    onClick: function() { submitAnswer(ci, choice, 'choice'); },
                     style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', boxShadow: 'inset 0 0 0 1px #475569' }
                   }, choice);
                 }),
+                typeable && el('button', { type: 'button', className: 'gw-focusable gw-answer-mode', 'aria-pressed': typeMode ? 'true' : 'false', onClick: function() { upd('gwTypeAnswers', !typeMode); },
+                  style: { display: 'block', minHeight: '28px', margin: '2px 0 4px', padding: '4px 2px', background: 'none', border: 'none', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit' } },
+                  typeMode ? 'Show the choices' : 'Type my answer instead (+1 XP)'),
+                feedbackNote && el('p', { id: 'gw-answer-feedback-' + dialogNpcIdx, className: 'gw-answer-feedback', role: 'status', style: { margin: '6px 0 2px', padding: '8px 10px', borderLeft: '3px solid #fbbf24', background: 'rgba(251,191,36,0.08)', borderRadius: '6px', color: '#fde68a', fontSize: '12px', lineHeight: 1.5 } }, feedbackNote.text),
                 // Gated AI hint (slice-2 pilot). Only shows when the teacher has
                 // enabled AI hints AND the student has missed this NPC >=2 times.
                 // ctx.getHint self-gates (off => zero traffic), enforces the
@@ -15788,6 +17801,8 @@
             })(),
             isAnswered && el('div', { style: { borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: '8px', marginTop: '4px' } },
               el('div', { style: { color: '#4ade80', fontWeight: 700, fontSize: '12px', marginBottom: '6px' } }, '\u2705 Great job!'),
+              // The character's own reaction to this question, when the lesson has one.
+              typeof data.after === 'string' && data.after && el('p', { className: 'gw-npc-after', style: { margin: '0 0 8px', fontSize: '12px', lineHeight: 1.55, color: 'var(--allo-stem-text, #e2e8f0)' } }, el('strong', null, data.name + ': '), data.after),
               el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, background: 'rgba(34,197,94,0.08)', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(34,197,94,0.15)' } },
                 // Bonus fun fact based on dialogue content
                 data.dialogue.indexOf('volume') >= 0 || data.dialogue.indexOf('Volume') >= 0
@@ -16006,6 +18021,58 @@
           el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: '6px' } },
             'Session: ' + sessionCode + ' \u2022 ' + Object.keys(studentProgressMap).length + ' students connected'
           ),
+          // A class practice round: one number every student types, the same world on every
+          // screen, and how far each student is (from their studentProgress summary).
+          (function() {
+            var classRound = geometryPracticeRound(d.classPracticeRound);
+            var box = { marginBottom: '10px', padding: '8px 10px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '8px' };
+            var buttonStyle = { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid #38bdf8', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' };
+            function newClassRound(level) { upd('classPracticeRound', geometryPracticeKey(geometryPracticeNewSeed(geometryStorage(), level), level)); }
+            var title = el('h3', { id: 'gw-teacher-class-round-title', style: { margin: '0 0 6px', fontSize: '11px', fontWeight: 800, color: '#38bdf8' } }, '\uD83C\uDFB2 Class practice round');
+            if (!classRound) {
+              return el('section', { className: 'gw-teacher-class-round', 'aria-labelledby': 'gw-teacher-class-round-title', style: box }, title,
+                el('p', { style: { margin: '0 0 6px', fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Choose a round and every student plays the same world, with the same numbers.'),
+                el('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                  el('button', { type: 'button', 'data-gw-class-round-new': 'core', onClick: function() { newClassRound('core'); }, style: buttonStyle }, 'New round'),
+                  el('button', { type: 'button', 'data-gw-class-round-new': 'stretch', onClick: function() { newClassRound('stretch'); }, style: buttonStyle }, 'New stretch round')));
+            }
+            var code = (classRound.level === 'stretch' ? 'S' : '') + classRound.seed;
+            var playing = Object.keys(studentProgressMap).map(function(id) {
+              var entry = studentProgressMap[id] || {}, read = geometryPracticeReadTeacherSummary(entry.geometryPractice);
+              return read && read.round === classRound.key ? { id: id, name: String(entry.studentNickname || id).slice(0, 40), practice: read } : null;
+            }).filter(Boolean);
+            var finished = playing.filter(function(x) { return x.practice.finished; }).length;
+            return el('section', { className: 'gw-teacher-class-round', 'data-gw-class-round': classRound.key, 'aria-labelledby': 'gw-teacher-class-round-title', style: box }, title,
+              el('p', { className: 'gw-teacher-class-code', style: { margin: '0 0 2px', fontSize: '28px', fontWeight: 900, letterSpacing: '0.04em', color: 'var(--allo-stem-text, #f8fafc)' } }, code),
+              el('p', { className: 'gw-teacher-class-how', style: { margin: '0 0 6px', fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                geometryPracticeLabel(classRound) + '. Students open Learn and type ' + code + ' under \u201cPlaying a round with your class?\u201d'),
+              el('p', { role: 'status', style: { margin: '0 0 4px', fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                playing.length ? playing.length + (playing.length === 1 ? ' student' : ' students') + ' on this round, ' + finished + ' finished' : 'No one has started this round yet.'),
+              playing.length > 0 && el('ul', { style: { listStyle: 'none', margin: '0 0 6px', padding: 0, display: 'grid', gap: '2px' } }, playing.map(function(x) {
+                return el('li', { key: x.id, 'data-gw-class-round-student': x.id, style: { fontSize: '11px', color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  x.name + ': ' + (x.practice.finished ? 'finished' : x.practice.solved + ' of ' + GW_PRACTICE_STATIONS.length + ' stations'));
+              })),
+              el('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                el('button', { type: 'button', 'data-gw-class-round-play': 'true', onClick: function() { var live = window[engineKey]; if (live && live.startPracticeRound) { toggleTeacherView(); live.startPracticeRound(classRound.key); } }, style: buttonStyle }, 'Play it here'),
+                el('button', { type: 'button', 'data-gw-class-round-new': classRound.level, onClick: function() { newClassRound(classRound.level); }, style: buttonStyle }, 'Another round'),
+                el('button', { type: 'button', 'data-gw-class-round-clear': 'true', onClick: function() { upd('classPracticeRound', ''); }, style: buttonStyle }, 'Clear')));
+          })(),
+          // Practice skills across the class, from each student's practice rounds.
+          (function() {
+            var cls = geometryPracticeClassSummary(studentProgressMap);
+            if (!cls.students) return null;
+            return el('section', { className: 'gw-teacher-practice', 'aria-labelledby': 'gw-teacher-practice-title', style: { marginBottom: '10px', padding: '8px 10px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '8px' } },
+              el('h3', { id: 'gw-teacher-practice-title', style: { margin: '0 0 6px', fontSize: '11px', fontWeight: 800, color: '#38bdf8' } }, '\uD83C\uDFB2 Practice skills, ' + cls.students + (cls.students === 1 ? ' student' : ' students')),
+              el('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '5px' } }, cls.skills.filter(function(sk) { return sk.tries > 0; }).map(function(sk) {
+                var pct = Math.round(100 * sk.firstTry / sk.tries);
+                return el('li', { key: sk.station, 'data-gw-class-skill': sk.station, style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '2px 8px', fontSize: '11px', color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  el('span', null, sk.skill),
+                  el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, sk.firstTry + ' of ' + sk.tries + ' right first time'),
+                  el('span', { 'aria-hidden': 'true', style: { gridColumn: '1 / -1', height: '4px', borderRadius: '2px', background: 'var(--allo-stem-border, #334155)', overflow: 'hidden' } },
+                    el('span', { style: { display: 'block', width: pct + '%', height: '100%', background: pct >= 70 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444' } })));
+              })),
+              cls.focus && el('p', { className: 'gw-teacher-practice-focus', style: { margin: '6px 0 0', fontSize: '11px', fontWeight: 700, color: '#fbbf24' } }, 'Class focus: ' + cls.focus));
+          })(),
           // Student cards
           Object.keys(studentProgressMap).length === 0
             ? el('div', { style: { textAlign: 'center', padding: '20px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
@@ -16014,8 +18081,11 @@
               )
             : el('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
                 Object.keys(studentProgressMap).map(function(sid) {
-                  var sp = studentProgressMap[sid];
+                  var sp = studentProgressMap[sid] || {};
+                  // A student who has only practised in Geometry World has no app stats yet.
+                  var hasStats = !!(sp.stats && typeof sp.stats === 'object');
                   var stats = sp.stats || {};
+                  var practice = geometryPracticeReadTeacherSummary(sp.geometryPractice);
                   var accuracy = stats.quizAvg || 0;
                   var tierColor = accuracy >= 80 ? '#22c55e' : accuracy >= 50 ? '#f59e0b' : '#ef4444';
                   var tierLabel = accuracy >= 80 ? 'T1' : accuracy >= 50 ? 'T2' : 'T3';
@@ -16025,10 +18095,10 @@
                   },
                     el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
                       el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px' } }, sp.studentNickname || sid),
-                      el('div', { style: { background: tierColor, color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 } }, tierLabel + ' ' + Math.round(accuracy) + '%')
+                      hasStats && el('div', { style: { background: tierColor, color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 } }, tierLabel + ' ' + Math.round(accuracy) + '%')
                     ),
                     // Stats row
-                    el('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                    hasStats && el('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
                       el('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
                         '\u2B50 ' + (stats.globalPoints || 0) + ' XP'),
                       stats.focusRatio !== undefined && el('span', { style: { fontSize: '10px', color: stats.focusRatio > 0.7 ? '#4ade80' : '#f59e0b', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
@@ -16036,6 +18106,13 @@
                       el('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px' } },
                         '\uD83D\uDD52 ' + (stats.engagedMinutes || 0) + 'min')
                     ),
+                    // Practice rounds: each skill tried, right first time out of the last six.
+                    practice && el('div', { className: 'gw-teacher-student-practice', 'data-gw-student-practice': sid, style: { marginTop: '6px', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                      el('div', null, '\uD83C\uDFB2 ' + practice.rounds + (practice.rounds === 1 ? ' practice round' : ' practice rounds') + (practice.roundLabel ? ' \u2022 on ' + practice.roundLabel : '')),
+                      el('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '3px' } }, practice.skills.filter(function(sk) { return sk.tries > 0; }).map(function(sk) {
+                        return el('span', { key: sk.station, 'data-gw-skill': sk.station, style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: '2px 6px', borderRadius: '4px', color: 'var(--allo-stem-text, #e2e8f0)' } }, sk.skill + ' ' + sk.firstTry + '/' + sk.tries);
+                      })),
+                      practice.focus && el('div', { style: { marginTop: '3px', color: '#fbbf24', fontWeight: 700 } }, 'Focus: ' + practice.focus)),
                     // Last synced
                     sp.lastSynced && el('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #475569)', marginTop: '4px' } },
                       'Last sync: ' + new Date(sp.lastSynced).toLocaleTimeString())
