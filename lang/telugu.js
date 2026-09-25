@@ -8283,7 +8283,7 @@
     "error_invalid_code": "దయచేసి చెల్లుబాటు అయ్యే 4-అక్షరాల కోడ్‌ను నమోదు చేయండి.",
     "joining": "Joining సెషన్ {code} పై host {host}...",
     "join_panel_title": "Join తరగతి సెషన్",
-    "join_instructions": "నమోదు చేయి 4-పాత్ర code provided by మీ ఉపాధ్యాయుడు కు sync.",
+    "join_instructions": "నమోదు చేయి 5-పాత్ర code provided by మీ ఉపాధ్యాయుడు కు sync.",
     "live_title": "ప్రత్యక్ష తరగతి సెషన్",
     "live_instruction": "విద్యార్థులు ఈ కోడ్‌ను ఉపయోగించి చేరవచ్చు:",
     "host_id_share": "Host App ID (భాగస్వామ్యం చేయి అయితే needed)",

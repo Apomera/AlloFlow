@@ -8283,7 +8283,7 @@
     "error_invalid_code": "amābō inscrībe valid 4-persōna code.",
     "joining": "Joining sessiō {code} in host {host}...",
     "join_panel_title": "Join classis sessiō",
-    "join_instructions": "Inscrībe 4-persōna code provided by tuus magister ad sync.",
+    "join_instructions": "Inscrībe 5-persōna code provided by tuus magister ad sync.",
     "live_title": "Vīvus classis sessiō",
     "live_instruction": "discipulus potest join ūtendō hoc code:",
     "host_id_share": "Host App ID (Commūnicā sī needed)",

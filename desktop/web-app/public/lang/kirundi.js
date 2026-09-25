@@ -8275,7 +8275,7 @@
     "error_invalid_code": "nakwinginze injiza valid 4-umuntu code.",
     "joining": "Joining igihe {code} kuri host {host}...",
     "join_panel_title": "Join ishuri igihe",
-    "join_instructions": "Injiza 4-umuntu code provided by cawe umwigisha ku sync.",
+    "join_instructions": "Injiza 5-umuntu code provided by cawe umwigisha ku sync.",
     "live_title": "Mu buryo butaziguye ishuri igihe",
     "live_instruction": "umunyeshure can join gukoresha iki code:",
     "host_id_share": "Host App ID (Sangira niba needed)",

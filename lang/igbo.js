@@ -8283,7 +8283,7 @@
     "error_invalid_code": "biko tinye otu valid 4-agwa code.",
     "joining": "Joining nnọkọ {code} na host {host}...",
     "join_panel_title": "Join klas nnọkọ",
-    "join_instructions": "Tinye 4-agwa code provided by gị onye nkụzi na sync.",
+    "join_instructions": "Tinye 5-agwa code provided by gị onye nkụzi na sync.",
     "live_title": "Na-ekwu okwu klas nnọkọ",
     "live_instruction": "nwa akwụkwọ nwere ike join iji nke otu code:",
     "host_id_share": "Host App ID (Kesaa ọ bụrụ na needed)",

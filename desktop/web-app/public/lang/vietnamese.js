@@ -8278,7 +8278,7 @@
     "error_invalid_code": "Vui lòng nhập mã 4 ký tự hợp lệ.",
     "joining": "Đang tham gia Phiên {code} trên chủ {host}...",
     "join_panel_title": "Tham gia Phiên Lớp",
-    "join_instructions": "Nhập mã 4 ký tự do giáo viên cung cấp để đồng bộ.",
+    "join_instructions": "Nhập mã 5 ký tự do giáo viên cung cấp để đồng bộ.",
     "live_title": "Phiên Lớp Trực tiếp",
     "live_instruction": "Học sinh có thể tham gia bằng mã này:",
     "host_id_share": "ID Ứng dụng Chủ (Chia sẻ nếu cần)",

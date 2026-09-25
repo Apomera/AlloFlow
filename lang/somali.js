@@ -5714,7 +5714,7 @@
     "error_invalid_code": "Fadlan geli kood 4-xaraf oo sax ah.",
     "joining": "Fadhiga {code} hostka {host} waa lagu biirayaa...",
     "join_panel_title": "Ku Biir Fadhiga Fasalka",
-    "join_instructions": "Geli koodka 4-xaraf ah ee macallimkaagu ku siiyay si aad isugu xidhid.",
+    "join_instructions": "Geli koodka 5-xaraf ah ee macallimkaagu ku siiyay si aad isugu xidhid.",
     "live_title": "Fadhi Fasal Tooska ah",
     "live_instruction": "Ardaydu way ku biiri karaan koodkan:",
     "host_id_share": "ID Host App (Wadaag haddii loo baahdo)",

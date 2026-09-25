@@ -8275,7 +8275,7 @@
     "error_invalid_code": "कृपया दर्ज करें एक valid 4-पात्र कोड.",
     "joining": "Joining सत्र {code} पर host {host}...",
     "join_panel_title": "Join कक्षा सत्र",
-    "join_instructions": "समन्वय के लिए अपने शिक्षक द्वारा प्रदान किया गया 4-अक्षर का कोड दर्ज करें।",
+    "join_instructions": "समन्वय के लिए अपने शिक्षक द्वारा प्रदान किया गया 5-अक्षर का कोड दर्ज करें।",
     "live_title": "लाइव कक्षा सत्र",
     "live_instruction": "छात्र सकता है join उपयोग करते हुए यह कोड:",
     "host_id_share": "Host App ID (साझा करें यदि needed)",

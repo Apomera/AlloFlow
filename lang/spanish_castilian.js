@@ -5952,7 +5952,7 @@
     "error_invalid_code": "Por favor ingresa un código válido de 4 caracteres.",
     "joining": "Uniéndose a la sesión {code} en el anfitrión {host}...",
     "join_panel_title": "Unirse a la Sesión de Clase",
-    "join_instructions": "Ingresa el código de 4 caracteres que te dio tu docente para sincronizar.",
+    "join_instructions": "Ingresa el código de 5 caracteres que te dio tu docente para sincronizar.",
     "live_title": "Sesión de Clase en Vivo",
     "live_instruction": "Los estudiantes pueden unirse con este código:",
     "host_id_share": "ID de Aplicación del Anfitrión (Comparte si es necesario)",

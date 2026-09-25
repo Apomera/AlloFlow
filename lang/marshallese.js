@@ -8290,7 +8290,7 @@
     "error_invalid_code": "Please deḷọñ a valid 4-character code.",
     "joining": "Joining Session {code} ioon host {host}...",
     "join_panel_title": "Join kilaaj Session",
-    "join_instructions": "Deḷọñ eo 4-character code provided by eo am rūkaki ñan sync.",
+    "join_instructions": "Deḷọñ eo 5-character code provided by eo am rūkaki ñan sync.",
     "live_title": "Mool kilaaj Session",
     "live_instruction": "rūkkatak maroñ join using in code:",
     "host_id_share": "Host App ID (Share if needed)",

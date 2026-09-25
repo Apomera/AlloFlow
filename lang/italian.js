@@ -8275,7 +8275,7 @@
     "error_invalid_code": "per favore inserisci un valid 4-personaggi codice.",
     "joining": "Joining sessioni {code} su host {host}...",
     "join_panel_title": "Join classe sessioni",
-    "join_instructions": "Inserisci il 4-personaggi codice fornired by tuo insegnanti un sync.",
+    "join_instructions": "Inserisci il 5-personaggi codice fornired by tuo insegnanti un sync.",
     "live_title": "Dal vivo classe sessioni",
     "live_instruction": "studenti può join utilizzando questo codice:",
     "host_id_share": "Host App ID (Condividi se needed)",

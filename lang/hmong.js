@@ -8276,7 +8276,7 @@
     "error_invalid_code": "thov sau valid 4-tus cwj pwm code.",
     "joining": "Joining kev sib ntsib {code} rau saum host {host}...",
     "join_panel_title": "Join chav kawm kev sib ntsib",
-    "join_instructions": "Sau 4-tus cwj pwm code provided by koj xib fwb mus sync.",
+    "join_instructions": "Sau 5-tus cwj pwm code provided by koj xib fwb mus sync.",
     "live_title": "Ncaj qha chav kawm kev sib ntsib",
     "live_instruction": "tub ntxhais kawm tuaj yeem join siv qhov no code:",
     "host_id_share": "Host App ID (Sib koom yog tias needed)",

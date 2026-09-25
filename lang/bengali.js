@@ -8284,7 +8284,7 @@
     "error_invalid_code": "দয়া করে enter এক valid 4-চরিত্র code.",
     "joining": "Joining সেশন {code} on host {host}...",
     "join_panel_title": "Join শ্রেণী সেশন",
-    "join_instructions": "Enter 4-চরিত্র code provided by আপনার শিক্ষক এর sync.",
+    "join_instructions": "Enter 5-চরিত্র code provided by আপনার শিক্ষক এর sync.",
     "live_title": "লাইভ শ্রেণী সেশন",
     "live_instruction": "শিক্ষার্থী can join using এই code:",
     "host_id_share": "Host App আমি (Share if প্রয়োজন)",

@@ -8289,7 +8289,7 @@
     "error_invalid_code": "Please geli a valid 4-character code.",
     "joining": "Joining Session {code} ku host {host}...",
     "join_panel_title": "Join fasal Session",
-    "join_instructions": "Geli 4-character code provided by kaaga macallin ku sync.",
+    "join_instructions": "Geli 5-character code provided by kaaga macallin ku sync.",
     "live_title": "Tooska fasal Session",
     "live_instruction": "arday wuu kara join using tan code:",
     "host_id_share": "Host App ID (Share if needed)",

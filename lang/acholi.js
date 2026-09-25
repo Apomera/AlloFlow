@@ -8281,7 +8281,7 @@
     "error_invalid_code": "Please donyo valid 4-character code.",
     "joining": "Joining Session {code} wi host {host}...",
     "join_panel_title": "Join kilas Session",
-    "join_instructions": "Donyo 4-character code provided by mamegi lapwony i sync.",
+    "join_instructions": "Donyo 5-character code provided by mamegi lapwony i sync.",
     "live_title": "Matye ka ngolo kilas Session",
     "live_instruction": "latin kwan can join using man code:",
     "host_id_share": "Host App ID (Share ka needed)",

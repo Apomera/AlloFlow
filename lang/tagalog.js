@@ -8275,7 +8275,7 @@
     "error_invalid_code": "pakiusap ipasok isang valid 4-karakter code.",
     "joining": "Joining sesyon {code} sa host {host}...",
     "join_panel_title": "Join klase sesyon",
-    "join_instructions": "Ipasok ang 4-karakter code provided by iyong guro sa sync.",
+    "join_instructions": "Ipasok ang 5-karakter code provided by iyong guro sa sync.",
     "live_title": "Sa direkta klase sesyon",
     "live_instruction": "mag-aaral maaari join paggamit ito code:",
     "host_id_share": "Host App ID (Ibahagi kung needed)",

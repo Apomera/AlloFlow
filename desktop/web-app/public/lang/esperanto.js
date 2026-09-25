@@ -8490,7 +8490,7 @@
     "error_invalid_code": "Bonvolu enigi validan 4-signan kodon.",
     "joining": "Aliĝado al Sesio {code} ĉe gastiganto {host}...",
     "join_panel_title": "Aliĝi al Klasa Sesio",
-    "join_instructions": "Enigu la 4-signan kodon donitan de via instruisto por sinkronigi.",
+    "join_instructions": "Enigu la 5-signan kodon donitan de via instruisto por sinkronigi.",
     "live_title": "Realtempa Klasa Sesio",
     "live_instruction": "Lernantoj povas aliĝi uzante ĉi tiun kodon:",
     "host_id_share": "Gastiganta Aplikaĵo-ID (Diskonigu se necese)",

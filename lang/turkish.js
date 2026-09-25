@@ -8490,7 +8490,7 @@
     "error_invalid_code": "Lütfen geçerli bir 4 karakterlik kod girin.",
     "joining": "{host} sunucusundaki {code} Oturumuna Katılınıyor...",
     "join_panel_title": "Sınıf Oturumuna Katıl",
-    "join_instructions": "Senkronize etmek için öğretmeninizin verdiği 4 karakterlik kodu girin.",
+    "join_instructions": "Senkronize etmek için öğretmeninizin verdiği 5 karakterlik kodu girin.",
     "live_title": "Canlı Sınıf Oturumu",
     "live_instruction": "Öğrenciler bu kodu kullanarak katılabilir:",
     "host_id_share": "Sunucu Uygulama Kimliği (Gerekirse Paylaşın)",

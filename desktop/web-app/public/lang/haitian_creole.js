@@ -5712,7 +5712,7 @@
     "error_invalid_code": "Tanpri antre yon kòd valid ak 4 karaktè.",
     "joining": "K ap antre nan Sesyon {code} sou òt {host}...",
     "join_panel_title": "Antre nan Sesyon Klas",
-    "join_instructions": "Antre kòd 4-karaktè pwofesè ou ba ou pou senkronize.",
+    "join_instructions": "Antre kòd 5-karaktè pwofesè ou ba ou pou senkronize.",
     "live_title": "Sesyon Klas Dirèk",
     "live_instruction": "Elèv yo ka antre lè yo itilize kòd sa a:",
     "host_id_share": "ID Aplikasyon Òt (Pataje si bezwen)",

@@ -8275,7 +8275,7 @@
     "error_invalid_code": "부디 입력 valid 4-캐릭터 코드.",
     "joining": "Joining 세션 {code} 위에 host {host}...",
     "join_panel_title": "Join 학급 세션",
-    "join_instructions": "입력 4-캐릭터 코드 provided by 당신의 교사 에 sync.",
+    "join_instructions": "입력 5-캐릭터 코드 provided by 당신의 교사 에 sync.",
     "live_title": "실시간 학급 세션",
     "live_instruction": "학생 수 있습니다 join 사용 이것 코드:",
     "host_id_share": "Host App ID (공유 만약 needed)",

@@ -9531,7 +9531,7 @@
     "error_invalid_code": "Please enter a valid 4-character code.",
     "joining": "Joining Session {code} on host {host}...",
     "join_panel_title": "Join Class Session",
-    "join_instructions": "Enter the 4-character code provided by your teacher to sync.",
+    "join_instructions": "Enter the 5-character code provided by your teacher to sync.",
     "live_title": "Live Class Session",
     "live_instruction": "Students can join using this code:",
     "host_id_share": "Host App ID (Share if needed)",

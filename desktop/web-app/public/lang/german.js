@@ -8279,7 +8279,7 @@
     "error_invalid_code": "Bitte eingeben ein valid 4-Charakter Code.",
     "joining": "Joining Sitzung {code} auf host {host}...",
     "join_panel_title": "Join Klasse Sitzung",
-    "join_instructions": "Eingeben die 4-Charakter Code provided by dein Lehrer zu sync.",
+    "join_instructions": "Eingeben die 5-Charakter Code provided by dein Lehrer zu sync.",
     "live_title": "Live-Klasse Sitzung",
     "live_instruction": "Schülers kann join verwendend dies Code:",
     "host_id_share": "Host App IchD (Teilen wenn brauchened)",

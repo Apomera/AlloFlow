@@ -8281,7 +8281,7 @@
     "error_invalid_code": "Please lut valid 4-character code.",
     "joining": "Joining Session {code} cung host {host}...",
     "join_panel_title": "Join sianginn Session",
-    "join_instructions": "Lut 4-character code provided by nangmah sayama ah sync.",
+    "join_instructions": "Lut 5-character code provided by nangmah sayama ah sync.",
     "live_title": "A nungkho sianginn Session",
     "live_instruction": "sianginn caa can join using hi code:",
     "host_id_share": "Host App ID (Share if needed)",

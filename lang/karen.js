@@ -8281,7 +8281,7 @@
     "error_invalid_code": "Please နုၥ်လီၤ valid 4-character code.",
     "joining": "Joining Session {code} လ၁်ဖီခိၣ် host {host}...",
     "join_panel_title": "Join ကၠိ Session",
-    "join_instructions": "နုၥ်လီၤ 4-character code provided by နၤအ သရၣ် ဆူ sync.",
+    "join_instructions": "နုၥ်လီၤ 5-character code provided by နၤအ သရၣ် ဆူ sync.",
     "live_title": "Live ကၠိ Session",
     "live_instruction": "ဖိသၣ်ကၠိ can join using အံၤ code:",
     "host_id_share": "Host App ID (Share if needed)",

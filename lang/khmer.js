@@ -8283,7 +8283,7 @@
     "error_invalid_code": "សូមបញ្ចូលលេខកូដ ៤ តួអក្សរដែលត្រឹមត្រូវ។",
     "joining": "Joining វគ្គ {code} លើ host {host}...",
     "join_panel_title": "Join ថ្នាក់រៀន វគ្គ",
-    "join_instructions": "បញ្ចូល 4-តួអង្គ code provided by របស់អ្នក គ្រូ ទៅ sync.",
+    "join_instructions": "បញ្ចូល 5-តួអង្គ code provided by របស់អ្នក គ្រូ ទៅ sync.",
     "live_title": "បន្តផ្ទាល់ ថ្នាក់រៀន វគ្គ",
     "live_instruction": "សិស្សអាចចូលរួមដោយប្រើលេខកូដនេះ៖",
     "host_id_share": "Host App ID (ចែករំលែក ប្រសិនបើ needed)",

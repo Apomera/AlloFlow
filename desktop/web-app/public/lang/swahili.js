@@ -8275,7 +8275,7 @@
     "error_invalid_code": "tafadhali ingiza valid 4-mhusika code.",
     "joining": "Joining kipindi {code} juu ya host {host}...",
     "join_panel_title": "Join darasa kipindi",
-    "join_instructions": "Ingiza 4-mhusika code provided by yako mwalimu kwa sync.",
+    "join_instructions": "Ingiza 5-mhusika code provided by yako mwalimu kwa sync.",
     "live_title": "Moja kwa moja darasa kipindi",
     "live_instruction": "mwanafunzi inaweza join kutumia hii code:",
     "host_id_share": "Host App ID (Shiriki kama needed)",

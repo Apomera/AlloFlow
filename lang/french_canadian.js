@@ -8823,7 +8823,7 @@
     "error_invalid_code": "Veuillez saisir un code valide de 4 caractères.",
     "joining": "Rejoindre la session {code} sur l'hôte {host}...",
     "join_panel_title": "Rejoindre la session de classe",
-    "join_instructions": "Saisissez le code à 4 caractères fourni par votre enseignant pour vous synchroniser.",
+    "join_instructions": "Saisissez le code à 5 caractères fourni par votre enseignant pour vous synchroniser.",
     "live_title": "Session de classe en direct",
     "live_instruction": "Les élèves peuvent rejoindre avec ce code :",
     "host_id_share": "ID de l'application hôte (à partager si nécessaire)",

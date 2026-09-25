@@ -8275,7 +8275,7 @@
     "error_invalid_code": "እባክዎ ትክክለኛ የ4-ቁምፊ code ያስገቡ።",
     "joining": "Joining ክፍለ ጊዜ {code} ላይ host {host}...",
     "join_panel_title": "Join ክፍል ክፍለ ጊዜ",
-    "join_instructions": "ለማመሳሰል በመምህርዎ የተሰጠውን የ4-ቁምፊ code ያስገቡ።",
+    "join_instructions": "ለማመሳሰል በመምህርዎ የተሰጠውን የ5-ቁምፊ code ያስገቡ።",
     "live_title": "በቀጥታ ክፍል ክፍለ ጊዜ",
     "live_instruction": "ተማሪዎች ይህንን code በመጠቀም መቀላቀል ይችላሉ፦",
     "host_id_share": "Host App ID (አጋራ ከሆነ needed)",

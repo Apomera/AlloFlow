@@ -8275,7 +8275,7 @@
     "error_invalid_code": "በጃኹም ቅኑዕ ናይ 4-ፊደል code ኣእትዉ።",
     "joining": "Joining ኣኼባ {code} ኣብ host {host}...",
     "join_panel_title": "Join ክፍሊ ኣኼባ",
-    "join_instructions": "እተው 4-ባህሪ code provided by ናትካ መምህር ናብ sync.",
+    "join_instructions": "እተው 5-ባህሪ code provided by ናትካ መምህር ናብ sync.",
     "live_title": "ብቐጥታ ክፍሊ ኣኼባ",
     "live_instruction": "ተምሃሮ ነዚ code ተጠቒሞም ክጽንበሩ ይኽእሉ፦",
     "host_id_share": "Host App ID (ኣካፍል እንተ needed)",

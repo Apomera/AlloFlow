@@ -8275,7 +8275,7 @@
     "error_invalid_code": "ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ 4-ਅੱਖਰਾਂ ਵਾਲਾ ਕੋਡ ਦਾਖਲ ਕਰੋ।",
     "joining": "Joining ਸੈਸ਼ਨ {code} ਉੱਤੇ host {host}...",
     "join_panel_title": "Join ਜਮਾਤ ਸੈਸ਼ਨ",
-    "join_instructions": "ਦਾਖਲ ਕਰੋ 4-ਪਾਤਰ code provided by ਤੁਹਾਡਾ ਅਧਿਆਪਕ ਨੂੰ sync.",
+    "join_instructions": "ਦਾਖਲ ਕਰੋ 5-ਪਾਤਰ code provided by ਤੁਹਾਡਾ ਅਧਿਆਪਕ ਨੂੰ sync.",
     "live_title": "ਲਾਈਵ ਜਮਾਤ ਸੈਸ਼ਨ",
     "live_instruction": "ਵਿਦਿਆਰਥੀ ਇਸ ਕੋਡ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਸ਼ਾਮਲ ਹੋ ਸਕਦੇ ਹਨ:",
     "host_id_share": "Host App ID (ਸਾਂਝਾ ਕਰੋ ਜੇ needed)",

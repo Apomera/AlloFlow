@@ -8275,7 +8275,7 @@
     "error_invalid_code": "nabondeli yo kotisá valid 4-mosali na lisapo code.",
     "joining": "Joining tángo {code} likoló host {host}...",
     "join_panel_title": "Join kelasi tángo",
-    "join_instructions": "Kotisá 4-mosali na lisapo code provided by yo molakisi na sync.",
+    "join_instructions": "Kotisá 5-mosali na lisapo code provided by yo molakisi na sync.",
     "live_title": "Na sembo kelasi tángo",
     "live_instruction": "moyekoli can join kosalela oyo code:",
     "host_id_share": "Host App ID (Kabolá soki needed)",

@@ -8275,7 +8275,7 @@
     "error_invalid_code": "Andika kode y'inyuguti 4 yemewe.",
     "joining": "Kwinjira mu Isomo {code} ku munyamuryango {host}...",
     "join_panel_title": "Injira mu Isomo ry'Ishuri",
-    "join_instructions": "Andika kode y'inyuguti 4 yatanzwe na mwarimu wawe kugira ngo muhuze.",
+    "join_instructions": "Andika kode y'inyuguti 5 yatanzwe na mwarimu wawe kugira ngo muhuze.",
     "live_title": "Isomo ry'Ishuri rya Mu buryo butaziguye",
     "live_instruction": "Abanyeshuri bashobora kwinjira ukoresheje iyi kode:",
     "host_id_share": "ID y'Umunyamuryango (Sangiza niba bikenewe)",

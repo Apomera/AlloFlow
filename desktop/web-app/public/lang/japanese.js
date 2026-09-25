@@ -5165,7 +5165,7 @@
     "error_invalid_code": "有効な4文字のコードを入力してください。",
     "joining": "ホスト {code} のセッション {host} に参加中...",
     "join_panel_title": "クラスセッションに参加",
-    "join_instructions": "同期するために教師から提供された4文字のコードを入力してください。",
+    "join_instructions": "同期するために教師から提供された5文字のコードを入力してください。",
     "live_title": "ライブクラスセッション",
     "live_instruction": "生徒はこのコードを使用して参加できます：",
     "host_id_share": "ホストアプリID (必要に応じて共有)",

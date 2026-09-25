@@ -8283,7 +8283,7 @@
     "error_invalid_code": "mohon masukkan sebuah valid 4-karakter code.",
     "joining": "Joining sesi {code} di host {host}...",
     "join_panel_title": "Join kelas sesi",
-    "join_instructions": "Masukkan 4-karakter code provided by Anda guru ke sync.",
+    "join_instructions": "Masukkan 5-karakter code provided by Anda guru ke sync.",
     "live_title": "Langsung kelas sesi",
     "live_instruction": "siswa dapat join menggunakan ini code:",
     "host_id_share": "Host App ID (Bagikan jika needed)",

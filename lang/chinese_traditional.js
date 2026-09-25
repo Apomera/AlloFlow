@@ -10579,7 +10579,7 @@
     "error_invalid_code": "請輸入有效的 4 字符代碼。",
     "joining": "正在加入主機 {code} 上的會話 {host}……",
     "join_panel_title": "加入課堂會話",
-    "join_instructions": "輸入你老師提供的 4 字符代碼以同步。",
+    "join_instructions": "輸入你老師提供的 5 字符代碼以同步。",
     "live_title": "實時課堂會話",
     "live_instruction": "學生可使用此代碼加入：",
     "host_id_share": "主機應用 ID(如需要請分享)",

@@ -8275,7 +8275,7 @@
     "error_invalid_code": "ကျေးဇူးပြု၍ မှန်ကန်သော စာလုံး ၄ လုံး code ကို ထည့်ပါ။",
     "joining": "Joining sessions {code} အပေါ် host {host}...",
     "join_panel_title": "Join အတန်း sessions",
-    "join_instructions": "ထည့်ပါ 4-ဇာတ်ကောင် code provided by သင်၏ ဆရာ သို့ sync.",
+    "join_instructions": "ထည့်ပါ 5-ဇာတ်ကောင် code provided by သင်၏ ဆရာ သို့ sync.",
     "live_title": "တိုက်ရိုက် အတန်း sessions",
     "live_instruction": "ကျောင်းသားများ ဤ code ကို သုံး၍ ဝင်ရောက်နိုင်သည်:",
     "host_id_share": "Host App ID (မျှဝေပါ လျှင် needed)",

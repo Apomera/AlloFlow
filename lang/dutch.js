@@ -8490,7 +8490,7 @@
     "error_invalid_code": "Voer een geldige code van 4 tekens in.",
     "joining": "Deelnemen aan sessie {code} op host {host}...",
     "join_panel_title": "Deelnemen aan klassikale sessie",
-    "join_instructions": "Voer de code van 4 tekens van je docent in om te synchroniseren.",
+    "join_instructions": "Voer de code van 5 tekens van je docent in om te synchroniseren.",
     "live_title": "Live klassikale sessie",
     "live_instruction": "Leerlingen kunnen deelnemen met deze code:",
     "host_id_share": "Host-app-ID (deel indien nodig)",

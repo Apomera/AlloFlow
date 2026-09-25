@@ -8283,7 +8283,7 @@
     "error_invalid_code": "don Allah shigar valid 4-tafarki code.",
     "joining": "Joining zama {code} kan host {host}...",
     "join_panel_title": "Join aji zama",
-    "join_instructions": "Shigar 4-tafarki code provided by naka malami zuwa sync.",
+    "join_instructions": "Shigar 5-tafarki code provided by naka malami zuwa sync.",
     "live_title": "Kai-tsaye aji zama",
     "live_instruction": "ɗalibi zai iya join amfani wannan code:",
     "host_id_share": "Host App ID (Raba idan needed)",

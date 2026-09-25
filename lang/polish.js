@@ -8274,7 +8274,7 @@
     "error_invalid_code": "Proszę wprowadzić poprawny 4-znakowy kod.",
     "joining": "Dołączanie do sesji {code} na hoście {host}...",
     "join_panel_title": "Dołącz do klasanej sesje",
-    "join_instructions": "Wprowadź 4-znakowy kod podany przez twojego nauczyciela, aby zsynchronizować.",
+    "join_instructions": "Wprowadź 5-znakowy kod podany przez twojego nauczyciela, aby zsynchronizować.",
     "live_title": "Sesja klasowa na żywo",
     "live_instruction": "Uczniowie mogą dołączyć, używając ten kod:",
     "host_id_share": "ID aplikacji hosta (proszę udostępnić w razie potrzeby)",

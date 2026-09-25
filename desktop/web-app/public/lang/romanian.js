@@ -8275,7 +8275,7 @@
     "error_invalid_code": "vă rog introdu un valid 4-personaj code.",
     "joining": "Joining sesiune {code} pe host {host}...",
     "join_panel_title": "Join clasă sesiune",
-    "join_instructions": "Introdu 4-personaj code provided by tău profesor la sync.",
+    "join_instructions": "Introdu 5-personaj code provided by tău profesor la sync.",
     "live_title": "În direct clasă sesiune",
     "live_instruction": "elev poate join folosind acesta code:",
     "host_id_share": "Host App ID (Partajează dacă needed)",

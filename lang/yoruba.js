@@ -8283,7 +8283,7 @@
     "error_invalid_code": "jọwọ wọle valid 4-oluyaworan code.",
     "joining": "Joining apejọ {code} lori host {host}...",
     "join_panel_title": "Join kilasi apejọ",
-    "join_instructions": "Wọle 4-oluyaworan code provided by rẹ olukọ si sync.",
+    "join_instructions": "Wọle 5-oluyaworan code provided by rẹ olukọ si sync.",
     "live_title": "Taara kilasi apejọ",
     "live_instruction": "akẹkọọ le join lilo eyi code:",
     "host_id_share": "Host App ID (Pin ti o ba needed)",
