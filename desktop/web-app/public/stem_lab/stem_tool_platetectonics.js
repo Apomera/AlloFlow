@@ -887,22 +887,59 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     function build() {
       scene = new T.Scene();
       camera = new T.PerspectiveCamera(42, 1, 0.5, 4000);
-      scene.add(new T.HemisphereLight(0xcbd5e1, 0x1c1917, 0.9));
-      dirLight = new T.DirectionalLight(0xffffff, 0.7);
+      scene.add(new T.HemisphereLight(0xcbd5e1, 0x1c1917, 0.8));
+      dirLight = new T.DirectionalLight(0xfff4e6, 0.7);
       dirLight.position.set(-90, 130, 110);
       scene.add(dirLight);
+      // Fill from the camera side, so the faces the student looks at are not
+      // left flat and unlit.
+      var fillL = new T.DirectionalLight(0xdbeafe, 0.22);
+      fillL.position.set(120, 40, 160);
+      scene.add(fillL);
 
       // Mantle: a translucent shell so the slab and the foci inside stay
       // visible. depthWrite off keeps it from occluding them from any angle.
-      var mantle = new T.Mesh(
-        new T.BoxGeometry(TECT_HALF_X * 2, TECT_DEPTH, TECT_HALF_Z * 2),
+      // Graded hotter with depth, and its top sits just BELOW the surface: level
+      // with the plate tops (and flush with their ends) it z-fought them into stripes.
+      var mGeo = new T.BoxGeometry(TECT_HALF_X * 2 - 0.2, TECT_DEPTH - 0.2, TECT_HALF_Z * 2 - 0.2, 1, 8, 1);
+      var mPos = mGeo.attributes.position, mCol = new Float32Array(mPos.count * 3), mc = new T.Color();
+      for (var mi = 0; mi < mPos.count; mi++) {
+        var mt = Math.min(1, Math.max(0, 0.5 - mPos.getY(mi) / (TECT_DEPTH - 0.2)));
+        mc.setHex(0x5b1414).lerp(new T.Color(0xc2410c), mt);
+        mCol[mi * 3] = mc.r; mCol[mi * 3 + 1] = mc.g; mCol[mi * 3 + 2] = mc.b;
+      }
+      mGeo.setAttribute('color', new T.BufferAttribute(mCol, 3));
+      var mantle = new T.Mesh(mGeo,
         new T.MeshLambertMaterial({
-          color: 0x7f1d1d, transparent: true, opacity: 0.18,
+          vertexColors: true, transparent: true, opacity: 0.2,
           depthWrite: false, side: T.DoubleSide, clippingPlanes: [clipPlane]
         })
       );
-      mantle.position.set(0, -TECT_DEPTH / 2, 0);
+      mantle.position.set(0, -TECT_DEPTH / 2 - 0.1, 0);
       scene.add(mantle);
+
+      // Plate-top textures, painted once and shared by every rebuild: ocean
+      // floor with abyssal hills running along strike, and continental land.
+      tex.ocean = topTex('#1f3f66', function (c, w, hh) {
+        for (var i = 0; i < 70; i++) {
+          c.strokeStyle = i % 3 ? 'rgba(96,165,250,0.12)' : 'rgba(15,30,55,0.35)';
+          c.lineWidth = 1 + (i % 4);
+          var x = (i * 37) % w;
+          c.beginPath(); c.moveTo(x, 0); c.bezierCurveTo(x + 6, hh * 0.3, x - 6, hh * 0.7, x + 3, hh); c.stroke();
+        }
+      });
+      tex.land = topTex('#7a5f1c', function (c, w, hh) {
+        for (var i = 0; i < 260; i++) {
+          var k = (i * 7919) % 100 / 100;
+          c.fillStyle = k < 0.5 ? 'rgba(77,110,48,0.45)' : k < 0.8 ? 'rgba(150,118,52,0.45)' : 'rgba(92,70,30,0.5)';
+          c.beginPath(); c.arc((i * 53) % w, (i * 97) % hh, 3 + (i % 9), 0, Math.PI * 2); c.fill();
+        }
+      });
+      tex.glow = topTex('rgba(0,0,0,0)', function (c, w) {
+        var g = c.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+        g.addColorStop(0, 'rgba(255,240,200,1)'); g.addColorStop(0.3, 'rgba(255,150,50,0.8)'); g.addColorStop(1, 'rgba(255,60,0,0)');
+        c.clearRect(0, 0, w, w); c.fillStyle = g; c.fillRect(0, 0, w, w);
+      }, 64);
 
       plateGroup = new T.Group();
       arcGroup = new T.Group();
@@ -915,29 +952,63 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       colorTmp = new T.Color();
     }
 
+    var tex = {};
+    function topTex(base, paint, size) {
+      var cv = document.createElement('canvas');
+      cv.width = cv.height = size || 256;
+      var c = cv.getContext('2d');
+      c.fillStyle = base; c.fillRect(0, 0, cv.width, cv.height);
+      paint(c, cv.width, cv.height);
+      var t = new T.CanvasTexture(cv);
+      t.__ptShared = true;
+      return t;
+    }
     function clearGroup(g) {
       if (!g) return;
       for (var i = g.children.length - 1; i >= 0; i--) {
         var c = g.children[i];
         g.remove(c);
-        if (c.geometry) c.geometry.dispose();
-        // Label sprites own a CanvasTexture; disposing only the material leaks
-        // the GPU texture, and the scale is rebuilt on every mode change.
-        if (c.material) {
-          if (c.material.map) c.material.map.dispose();
-          c.material.dispose();
-        }
+        // Walked, not just the child: a volcano is a group of parts. Label
+        // sprites own a CanvasTexture, and disposing only the material leaks the
+        // GPU texture on every mode change. Plate-top textures are shared
+        // across rebuilds, so they stay.
+        c.traverse(function (o) {
+          if (o.geometry && !o.isSprite) o.geometry.dispose();
+          (Array.isArray(o.material) ? o.material : o.material ? [o.material] : []).forEach(function (mt) {
+            if (mt.map && !mt.map.__ptShared) mt.map.dispose();
+            mt.dispose();
+          });
+        });
       }
     }
 
-    function slab(w, hgt, d, color, opacity) {
-      return new T.Mesh(
-        new T.BoxGeometry(w, hgt, d),
-        new T.MeshLambertMaterial({
-          color: color, transparent: opacity < 1, opacity: opacity,
-          side: T.DoubleSide, clippingPlanes: [clipPlane]
-        })
-      );
+    function slab(w, hgt, d, color, opacity, top) {
+      var side = new T.MeshLambertMaterial({
+        color: color, transparent: opacity < 1, opacity: opacity,
+        side: T.DoubleSide, clippingPlanes: [clipPlane]
+      });
+      if (!top) return new T.Mesh(new T.BoxGeometry(w, hgt, d), side);
+      // A textured top face; the sides keep the plate's flat identity colour.
+      var topM = new T.MeshLambertMaterial({ map: top, side: T.DoubleSide, clippingPlanes: [clipPlane] });
+      return new T.Mesh(new T.BoxGeometry(w, hgt, d), [side, side, topM, side, side, side]);
+    }
+    // A volcano that reads as one: a shaded cone with a glowing crater.
+    function arcVolcano(x, z, r, hgt) {
+      var g = new T.Group();
+      var cone = new T.Mesh(new T.ConeGeometry(r, hgt, 20),
+        new T.MeshLambertMaterial({ color: 0x57534e, clippingPlanes: [clipPlane] }));
+      cone.position.y = hgt / 2;
+      g.add(cone);
+      var cap = new T.Mesh(new T.ConeGeometry(r * 0.32, hgt * 0.32, 20),
+        new T.MeshLambertMaterial({ color: 0x3f3a36, emissive: 0x7c2d12, clippingPlanes: [clipPlane] }));
+      cap.position.y = hgt - hgt * 0.16 + 0.05;
+      g.add(cap);
+      var glow = new T.Sprite(new T.SpriteMaterial({ map: tex.glow, color: 0xff8a3d, transparent: true, depthWrite: false, blending: T.AdditiveBlending }));
+      glow.scale.set(r * 1.6, r * 1.6, 1);
+      glow.position.y = hgt + 0.2;
+      g.add(glow);
+      g.position.set(x, 0, z);
+      return g;
     }
 
     // Lithosphere geometry per boundary mode. Thickness follows the real
@@ -956,11 +1027,11 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         // the diagram students already know: subducting plate on -x (Plate A),
         // overriding plate carrying the arc on +x (Plate B), slab descending
         // to the RIGHT from the trench at x = 0.
-        var oce = slab(TECT_HALF_X, oceT, Z, 0x1e3a5f, 1);
+        var oce = slab(TECT_HALF_X, oceT, Z, 0x1e3a5f, 1, tex.ocean);
         oce.position.set(-TECT_HALF_X / 2, -oceT / 2, 0);
         plateGroup.add(oce);
 
-        var cont = slab(TECT_HALF_X, contT, Z, 0x8b6914, 1);
+        var cont = slab(TECT_HALF_X, contT, Z, 0x8b6914, 1, tex.land);
         cont.position.set(TECT_HALF_X / 2, -contT / 2, 0);
         plateGroup.add(cont);
 
@@ -981,39 +1052,50 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         // Mountains on the overriding plate, driven by the same
         // mountainHeight the 2D view reports in its HUD.
         var mh = Math.max(0.4, (m.mountainHeight / 8000) * 7);
-        var range = new T.Mesh(
-          new T.ConeGeometry(4.5, mh, 4),
-          new T.MeshLambertMaterial({ color: 0x9ca3af, clippingPlanes: [clipPlane] })
-        );
-        range.position.set(9, mh / 2, 0);
-        range.rotation.y = Math.PI / 4;
-        arcGroup.add(range);
+        // A range, not a lone pyramid: a few peaks along strike, snow on the
+        // tallest once it is high enough to hold any.
+        [[0, 1], [-9, 0.72], [8, 0.8], [-17, 0.5], [16, 0.55]].forEach(function (pk) {
+          var ph = mh * pk[1];
+          var peak = new T.Mesh(new T.ConeGeometry(4.2 * (0.7 + 0.3 * pk[1]), ph, 5),
+            new T.MeshLambertMaterial({ color: 0x8a8178, clippingPlanes: [clipPlane] }));
+          peak.position.set(9 + (pk[0] % 2), ph / 2, pk[0]);
+          peak.rotation.y = pk[0] * 0.37;
+          arcGroup.add(peak);
+          if (ph > 2.2) {
+            var snow = new T.Mesh(new T.ConeGeometry(4.2 * (0.7 + 0.3 * pk[1]) * 0.3, ph * 0.3, 5),
+              new T.MeshLambertMaterial({ color: 0xf1f5f9, clippingPlanes: [clipPlane] }));
+            snow.position.set(9 + (pk[0] % 2), ph * 0.85 + 0.03, pk[0]);
+            snow.rotation.y = peak.rotation.y;
+            arcGroup.add(snow);
+          }
+        });
 
         // Volcanic arc sits where the slab reaches ~100 km, which is why arcs
         // stand a fixed distance behind the trench rather than at it.
         var arcX = tectSlabDistKm(100) * TECT_KM;
-        for (var v = -1; v <= 1; v++) {
-          var cone = new T.Mesh(
-            new T.ConeGeometry(2.2, 4.2, 12),
-            new T.MeshLambertMaterial({ color: 0x44403c, clippingPlanes: [clipPlane] })
-          );
-          cone.position.set(arcX, 2.1, v * 14);
-          arcGroup.add(cone);
-        }
+        for (var v = -1; v <= 1; v++) arcGroup.add(arcVolcano(arcX, v * 14, 2.4, 4.4));
       } else if (m.mode === 'divergent') {
         // Two plates pulled apart; the gap is the rift the 2D HUD reports.
         var gap = Math.max(1.5, (m.rift / 180) * 16);
-        var lp = slab(TECT_HALF_X - gap / 2, oceT, Z, 0x2a4a6f, 1);
+        var lp = slab(TECT_HALF_X - gap / 2, oceT, Z, 0x2a4a6f, 1, tex.ocean);
         lp.position.set(-(TECT_HALF_X + gap / 2) / 2, -oceT / 2, 0);
         plateGroup.add(lp);
-        var rp = slab(TECT_HALF_X - gap / 2, oceT, Z, 0x2a4a6f, 1);
+        var rp = slab(TECT_HALF_X - gap / 2, oceT, Z, 0x2a4a6f, 1, tex.ocean);
         rp.position.set((TECT_HALF_X + gap / 2) / 2, -oceT / 2, 0);
         plateGroup.add(rp);
 
         // New crust welling up to fill the gap — the ridge.
-        var ridge = slab(gap, oceT * 0.8, Z, 0xdc2626, 1);
+        // Molten, so it glows rather than being shaded like the cold plates.
+        var ridge = new T.Mesh(new T.BoxGeometry(gap, oceT * 0.8, Z),
+          new T.MeshLambertMaterial({ color: 0xdc2626, emissive: 0xc2410c, side: T.DoubleSide, clippingPlanes: [clipPlane] }));
         ridge.position.set(0, -oceT * 0.4, 0);
         plateGroup.add(ridge);
+        for (var gz = -2; gz <= 2; gz++) {
+          var rg = new T.Sprite(new T.SpriteMaterial({ map: tex.glow, color: 0xff7a2a, transparent: true, opacity: 0.45, depthWrite: false, blending: T.AdditiveBlending }));
+          rg.scale.set(gap * 1.6, gap * 1.6, 1);
+          rg.position.set(0, 0.2, gz * Z / 5);
+          arcGroup.add(rg);
+        }
         var plume = new T.Mesh(
           new T.CylinderGeometry(gap * 0.42, gap * 0.9, 22, 16, 1, true),
           new T.MeshLambertMaterial({
@@ -1027,10 +1109,10 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         // Transform: the offset is ALONG STRIKE, perpendicular to the section
         // plane. This is the motion a cross-section structurally cannot show.
         var off = Math.min(TECT_HALF_Z * 0.7, (m.offset / 400) * TECT_HALF_Z);
-        var a = slab(TECT_HALF_X, contT, Z, 0x8b6914, 1);
+        var a = slab(TECT_HALF_X, contT, Z, 0x8b6914, 1, tex.land);
         a.position.set(-TECT_HALF_X / 2, -contT / 2, off);
         plateGroup.add(a);
-        var b = slab(TECT_HALF_X, contT, Z, 0xa16207, 1);
+        var b = slab(TECT_HALF_X, contT, Z, 0xa16207, 1, tex.land);
         b.position.set(TECT_HALF_X / 2, -contT / 2, -off);
         plateGroup.add(b);
 
@@ -1180,7 +1262,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       var az = -m.rotY * DEG;
       // Pulled back enough that the depth labels and the arc label, which sit
       // just outside the block proper, stay inside the frustum.
-      var dist = 250 / Math.max(0.25, m.scale);
+      var dist = 215 / Math.max(0.25, m.scale);
       var ty = -TECT_DEPTH * 0.32;
       camera.position.set(
         dist * Math.cos(el) * Math.sin(az),
@@ -1284,6 +1366,8 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
         if (scene) { clearGroup(plateGroup); clearGroup(arcGroup); clearGroup(scaleGroup); if (quakeBatch) quakeBatch.dispose(scene); }
+        Object.keys(tex).forEach(function (k) { try { tex[k].dispose(); } catch (e) {} });
+        tex = {};
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
         plateGroup = arcGroup = scaleGroup = slabMesh = quakeBatch = null;
         renderer = scene = camera = null; canvasEl = null; pending = null;
@@ -1294,7 +1378,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
   })();
 
   // ── 3D volcano vent (eruption anatomy) ──────────────────────────────────────
-  // The 2D sim draws a good side-on eruption, but a silhouette cannot show the
+  // The 2D sim draws a side-on eruption, but a silhouette cannot show the
   // plumbing that CAUSES it: how big the magma chamber is, that a conduit joins
   // it to the vent, that dikes and sills branch off it, and that the summit
   // drops into a caldera once the chamber has emptied. This view shows those.
@@ -1305,18 +1389,25 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
   // once. What is reused is the lifecycle TectGL got right — ensureThree with a
   // 2D fallback, a dirty-flag frame loop so an idle view costs no GPU work, a
   // clipping plane for the cutaway, and canvas-texture sprites for labels.
+  //
+  // ★ The cut face is CAPPED. A clipping plane on its own leaves every sliced
+  // solid hollow: the chamber showed as a red ring with the far wall inside it,
+  // the beds as striped shells, and the cone as an empty tent — and the cut face
+  // is the one surface this view exists to show. Each solid now writes its
+  // inside/outside parity to the stencil buffer and a cap is painted wherever
+  // the parity says "inside", so a slice reads as solid rock and solid melt.
   var VentGL = (function () {
     var DEG = Math.PI / 180;
     var T = null;
     var state = 'idle';                 // idle | loading | ready | failed
     var canvasEl = null, renderer = null, scene = null, camera = null;
     var clipPlane = null, resizeObs = null, rafId = 0;
-    var parts = {}, labelGroup = null, scaleGroup = null, ashBatch = null, ashP = [];
-    var lavaBatch = null, lavaP = [];
-    // Deliberately NOT in `parts`: unmount disposes every parts entry's
-    // geometry, and r128 Sprites share a single plane geometry between them, so
-    // disposing this one would blank every other label in the scene.
-    var ventLabel = null;
+    var parts = {}, labelGroup = null, scaleGroup = null, dynLabels = {};
+    // Everything build() allocates, so unmount() can free it in one pass rather
+    // than walking a scene graph whose meshes share geometry with their stencil
+    // twins (disposing by walking double-freed some and leaked others).
+    var owned = [];
+    var ventLabel = null, ventLeader = null, interiorLabels = [];
     var pending = { active: false, tick: 0, dark: true, labels: true, magma: 'andesite' };
     var appliedMagma = null;
     // Nearly side-on by DEFAULT. At -16/-34 the block presented the camera
@@ -1326,20 +1417,23 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     // Current eased camera distance (see applyCam). Module state, not derived per
     // frame, because the easing needs the previous value.
     var frameDist = 78;
-    // Sliced open by DEFAULT. Screenshotting the closed block showed why: the
-    // country rock is opaque, so the chamber, conduit, dikes and sill were all
-    // buried inside it and the five labels pointed at blank hillside. An anatomy
-    // view that opens showing no anatomy teaches nothing. The slider closes the
-    // block back up when the student wants the landform instead.
+    // Sliced open by DEFAULT: the country rock is opaque, so a closed block
+    // buries the chamber, conduit, dikes and sill and the labels point at blank
+    // hillside. The slider closes it back up when the student wants the landform.
     var cut = 0;                        // clip constant; null = nothing clipped
-    var appliedDark = null, appliedLabels = null, appliedCam = '';
+    var appliedDark = null, appliedLabels = null, appliedCam = '', appliedCut = 'x';
     var dirty = true, wasActive = false, prevTick = -1;
     var shape = { fill: 0.85, summit: 1 };
     var failCb = null, readyCb = null;
+    // Lasting marks an eruption leaves on the landscape. Held after the eruption
+    // ends for the same reason the caldera is: what the eruption DID is the lesson.
+    var scars = { ash: 0 };
+    var hotNow = 0, magmaTime = 0, boltCool = 60;
 
     // Scene units. The chamber sits deep enough below the cone to read as a
     // VOLUME rather than a dot — the whole point of the view.
     var CHAMBER_Y = -19;
+    var BED_N = 5, BED_TOP = -5, BED_BOT = -27;
 
     // ── Magma composition ──────────────────────────────────────────────────────
     // The lever the rest of the model hangs off. Silica content sets viscosity
@@ -1354,21 +1448,27 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     // Numbers are shape parameters for a schematic, NOT measurements. Real edifice
     // dimensions vary by more than an order of magnitude within every one of these
     // compositions; the ratios are chosen so the three read as distinct landforms.
+    // flank/flankP give the profile: a shield bulges (convex), a stratovolcano
+    // sweeps up into a steep summit (concave). plumeH is where the column stops
+    // being buoyant and spreads sideways as an umbrella cloud.
     var MAGMA = [
       { id: 'basalt', label: 'Basaltic', silica: 'Low silica (~50%)',
         visc: 'Runny', gas: 'Little trapped gas', landform: 'Broad shield volcano',
         coneR: 26, coneH: 8, chamber: 0.8,
         ashRate: 1, ashVy: 0.30, lavaRate: 4, calderaDrop: 0.10,
+        flank: 'convex', flankP: 1.5, craterU: 0.16, rough: 0.02, plumeH: 10,
         example: 'Mauna Loa, Kilauea' },
       { id: 'andesite', label: 'Andesitic', silica: 'Medium silica (~60%)',
         visc: 'Sticky', gas: 'Some trapped gas', landform: 'Steep stratovolcano',
         coneR: 15, coneH: 17, chamber: 1,
         ashRate: 3, ashVy: 0.55, lavaRate: 1, calderaDrop: 0.38,
+        flank: 'concave', flankP: 1.55, craterU: 0.12, rough: 0.05, plumeH: 23,
         example: 'Mt Fuji, Mt St Helens' },
       { id: 'rhyolite', label: 'Rhyolitic', silica: 'High silica (~72%)',
         visc: 'Stiff', gas: 'Lots of trapped gas', landform: 'Caldera complex',
         coneR: 12, coneH: 21, chamber: 1.3,
         ashRate: 6, ashVy: 0.62, lavaRate: 0, calderaDrop: 0.62,
+        flank: 'concave', flankP: 1.25, craterU: 0.15, rough: 0.055, plumeH: 23,
         example: 'Yellowstone, Toba' }
     ];
     function magmaById(id) {
@@ -1384,286 +1484,773 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     // detaches and hangs in the air mid-eruption.
     var ASH_CAP = 520;
     var LAVA_CAP = 160;
-    // Conduit reference geometry: bottom sits in the chamber roof, top reaches the
-    // un-collapsed summit. Recomputed whenever the composition changes the cone.
-    var CONDUIT_BOT = CHAMBER_Y + 4, CONDUIT_H0 = (17 - 1) - (CHAMBER_Y + 4);
+    var GLOW_CAP = 900, FLOW_CAP = 260, BUBBLE_CAP = 70;
+    var ashP = [], lavaP = [], glowP = [], flowP = [], bubbleP = [];
+    var ashPts = null, glowPts = null, lavaPts = null, flowPts = null, bubblePts = null;
+    var ptScale = { value: 400 };
+    var CONDUIT_BOT = CHAMBER_Y + 4, CONDUIT_H0 = 16;
 
     function fail(reason) {
       state = 'failed';
       if (typeof failCb === 'function') { try { failCb(reason); } catch (e) {} }
     }
+    function own(x) { owned.push(x); return x; }
+    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+    function sstep(a, b, v) { var t = clamp01((v - a) / (b - a)); return t * t * (3 - 2 * t); }
+    function hash(n) { var s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+
+    // ── Edifice profile ────────────────────────────────────────────────────────
+    // One function answers "how high is the ground here" for the mesh, the lava
+    // that runs down it and the flows that race over it, so nothing floats above
+    // or tunnels through the mountain it belongs to.
+    var prof = { hpk: 20, rimU: 0.12, rimH: 17, floorY: 13, k: 2, collapse: 0 };
+    function flankF(u) {
+      u = clamp01(u);
+      return mag.flank === 'convex' ? 1 - Math.pow(u, mag.flankP) : Math.pow(1 - u, mag.flankP);
+    }
+    function invFlank(v) {
+      var lo = 0, hi = 1;
+      for (var i = 0; i < 24; i++) { var mid = (lo + hi) / 2; if (flankF(mid) > v) lo = mid; else hi = mid; }
+      return (lo + hi) / 2;
+    }
+    function wobble(th) { return 1 + (mag.flank === 'convex' ? 0.06 : 0.03) * Math.sin(3 * th + 0.7) + 0.02 * Math.sin(7 * th + 2.1); }
+    function gully(th, u) { return 0.55 * Math.sin(11 * th + 2.2 * u + 0.3) + 0.3 * Math.sin(23 * th - 3.1 * u + 1.7) + 0.15 * Math.sin(43 * th + 0.9); }
+    // Recomputed whenever the summit moves. The caldera is not the cone shrinking:
+    // the rim retreats DOWN the flank to wherever the ground is as low as the
+    // collapsed summit, so a big collapse leaves a wide basin inside a truncated
+    // mountain — the shape Crater Lake and Yellowstone actually have.
+    function profile() {
+      prof.hpk = coneH / flankF(mag.craterU);
+      prof.rimH = coneH * shape.summit;
+      prof.rimU = Math.max(mag.craterU, invFlank(prof.rimH / prof.hpk));
+      // Guarded divide: a composition-dependent constant that could reach 0 would
+      // put NaN into every vertex and blank the summit.
+      prof.collapse = mag.calderaDrop > 0 ? clamp01((1 - shape.summit) / mag.calderaDrop) : 0;
+      var depth = (coneH * 0.2 + 1.4) * (1 + 0.6 * prof.collapse);
+      prof.floorY = Math.max(prof.rimH * 0.3, prof.rimH - depth);
+      prof.k = 2 + 2.2 * prof.collapse;   // a caldera is flat-floored and steep-walled
+    }
+    function groundY(u, th) {
+      if (u < prof.rimU) return prof.floorY + (prof.rimH - prof.floorY) * Math.pow(u / prof.rimU, prof.k);
+      var amp = coneH * mag.rough * Math.sin(Math.PI * clamp01((u - prof.rimU) / (1 - prof.rimU)));
+      return prof.hpk * flankF(u) + amp * gully(th, u) - 0.4 * sstep(0.92, 1, u);
+    }
+    function ventY() { return prof.floorY + 0.4; }
+
+    // ── Textures ───────────────────────────────────────────────────────────────
+    function canvasTex(w, hh, paint) {
+      var cv = document.createElement('canvas');
+      cv.setAttribute('aria-hidden', 'true');
+      cv.width = w; cv.height = hh;
+      paint(cv.getContext('2d'), w, hh);
+      var tex = own(new T.CanvasTexture(cv));
+      tex.needsUpdate = true;
+      return tex;
+    }
+    // A billowing puff rather than a disc: several offset lobes, lit from above,
+    // so a few hundred of them read as a convecting column and not as a pile of
+    // balls — which is how the old sphere-voxel plume photographed.
+    function puffTex() {
+      return canvasTex(64, 64, function (c, w) {
+        var lobes = [[32, 34, 20], [22, 28, 13], [42, 27, 13], [30, 20, 12], [40, 40, 11], [22, 41, 11]];
+        lobes.forEach(function (L) {
+          var g = c.createRadialGradient(L[0] - 3, L[1] - 4, 0, L[0], L[1], L[2]);
+          g.addColorStop(0, 'rgba(255,255,255,0.95)');
+          g.addColorStop(0.55, 'rgba(200,200,200,0.7)');
+          g.addColorStop(1, 'rgba(120,120,120,0)');
+          c.fillStyle = g;
+          c.beginPath(); c.arc(L[0], L[1], L[2], 0, Math.PI * 2); c.fill();
+        });
+      });
+    }
+    function glowTex() {
+      return canvasTex(64, 64, function (c) {
+        var g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+        g.addColorStop(0, 'rgba(255,255,255,1)');
+        g.addColorStop(0.22, 'rgba(255,255,255,0.85)');
+        g.addColorStop(0.5, 'rgba(255,255,255,0.28)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        c.fillStyle = g; c.fillRect(0, 0, 64, 64);
+      });
+    }
+    function bubbleTex() {
+      return canvasTex(64, 64, function (c) {
+        c.strokeStyle = 'rgba(255,255,255,0.95)'; c.lineWidth = 6;
+        c.beginPath(); c.arc(32, 32, 24, 0, Math.PI * 2); c.stroke();
+        c.fillStyle = 'rgba(255,255,255,0.35)';
+        c.beginPath(); c.arc(32, 32, 21, 0, Math.PI * 2); c.fill();
+        c.fillStyle = 'rgba(255,255,255,0.9)';
+        c.beginPath(); c.arc(24, 23, 5, 0, Math.PI * 2); c.fill();
+      });
+    }
+    // Ground seen from above: grass, scrub and bare soil. Painted once; ashfall
+    // greys it by tinting the material rather than repainting.
+    function groundTex() {
+      var t = canvasTex(256, 192, function (c, w, hh) {
+        c.fillStyle = '#56663a'; c.fillRect(0, 0, w, hh);
+        for (var i = 0; i < 900; i++) {
+          var x = hash(i * 3.1) * w, y = hash(i * 7.7 + 2) * hh, r = 2 + hash(i * 1.3 + 5) * 9;
+          var k = hash(i * 5.9 + 1);
+          c.fillStyle = k < 0.45 ? 'rgba(70,92,48,0.55)' : k < 0.75 ? 'rgba(104,110,66,0.5)' : k < 0.92 ? 'rgba(122,104,78,0.45)' : 'rgba(48,66,40,0.6)';
+          c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+        }
+      });
+      return t;
+    }
+
+    // ── Shaders ────────────────────────────────────────────────────────────────
+    var NOISE_GLSL = [
+      'float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+      'float vn(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+      '  return mix(mix(h2(i), h2(i + vec2(1.0, 0.0)), u.x), mix(h2(i + vec2(0.0, 1.0)), h2(i + vec2(1.0, 1.0)), u.x), u.y); }',
+      'float fbm(vec2 p){ float a = 0.5, s = 0.0; for (int k = 0; k < 3; k++) { s += a * vn(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return s; }'
+    ].join('\n');
+    var CAP_VERT = 'varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
+    // Heat halo shared by every rock cap: country rock beside a magma body is
+    // baked, and during an eruption it glows. The halo follows the chamber as it
+    // swells and drains, so the cut face shows the same pressure story the
+    // chamber does.
+    var HALO_GLSL = [
+      'uniform vec4 uCh; uniform vec4 uCd; uniform float uHeat;',
+      'float halo(vec2 p){',
+      '  vec2 q = (p - uCh.xy) / uCh.zw; float dch = max(0.0, length(q) - 1.0) * min(uCh.z, uCh.w);',
+      '  float w = mix(uCd.w * 1.85, uCd.w, clamp((p.y - uCd.y) / max(0.1, uCd.z - uCd.y), 0.0, 1.0));',
+      '  float dcd = (p.y < uCd.y || p.y > uCd.z) ? 99.0 : max(0.0, abs(p.x - uCd.x) - w);',
+      '  return exp(-dch * 0.32) * 0.8 + exp(-dcd * 0.7) * 0.7; }'
+    ].join('\n');
+    // `over`: painted on top of the rock cap on the SAME plane. Nothing kept by
+    // the clip can lie between the camera and the cut plane, so the depth test
+    // can be skipped there, which is what stops the two caps z-fighting.
+    function capMaterial(frag, uniforms, over) {
+      return own(new T.ShaderMaterial({
+        depthFunc: over ? T.AlwaysDepth : T.LessEqualDepth,
+        uniforms: uniforms,
+        vertexShader: CAP_VERT,
+        fragmentShader: frag,
+        stencilWrite: true, stencilRef: 0,
+        stencilFunc: T.NotEqualStencilFunc,
+        stencilFail: T.ReplaceStencilOp, stencilZFail: T.ReplaceStencilOp, stencilZPass: T.ReplaceStencilOp
+      }));
+    }
+    var U = {};                         // shared uniforms, updated in animate()
+    // One cap for all the solid rock, cone included. Below ground it is the
+    // bedded country rock; above, the cone's own cut face shows what a
+    // stratovolcano IS: alternating lava and ash beds laid down parallel to the
+    // slope, eruption on eruption. A shield's are thin lava flows; a rhyolitic
+    // edifice is pale welded tuff.
+    function rockCapMat() {
+      return capMaterial([
+        'uniform vec3 uA; uniform vec3 uB; uniform float uBright; uniform float uThick;',
+        'uniform float uHpk; uniform float uR; uniform float uP; uniform float uConvex;',
+        'uniform vec3 uTop; uniform vec3 uBedA; uniform vec3 uBedB;',
+        NOISE_GLSL, HALO_GLSL, 'varying vec3 vW;',
+        'float fl(float u){ u = clamp(u, 0.0, 1.0); return uConvex > 0.5 ? 1.0 - pow(u, uP) : pow(1.0 - u, uP); }',
+        'void main(){ vec2 p = vW.xy; vec3 c;',
+        '  if (p.y > 0.0) {',
+        '    float n = fbm(p * 0.45);',
+        '    float band = fract((uHpk * fl(abs(p.x) / uR) - p.y) / uThick + n * 0.55);',
+        '    c = mix(uA, uB, smoothstep(0.52, 0.6, band) - smoothstep(0.84, 0.92, band));',
+        '    c *= 0.8 + 0.35 * vn(p * vec2(1.6, 3.2));',
+        '  } else {',
+        '    float g = fbm(p * vec2(0.28, 0.85));',
+        '    float bi = floor((' + BED_TOP.toFixed(1) + ' - p.y) / ' + ((BED_TOP - BED_BOT) / BED_N).toFixed(2) + ');',
+        '    vec3 base = p.y > ' + BED_TOP.toFixed(1) + ' ? uTop : (mod(bi, 2.0) < 0.5 ? uBedA : uBedB);',
+        '    c = base * (0.74 + 0.42 * g + 0.07 * (0.5 + 0.5 * sin(p.y * 5.5 + g * 4.0)));',
+        '    c *= 1.0 - 0.18 * step(0.94, h2(floor(p * 3.0)));',
+        '  }',
+        '  float hl = halo(p);',
+        '  c = c * uBright + vec3(1.0, 0.33, 0.07) * hl * uHeat * 0.55 + vec3(0.25, 0.05, 0.0) * min(1.0, hl) * 0.3;',
+        '  gl_FragColor = vec4(c, 1.0); }'
+      ].join('\n'), {
+        uA: { value: new T.Color(0x3a3431) }, uB: { value: new T.Color(0x7b6a58) }, uThick: { value: 2.2 },
+        uHpk: { value: 20 }, uR: { value: 15 }, uP: { value: 1.5 }, uConvex: { value: 0 },
+        uTop: { value: new T.Color(0x6b5a46) }, uBedA: { value: new T.Color(0x8a7b68) }, uBedB: { value: new T.Color(0x4a3f36) },
+        uBright: U.bright, uCh: U.ch, uCd: U.cd, uHeat: U.heat
+      });
+    }
+    // Molten rock, not a flat red: it churns (slowly, and only while the eruption
+    // clock runs), carries crystals, and brightens toward white-hot with the
+    // pressure the eruption phase is building.
+    function magmaCapMat() {
+      return capMaterial([
+        'uniform float uTime; uniform float uHeat;', NOISE_GLSL, 'varying vec3 vW;',
+        'void main(){ vec2 p = vW.xy; vec2 fl = vec2(0.0, -uTime * 0.018);',
+        '  float n = fbm(p * 0.42 + fl); float n2 = fbm(p * 1.25 - fl * 1.8 + n * 2.2);',
+        '  float t = clamp(n * 0.62 + n2 * 0.55 - 0.08, 0.0, 1.0);',
+        '  float heat = 0.45 + 0.55 * uHeat;',
+        '  vec3 c = mix(vec3(0.32, 0.02, 0.01), vec3(0.93, 0.22, 0.03), smoothstep(0.22, 0.62, t));',
+        '  c = mix(c, vec3(1.0, 0.72, 0.25), smoothstep(0.62, 0.9, t) * heat);',
+        '  c *= 0.6 + 0.55 * heat;',
+        '  c = mix(c, vec3(0.95, 0.88, 0.7), step(0.975, h2(floor(p * 4.0))) * 0.35);',
+        '  gl_FragColor = vec4(c, 1.0); }'
+      ].join('\n'), { uTime: U.time, uHeat: U.heat }, true);
+    }
+
+    // Soft point sprites for everything that is gas, ash or incandescent spray.
+    // A custom material so each particle carries its own size, colour and
+    // opacity; clipping is opt-in so lava riding the sliced-away flank is cut
+    // with the flank rather than left floating in front of the cut face.
+    function makePoints(cap, tex, additive, clipped, shade) {
+      var g = own(new T.BufferGeometry());
+      var pos = new Float32Array(cap * 3), col = new Float32Array(cap * 4), size = new Float32Array(cap);
+      g.setAttribute('position', new T.BufferAttribute(pos, 3));
+      g.setAttribute('aCol', new T.BufferAttribute(col, 4));
+      g.setAttribute('aSize', new T.BufferAttribute(size, 1));
+      g.setDrawRange(0, 0);
+      var mat = own(new T.ShaderMaterial({
+        uniforms: { uMap: { value: tex }, uScale: ptScale },
+        vertexShader: [
+          'attribute float aSize; attribute vec4 aCol; uniform float uScale; varying vec4 vCol;',
+          '#include <clipping_planes_pars_vertex>',
+          'void main(){ vCol = aCol; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);',
+          '  gl_PointSize = min(420.0, aSize * uScale / max(0.5, -mvPosition.z));',
+          '  gl_Position = projectionMatrix * mvPosition;',
+          '  #include <clipping_planes_vertex>',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform sampler2D uMap; varying vec4 vCol;',
+          '#include <clipping_planes_pars_fragment>',
+          'void main(){',
+          '  #include <clipping_planes_fragment>',
+          '  vec4 t = texture2D(uMap, gl_PointCoord);',
+          '  float a = vCol.a * t.a; if (a < 0.004) discard;',
+          '  gl_FragColor = vec4(vCol.rgb * mix(1.0, 0.55 + 0.6 * t.r, ' + (shade ? '1.0' : '0.0') + '), a); }'
+        ].join('\n'),
+        transparent: true, depthWrite: false,
+        blending: additive ? T.AdditiveBlending : T.NormalBlending,
+        clipping: !!clipped, clippingPlanes: clipped ? [clipPlane] : null
+      }));
+      var pts = new T.Points(g, mat);
+      pts.frustumCulled = false;
+      pts.renderOrder = additive ? 60 : 50;
+      scene.add(pts);
+      return {
+        pts: pts,
+        set: function (i, x, y, z, s, hex, a) {
+          pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+          col[i * 4] = ((hex >> 16) & 255) / 255; col[i * 4 + 1] = ((hex >> 8) & 255) / 255; col[i * 4 + 2] = (hex & 255) / 255; col[i * 4 + 3] = a;
+          size[i] = s;
+        },
+        setRGB: function (i, x, y, z, s, r, gg, b, a) {
+          pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+          col[i * 4] = r; col[i * 4 + 1] = gg; col[i * 4 + 2] = b; col[i * 4 + 3] = a;
+          size[i] = s;
+        },
+        commit: function (n) {
+          g.setDrawRange(0, n);
+          g.attributes.position.needsUpdate = true;
+          g.attributes.aCol.needsUpdate = true;
+          g.attributes.aSize.needsUpdate = true;
+        }
+      };
+    }
+    function mixHex(a, b, t) {
+      t = clamp01(t);
+      var r = ((a >> 16) & 255) + (((b >> 16) & 255) - ((a >> 16) & 255)) * t;
+      var g = ((a >> 8) & 255) + (((b >> 8) & 255) - ((a >> 8) & 255)) * t;
+      var bl = (a & 255) + ((b & 255) - (a & 255)) * t;
+      return (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(bl);
+    }
 
     // Text via canvas texture: r128 has no text geometry, and a sprite always
     // faces the camera, which is what an anatomy label needs while the model turns.
     function makeLabel(text, hex) {
-      var pad = 8, fs = 40;
+      var pad = 12, fs = 40;
       var cv = document.createElement('canvas');
       cv.setAttribute('aria-hidden', 'true');
       var c2 = cv.getContext('2d');
-      c2.font = 'bold ' + fs + 'px sans-serif';
-      cv.width = Math.ceil(c2.measureText(text).width) + pad * 2;
+      c2.font = 'bold ' + fs + 'px system-ui, sans-serif';
+      cv.width = Math.ceil(c2.measureText(text).width) + pad * 2 + 6;
       cv.height = fs + pad * 2;
       c2 = cv.getContext('2d');
-      c2.font = 'bold ' + fs + 'px sans-serif';
-      c2.fillStyle = 'rgba(15,23,42,0.74)';
-      c2.fillRect(0, 0, cv.width, cv.height);
+      c2.font = 'bold ' + fs + 'px system-ui, sans-serif';
+      var w = cv.width, hh = cv.height, r = hh / 2 - 3;
+      c2.beginPath();
+      c2.moveTo(r + 3, 3); c2.lineTo(w - r - 3, 3); c2.arc(w - r - 3, hh / 2, r, -Math.PI / 2, Math.PI / 2);
+      c2.lineTo(r + 3, hh - 3); c2.arc(r + 3, hh / 2, r, Math.PI / 2, Math.PI * 1.5); c2.closePath();
+      c2.fillStyle = 'rgba(15,23,42,0.82)';
+      c2.fill();
+      c2.lineWidth = 3; c2.strokeStyle = hex; c2.globalAlpha = 0.55; c2.stroke(); c2.globalAlpha = 1;
       c2.fillStyle = hex;
       c2.textBaseline = 'middle';
-      c2.fillText(text, pad, cv.height / 2);
-      var tex = new T.CanvasTexture(cv);
+      c2.fillText(text, pad + 3, hh / 2 + 1);
+      var tex = own(new T.CanvasTexture(cv));
       tex.needsUpdate = true;
-      var sp = new T.Sprite(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+      var sp = new T.Sprite(own(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false })));
+      sp.renderOrder = 999;
       // Sprite scale is in WORLD units, so a label sized for the old fixed camera
-      // 118 units back became a billboard once the framing tightened to ~74 —
-      // "magma chamber" spanned a third of the block it was pointing at.
+      // 118 units back became a billboard once the framing tightened to ~74.
       var s = 2.9;
       sp.scale.set(s * (cv.width / cv.height), s, 1);
       return sp;
     }
+    // A thin leader from each label to the thing it names. Labels have to sit
+    // OFF their feature (on it they hide it), and at a distance a floating word
+    // beside three red shapes did not say which one it meant.
+    function makeLeader(hex) {
+      var g = own(new T.BufferGeometry());
+      g.setAttribute('position', new T.BufferAttribute(new Float32Array(6), 3));
+      var ln = new T.LineSegments(g, own(new T.LineBasicMaterial({ color: new T.Color(hex), transparent: true, opacity: 0.75, depthTest: false })));
+      ln.renderOrder = 998;
+      ln.frustumCulled = false;
+      return ln;
+    }
+    function setLeader(ln, ax, ay, az, bx, by, bz) {
+      var a = ln.geometry.attributes.position.array;
+      a[0] = ax; a[1] = ay; a[2] = az; a[3] = bx; a[4] = by; a[5] = bz;
+      ln.geometry.attributes.position.needsUpdate = true;
+    }
 
     function rock(color, clip, recede) {
-      return new T.MeshLambertMaterial({
+      return own(new T.MeshLambertMaterial({
         color: color, clippingPlanes: clip, side: T.DoubleSide,
-        // The cutaway leaves country rock and intrusions ending on the SAME
-        // plane, so they z-fight: the dikes came out chopped into segments by
-        // whichever bed happened to win each band of pixels. A polygon offset on
-        // the rock lets the plumbing hold the cut face, which is the one surface
-        // this view exists to show.
         polygonOffset: !!recede, polygonOffsetFactor: 4, polygonOffsetUnits: 4
-      });
+      }));
     }
-
     function magma(color, emissive, clip) {
-      return new T.MeshLambertMaterial({
+      return own(new T.MeshLambertMaterial({
         color: color, emissive: emissive, clippingPlanes: clip, side: T.DoubleSide
-      });
+      }));
     }
 
-    // Rebuild the edifice for the current composition. The cone geometry is
-    // REPLACED rather than scaled: scaling y alone would keep the stratovolcano's
-    // narrow base and give a squashed steep cone, which is not what a basaltic
-    // shield looks like — the base has to spread as the summit drops.
+    // ── Stencil caps ───────────────────────────────────────────────────────────
+    // Back faces add one to the stencil and front faces take one away, so
+    // wherever the slice passes through a solid the count is non-zero (and it
+    // COUNTS rather than toggles, so overlapping bodies — a dike running into
+    // the chamber — stay filled instead of cancelling). The cap plane is drawn
+    // only there and resets the count behind it. Two groups: all the rock, then
+    // all the magma painted over it. Each cap is only as big as its group can
+    // ever be: a screen-filling cap per solid made a dozen full-screen shader
+    // passes a frame, which an integrated school-laptop GPU pays for.
+    var capList = [], twinPairs = [], stencilBack = null, stencilFront = null, capOrder = 1;
+    function addCapGroup(meshes, capMat, box) {
+      if (!stencilBack) return;
+      var twins = [];
+      meshes.forEach(function (mesh) {
+        var b = new T.Mesh(mesh.geometry, stencilBack);
+        var f = new T.Mesh(mesh.geometry, stencilFront);
+        b.renderOrder = f.renderOrder = capOrder;
+        mesh.add(b); mesh.add(f);
+        twins.push(b, f);
+        twinPairs.push({ mesh: mesh, b: b, f: f });
+      });
+      var cp = new T.Mesh(own(new T.PlaneGeometry(box[1] - box[0], box[3] - box[2])), capMat);
+      cp.position.set((box[0] + box[1]) / 2, (box[2] + box[3]) / 2, 0);
+      cp.renderOrder = capOrder + 0.5;
+      cp.onAfterRender = function (r) { r.clearStencil(); };
+      scene.add(cp);
+      capList.push({ twins: twins, cap: cp });
+      capOrder += 1;
+    }
+    function syncTwins(mesh) {
+      for (var i = 0; i < twinPairs.length; i++) {
+        if (twinPairs[i].mesh === mesh) { twinPairs[i].b.geometry = mesh.geometry; twinPairs[i].f.geometry = mesh.geometry; }
+      }
+    }
+
+    // ── Edifice mesh ───────────────────────────────────────────────────────────
+    // A sculpted cone, not a primitive: a flank profile set by the magma, erosion
+    // gullies, a crater that becomes a caldera, and per-vertex colour for
+    // vegetation, bare rock, snow, fresh ash and fresh black lava. aHeat carries
+    // the glow of lava that has run over each vertex and is still cooling.
+    var NR = 44, NS = 96;
+    var cone = { geo: null, pos: null, col: null, heat: null, dep: null, noise: null };
+    function buildConeGeo() {
+      var nV = (NR + 1) * NS + NS + 1;
+      var g = new T.BufferGeometry();
+      cone.pos = new Float32Array(nV * 3);
+      cone.col = new Float32Array(nV * 3);
+      cone.heat = new Float32Array(nV);
+      cone.dep = new Float32Array(nV);
+      cone.noise = new Float32Array(nV);
+      for (var v = 0; v < nV; v++) cone.noise[v] = hash(v * 1.37 + 0.5);
+      var idx = [];
+      for (var i = 0; i < NR; i++) {
+        for (var j = 0; j < NS; j++) {
+          var a = i * NS + j, b = i * NS + (j + 1) % NS, c = (i + 1) * NS + j, d = (i + 1) * NS + (j + 1) % NS;
+          idx.push(a, b, c, b, d, c);
+        }
+      }
+      var ring = (NR + 1) * NS, ctr = nV - 1;
+      for (var jj = 0; jj < NS; jj++) idx.push(ctr, ring + jj, ring + (jj + 1) % NS);
+      g.setIndex(idx);
+      g.setAttribute('position', new T.BufferAttribute(cone.pos, 3));
+      g.setAttribute('color', new T.BufferAttribute(cone.col, 3));
+      g.setAttribute('aHeat', new T.BufferAttribute(cone.heat, 1));
+      cone.geo = g;
+      return g;
+    }
+    var coneSig = '';
+    function updateConeShape(force) {
+      profile();
+      var sig = prof.rimU.toFixed(4) + '|' + prof.floorY.toFixed(3) + '|' + coneR + '|' + coneH;
+      if (!force && sig === coneSig) return;
+      coneSig = sig;
+      var P = cone.pos;
+      for (var i = 0; i <= NR; i++) {
+        var u = i / NR;
+        for (var j = 0; j < NS; j++) {
+          var th = j / NS * Math.PI * 2, rr = u * coneR * wobble(th), k = (i * NS + j) * 3;
+          P[k] = Math.cos(th) * rr; P[k + 1] = groundY(u, th); P[k + 2] = Math.sin(th) * rr;
+        }
+      }
+      var ring = (NR + 1) * NS;
+      for (var jb = 0; jb < NS; jb++) {
+        var thb = jb / NS * Math.PI * 2, rb = coneR * wobble(thb), kb = (ring + jb) * 3;
+        P[kb] = Math.cos(thb) * rb; P[kb + 1] = -0.4; P[kb + 2] = Math.sin(thb) * rb;
+      }
+      var kc = (ring + NS) * 3;
+      P[kc] = 0; P[kc + 1] = -0.4; P[kc + 2] = 0;
+      cone.geo.attributes.position.needsUpdate = true;
+      cone.geo.computeVertexNormals();
+      cone.geo.computeBoundingSphere();
+      paintCone();
+    }
+    // Colour as a function of height and of what has happened here. Snow is the
+    // andesite stratovolcano's alone (the tall, cold summit); ash from an
+    // eruption buries it, and cooled lava leaves its flows black.
+    function paintCone() {
+      var C = cone.col, P = cone.pos, dark = pending.dark !== false;
+      var lift = dark ? 1 : 1.18;
+      var pal = mag.id === 'basalt'
+        ? [0x4a3f36, 0x3b3431, 0x2f2a27, 0x6b3b26]
+        : mag.id === 'rhyolite'
+          ? [0x56643a, 0x8a7d6c, 0xa39684, 0x9a8a78]
+          : [0x4d5a36, 0x6a6058, 0x57524f, 0x7a6a5a];
+      var nV = cone.dep.length;
+      for (var v = 0; v < nV; v++) {
+        var i = Math.floor(v / NS), y = P[v * 3 + 1], t = y / coneH, n = cone.noise[v];
+        var u = i / NR, hex;
+        if (i > NR) { hex = 0x2a2522; }
+        else if (u < prof.rimU) {
+          hex = mixHex(0x2c2521, 0x4a3a2c, n);
+          if (n > 0.95 && u > prof.rimU * 0.7) hex = mixHex(hex, 0xb59a3a, 0.4);          // sulphur crust on the crater wall
+        } else {
+          hex = t < 0.22 ? mixHex(pal[0], pal[1], t / 0.22 + (n - 0.5) * 0.5)
+              : mixHex(pal[1], pal[2], (t - 0.22) / 0.6 + (n - 0.5) * 0.3);
+          if (n > 0.86) hex = mixHex(hex, pal[3], 0.55);
+          if (mag.id === 'andesite' && t > 0.74 + (n - 0.5) * 0.08) hex = mixHex(hex, 0xeef2f7, sstep(0.74, 0.8, t) * 0.95);
+          hex = mixHex(hex, 0x6f6a64, scars.ash * sstep(0.1, 0.55, t) * 0.8);
+        }
+        hex = mixHex(hex, 0x1a1614, Math.min(0.9, cone.dep[v]));
+        C[v * 3] = Math.min(1, ((hex >> 16) & 255) / 255 * lift);
+        C[v * 3 + 1] = Math.min(1, ((hex >> 8) & 255) / 255 * lift);
+        C[v * 3 + 2] = Math.min(1, (hex & 255) / 255 * lift);
+      }
+      cone.geo.attributes.color.needsUpdate = true;
+    }
+    // Deposit heat where a lava parcel is. Glowing channels form because parcels
+    // follow a handful of flow paths, and they cool from the toe back.
+    function heatAt(u, th, amt) {
+      var i = Math.round(u * NR), j = Math.round(th / (Math.PI * 2) * NS);
+      for (var di = -1; di <= 1; di++) {
+        for (var dj = -1; dj <= 1; dj++) {
+          var ii = i + di; if (ii < 0 || ii > NR) continue;
+          var v = ii * NS + (((j + dj) % NS) + NS) % NS, w = (di === 0 && dj === 0) ? 1 : 0.4;
+          cone.heat[v] = Math.min(1.3, cone.heat[v] + amt * w);
+          cone.dep[v] = Math.min(1, cone.dep[v] + amt * w * 0.03);
+        }
+      }
+    }
+    function coolCone() {
+      var H = cone.heat, any = false;
+      for (var v = 0; v < H.length; v++) { if (H[v] > 0.002) { H[v] *= 0.985; any = true; } else H[v] = 0; }
+      cone.geo.attributes.aHeat.needsUpdate = true;
+      return any;
+    }
+    function coneMaterial(clip) {
+      var m = own(new T.MeshLambertMaterial({ vertexColors: true, clippingPlanes: clip, side: T.DoubleSide }));
+      m.onBeforeCompile = function (sh) {
+        sh.vertexShader = 'attribute float aHeat;\nvarying float vHeat;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvHeat = aHeat;');
+        sh.fragmentShader = 'varying float vHeat;\n' + sh.fragmentShader.replace('#include <emissivemap_fragment>',
+          '#include <emissivemap_fragment>\n' +
+          'totalEmissiveRadiance += mix(vec3(0.45, 0.03, 0.0), vec3(1.0, 0.42, 0.05), smoothstep(0.15, 0.7, vHeat)) * smoothstep(0.02, 0.3, vHeat)' +
+          ' + vec3(0.6, 0.5, 0.2) * smoothstep(0.8, 1.2, vHeat);');
+      };
+      return m;
+    }
+
+    // Shape changes (composition, collapse) all funnel through here.
     function shapeCone() {
-      if (parts.cone.geometry) parts.cone.geometry.dispose();
-      parts.cone.geometry = new T.ConeGeometry(coneR, coneH, 40);
-
-      // Crater scales with the edifice, floored so a broad shield still has a
-      // readable summit vent rather than a pinprick.
-      if (parts.crater.geometry) parts.crater.geometry.dispose();
-      parts.crater.geometry = new T.ConeGeometry(Math.max(2.4, coneR * 0.2), 3.4, 24);
-
-      CONDUIT_H0 = (coneH - 1) - CONDUIT_BOT;
+      coneSig = '';
+      updateConeShape(true);
+      CONDUIT_H0 = Math.max(4, (coneH - 1) - CONDUIT_BOT);
       if (parts.conduit.geometry) parts.conduit.geometry.dispose();
-      parts.conduit.geometry = new T.CylinderGeometry(1.4, 2.6, CONDUIT_H0, 18);
+      parts.conduit.geometry = new T.CylinderGeometry(1.4, 2.6, CONDUIT_H0, 20);
+      syncTwins(parts.conduit);
+      var cc = parts.coneCap && parts.coneCap.uniforms;
+      if (cc) {
+        cc.uHpk.value = prof.hpk; cc.uR.value = coneR; cc.uP.value = mag.flankP; cc.uConvex.value = mag.flank === 'convex' ? 1 : 0;
+        if (mag.id === 'basalt') { cc.uA.value.setHex(0x2e2724); cc.uB.value.setHex(0x5a3527); cc.uThick.value = 1.5; }
+        else if (mag.id === 'rhyolite') { cc.uA.value.setHex(0x8f8479); cc.uB.value.setHex(0xb39a84); cc.uThick.value = 3.6; }
+        else { cc.uA.value.setHex(0x4a4340); cc.uB.value.setHex(0x7c6955); cc.uThick.value = 3.0; }
+      }
+      placeTrees();
     }
 
     function applyMagma(id) {
       mag = magmaById(id);
       coneR = mag.coneR;
       coneH = mag.coneH;
-      shapeCone();
-      // A new composition is a DIFFERENT volcano, so it starts intact. Without
-      // this the edifice inherited the previous eruption's collapse and simply
-      // re-derived it against the new calderaDrop, so switching to basalt after a
-      // rhyolitic eruption showed a shield that had already caved in.
+      // A new composition is a DIFFERENT volcano, so it starts intact and
+      // unscarred. Without this the edifice inherited the previous eruption's
+      // collapse, ash and lava.
       resetShape();
-      // Re-seat every position derived from the summit height. animate() is the
-      // single place that knows all of them.
+      scars.ash = 0;
+      if (cone.heat) { cone.heat.fill(0); cone.dep.fill(0); cone.geo.attributes.aHeat.needsUpdate = true; }
+      shapeCone();
       animate(pending);
+      updateDynLabels(pending);
+    }
+
+    // ── Trees ──────────────────────────────────────────────────────────────────
+    // Scale for the eye: without anything of a known size on the ground the
+    // block read as a tabletop model, not a landscape kilometres across. They
+    // also show what ashfall does to the land around a vent.
+    var TREE_N = 110, trees = [];
+    function placeTrees() {
+      if (!parts.trees) return;
+      var m4 = new T.Matrix4(), q = new T.Quaternion(), sc = new T.Vector3(), p3 = new T.Vector3();
+      for (var i = 0; i < TREE_N; i++) {
+        var tr = trees[i];
+        var r = Math.sqrt(tr.x * tr.x + tr.z * tr.z);
+        var clear = r > coneR * 1.08 + 1.5;
+        // A tree straddling the cut would be sliced into a hollow shell: skip it.
+        var straddle = cut != null && Math.abs(tr.z - cut) < 0.9;
+        var s = clear && !straddle ? tr.s : 0.0001;
+        p3.set(tr.x, 0, tr.z); sc.set(s, s * tr.h, s);
+        m4.compose(p3, q, sc);
+        parts.trees.setMatrixAt(i, m4);
+      }
+      parts.trees.instanceMatrix.needsUpdate = true;
+      tintTrees();
+    }
+    function tintTrees() {
+      if (!parts.trees || !parts.trees.instanceColor) return;
+      var c = new T.Color();
+      for (var i = 0; i < TREE_N; i++) {
+        var tr = trees[i], r = Math.sqrt(tr.x * tr.x + tr.z * tr.z);
+        var near = clamp01(1.4 - r / (coneR * 2.2));
+        c.setHex(mixHex(tr.hex, 0x77706a, scars.ash * (0.35 + 0.65 * near)));
+        parts.trees.setColorAt(i, c);
+      }
+      parts.trees.instanceColor.needsUpdate = true;
     }
 
     function build() {
       scene = new T.Scene();
       camera = new T.PerspectiveCamera(44, 1, 0.5, 2000);
-      // ★ Total scene intensity, not any one light, decides whether the rock
-      // reads as rock. r128 does no tone mapping and this is a Lambert scene,
-      // so the shaded colour is simply colour x SUM(light), clamped at 1. At the
-      // old 0.95 + 0.62 + 0.34 + 0.30 = 2.21, the country rock (0x57534e) came
-      // out around #BFB8B0 — cream — and the dark bed (0x231f1c) lifted with it,
-      // so five alternating beds collapsed into one pale block that read as
-      // plaster. That is not cosmetic: the dike cutting ACROSS the beds while
-      // the sill runs ALONG them is the whole point of this cutaway, and it
-      // needs the beds to be tellable apart. Now 1.46 total.
-      // Checked by screenshotting the block before and after, not by arithmetic.
+      // Total scene intensity, not any one light, decides whether the rock reads
+      // as rock: r128 does no tone mapping and this is a Lambert scene, so the
+      // shaded colour is simply colour x SUM(light), clamped at 1. Kept near 1.5.
       scene.add(new T.HemisphereLight(0xcbd5e1, 0x1c1917, 0.42));
-      var dl = new T.DirectionalLight(0xffffff, 0.48);
+      var dl = new T.DirectionalLight(0xfff4e6, 0.5);
       dl.position.set(-60, 95, 85);
       scene.add(dl);
-      // Fill from the camera's own side. With the key light alone behind and to
-      // the left, the flank of the cone the student is actually looking at was
-      // unlit, and a grey mountain against a near-black canvas read as a black
-      // triangle with no shape in it at all.
-      var fill = new T.DirectionalLight(0xffffff, 0.30);
+      var fill = new T.DirectionalLight(0xdbeafe, 0.28);
       fill.position.set(70, 40, 90);
       scene.add(fill);
-      // The block opens by DEFAULT, so most of what the camera sees is the inside
-      // of the far half — surfaces whose normals point away from every light in
-      // the scene. Directional light alone left the cone a flat black triangle:
-      // the anatomy view was showing the student the unlit back of the mountain.
       scene.add(new T.AmbientLight(0xffffff, 0.26));
+      // The eruption is a light source. Without this the cone sat unlit beside a
+      // blazing vent and the fire looked pasted on.
+      parts.ventLight = new T.PointLight(0xff7a2a, 0, 70, 1.6);
+      scene.add(parts.ventLight);
 
       var CLIP = [clipPlane];
+      U.bright = { value: 1 };
+      U.ch = { value: new T.Vector4(0, CHAMBER_Y, 11, 5.4) };
+      U.cd = { value: new T.Vector4(0, CONDUIT_BOT, 16, 1.4) };
+      U.heat = { value: 0 };
+      U.time = { value: 0 };
 
-      // Crust the cone stands on. Clipped like everything else, so the cutaway
-      // reveals the plumbing instead of stopping at ground level. Sized for the
-      // WIDEST edifice: at 58 deep the basaltic shield's 26-unit radius reached
-      // the back edge and the volcano visibly overhung its own crust.
-      parts.crust = new T.Mesh(new T.BoxGeometry(96, 5, 72), rock(0x57534e, CLIP, true));
+      var canCap = !!(T.IncrementWrapStencilOp && T.DecrementWrapStencilOp && T.NotEqualStencilFunc && T.AlwaysStencilFunc);
+      if (canCap) {
+        var sbase = { depthWrite: false, depthTest: false, colorWrite: false, stencilWrite: true, stencilFunc: T.AlwaysStencilFunc, clippingPlanes: CLIP };
+        stencilBack = own(new T.MeshBasicMaterial(Object.assign({ side: T.BackSide,
+          stencilFail: T.IncrementWrapStencilOp, stencilZFail: T.IncrementWrapStencilOp, stencilZPass: T.IncrementWrapStencilOp }, sbase)));
+        stencilFront = own(new T.MeshBasicMaterial(Object.assign({ side: T.FrontSide,
+          stencilFail: T.DecrementWrapStencilOp, stencilZFail: T.DecrementWrapStencilOp, stencilZPass: T.DecrementWrapStencilOp }, sbase)));
+      }
+
+      // Crust the cone stands on. Sized for the WIDEST edifice: the basaltic
+      // shield's 26-unit radius has to fit with ground to spare.
+      var sideMat = rock(0x57534e, CLIP, true);
+      parts.groundMat = own(new T.MeshLambertMaterial({ map: groundTex(), clippingPlanes: CLIP, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 }));
+      parts.crust = new T.Mesh(own(new T.BoxGeometry(96, 5, 72, 48, 1, 36)), [sideMat, sideMat, parts.groundMat, sideMat, sideMat, sideMat]);
       parts.crust.position.set(0, -2.5, 0);
       scene.add(parts.crust);
 
-      // Layered country rock. As one 22-unit box it was a single flat slab of
-      // uniform colour, so "a dike cuts ACROSS the beds while a sill runs ALONG
-      // them" — the whole reason both are in this model — pointed at rock with no
-      // beds in it. Screenshotting the block is what showed it: five labels, and
-      // the two that name a relationship had nothing to relate to.
-      //
-      // Five stacked layers of alternating tone instead. Real sedimentary beds are
-      // not this regular; the point is that a boundary between beds EXISTS and is
-      // horizontal, which is what makes the sill's orientation mean something.
+      // Layered country rock: five beds of alternating tone, so "a dike cuts
+      // ACROSS the beds while a sill runs ALONG them" has beds to relate to.
+      // Real sedimentary beds are not this regular; the point is that a boundary
+      // between beds EXISTS and is horizontal.
       parts.beds = new T.Group();
-      var BED_N = 5, BED_TOP = -5, BED_BOT = -27;
       var bedH = (BED_TOP - BED_BOT) / BED_N;
       parts.bedMeshes = [];
       for (var bd = 0; bd < BED_N; bd++) {
-        var bedMesh = new T.Mesh(
-          new T.BoxGeometry(96, bedH, 72),
-          rock(bd % 2 === 0 ? 0x57534e : 0x231f1c, CLIP, true)
-        );
+        var bedMesh = new T.Mesh(own(new T.BoxGeometry(96, bedH, 72)), rock(bd % 2 === 0 ? 0x57534e : 0x231f1c, CLIP, true));
         bedMesh.position.set(0, BED_TOP - bedH * (bd + 0.5), 0);
         parts.beds.add(bedMesh);
         parts.bedMeshes.push(bedMesh);
       }
       scene.add(parts.beds);
+      // The rock's stencil volume: one box for crust and beds together, since
+      // the cap shader colours the beds by depth itself.
+      parts.rockVol = new T.Mesh(own(new T.BoxGeometry(96, -BED_BOT, 72)), own(new T.MeshBasicMaterial({ visible: false })));
+      parts.rockVol.position.set(0, BED_BOT / 2, 0);
+      scene.add(parts.rockVol);
 
-      // The cone, the crater sunk into its summit, and the tapered conduit that
-      // feeds it. All three are sized by the composition, so shapeCone() owns the
-      // geometry and build() owns only the meshes and materials.
-      parts.cone = new T.Mesh(new T.ConeGeometry(1, 1, 40), rock(0x3f3f46, CLIP));
+      // The edifice and the tapered conduit that feeds it.
+      parts.cone = new T.Mesh(own(buildConeGeo()), coneMaterial(CLIP));
       scene.add(parts.cone);
-      parts.crater = new T.Mesh(new T.ConeGeometry(1, 1, 24), rock(0x1c1917, CLIP));
-      scene.add(parts.crater);
-      parts.conduit = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 18), magma(0xb91c1c, 0x450a0a, CLIP));
+      parts.coneCap = rockCapMat();
+      addCapGroup([parts.rockVol, parts.cone], parts.coneCap, [-48, 48, BED_BOT, 24]);
+      parts.conduit = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 20), magma(0xb91c1c, 0x450a0a, CLIP));
       scene.add(parts.conduit);
-      shapeCone();
+      var mCap = magmaCapMat();
 
       // Magma chamber. An ellipsoid, not a sphere: chambers are wide and flat.
-      parts.chamber = new T.Mesh(new T.SphereGeometry(9, 28, 18), magma(0xdc2626, 0x7f1d1d, CLIP));
+      parts.chamber = new T.Mesh(own(new T.SphereGeometry(9, 32, 20)), magma(0xdc2626, 0x7f1d1d, CLIP));
       parts.chamber.scale.set(1.25, 0.6, 1.0);
       parts.chamber.position.set(0, CHAMBER_Y, 0);
       scene.add(parts.chamber);
 
       // Dikes cut ACROSS the beds, a sill runs ALONG them. That contrast is the
       // whole distinction, so they are drawn as one pair rather than separately.
-      parts.dikeL = new T.Mesh(new T.BoxGeometry(1.3, 20, 7), magma(0x991b1b, 0x450a0a, CLIP));
+      parts.dikeL = new T.Mesh(own(new T.BoxGeometry(1.3, 20, 7)), magma(0x991b1b, 0x450a0a, CLIP));
       parts.dikeL.position.set(-9, CHAMBER_Y + 9, 0);
       parts.dikeL.rotation.z = 17 * DEG;
       scene.add(parts.dikeL);
-
-      parts.dikeR = new T.Mesh(new T.BoxGeometry(1.3, 16, 7), magma(0x991b1b, 0x450a0a, CLIP));
+      parts.dikeR = new T.Mesh(own(new T.BoxGeometry(1.3, 16, 7)), magma(0x991b1b, 0x450a0a, CLIP));
       parts.dikeR.position.set(10, CHAMBER_Y + 7, 0);
       parts.dikeR.rotation.z = -21 * DEG;
       scene.add(parts.dikeR);
-
       // Seated ON a bed contact (the boundaries sit at -5, -9.4, -13.8, -18.2,
-      // -22.6, -27). A sill that floats mid-bed is just a horizontal slab; a sill
-      // that lies exactly on a contact is the thing the word means.
-      parts.sill = new T.Mesh(new T.BoxGeometry(19, 1.1, 11), magma(0x991b1b, 0x450a0a, CLIP));
+      // -22.6, -27). A sill that lies exactly on a contact is the thing the word means.
+      parts.sill = new T.Mesh(own(new T.BoxGeometry(19, 1.1, 11)), magma(0x991b1b, 0x450a0a, CLIP));
       parts.sill.position.set(19, -18.2, 0);
       scene.add(parts.sill);
+      addCapGroup([parts.conduit, parts.chamber, parts.dikeL, parts.dikeR, parts.sill], mCap, [-17, 30, CHAMBER_Y - 9, 24]);
 
-      // Crater glow. Unlit and additive-ish: it is a light source in the scene's
-      // story, so scene lighting must not modulate it.
-      parts.glow = new T.Mesh(
-        new T.SphereGeometry(3.6, 20, 14),
-        new T.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0, depthWrite: false })
-      );
-      parts.glow.position.set(0, coneH - 0.5, 0);
+      // Trees on the ground around the edifice, from a fixed seed so the scene
+      // is the same every time it opens.
+      var treeGeo = own(new T.ConeGeometry(0.75, 1, 6));
+      treeGeo.translate(0, 0.5, 0);
+      parts.trees = new T.InstancedMesh(treeGeo, own(new T.MeshLambertMaterial({ color: 0xffffff, clippingPlanes: CLIP })), TREE_N);
+      trees = [];
+      for (var ti = 0; ti < TREE_N; ti++) {
+        var ang = hash(ti * 2.3 + 0.1) * Math.PI * 2, rad = 14 + hash(ti * 4.1 + 0.7) * 34;
+        var tx = Math.cos(ang) * rad, tz = Math.sin(ang) * rad;
+        tx = Math.max(-46, Math.min(46, tx)); tz = Math.max(-34, Math.min(34, tz));
+        trees.push({ x: tx, z: tz, s: 0.8 + hash(ti * 9.3) * 0.7, h: 2.2 + hash(ti * 6.1) * 1.4,
+          hex: [0x2f5d34, 0x3b6b3a, 0x274d2e, 0x4a6b33][ti % 4] });
+        parts.trees.setColorAt(ti, new T.Color(trees[ti].hex));
+      }
+      scene.add(parts.trees);
+
+      // Crater glow: an unlit additive halo, since it is a light source in the
+      // scene's story and scene lighting must not modulate it.
+      var gTex = glowTex();
+      parts.glow = new T.Sprite(own(new T.SpriteMaterial({ map: gTex, color: 0xff8a3d, transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending })));
+      parts.glow.renderOrder = 70;
       scene.add(parts.glow);
+      // A dull red sky-glow over the whole summit during the blast: an eruption
+      // lights its own ash cloud from underneath.
+      parts.skyGlow = new T.Sprite(own(new T.SpriteMaterial({ map: gTex, color: 0xb4461a, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: T.AdditiveBlending })));
+      parts.skyGlow.renderOrder = 40;
+      scene.add(parts.skyGlow);
+
+      // Soft contact shadow, so the block sits on something instead of floating.
+      var shTex = canvasTex(64, 64, function (c) {
+        var g = c.createRadialGradient(32, 32, 4, 32, 32, 32);
+        g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g; c.fillRect(0, 0, 64, 64);
+      });
+      parts.shadow = new T.Mesh(own(new T.PlaneGeometry(150, 110)), own(new T.MeshBasicMaterial({ map: shTex, transparent: true, depthWrite: false })));
+      parts.shadow.rotation.x = -Math.PI / 2;
+      parts.shadow.position.set(0, BED_BOT - 0.6, 0);
+      scene.add(parts.shadow);
 
       // ── Depth scale ────────────────────────────────────────────────────────
-      // The block had no scale of any kind, so a student could not say whether
-      // the chamber was one kilometre down or fifty, and "a wide flat chamber" was
-      // a shape with no size. Shallow crustal chambers really do sit a few km
-      // under the vent; at 0.4 km per scene unit the model's chamber lands at
-      // about 7.6 km, which is squarely in the observed range.
+      // Shallow crustal chambers sit a few km under the vent; at 0.4 km per scene
+      // unit the model's chamber lands at about 7.6 km, squarely in that range.
       scaleGroup = new T.Group();
       [
         [0,     'surface', '#e2e8f0'],
         [-12.5, '5 km',    '#cbd5e1'],
         [-25,   '10 km',   '#cbd5e1']
       ].forEach(function (tk) {
-        // A short tick at the near-left corner, not a rule across the whole
-        // scene: drawn edge to edge the lines projected as long diagonals across
-        // empty space and read as some second structure rather than as a scale.
-        var g = new T.BufferGeometry();
-        // z just behind the cut plane, so the tick lies ON the exposed cut face.
-        // At z = 37 it sat in front of the half that has been sliced away, and
-        // three depth marks hung in empty space beside the model.
+        // A short tick ON the cut face at the near-left corner, not a rule across
+        // the scene: drawn edge to edge the lines read as a second structure.
+        var g = own(new T.BufferGeometry());
         g.setAttribute('position', new T.BufferAttribute(new Float32Array([
-          -47, tk[0], -0.4, -41, tk[0], -0.4
+          -47, tk[0], 0.05, -41, tk[0], 0.05
         ]), 3));
-        scaleGroup.add(new T.LineSegments(g, new T.LineBasicMaterial({
-          color: new T.Color(tk[2]), transparent: true, opacity: 0.6
-        })));
+        var tick = new T.LineSegments(g, own(new T.LineBasicMaterial({ color: new T.Color(tk[2]), transparent: true, opacity: 0.8 })));
+        tick.renderOrder = 997;
+        scaleGroup.add(tick);
         var tl = makeLabel(tk[1], tk[2]);
-        // 0.7 put 'surface' and '5 km' at about 8 px on a 1000 px canvas —
-        // a scale nobody can read is decoration. 0.9 still sits under the
-        // named parts and, at x = -43, clears 'magma chamber' (x = -25).
         tl.scale.multiplyScalar(0.9);
-        // Inside the block's own x-range. Hung off the left edge the labels sat
-        // outside a frustum that fits the block, and only their last letter was
-        // on screen.
-        // Far enough left to clear the 'magma chamber' label, which sits at
-        // x = -25 and was overprinting the depth ticks.
         tl.position.set(-43, tk[0], -0.4);
         scaleGroup.add(tl);
       });
       scene.add(scaleGroup);
 
       labelGroup = new T.Group();
-      // Positions checked against screenshots, not guessed. The vent label is
-      // pushed off-axis because the ash column rises straight through the centre
-      // and buried it; the chamber label sits to the LEFT because
-      // below-and-right pointed at blank rock and beside-right hit the sill.
+      // Positions checked against screenshots. The vent label is off-axis because
+      // the ash column rises straight through the centre and buried it; the
+      // chamber label sits LEFT because below-right hit the sill.
       [
-        ['vent', '#fed7aa', -15, coneH + 5, 0],
-        ['conduit', '#fca5a5', 9, 1, 0],
-        ['magma chamber', '#f87171', -25, CHAMBER_Y - 3, 0],
-        ['dike', '#fdba74', -17, CHAMBER_Y + 12, 0],
-        ['sill', '#fdba74', 33, CHAMBER_Y + 4, 0]
+        ['vent', '#fed7aa', -15, coneH + 5, 0, 0, coneH, 0],
+        ['conduit', '#fca5a5', 9, 1, 0, 1.8, 1, 0],
+        ['magma chamber', '#f87171', -25, CHAMBER_Y - 3, 0, -9.5, CHAMBER_Y - 1.5, 0],
+        ['dike', '#fdba74', -17, CHAMBER_Y + 12, 0, -7.4, CHAMBER_Y + 12.5, 0],
+        ['sill', '#fdba74', 33, CHAMBER_Y + 4, 0, 26, -18.2, 0]
       ].forEach(function (L) {
         var sp = makeLabel(L[0], L[1]);
         sp.position.set(L[2], L[3], L[4]);
-        // The vent label is the one that has to move: everything else is fixed
-        // in the rock, but the summit drops 38% during the collapse and left the
-        // label hanging in empty sky above a mountain that was no longer there.
-        if (L[0] === 'vent') ventLabel = sp;
+        var ld = makeLeader(L[1]);
+        setLeader(ld, L[2], L[3] - 1.2, L[4], L[5], L[6], L[7]);
+        labelGroup.add(ld);
+        // The vent label is the one that has to move: the summit drops during
+        // the collapse and left it hanging above a mountain that was gone.
+        if (L[0] === 'vent') { ventLabel = sp; ventLeader = ld; }
+        else interiorLabels.push(sp, ld);
         labelGroup.add(sp);
+      });
+      // Labels that name what the eruption is DOING, shown only while it is.
+      [
+        ['ash', 'ash column', '#e5e7eb'],
+        ['fountain', 'lava fountain', '#fde68a'],
+        ['flow', 'lava flow', '#fdba74'],
+        ['pdc', 'pyroclastic flow', '#d6d3d1'],
+        ['caldera', 'caldera', '#fed7aa'],
+        ['bubbles', 'gas bubbles', '#fef3c7']
+      ].forEach(function (L) {
+        var sp = makeLabel(L[1], L[2]);
+        sp.scale.multiplyScalar(0.92);
+        sp.visible = false;
+        var ld = makeLeader(L[2]);
+        ld.visible = false;
+        labelGroup.add(sp); labelGroup.add(ld);
+        dynLabels[L[0]] = { sp: sp, ld: ld };
       });
       scene.add(labelGroup);
 
-      ashBatch = window.StemLab.makeVoxelBatch(T, {
-        capacity: ASH_CAP,
-        geometry: new T.SphereGeometry(1, 8, 6),
-        material: new T.MeshBasicMaterial({ color: 0xffffff, clippingPlanes: CLIP }),
-        edges: false
-      });
-      ashBatch.addTo(scene);
-      ashBatch.commit(0);
+      // Particle systems. Ash and fountain spray are not clipped: they are in
+      // the open air, and slicing the plume in half with the rock would read as
+      // a cloud with a flat side. Lava, flows and bubbles belong to surfaces
+      // that ARE sliced, so they are.
+      var pTex = puffTex();
+      ashPts = makePoints(ASH_CAP, pTex, false, false, true);
+      flowPts = makePoints(FLOW_CAP, pTex, false, true, true);
+      glowPts = makePoints(GLOW_CAP, gTex, true, false, false);
+      lavaPts = makePoints(LAVA_CAP, gTex, true, true, false);
+      bubblePts = makePoints(BUBBLE_CAP, bubbleTex(), false, false, false);
 
-      lavaBatch = window.StemLab.makeVoxelBatch(T, {
-        capacity: LAVA_CAP,
-        geometry: new T.SphereGeometry(1, 8, 6),
-        material: new T.MeshBasicMaterial({ color: 0xffffff, clippingPlanes: CLIP }),
-        edges: false
-      });
-      lavaBatch.addTo(scene);
-      lavaBatch.commit(0);
-
-      // Settle the model into its repose pose, so a vent that has never erupted
-      // still shows a chamber sized to match `shape` rather than the build-time
-      // geometry. Without this the first eruption visibly jumps on frame one.
+      shapeCone();
+      placeTrees();
       animate(pending);
     }
 
@@ -1681,6 +2268,10 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       shape.summit = 1;
       ashP.length = 0;
       lavaP.length = 0;
+      glowP.length = 0;
+      flowP.length = 0;
+      bubbleP.length = 0;
+      boltCool = 60;
     }
 
     // Phase boundaries mirror the 2D loop's tick timeline exactly, so the two
@@ -1695,172 +2286,378 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         shape.fill = 1 - 0.45 * Math.min(1, (t - 180) / 200);
       } else if (ph === 'caldera') {
         shape.fill = 0.55;
-        // The roof founders into the space the magma vacated. This is the one
-        // thing a 2D silhouette cannot distinguish from the cone just shrinking.
-        // Depth of collapse is the composition's, not a constant: a basaltic
-        // shield barely subsides, a rhyolitic roof drops most of its height into
-        // the void it emptied. That contrast is the point of the caldera phase.
+        // The roof founders into the space the magma vacated. Depth of collapse
+        // is the composition's: a basaltic shield barely subsides, a rhyolitic
+        // roof drops most of its height into the void it emptied.
         shape.summit = 1 - mag.calderaDrop * Math.min(1, (t - 380) / 140);
       }
 
       var cs = shape.fill * mag.chamber;
       parts.chamber.scale.set(1.25 * cs, 0.6 * cs, 1.0 * cs);
-      parts.cone.scale.y = shape.summit;
-      parts.cone.position.y = (coneH / 2) * shape.summit;
+      updateConeShape(false);
 
-      // The conduit has to follow the summit down. Left at its build height it
-      // stood proud of the collapsed cone as a red chimney sticking out of the
-      // mountain — the collapse read as the pipe growing, not the roof dropping.
-      var top = coneH * shape.summit - 1;
-      parts.conduit.scale.y = (top - CONDUIT_BOT) / CONDUIT_H0;
+      // The conduit follows the crater floor down. Left at its build height it
+      // stood proud of the collapsed summit as a red chimney.
+      var top = prof.floorY + 0.2;
+      parts.conduit.scale.y = Math.max(0.05, (top - CONDUIT_BOT) / CONDUIT_H0);
       parts.conduit.position.y = (top + CONDUIT_BOT) / 2;
 
-      // Collapse widens the summit depression as it deepens it: a caldera is a
-      // broad basin, not a smaller version of the same neat crater.
-      // Guarded divide: a basaltic shield's calderaDrop is 0.10, and dividing by
-      // a composition-dependent constant that could reach 0 would put NaN into
-      // every scale below and blank the summit.
-      var collapse = mag.calderaDrop > 0 ? Math.min(1, (1 - shape.summit) / mag.calderaDrop) : 0;
-      parts.crater.scale.set(1 + collapse * 1.1, 1 + collapse * 0.6, 1 + collapse * 1.1);
-      parts.crater.position.y = coneH * shape.summit - 1.2 - collapse * 0.8;
-      parts.glow.position.y = coneH * shape.summit - 0.5;
-      if (ventLabel) ventLabel.position.y = coneH * shape.summit + 5;
+      var vy = ventY();
+      if (ventLabel) {
+        ventLabel.position.y = prof.rimH + 5;
+        setLeader(ventLeader, -15, prof.rimH + 3.8, 0, -1.2, vy + 0.6, 0);
+        ventLabel.visible = ventLeader.visible = prof.collapse < 0.45;
+      }
 
-      // No residual glow at rest: 0.12 of orange over the dark theme's sky was a
-      // dark disc hanging above the collapsed summit, a shape with no meaning.
+      // No residual glow at rest: orange over the dark sky with nothing erupting
+      // was a disc with no meaning.
       var hot = ph === 'blast' ? 1 : ph === 'pressure' ? 0.35 + 0.3 * Math.sin(t * 0.09)
               : ph === 'deflate' ? Math.max(0, 1 - (t - 180) / 200) : 0;
-      parts.glow.material.opacity = Math.max(0, Math.min(0.85, hot));
-      // Scaled to the edifice, not fixed: a glow sized for the 17-unit
-      // stratovolcano sat on the 8-unit shield like a beach ball and swallowed
-      // the summit it was meant to mark.
-      parts.glow.scale.setScalar((1 + hot * 0.55) * Math.min(1, coneH / 17));
+      hotNow = Math.max(0, Math.min(1, hot));
+      // Scaled to the edifice: a glow sized for the stratovolcano sat on the
+      // shield like a beach ball and swallowed the summit it was meant to mark.
+      var gs = Math.min(1, coneH / 17);
+      parts.glow.position.set(0, vy + 1.2, 0);
+      parts.glow.material.opacity = hotNow * 0.95;
+      parts.glow.scale.setScalar((7 + hotNow * 6) * (0.6 + 0.4 * gs));
+      parts.skyGlow.position.set(0, vy + mag.plumeH * 0.45, -2);
+      parts.skyGlow.material.opacity = hotNow * (mag.ashRate > 1 ? 0.3 : 0.22);
+      parts.skyGlow.scale.setScalar(26 + mag.plumeH * 1.2);
+      parts.ventLight.position.set(0, vy + 3, 4);
+      parts.ventLight.intensity = hotNow * 1.3;
       parts.conduit.material.emissive.setHex(ph === 'blast' ? 0xdc2626 : ph === 'pressure' ? 0x7f1d1d : 0x450a0a);
       parts.chamber.material.emissive.setHex(ph === 'pressure' || ph === 'blast' ? 0xb91c1c : 0x7f1d1d);
+
+      // Shader state: the halo tracks the chamber's current size, and the melt
+      // brightens with pressure and dims as the chamber drains.
+      U.ch.value.set(0, CHAMBER_Y, 11.25 * cs, 5.4 * cs);
+      U.cd.value.set(0, CONDUIT_BOT, top, 1.4);
+      U.heat.value = ph === 'repose' || ph === 'caldera' ? 0.12 : 0.12 + 0.88 * (ph === 'pressure' ? 0.35 + 0.65 * Math.min(1, t / 60) : hotNow);
+      magmaTime = t;
+      U.time.value = ptReducedMotion() ? 0 : magmaTime;
     }
 
+    // ── Eruption column ────────────────────────────────────────────────────────
+    // Physics a student can see: a jet out of the vent that slows as it rises,
+    // stays buoyant because it is hot, and stops rising where it has cooled to
+    // the surrounding air — then spreads sideways as an umbrella cloud and drifts
+    // downwind. The stiffer and gassier the magma, the taller that column.
+    // Before the blast only steam and gas escape: white, not grey.
     function stepAsh(m) {
       var ph = phaseOf(m);
-      if (ph === 'blast' || ph === 'pressure') {
+      var vy0 = ventY();
+      if (ph === 'blast' || ph === 'pressure' || (ph === 'deflate' && m.tick < 230 && mag.ashRate > 1)) {
         // Stiff, gas-rich melt shatters into far more ash than runny basalt does.
-        var want = ph === 'blast' ? mag.ashRate : Math.max(1, Math.round(mag.ashRate / 3));
-        var summitY = coneH * shape.summit;
+        var want = ph === 'blast' ? mag.ashRate : ph === 'pressure' ? Math.max(1, Math.round(mag.ashRate / 3)) : 1;
         for (var i = 0; i < want && ashP.length < ASH_CAP; i++) {
-          var a = Math.random() * Math.PI * 2, r = Math.random() * 1.7;
+          var a = Math.random() * Math.PI * 2, r = Math.random() * 1.5;
+          var steam = ph === 'pressure';
           ashP.push({
-            x: Math.cos(a) * r, y: summitY + 1, z: Math.sin(a) * r,
-            vx: (Math.random() - 0.5) * (ph === 'blast' ? 0.5 : 0.16),
-            // Ballistics chosen to keep the column IN FRAME. Peak rise is
-            // vy²/2g, so the original 1.2 against g=0.013 threw grains ~55 units
-            // above the vent and the top two thirds of the plume were cropped
-            // off the canvas. 0.85 against g=0.016 tops out around 22.
-            vy: (ph === 'blast' ? mag.ashVy : mag.ashVy * 0.44) + Math.random() * 0.28,
-            vz: (Math.random() - 0.5) * (ph === 'blast' ? 0.5 : 0.16),
-            life: 1
+            x: Math.cos(a) * r, y: vy0 + 0.6, z: Math.sin(a) * r,
+            vx: (Math.random() - 0.5) * (steam ? 0.08 : 0.16),
+            // Ballistics chosen to keep the column IN FRAME: grains top out near
+            // the composition's plume height, never far above it.
+            vy: (steam ? mag.ashVy * 0.44 : mag.ashVy) + Math.random() * 0.28,
+            vz: (Math.random() - 0.5) * (steam ? 0.08 : 0.16),
+            life: 1, steam: steam, top: vy0 + mag.plumeH * (0.82 + Math.random() * 0.3) * (steam ? 0.45 : 1)
           });
         }
       }
       for (var j = ashP.length - 1; j >= 0; j--) {
         var p = ashP[j];
         p.x += p.vx; p.y += p.vy; p.z += p.vz;
-        p.vy -= 0.016;               // gravity: the plume tops out and spreads
-        p.vx *= 1.007; p.vz *= 1.007;
-        p.life -= 0.012;
-        // Cull above the frustum too: a grain that has drifted off the top of
-        // the canvas still costs an instance and still holds a slot in the cap.
+        if (p.y < p.top) {
+          // Jet thrust fading into buoyant rise.
+          p.vy = Math.max(0.09, p.vy * 0.985 - 0.004);
+        } else {
+          // Neutral buoyancy: stop climbing and spread outward.
+          p.vy *= 0.8;
+          var rr = Math.sqrt(p.x * p.x + p.z * p.z) + 0.3, spread = mag.ashRate > 1 ? 1 : 0.3;
+          p.vx += ((p.x / rr) * 0.012 + 0.004) * spread; p.vz += (p.z / rr) * 0.009 * spread;
+          p.vx *= 0.975; p.vz *= 0.975;
+        }
+        p.life -= p.steam ? 0.016 : 0.012;
+        // Cull above the frustum too: a grain off the top of the canvas still
+        // holds a slot in the cap.
         if (p.life <= 0 || p.y < 0 || p.y > 46) ashP.splice(j, 1);
       }
-      if (!ashBatch) return;
+      if (!ashPts) return;
       for (var k = 0; k < ashP.length; k++) {
         var q = ashP[k];
-        // Incandescent at the vent, cooling to ash grey as it rises — the colour
-        // IS the temperature, so it must not be modulated by scene lighting.
-        var up = Math.max(0, Math.min(1, (q.y - coneH * shape.summit) / 14));
-        var col = up < 0.25 ? 0xfb923c : up < 0.5 ? 0x78716c : 0x9ca3af;
-        ashBatch.set(k, q.x, q.y, q.z, 0.5 + q.life * 1.4, col);
+        var age = 1 - q.life;
+        var up = clamp01((q.y - vy0) / 10);
+        var col, al;
+        if (q.steam) { col = 0xe7e5e4; al = 0.5 * q.life; }
+        // Basalt holds little gas and makes little ash: what rises over a fire
+        // fountain is a thin, pale gas plume, not a grey column.
+        else if (mag.ashRate <= 1) { col = mixHex(0xffc38a, 0xc9c3bc, clamp01(up * 2)); al = 0.42 * q.life; }
+        else {
+          // Lit from below by the vent at its base, dark and dense in the stem,
+          // paler where it has spread and thinned.
+          col = up < 0.18 ? mixHex(0xffb35c, 0x5b4a3e, up / 0.18) : mixHex(0x4a423c, 0x8a847c, clamp01(age * 1.3));
+          al = Math.min(0.9, q.life * 1.4) * 0.85;
+        }
+        ashPts.set(k, q.x, q.y, q.z, 1.6 + age * 5.2, col, al);
       }
-      ashBatch.commit(ashP.length);
+      ashPts.commit(ashP.length);
     }
 
     // Flank lava. Runny basalt POURS and stiff rhyolite does not, so this is the
     // half of the eruption the ash plume cannot express — a shield's whole
-    // landform is built by these flows, not by fallout.
-    //
-    // Particles ride the cone SURFACE rather than flying ballistically: at a
-    // parameter s from 0 at the summit to 1 at the base, the surface is at
-    // radius coneR*s and height coneH*(1-s). Free-fall would have them tunnel
-    // straight through the mountain.
+    // landform is built by these flows. Parcels ride the ground surface along a
+    // few flow paths and leave heat behind them, so glowing channels form and
+    // then cool, from the toe back, into black rock.
+    var lavaPaths = [];
     function stepLava(m) {
       var ph = phaseOf(m);
-      var summitScale = shape.summit;
       if ((ph === 'blast' || ph === 'deflate') && mag.lavaRate > 0) {
+        if (!lavaPaths.length) {
+          // Paths on the half that is still standing, hugging the slice: a
+          // concave cone's back half never rises above its own cross-section,
+          // so a flow further round is hidden behind the cut face.
+          var nPath = 4;
+          for (var pi = 0; pi < nPath; pi++) {
+            var side = pi % 2 === 0 ? Math.PI + 0.06 + Math.random() * 0.2 : Math.PI * 2 - 0.06 - Math.random() * 0.25;
+            lavaPaths.push(cut == null ? Math.random() * Math.PI * 2 : side);
+          }
+        }
         var want = ph === 'blast' ? mag.lavaRate : Math.max(1, Math.round(mag.lavaRate / 2));
         for (var i = 0; i < want && lavaP.length < LAVA_CAP; i++) {
           lavaP.push({
-            th: Math.random() * Math.PI * 2,
-            s: 0.12 + Math.random() * 0.06,
+            th: lavaPaths[Math.floor(Math.random() * lavaPaths.length)] + (Math.random() - 0.5) * 0.09,
+            s: prof.rimU * 0.8 + Math.random() * 0.04,
             // Runnier melt travels further per frame. Basalt reaches the base;
             // andesite stalls partway down, which is why its flows are stubby.
             v: (0.0016 + Math.random() * 0.0022) * mag.lavaRate,
             life: 1
           });
         }
-      }
+      } else if (!m.active) { lavaPaths.length = 0; }
       for (var j = lavaP.length - 1; j >= 0; j--) {
         var p = lavaP[j];
-        p.s += p.v;
+        p.s += p.v * (1 - p.s * 0.55);
+        p.th += Math.sin(p.s * 20 + p.th * 7) * 0.002;
         p.life -= 0.006;
-        if (p.life <= 0 || p.s >= 1) lavaP.splice(j, 1);
+        if (p.life <= 0 || p.s >= 1) { lavaP.splice(j, 1); continue; }
+        if (p.s > prof.rimU) heatAt(p.s, p.th, 0.06 * p.life);
       }
-      if (!lavaBatch) return;
+      if (!lavaPts) return;
       for (var k = 0; k < lavaP.length; k++) {
         var q = lavaP[k];
-        var rr = coneR * q.s;
-        // +0.4 lifts the blob clear of the surface it is riding; without it the
-        // sphere is half-buried in the cone and reads as a stain, not a flow.
-        var yy = coneH * summitScale * (1 - q.s) + 0.4;
-        // Cools as it travels: incandescent at the vent, crusted dark at the toe.
-        var col = q.s < 0.3 ? 0xfbbf24 : q.s < 0.55 ? 0xf97316 : q.s < 0.8 ? 0xdc2626 : 0x7f1d1d;
-        lavaBatch.set(k, Math.cos(q.th) * rr, yy, Math.sin(q.th) * rr, 0.85, col);
+        var rr = coneR * q.s * wobble(q.th);
+        var yy = groundY(q.s, q.th) + 0.3;
+        // Cools as it travels: incandescent at the vent, dull red at the toe.
+        var col = q.s < 0.3 ? 0xffa440 : q.s < 0.55 ? 0xff7a22 : q.s < 0.8 ? 0xd8401a : 0x8a1d0a;
+        lavaPts.set(k, Math.cos(q.th) * rr, yy, Math.sin(q.th) * rr, 1.2 + q.life * 0.8, col, 0.6);
       }
-      lavaBatch.commit(lavaP.length);
+      lavaPts.commit(lavaP.length);
+    }
+
+    // Incandescent spray: a basaltic fire fountain, the bombs a stickier magma
+    // hurls out ballistically, their spark trails, and lightning in the plume.
+    function glowAdd(x, y, z, vx, vy, vz, life, size, kind) {
+      if (glowP.length >= GLOW_CAP) return;
+      glowP.push({ x: x, y: y, z: z, vx: vx, vy: vy, vz: vz, life: life, max: life, size: size, kind: kind });
+    }
+    function stepGlow(m) {
+      var ph = phaseOf(m), vy0 = ventY(), t = m.tick;
+      if (ph === 'blast') {
+        if (mag.id === 'basalt') {
+          for (var f = 0; f < 7; f++) {
+            glowAdd((Math.random() - 0.5) * 1.2, vy0 + 0.5, (Math.random() - 0.5) * 1.2,
+              (Math.random() - 0.5) * 0.16, 0.62 + Math.random() * 0.36, (Math.random() - 0.5) * 0.16, 90, 0.9 + Math.random() * 0.7, 'fountain');
+          }
+        } else {
+          // Bombs thrown clear of the column. Rhyolite's are more frequent.
+          if (Math.random() < (mag.ashRate >= 6 ? 0.35 : 0.22)) {
+            var ba = Math.random() * Math.PI * 2, bs = 0.18 + Math.random() * 0.26;
+            glowAdd(0, vy0 + 1, 0, Math.cos(ba) * bs, 0.55 + Math.random() * 0.4, Math.sin(ba) * bs, 140, 1.5 + Math.random() * 0.8, 'bomb');
+          }
+        }
+        for (var e = 0; e < 2; e++) {
+          glowAdd((Math.random() - 0.5) * 2, vy0 + 1 + Math.random() * 3, (Math.random() - 0.5) * 2,
+            (Math.random() - 0.5) * 0.1, 0.2 + Math.random() * 0.25, (Math.random() - 0.5) * 0.1, 40, 0.45, 'ember');
+        }
+        // Volcanic lightning: ash grains colliding in a dense column charge it.
+        // Only where there IS a dense column, never for basalt, and never under
+        // reduced motion — a flash is exactly what that setting is for.
+        boltCool -= 1;
+        if (mag.ashRate > 1 && boltCool <= 0 && t > 90 && ashP.length > 120 && !ptReducedMotion()) {
+          boltCool = 25 + Math.random() * 45;
+          var bx = (Math.random() - 0.5) * 8, by = vy0 + mag.plumeH * (0.45 + Math.random() * 0.35), bz = (Math.random() - 0.5) * 4;
+          var len = 9 + Math.random() * 7, steps = 22;
+          for (var s = 0; s < steps; s++) {
+            bx += (Math.random() - 0.5) * 1.6; by -= len / steps; bz += (Math.random() - 0.5) * 0.6;
+            glowAdd(bx, by, bz, 0, 0, 0, 5, 1.1, 'bolt');
+            if (s === 9 || s === 15) glowAdd(bx + (Math.random() - 0.5) * 3, by - 1, bz, 0, 0, 0, 4, 0.8, 'bolt');
+          }
+        }
+      }
+      for (var j = glowP.length - 1; j >= 0; j--) {
+        var p = glowP[j];
+        p.x += p.vx; p.y += p.vy; p.z += p.vz;
+        if (p.kind === 'fountain') p.vy -= 0.03;
+        else if (p.kind === 'bomb') {
+          p.vy -= 0.022;
+          if (Math.random() < 0.8) glowAdd(p.x, p.y, p.z, (Math.random() - 0.5) * 0.02, 0.01, (Math.random() - 0.5) * 0.02, 22, 0.55, 'trail');
+        } else if (p.kind === 'ember') p.vy *= 0.97;
+        p.life -= 1;
+        var r = Math.sqrt(p.x * p.x + p.z * p.z);
+        var u = r / coneR;
+        var gy = u < 1 ? groundY(u, Math.atan2(p.z, p.x)) : 0;
+        if ((p.kind === 'fountain' || p.kind === 'bomb') && p.vy < 0 && p.y <= gy + 0.2) {
+          // Spatter lands and feeds the flows; a bomb lands with a puff of dust.
+          if (u < 1 && u > prof.rimU) {
+            var th = Math.atan2(p.z, p.x); if (th < 0) th += Math.PI * 2;
+            heatAt(u, th, p.kind === 'bomb' ? 0.5 : 0.12);
+          }
+          if (p.kind === 'bomb' && flowP.length < FLOW_CAP) flowP.push({ puff: true, x: p.x, y: gy + 0.4, z: p.z, life: 1, v: 0, u: u, th: 0 });
+          glowP.splice(j, 1); continue;
+        }
+        if (p.life <= 0 || p.y > 48) glowP.splice(j, 1);
+      }
+      if (!glowPts) return;
+      for (var k = 0; k < glowP.length; k++) {
+        var q = glowP[k], lf = q.life / q.max, col;
+        if (q.kind === 'bolt') col = 0xeee6ff;
+        else if (q.kind === 'trail') col = mixHex(0xff5a1a, 0x5a1a0a, 1 - lf);
+        else col = mixHex(0xfff0b0, 0xff4a10, clamp01((q.y - vy0) / 14 + (1 - lf) * 0.5));
+        glowPts.set(k, q.x, q.y, q.z, q.kind === 'bolt' ? q.size * (0.8 + Math.random() * 0.5) : q.size * (0.6 + 0.4 * lf), col,
+          q.kind === 'bolt' ? 1 : q.kind === 'trail' ? lf * 0.7 : Math.min(1, lf * 1.6));
+      }
+      glowPts.commit(glowP.length);
+    }
+
+    // Pyroclastic density currents: when part of a heavy column collapses under
+    // its own weight, hot ash and gas race DOWN the flanks faster than anything
+    // can outrun. Only the gas-rich magmas make them; a basaltic shield does not.
+    function stepFlows(m) {
+      var ph = phaseOf(m), t = m.tick;
+      if (mag.ashRate > 1 && ((ph === 'blast' && t > 125) || (ph === 'deflate' && t < 250))) {
+        var n = mag.ashRate >= 6 ? 3 : 2;
+        for (var i = 0; i < n && flowP.length < FLOW_CAP; i++) {
+          var th = cut == null ? Math.random() * Math.PI * 2
+            : (Math.random() < 0.5 ? Math.PI + 0.05 + Math.random() * 0.5 : Math.PI * 2 - 0.05 - Math.random() * 0.5);
+          flowP.push({ u: prof.rimU, th: th, v: 0.012 + Math.random() * 0.01, life: 1, puff: false });
+        }
+      }
+      for (var j = flowP.length - 1; j >= 0; j--) {
+        var p = flowP[j];
+        if (p.puff) { p.life -= 0.03; p.y += 0.05; if (p.life <= 0) flowP.splice(j, 1); continue; }
+        p.u += p.v; p.v *= p.u > 1 ? 0.96 : 1.004;
+        p.life -= p.u > 1 ? 0.018 : 0.006;
+        if (p.life <= 0 || p.u > 2.1) flowP.splice(j, 1);
+      }
+      if (!flowPts) return;
+      for (var k = 0; k < flowP.length; k++) {
+        var q = flowP[k], x, y, z, sz, col;
+        if (q.puff) { x = q.x; y = q.y; z = q.z; sz = 1.2 + (1 - q.life) * 2.2; col = 0x8a8078; }
+        else {
+          var rr = coneR * q.u * (q.u < 1 ? wobble(q.th) : 1);
+          x = Math.cos(q.th) * rr; z = Math.sin(q.th) * rr;
+          sz = 2 + Math.min(1.6, q.u) * 3.4;
+          y = (q.u < 1 ? groundY(q.u, q.th) : 0) + sz * 0.42;
+          col = q.u < 0.35 ? 0xc27a4a : 0x6f675f;
+        }
+        flowPts.set(k, x, y, z, sz, col, Math.min(0.85, q.life * 1.3));
+      }
+      flowPts.commit(flowP.length);
+    }
+
+    // Gas bubbles on the conduit's cut face. Dissolved gas comes out of solution
+    // as the magma rises and the pressure on it drops, so bubbles appear low,
+    // grow as they climb and race near the top — which is what finally shatters
+    // the melt into ash. Drawn only where the slice actually crosses the conduit.
+    function stepBubbles(m) {
+      var ph = phaseOf(m);
+      var half = cut == null ? 0 : Math.sqrt(Math.max(0, 1.9 * 1.9 - cut * cut));
+      var top = prof.floorY;
+      if ((ph === 'pressure' || ph === 'blast') && half > 0.3 && bubbleP.length < BUBBLE_CAP) {
+        var rate = ph === 'blast' ? 0.9 : 0.45;
+        if (Math.random() < rate * (mag.ashRate > 1 ? 1 : 0.55)) {
+          bubbleP.push({ x: (Math.random() - 0.5) * 1.6 * half, y: CONDUIT_BOT + Math.random() * 3, v: 0.03 + Math.random() * 0.03, life: 1 });
+        }
+      }
+      for (var j = bubbleP.length - 1; j >= 0; j--) {
+        var p = bubbleP[j];
+        var h = clamp01((p.y - CONDUIT_BOT) / Math.max(1, top - CONDUIT_BOT));
+        p.y += p.v * (1 + h * 3) * (ph === 'blast' ? 1.8 : 1);
+        if (p.y > top - 0.2 || half <= 0.3) bubbleP.splice(j, 1);
+      }
+      if (!bubblePts) return;
+      var z = (cut == null ? 0 : cut) + 0.08;
+      for (var k = 0; k < bubbleP.length; k++) {
+        var q = bubbleP[k];
+        var hh = clamp01((q.y - CONDUIT_BOT) / Math.max(1, top - CONDUIT_BOT));
+        var w = (1.4 + (2.6 - 1.4) * (1 - hh)) * 0.7;
+        bubblePts.set(k, Math.max(-w, Math.min(w, q.x)), q.y, z, 0.35 + hh * 0.9, 0xfff3c4, 0.85);
+      }
+      bubblePts.commit(bubbleP.length);
+    }
+
+    // Place and show the labels that name what the eruption is doing right now.
+    function updateDynLabels(m) {
+      var on = m.labels !== false, ph = phaseOf(m), vy0 = ventY();
+      function show(key, vis, lx, ly, ax, ay, az) {
+        var d = dynLabels[key]; if (!d) return;
+        d.sp.visible = d.ld.visible = !!(on && vis);
+        if (!d.sp.visible) return;
+        d.sp.position.set(lx, ly, 0);
+        setLeader(d.ld, lx, ly - 1.1, 0, ax, ay, az);
+      }
+      show('ash', mag.ashRate > 1 && ashP.length > 60 && (ph === 'blast' || ph === 'deflate'), 17, vy0 + mag.plumeH * 0.55, 3, vy0 + mag.plumeH * 0.5, 0);
+      show('fountain', mag.id === 'basalt' && ph === 'blast' && glowP.length > 40, 15, vy0 + 13, 1.5, vy0 + 8, 0);
+      var fl = null;
+      // Prefer a parcel on the right flank: the vent label owns the upper left.
+      for (var i = 0; i < lavaP.length; i++) {
+        var li = lavaP[i];
+        if (li.s > 0.3 && li.s < 0.75 && (!fl || (Math.cos(li.th) > 0 && Math.cos(fl.th) <= 0))) fl = li;
+      }
+      if (fl) {
+        var rr = coneR * fl.s * wobble(fl.th);
+        var fx = Math.cos(fl.th) * rr, fz = Math.sin(fl.th) * rr;
+        show('flow', lavaP.length > 15, Math.max(fx, 0) + 10, groundY(fl.s, fl.th) + 5, fx, groundY(fl.s, fl.th) + 0.4, fz);
+      } else show('flow', false);
+      show('pdc', flowP.length > 30, -coneR - 6, 7, -coneR * 0.75, 1.2, 0);
+      show('caldera', prof.collapse >= 0.45, -15, prof.rimH + 5, -1.2, vy0 + 0.6, 0);
+      show('bubbles', cut != null && bubbleP.length > 6, -9.5, -1.5, -0.8, -2, 0);
     }
 
     function applyTheme(dark) {
-      parts.crust.material.color.setHex(dark ? 0x44403c : 0x78716c);
-      // Two alternating tones, so the bedding stays readable in both themes
-      // instead of collapsing to one flat value.
+      // Two alternating tones, so the bedding stays readable in both themes.
       for (var bt = 0; bt < parts.bedMeshes.length; bt++) {
         parts.bedMeshes[bt].material.color.setHex(
           bt % 2 === 0 ? (dark ? 0x57534e : 0x9c938a) : (dark ? 0x231f1c : 0x5e564e));
       }
-      // The edifice has to separate from BOTH the sky above it and the crust it
-      // stands on, and it now has to do that at two very different shapes. At
-      // 0x494950 the basaltic shield was the same value as the crust and simply
-      // disappeared, while the rhyolitic spire read as a flat black triangle
-      // against the shell. A lighter, cooler grey clears both.
-      parts.cone.material.color.setHex(dark ? 0x6b7280 : 0x9ca3af);
-      parts.crater.material.color.setHex(dark ? 0x09090b : 0x1c1917);
+      parts.crust.material[0].color.setHex(dark ? 0x44403c : 0x78716c);
+      U.bright.value = dark ? 1 : 1.22;
+      parts.shadow.material.opacity = dark ? 1 : 0.3;
+      paintCone();
+    }
+    // Ash greys the land around the vent. Lasts until the composition changes.
+    function applyScars() {
+      var a = scars.ash;
+      parts.groundMat.color.setRGB(1 - a * 0.28, 1 - a * 0.3, 1 - a * 0.26);
+      paintCone();
+      tintTrees();
     }
 
     function applyCam() {
       var el = Math.max(-88, Math.min(88, -cam.rotX)) * DEG;
       var az = -cam.rotY * DEG;
-      // Framed for what is ACTUALLY on screen, not permanently for the worst
-      // case. A rhyolitic ash column tops out near y=44, so a fixed distance that
-      // keeps it in frame also has to keep it in frame while nothing is erupting
-      // — and at repose that left the block a small object adrift in a mostly
-      // empty canvas, which is how a screenshot of the default view looked. The
-      // pull-back now follows the plume: it eases out as ash climbs and eases
-      // back in as it clears, so the model fills the frame the rest of the time.
+      // Framed for what is ACTUALLY on screen: the pull-back follows the plume,
+      // easing out as ash climbs and back in as it clears, so the model fills
+      // the frame the rest of the time.
       var plumeTop = 0;
       for (var pf = 0; pf < ashP.length; pf++) { if (ashP[pf].y > plumeTop) plumeTop = ashP[pf].y; }
+      for (var gf = 0; gf < glowP.length; gf++) { if (glowP[gf].y > plumeTop) plumeTop = glowP[gf].y; }
       var want = 84 + Math.max(0, plumeTop - coneH) * 0.85;
       frameDist += (Math.min(126, want) - frameDist) * 0.06;   // eased, so it never snaps
       var dist = frameDist / Math.max(0.3, cam.scale);
       // Centre on the block itself: it runs from about -27 (base of the beds) to
       // the summit, so aiming at y=0 wasted the lower third of the frame.
-      var ty = coneH * 0.28 - 6;
+      // Lifted as the plume climbs, so the umbrella cloud is not cropped.
+      var ty = coneH * 0.28 - 6 + (frameDist - 84) * 0.3;
       camera.position.set(
         dist * Math.cos(el) * Math.sin(az),
         ty + dist * Math.sin(el),
@@ -1870,13 +2667,31 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       camera.updateProjectionMatrix();
     }
 
+    function applyCut() {
+      clipPlane.constant = cut == null ? 1e6 : cut;
+      for (var i = 0; i < capList.length; i++) {
+        capList[i].cap.visible = cut != null;
+        capList[i].cap.position.z = cut == null ? 0 : cut;
+        capList[i].twins[0].visible = capList[i].twins[1].visible = cut != null;
+      }
+      if (scaleGroup) scaleGroup.position.z = cut == null ? 36 : cut;
+      // A sealed block hides the plumbing, so labels for it would point at
+      // blank hillside.
+      for (var li = 0; li < interiorLabels.length; li++) interiorLabels[li].visible = cut != null;
+      placeTrees();
+    }
+
     function resize() {
       if (!renderer || !canvasEl) return;
       var w = canvasEl.clientWidth || 1, hh = canvasEl.clientHeight || 1;
-      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      var pr = Math.min(2, window.devicePixelRatio || 1);
+      renderer.setPixelRatio(pr);
       renderer.setSize(w, hh, false);
       camera.aspect = w / hh;
       camera.updateProjectionMatrix();
+      // Point sprites are sized in pixels, so the world-to-pixel factor has to
+      // follow the canvas or the plume shrinks on a big screen.
+      ptScale.value = (hh * pr) / (2 * Math.tan(camera.fov * DEG / 2));
       dirty = true;
     }
 
@@ -1885,40 +2700,60 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       if (state !== 'ready') return;
       var m = pending;
       try {
-        if (m.dark !== appliedDark) { applyTheme(m.dark); appliedDark = m.dark; dirty = true; }
+        if (m.dark !== appliedDark) { appliedDark = m.dark; applyTheme(m.dark !== false); dirty = true; }
         if (m.labels !== appliedLabels) {
           labelGroup.visible = m.labels !== false;
           if (scaleGroup) scaleGroup.visible = m.labels !== false;
           appliedLabels = m.labels;
           dirty = true;
         }
+        if (cut !== appliedCut) { appliedCut = cut; applyCut(); dirty = true; }
         // frameDist is in the signature: without it applyCam() ran only when the
         // student moved the camera, so the eruption pull-back was computed every
         // frame and applied never.
         var cs = cam.rotX + ',' + cam.rotY + ',' + cam.scale + ',' + cut + ',' + Math.round(frameDist);
         if (cs !== appliedCam) {
           applyCam();
-          clipPlane.constant = cut == null ? 1e6 : cut;
           appliedCam = cs;
           dirty = true;
         }
+        if (m.magma !== appliedMagma) { applyMagma(m.magma); appliedMagma = m.magma; dirty = true; }
         // The eruption is the ONE animated state here. It forces frames while it
-        // runs and releases the moment the ash clears, so a vent sitting idle in
-        // an offscreen bay costs no GPU work — the rest of this module is a
-        // dirty-flag renderer for exactly that reason.
+        // runs and releases the moment the air clears and the lava has cooled, so
+        // a vent sitting idle costs no GPU work.
         if (m.active) {
-          if (!wasActive || m.tick < prevTick) resetShape();
+          if (!wasActive || m.tick < prevTick) { resetShape(); lavaPaths.length = 0; }
           wasActive = true; prevTick = m.tick;
           animate(m);
+          var ph = phaseOf(m);
+          var ashWant = ph === 'blast' ? 1 : ph === 'deflate' ? 1 : 0;
+          if (ashWant && mag.ashRate > 1 && scars.ash < 1) {
+            scars.ash = Math.min(1, scars.ash + 0.0025 * mag.ashRate);
+            if (Math.round(m.tick) % 6 === 0) applyScars();
+          }
           dirty = true;
         } else if (wasActive) {
           // Hold the caldera the eruption left behind rather than snapping the
           // cone back — the landform it produced IS the lesson.
           wasActive = false;
+          applyScars();
+          animate(m);
         }
-        if (m.magma !== appliedMagma) { applyMagma(m.magma); appliedMagma = m.magma; dirty = true; }
-        if (m.active || ashP.length) { stepAsh(m); applyCam(); dirty = true; }
-        if (m.active || lavaP.length) { stepLava(m); dirty = true; }
+        var busy = m.active || ashP.length || glowP.length || flowP.length || bubbleP.length;
+        if (busy) { stepAsh(m); stepGlow(m); stepFlows(m); stepBubbles(m); updateDynLabels(m); applyCam(); wasBusy = true; dirty = true; }
+        else if (wasBusy) { wasBusy = false; updateDynLabels(m); dirty = true; }
+        if (m.active || lavaP.length) {
+          stepLava(m);
+          // Fresh flows crust over black as they cool; repainted at a few Hz,
+          // not per frame.
+          if (lavaP.length && Math.round(m.tick) % 8 === 0) paintCone();
+          dirty = true;
+        }
+        if (cone.heat && (m.active || lavaP.length || hotLeft)) {
+          hotLeft = coolCone();
+          if (!hotLeft && !m.active) paintCone();
+          dirty = true;
+        }
         if (!dirty) return;
         dirty = false;
         renderer.render(scene, camera);
@@ -1928,6 +2763,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         fail('frame');
       }
     }
+    var hotLeft = false, wasBusy = false;
 
     return {
       isReady: function () { return state === 'ready'; },
@@ -1936,8 +2772,8 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       onFail: function (fn) { failCb = fn; },
       onReady: function (fn) { readyCb = fn; },
       // Camera and cutaway live HERE, not in React state. The host is the whole
-      // 1.8 MB tool component, so routing a pointermove or a slider drag through
-      // upd() would re-render it on every frame of the gesture.
+      // tool component, so routing a pointermove or a slider drag through upd()
+      // would re-render it on every frame of the gesture.
       nudge: function (dx, dy) {
         cam.rotY += dx;
         cam.rotX = Math.max(-88, Math.min(88, cam.rotX + dy));
@@ -1949,10 +2785,8 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       zoom: function (dz) { cam.scale = Math.max(0.4, Math.min(2.4, cam.scale + dz)); },
       setCut: function (v) { cut = v; },
       magmaTypes: function () { return MAGMA; },
-      // The model already knows which stage of the eruption it is in — it drives
-      // the chamber, the plume and the collapse from it — but nothing ever told
-      // the student. Naming the stage is what turns "the mountain is doing
-      // something" into a sequence they can predict the next step of.
+      // The model already knows which stage of the eruption it is in; naming the
+      // stage turns "the mountain is doing something" into a sequence.
       phase: function (m) { return phaseOf(m || pending); },
       getCam: function () { return { rotX: cam.rotX, rotY: cam.rotY, scale: cam.scale, cut: cut }; },
       debug: function () {
@@ -1966,8 +2800,14 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           coneH: coneH,
           ash: ashP.length,
           lava: lavaP.length,
+          glow: glowP.length,
+          flows: flowP.length,
+          bubbles: bubbleP.length,
           fill: shape.fill,
           summit: shape.summit,
+          rimH: +prof.rimH.toFixed(2),
+          caps: capList.length,
+          ashCover: +scars.ash.toFixed(2),
           labels: labelGroup ? labelGroup.visible : null,
           clipConstant: clipPlane ? clipPlane.constant : null,
           contextLost: renderer && renderer.getContext ? renderer.getContext().isContextLost() : null
@@ -1985,19 +2825,22 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           if (!canvasEl) return;
           T = three;
           try {
-            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true, stencil: true });
           } catch (e) { fail('no-webgl'); return; }
           renderer.setClearColor(0x000000, 0);
           renderer.localClippingEnabled = true;
           clipPlane = new T.Plane(new T.Vector3(0, 0, -1), 1e6);
-          build();
+          try { build(); } catch (e3) {
+            console.error('[tectonics] vent scene build failed, falling back to the 2D eruption', e3);
+            fail('build'); return;
+          }
           resize();
           if (typeof ResizeObserver === 'function') {
             resizeObs = new ResizeObserver(resize);
             resizeObs.observe(canvasEl);
           } else { window.addEventListener('resize', resize); }
           state = 'ready';
-          appliedDark = null; appliedLabels = null; appliedCam = ''; appliedMagma = null;
+          appliedDark = null; appliedLabels = null; appliedCam = ''; appliedMagma = null; appliedCut = 'x';
           dirty = true;
           if (!rafId) rafId = requestAnimationFrame(frame);
           if (typeof readyCb === 'function') { try { readyCb(); } catch (e2) {} }
@@ -2007,50 +2850,22 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
-        // Sprite labels own a CanvasTexture apiece: disposing only the material
-        // leaks the GPU texture every time the view is toggled off and on.
-        [labelGroup, scaleGroup].forEach(function (grp) {
-          if (!grp) return;
-          for (var i = grp.children.length - 1; i >= 0; i--) {
-            var sp = grp.children[i];
-            grp.remove(sp);
-            // Sprites SHARE one plane geometry in r128, so only the scale's own
-            // LineSegments geometries may be disposed; disposing a sprite's would
-            // blank every other label in the scene.
-            if (sp.isLineSegments && sp.geometry) sp.geometry.dispose();
-            if (sp.material) {
-              if (sp.material.map) sp.material.map.dispose();
-              sp.material.dispose();
-            }
-          }
-        });
-        Object.keys(parts).forEach(function (k) {
-          var mesh = parts[k];
-          if (!mesh) return;
-          if (Array.isArray(mesh)) return;          // bedMeshes: aliases of children
-          if (scene) scene.remove(mesh);
-          // parts.beds is a Group of layers, not a single mesh. Disposing only the
-          // Group would leak one geometry and one material per bed on every
-          // toggle of this view.
-          if (mesh.children && mesh.children.length) {
-            for (var ci2 = mesh.children.length - 1; ci2 >= 0; ci2--) {
-              var kid = mesh.children[ci2];
-              mesh.remove(kid);
-              if (kid.geometry) kid.geometry.dispose();
-              if (kid.material) kid.material.dispose();
-            }
-          }
-          if (mesh.geometry) mesh.geometry.dispose();
-          if (mesh.material) mesh.material.dispose();
-        });
-        parts = {};
-        if (ashBatch) { ashBatch.dispose(scene); ashBatch = null; }
-        if (lavaBatch) { lavaBatch.dispose(scene); lavaBatch = null; }
+        // One pass over everything build() allocated. The cone and conduit swap
+        // geometry when the composition changes, so their live geometry is freed
+        // here too (the replaced ones were freed at the swap).
+        if (parts.conduit && parts.conduit.geometry) parts.conduit.geometry.dispose();
+        for (var i = 0; i < owned.length; i++) { try { owned[i].dispose(); } catch (e) {} }
+        if (parts.trees && parts.trees.dispose) { try { parts.trees.dispose(); } catch (e) {} }
+        owned = []; parts = {}; capList = []; twinPairs = []; dynLabels = {}; interiorLabels = [];
+        stencilBack = stencilFront = null; capOrder = 1;
+        ashPts = glowPts = lavaPts = flowPts = bubblePts = null;
+        cone = { geo: null, pos: null, col: null, heat: null, dep: null, noise: null };
+        coneSig = ''; lavaPaths = [];
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        renderer = scene = camera = labelGroup = scaleGroup = ventLabel = null;
-        canvasEl = null; ashP = []; lavaP = [];
+        renderer = scene = camera = labelGroup = scaleGroup = ventLabel = ventLeader = null;
+        canvasEl = null;
         resetShape();
-        wasActive = false; prevTick = -1;
+        wasActive = false; prevTick = -1; hotLeft = false; wasBusy = false;
         if (state !== 'failed') state = 'idle';
       }
     };
@@ -2075,6 +2890,284 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     };
   }
   try { window.__alloPtEruptProfile = eruptProfileFor; } catch (e) {}
+
+  // ── 2D eruption painter ─────────────────────────────────────────────────────
+  // The side-on eruption in the main sim. It draws the SAME volcano the 3D
+  // cutaway builds — profile, eruption style and caldera collapse all come from
+  // the magma record and follow the shared tick timeline — so the two views
+  // tell one story. It used to be a flat trapezoid with a dot of glow, which
+  // gave every composition the same mountain and no sense of what was coming
+  // out of it.
+  var PtErupt2D = (function () {
+    var sprites = null;
+    function sprite(w, paint) {
+      var cv = document.createElement('canvas');
+      cv.width = cv.height = w;
+      paint(cv.getContext('2d'), w);
+      return cv;
+    }
+    // Painted once and stamped with drawImage: a gradient per puff per frame
+    // is what makes a canvas plume stutter on a school laptop.
+    function getSprites() {
+      if (sprites) return sprites;
+      function puff(core, rim) {
+        return sprite(64, function (c) {
+          [[32, 35, 20], [22, 29, 13], [42, 28, 13], [31, 20, 12], [41, 41, 11], [22, 42, 11]].forEach(function (L) {
+            var g = c.createRadialGradient(L[0] - 4, L[1] - 5, 0, L[0], L[1], L[2]);
+            g.addColorStop(0, core); g.addColorStop(0.6, rim); g.addColorStop(1, 'rgba(0,0,0,0)');
+            c.fillStyle = g; c.beginPath(); c.arc(L[0], L[1], L[2], 0, Math.PI * 2); c.fill();
+          });
+        });
+      }
+      sprites = {
+        ash: puff('rgba(128,120,112,0.95)', 'rgba(70,64,58,0.8)'),
+        steam: puff('rgba(250,250,250,0.9)', 'rgba(210,214,220,0.7)'),
+        glow: sprite(64, function (c) {
+          var g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+          g.addColorStop(0, 'rgba(255,240,200,1)'); g.addColorStop(0.25, 'rgba(255,170,60,0.85)');
+          g.addColorStop(0.6, 'rgba(255,80,20,0.3)'); g.addColorStop(1, 'rgba(255,40,0,0)');
+          c.fillStyle = g; c.fillRect(0, 0, 64, 64);
+        })
+      };
+      return sprites;
+    }
+    function magRec(id) {
+      var types = VentGL.magmaTypes();
+      for (var i = 0; i < types.length; i++) { if (types[i].id === id) return types[i]; }
+      return types[1];
+    }
+    function hot(t) {
+      return t < 60 ? 0.35 + 0.3 * Math.sin(t * 0.09) : t < 180 ? 1 : t < 380 ? Math.max(0, 1 - (t - 180) / 200) : 0;
+    }
+    // Edifice geometry for this frame. Collapse mirrors VentGL.animate exactly.
+    function shape(es) {
+      var m = magRec(es.magId), t = es.tick;
+      var prog = t >= 380 ? Math.min(1, (t - 380) / 140) : 0;
+      var H = es.coneH * (1 - m.calderaDrop * prog);
+      var Wb = es.coneW * 0.75;
+      var cr = Math.max(4, es.coneW * 0.12) * (1 + 3 * m.calderaDrop * prog);
+      return { m: m, cx: es.coneX, by: es.coneBaseY, H: H, Wb: Wb, cr: cr, top: es.coneBaseY - H, depth: Math.min(H * 0.5, cr * 0.55 + H * 0.12 * prog) };
+    }
+    // The flank as a quadratic curve from base to rim. A stratovolcano's is
+    // concave (gentle foot, steep summit), a shield's convex.
+    function flank(s, side, u) {
+      var x0 = s.cx + side * s.Wb, x1 = s.cx + side * s.cr;
+      var cx = s.m.flank === 'convex' ? x0 + (x1 - x0) * 0.2 : x0 + (x1 - x0) * 0.72;
+      var cy = s.m.flank === 'convex' ? s.top + s.H * 0.08 : s.by - s.H * 0.1;
+      var a = (1 - u) * (1 - u), b = 2 * (1 - u) * u, c = u * u;
+      return { x: a * x0 + b * cx + c * x1, y: a * s.by + b * cy + c * s.top };
+    }
+    // Ground height at x: the pyroclastic flows ride it and the lava runs on it.
+    function surfaceY(s, x) {
+      var dx = Math.abs(x - s.cx);
+      if (dx >= s.Wb) return s.by;
+      if (dx <= s.cr) { var q = dx / s.cr; return s.top + s.depth * (1 - q * q); }
+      var side = x < s.cx ? -1 : 1, lo = 0, hi = 1;
+      for (var i = 0; i < 14; i++) {
+        var mid = (lo + hi) / 2, p = flank(s, side, mid);
+        if (Math.abs(p.x - s.cx) > dx) lo = mid; else hi = mid;
+      }
+      return flank(s, side, (lo + hi) / 2).y;
+    }
+    function conePath(ctx, s) {
+      ctx.beginPath();
+      ctx.moveTo(s.cx - s.Wb - 6, s.by + 1);
+      for (var i = 0; i <= 16; i++) { var p = flank(s, -1, i / 16); ctx.lineTo(p.x, p.y); }
+      ctx.quadraticCurveTo(s.cx, s.top + s.depth * 2, s.cx + s.cr, s.top);
+      for (var j = 16; j >= 0; j--) { var r = flank(s, 1, j / 16); ctx.lineTo(r.x, r.y); }
+      ctx.lineTo(s.cx + s.Wb + 6, s.by + 1);
+      ctx.closePath();
+    }
+
+    return {
+      getSprites: getSprites,
+      magRec: magRec,
+      surfaceAt: function (es, x) { return surfaceY(shape(es), x); },
+      // Behind the cone: the glow the eruption throws on its own sky, and the
+      // magma chamber and conduit through the crust that feed it.
+      drawBack: function (ctx, es, isDark) {
+        var s = shape(es), t = es.tick, h = hot(t), sp = getSprites();
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        if (h > 0) {
+          ctx.globalAlpha = h * (isDark ? 0.55 : 0.35);
+          var gr = s.Wb * 2.6;
+          ctx.drawImage(sp.glow, s.cx - gr, s.top - gr * 0.9, gr * 2, gr * 2);
+        }
+        // Chamber and conduit. Brightest while pressure builds and the blast
+        // runs; dimming as the chamber drains.
+        var fill = t < 60 ? 0.6 + 0.4 * t / 60 : t < 180 ? 1 : t < 380 ? 1 - 0.6 * (t - 180) / 200 : 0.4;
+        var chY = s.by + 34;
+        var cg = ctx.createRadialGradient(s.cx, chY, 0, s.cx, chY, 46 * (0.7 + 0.3 * fill));
+        cg.addColorStop(0, 'rgba(255,190,90,' + (0.75 * fill) + ')');
+        cg.addColorStop(0.45, 'rgba(240,70,20,' + (0.45 * fill) + ')');
+        cg.addColorStop(1, 'rgba(160,20,0,0)');
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = cg;
+        ctx.beginPath(); ctx.ellipse(s.cx, chY, 58 * (0.7 + 0.3 * fill), 26 * (0.7 + 0.3 * fill), 0, 0, Math.PI * 2); ctx.fill();
+        var lg = ctx.createLinearGradient(0, chY, 0, s.top + s.depth);
+        lg.addColorStop(0, 'rgba(255,90,30,' + (0.55 * fill) + ')');
+        lg.addColorStop(1, 'rgba(255,200,90,' + (0.35 + 0.6 * h) + ')');
+        ctx.strokeStyle = lg;
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 7; ctx.globalAlpha = 0.45;
+        ctx.beginPath(); ctx.moveTo(s.cx, chY - 10); ctx.lineTo(s.cx, s.by); ctx.stroke();
+        ctx.lineWidth = 3; ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.moveTo(s.cx, chY - 10); ctx.lineTo(s.cx, s.by); ctx.stroke();
+        ctx.restore();
+      },
+      // The mountain itself, then the lava on it, then the vent's own glow.
+      drawCone: function (ctx, es, isDark) {
+        var s = shape(es), t = es.tick, h = hot(t), m = s.m;
+        var pal = m.id === 'basalt' ? (isDark ? ['#4a403a', '#2c2522', '#15110f'] : ['#6e5e52', '#473b33', '#2a221d'])
+          : m.id === 'rhyolite' ? (isDark ? ['#8d8276', '#5f564e', '#2f2a26'] : ['#b3a494', '#857666', '#51473e'])
+          : (isDark ? ['#6a605a', '#3d3632', '#1c1816'] : ['#8a7462', '#5e4c3e', '#3a2d24']);
+        ctx.save();
+        conePath(ctx, s);
+        var g = ctx.createLinearGradient(s.cx - s.Wb, 0, s.cx + s.Wb, 0);
+        g.addColorStop(0, pal[1]); g.addColorStop(0.38, pal[0]); g.addColorStop(0.62, pal[1]); g.addColorStop(1, pal[2]);
+        ctx.fillStyle = g;
+        ctx.fill();
+        ctx.clip();
+        // Layered flanks: a stratovolcano is built of lava and ash beds laid
+        // down parallel to its slope, one eruption after another.
+        ctx.globalAlpha = 0.22;
+        ctx.strokeStyle = isDark ? '#a8927a' : '#2a1f18';
+        ctx.lineWidth = 1.5;
+        var layers = m.id === 'basalt' ? 3 : 5;
+        for (var L = 1; L <= layers; L++) {
+          var off = L * s.H / (layers + 1.5);
+          ctx.beginPath();
+          for (var i = 0; i <= 20; i++) {
+            var x = s.cx - s.Wb + i * (2 * s.Wb / 20);
+            var yy = surfaceY(s, x) + off;
+            if (i === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+          }
+          ctx.stroke();
+        }
+        // Erosion gullies down the lit face.
+        ctx.globalAlpha = 0.18;
+        ctx.strokeStyle = '#000';
+        for (var gq = -3; gq <= 3; gq++) {
+          if (!gq) continue;
+          ctx.beginPath();
+          for (var k = 0; k <= 10; k++) {
+            var r = s.cr + (s.Wb - s.cr) * (k / 10) * 0.95;
+            var gx = s.cx + r * gq * 0.28;
+            if (k === 0) ctx.moveTo(gx, surfaceY(s, s.cx + r)); else ctx.lineTo(gx, surfaceY(s, s.cx + r));
+          }
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        // Lava rivers. A front-facing flow at azimuth c sits at x = r·c but at
+        // the height of radius r — it runs DOWN the face, not along the edge.
+        if (m.lavaRate > 0 && t >= 70) {
+          if (!es.rivers) {
+            es.rivers = [];
+            var n = m.lavaRate >= 4 ? 5 : 2;
+            for (var ri = 0; ri < n; ri++) es.rivers.push({ c: (ri % 2 ? 1 : -1) * (0.15 + Math.random() * 0.8), seed: Math.random() * 10 });
+          }
+          var reach = Math.min(1, (t - 70) / 260) * (m.lavaRate >= 4 ? 1 : 0.5);
+          var cool = t < 260 ? 0 : Math.min(1, (t - 260) / 240);
+          for (var rv = 0; rv < es.rivers.length; rv++) {
+            var R = es.rivers[rv], pts = [];
+            for (var sIdx = 0; sIdx <= 24; sIdx++) {
+              var sf = (sIdx / 24) * reach;
+              var rad = s.cr * 0.8 + (s.Wb - s.cr * 0.8) * sf;
+              pts.push([s.cx + rad * R.c + Math.sin(sf * 14 + R.seed) * 3, surfaceY(s, s.cx + rad) + 1]);
+            }
+            ctx.lineJoin = ctx.lineCap = 'round';
+            if (cool < 1) {
+              ctx.globalCompositeOperation = 'lighter';
+              ctx.globalAlpha = (1 - cool) * 0.45;
+              ctx.strokeStyle = '#ff5a14'; ctx.lineWidth = 9;
+              ctx.beginPath(); pts.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.stroke();
+            }
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.globalAlpha = 1;
+            var lg2 = ctx.createLinearGradient(0, s.top, 0, s.by);
+            lg2.addColorStop(0, cool < 1 ? 'rgba(255,230,140,' + (1 - cool) + ')' : '#2a1d17');
+            lg2.addColorStop(0.5, cool < 1 ? 'rgba(255,120,30,' + (1 - cool * 0.7) + ')' : '#1e1512');
+            lg2.addColorStop(1, cool < 0.5 ? '#b91c1c' : '#1a1210');
+            ctx.strokeStyle = lg2; ctx.lineWidth = 3.5;
+            ctx.beginPath(); pts.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.stroke();
+          }
+        }
+        ctx.restore();
+        // Vent glow on top, unclipped so it can spill into the air.
+        if (h > 0) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = h * 0.85;
+          var vr = Math.min(40, s.cr * 3 + 10);
+          ctx.drawImage(getSprites().glow, s.cx - vr, s.top + s.depth * 0.6 - vr, vr * 2, vr * 2);
+          ctx.restore();
+        }
+        // Outline so the edifice separates from a plate of the same tone.
+        ctx.save();
+        conePath(ctx, s);
+        ctx.strokeStyle = isDark ? 'rgba(255,237,213,0.18)' : 'rgba(41,31,24,0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.restore();
+      },
+      // One eruption particle. Incandescent things are ADDED to what is behind
+      // them (they are light); ash and steam are laid over it (they block it).
+      drawParticle: function (ctx, p, a, isDark) {
+        var sp = getSprites(), sz;
+        if (p.type === 'lava_fountain' || p.type === 'ember' || p.type === 'lava') {
+          sz = p.type === 'ember' ? 5 : 7;
+          ctx.globalCompositeOperation = 'lighter';
+          // Many overlap in a fountain; kept under full strength so the jet
+          // stays orange instead of adding up to a white bar.
+          ctx.globalAlpha = Math.min(1, a * 1.3) * (p.type === 'ember' ? 1 : 0.55);
+          ctx.drawImage(sp.glow, p.x - sz, p.y - sz, sz * 2, sz * 2);
+        } else if (p.type === 'lava_bomb') {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = a * 0.7;
+          ctx.strokeStyle = 'rgba(255,140,40,0.9)';
+          ctx.lineWidth = 2; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 5, p.y - p.vy * 5); ctx.stroke();
+          ctx.globalAlpha = a;
+          ctx.drawImage(sp.glow, p.x - 9, p.y - 9, 18, 18);
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.fillStyle = '#3a1a10';
+          ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2); ctx.fill();
+        } else if (p.type === 'pyroclastic') {
+          sz = 10 + (1 - a) * 22;
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.globalAlpha = a * 0.8;
+          ctx.drawImage(sp.ash, p.x - sz, p.y - sz * 1.3, sz * 2, sz * 2);
+          if (a > 0.6) {
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = (a - 0.6) * 0.8;
+            ctx.drawImage(sp.glow, p.x - sz * 0.6, p.y - sz * 0.8, sz * 1.2, sz * 1.2);
+          }
+        } else {
+          sz = 7 + (1 - a) * 12;
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.globalAlpha = a * (isDark ? 0.55 : 0.7);
+          ctx.drawImage(sp.steam, p.x - sz, p.y - sz, sz * 2, sz * 2);
+        }
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+      },
+      drawAsh: function (ctx, p, a, es) {
+        var sp = getSprites(), sz = 9 + (1 - a) * 24;
+        ctx.globalAlpha = Math.min(1, a * 1.4) * 0.75;
+        ctx.drawImage(sp.ash, p.x - sz, p.y - sz, sz * 2, sz * 2);
+        // Lit from below by the vent while it is still close to it.
+        var near = 1 - Math.min(1, Math.abs(p.y - (es.coneBaseY - es.coneH)) / 60);
+        if (near > 0 && es.tick < 380) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = near * 0.35 * a;
+          ctx.drawImage(sp.glow, p.x - sz * 0.7, p.y - sz * 0.5, sz * 1.4, sz * 1.4);
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        ctx.globalAlpha = 1;
+      }
+    };
+  })();
 
   // Spread the correct answer evenly across the option slots.
   //
@@ -7398,6 +8491,8 @@ var d = labToolData.plateTectonics || {};
               // cone is drawn straight to canvas, so this is the only way a test
               // can tell a reshaped edifice from an unchanged one.
               canvasEl._ptEruptProfile = { coneW: prof.coneW, coneH: prof.coneH, id: prof.id };
+              eruptState.magId = prof.id;
+              eruptState.rivers = null;
               eruptState.lavaFlows = [];
               eruptState.ashParticles = [];
               // Spawn rumble quake particles
@@ -8880,46 +9975,26 @@ var d = labToolData.plateTectonics || {};
 
 
               // ── Volcano particles ──
+              // The edifice is painted first so flows and spray sit in front of it.
+              if (eruptState.active) {
+                PtErupt2D.drawBack(ctx, eruptState, isDark);
+                PtErupt2D.drawCone(ctx, eruptState, isDark);
+              }
 
               for (var vi = volcanoParticles.length - 1; vi >= 0; vi--) {
-
                 var vp2 = volcanoParticles[vi];
-
                 vp2.x += vp2.vx * speed;
-
                 vp2.y += vp2.vy * speed;
-
-                vp2.vy += 0.05;
-
+                vp2.vy += vp2.type === 'smoke' ? -0.01 : 0.05;
                 vp2.life -= speed;
-
                 if (vp2.life <= 0) { volcanoParticles.splice(vi, 1); continue; }
-
-                var vAlpha = vp2.life / vp2.maxLife;
-
-                if (vp2.type === 'lava') {
-                  ctx.fillStyle = 'rgba(255,' + Math.floor(80 + vp2.life) + ',0,' + vAlpha + ')';
-                  ctx.beginPath(); ctx.arc(vp2.x, vp2.y, 3, 0, Math.PI * 2); ctx.fill();
-                } else if (vp2.type === 'lava_fountain') {
-                  ctx.fillStyle = 'rgba(255,' + Math.floor(180 + vp2.life * 0.5) + ',0,' + vAlpha + ')';
-                  ctx.beginPath(); ctx.arc(vp2.x, vp2.y, 2.5, 0, Math.PI * 2); ctx.fill();
-                } else if (vp2.type === 'lava_bomb') {
-                  ctx.fillStyle = 'rgba(255,' + Math.floor(100 + vp2.life * 0.3) + ',20,' + vAlpha + ')';
-                  ctx.beginPath(); ctx.arc(vp2.x, vp2.y, 4 + Math.random(), 0, Math.PI * 2); ctx.fill();
-                  ctx.fillStyle = 'rgba(255,200,50,' + (vAlpha * 0.4) + ')';
-                  ctx.beginPath(); ctx.arc(vp2.x - vp2.vx * 1.5, vp2.y - vp2.vy * 1.5, 1.5, 0, Math.PI * 2); ctx.fill();
-                } else if (vp2.type === 'pyroclastic') {
-                  var pSize = 6 + (1 - vAlpha) * 14;
-                  var pGray = Math.floor(60 + (1 - vAlpha) * 40);
-                  ctx.fillStyle = 'rgba(' + pGray + ',' + pGray + ',' + Math.floor(pGray * 0.8) + ',' + (vAlpha * 0.45) + ')';
-                  ctx.beginPath(); ctx.arc(vp2.x, vp2.y, pSize, 0, Math.PI * 2); ctx.fill();
-                } else if (vp2.type === 'ember') {
-                  ctx.fillStyle = 'rgba(255,' + Math.floor(200 + Math.random() * 55) + ',50,' + vAlpha + ')';
-                  ctx.beginPath(); ctx.arc(vp2.x, vp2.y, 1 + Math.random(), 0, Math.PI * 2); ctx.fill();
-                } else {
-                  ctx.fillStyle = 'rgba(100,100,100,' + (vAlpha * 0.5) + ')';
-                  ctx.beginPath(); ctx.arc(vp2.x, vp2.y, 4 + (1 - vAlpha) * 6, 0, Math.PI * 2); ctx.fill();
+                // A pyroclastic flow is a ground-hugging avalanche of hot ash: it
+                // pours down the flank and runs out across the land, it does not fly.
+                if (vp2.type === 'pyroclastic' && eruptState.active) {
+                  var pgY = PtErupt2D.surfaceAt(eruptState, vp2.x) - 5;
+                  if (vp2.y > pgY) { vp2.y = pgY; vp2.vy = 0; vp2.vx *= 0.995; }
                 }
+                PtErupt2D.drawParticle(ctx, vp2, vp2.life / vp2.maxLife, isDark);
               }
 
               // ══════════════════════════════════════
@@ -8966,56 +10041,12 @@ var d = labToolData.plateTectonics || {};
                 var eCW2 = eruptState.coneW;
                 var eCH2 = eruptState.coneH;
 
-                // Draw volcano cone (trapezoid with crater)
-                var coneGrad = ctx.createLinearGradient(eCX, eCY - eCH2, eCX, eCY);
-                if (isDark) {
-                  coneGrad.addColorStop(0, '#27272a');
-                  coneGrad.addColorStop(0.5, '#1e293b');
-                  coneGrad.addColorStop(1, '#090d16');
-                } else {
-                  coneGrad.addColorStop(0, '#4a3528');
-                  coneGrad.addColorStop(0.5, '#5c4233');
-                  coneGrad.addColorStop(1, '#3a2a1e');
-                }
-                ctx.fillStyle = coneGrad;
-                ctx.beginPath();
-                ctx.moveTo(eCX - eCW2 * 0.7, eCY);
-                ctx.lineTo(eCX - eCW2 * 0.15, eCY - eCH2);
-                ctx.lineTo(eCX + eCW2 * 0.15, eCY - eCH2);
-                ctx.lineTo(eCX + eCW2 * 0.7, eCY);
-                ctx.closePath();
-                ctx.fill();
-
-                // Crater depression
-                ctx.fillStyle = isDark ? '#020617' : '#2a1a10';
-                ctx.beginPath();
-                ctx.ellipse(eCX, eCY - eCH2 + 2, eCW2 * 0.14, 4, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Magma glow inside crater
-                var mgAlpha2 = 0.4 + 0.3 * Math.sin(eT * 0.08);
-                var craterGlow = ctx.createRadialGradient(eCX, eCY - eCH2 + 2, 0, eCX, eCY - eCH2 + 2, eCW2 * 0.2);
-                if (isDark) {
-                  craterGlow.addColorStop(0, 'rgba(244,63,94,' + mgAlpha2 + ')');
-                  craterGlow.addColorStop(0.5, 'rgba(239,68,68,' + (mgAlpha2 * 0.5) + ')');
-                } else {
-                  craterGlow.addColorStop(0, 'rgba(255,140,0,' + mgAlpha2 + ')');
-                  craterGlow.addColorStop(0.5, 'rgba(255,60,0,' + (mgAlpha2 * 0.5) + ')');
-                }
-                craterGlow.addColorStop(1, 'rgba(200,30,0,0)');
-                ctx.fillStyle = craterGlow;
-                ctx.beginPath(); ctx.arc(eCX, eCY - eCH2 + 2, eCW2 * 0.2, 0, Math.PI * 2); ctx.fill();
-
-                // Magma chamber glow below cone
-                var chamberGlow = ctx.createRadialGradient(eCX, eCY + 15, 0, eCX, eCY + 15, 40);
-                if (isDark) {
-                  chamberGlow.addColorStop(0, 'rgba(244,63,94,' + (0.3 + 0.15 * Math.sin(eT * 0.05)) + ')');
-                } else {
-                  chamberGlow.addColorStop(0, 'rgba(255,80,0,' + (0.3 + 0.15 * Math.sin(eT * 0.05)) + ')');
-                }
-                chamberGlow.addColorStop(1, 'rgba(255,40,0,0)');
-                ctx.fillStyle = chamberGlow;
-                ctx.beginPath(); ctx.arc(eCX, eCY + 15, 40, 0, Math.PI * 2); ctx.fill();
+                // What comes out, and how much, is the composition's: runny basalt
+                // fountains and pours, gassy rhyolite blasts ash and collapses
+                // into pyroclastic flows. Same table the 3D cutaway reads.
+                var eMag = PtErupt2D.magRec(eruptState.magId);
+                var eGassy = eMag.ashRate > 1;
+                var eRim = Math.max(4, eCW2 * 0.12);
 
                 // Phase 0: Rumble (0-60 ticks)
                 if (eT < 60) {
@@ -9026,30 +10057,26 @@ var d = labToolData.plateTectonics || {};
 
                 // Phase 1: Main blast (60-180 ticks)
                 if (eT >= 60 && eT < 180) {
+                  var nFount = eMag.lavaRate >= 4 ? 5 : eMag.lavaRate > 0 ? 2 : 0;
                   if (eT % 2 < 1) {
-                    for (var lf = 0; lf < 3; lf++) {
-                      volcanoParticles.push({ x: eCX + (Math.random()-0.5)*10, y: eCY - eCH2 - 3, vx: (Math.random()-0.5)*2.5, vy: -4 - Math.random()*5, life: 40+Math.random()*30, maxLife: 70, type: 'lava_fountain' });
+                    for (var lf = 0; lf < nFount; lf++) {
+                      volcanoParticles.push({ x: eCX + (Math.random()-0.5)*8, y: eCY - eCH2 - 3, vx: (Math.random()-0.5)*1.6, vy: -4 - Math.random()*4, life: 40+Math.random()*30, maxLife: 70, type: 'lava_fountain' });
                     }
                   }
-                  if (eT % 12 < 2) {
+                  if (eT % (eMag.ashRate >= 6 ? 7 : eGassy ? 12 : 30) < 2) {
                     volcanoParticles.push({ x: eCX + (Math.random()-0.5)*6, y: eCY - eCH2 - 5, vx: (Math.random()-0.5)*6, vy: -6 - Math.random()*3, life: 70+Math.random()*30, maxLife: 100, type: 'lava_bomb' });
                   }
-                  if (eT % 8 < 2) {
+                  if (eGassy && eT > 110 && eT % (eMag.ashRate >= 6 ? 4 : 7) < 2) {
                     var pDir2 = Math.random() > 0.5 ? 1 : -1;
-                    volcanoParticles.push({ x: eCX + pDir2 * 10, y: eCY - eCH2 * 0.5, vx: pDir2 * (1 + Math.random()*2), vy: -0.3 - Math.random()*0.5, life: 80+Math.random()*40, maxLife: 120, type: 'pyroclastic' });
+                    volcanoParticles.push({ x: eCX + pDir2 * eRim, y: eCY - eCH2, vx: pDir2 * (1.2 + Math.random()*1.8), vy: 0.5, life: 80+Math.random()*40, maxLife: 120, type: 'pyroclastic' });
                   }
                   if (eT % 3 < 1) {
                     volcanoParticles.push({ x: eCX + (Math.random()-0.5)*20, y: eCY - eCH2 - 10, vx: (Math.random()-0.5)*1.5, vy: -1.5 - Math.random()*2, life: 35+Math.random()*25, maxLife: 60, type: 'ember' });
                   }
                 }
 
-                // Phase 2: Lava flow (120-350 ticks)
-                if (eT >= 120 && eT < 350) {
-                  if (eT % 4 < 1 && eruptState.lavaFlows.length < 30) {
-                    var lfDir2 = Math.random() > 0.5 ? 1 : -1;
-                    eruptState.lavaFlows.push({ x: eCX + (Math.random()-0.5)*6, y: eCY - eCH2 + 4, vx: lfDir2 * (0.3 + Math.random()*0.6), vy: 0.4 + Math.random()*0.3, life: 120, maxLife: 120 });
-                  }
-                }
+                // Lava flows are drawn as rivers on the cone (PtErupt2D.drawCone);
+                // lavaFlows stays for anything a previous build left in it.
                 for (var lfi = eruptState.lavaFlows.length - 1; lfi >= 0; lfi--) {
                   var lf2 = eruptState.lavaFlows[lfi];
                   lf2.x += lf2.vx * speed * 0.5;
@@ -9065,23 +10092,25 @@ var d = labToolData.plateTectonics || {};
                   }
                 }
 
-                // Phase 3: Ash cloud (200-500 ticks)
-                if (eT >= 200 && eT < 500) {
-                  if (eT % 5 < 2) {
-                    var ashDir2 = (Math.random() - 0.3) * 2;
-                    eruptState.ashParticles.push({ x: eCX + (Math.random()-0.5)*30, y: eCY - eCH2 - 20 - Math.random()*30, vx: ashDir2, vy: -0.2 - Math.random()*0.3, life: 100+Math.random()*60, maxLife: 160 });
+                // Ash column. A gassy magma's column rises out of the vent from the
+                // blast on, slows, and spreads into an umbrella cloud that drifts
+                // downwind; basalt sends up only a thin wisp late on.
+                if ((eGassy && eT >= 80 && eT < 420) || (!eGassy && eT >= 200 && eT < 400)) {
+                  if (eT % (eGassy ? (eMag.ashRate >= 6 ? 2 : 3) : 9) < 1) {
+                    eruptState.ashParticles.push({ x: eCX + (Math.random()-0.5)*eRim*1.5, y: eCY - eCH2 - 4, vx: (Math.random() - 0.5) * 0.8, vy: -(eGassy ? 5 + Math.random() * 3 : 2), life: 110+Math.random()*60, maxLife: 170, ceil: 18 + Math.random() * 26 });
                   }
                 }
                 for (var ai2 = eruptState.ashParticles.length - 1; ai2 >= 0; ai2--) {
                   var ap2 = eruptState.ashParticles[ai2];
                   ap2.x += ap2.vx * speed * 0.4;
                   ap2.y += ap2.vy * speed * 0.3;
+                  if (ap2.ceil != null) {
+                    if (ap2.y > ap2.ceil) ap2.vy = Math.min(-0.4, ap2.vy * 0.975);
+                    else { ap2.vy *= 0.7; ap2.vx += (ap2.x < eCX ? -0.03 : 0.03) + 0.02; }
+                  }
                   ap2.life -= speed * 0.5;
                   if (ap2.life <= 0) { eruptState.ashParticles.splice(ai2, 1); continue; }
-                  var aAlpha2 = ap2.life / ap2.maxLife;
-                  var ashG2 = Math.floor(100 + (1 - aAlpha2) * 50);
-                  ctx.fillStyle = 'rgba(' + ashG2 + ',' + Math.floor(ashG2 * 0.9) + ',' + Math.floor(ashG2 * 0.8) + ',' + (aAlpha2 * 0.25) + ')';
-                  ctx.beginPath(); ctx.arc(ap2.x, ap2.y, 5 + (1 - aAlpha2) * 10, 0, Math.PI * 2); ctx.fill();
+                  PtErupt2D.drawAsh(ctx, ap2, ap2.life / ap2.maxLife, eruptState);
                 }
 
                 // End the eruption. The sequence itself is over at ~520 ticks;
@@ -9963,7 +10992,9 @@ var d = labToolData.plateTectonics || {};
                       // field — the one panel in the tool that ignored the theme
                       // the student chose, and the labels lost most of their
                       // contrast to it.
-                      style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', background: isDark ? '#0f1220' : '#dbeafe', touchAction: 'pan-y' },
+                      // A sky, not a flat fill: the block is a diorama and reads as one only
+                      // with some air and a horizon behind it.
+                      style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', background: isDark ? 'radial-gradient(120% 95% at 50% 0%, #2a2350 0%, #151733 42%, #0a0c18 100%)' : 'linear-gradient(180deg, #7fb4f5 0%, #c7ddfb 48%, #eef4fd 100%)', touchAction: 'pan-y' },
                       onPointerDown: function (e) {
                         var c = VentGL.getCam();
                         ventDrag = { x: e.clientX, y: e.clientY, rx: c.rotX, ry: c.rotY };
