@@ -141,6 +141,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       var _sen_FGD = {'#6366f1':'#818cf8','#a855f7':'#c084fc','#ec4899':'#f472b6','#dc2626':'#f87171'};
       var _senFg = function(h){ return _senHC ? (_sen_FGH[h]||h) : (_senL ? (_sen_FGL[h]||h) : (_sen_FGD[h]||h)); };
       var _senBd = function(h){ return _senHC ? (_sen_BDH[h]||h) : (_senL ? (_sen_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _senSolid = function(c){ return _senHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -619,7 +621,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submitInput(); } },
                 style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: submitInput, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _senBg('#6366f1'), color: _senFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _senBg(_senSolid('#6366f1')), color: _senFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
@@ -707,7 +709,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               )
             ) : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _senFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _senFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Sensory framework: Ayres (1972), Dunn (1997). For formal sensory evaluation, see an occupational therapist (OT). ',
               'Created with AlloFlow SEL Hub.'
             )

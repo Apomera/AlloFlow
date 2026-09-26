@@ -247,6 +247,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       var _griBg = function(h){ return _griHC ? (_gri_BGH[h]||h) : (_griL ? (_gri_BGL[h]||h) : h); };
       var _griFg = function(h){ return _griHC ? (_gri_FGH[h]||h) : (_griL ? (_gri_FGL[h]||h) : h); };
       var _griBd = function(h){ return _griHC ? (_gri_BDH[h]||h) : (_griL ? (_gri_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _griInk = function(c){ return _griHC || _griL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -455,10 +457,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
                 style: { textAlign: 'left', padding: 10, borderRadius: 8, border: '2px solid ' + (isActive ? t.color : '#334155'), background: isActive ? t.color + '22' : '#0f172a', cursor: 'pointer', color: _griFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
                   h('span', { style: { fontSize: 16 } }, t.icon),
-                  h('span', { style: { fontSize: 10, color: t.color, fontWeight: 800 } }, 'Task ' + t.number),
+                  h('span', { style: { fontSize: 10, color: _griInk(t.color), fontWeight: 800 } }, 'Task ' + t.number),
                   hasNotes ? h('span', { style: { marginLeft: 'auto', fontSize: 10, color: t.color } }, '✓') : null
                 ),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: isActive ? t.color : _griFg('#cbd5e1'), marginTop: 4, lineHeight: 1.4 } }, t.label)
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: isActive ? _griInk(t.color) : _griFg('#cbd5e1'), marginTop: 4, lineHeight: 1.4 } }, t.label)
               );
             })
           ),
@@ -476,7 +478,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
 
             // Prompts
             h('div', { style: { padding: 12, borderRadius: 8, background: _griBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: active.color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Reflection prompts'),
+              h('div', { style: { fontSize: 11, color: _griInk(active.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Reflection prompts'),
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _griFg('#cbd5e1'), fontSize: 13, lineHeight: 1.8, fontStyle: 'italic' } },
                 active.prompts.map(function(p, i) { return h('li', { key: i, style: { marginBottom: 4 } }, p); })
               )
@@ -651,7 +653,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               h('p', { style: { margin: 0, color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, d.ritualPlan)
             ) : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _griFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _griFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Worden\'s Tasks of Mourning (2018, 4th ed.). Dual Process Model: Stroebe and Schut (1999). ',
               'Created with AlloFlow SEL Hub.'
             )

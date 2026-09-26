@@ -1828,6 +1828,7 @@ function ConceptQuestSoloGM({
   }, tr('solo_gm_lesson_evidence', 'From your lesson')), /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
   }, shown.evidence))), /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "flex flex-wrap gap-2",
     "aria-label": tr('solo_gm_suggestions', 'Suggested actions')
   }, shown.choices.map(choice => /*#__PURE__*/React.createElement("button", {
@@ -2604,6 +2605,7 @@ function ConceptQuestSolo({
   }, saved.status === 'saved' ? tr('solo_start_new', 'Start a new adventure') : tr('solo_start', 'Start solo adventure')), !items.length && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-amber-900"
   }, tr('solo_items_required', 'Add at least one assessment question to start an adventure.'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "grid grid-cols-2 gap-2 sm:grid-cols-4",
     "aria-label": tr('solo_progress', 'Adventure progress')
   }, [['solo_health', 'Health', quest.party.hp + '/' + quest.party.maxHp], ['solo_shield', 'Shield', quest.party.shield], ['solo_items_seen', 'Items explored', progress.attempted + '/' + progress.total], ['solo_xp', 'Adventure XP', quest.party.xp]].map(([key, label, value]) => /*#__PURE__*/React.createElement("div", {

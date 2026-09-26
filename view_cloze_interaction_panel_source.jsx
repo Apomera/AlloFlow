@@ -46,7 +46,6 @@ function ClozeInteractionPanel(props) {
                       </h4>
                       <div className="flex items-center gap-2">
                         <button
-                            aria-label={t('common.refresh')}
                             onClick={() => {
                                 setClozeCompletedSet(new Set());
                                 // The solved blanks live here; clearing only the set above changed nothing.

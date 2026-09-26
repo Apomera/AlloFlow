@@ -47,7 +47,8 @@
   header h1 { font-size: 14px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11px; }
   header .spacer { flex: 1 1 auto; }
-  .tpl { display: flex; align-items: center; gap: 6px; }
+  .tpl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; max-width: 100%; }
+  .tpl select { min-width: 0; max-width: 100%; }
   .tpl label { font-size: 11px; color: var(--dim); }
   select, button.hdr { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; font-family: inherit; }
   button.hdr:hover, select:hover { border-color: var(--accent); }
@@ -60,7 +61,7 @@
   .excalidraw { --color-primary: #4f46e5; }
   input.hdr { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; }
   input.hdr::placeholder { color: var(--dim); }
-  input.hdr:focus { outline: none; border-color: var(--accent); }
+  input.hdr:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
   .nameinput { max-width: 170px; }
   button.hdr:disabled { pointer-events: none; }
   button.hdr[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }

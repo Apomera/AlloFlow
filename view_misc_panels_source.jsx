@@ -1248,7 +1248,6 @@ function GroupSessionModal(props) {
                 </div>
                 <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end flex-shrink-0">
                     <button
-                        aria-label={t('common.confirm')}
                         onClick={handleSetShowGroupModalToFalse}
                         className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full transition-colors shadow-md flex items-center gap-2"
                     >
@@ -2662,7 +2661,7 @@ function SourceGenPanel(props) {
                               </div>
                           )}
                       </div>
-                      <button aria-label={t('common.generate_source_text')}
+                      <button
                         data-help-key="source_generate_button"
                         onClick={handleGenerateSource}
                         disabled={(!sourceTopic.trim() && targetStandards.length === 0) || isGeneratingSource} aria-busy={isGeneratingSource}

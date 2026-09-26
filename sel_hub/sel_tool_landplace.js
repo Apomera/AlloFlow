@@ -134,6 +134,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       var _lan_FGD = {'#a855f7':'#c084fc'};
       var _lanFg = function(h){ return _lanHC ? (_lan_FGH[h]||h) : (_lanL ? (_lan_FGL[h]||h) : (_lan_FGD[h]||h)); };
       var _lanBd = function(h){ return _lanHC ? (_lan_BDH[h]||h) : (_lanL ? (_lan_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _lanSolid = function(c){ return _lanHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -499,7 +501,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
               style: { width: '100%', minHeight: 100, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginBottom: 8 }
             }),
             h('button', { onClick: addEntry, 'aria-label': 'Save journal entry',
-              style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _lanBg('#0ea5e9'), color: _lanFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Save entry')
+              style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _lanBg(_lanSolid('#0ea5e9')), color: _lanFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Save entry')
           ),
 
           // Existing entries (newest first)

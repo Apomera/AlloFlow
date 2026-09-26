@@ -5079,7 +5079,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             T('video_studio.gallery_note', 'Kept on this device — they stay here (even if you close this panel) until you remove them. The ' + VS_MAX_STORED_TAKES + ' most recent are kept; download anything you need to keep for good.') +
             ' ' + videos.length + ' · ' + fmtBytes(videos.reduce(function (s, v) { return s + (Number(v.size) || 0); }, 0))),
           videos.length === 0
-            ? h('p', { className: 'text-sm text-slate-400 italic' }, T('video_studio.gallery_empty', 'No videos yet. Record one in the Studio window and press “Send to AlloFlow”.'))
+            ? h('p', { className: 'text-sm text-slate-600 italic' }, T('video_studio.gallery_empty', 'No videos yet. Record one in the Studio window and press “Send to AlloFlow”.'))
             : h('ul', { className: 'space-y-3', role: 'list' }, videos.map(function (v) {
                 return h('li', { key: v.id, className: 'border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row gap-3' },
                   h('video', { src: v.url, controls: true, preload: 'metadata', className: 'w-full sm:w-64 rounded-lg bg-black', 'aria-label': v.title }),

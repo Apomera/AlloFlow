@@ -4383,7 +4383,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                   h('div', { style: { width: 180, color: _dwC('#0f172a'), fontWeight: 500, flexShrink: 0 } }, r.label),
                   h('div', { style: { flex: 1, background: _dwC('#e2e8f0'), height: 18, borderRadius: 4, overflow: 'hidden', position: 'relative' } },
                     h('div', { style: { background: color, height: '100%', width: (r.pct * 100) + '%', transition: 'width 0.4s ease' } }),
-                    h('span', { style: { position: 'absolute', right: 6, top: 0, lineHeight: '18px', fontSize: 11, fontWeight: 700, color: _dwC('#0f172a') } }, pctText)
+                    h('span', { style: { position: 'absolute', right: 6, top: 0, lineHeight: '18px', fontSize: 11, fontWeight: 700, color: _dwC('#0f172a'), background: _dwC('#fff'), padding: '0 4px', borderRadius: 3 } }, pctText)
                   )
                 );
               })
@@ -4662,7 +4662,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
               onChange: function(e) { upd('rfInput', e.target.value); },
               placeholder: 'Everyone at school seems to have more friends than I do...',
               rows: 3,
-              style: { width: '100%', padding: 10, border: '1px solid #f9a8d4', borderRadius: 6, fontSize: 14, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
+              style: { background: _dwC('#fff'), color: _dwC('#0f172a'), width: '100%', padding: 10, border: '1px solid #f9a8d4', borderRadius: 6, fontSize: 14, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
             }),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' } },
               h('button', {
@@ -4861,8 +4861,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 boxShadow: '0 0 0 1px ' + color + ', 0 2px 6px rgba(15, 23, 42, 0.30)',
                 transition: 'all 0.3s ease',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 700, fontSize: 11, lineHeight: 1,
-                textShadow: '0 1px 2px rgba(0,0,0,0.4)'
+                color: '#0f172a', fontWeight: 700, fontSize: 11, lineHeight: 1
               } }, widthPct > 14 ? '💤 sleep' : '💤');
             })()
           ),
@@ -4894,7 +4893,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 h('div', { style: { fontSize: 12, color: _dwC('#475569'), marginTop: 2 } }, 'It is 1 AM and you just looked up — start the 4-minute reset.')),
               h('button', {
                 onClick: function() { upd({ dsActive: true, dsStep: 0, dsDone: {} }); if (announceToSR) announceToSR('Reset routine started'); },
-                style: { padding: '8px 14px', background: _dwC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                style: { padding: '8px 14px', background: _dwCDark ? '#b91c1c' : _dwC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
               }, 'Start reset')
             )
           );
@@ -4965,14 +4964,14 @@ var EDUCATOR_GUIDES_DIGITAL = [
                     if (dsStep < DOOMSCROLL_RESET.length - 1) u.dsStep = dsStep + 1;
                     upd(u);
                   },
-                  style: { padding: '8px 14px', background: _dwC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 14px', background: _dwCDark ? '#b91c1c' : _dwC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                 }, dsStep < DOOMSCROLL_RESET.length - 1 ? 'Done — next →' : 'Done — finish')
               : h('button', {
                   onClick: function() {
                     if (dsStep < DOOMSCROLL_RESET.length - 1) upd('dsStep', dsStep + 1);
                   },
                   disabled: dsStep >= DOOMSCROLL_RESET.length - 1,
-                  style: { padding: '8px 14px', background: _dwC('#94a3b8'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 14px', background: _dwCHC ? _dwC('#94a3b8') : '#475569', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                 }, 'Next →')
           )
         );
@@ -5037,7 +5036,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
               type: 'text', value: tkActivity,
               onChange: function(e) { upd('tkActivity', e.target.value); },
               placeholder: 'learn guitar, train for a 5K, write a story, sleep more...',
-              style: { width: '100%', padding: '10px 12px', border: '1px solid #67e8f9', borderRadius: 6, fontSize: 14, boxSizing: 'border-box' }
+              style: { background: _dwC('#fff'), color: _dwC('#0f172a'), width: '100%', padding: '10px 12px', border: '1px solid #67e8f9', borderRadius: 6, fontSize: 14, boxSizing: 'border-box' }
             }),
             tkActivity && tkActivity.length > 2 && h('p', { 'aria-live': 'polite', style: { margin: '8px 0 0', fontSize: 13, color: _dwC('#0e7490'), fontWeight: 600 } },
               '✓ Worth more to you than the scroll? Then the math is on your side.')
@@ -5452,7 +5451,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
               );
             })
           ),
-          h('div', { style: { padding: 14, background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10 } },
+          h('div', { style: { padding: 14, background: _dwC('#f8fafc'), border: '1px solid #e7e5e4', borderRadius: 10 } },
             h('h3', { style: { margin: '0 0 8px', color: _dwC('#0f172a'), fontSize: 15 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🎯'),
               'The 90-second lateral read'),
@@ -5486,7 +5485,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
             h('div', { style: { fontSize: 12, color: _dwC('#92400e'), fontWeight: 700 } },
               'Score: ' + stScore + ' / ' + SPOT_TELLS_ITEMS.length + (allDone ? ' · Complete!' : ''))
           ),
-          h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#451a03', lineHeight: 1.55 } },
+          h('p', { style: { margin: '0 0 12px', fontSize: 13, color: _dwC('#92400e'), lineHeight: 1.55 } },
             'Read the scenario. Tap every red flag you see. There may be more than one per scenario — and at least one option is a trap. Then check your answer.'),
 
           h('div', { style: { padding: 12, background: _dwC('#fff'), border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 12 } },
@@ -5498,7 +5497,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
           h('div', { style: { display: 'grid', gap: 8 } },
             item.options.map(function(opt, idx) {
               var sel = !!picked[idx];
-              var bg = '#fff';
+              var bg = _dwC('#fff');
               var border = _dwC('#cbd5e1');
               if (submitted) {
                 if (sel && opt.correct) { bg = _dwC('#f0fdf4'); border = '#10b981'; }
@@ -5647,7 +5646,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                   fontSize: 26, color: '#fff'
                 } }, rsc.icon),
                 h('div', { style: { padding: '12px 14px 12px 4px', flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontWeight: 700, fontSize: 15, color: rsc.accent, marginBottom: 2 } }, rsc.name),
+                  h('div', { style: { fontWeight: 700, fontSize: 15, color: _dwCDark ? ({ '#0891b2': '#22d3ee', '#7c3aed': '#a78bfa', '#0d9488': '#2dd4bf', '#db2777': '#f472b6', '#dc2626': '#f87171', '#2563eb': '#93c5fd', '#16a34a': '#4ade80', '#9333ea': '#c084fc', '#ea580c': '#fb923c' })[rsc.accent] || rsc.accent : rsc.accent, marginBottom: 2 } }, rsc.name),
                   h('div', { style: { fontSize: 14, color: _dwC('#0f172a'), fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, rsc.contact),
                   h('div', { style: { fontSize: 13, color: _dwC('#475569'), lineHeight: 1.5 } }, rsc.desc)
                 )
@@ -5752,7 +5751,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 value: newAdultName,
                 onChange: function(e) { upd('newAdultName', e.target.value); },
                 placeholder: 'Ms. Rodriguez',
-                style: { padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, marginTop: 2 }
+                style: { background: _dwC('#fff'), color: _dwC('#0f172a'), padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, marginTop: 2 }
               })
             ),
             h('label', { style: { display: 'flex', flexDirection: 'column', fontSize: 12, color: _dwC('#475569'), flex: '1 1 140px' } },
@@ -5761,7 +5760,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 value: newAdultRole,
                 onChange: function(e) { upd('newAdultRole', e.target.value); },
                 placeholder: 'school counselor',
-                style: { padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, marginTop: 2 }
+                style: { background: _dwC('#fff'), color: _dwC('#0f172a'), padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, marginTop: 2 }
               })
             ),
             h('button', {

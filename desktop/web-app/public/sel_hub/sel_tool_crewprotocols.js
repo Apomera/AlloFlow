@@ -425,6 +425,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       var _cp_FGD = {'#dc2626':'#ef4444'};
       var _cpFg = function(h){ return _cpHC ? (_cp_FGH[h]||h) : (_cpL ? (_cp_FGL[h]||h) : (_cp_FGD[h]||h)); };
       var _cpBd = function(h){ return _cpHC ? (_cp_BDH[h]||h) : (_cpL ? (_cp_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _cpInk = function(c){ return _cpHC || _cpL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -565,11 +567,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                 h('span', null, '📦 ' + p.materials)
               ),
               h('div', { style: { padding: 10, borderRadius: 6, background: _cpBg('#1e293b'), marginBottom: 10 } },
-                h('div', { style: { fontSize: 11, color: _cpFg(cat.color), fontWeight: 700, marginBottom: 4 } }, 'Purpose'),
+                h('div', { style: { fontSize: 11, color: _cpInk(_cpFg(cat.color)), fontWeight: 700, marginBottom: 4 } }, 'Purpose'),
                 h('p', { style: { margin: 0, color: _cpFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, p.purpose)
               ),
               h('div', { style: { marginBottom: 10 } },
-                h('div', { style: { fontSize: 11, color: _cpFg(cat.color), fontWeight: 700, marginBottom: 4 } }, 'Steps'),
+                h('div', { style: { fontSize: 11, color: _cpInk(_cpFg(cat.color)), fontWeight: 700, marginBottom: 4 } }, 'Steps'),
                 h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: _cpFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
                   p.steps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 4 } }, s); })
                 )
@@ -590,7 +592,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                 setCP({ planned: planned });
                 if (addToast) addToast(isPlanned ? 'Removed from plan.' : 'Added to plan.', 'info');
               }, 'aria-label': isPlanned ? 'Remove from plan' : 'Add to plan', 'aria-pressed': isPlanned,
-                style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + cat.color, background: isPlanned ? cat.color : 'transparent', color: isPlanned ? _cpFg('#fff') : cat.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + cat.color, background: isPlanned ? cat.color : 'transparent', color: isPlanned ? _cpFg('#fff') : _cpInk(cat.color), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                 isPlanned ? '✓ Saved to plan' : '+ Save to my Crew plan')
             );
           }),
@@ -749,9 +751,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                     )
                   );
                 })
-              : h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), fontStyle: 'italic' } }, 'No protocols in plan yet.'),
+              : h('div', { style: { fontSize: 12, color: _cpFg('#475569'), fontStyle: 'italic' } }, 'No protocols in plan yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _cpFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _cpFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Crew protocols drawn from EL Education, Restorative Practices (IIRP), Tribes Learning Communities, Responsive Classroom. ',
               'Created with AlloFlow SEL Hub.'
             )

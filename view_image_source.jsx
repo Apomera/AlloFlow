@@ -286,7 +286,7 @@ function ImageView(props) {
                                         <p className="font-bold text-slate-600">{t('visuals.image_not_saved')}</p>
                                         <p className="text-xs">{t('visuals.image_stripped')}</p>
                                     </div>
-                                    <button aria-label={t('common.restore_image')}
+                                    <button
                                         onClick={handleRestoreImage}
                                         disabled={isProcessing} aria-busy={isProcessing}
                                         data-help-key="visuals_regenerate"

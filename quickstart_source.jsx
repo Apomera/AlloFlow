@@ -752,7 +752,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                     data-help-key="wizard_growth_goal_input"
                                     placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.learning_goal_placeholder')}
                                   />
-                                  <button type="button" aria-label={t('common.search_learning_standards')}
+                                  <button type="button"
                                     data-help-key="wizard_find_standard_btn"
                                     onClick={handleGoalSearch}
                                     disabled={isSearching || !learningGoal.trim()}
@@ -818,7 +818,6 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                           <p className="text-slate-600 mb-6 text-sm">{t('wizard.source_desc')}</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <button type="button" data-help-key="wizard_upload_source"
-                                  aria-label={t('common.upload')}
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'file' }));
                                     setStep(3);
@@ -858,7 +857,6 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <span className="text-xs text-slate-600 mt-1">{wt('wizard.storybooks_desc', 'Books, articles, and primary sources')}</span>
                               </button>
                               <button type="button" data-help-key="wizard_generate_source"
-                                  aria-label={t('common.generate')}
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'generate' }));
                                     setStep(3);
@@ -940,7 +938,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       onKeyDown={(e) => e.key === 'Enter' && handleWizardWebFind()}
                                       autoFocus
                                   />
-                                  <button type="button" aria-label={t('common.search_with_ai')}
+                                  <button type="button"
                                       data-help-key="wizard_search_btn"
                                       onClick={handleWizardWebFind}
                                       disabled={isFetching || !localData.searchQuery}
@@ -1452,7 +1450,6 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   {t('wizard.file_helper')}
                               </p>
                               <button type="button"
-                                  aria-label={t('common.upload')}
                                   onClick={() => onComplete({ ...localData, sourceMode: 'file', materialType: 'file' })}
                                   className="bg-indigo-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-700 transition-transform motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center gap-3 mx-auto shadow-xl"
                               >

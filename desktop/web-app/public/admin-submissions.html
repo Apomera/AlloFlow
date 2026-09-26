@@ -16,10 +16,13 @@
   header h1 { font-size: 18px; margin: 0; font-weight: 600; }
   header .who { font-size: 13px; opacity: 0.9; }
   main { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: calc(100vh - 50px); }
+  @media (max-width: 720px) { main { grid-template-columns: minmax(0, 1fr); } aside, section { max-height: none; } aside { border-right: 0; border-bottom: 1px solid var(--rule); } section { padding: 16px; } .meta-grid { grid-template-columns: minmax(0, 1fr); } }
   aside { border-right: 1px solid var(--rule); background: var(--soft); overflow-y: auto; max-height: calc(100vh - 50px); }
   aside .filter { padding: 10px 14px; border-bottom: 1px solid var(--rule); }
   aside select { width: 100%; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 4px; font: inherit; background: #fff; }
-  .sub-item { padding: 10px 14px; border-bottom: 1px solid var(--rule); cursor: pointer; }
+  .sub-item { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: transparent; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; padding: 10px 14px; cursor: pointer; }
+  .sub-item:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+  .sub-item .title, .sub-item .meta { display: block; }
   .sub-item:hover { background: #fff; }
   .sub-item.active { background: #fff; border-left: 3px solid var(--accent); padding-left: 11px; }
   .sub-item .title { font-weight: 600; font-size: 14px; color: var(--navy); margin-bottom: 2px; }
@@ -79,7 +82,7 @@
     <div id="submissionList"><div class="empty">Loading...</div></div>
   </aside>
 
-  <section id="detailPane">
+  <section id="detailPane" tabindex="0" aria-label="Submission details">
     <div class="empty">Select a submission to review.</div>
   </section>
 </main>
@@ -174,15 +177,15 @@
       const piiCount = (item.pii_scan?.findings || []).reduce((sum, f) => sum + (f.count || 0), 0);
       const ts = item.submitted_at?.toDate?.()?.toLocaleString?.() || "—";
       return `
-        <div class="sub-item ${item.id === currentSubId ? "active" : ""}" data-id="${item.id}">
-          <div class="title">${escapeHtml(item.metadata?.title || "(no title)")}</div>
-          <div class="meta">
+        <button type="button" class="sub-item ${item.id === currentSubId ? "active" : ""}" data-id="${item.id}"${item.id === currentSubId ? ' aria-current="true"' : ""}>
+          <span class="title">${escapeHtml(item.metadata?.title || "(no title)")}</span>
+          <span class="meta">
             <span class="status-badge status-${item.status}">${item.status}</span>
             ${escapeHtml(item.metadata?.subject || "—")} · ${escapeHtml(item.metadata?.grade_level || "—")}
             ${piiCount > 0 ? '· <span class="pii-count">' + piiCount + ' PII flag' + (piiCount !== 1 ? "s" : "") + '</span>' : ""}
-          </div>
-          <div class="meta" style="margin-top:2px">${escapeHtml(ts)}</div>
-        </div>
+          </span>
+          <span class="meta" style="margin-top:2px">${escapeHtml(ts)}</span>
+        </button>
       `;
     }).join("");
     list.querySelectorAll(".sub-item").forEach(el => {
@@ -192,7 +195,7 @@
 
   async function loadDetail(id) {
     currentSubId = id;
-    document.querySelectorAll(".sub-item").forEach(el => el.classList.toggle("active", el.dataset.id === id));
+    document.querySelectorAll(".sub-item").forEach(el => { const on = el.dataset.id === id; el.classList.toggle("active", on); if (on) el.setAttribute("aria-current", "true"); else el.removeAttribute("aria-current"); });
     const ref = doc(db, "catalog_submissions", id);
     const snap = await getDoc(ref);
     if (!snap.exists()) {

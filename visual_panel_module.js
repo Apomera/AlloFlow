@@ -1382,7 +1382,6 @@ Return ONLY valid JSON:
     "button",
     {
       type: "button",
-      "aria-label": t("common.toggle_labels"),
       onClick: () => setLabelsHidden(!labelsHidden),
       className: labelsHidden ? "active" : "",
       title: labelsHidden ? "Show Labels" : "Hide Labels (Self-Test)",

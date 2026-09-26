@@ -655,6 +655,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
         return /* @__PURE__ */ React.createElement(
           "div",
           {
+            role: "img",
             key: a.id + ":" + idx,
             className: "absolute pointer-events-none z-40",
             style: {
@@ -806,6 +807,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
       return /* @__PURE__ */ React.createElement(
         "div",
         {
+          role: "group",
           className: "absolute pointer-events-none z-40",
           style: { top: svgY, left: svgX, width: svgW, height: svgH },
           "aria-label": (DRAW_SHAPE_LABELS[shape] || "Drawing") + ": " + title,
@@ -1024,6 +1026,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
       return /* @__PURE__ */ React.createElement(
         "div",
         {
+          role: "group",
           ref: hostRef,
           className: "absolute inset-0 z-[60]",
           style: { cursor: cursorStyle, touchAction: "none" },

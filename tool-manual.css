@@ -197,6 +197,13 @@ body {
 .manual-block a {
     color: var(--mn-accent);
 }
+/* WCAG 1.4.1: links in table cells and <dd> are not covered by shared.css's
+   p/li underline, and ink alone is only 1.47:1 against body text. */
+.manual-block a:not(.btn-primary):not(.btn-secondary) {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+}
 
 .manual-steps,
 .manual-list {

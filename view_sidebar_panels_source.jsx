@@ -1217,7 +1217,7 @@ function AdventurePanel(props) {
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3">
                     {hasSavedAdventure && (
-                        <button type="button" aria-label={t('common.resume_saved_adventure')}
+                        <button type="button"
                             data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
                             disabled={isResumingAdventure}
                             className="w-full bg-white border-2 border-purple-600 text-purple-700 text-sm font-bold py-2 rounded-md hover:bg-purple-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 shadow-sm mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1399,7 +1399,6 @@ function SimplifiedPanel(props) {
                 <button type="button" data-read-original onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing} className={SIDEBAR_PANEL_UI.primaryAction}>{t('sidebar.read_original_with_supports') || 'Read original with supports'}</button>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
                 <button type="button"
-                    aria-label={t('common.generate')}
                     onClick={() => handleGenerate('simplified')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -1497,7 +1496,6 @@ function MathPanel(props) {
                                 data-help-key="math_open_studio"
                                 onClick={openMathCreate}
                     className="w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-indigo-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
-                                aria-label={t('math_create.open_aria') || 'Open Math Studio: create problems, assessments, and fluency practice'}
                             >🧮 {t('math_create.open_button') || 'Math Studio: problems & assessments'}</button>
                         )}
 {mathMode === 'Fluency Probes' && (() => {
@@ -1699,7 +1697,6 @@ function MathPanel(props) {
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('common.generate_math_problems')}
                         data-help-key="math_generate_button"
                         onClick={handleGenerateMath}
                         disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probe' || !aiTextAvailable}
@@ -1905,7 +1902,6 @@ function DbqPanel(props) {
                     )}
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('dbq.generate_aria') || 'Generate DBQ'}
                         data-help-key="dbq_generate_button"
                         onClick={() => handleGenerate('dbq')}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -1970,7 +1966,7 @@ function SourceInputPanel(props) {
                                       onKeyDown={(e) => e.key === 'Enter' && handleAiUrlSearch()}
                                       autoFocus
                                   />
-                                  <button type="button" aria-label={t('common.search_by_url')}
+                                  <button type="button"
                                       onClick={handleAiUrlSearch}
                                       disabled={!urlSearchQuery.trim() || isExtracting}
                                       className="bg-teal-700 text-white text-sm font-medium px-4 rounded-md hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
@@ -2029,7 +2025,6 @@ function SourceInputPanel(props) {
                                   autoFocus
                                 />
                                 <button type="button"
-                                    aria-label={t('common.download')}
                                     onClick={() => handleUrlFetch()}
                                     disabled={!urlToFetch.trim() || isExtracting}
                                     className="bg-indigo-600 text-white text-sm font-medium px-4 rounded-md hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
@@ -2242,7 +2237,6 @@ function GlossaryPanel(props) {
                 </div>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
                 <button type="button"
-                    aria-label={t('common.generate')}
                     onClick={() => handleGenerate('glossary')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -2638,7 +2632,6 @@ function QuizPanel(props) {
       {!aiTextAvailable && <AiSetupNotice t={t} />}
       <button
         type="button"
-        aria-label={t('common.generate')}
         onClick={() => handleGenerate('quiz', null, false, null, {
           quizMode,
           quizMcqCount: clampCount(effectiveMix.mcq || 0, 20),
@@ -2746,7 +2739,6 @@ function TimelinePanel(props) {
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('common.generate')}
                         onClick={() => handleGenerate('timeline')}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
@@ -2848,7 +2840,6 @@ function ConceptSortPanel(props) {
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('common.generate')}
                         data-help-key="concept_sort_generate_button"
                         onClick={() => handleGenerate('concept-sort')}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -2960,7 +2951,6 @@ function BrainstormPanel(props) {
                     {activityMode !== 'simulation' && !aiTextAvailable && <AiSetupNotice t={t} />}
                     {activityMode !== 'simulation' && (
                     <button type="button"
-                        aria-label={t('common.generate')}
                     onClick={() => handleGenerate('brainstorm', null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } })}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -3017,7 +3007,6 @@ function BrainstormPanel(props) {
                              </div>
                         </div>
                         <button type="button"
-                            aria-label={t('common.refresh')}
                             data-help-key="brainstorm_generate_button"
                             onClick={() => handleGenerate('gemini-bridge')}
                             disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
@@ -3147,7 +3136,6 @@ function ImagePanel(props) {
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('common.generate')}
                     onClick={() => handleGenerate('image')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -3195,7 +3183,6 @@ function PersonaPanel(props) {
                     </div>
                     {(personaState.options.length > 0 || (generatedContent && generatedContent.type === 'persona')) && (
                         <button type="button"
-                            aria-label={t('common.ask_question')}
                              aria-current={activeView === 'persona' ? 'page' : undefined}
                             onClick={handleSetActiveViewToPersona}
                             className={`w-full p-3 text-left hover:bg-indigo-50 flex justify-between items-center group border-b border-slate-100 ${activeView === 'persona' ? 'bg-indigo-50 text-indigo-900 font-bold' : 'text-slate-600'}`}
@@ -3208,7 +3195,6 @@ function PersonaPanel(props) {
                         </button>
                     )}
                     <button type="button"
-                        aria-label={t('common.refresh')}
                         data-help-key="persona_generate_button"
                         onClick={() => {
                             handleGeneratePersonas();
@@ -3272,7 +3258,6 @@ function OutlinePanel(props) {
                 </div>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
                 <button type="button"
-                    aria-label={t('common.generate')}
                     data-help-key="outline_generate_button"
                     onClick={() => handleGenerate('outline')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -3326,7 +3311,6 @@ function NoteTakingPanel(props) {
       </div>
       {!aiTextAvailable && <AiSetupNotice t={t} />}
       <button type="button"
-        aria-label={t('common.generate') || 'Generate'}
         data-help-key="note_taking_generate_button"
         onClick={() => handleGenerate('note-taking')}
         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
@@ -3388,7 +3372,6 @@ function AnchorChartPanel(props) {
       </div>
       {!aiTextAvailable && <AiSetupNotice t={t} />}
       <button type="button"
-        aria-label={t('common.generate') || 'Generate'}
         data-help-key="anchor_chart_generate_button"
         onClick={() => handleGenerate('anchor-chart')}
         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
@@ -3435,7 +3418,6 @@ function FaqPanel(props) {
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('common.generate')}
                     onClick={() => handleGenerate('faq')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -3480,7 +3462,6 @@ function SentenceFramesPanel(props) {
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('common.generate')}
                     onClick={() => handleGenerate('sentence-frames')}
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
@@ -3555,7 +3536,6 @@ function AnalysisPanel(props) {
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('common.generate')}
                         data-help-key="analysis_generate_button"
                         onClick={() => handleGenerate('analysis', null, false, inputText, { selectedReadingSourceId: '__input__' })}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
@@ -3580,7 +3560,6 @@ function UiToolWordsoundsPanel(props) {
                             Generate phonics activities from any word list. Includes automatic segmentation, rhyming, and image generation.
                         </p>
                         <button type="button"
-                            aria-label={t('common.generate')}
                             data-help-key="wordsounds_open_btn"
                             onClick={handleOpenWordSounds}
                             className="w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 transition-all motion-reduce:transition-none flex items-center justify-center gap-2"
@@ -3814,7 +3793,6 @@ function GeneratorActionsView(props) {
                 ${activeView === 'analysis' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
               `}>
               <button type="button"
-                  aria-label={t('common.search')}
                 data-help-key="tool_analysis"
                 aria-expanded={expandedTools.includes('analysis')} onClick={() => toggleTool('analysis')}
                 className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors motion-reduce:transition-none"
@@ -3855,7 +3833,6 @@ function GeneratorActionsView(props) {
                 ${activeView === 'simplified' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
               `}>
                 <button type="button"
-                    aria-label={t('common.read')}
                     data-help-key="tool_simplified"
                     aria-expanded={expandedTools.includes('simplified')} onClick={() => toggleTool('simplified')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
@@ -3997,7 +3974,6 @@ function GeneratorActionsView(props) {
                 ${activeView === 'image' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
               `}>
                 <button type="button"
-                    aria-label={t('common.toggle_images')}
                     data-help-key="tool_visual"
                     aria-expanded={expandedTools.includes('image')} onClick={() => toggleTool('image')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors motion-reduce:transition-none"
@@ -4071,7 +4047,6 @@ function GeneratorActionsView(props) {
                 ${activeView === 'persona' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
               `}>
                 <button type="button"
-                    aria-label={t('common.history')}
                     data-help-key="tool_persona"
                     aria-expanded={expandedTools.includes('persona')} onClick={() => toggleTool('persona')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
@@ -4091,7 +4066,6 @@ function GeneratorActionsView(props) {
                 ${activeView === 'timeline' ? 'border-teal-600 shadow-xl shadow-teal-500/20' : 'border-slate-200 hover:border-teal-200 shadow-lg shadow-teal-500/10'}
               `}>
                 <button type="button"
-                    aria-label={t('common.reorder_list')}
                     data-help-key="tool_timeline"
                     aria-expanded={expandedTools.includes('timeline')} onClick={() => toggleTool('timeline')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors motion-reduce:transition-none"
@@ -4111,7 +4085,6 @@ function GeneratorActionsView(props) {
                 ${activeView === 'concept-sort' ? 'border-amber-600 shadow-xl shadow-amber-500/20' : 'border-slate-200 hover:border-amber-200 shadow-lg shadow-amber-500/10'}
               `}>
                 <button type="button"
-                    aria-label={t('common.filter')}
                     data-help-key="tool_concept_sort"
                     onClick={() => toggleTool('concept-sort')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:transition-none"
@@ -4132,7 +4105,6 @@ function GeneratorActionsView(props) {
                 ${activeView === 'dbq' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
               `}>
                 <button type="button"
-                    aria-label={t('sidebar.tool_dbq_aria') || 'Document-Based Questions'}
                     data-help-key="tool_dbq"
                     onClick={() => toggleTool('dbq')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
@@ -4230,7 +4202,6 @@ function GeneratorActionsView(props) {
                 ${activeView === 'quiz' ? 'border-emerald-600 shadow-xl shadow-emerald-500/20' : 'border-slate-200 hover:border-emerald-200 shadow-lg shadow-emerald-500/10'}
               `}>
                 <button type="button"
-                    aria-label={t('common.check')}
                     data-help-key="tool_quiz"
                     aria-expanded={expandedTools.includes('quiz')} onClick={() => toggleTool('quiz')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors motion-reduce:transition-none"
@@ -4544,7 +4515,6 @@ function SourceInputShellView(props) {
                         {showUrlInput ? t('common.cancel') : t('common.link')}
                      </button>
                      <button type="button"
-                         aria-label={t('common.generate')}
                         data-help-key="source_generate_btn" onClick={() => {
                             if (!showSourceGen && !expandedTools.includes('source-input')) {
                                 setExpandedTools(prev => [...prev, 'source-input']);

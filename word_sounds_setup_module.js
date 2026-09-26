@@ -2889,7 +2889,6 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     "button",
     {
       type: "button",
-      "aria-label": t("common.show"),
       "data-help-key": "ws_gen_review_btn",
       onClick: onShowReview,
       className: "px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
@@ -3196,7 +3195,6 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     "button",
     {
       type: "button",
-      "aria-label": t("common.confirm"),
       onClick: handleAiGenerate,
       disabled: isAiGenerating,
       className: "bg-violet-600 text-white px-3 py-1 rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50"

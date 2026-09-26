@@ -1066,7 +1066,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'flex gap-2' },
               h('input', { type: 'text', value: customCulture, onChange: function(e) { upd('customCulture', e.target.value); },
                 placeholder: 'e.g., Hmong, Somali diaspora, Deaf culture, Cajun... (don’t share personal info)',
-                className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300 bg-white text-slate-800',
                 onKeyDown: function(e) { if (e.key === 'Enter' && customCulture.trim()) { updMulti({ culture: customCulture.trim(), tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(customCulture.trim(), 'traditions'); } },
                 'aria-label': 'Search for a culture'
               }),
@@ -1458,7 +1458,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', {  className: 'text-sm font-bold ' + (isCurrent ? 'text-rose-700' : 'text-slate-800') }, m.month.substring(0, 3)),
                 h('div', {  className: 'text-xs text-slate-600 mt-0.5' }, m.celebrations.length + ' events'),
-                isCurrent && h('div', {  className: 'text-xs text-rose-500 font-bold mt-0.5' }, 'This Month'),
+                isCurrent && h('div', {  className: 'text-xs text-rose-700 font-bold mt-0.5' }, 'This Month'),
                 isViewed && !isCurrent && h('div', {  className: 'text-xs text-cyan-500 font-bold mt-0.5' }, '\u2713')
               );
             })
@@ -1597,14 +1597,14 @@ window.SelHub = window.SelHub || {
               h('div', null,
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase block mb-1' }, 'Culture 1'),
                 h('input', { type: 'text', value: compCulture1, onChange: function(e) { upd('compCulture1', e.target.value); },
-                  placeholder: 'e.g., Japanese (don’t share personal info)', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  placeholder: 'e.g., Japanese (don’t share personal info)', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300 bg-white text-slate-800',
                   'aria-label': 'First culture to compare'
                 })
               ),
               h('div', null,
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase block mb-1' }, 'Culture 2'),
                 h('input', { type: 'text', value: compCulture2, onChange: function(e) { upd('compCulture2', e.target.value); },
-                  placeholder: 'e.g., Mexican (don’t share personal info)', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  placeholder: 'e.g., Mexican (don’t share personal info)', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300 bg-white text-slate-800',
                   'aria-label': 'Second culture to compare'
                 })
               )
@@ -1688,7 +1688,7 @@ window.SelHub = window.SelHub || {
               h('p', { className: 'text-xs font-bold text-teal-600 mb-1' }, '\uD83E\uDD14 Reflect'),
               h('p', { className: 'text-sm text-teal-800 italic' }, compResult.reflection),
               h('textarea', { value: d.compReflection || '', onChange: function(e) { upd('compReflection', e.target.value); },
-                placeholder: 'Write your thoughts...', className: 'mt-2 w-full text-sm p-3 border border-teal-600 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300',
+                placeholder: 'Write your thoughts...', className: 'mt-2 w-full text-sm p-3 border border-teal-600 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800',
                 'aria-label': 'Comparison reflection'
               })
             ),
@@ -1772,7 +1772,7 @@ window.SelHub = window.SelHub || {
               h('p', { className: 'text-xs font-bold text-teal-600 mb-1' }, '\uD83E\uDD14 Reflect'),
               h('p', { className: 'text-sm text-teal-800 italic' }, cultureData.reflection),
               h('textarea', { value: d.reflectionText || '', onChange: function(e) { upd('reflectionText', e.target.value); },
-                placeholder: 'Write your reflection...', className: 'mt-2 w-full text-sm p-3 border border-teal-600 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300', 'aria-label': 'Culture reflection' })
+                placeholder: 'Write your reflection...', className: 'mt-2 w-full text-sm p-3 border border-teal-600 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800', 'aria-label': 'Culture reflection' })
             ),
 
             // Learn more
@@ -1787,7 +1787,7 @@ window.SelHub = window.SelHub || {
                 h('input', { type: 'text', value: d.followUpQ || '', onChange: function(e) { upd('followUpQ', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
                   placeholder: 'What else would you like to know? (don’t share personal info)',
-                  className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300 bg-white text-slate-800',
                   'aria-label': 'Follow-up question'
                 }),
                 h('button', { onClick: function() { if (d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
@@ -1827,7 +1827,7 @@ window.SelHub = window.SelHub || {
           // Quiz not started
           !quizActive && h('div', {  className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
             h('div', {  className: 'text-5xl' }, '\uD83C\uDF0D'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Test your knowledge of world cultures! Answer 10 multiple-choice questions.'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Test your knowledge of world cultures! Answer 10 multiple-choice questions.'),
             quizBestScore > 0 && h('p', { className: 'text-xs text-cyan-600 font-bold' }, '\uD83C\uDFC6 Best score: ' + quizBestScore + '/10'),
             h('button', { 'aria-label': 'Start quiz', onClick: startQuiz,
               className: 'px-6 py-3 bg-cyan-700 text-white rounded-lg text-sm font-bold hover:bg-cyan-700 transition-colors'
@@ -1955,7 +1955,7 @@ window.SelHub = window.SelHub || {
                       upd('journalEntries', newEntries);
                     },
                     placeholder: 'Write your thoughts...',
-                    className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300',
+                    className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800',
                   }),
                   entryVal.length > 20 && !completed && h('button', { 'aria-label': 'Save reflection for: ' + jp.prompt, onClick: function() {
                       var newCompleted = journalPromptsCompleted.concat([jp.id]);
@@ -1993,7 +1993,7 @@ window.SelHub = window.SelHub || {
             h('h4', { className: 'text-sm font-bold text-cyan-700 mb-2' }, '\uD83C\uDF0D What have you learned about the world \u2014 and about yourself?'),
             h('textarea', { value: d.journalEntry || '', onChange: function(e) { upd('journalEntry', e.target.value); },
               placeholder: 'What surprised you? What connections did you find between cultures? How does learning about others change how you see yourself?',
-              className: 'w-full text-sm p-3 border border-cyan-600 rounded-lg resize-none h-32 outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': 'Culture journal entry'
+              className: 'w-full text-sm p-3 border border-cyan-600 rounded-lg resize-none h-32 outline-none focus:ring-2 focus:ring-cyan-300 bg-white text-slate-800', 'aria-label': 'Culture journal entry'
             }),
             d.journalEntry && d.journalEntry.length > 30 && h('button', { onClick: function() {
                 var newCount = journalCount + 1;
@@ -2028,19 +2028,19 @@ window.SelHub = window.SelHub || {
 
           h('div', { className: 'text-center mb-3' },
             h('span', { className: 'text-2xl font-black text-cyan-600' }, badgesEarned.length),
-            h('span', { className: 'text-sm text-slate-600 ml-1' }, '/ ' + BADGES.length + ' badges earned')
+            h('span', { className: 'text-sm text-slate-300 ml-1' }, '/ ' + BADGES.length + ' badges earned')
           ),
 
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             BADGES.map(function(badge) {
               var earned = badgesEarned.indexOf(badge.id) >= 0;
               return h('div', { key: badge.id, className: 'bg-white rounded-xl border-2 p-4 flex items-center gap-3 transition-all ' +
-                  (earned ? 'border-amber-300 bg-amber-50' : 'border-slate-200 opacity-60')
+                  (earned ? 'border-amber-300 bg-amber-50' : 'border-dashed border-slate-400')
                 },
                 h('div', { className: 'text-2xl' }, earned ? badge.emoji : '\uD83D\uDD12'),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-300') }, badge.label),
-                  h('div', { className: 'text-xs ' + (earned ? 'text-amber-700' : 'text-slate-300') }, badge.desc)
+                  h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-600') }, badge.label),
+                  h('div', { className: 'text-xs ' + (earned ? 'text-amber-700' : 'text-slate-600') }, badge.desc)
                 ),
                 earned && h('span', { className: 'text-green-500 text-lg font-bold' }, '\u2713')
               );

@@ -8,7 +8,9 @@ describe('Glossary Health Check controls', () => {
     expect(source).not.toContain('onClick={handleToggleShowHealthCheckPanel} className="w-full flex items-center justify-between');
     expect(source).not.toContain('role="button" tabIndex={0}><div className="flex items-center gap-2"');
     expect(source).toContain('type="button"\n    onClick={handleToggleShowHealthCheckPanel}');
-    expect(source).toContain('type="button"\n      aria-label={t(\'common.re_run_analysis\')}');
+    // Visible "Re-analyze" is the name (WCAG 2.5.3); a generic aria-label must not replace it.
+    expect(source).not.toContain("aria-label={t('common.re_run_analysis')}");
+    expect(source).toContain('<RefreshCw size={14} aria-hidden="true" /> Re-analyze</button>');
     expect(source).toContain('type="button"\n      aria-label={t(\'common.dismiss_analysis\')}');
   });
 

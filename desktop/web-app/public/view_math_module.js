@@ -1385,7 +1385,6 @@ function MathView(props) {
     className: "ml-0 sm:ml-12 p-3 bg-slate-50 border border-slate-400 rounded-lg text-center text-sm text-slate-600 italic flex items-center justify-center gap-2 mt-4"
   }, isIndependentMode ? /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.show_math_answers'),
     onClick: handleSetShowMathAnswersToTrue,
     disabled: !canSetShowMathAnswers,
     className: "flex min-h-[44px] items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold transition-colors py-2 px-4 hover:bg-white rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
@@ -1551,7 +1550,6 @@ function MathView(props) {
     className: "mt-8 flex justify-center pb-4"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.generate_content'),
     onClick: handleGenerateSimilar,
     disabled: !canHandleGenerateSimilar || isProcessing,
     "aria-busy": isProcessing,

@@ -1,0 +1,123 @@
+{
+ "startedAt": "2026-09-26T05:00:02.586Z",
+ "group": "educator",
+ "items": [
+  {
+   "name": "Document Hub",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Document settings",
+   "dialogs": [
+    {
+     "name": "Document Builder",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "Page Designer",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON 📂 Open .allostudio.json",
+   "dialogs": [
+    {
+     "name": "AlloStudio",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "✏️ Whiteboard Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Educator Tools",
+   "dialogs": []
+  },
+  {
+   "name": "🧵 Learning Web: Unit Path Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Educator Tools",
+   "dialogs": [
+    {
+     "name": "Learning Web: Unit Path",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🎥 Video Studio Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Close Video Studio panel",
+   "dialogs": [
+    {
+     "name": "Video Studio",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🪧 Symbol Studio AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "DIV 🎨\nSymbol Studio\n\nAI-powered symbol bank",
+   "dialogs": [
+    {
+     "name": "Symbol Studio",
+     "modal": "true"
+    }
+   ]
+  }
+ ],
+ "names": [
+  "☆ Favorites",
+  "Help me build a lesson",
+  "Document Hub",
+  "Lumen",
+  "Whiteboard",
+  "Page Designer",
+  "Collapse section",
+  "🪄 BLUEPRINT MODE Help me build a lesson Answer a few questions, then build a differentiated lesson step by step with AlloBot.",
+  "💡 Lumen Research sources or explore data in one evidence workspace. Cite exact passages and keep uncertainty and provenance visible.",
+  "📄 Document Hub Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)",
+  "✏️ Whiteboard Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export.",
+  "🧵 Learning Web: Unit Path Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web.",
+  "🎨 Page Designer Create flyers, worksheets, posters, and slide decks with accessible exports, reading order, alt text, and a hand/AI process record.",
+  "🎥 Video Studio Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools.",
+  "🪧 Symbol Studio AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing",
+  "📊 AlloSheet (Pilot) Explore educator data with agent assistance, review every change before applying it, and run local audits.",
+  "🗓️ Polls & Sign-ups Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code — no account required.",
+  "🗒️ Assessment Center Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress.",
+  "🩺 Dynamic Assessment Create dynamic, standard-aligned assessment tasks for diagnostic checks",
+  "👁️ BehaviorLens FBA/BIP behavioral observation, ABC data collection, and 80+ clinical tools",
+  "📝 Report Writer AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms",
+  "♿ Document accessibility Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats.",
+  "🔍 Accessibility Lab Verify the student experience: preview as student, keyboard-only tour, live WCAG audit (axe-core) with violations framed by student impact, screen-reader announcement preview, and disability simulators (low-vision, color-blindness, dyslexia, motor delay).",
+  "🗂️ Community Catalog Browse open-licensed lessons from the AlloFlow community, or submit your own for review",
+  "📇 Research Suite Run a named study: IRB tracking, consent provenance, Likert instruments, fidelity logs, and the study bundle export.",
+  "🎓 Professional Development Work through short, self-paced modules, take a knowledge check, and download a completion record.",
+  "🏛️ Leadership Hub For leaders: conduct UDL walkthroughs, examine disproportionality patterns, and document meetings with aggregate or de-identified, device-only data. Reports are descriptive, not evaluative.",
+  "🎟️ School Rewards & Store Award recognition points and open the school-owned rewards ledger and prize store. The ledger lives in your school Google Workspace; the staff share link and setup checklist are inside.",
+  "✉️ Communications Studio Family updates, batch report-card comments, recommendation letters and replies to families, drafted only from your notes. Codenames only, plain-language check, optional translation draft, send to your Drive. Nothing is emailed from here."
+ ],
+ "errors": []
+}

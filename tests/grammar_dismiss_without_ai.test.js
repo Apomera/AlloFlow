@@ -219,7 +219,7 @@ describe('analysis grammar updates persist through the host artifact boundary', 
     const props = makeProps(['Spelling: lazy'], {selectedGrammarErrors:new Set([0]),callGemini:vi.fn().mockResolvedValue(corrected),onCorrectAnalysisText:vi.fn().mockResolvedValue(true)});
     props.generatedContent.id = 'analysis-a';
     const el = renderView(props);
-    await act(async()=>{el.querySelector('[aria-label="common.fix_grammar_errors"]').click();});
+    await act(async()=>{[...el.querySelectorAll('button')].find(b=>b.textContent.includes('analysis.fix_grammar_button')).click();});
     expect(props.onCorrectAnalysisText).toHaveBeenCalledWith('analysis-a',props.generatedContent.data.originalText,corrected,['Spelling: lazy']);
     expect(props.setGeneratedContent).not.toHaveBeenCalled(); expect(props.setInputText).not.toHaveBeenCalled();
     expect(props.addToast).toHaveBeenCalledWith('process.grammar_fixed','success');
@@ -228,7 +228,7 @@ describe('analysis grammar updates persist through the host artifact boundary', 
     const props = makeProps(['Spelling: lazy'], {selectedGrammarErrors:new Set([0]),callGemini:vi.fn().mockResolvedValue('The quick brown fox jumps over the lazi dog.'),onCorrectAnalysisText:vi.fn().mockResolvedValue(false)});
     props.generatedContent.id = 'analysis-a';
     const el = renderView(props);
-    await act(async()=>{el.querySelector('[aria-label="common.fix_grammar_errors"]').click();});
+    await act(async()=>{[...el.querySelectorAll('button')].find(b=>b.textContent.includes('analysis.fix_grammar_button')).click();});
     expect(props.addToast).toHaveBeenCalledWith('analysis.grammar_source_changed','warning');
     expect(props.addToast).not.toHaveBeenCalledWith('process.grammar_fixed','success');
     expect(props.setInputText).not.toHaveBeenCalled();
@@ -258,7 +258,7 @@ describe('source review context and built-in AI cleanup', () => {
     });
     try {
       const el=renderView(p);
-      await act(async()=>{el.querySelector('button[aria-label="common.fix_grammar_errors"]').click();for(let i=0;i<12;i++)await Promise.resolve();});
+      await act(async()=>{[...el.querySelectorAll('button')].find(b=>b.textContent.includes('analysis.fix_grammar_button')).click();for(let i=0;i<12;i++)await Promise.resolve();});
       expect(destroy).toHaveBeenCalledOnce();expect(p.callGemini).toHaveBeenCalledOnce();
       expect(p.onCorrectAnalysisText).toHaveBeenCalledOnce();
     } finally {window.ai=previous;}

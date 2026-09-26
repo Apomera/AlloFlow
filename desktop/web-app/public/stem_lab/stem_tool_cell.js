@@ -24128,7 +24128,7 @@ var d = labToolData.cell || {};
 [data-cell-visibility-identity]{display:flex;align-items:center;gap:8px;min-width:0;color:#35574a}
 [data-cell-visibility-identity] strong{display:block;font-size:12px;line-height:1.4;font-weight:700;overflow-wrap:anywhere}
 [data-cell-visibility-dot]{width:8px;height:8px;border-radius:50%;background:var(--cell-visibility-accent);flex-shrink:0}
-[data-cell-visibility-state]{display:block;font-size:10px;font-weight:500;color:#687b73;margin-top:2px}
+[data-cell-visibility-state]{display:block;font-size:10px;font-weight:500;color:#5b6b65;margin-top:2px}
 [data-cell-visibility-mark]{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;flex-shrink:0;background:#e6ece9;color:#64786d;font-size:12px}
 [data-cell-visibility-option][aria-pressed=true] [data-cell-visibility-mark]{background:#397e5c;color:white}
 [data-cell-visibility-panel] button:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
@@ -24149,7 +24149,7 @@ var d = labToolData.cell || {};
 [data-cell-mode=observe] [data-cell-organism-option]{display:flex;flex-direction:column;align-items:stretch;min-width:0}
 [data-cell-mode=observe] [data-cell-organism-card-header]{min-height:20px}
 [data-cell-gallery-classification]{display:block;font-size:11px!important;line-height:1.45!important;font-weight:650;color:#43685c;margin-top:7px}
-[data-cell-gallery-movement]{font-size:11px!important;line-height:1.5!important;color:#697d76;margin-top:5px!important;margin-bottom:12px}
+[data-cell-gallery-movement]{font-size:11px!important;line-height:1.5!important;color:#5b6b65;margin-top:5px!important;margin-bottom:12px}
 [data-cell-gallery-footer]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px 8px;margin-top:auto;border-top:1px solid #dce9e2;padding-top:10px;font-size:10px;line-height:1.4;color:#617a70}
 [data-cell-gallery-status]{font-weight:750;color:#356a57}
 [data-cell-observation-state=selected] [data-cell-gallery-status]{padding:3px 7px;border-radius:5px;background:#d3ece0;color:#21503e}

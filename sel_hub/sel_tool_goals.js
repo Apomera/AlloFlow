@@ -1171,6 +1171,8 @@ window.SelHub = window.SelHub || {
       var _goaBg = function(h){ return _goaHC ? (_goa_BGH[h]||h) : (_goaL ? (_goa_BGL[h]||h) : (_goa_BGD[h]||h)); };
       var _goaFg = function(h){ return _goaHC ? (_goa_FGH[h]||h) : (_goaL ? (_goa_FGL[h]||h) : h); };
       var _goaBd = function(h){ return _goaHC ? (_goa_BDH[h]||h) : (_goaL ? (_goa_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _goaInk = function(c){ return _goaHC || _goaL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var toolData = ctx.toolData;
@@ -2463,7 +2465,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: section.key, style: { marginBottom: 14, padding: 14, borderRadius: 12, background: section.color + '08', border: '1px solid ' + section.color + '22' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
                     h('span', { style: { fontSize: 16 } }, section.emoji),
-                    h('span', { style: { fontSize: 13, fontWeight: 'bold', color: section.color } }, section.label)
+                    h('span', { style: { fontSize: 13, fontWeight: 'bold', color: _goaInk(section.color) } }, section.label)
                   ),
                   h('textarea', { value: visionBoard[section.key] || '', 'aria-label': section.label + ' vision', onChange: function(e) { updateVision(section.key, e.target.value); }, placeholder: section.hint, style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid ' + section.color + '22', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
                 );

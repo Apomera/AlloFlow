@@ -275,7 +275,6 @@ function StudentSaveAdventurePanel({
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      aria-label={t('common.resume_saved_adventure')}
                       data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
                       disabled={isResumingAdventure}
                       className={cx('w-full py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
@@ -285,7 +284,6 @@ function StudentSaveAdventurePanel({
                     </button>
                     <button
                       type="button"
-                      aria-label={t('common.start_adventure')}
                       data-help-key="adventure_start_btn" onClick={handleStartAdventure}
                       disabled={isResumingAdventure}
                       className={cx('w-full py-3 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondaryPurple, styles.focusPurple, styles.focusOffset)}

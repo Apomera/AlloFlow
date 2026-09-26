@@ -1041,7 +1041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'font-bold text-sm text-purple-800' }, t('stem.a11yauditor.john_slatin_accessu', 'John Slatin AccessU')),
                   h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.a11yauditor.annual_hands_on_training_conference_hy', 'Annual hands-on training conference (hybrid). Named after Dr. John Slatin, it teaches practical skills in coding, usability, and inclusive design. Next session: May 11\u201314, 2026.')),
-                  h('div', { className: 'text-[0.6875rem] text-purple-500 font-bold mt-2' }, t('stem.a11yauditor.knowbility_org_programs_accessu', '\uD83D\uDD17 knowbility.org/programs/accessu'))
+                  h('div', { className: 'text-[0.6875rem] text-purple-700 font-bold mt-2' }, t('stem.a11yauditor.knowbility_org_programs_accessu', '\uD83D\uDD17 knowbility.org/programs/accessu'))
                 )
               )
             ),
@@ -1052,7 +1052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'font-bold text-sm text-teal-800' }, t('stem.a11yauditor.accessibility_internet_rally_air', 'Accessibility Internet Rally (AIR)')),
                   h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.a11yauditor.an_8_week_global_online_competition_pa', 'An 8-week global online competition pairing volunteer web professionals with nonprofits to build accessible websites. Started as a one-day hackathon and evolved into Knowbility\u2019s signature program.')),
-                  h('div', { className: 'text-[0.6875rem] text-teal-500 font-bold mt-2' }, t('stem.a11yauditor.knowbility_org_programs_air', '\uD83D\uDD17 knowbility.org/programs/air'))
+                  h('div', { className: 'text-[0.6875rem] text-teal-700 font-bold mt-2' }, t('stem.a11yauditor.knowbility_org_programs_air', '\uD83D\uDD17 knowbility.org/programs/air'))
                 )
               )
             )
@@ -1184,10 +1184,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           h('div', { className: 'bg-blue-50 border border-blue-200 rounded-2xl p-5' },
             h('h4', { className: 'text-sm font-black text-blue-800 mb-2' }, t('stem.a11yauditor.how_to_file', '\uD83D\uDCCB How to File')),
             h('ol', { className: 'space-y-2 text-xs text-blue-900' },
-              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '1.'), t('stem.a11yauditor.contact_the_entity_s_ada_coordinator_f', 'Contact the entity\u2019s ADA Coordinator first \u2014 they can often resolve issues quickly.')),
-              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '2.'), t('stem.a11yauditor.if_unresolved_file_with_the_doj_at_ada', 'If unresolved, file with the DOJ at ada.gov/file-a-complaint/')),
-              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '3.'), t('stem.a11yauditor.you_can_also_mail_u_s_doj_civil_rights', 'You can also mail: U.S. DOJ, Civil Rights Division, 950 Pennsylvania Ave NW, Washington DC 20530')),
-              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '4.'), t('stem.a11yauditor.ada_info_line_1_800_514_0301_voice_1_8', 'ADA Info Line: 1-800-514-0301 (voice) / 1-833-610-1264 (TTY)'))
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-700' }, '1.'), t('stem.a11yauditor.contact_the_entity_s_ada_coordinator_f', 'Contact the entity\u2019s ADA Coordinator first \u2014 they can often resolve issues quickly.')),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-700' }, '2.'), t('stem.a11yauditor.if_unresolved_file_with_the_doj_at_ada', 'If unresolved, file with the DOJ at ada.gov/file-a-complaint/')),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-700' }, '3.'), t('stem.a11yauditor.you_can_also_mail_u_s_doj_civil_rights', 'You can also mail: U.S. DOJ, Civil Rights Division, 950 Pennsylvania Ave NW, Washington DC 20530')),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-700' }, '4.'), t('stem.a11yauditor.ada_info_line_1_800_514_0301_voice_1_8', 'ADA Info Line: 1-800-514-0301 (voice) / 1-833-610-1264 (TTY)'))
             )
           )
         ),
@@ -1214,8 +1214,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
             AUDIT_BADGES.map(function(badge) {
               var earned = badges.indexOf(badge.id) >= 0;
-              return h('div', { key: badge.id, className: 'text-center p-3 rounded-xl border-2 transition-all ' + (earned ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50') },
-                h('div', { className: 'text-2xl' }, badge.icon),
+              return h('div', { key: badge.id, className: 'text-center p-3 rounded-xl border-2 transition-all ' + (earned ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-50 border-dashed border-slate-400') },
+                h('div', { className: 'text-2xl' + (earned ? '' : ' grayscale') }, badge.icon),
                 h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mt-1' }, badge.name),
                 h('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, __alloT('stem.a11yauditor.' + (badge.id) + '_desc', badge.desc))
               );

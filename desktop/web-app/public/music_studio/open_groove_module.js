@@ -2448,7 +2448,7 @@
       return h('svg', {
         style: styles.staffSvg,
         viewBox: '0 0 ' + staffEngraving.width + ' ' + staffEngraving.height,
-        role: 'img',
+        role: 'group',
         'aria-label': 'Editable engraved ' + (staffEngraving.clefLabel || staffEngraving.clef || 'treble') + ' staff'
       }, children);
     }
@@ -4230,7 +4230,7 @@
                     disabled: !selectedStaffNote,
                     'aria-label': selectedStaffNote ? 'Delete selected staff note' : 'No staff note selected'
                   }, 'Delete Note')),
-                h('div', { style: styles.staffNoteList, role: 'list', 'aria-label': 'Staff notes in selected bar' },
+                h('div', { style: styles.staffNoteList, role: 'group', 'aria-label': 'Staff notes in selected bar' },
                   currentBarStaffNotes.length ? currentBarStaffNotes.map(function (note) {
                     return h('button', {
                       key: 'staff-note-row-' + note.id,
@@ -4239,7 +4239,7 @@
                       'aria-label': 'Select ' + note.pitch + ' at beat ' + note.startBeat + ' in bar ' + note.bar
                     }, note.pitch + ' - beat ' + note.startBeat + ' - ' + staffDurationTokenFor(note).toUpperCase());
                   }) : h('span', { style: styles.muted }, 'No staff notes in this bar.'))),
-                h('div', { style: styles.staffNoteList, role: 'list', 'aria-label': 'Staff rests in selected bar' },
+                h('div', { style: styles.staffNoteList, role: 'group', 'aria-label': 'Staff rests in selected bar' },
                   currentBarStaffRests.length ? currentBarStaffRests.map(function (rest, restIndex) {
                     var restSelected = selectedStaffRest && selectedStaffRest.barIndex === selectedBar && selectedStaffRest.startBeat === rest.startBeat;
                     return h('button', {

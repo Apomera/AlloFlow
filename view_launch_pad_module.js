@@ -952,6 +952,7 @@
             }
           `), /*#__PURE__*/React.createElement("div", {
     className: "lp-utility-bar",
+    role: "group",
     "aria-label": copy('launch_pad.utilities_label', 'Launch Pad settings')
   }, !_isCanvasEnv && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",

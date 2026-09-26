@@ -168,6 +168,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       var _sleBg = function(h){ return _sleHC ? (_sle_BGH[h]||h) : (_sleL ? (_sle_BGL[h]||h) : h); };
       var _sleFg = function(h){ return _sleHC ? (_sle_FGH[h]||h) : (_sleL ? (_sle_FGL[h]||h) : h); };
       var _sleBd = function(h){ return _sleHC ? (_sle_BDH[h]||h) : (_sleL ? (_sle_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _sleInk = function(c){ return _sleHC || _sleL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _sleSolid = function(c){ return _sleHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -387,11 +391,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             return h('div', { key: b.id, style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + b.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 24 } }, b.icon),
-                h('span', { style: { fontSize: 15, fontWeight: 800, color: b.color } }, b.label)
+                h('span', { style: { fontSize: 15, fontWeight: 800, color: _sleInk(b.color) } }, b.label)
               ),
               h('p', { style: { margin: '0 0 10px', color: _sleFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } }, b.what),
               h('div', { style: { padding: 10, borderRadius: 6, background: _sleBg('#1e293b') } },
-                h('div', { style: { fontSize: 11, color: b.color, fontWeight: 700, marginBottom: 6 } }, '✓ What helps'),
+                h('div', { style: { fontSize: 11, color: _sleInk(b.color), fontWeight: 700, marginBottom: 6 } }, '✓ What helps'),
                 h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _sleFg('#e2e8f0'), fontSize: 13, lineHeight: 1.75 } },
                   b.helps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 3 } }, s); })
                 )
@@ -435,6 +439,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           var validQuality = diary.filter(function(e) { return !isNaN(e.quality); });
           avgHours = validHours.length > 0 ? (validHours.reduce(function(s, e) { return s + e.hours; }, 0) / validHours.length).toFixed(1) : 0;
           avgQuality = validQuality.length > 0 ? (validQuality.reduce(function(s, e) { return s + e.quality; }, 0) / validQuality.length).toFixed(1) : 0;
+        }
         var experimentGroups = {};
         diary.forEach(function(e) {
           var label = (e.experiment || '').trim();
@@ -452,7 +457,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             avgQuality: qualityRows.length ? (qualityRows.reduce(function(sum, e) { return sum + e.quality; }, 0) / qualityRows.length).toFixed(1) : null,
             avgHours: hourRows.length ? (hourRows.reduce(function(sum, e) { return sum + e.hours; }, 0) / hourRows.length).toFixed(1) : null
           };
-        });        }
+        });
 
         return h('div', null,
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: _sleFg('#bae6fd'), lineHeight: 1.65 } },
@@ -534,7 +539,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             h('input', { id: 'sl-experiment', type: 'text', placeholder: 'e.g. charge phone outside bedroom',
               style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12, marginBottom: 8 } }),
             h('button', { onClick: addEntry, 'aria-label': 'Add diary entry',
-              style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _sleBg('#0ea5e9'), color: _sleFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add entry')
+              style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _sleBg(_sleSolid('#0ea5e9')), color: _sleFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add entry')
           ),
 
           // Entry list
@@ -678,7 +683,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
 
             // Diary summary stats
             diary.length > 0 ? h('div', { style: { marginBottom: 18, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _sleBg('#0ea5e9'), color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary summary'),
+              h('div', { style: { background: _sleBg(_sleSolid('#0ea5e9')), color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary summary'),
               h('div', { style: { padding: '4px 12px', fontSize: 13, color: _sleFg('#0f172a'), lineHeight: 1.85 } },
                 h('div', null, h('strong', null, 'Entries: '), diary.length),
                 h('div', null, h('strong', null, 'Average hours slept: '), avgHours),
@@ -688,7 +693,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
 
             // Diary entries table
             diary.length > 0 ? h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { background: _sleBg('#0ea5e9'), color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary entries'),
+              h('div', { style: { background: _sleBg(_sleSolid('#0ea5e9')), color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary entries'),
               h('table', { 'aria-label': 'Sleep diary entries', style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, color: _sleFg('#0f172a') } },
                 h('thead', null,
                   h('tr', { style: { borderBottom: '2px solid #cbd5e1' } },
@@ -713,9 +718,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
                   })
                 )
               )
-            ) : h('div', { style: { fontSize: 12, color: _sleFg('#94a3b8'), fontStyle: 'italic' } }, 'No diary entries yet.'),
+            ) : h('div', { style: { fontSize: 12, color: _sleFg('#475569'), fontStyle: 'italic' } }, 'No diary entries yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _sleFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _sleFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Based on AAP / CDC adolescent sleep guidance. ',
               'Created with AlloFlow SEL Hub.'
             )

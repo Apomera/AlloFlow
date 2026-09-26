@@ -198,7 +198,7 @@ function AdventureTurnRecovery({ t, theme, immersive = false, loading, onRetry }
         <p className="mt-1 text-sm leading-relaxed text-[var(--av-muted)]">{t('adventure.interrupted_desc')}</p>
       </div>
     </div>
-    <button type="button" aria-label={t('common.retry_adventure_turn')} onClick={onRetry} disabled={loading || typeof onRetry !== 'function'}
+    <button type="button" onClick={onRetry} disabled={loading || typeof onRetry !== 'function'}
       className="mt-4 min-h-11 w-full sm:w-auto px-4 py-3 flex items-center justify-center gap-2 rounded-xl border border-[var(--av-control)] bg-[var(--av-wash)] text-[var(--av-ink)] text-sm font-semibold hover:bg-[var(--av-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed">
       <RefreshCw size={16} aria-hidden="true" className={loading ? 'animate-spin motion-reduce:animate-none' : ''} />{t('adventure.retry_action')}
     </button>
@@ -289,7 +289,7 @@ function AdventureConsequenceCard({ consequence, t, immersive = false, theme = '
         {changes.length > 0 ? <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {changes.map(function (change, index) { return <div key={index} className="rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] px-3 py-3 min-w-0">
             <dt className="text-xs text-[var(--av-muted)] mb-1">{typeof change.key === 'string' && (change.key.startsWith('resource:') || change.key.startsWith('inventory:')) ? String(change.label || '').slice(0, 80) : label('metric_' + change.key, String(change.label || '').slice(0, 80))}</dt>
-            <dd className="tabular-nums flex flex-wrap items-baseline gap-x-2 gap-y-1"><span className="text-sm text-[var(--av-muted)]">{change.before}</span><span className="text-[var(--av-accent)]" aria-label={label('to', 'to')}>→</span><strong className="text-lg leading-tight">{change.after}</strong>{change.unit && <span className="text-xs text-[var(--av-muted)]">{String(change.unit).slice(0, 30)}</span>}</dd>
+            <dd className="tabular-nums flex flex-wrap items-baseline gap-x-2 gap-y-1"><span className="text-sm text-[var(--av-muted)]">{change.before}</span><span role="img" className="text-[var(--av-accent)]" aria-label={label('to', 'to')}>→</span><strong className="text-lg leading-tight">{change.after}</strong>{change.unit && <span className="text-xs text-[var(--av-muted)]">{String(change.unit).slice(0, 30)}</span>}</dd>
           </div>; })}
         </dl> : <p className="text-xs">{label('no_changes', 'No tracked values changed this turn.')}</p>}
       </div>
@@ -1344,7 +1344,7 @@ function AdventureView(props) {
                                     turn but only shown on the game-over Mission Report — now visible DURING
                                     play so students/teachers see learning progress as it happens. */}
                                 {(adventureState.stats?.conceptsFound || []).length > 0 && (
-                                    <div className="bg-[var(--av-wash)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex flex-wrap items-center gap-1.5 text-[var(--av-ink)] min-w-0"
+                                    <div role="group" className="bg-[var(--av-wash)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex flex-wrap items-center gap-1.5 text-[var(--av-ink)] min-w-0"
                                         title={(t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', ')}
                                         aria-label={(t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', ')}
                                     >
@@ -1424,7 +1424,7 @@ function AdventureView(props) {
                                 <span className="hidden sm:inline">{t('adventure.view_button')}</span>
                             </button>
                             )}
-                            <button type="button" aria-label={t('common.start_new_adventure')}
+                            <button type="button"
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure} disabled={adventureState.isLoading || isProcessing}
                                 className="min-w-11 min-h-11 flex items-center gap-2 bg-[var(--av-surface)] text-[var(--av-ink)] border border-[var(--av-control)] px-3 py-2 rounded-xl text-xs font-semibold hover:bg-[var(--av-wash)] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
                             >

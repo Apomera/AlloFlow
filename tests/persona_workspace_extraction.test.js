@@ -79,12 +79,12 @@ describe('Persona workspace extraction', () => {
     act(() => button(t('persona.mode_panel')).click());
     expect(p.setPersonaState.mock.calls[0][0]({ mode: 'single', selectedCharacters: [], retained: true })).toMatchObject({ mode: 'panel', retained: true });
     update({ ...p, personaState: { mode: 'panel', selectedCharacters: [] } });
-    expect(button(t('common.start_panel_chat')).disabled).toBe(true);
+    expect(button(t('persona.start_panel')).disabled).toBe(true);
     act(() => host.querySelector('[data-help-key="persona_select_button"]').click());
     expect(p.handleTogglePanelSelection).toHaveBeenCalledTimes(1);
     update({ ...p, personaState: { mode: 'panel', selectedCharacters: p.generatedContent.data } });
-    expect(button(t('common.start_panel_chat')).disabled).toBe(false);
-    act(() => button(t('common.start_panel_chat')).click()); expect(p.handleStartPanelChat).toHaveBeenCalledTimes(1);
+    expect(button(t('persona.start_panel')).disabled).toBe(false);
+    act(() => button(t('persona.start_panel')).click()); expect(p.handleStartPanelChat).toHaveBeenCalledTimes(1);
   });
   it('blocks selection, mode changes, and teacher editing while generation is busy', () => {
     const p = render(fixture({ isGeneratingPersona: true }));

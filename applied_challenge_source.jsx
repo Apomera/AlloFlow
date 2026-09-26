@@ -1776,7 +1776,7 @@ function AppliedChallengePanel(props) {
           <textarea aria-label={tx('applied_challenge.panel.instructions_aria', 'Custom instructions for applied challenge')} value={customInstructions} onChange={(event) => setCustomInstructions(event.target.value)} maxLength={2000} rows={3} placeholder={tx('applied_challenge.panel.instructions_placeholder', 'Use a local issue, require two alternatives...')} className='mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900' />
         </label>
       </div>
-      <div className='mx-3 mb-3 rounded-xl border border-orange-200 bg-white p-3 text-sm' aria-label={tx('applied_challenge.panel.summary', 'Your task settings')}>
+      <div role="group" className='mx-3 mb-3 rounded-xl border border-orange-200 bg-white p-3 text-sm' aria-label={tx('applied_challenge.panel.summary', 'Your task settings')}>
         <p className='font-bold'>{appliedChallengeScopeText(scope, 'label', t)}{plan.availableTime && ' · ' + plan.availableTime}</p>
         <p className='mt-1'>{appliedChallengeScopeText(scope, 'description', t)}</p><p className='mt-2'>{appliedChallengeAgencyText(agencyMode, 'description', t)}</p>
         <p className='mt-2'>{plan.supportLevel === 'example' ? tx('applied_challenge.plan.example', 'Start with a parallel example') : plan.supportLevel === 'independent' ? tx('applied_challenge.plan.independent', 'Independent start; help stays available') : tx('applied_challenge.plan.prompt', 'Thinking prompts available')}</p>

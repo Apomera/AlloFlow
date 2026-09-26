@@ -3138,8 +3138,8 @@
               e('div', { className: 'text-lg font-extrabold text-slate-900' }, tr('readinglib_collection_' + collection.id + '_label', collection.label)),
               e('div', { className: 'text-sm font-semibold text-slate-700' }, tr('readinglib_collection_' + collection.id + '_sources', collection.sourceLine)),
               e('p', { className: 'text-sm text-slate-600 leading-snug flex-1' }, tr('readinglib_collection_' + collection.id + '_summary', collection.summary)),
-              e('div', { className: 'text-[11px] font-semibold text-slate-500' },
-                available ? langCount + ' ' + tr('readinglib_languages', 'languages') : tr('readinglib_collection_next', 'Ready for a licensed-source import'))
+              e('div', { className: 'text-[11px] font-semibold text-slate-600' },
+                available ? langCount + ' ' + (langCount === 1 ? tr('readinglib_language', 'language') : tr('readinglib_languages', 'languages')) : tr('readinglib_collection_next', 'Ready for a licensed-source import'))
             );
           })
         )

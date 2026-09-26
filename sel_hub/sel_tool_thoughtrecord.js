@@ -463,9 +463,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
                     printRow('7. Emotion re-rating', e.emotion2Rating + '/100')
                   );
                 })
-              : h('div', { style: { fontSize: 12, color: _thFg('#94a3b8'), fontStyle: 'italic' } }, 'No records yet.'),
+              : h('div', { style: { fontSize: 12, color: _thFg('#475569'), fontStyle: 'italic' } }, 'No records yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _thFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _thFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'CBT Thought Record from Beck, Burns, Padesky. Created with AlloFlow SEL Hub.'
             )
           ),

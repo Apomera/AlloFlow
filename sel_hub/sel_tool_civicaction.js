@@ -1000,7 +1000,7 @@ window.SelHub = window.SelHub || {
 
         // ── Badges ribbon ──
         earnedBadges.length > 0 && h('div', { className: 'flex gap-2 flex-wrap bg-amber-50 border border-amber-200 rounded-xl p-2' },
-          h('span', { className: 'text-xs font-bold text-amber-600 uppercase self-center' }, 'Badges:'),
+          h('span', { className: 'text-xs font-bold text-amber-700 uppercase self-center' }, 'Badges:'),
           earnedBadges.map(function(bid) {
             var badge = BADGES.find(function(b) { return b.id === bid; });
             if (!badge) return null;
@@ -1144,7 +1144,7 @@ window.SelHub = window.SelHub || {
               value: d.freeWrite || '',
               onChange: function(e) { upd('freeWrite', e.target.value); },
               placeholder: 'Write freely about what you are thinking and feeling. Nobody will see this unless you choose to share it.',
-              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300'
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
             })
           ),
 
@@ -1171,7 +1171,7 @@ window.SelHub = window.SelHub || {
                 type: 'text', value: d.issueText || '',
                 onChange: function(e) { upd('issueText', e.target.value); },
                 placeholder: 'e.g., climate change, inequality, bullying, gun violence, housing...',
-                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
               })
             ),
             h('div', null,
@@ -1181,7 +1181,7 @@ window.SelHub = window.SelHub || {
                 value: d.whyItMatters || '',
                 onChange: function(e) { upd('whyItMatters', e.target.value); },
                 placeholder: 'Connect this issue to your life, your values, or people you care about...',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-teal-300'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
               })
             ),
             h('div', null,
@@ -1191,7 +1191,7 @@ window.SelHub = window.SelHub || {
                 value: d.whoAffected || '',
                 onChange: function(e) { upd('whoAffected', e.target.value); },
                 placeholder: 'Think about the people and communities most impacted...',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
               })
             )
           ),
@@ -1385,7 +1385,7 @@ window.SelHub = window.SelHub || {
                 upd('plannerData', newData);
               },
               placeholder: 'Write your response here...',
-              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300'
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
             }),
             h('div', { className: 'flex justify-between' },
               plannerStep > 0 ? h('button', { 'aria-label': 'Previous',
@@ -1448,7 +1448,7 @@ window.SelHub = window.SelHub || {
                 value: d.petitionTitle || '',
                 onChange: function(e) { upd('petitionTitle', e.target.value); },
                 placeholder: 'e.g., "Add Recycling Bins to Every Classroom"',
-                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
               })
             ),
             h('div', null,
@@ -1458,7 +1458,7 @@ window.SelHub = window.SelHub || {
                 value: d.petitionDesc || '',
                 onChange: function(e) { upd('petitionDesc', e.target.value); },
                 placeholder: 'Explain the problem and why this change is important...',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
               })
             ),
             h('div', null,
@@ -1468,7 +1468,7 @@ window.SelHub = window.SelHub || {
                 value: d.petitionAsks || '',
                 onChange: function(e) { upd('petitionAsks', e.target.value); },
                 placeholder: '1. \n2. \n3. ',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
               })
             ),
             d.petitionTitle && d.petitionDesc && h('button', { 'aria-label': 'Save Petition Draft',
@@ -1507,8 +1507,8 @@ window.SelHub = window.SelHub || {
                     var isChosen = chosen === oi;
                     var showResult = chosen !== undefined;
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
-                    if (showResult && isChosen) btnClass += 'border-teal-400 bg-teal-50 font-bold';
-                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-600 hover:bg-teal-50';
+                    if (showResult && isChosen) btnClass += 'border-teal-400 bg-teal-50 font-bold text-slate-800';
+                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-600 hover:bg-teal-50 text-slate-800';
                     else btnClass += 'border-slate-200 bg-slate-50 text-slate-400';
                     return h('div', { key: oi },
                       h('button', { 'aria-label': opt.text,
@@ -1875,7 +1875,7 @@ window.SelHub = window.SelHub || {
               value: surveyTitle,
               onChange: function(e) { upd('surveyTitle', e.target.value); },
               placeholder: 'e.g., "Our Community Needs Assessment"',
-              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
+              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
             })
           ),
 
@@ -1915,7 +1915,7 @@ window.SelHub = window.SelHub || {
               value: surveyCustomQ,
               onChange: function(e) { upd('surveyCustomQ', e.target.value); },
               placeholder: 'Type your question here...',
-              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
+              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
             }),
             h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'Open-ended',
@@ -1935,7 +1935,7 @@ window.SelHub = window.SelHub || {
                 value: surveyCustomOpts,
                 onChange: function(e) { upd('surveyCustomOpts', e.target.value); },
                 placeholder: 'e.g., Strongly Agree, Agree, Neutral, Disagree, Strongly Disagree',
-                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
               })
             ),
             surveyCustomQ.length > 5 && h('button', { 'aria-label': '+ Add Question to Survey',
@@ -2129,7 +2129,7 @@ window.SelHub = window.SelHub || {
                   value: rightsScenarioAnswer,
                   onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
                   placeholder: 'Write your response here.',
-                  className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300'
+                  className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
                 }),
                 rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', {
                   'aria-label': 'Get feedback on your response',
@@ -2158,7 +2158,7 @@ window.SelHub = window.SelHub || {
                   onClick: function() { updMulti({ rightsIdx: rightsIdx - 1, rightsScenarioAnswer: '' }); },
                   className: 'px-3 py-1.5 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
                 }, '\u2190 Previous') : h('div'),
-                h('div', { className: 'text-xs text-slate-400 font-bold' }, totalExplored + ' / ' + totalItems + ' explored'),
+                h('div', { className: 'text-xs text-slate-300 font-bold' }, totalExplored + ' / ' + totalItems + ' explored'),
                 rightsIdx < activeSection.items.length - 1 ? h('button', {
                   'aria-label': 'Next item',
                   onClick: function() { updMulti({ rightsIdx: rightsIdx + 1, rightsScenarioAnswer: '' }); },
@@ -2171,7 +2171,7 @@ window.SelHub = window.SelHub || {
                   'aria-label': 'Complete',
                   onClick: function() { awardBadge('rights_scholar'); ctx.awardXP(15); addToast('You have explored all of Rights & Dissent.', 'success'); ctx.celebrate(); },
                   className: 'px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800'
-                }, '\u2728 Complete') : h('div', { className: 'text-xs text-slate-400 italic' }, 'Visit every item to finish')
+                }, '\u2728 Complete') : h('div', { className: 'text-xs text-slate-300 italic' }, 'Visit every item to finish')
               )
             );
           })() : (function() {
@@ -2229,7 +2229,7 @@ window.SelHub = window.SelHub || {
                       value: rightsScenarioAnswer,
                       onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
                       placeholder: 'Write your response here. Think about rights and responsibilities...',
-                      className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300'
+                      className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
                     }),
                     rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', { 'aria-label': 'Get feedback on your response',
                       onClick: function() {
@@ -2351,7 +2351,7 @@ window.SelHub = window.SelHub || {
                     upd('serviceNotes', newNotes);
                   },
                   placeholder: 'Write your notes, plans, and progress here...',
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300'
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
                 }),
 
                 // Hour tracker
@@ -2549,8 +2549,8 @@ window.SelHub = window.SelHub || {
                     var stars = '';
                     for (var s = 0; s < 5; s++) stars += s < choice.score ? '\u2605' : '\u2606';
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
-                    if (showResult && isChosen) btnClass += choice.score >= 4 ? 'border-emerald-400 bg-emerald-50' : choice.score >= 3 ? 'border-amber-400 bg-amber-50' : 'border-red-600 bg-red-50';
-                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-indigo-600 hover:bg-indigo-50';
+                    if (showResult && isChosen) btnClass += (choice.score >= 4 ? 'border-emerald-400 bg-emerald-50' : choice.score >= 3 ? 'border-amber-400 bg-amber-50' : 'border-red-600 bg-red-50') + ' text-slate-800';
+                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-indigo-600 hover:bg-indigo-50 text-slate-800';
                     else btnClass += 'border-slate-200 bg-slate-50 text-slate-300';
                     return h('div', { key: ci },
                       h('button', { 'aria-label': choice.text,
@@ -2909,7 +2909,7 @@ window.SelHub = window.SelHub || {
                     id: 'talk-' + f.key, value: currentDraft[f.key] || '',
                     onChange: function(e) { updateDraft(f.key, e.target.value); },
                     placeholder: f.placeholder, rows: 2,
-                    className: 'w-full text-sm p-2 border border-slate-300 rounded'
+                    className: 'w-full text-sm p-2 border border-slate-300 rounded bg-white text-slate-800'
                   })
                 );
               }),
@@ -2991,7 +2991,7 @@ window.SelHub = window.SelHub || {
               value: d.visionText || '',
               onChange: function(e) { upd('visionText', e.target.value); },
               placeholder: 'Describe the world you want to help create...',
-              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300'
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
             }),
             d.visionText && d.visionText.length > 20 && h('button', { 'aria-label': 'Save My Vision',
               onClick: function() {

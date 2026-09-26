@@ -2136,13 +2136,12 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: b.id, style: {
                   padding: 16, borderRadius: 14, textAlign: 'center',
                   background: earned ? _jouBg('#0f172a') : '#0f172a88',
-                  border: '1px solid ' + (earned ? ACCENT_MED : '#334155'),
-                  opacity: earned ? 1 : 0.5,
+                  border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : '#475569'),
                   transition: 'all 0.2s'
                 } },
-                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, b.icon),
+                  h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: earned ? _jouFg('#f1f5f9') : _jouFg('#94a3b8'), marginBottom: 2 } }, b.name),
-                  h('div', { style: { fontSize: 10, color: earned ? _jouFg('#94a3b8') : '#475569', lineHeight: 1.4 } }, b.desc),
+                  h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8'), lineHeight: 1.4 } }, b.desc),
                   earned && h('div', { style: { fontSize: 11, color: _jouFg(ACCENT), marginTop: 4 } }, '\u2713 ' + new Date(earnedBadges[b.id]).toLocaleDateString())
                 );
               })

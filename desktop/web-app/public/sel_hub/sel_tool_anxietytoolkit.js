@@ -1102,7 +1102,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               )
             ) : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _anxFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _anxFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'CBT-for-anxiety: Beck Institute · Padesky · AACAP. ',
               'Created with AlloFlow SEL Hub.'
             )

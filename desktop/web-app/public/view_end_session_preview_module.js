@@ -154,6 +154,7 @@ function EndSessionPreview({
     }, tx('end_session.may_need_launch_support', '{count} may need launch support', {
       count: organizer.followUpCodenames.length
     }))), /*#__PURE__*/React.createElement("div", {
+      role: "group",
       className: "mt-2 flex flex-wrap gap-1.5",
       "aria-label": tx('end_session.organizer_activity_outcomes', 'Visual organizer activity outcomes')
     }, labels.map(([status, label]) => /*#__PURE__*/React.createElement("span", {
@@ -203,12 +204,14 @@ function EndSessionPreview({
   }, (endSessionPreview.summary.insightBrief.followUpCodenames || []).length), /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-bold text-slate-600"
   }, tx('end_session.follow_up', 'Follow-up')))), (endSessionPreview.summary.insightBrief.byKind || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "mt-3 flex flex-wrap gap-1.5",
     "aria-label": tx('end_session.activity_participation_by_type', 'Activity participation by type')
   }, endSessionPreview.summary.insightBrief.byKind.map(item => /*#__PURE__*/React.createElement("span", {
     key: item.kind,
     className: "rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-bold text-indigo-800"
   }, item.kind.replace(/_/g, ' '), " \xB7 ", item.submitted, "/", item.invited))), (endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "mt-3 rounded-xl border border-violet-200 bg-white p-3",
     "aria-label": tx('end_session.evidence_cohorts_follow_up', 'Evidence cohorts and targeted follow-up')
   }, /*#__PURE__*/React.createElement("div", {

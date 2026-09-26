@@ -1,0 +1,252 @@
+{
+ "startedAt": "2026-09-26T05:07:30.744Z",
+ "width": 1280,
+ "theme": "dark",
+ "states": [
+  {
+   "name": "teacher-loaded",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "color-contrast",
+     "count": 8
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "opened: Learning Tools",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "color-contrast",
+     "count": 14
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "opened: Educator Tools",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "color-contrast",
+     "count": 14
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "opened: Teach Live",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "color-contrast",
+     "count": 11
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "opened: Start & setup",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "color-contrast",
+     "count": 10
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "expanded: Analyze Source Material",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "aria-valid-attr-value",
+     "count": 1
+    },
+    {
+     "id": "color-contrast",
+     "count": 24
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "expanded: Glossary",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "aria-valid-attr-value",
+     "count": 1
+    },
+    {
+     "id": "color-contrast",
+     "count": 25
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "expanded: Text Adaptation",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "aria-valid-attr-value",
+     "count": 1
+    },
+    {
+     "id": "color-contrast",
+     "count": 26
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "expanded: Lesson Images",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "aria-valid-attr-value",
+     "count": 1
+    },
+    {
+     "id": "color-contrast",
+     "count": 24
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "expanded: Assess",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "aria-valid-attr-value",
+     "count": 1
+    },
+    {
+     "id": "color-contrast",
+     "count": 24
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  },
+  {
+   "name": "after-launchers",
+   "violations": [],
+   "incomplete": [
+    {
+     "id": "aria-valid-attr-value",
+     "count": 1
+    },
+    {
+     "id": "color-contrast",
+     "count": 26
+    }
+   ],
+   "width": 1280,
+   "viewport": 1280
+  }
+ ],
+ "dialogs": [
+  {
+   "launcher": "Learning Tools",
+   "opened": [
+    {
+     "role": "dialog",
+     "id": "",
+     "modal": "true",
+     "name": "🧩 Learning Tools",
+     "focusInside": true
+    }
+   ],
+   "violations": [],
+   "escapeCloses": true,
+   "focusReturned": true,
+   "activeAfterEscape": "BUTTON Learning Tools"
+  },
+  {
+   "launcher": "Educator Tools",
+   "opened": [
+    {
+     "role": "dialog",
+     "id": "",
+     "modal": "true",
+     "name": "🛠️ Educator Tools",
+     "focusInside": true
+    }
+   ],
+   "violations": [],
+   "escapeCloses": true,
+   "focusReturned": true,
+   "activeAfterEscape": "BUTTON Educator Tools"
+  },
+  {
+   "launcher": "Teach Live",
+   "opened": [
+    {
+     "role": "dialog",
+     "id": "",
+     "modal": "true",
+     "name": "Teach live",
+     "focusInside": true
+    }
+   ],
+   "violations": [],
+   "escapeCloses": true,
+   "focusReturned": true,
+   "activeAfterEscape": "BUTTON Teach Live"
+  },
+  {
+   "launcher": "Start & setup",
+   "opened": [
+    {
+     "role": "dialog",
+     "id": "",
+     "modal": "true",
+     "name": "Start & setup",
+     "focusInside": true
+    }
+   ],
+   "violations": [],
+   "escapeCloses": true,
+   "focusReturned": true,
+   "activeAfterEscape": "BUTTON Start & setup"
+  }
+ ],
+ "tools": [],
+ "appliedTheme": "theme-dark",
+ "launchers": [
+  "Teacher Grading Dashboard",
+  "Learning Tools",
+  "Educator Tools",
+  "Teach Live",
+  "Start & setup",
+  "More information",
+  "Create",
+  "History",
+  "Collapse",
+  "Universal Settings 5th Grade · English",
+  "Analyze Source Material",
+  "Glossary",
+  "Text Adaptation",
+  "Lesson Images",
+  "Assess"
+ ],
+ "errors": [],
+ "blocked": [
+  "https://cdn.jsdelivr.net"
+ ]
+}

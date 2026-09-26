@@ -113,7 +113,7 @@ function LiveSessionDockView(props) {
                           </div>
                         </div>
                         {countBadges.length > 0 && (
-                          <div aria-label="Student activity launch summary" style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:8}}>
+                          <div role="group" aria-label="Student activity launch summary" style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:8}}>
                             {countBadges.map(item => (
                               <span key={item.key} style={{border:'1px solid '+item.border,borderRadius:999,background:item.background,color:item.color,padding:'0.12rem 0.38rem',fontSize:'0.64rem',fontWeight:900}}>
                                 {liveOrganizerSummary[item.key]} {item.label}

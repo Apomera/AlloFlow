@@ -481,7 +481,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                 </div>
             </div>
         </div>
-        <div className={cx('rounded-xl p-4 mb-6', styles.panelSoft)} aria-labelledby={summaryId}>
+        <div role="group" className={cx('rounded-xl p-4 mb-6', styles.panelSoft)} aria-labelledby={summaryId}>
             <h4 id={summaryId} className={cx('text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2', styles.muted)}>{t('modals.work_summary')}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div className={cx('flex items-center gap-2 text-sm', styles.text)}>
@@ -521,7 +521,6 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
             </p>
             <button
                 type="button"
-                aria-label={t('common.close')}
                 onClick={onClose}
                 disabled={submitting}
                 className={cx('w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95', styles.secondary)}
@@ -604,7 +603,7 @@ const DraftFeedbackInterface = React.memo(({
                     data-help-key="mastery_draft_input"
                 />
                 <div className="mt-4 flex justify-end">
-                    <button type="button" aria-label={t('common.next')}
+                    <button type="button"
                         onClick={onSubmit}
                         disabled={!draftText.trim()}
                         className={cx('font-bold py-3 px-8 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 flex items-center gap-2', styles.primary)}
@@ -682,7 +681,7 @@ const DraftFeedbackInterface = React.memo(({
             </div>
         </div>
         <div className="sticky bottom-6 z-50 flex justify-center">
-            <button type="button" aria-label={t('common.next')}
+            <button type="button"
                 onClick={onSubmit}
                 className={cx('font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95', styles.primary)}
             >
@@ -729,7 +728,6 @@ const DraftFeedbackInterface = React.memo(({
              </div>
         )}
         <button type="button"
-            aria-label={t('common.cancel')}
             onClick={onCancel}
             className={cx('font-bold py-3 px-12 rounded-full shadow-lg transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95', styles.primary)}
         >

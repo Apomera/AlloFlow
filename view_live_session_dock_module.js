@@ -431,6 +431,7 @@ function LiveSessionDockView(props) {
         opacity: interactiveOrganizerSync.status === 'stopping' ? 0.65 : 1
       }
     }, interactiveOrganizerSync.status === 'stopping' ? 'Stopping…' : 'Stop for students'))), countBadges.length > 0 && /*#__PURE__*/React.createElement("div", {
+      role: "group",
       "aria-label": "Student activity launch summary",
       style: {
         display: 'flex',

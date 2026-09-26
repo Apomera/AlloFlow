@@ -1,0 +1,417 @@
+{
+ "startedAt": "2026-09-26T04:37:43.351Z",
+ "group": "learning",
+ "items": [
+  {
+   "name": "☆ Favorites",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON ★ Favorites",
+   "dialogs": [
+    {
+     "name": "🧩 Learning Tools",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "Learning Web: Explore",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Close Learning Web Explorer",
+   "dialogs": [
+    {
+     "name": "Learning Web",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "Research Hub",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Close",
+   "dialogs": [
+    {
+     "name": "Research & Inquiry Hub",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "STEAM Lab",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Learning Tools",
+   "dialogs": []
+  },
+  {
+   "name": "Reading Library",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Learning Tools",
+   "dialogs": [
+    {
+     "name": "Reading Library",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "Collapse section",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Expand section",
+   "dialogs": [
+    {
+     "name": "🧩 Learning Tools",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "💡 Lumen Study Ask questions, inspect exact supporting passages, and save source-grounded notes.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Learning Tools",
+   "dialogs": []
+  },
+  {
+   "name": "📚 Reading Library Browse picture books, longer reads, textbooks, and primary sources",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Learning Tools",
+   "dialogs": [
+    {
+     "name": "Reading Library",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🔬 STEAM Lab 100+ interactive math & science explorations",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Learning Tools",
+   "dialogs": []
+  },
+  {
+   "name": "📃 Text Inquiry Studio Inspect frequency and concordance, then test an interpretation against exceptions and context.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Learning Tools",
+   "dialogs": []
+  },
+  {
+   "name": "A/文 Lingua Practice Build vocabulary, practice speaking, and rehearse real conversations",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "H3 Practice language from what you are lear",
+   "dialogs": [
+    {
+     "name": "Lingua Practice",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🎯 Test Prep Hub Accessible practice packs for licensure, vocational, and professional exams",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "SECTION 🧭\nTest Prep Hub\n\nAccessible practice, t",
+   "dialogs": [
+    {
+     "name": "Test Prep Hub",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "💖 SEL Hub Social-emotional learning for self-awareness & growth",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Learning Tools",
+   "dialogs": []
+  },
+  {
+   "name": "⏱️ Screen Coach Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Learning Tools",
+   "dialogs": []
+  },
+  {
+   "name": "📑 Research Hub Scientific Inquiry, Engineering Design, and Humanities research — one inquiry journal, three lanes.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Close",
+   "dialogs": [
+    {
+     "name": "Research & Inquiry Hub",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🕸️ Learning Web: Explore Explore standards, concepts, lessons, evidence, and word connections in one accessible map.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Close Learning Web Explorer",
+   "dialogs": [
+    {
+     "name": "Learning Web",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🕰️ Timeline Studio Turn readings into interactive timelines, or build one by hand.",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Close Timeline Studio",
+   "dialogs": [
+    {
+     "name": "Timeline Studio",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "📖 StoryForge Create illustrated stories with AI writing tools",
+   "violations": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": [
+      {
+       "target": [
+        ".border-blue-500.bg-blue-50.text-blue-700 > .opacity-75.text-\\[10px\\].leading-snug"
+       ],
+       "html": "<div class=\"text-[10px] leading-snug opacity-75 mt-0.5\">A clean, focused writing canvas</div>",
+       "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.75 (foreground color: #5278e2, background color: #eff6ff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+       "target": [
+        "button[title=\"A lined, notebook-style canvas\"] > .opacity-75.text-\\[10px\\].leading-snug"
+       ],
+       "html": "<div class=\"text-[10px] leading-snug opacity-75 mt-0.5\">A lined, notebook-style canvas</div>",
+       "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4 (foreground color: #75808f, background color: #ffffff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+       "target": [
+        ".hover\\:border-blue-300.p-2\\.5.text-left:nth-child(3) > .opacity-75.text-\\[10px\\].leading-snug"
+       ],
+       "html": "<div class=\"text-[10px] leading-snug opacity-75 mt-0.5\">A darker canvas for comfortable writing</div>",
+       "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4 (foreground color: #75808f, background color: #ffffff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1"
+      }
+     ]
+    }
+   ],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "SUMMARY Open project menu",
+   "dialogs": [
+    {
+     "name": "StoryForge Creative Writing Studio",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🎭 LitLab Bring stories to life with character voices & literary analysis",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Close",
+   "dialogs": [
+    {
+     "name": "LitLab",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🍃 PoetTree Write poems with form scaffolds, rhyme & meter analysis, AI feedback",
+   "violations": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": [
+      {
+       "target": [
+        "#pt-tab-form"
+       ],
+       "html": "<button id=\"pt-tab-form\" role=\"tab\" aria-selected=\"true\" aria-controls=\"pt-panel-form\" tabindex=\"0\" style=\"padding: 8px 14px; border-radius: 10px; border: none; background: rgb(13, 148, 136); color: rgb(255, 255, 255); font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;\">",
+       "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.74 (foreground color: #ffffff, background color: #0d9488, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+      }
+     ]
+    }
+   ],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Open privacy and data controls",
+   "dialogs": [
+    {
+     "name": "PoetTree",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🎛️ Open Groove Studio Make beats, shape synths, and connect patterns to real composition and notation.",
+   "violations": [
+    {
+     "id": "aria-required-children",
+     "impact": "critical",
+     "help": "Certain ARIA roles must contain particular children",
+     "nodes": [
+      {
+       "target": [
+        "div[aria-label=\"Staff notes in selected bar\"]"
+       ],
+       "html": "<div role=\"list\" aria-label=\"Staff notes in selected bar\" style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 108px), 1fr)); gap: 6px; min-width: 0px;\">",
+       "summary": "Fix any of the following:\n  Element has children which are not allowed: button[aria-label]"
+      },
+      {
+       "target": [
+        "div[aria-label=\"Staff rests in selected bar\"]"
+       ],
+       "html": "<div role=\"list\" aria-label=\"Staff rests in selected bar\" style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 108px), 1fr)); gap: 6px; min-width: 0px;\">",
+       "summary": "Fix any of the following:\n  Element has children which are not allowed: button[aria-label]"
+      }
+     ]
+    },
+    {
+     "id": "nested-interactive",
+     "impact": "serious",
+     "help": "Interactive controls must not be nested",
+     "nodes": [
+      {
+       "target": [
+        "svg[viewBox=\"0 0 680 158\"]"
+       ],
+       "html": "<svg viewBox=\"0 0 680 158\" role=\"img\" aria-label=\"Editable engraved Treble staff\" style=\"width: 100%; min-height: 148px; display: block; border: 1px solid rgb(203, 213, 225); background: rgb(255, 255, 255); touch-action: manipulation;\">",
+       "summary": "Fix any of the following:\n  Element has focusable descendants"
+      }
+     ]
+    }
+   ],
+   "incomplete": [
+    "aria-prohibited-attr",
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "DIV MILESTONE 0\nOpen Groove Studio\nMusic lea",
+   "dialogs": [
+    {
+     "name": "Open Groove Studio",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🌿 AlloHaven A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt.",
+   "violations": [],
+   "incomplete": [
+    "aria-prohibited-attr",
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Got it",
+   "dialogs": [
+    {
+     "name": "AlloHaven",
+     "modal": "true"
+    },
+    {
+     "name": "Welcome to AlloHaven",
+     "modal": "true"
+    }
+   ]
+  }
+ ],
+ "names": [
+  "☆ Favorites",
+  "Learning Web: Explore",
+  "Research Hub",
+  "STEAM Lab",
+  "Reading Library",
+  "Collapse section",
+  "💡 Lumen Study Ask questions, inspect exact supporting passages, and save source-grounded notes.",
+  "📚 Reading Library Browse picture books, longer reads, textbooks, and primary sources",
+  "🔬 STEAM Lab 100+ interactive math & science explorations",
+  "📃 Text Inquiry Studio Inspect frequency and concordance, then test an interpretation against exceptions and context.",
+  "A/文 Lingua Practice Build vocabulary, practice speaking, and rehearse real conversations",
+  "🎯 Test Prep Hub Accessible practice packs for licensure, vocational, and professional exams",
+  "💖 SEL Hub Social-emotional learning for self-awareness & growth",
+  "⏱️ Screen Coach Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work.",
+  "📑 Research Hub Scientific Inquiry, Engineering Design, and Humanities research — one inquiry journal, three lanes.",
+  "🕸️ Learning Web: Explore Explore standards, concepts, lessons, evidence, and word connections in one accessible map.",
+  "🕰️ Timeline Studio Turn readings into interactive timelines, or build one by hand.",
+  "📖 StoryForge Create illustrated stories with AI writing tools",
+  "🎭 LitLab Bring stories to life with character voices & literary analysis",
+  "🍃 PoetTree Write poems with form scaffolds, rhyme & meter analysis, AI feedback",
+  "🎛️ Open Groove Studio Make beats, shape synths, and connect patterns to real composition and notation.",
+  "🌿 AlloHaven A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt."
+ ],
+ "errors": []
+}

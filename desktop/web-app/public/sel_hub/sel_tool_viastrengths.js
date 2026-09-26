@@ -481,9 +481,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                     ref ? h('p', { style: { margin: '0 8px', color: _viaFg('#0f172a'), fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, ref) : null
                   );
                 })
-              : h('div', { style: { padding: 14, fontSize: 12, color: _viaFg('#94a3b8'), fontStyle: 'italic' } }, 'No signature strengths selected yet.'),
+              : h('div', { style: { padding: 14, fontSize: 12, color: _viaFg('#475569'), fontStyle: 'italic' } }, 'No signature strengths selected yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _viaFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _viaFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Strengths from Peterson, C. and Seligman, M. E. P. (2004), Character Strengths and Virtues, Oxford University Press. ',
               'For the authoritative free survey: viacharacter.org. Created with AlloFlow SEL Hub.'
             )

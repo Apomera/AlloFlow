@@ -954,7 +954,7 @@
       return function () { clearTimeout(t); };
     });
 
-    var TEAL = '#0d9488';
+    var TEAL = '#0f766e';
     var TEAL_LIGHT = '#f0fdfa';
     var TEAL_DARK = '#115e59';
     var AMBER = '#d97706';
@@ -3010,9 +3010,9 @@
         + 'figure{margin:0}'
         + '.page{max-width:680px;margin:0 auto;padding:48px 56px}'
         + '.toolbar{position:sticky;top:0;background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:10px 20px;display:flex;gap:10px;align-items:center;font-family:system-ui,sans-serif;font-size:12px}'
-        + '.toolbar button{padding:6px 14px;border-radius:6px;border:none;background:#0d9488;color:#fff;font-weight:700;cursor:pointer;font-size:12px}'
+        + '.toolbar button{padding:6px 14px;border-radius:6px;border:none;background:#0f766e;color:#fff;font-weight:700;cursor:pointer;font-size:12px}'
         + '.toolbar button:focus{outline:2px solid #0f172a;outline-offset:2px}'
-        + '.toolbar button.secondary{background:#fff;color:#115e59;border:1px solid #0d9488}'
+        + '.toolbar button.secondary{background:#fff;color:#115e59;border:1px solid #0f766e}'
         + '.toolbar .help{margin-left:auto;color:#334155}'
         + '.poem-header{margin-bottom:28px}'
         + '.title{font-size:32px;font-weight:800;text-align:center;margin:0 0 6px;letter-spacing:-0.5px;line-height:1.2}'
@@ -3119,14 +3119,14 @@
         + 'html,body{margin:0;padding:0;background:#fff;color:#1e293b;font-family:Georgia,serif}'
         + 'main{display:block} figure{margin:0}'
         + '.toolbar{position:sticky;top:0;background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:10px 20px;display:flex;gap:10px;align-items:center;font-family:system-ui,sans-serif;font-size:12px;z-index:10}'
-        + '.toolbar button{padding:6px 14px;border-radius:6px;border:none;background:#0d9488;color:#fff;font-weight:700;cursor:pointer;font-size:12px}'
+        + '.toolbar button{padding:6px 14px;border-radius:6px;border:none;background:#0f766e;color:#fff;font-weight:700;cursor:pointer;font-size:12px}'
         + '.toolbar button:focus{outline:2px solid #0f172a;outline-offset:2px}'
-        + '.toolbar button.secondary{background:#fff;color:#115e59;border:1px solid #0d9488}'
+        + '.toolbar button.secondary{background:#fff;color:#115e59;border:1px solid #0f766e}'
         + '.toolbar .help{margin-left:auto;color:#334155}'
         + '.page{page-break-after:always;min-height:100vh;padding:64px 64px;box-sizing:border-box;display:flex;flex-direction:column;max-width:780px;margin:0 auto}'
         + '.page:last-child{page-break-after:auto}'
         // Cover styling — gradient and large display.
-        + '.cover{background:linear-gradient(135deg,#0d9488,#0891b2);color:#fff;align-items:center;justify-content:center;text-align:center}'
+        + '.cover{background:linear-gradient(135deg,#0f766e,#0891b2);color:#fff;align-items:center;justify-content:center;text-align:center}'
         + '.cover-inner{max-width:520px}'
         + '.cover .kicker{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;opacity:0.85;margin:0 0 12px}'
         + '.cover-title{font-size:48px;font-weight:900;margin:0 0 16px;line-height:1.1;letter-spacing:-0.5px}'
@@ -3150,7 +3150,7 @@
         + '.stanza-break{height:18px}'
         + '.page-num{margin-top:auto;text-align:center;font-size:11px;color:#475569;font-family:system-ui,sans-serif;padding-top:24px}'
         // Print
-        + '@media print{.toolbar,.skip-link{display:none}.page{padding:32px;page-break-after:always}.cover{background:#0d9488 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{background:#fff !important}}'
+        + '@media print{.toolbar,.skip-link{display:none}.page{padding:32px;page-break-after:always}.cover{background:#0f766e !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{background:#fff !important}}'
         + '@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}'
         + '</style></head><body>'
         + '<a class="skip-link" href="#chapbook-title">Skip to chapbook</a>'
@@ -4686,11 +4686,11 @@
                 }, illusLoading ? '⏳ Painting…' : '🎨 Illustrate'),
                 e('button', { onClick: startReadAloud, disabled: !poemText.trim() || readCountdown > 0,
                   'aria-label': tr('Read aloud yourself in large-text recital mode'),
-                  style: { padding: '10px 16px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() && !readCountdown ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
+                  style: { padding: '10px 16px', background: '#0f766e', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() && !readCountdown ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
                 }, readCountdown > 0 ? ('… ' + readCountdown) : '🎤 Read aloud'),
                 e('button', { onClick: printBroadside, disabled: !poemText.trim(),
                   'aria-label': tr('Open a printable broadside of this poem in a new window'),
-                  style: { padding: '10px 16px', background: '#fff', color: '#0d9488', border: '1px solid #0d9488', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
+                  style: { padding: '10px 16px', background: '#fff', color: '#0f766e', border: '1px solid #0f766e', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
                 }, '🖨️ Broadside')
               ),
               // Image Poem result — rendered as a primary first-class output, not a sidebar decoration.
@@ -4728,7 +4728,7 @@
               style: { position: 'fixed', inset: 0, zIndex: 70, background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '40px', cursor: readAloudActive ? 'pointer' : 'default' }
             },
               // Countdown
-              readCountdown > 0 && e('div', { style: { fontSize: '120px', fontWeight: 900, color: '#0d9488', fontFamily: 'system-ui, sans-serif', textAlign: 'center' }, 'aria-live': 'assertive' }, readCountdown),
+              readCountdown > 0 && e('div', { style: { fontSize: '120px', fontWeight: 900, color: '#0f766e', fontFamily: 'system-ui, sans-serif', textAlign: 'center' }, 'aria-live': 'assertive' }, readCountdown),
               // Active line
               readAloudActive && e('div', { style: { width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' } },
                 // Top bar
@@ -4828,7 +4828,7 @@
                           onClick: chapbookCurating ? exitChapbookCuration : enterChapbookCuration,
                           'aria-pressed': chapbookCurating ? 'true' : 'false',
                           'aria-label': chapbookCurating ? 'Finish chapbook curation' : 'Choose poems for a custom chapbook',
-                          style: { padding: '8px 11px', background: chapbookCurating ? '#fff' : '#fff', color: TEAL_DARK, border: '1px solid #0d9488', borderRadius: '8px', fontWeight: 700, fontSize: '11px', cursor: 'pointer' }
+                          style: { padding: '8px 11px', background: chapbookCurating ? '#fff' : '#fff', color: TEAL_DARK, border: '1px solid #0f766e', borderRadius: '8px', fontWeight: 700, fontSize: '11px', cursor: 'pointer' }
                         }, chapbookCurating ? '✓ Done curating' : '✚ Curate selection'),
                         e('button', { onClick: function () { printChapbook(chapbookCurating ? '' : chapbookFilter); },
                           'aria-label': (chapbookCurating ? 'Print selected chapbook of ' : 'Print chapbook of ') + chapbookPrintCount + ' poems',

@@ -184,6 +184,8 @@ window.SelHub = window.SelHub || {
 
       // Colors
       var SKY = '#0284c7';
+      // SKY fails 4.5:1 as a white-text fill and as small text on the dark shell (1.4.3)
+      var SKY_FILL = _trCHC ? SKY : '#0369a1', SKY_INK = _trCHC ? SKY : (_trCDark ? '#38bdf8' : '#0369a1');
       var SKY_LIGHT = _trC('#f0f9ff');
       var SKY_DARK = _trC('#0c4a6e');
       var WARM = '#ea580c';
@@ -277,7 +279,7 @@ window.SelHub = window.SelHub || {
                 }
               },
                 h('div', { style: { fontSize: '24px', marginBottom: '4px' } }, ct.icon),
-                h('div', { style: { fontSize: '12px', fontWeight: 700, color: isSelected ? SKY : _trC('#374151') } }, ct.label),
+                h('div', { style: { fontSize: '12px', fontWeight: 700, color: isSelected ? SKY_INK : _trC('#374151') } }, ct.label),
                 h('div', { style: { fontSize: '10px', color: _trC('#94a3b8'), marginTop: '2px' } }, ct.desc)
               );
             })
@@ -292,7 +294,7 @@ window.SelHub = window.SelHub || {
               onChange: function(ev) { upd('myChangeNote', ev.target.value); },
               'aria-label': 'Describe your change',
               placeholder: band === 'elementary' ? 'I feel... because...' : 'What happened, how it affects you, what\u2019s hardest about it...',
-              style: { width: '100%', border: '1px solid #bae6fd', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box' }
+              style: { background: _trC('#fff'), color: _trC('#0f172a'), width: '100%', border: '1px solid #bae6fd', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box' }
             }),
             h('p', { style: { fontSize: '11px', color: _trC('#94a3b8'), margin: '6px 0 0', fontStyle: 'italic' } },
               '\uD83D\uDD12 This stays private. Only you can see what you write here.')
@@ -363,7 +365,7 @@ window.SelHub = window.SelHub || {
               style: {
                 padding: '10px 24px', borderRadius: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
                 background: myPhase === curvePhaseIdx % phases.length ? currentPhase.color : _trC('#fff'),
-                color: myPhase === curvePhaseIdx % phases.length ? '#fff' : SKY,
+                color: myPhase === curvePhaseIdx % phases.length ? '#fff' : SKY_INK,
                 border: '2px solid ' + (myPhase === curvePhaseIdx % phases.length ? currentPhase.color : SKY),
                 transition: 'all 0.15s'
               }
@@ -388,7 +390,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: _trC('#94a3b8'), margin: 0 } }, 'Real stories about navigating transitions. You\u2019re not the first to walk this path.')
           ),
           h('div', { style: { background: _trC('#fff'), borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '16px' } },
-            storyType && h('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px', background: SKY_LIGHT, padding: '3px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, color: SKY, marginBottom: '10px' } },
+            storyType && h('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px', background: SKY_LIGHT, padding: '3px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, color: SKY_INK, marginBottom: '10px' } },
               storyType.icon, ' ', storyType.label
             ),
             h('h4', { style: { fontSize: '16px', fontWeight: 800, color: _trC('#1f2937'), margin: '0 0 10px' } }, currentStory.name),
@@ -418,7 +420,7 @@ window.SelHub = window.SelHub || {
                 if (Object.keys(newRead).length >= stories.length && awardXP) awardXP(15, 'Read all Change Stories!');
               },
               'aria-label': 'Next story',
-              style: { padding: '8px 16px', background: SKY, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' }
+              style: { padding: '8px 16px', background: SKY_FILL, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' }
             }, 'Next \u2192')
           )
         );
@@ -465,7 +467,7 @@ window.SelHub = window.SelHub || {
                 }
               },
               placeholder: band === 'elementary' ? 'Something that stays the same for me...' : 'What stays constant when everything changes...',
-              style: { flex: 1, border: '2px solid #bae6fd', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+              style: { background: _trC('#fff'), color: _trC('#0f172a'), flex: 1, border: '2px solid #bae6fd', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
               onClick: function() {
@@ -475,7 +477,7 @@ window.SelHub = window.SelHub || {
                 if (awardXP) awardXP(5, 'Identified an anchor!');
               },
               disabled: !newAnchor.trim(),
-              style: { padding: '10px 16px', background: newAnchor.trim() ? SKY : _trC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: newAnchor.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }
+              style: { padding: '10px 16px', background: newAnchor.trim() ? SKY_FILL : _trC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: newAnchor.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, '\u2693 Drop Anchor')
           ),
           // Anchors list
@@ -524,7 +526,7 @@ window.SelHub = window.SelHub || {
                 }
               },
               placeholder: band === 'elementary' ? 'One small thing I can try...' : 'A concrete step I can take...',
-              style: { flex: 1, border: '2px solid #bae6fd', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+              style: { background: _trC('#fff'), color: _trC('#0f172a'), flex: 1, border: '2px solid #bae6fd', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
               onClick: function() {
@@ -533,7 +535,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxClick();
               },
               disabled: !newStep.trim(),
-              style: { padding: '10px 16px', background: newStep.trim() ? SKY : _trC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: newStep.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }
+              style: { padding: '10px 16px', background: newStep.trim() ? SKY_FILL : _trC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: newStep.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, '+ Add Step')
           ),
           planSteps.length > 0
@@ -613,7 +615,7 @@ window.SelHub = window.SelHub || {
                   border: '1px solid ' + (isUser ? '#bfdbfe' : '#bae6fd'),
                   fontSize: '13px', lineHeight: 1.6, color: _trC('#1f2937')
                 } },
-                  !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: SKY, marginBottom: '4px' } }, '\uD83C\uDF00 Transition Coach'),
+                  !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: SKY_INK, marginBottom: '4px' } }, '\uD83C\uDF00 Transition Coach'),
                   msg.text
                 )
               );
@@ -694,7 +696,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: coachLoading || !coachInput.trim() || !callGemini,
-              style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? SKY : _trC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
+              style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? SKY_FILL : _trC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, coachLoading ? '\u23F3' : '\u2728 Send')
           ),
           coachHistory.length === 0 && h('div', { style: { marginTop: '16px' } },

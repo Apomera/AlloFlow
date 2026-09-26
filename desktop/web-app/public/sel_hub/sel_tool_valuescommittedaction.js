@@ -551,14 +551,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
                     actions.length > 0
                       ? h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _vcaFg('#0f172a'), fontSize: 13, lineHeight: 1.7 } },
                           actions.map(function(a, i) {
-                            return h('li', { key: i, style: { marginBottom: 3, textDecoration: a.done ? 'line-through' : 'none', color: a.done ? _vcaFg('#94a3b8') : '#0f172a' } }, (a.done ? '✓ ' : '☐ ') + a.text);
+                            return h('li', { key: i, style: { marginBottom: 3, textDecoration: a.done ? 'line-through' : 'none', color: a.done ? _vcaFg('#475569') : '#0f172a' } }, (a.done ? '✓ ' : '☐ ') + a.text);
                           }))
-                      : h('div', { style: { padding: 6, fontSize: 11, color: _vcaFg('#94a3b8'), fontStyle: 'italic' } }, '(no committed actions yet)')
+                      : h('div', { style: { padding: 6, fontSize: 11, color: _vcaFg('#475569'), fontStyle: 'italic' } }, '(no committed actions yet)')
                   );
                 })
-              : h('div', { style: { fontSize: 12, color: _vcaFg('#94a3b8'), fontStyle: 'italic' } }, 'No top values picked yet.'),
+              : h('div', { style: { fontSize: 12, color: _vcaFg('#475569'), fontStyle: 'italic' } }, 'No top values picked yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _vcaFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _vcaFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Values and Committed Action from Acceptance and Commitment Therapy (Hayes, Strosahl, Wilson). ',
               'Adolescent framing draws on DNA-V (Hayes, Ciarrochi, Bailey). Created with AlloFlow SEL Hub.'
             )

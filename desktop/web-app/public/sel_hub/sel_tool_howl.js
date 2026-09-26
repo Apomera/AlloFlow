@@ -12310,6 +12310,8 @@ var EXPEDITION_CONNECTIONS = [
       var _howBg = function(h){ return _howHC ? (_how_BGH[h]||h) : (_howL ? (_how_BGL[h]||h) : (_how_BGD[h]||h)); };
       var _howFg = function(h){ return _howHC ? (_how_FGH[h]||h) : (_howL ? (_how_FGL[h]||h) : h); };
       var _howBd = function(h){ return _howHC ? (_how_BDH[h]||h) : (_howL ? (_how_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _howInk = function(c){ return _howHC || _howL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#fca5a5','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#0ea5e9':'#7dd3fc','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -13028,7 +13030,7 @@ var EXPEDITION_CONNECTIONS = [
                 h('button', { onClick: addAction,
                   style: { marginTop: 4, padding: '6px 10px', borderRadius: 6, border: '1px dashed ' + hw.color + '88', background: 'transparent', color: hw.color, cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
                   '+ Add a weekly micro-action'),
-                actions.length === 0 && h('div', { style: { fontSize: 11, color: _howFg('#64748b'), fontStyle: 'italic', marginTop: 4, lineHeight: 1.55 } },
+                actions.length === 0 && h('div', { style: { fontSize: 11, color: _howFg('#94a3b8'), fontStyle: 'italic', marginTop: 4, lineHeight: 1.55 } },
                   'Add 3–5 small things you can DO this week (or month) that move you toward the goal above. Goals stay abstract; actions get done.')
               )
             );
@@ -13133,7 +13135,7 @@ var EXPEDITION_CONNECTIONS = [
               rating > 0 ? h('div', { style: { fontSize: 12, color: _howFg('#cbd5e1'), padding: 8, background: _howBg('#1e293b'), borderRadius: 6, marginBottom: 8, fontStyle: 'italic', borderLeft: '2px solid ' + rubricColor(rating) } },
                 h('strong', { style: { color: rubricColor(rating) } }, 'Level ' + rating + ': '),
                 hw.rubric[rating]
-              ) : h('div', { style: { fontSize: 11, color: _howFg('#64748b'), fontStyle: 'italic', marginBottom: 8 } }, 'Pick a rubric level.'),
+              ) : h('div', { style: { fontSize: 11, color: _howFg('#94a3b8'), fontStyle: 'italic', marginBottom: 8 } }, 'Pick a rubric level.'),
               // Rubric-to-evidence helper: when student picks a level, surface concrete examples of
               // that level AND one above (stretch target). Helps push past "I'm a 3 because average"
               // toward actual behavior naming. Sourced from LEVEL_EVIDENCE per HOWL.
@@ -13231,7 +13233,7 @@ var EXPEDITION_CONNECTIONS = [
               sorted.map(function(c, i) {
                 if (sorted.length > 8 && i % 2 !== 0 && i !== sorted.length - 1) return null;
                 var x = padL + (sorted.length === 1 ? ix / 2 : (i / (sorted.length - 1)) * ix);
-                return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: _howFg('#64748b'), textAnchor: 'middle' }, c.week.split('-W')[1] || c.week);
+                return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: _howFg('#94a3b8'), textAnchor: 'middle' }, c.week.split('-W')[1] || c.week);
               }),
               // HOWL lines
               activeHowls.map(function(hw) {
@@ -14093,7 +14095,7 @@ var EXPEDITION_CONNECTIONS = [
             h('div', { style: { display: 'flex', gap: 8, marginTop: 14, justifyContent: 'space-between', flexWrap: 'wrap' } },
               h('button', { onClick: function() { if (step > 0) gotoStep(step - 1); }, disabled: step === 0,
                 style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', cursor: step === 0 ? 'not-allowed' : 'pointer', background: _howBg('#1e293b'), color: step === 0 ? _howFg('#64748b') : _howFg('#cbd5e1'), fontWeight: 700, fontSize: 12, opacity: step === 0 ? 0.5 : 1 } }, '← Previous'),
-              h('div', { style: { fontSize: 11, color: _howFg('#64748b') } }, 'Step ' + (step + 1) + ' of ' + steps.length),
+              h('div', { style: { fontSize: 11, color: _howFg('#94a3b8') } }, 'Step ' + (step + 1) + ' of ' + steps.length),
               step < steps.length - 1
                 ? h('button', { onClick: function() { gotoStep(step + 1); },
                     style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _howBg('#7c3aed'), color: _howFg('#fff'), fontWeight: 700, fontSize: 12 } }, 'Next →')
@@ -14339,7 +14341,7 @@ if (activeTab === 'goal_lab') {
         howlList.map(function(h2) {
           var sel = glHowl === h2.id;
           return h('button', { key: h2.id, onClick: function() { upd({ glHowl: h2.id }); },
-            style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? h2.color : _howFg('#cbd5e1'), fontSize: 12, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+            style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 12, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, (h2.icon || '') + ' ' + h2.name);
         })
       )
@@ -14415,7 +14417,7 @@ if (activeTab === 'rubric') {
       return h('div', { key: h2.id, style: { padding: 14, borderRadius: 10, background: _howBg('#1e293b'), marginBottom: 10, border: '1px solid ' + h2.color + '33', borderLeft: '4px solid ' + h2.color } },
         h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 } },
           h2.icon ? h('span', { style: { fontSize: 20 } }, h2.icon) : null,
-          h('h4', { style: { margin: 0, color: h2.color, fontSize: 16, fontWeight: 800 } }, h2.name)
+          h('h4', { style: { margin: 0, color: _howInk(h2.color), fontSize: 16, fontWeight: 800 } }, h2.name)
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6 } },
           [1, 2, 3, 4].map(function(lvl) {
@@ -14426,7 +14428,7 @@ if (activeTab === 'rubric') {
               },
               style: { padding: 10, borderRadius: 8, border: '2px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: _howFg('#cbd5e1'), textAlign: 'left', cursor: 'pointer' }
             },
-              h('div', { style: { color: sel ? h2.color : _howFg('#fbbf24'), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, 'Level ' + lvl),
+              h('div', { style: { color: sel ? _howInk(h2.color) : _howFg('#fbbf24'), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, 'Level ' + lvl),
               h('div', { style: { color: _howFg('#e2e8f0'), fontSize: 11, lineHeight: 1.4, marginTop: 4 } }, typeof desc === 'string' ? desc : (desc.summary || ''))
             );
           })
@@ -14475,7 +14477,7 @@ if (activeTab === 'protocol_run') {
             h('div', { style: { color: _howFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, (p.origin || '') + ' · ' + (p.durationMin || '?') + ' min · ' + (p.groupSize || '?')),
             h('p', { style: { margin: '6px 0', color: _howFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, p.forWhat),
             h('button', { onClick: function() { upd({ pfId: p.id, pfPhase: 0, pfStart: Date.now(), pfRunning: false }); if (soundEnabled) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: 6, border: 'none', background: _howBg('#7c3aed'), color: _howFg('#0f172a'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '6px 14px', borderRadius: 6, border: 'none', background: _howBg('#7c3aed'), color: _howHC ? _howFg('#0f172a') : '#ffffff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
             }, '▶ Use this protocol')
           );
         })
@@ -14612,7 +14614,7 @@ if (activeTab === 'climate_gauge') {
             DIMENSIONS.map(function(dim) {
               var sel = cgDimension === dim.id;
               return h('button', { key: dim.id, onClick: function() { upd({ cgDimension: dim.id }); },
-                style: { padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (sel ? color : _howFg('#475569')), background: sel ? color + '33' : '#0f172a', color: sel ? color : _howFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+                style: { padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (sel ? color : _howFg('#475569')), background: sel ? color + '33' : '#0f172a', color: sel ? _howInk(color) : _howFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, dim.label);
             })
           )
@@ -14716,7 +14718,7 @@ if (activeTab === 'opener_random') {
         )
       ) : h('div', { style: { padding: 30, borderRadius: 12, background: _howBg('#0f172a'), textAlign: 'center' } },
         h('button', { onClick: _pick,
-          style: { padding: '14px 28px', borderRadius: 8, border: 'none', background: _howBg('#7c3aed'), color: _howFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '14px 28px', borderRadius: 8, border: 'none', background: _howBg('#7c3aed'), color: _howHC ? _howFg('#0f172a') : '#ffffff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
         }, '🎲 Pick an opener')
       ),
       orUsed.length > 0 ? h('div', { style: { marginTop: 14, padding: 10, borderRadius: 10, background: _howBg('#1e293b') } },
@@ -14831,7 +14833,7 @@ if (activeTab === 'goals_lib') {
         howlList2.map(function(h2) {
           var sel = glLibHowl === h2.id;
           return h('button', { key: h2.id, onClick: function() { upd({ glLibHowl: h2.id }); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? h2.color : _howFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, h2.name);
         })
       ),
@@ -14848,7 +14850,7 @@ if (activeTab === 'goals_lib') {
         filtered.slice(0, 60).map(function(g) {
           var hh = howlList2.find(function(h2) { return h2.id === g.howl; }) || { color: _howFg('#fbbf24'), name: g.howl };
           return h('div', { key: g.id, style: { padding: 12, borderRadius: 10, background: _howBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + hh.color } },
-            h('div', { style: { color: hh.color, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, hh.name + ' · L' + g.startingLevel + ' → L' + g.targetLevel),
+            h('div', { style: { color: _howInk(hh.color), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, hh.name + ' · L' + g.startingLevel + ' → L' + g.targetLevel),
             h('h5', { style: { margin: '4px 0', color: _howFg('#fde68a'), fontSize: 13, fontWeight: 600, lineHeight: 1.5 } }, '"' + g.goal + '"'),
             g.whyItMatters ? h('p', { style: { margin: '6px 0', color: _howFg('#cbd5e1'), fontSize: 11, fontStyle: 'italic', lineHeight: 1.5 } }, g.whyItMatters) : null,
             g.weeklyMicroActions && g.weeklyMicroActions.length ? h('details', { style: { marginTop: 6 } },
@@ -14891,7 +14893,7 @@ if (activeTab === 'evidence_lib') {
         howlList3.map(function(h2) {
           var sel = elHowl === h2.id;
           return h('button', { key: h2.id, onClick: function() { upd({ elHowl: h2.id }); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? h2.color : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, h2.name.split(' ')[0]);
         })
       ),
@@ -14907,7 +14909,7 @@ if (activeTab === 'evidence_lib') {
         filtered.slice(0, 60).map(function(e) {
           var hh = howlList3.find(function(h2) { return h2.id === e.howl; }) || { color: _howFg('#fbbf24') };
           return h('div', { key: e.id, style: { padding: 10, borderRadius: 8, background: _howBg('#1e293b'), borderLeft: '3px solid ' + hh.color } },
-            h('div', { style: { color: hh.color, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, (e.howl && e.howl !== 'any' ? e.howl + ' · ' : '') + 'Level ' + e.level),
+            h('div', { style: { color: _howInk(hh.color), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, (e.howl && e.howl !== 'any' ? e.howl + ' · ' : '') + 'Level ' + e.level),
             h('p', { style: { margin: '4px 0', color: _howFg('#fde68a'), fontSize: 12, fontStyle: 'italic', lineHeight: 1.55 } }, '"' + e.studentVoice + '"')
           );
         })
@@ -14943,7 +14945,7 @@ if (activeTab === 'exemplars') {
         howlList4.map(function(h2) {
           var sel = exHowl === h2.id;
           return h('button', { key: h2.id, onClick: function() { upd({ exHowl: h2.id }); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? h2.color : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, h2.name.split(' ')[0]);
         })
       ),
@@ -14952,7 +14954,7 @@ if (activeTab === 'exemplars') {
           var hh = howlList4.find(function(h2) { return h2.id === e.howl; }) || { color: _howFg('#fbbf24'), name: e.howl };
           var isOpen = exOpen === e.id;
           return h('div', { key: e.id, style: { padding: 14, borderRadius: 10, background: _howBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + hh.color } },
-            h('div', { style: { color: hh.color, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, (hh.name || '') + ' · Level ' + e.level),
+            h('div', { style: { color: _howInk(hh.color), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, (hh.name || '') + ' · Level ' + e.level),
             h('h4', { style: { margin: '4px 0', color: _howFg('#fde68a'), fontSize: 14, fontWeight: 800 } }, e.studentPseudonym),
             h('div', { style: { color: _howFg('#94a3b8'), fontSize: 11, marginBottom: 6 } }, e.studentBio),
             h('p', { style: { margin: '6px 0', color: _howFg('#e2e8f0'), fontSize: 13, lineHeight: 1.65 } }, e.narrative),
@@ -15055,7 +15057,7 @@ if (activeTab === 'misconceptions') {
         howlList6.map(function(h2) {
           var sel = mcHowl === h2.id;
           return h('button', { key: h2.id, onClick: function() { upd({ mcHowl: h2.id }); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? h2.color : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, h2.name.split(' ')[0]);
         })
       ),
@@ -15138,7 +15140,7 @@ if (activeTab === 'climate_scenarios') {
           return h('div', { key: c.id, style: { padding: 12, borderRadius: 10, background: _howBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + difColor } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 } },
               h('h5', { style: { margin: 0, color: _howFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, c.scenario),
-              c.difficulty ? h('span', { style: { padding: '2px 8px', borderRadius: 4, background: difColor + '33', color: difColor, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' } }, c.difficulty) : null
+              c.difficulty ? h('span', { style: { padding: '2px 8px', borderRadius: 4, background: difColor + '33', color: _howHC ? difColor : ({ '#ef4444': '#fca5a5' }[difColor] || difColor), fontSize: 9, fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' } }, c.difficulty) : null
             ),
             crisis ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: _howBg('#7c2d12'), color: _howFg('#fed7aa'), fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + c.whenToEscalate) : null
           );

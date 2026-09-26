@@ -876,7 +876,7 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
         </div>
         <div style={{ padding: '14px 18px' }}>
           {pages.length > 1 && (
-            <div aria-label='AAC Board pages' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
+            <div role="group" aria-label='AAC Board pages' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
               <button type='button' onClick={() => setPageIndex((current) => Math.max(0, current - 1))} disabled={safePageIndex === 0}>Previous page</button>
               <strong>{page.title} ({safePageIndex + 1} of {pages.length})</strong>
               <button type='button' onClick={() => setPageIndex((current) => Math.min(pages.length - 1, current + 1))} disabled={safePageIndex === pages.length - 1}>Next page</button>

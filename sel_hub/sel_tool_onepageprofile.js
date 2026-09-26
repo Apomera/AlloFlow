@@ -122,6 +122,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       var _opBg = function(h){ return _opHC ? (_op_BGH[h]||h) : (_opL ? (_op_BGL[h]||h) : h); };
       var _opFg = function(h){ return _opHC ? (_op_FGH[h]||h) : (_opL ? (_op_FGL[h]||h) : h); };
       var _opBd = function(h){ return _opHC ? (_op_BDH[h]||h) : (_opL ? (_op_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _opInk = function(c){ return _opHC || _opL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _opSolid = function(c){ return _opHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -300,7 +304,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           function useStarter(s) { addItem(sectionKey, s); if (announceToSR) announceToSR('Added: ' + s); }
 
           return h('div', { style: { padding: 14, borderRadius: 10, background: _opBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 14 } },
-            h('div', { style: { fontSize: 13, color: color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, title),
+            h('div', { style: { fontSize: 13, color: _opInk(color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, title),
             // Existing items
             items.length > 0 ? h('div', { style: { marginBottom: 12 } },
               items.map(function(item, i) {
@@ -323,7 +327,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submitInput(); } },
                 style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: submitInput, 'aria-label': 'Add item',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: color, color: _opFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _opSolid(color), color: _opFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             // Starters
             h('details', null,
@@ -451,7 +455,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
             printSection('How best to support me', d.howToSupport, '#4f46e5'),
 
             // Print footer
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _opFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _opFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Format adapted from the Helen Sanderson Associates One-Page Profile (helensandersonassociates.co.uk). ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -463,12 +467,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
 
       function printSection(title, items, color) {
         return h('div', { style: { marginBottom: 16, pageBreakInside: 'avoid' } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: _opFg('#fff'), background: color, padding: '6px 12px', borderRadius: 4, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, title),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: _opFg('#fff'), background: _opSolid(color), padding: '6px 12px', borderRadius: 4, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, title),
           (items && items.length > 0)
             ? h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _opFg('#0f172a'), fontSize: 13, lineHeight: 1.65 } },
                 items.map(function(item, i) { return h('li', { key: i, style: { marginBottom: 4 } }, item); })
               )
-            : h('div', { style: { padding: 8, fontSize: 11, color: _opFg('#94a3b8'), fontStyle: 'italic' } }, '(not filled in)')
+            : h('div', { style: { padding: 8, fontSize: 11, color: _opFg('#475569'), fontStyle: 'italic' } }, '(not filled in)')
         );
       }
 

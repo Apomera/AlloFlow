@@ -44,7 +44,9 @@ describe('Simplified View layered accessibility', () => {
 
   it('provides large focus-visible Definition and Revision actions', () => {
     expect(source.match(/min-h-11 min-w-11/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(source).toContain("type=\"button\" aria-label={t('common.apply_text_revision')}");
+    // Its visible "Replace in Text" label is the accessible name (WCAG 2.5.3).
+    expect(source).toContain('type="button" onClick={applyTextRevision} className="min-h-11 w-full');
+    expect(source).not.toContain("aria-label={t('common.apply_text_revision')}");
     expect(source).toContain('min-h-11 w-full bg-indigo-600');
     expect(source).toContain('motion-reduce:animate-none motion-reduce:transition-none');
   });

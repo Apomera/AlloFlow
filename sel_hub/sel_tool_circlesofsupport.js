@@ -78,6 +78,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       var _cirBg = function(h){ return _cirHC ? (_cir_BGH[h]||h) : (_cirL ? (_cir_BGL[h]||h) : h); };
       var _cirFg = function(h){ return _cirHC ? (_cir_FGH[h]||h) : (_cirL ? (_cir_FGL[h]||h) : h); };
       var _cirBd = function(h){ return _cirHC ? (_cir_BDH[h]||h) : (_cirL ? (_cir_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _cirInk = function(c){ return _cirHC || _cirL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _cirSolid = function(c){ return _cirHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -326,7 +330,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             }
             return h('div', { key: ring.id, style: { padding: 14, borderRadius: 10, background: _cirBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + ring.color, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                h('div', { style: { fontSize: 14, fontWeight: 800, color: ring.color, flex: 1 } }, ring.label + '  (' + items.length + ')')
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: _cirInk(ring.color), flex: 1 } }, ring.label + '  (' + items.length + ')')
               ),
               h('div', { style: { fontSize: 12, color: _cirFg('#94a3b8'), lineHeight: 1.55, marginBottom: 8, fontStyle: 'italic' } }, ring.blurb),
 
@@ -361,7 +365,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
                   onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                   style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13 } }),
                 h('button', { onClick: submit, 'aria-label': 'Add to ' + ring.label,
-                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: ring.color, color: _cirFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _cirSolid(ring.color), color: _cirFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
               )
             );
           }),
@@ -412,7 +416,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
 
       function patternCard(title, list, color, blurb) {
         return h('div', { style: { padding: 12, borderRadius: 10, background: _cirBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
-          h('div', { style: { fontSize: 12, color: color, fontWeight: 700, marginBottom: 6 } }, title + '  (' + list.length + ')'),
+          h('div', { style: { fontSize: 12, color: _cirInk(color), fontWeight: 700, marginBottom: 6 } }, title + '  (' + list.length + ')'),
           list.length > 0
             ? h('div', { style: { fontSize: 12.5, color: _cirFg('#e2e8f0'), lineHeight: 1.6, marginBottom: 6 } }, list.join('  ·  '))
             : null,
@@ -457,16 +461,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             RINGS.map(function(ring) {
               var items = r[ring.id];
               return h('div', { key: ring.id, style: { marginBottom: 16, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: ring.color, color: _cirFg('#fff') } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _cirSolid(ring.color), color: _cirFg('#fff') } },
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, ring.label + '  (' + items.length + ')')
                 ),
                 items.length > 0
                   ? h('div', { style: { padding: '0 12px', fontSize: 13, color: _cirFg('#0f172a'), lineHeight: 1.7 } }, items.join('  ·  '))
-                  : h('div', { style: { padding: '0 12px', fontSize: 11, color: _cirFg('#94a3b8'), fontStyle: 'italic' } }, '(empty)')
+                  : h('div', { style: { padding: '0 12px', fontSize: 11, color: _cirFg('#475569'), fontStyle: 'italic' } }, '(empty)')
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _cirFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _cirFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Circles of Support from Forest, M. and Snow, J., Inclusion Press (inclusion.com). ',
               'Created with AlloFlow SEL Hub.'
             )

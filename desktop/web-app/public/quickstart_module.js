@@ -998,7 +998,6 @@ const QuickStartWizard = React.memo(({
     placeholder: isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.learning_goal_placeholder')
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.search_learning_standards'),
     "data-help-key": "wizard_find_standard_btn",
     onClick: handleGoalSearch,
     disabled: isSearching || !learningGoal.trim(),
@@ -1064,7 +1063,6 @@ const QuickStartWizard = React.memo(({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "wizard_upload_source",
-    "aria-label": t('common.upload'),
     onClick: () => {
       setLocalData(prev => ({
         ...prev,
@@ -1125,7 +1123,6 @@ const QuickStartWizard = React.memo(({
   }, wt('wizard.storybooks_desc', 'Books, articles, and primary sources'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "wizard_generate_source",
-    "aria-label": t('common.generate'),
     onClick: () => {
       setLocalData(prev => ({
         ...prev,
@@ -1217,7 +1214,6 @@ const QuickStartWizard = React.memo(({
     autoFocus: true
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.search_with_ai'),
     "data-help-key": "wizard_search_btn",
     onClick: handleWizardWebFind,
     disabled: isFetching || !localData.searchQuery,
@@ -1798,7 +1794,6 @@ const QuickStartWizard = React.memo(({
     className: "text-slate-600 mb-8 max-w-xs mx-auto text-sm"
   }, t('wizard.file_helper')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.upload'),
     onClick: () => onComplete({
       ...localData,
       sourceMode: 'file',

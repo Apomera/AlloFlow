@@ -377,6 +377,8 @@ window.SelHub = window.SelHub || {
       var confirmAction = d.confirmAction || null;
 
       var CYAN = '#0891b2'; var CYAN_LIGHT = _efC('#ecfeff'); var CYAN_DARK = _efC('#155e75');
+      // CYAN fails 4.5:1 as a white-text fill and as small text on the dark shell (1.4.3)
+      var CYAN_FILL = _efCHC ? CYAN : '#0e7490', CYAN_INK = _efCHC ? CYAN : (_efCDark ? '#22d3ee' : '#0e7490');
       function focusExecControl(id) {
         setTimeout(function() {
           var target = document.getElementById(id);
@@ -593,7 +595,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: '13px', fontWeight: 800, color: CYAN_DARK } }, (ri + 1) + '. ' + dom.label + ' (score: ' + s + '/6)'),
                   h('div', { style: { fontSize: '11px', color: _efC('#475569'), marginTop: '2px' } }, dom.pitch)
                 ),
-                h('span', { style: { fontSize: '14px', color: CYAN } }, '→')
+                h('span', { style: { fontSize: '14px', color: CYAN_INK } }, '→')
               );
             })
           ),
@@ -633,11 +635,11 @@ window.SelHub = window.SelHub || {
               h('h4', { style: { fontSize: '16px', fontWeight: 800, color: CYAN_DARK, margin: 0 } }, curS.title)
             ),
             h('div', { style: { background: CYAN_LIGHT, borderRadius: '10px', padding: '10px 12px', marginBottom: '10px', borderLeft: '4px solid ' + CYAN } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: CYAN, marginBottom: '2px', textTransform: 'uppercase' } }, 'When this fits:'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: CYAN_INK, marginBottom: '2px', textTransform: 'uppercase' } }, 'When this fits:'),
               h('p', { style: { fontSize: '13px', color: CYAN_DARK, margin: 0 } }, curS.when)
             ),
             h('div', { style: { background: _efC('#f0fdf4'), borderRadius: '10px', padding: '10px 12px', marginBottom: '10px', borderLeft: '4px solid #4ade80' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#16a34a', marginBottom: '2px', textTransform: 'uppercase' } }, 'How to do it:'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _efCDark ? '#4ade80' : '#15803d', marginBottom: '2px', textTransform: 'uppercase' } }, 'How to do it:'),
               h('p', { style: { fontSize: '13px', color: _efC('#166534'), margin: 0, lineHeight: 1.6 } }, curS.how)
             ),
             h('div', { style: { background: _efC('#fef9c3'), borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid #facc15' } },
@@ -647,11 +649,11 @@ window.SelHub = window.SelHub || {
           ),
           // 5-Minute timer interactive
           curS.hasTimer && h('div', { style: { background: _efC('#fff'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '18px', textAlign: 'center', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN, marginBottom: '6px', textTransform: 'uppercase' } }, 'Try it now'),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Try it now'),
             fiveMinStart === 0 ? h('button', {
               onClick: function() { upd('fiveMinStart', Date.now()); if (soundOn) sfxStart(); if (addToast) addToast('Timer started. 5 minutes only.', 'info'); },
               'aria-label': 'Start 5-minute timer',
-              style: { padding: '12px 28px', background: CYAN, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
+              style: { padding: '12px 28px', background: CYAN_FILL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
             }, '▶ Start 5 minutes') : h('div', null,
               h('div', { style: { fontSize: '36px', fontWeight: 800, color: fiveMinDone ? '#16a34a' : CYAN_DARK, fontVariantNumeric: 'tabular-nums', marginBottom: '6px' } },
                 Math.floor(fiveMinSeconds / 60) + ':' + String(fiveMinSeconds % 60).padStart(2, '0')
@@ -668,13 +670,13 @@ window.SelHub = window.SelHub || {
           ),
           // Future-self note interactive
           curS.hasNote && h('div', { style: { background: _efC('#fff'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '14px', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN, marginBottom: '6px', textTransform: 'uppercase' } }, 'Write your future-self note'),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Write your future-self note'),
             h('textarea', {
               value: futureNote,
               onChange: function(ev) { upd('futureNote', ev.target.value); },
               'aria-label': 'A 2-line note for tomorrow morning',
               placeholder: 'Tomorrow morning at 8am: open the science doc. Click problem 1. Read it.',
-              style: { width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '60px', boxSizing: 'border-box', resize: 'vertical' }
+              style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '60px', boxSizing: 'border-box', resize: 'vertical' }
             }),
             h('button', {
               onClick: function() {
@@ -685,7 +687,7 @@ window.SelHub = window.SelHub || {
                 if (awardXP) awardXP(8, 'Saved a future-self note');
               },
               disabled: !futureNote.trim(),
-              style: { marginTop: '8px', padding: '8px 16px', background: futureNote.trim() ? CYAN : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: futureNote.trim() ? 'pointer' : 'not-allowed' }
+              style: { marginTop: '8px', padding: '8px 16px', background: futureNote.trim() ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: futureNote.trim() ? 'pointer' : 'not-allowed' }
             }, '💾 Save for tomorrow'),
             savedNotes.length > 0 && h('div', { style: { marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' } },
               savedNotes.slice(0, 5).map(function(n) {
@@ -726,17 +728,17 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: '32px' } }, curH.icon),
               h('h4', { style: { fontSize: '16px', fontWeight: 800, color: CYAN_DARK, margin: 0 } }, curH.title)
             ),
-            h('p', { style: { fontSize: '12px', color: CYAN, fontWeight: 700, fontStyle: 'italic', margin: '0 0 12px' } }, curH.summary),
+            h('p', { style: { fontSize: '12px', color: CYAN_INK, fontWeight: 700, fontStyle: 'italic', margin: '0 0 12px' } }, curH.summary),
             h('p', { style: { fontSize: '14px', color: _efC('#374151'), margin: 0, lineHeight: 1.7 } }, curH.body)
           ),
           curH.interactive && h('div', { style: { background: _efC('#fff'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '14px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN, marginBottom: '6px', textTransform: 'uppercase' } }, 'Brain dump zone'),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Brain dump zone'),
             h('textarea', {
               value: brainDump,
               onChange: function(ev) { upd('brainDump', ev.target.value); },
               'aria-label': 'Brain dump',
               placeholder: 'Every loose thought. Don\'t organize. Don\'t filter. Just dump.',
-              style: { width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '120px', boxSizing: 'border-box', resize: 'vertical' }
+              style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '120px', boxSizing: 'border-box', resize: 'vertical' }
             }),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '8px' } },
               h('button', {
@@ -749,7 +751,7 @@ window.SelHub = window.SelHub || {
                   if (addToast) addToast('Out of your head. Onto the page.', 'success');
                 },
                 disabled: !brainDump.trim(),
-                style: { padding: '8px 16px', background: brainDump.trim() ? CYAN : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump.trim() ? 'pointer' : 'not-allowed' }
+                style: { padding: '8px 16px', background: brainDump.trim() ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump.trim() ? 'pointer' : 'not-allowed' }
               }, '💾 Save dump'),
               h('button', {
                 onClick: function() { upd('brainDump', ''); },
@@ -799,7 +801,7 @@ window.SelHub = window.SelHub || {
             type: 'text', value: planGoal,
             onChange: function(ev) { upd('planGoal', ev.target.value); },
             placeholder: 'Submit science fair project',
-            style: { width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '10px' }
+            style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '10px' }
           }),
           // Deadline
           h('label', { htmlFor: 'ef-plan-deadline', style: { fontSize: '12px', fontWeight: 700, color: CYAN_DARK, display: 'block', marginBottom: '4px' } }, 'The deadline'),
@@ -807,7 +809,7 @@ window.SelHub = window.SelHub || {
             id: 'ef-plan-deadline',
             type: 'date', value: planDeadline,
             onChange: function(ev) { upd('planDeadline', ev.target.value); },
-            style: { width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '14px' }
+            style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '14px' }
           }),
           // Chunks (label is for the list as a whole; individual chunk inputs already have aria-label)
           h('label', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_DARK, display: 'block', marginBottom: '4px' } }, 'The chunks (in order)'),
@@ -820,7 +822,7 @@ window.SelHub = window.SelHub || {
                 onChange: function(ev) { var nc = planChunks.slice(); nc[ci] = ev.target.value; upd('planChunks', nc); },
                 'aria-label': 'Chunk ' + (ci + 1),
                 placeholder: 'e.g. Read 3 articles, take notes',
-                style: { flex: 1, border: '1px solid #cffafe', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box' }
+                style: { background: _efC('#fff'), color: _efC('#0f172a'), flex: 1, border: '1px solid #cffafe', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               planChunks.length > 1 && h('button', {
                 onClick: function() { upd('planChunks', planChunks.filter(function(_, j) { return j !== ci; })); },
@@ -843,7 +845,7 @@ window.SelHub = window.SelHub || {
               var isLast = si === schedule.length - 1;
               var dt = s.due.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
               return h('div', { key: si, style: { display: 'flex', gap: '10px', alignItems: 'center', padding: '8px 10px', background: _efC('#fff'), borderRadius: '8px', marginBottom: '6px', border: isLast ? '2px solid ' + CYAN : '1px solid #e5e7eb' } },
-                h('div', { style: { fontSize: '11px', fontWeight: 800, color: isLast ? CYAN : _efC('#475569'), flexShrink: 0, minWidth: '90px' } }, dt + (isLast ? ' (deadline)' : '')),
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: isLast ? CYAN_INK : _efC('#475569'), flexShrink: 0, minWidth: '90px' } }, dt + (isLast ? ' (deadline)' : '')),
                 h('div', { style: { fontSize: '13px', color: _efC('#374151') } }, s.chunk)
               );
             }),
@@ -853,7 +855,7 @@ window.SelHub = window.SelHub || {
                 try { window.SelHub.copyText(txt).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; } if (addToast) addToast('Schedule copied to clipboard.', 'success'); if (awardXP) awardXP(10, 'Made a backward plan!'); }); } catch(e) {}
               },
               'aria-label': 'Copy schedule',
-              style: { marginTop: '6px', padding: '8px 14px', background: CYAN, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+              style: { marginTop: '6px', padding: '8px 14px', background: CYAN_FILL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
             }, '📋 Copy schedule')
           )
         );
@@ -877,7 +879,7 @@ window.SelHub = window.SelHub || {
           ),
           // Estimation game
           h('div', { style: { background: _efC('#fff'), border: '2px solid #cffafe', borderRadius: '14px', padding: '16px', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN, marginBottom: '8px', textTransform: 'uppercase' } }, 'Estimation game'),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '8px', textTransform: 'uppercase' } }, 'Estimation game'),
             timeScore > 0 && h('div', { style: { textAlign: 'center', marginBottom: '8px' } },
               h('span', { style: { background: CYAN_LIGHT, color: CYAN_DARK, padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700 } }, '🎯 ' + timeScore + ' calibrated')
             ),
@@ -890,7 +892,7 @@ window.SelHub = window.SelHub || {
                   'aria-label': 'Your time estimate in minutes',
                   placeholder: '?',
                   min: '1', max: '600',
-                  style: { width: '80px', border: '1px solid #cffafe', borderRadius: '6px', padding: '8px', fontSize: '14px', textAlign: 'center', boxSizing: 'border-box' }
+                  style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '80px', border: '1px solid #cffafe', borderRadius: '6px', padding: '8px', fontSize: '14px', textAlign: 'center', boxSizing: 'border-box' }
                 }),
                 h('span', { style: { fontSize: '13px', color: _efC('#475569') } }, 'minutes'),
                 h('button', {
@@ -904,7 +906,7 @@ window.SelHub = window.SelHub || {
                   },
                   disabled: !timeGuess,
                   'aria-label': 'Submit estimate',
-                  style: { padding: '8px 16px', background: timeGuess ? CYAN : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: timeGuess ? 'pointer' : 'not-allowed' }
+                  style: { padding: '8px 16px', background: timeGuess ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: timeGuess ? 'pointer' : 'not-allowed' }
                 }, 'Reveal')
               )
             ),
@@ -916,13 +918,13 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { upd({ timeGameIdx: (timeGameIdx + 1) % games.length, timeGuess: '', timeRevealed: false }); if (soundOn) sfxClick(); },
                 'aria-label': 'Next estimation',
-                style: { padding: '8px 16px', background: CYAN, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                style: { padding: '8px 16px', background: CYAN_FILL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, 'Next →')
             )
           ),
           // Pomodoro
           h('div', { style: { background: _efC('#fff'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '18px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN, marginBottom: '6px', textTransform: 'uppercase' } }, 'Pomodoro: ' + (pomoMode === 'work' ? '25-min work' : '5-min break')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Pomodoro: ' + (pomoMode === 'work' ? '25-min work' : '5-min break')),
             h('div', { style: { fontSize: '48px', fontWeight: 800, color: pomoDone ? '#16a34a' : CYAN_DARK, fontVariantNumeric: 'tabular-nums', marginBottom: '10px', letterSpacing: '0.05em' } },
               Math.floor(pomoSeconds / 60) + ':' + String(pomoSeconds % 60).padStart(2, '0')
             ),
@@ -930,7 +932,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { upd({ pomoStart: Date.now(), pomoMode: 'work' }); if (soundOn) sfxStart(); },
                 'aria-label': 'Start 25-minute work session',
-                style: { padding: '10px 18px', background: CYAN, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
+                style: { padding: '10px 18px', background: CYAN_FILL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
               }, '▶ Start work (25)'),
               h('button', {
                 onClick: function() { upd({ pomoStart: Date.now(), pomoMode: 'break' }); if (soundOn) sfxStart(); },
@@ -1037,10 +1039,10 @@ window.SelHub = window.SelHub || {
 
           mode.id === 'custom' && h('div', { style: { display: 'flex', gap: 10, marginBottom: 14, padding: 10, background: _efC('#f8fafc'), borderRadius: 8, flexWrap: 'wrap' } },
             h('label', { htmlFor: 'ef-cust-work', style: { fontSize: 11, fontWeight: 700, color: _efC('#475569') } }, 'Work min: ',
-              h('input', { id: 'ef-cust-work', type: 'number', min: 1, max: 90, value: custW, onChange: function(e) { upd('focusCustomWork', parseInt(e.target.value, 10) || 25); }, style: { width: 60, marginLeft: 6, padding: 4, border: '1px solid #cbd5e1', borderRadius: 4 } })
+              h('input', { id: 'ef-cust-work', type: 'number', min: 1, max: 90, value: custW, onChange: function(e) { upd('focusCustomWork', parseInt(e.target.value, 10) || 25); }, style: { background: _efC('#fff'), color: _efC('#0f172a'), width: 60, marginLeft: 6, padding: 4, border: '1px solid #cbd5e1', borderRadius: 4 } })
             ),
             h('label', { htmlFor: 'ef-cust-brk', style: { fontSize: 11, fontWeight: 700, color: _efC('#475569') } }, 'Break min: ',
-              h('input', { id: 'ef-cust-brk', type: 'number', min: 1, max: 30, value: custB, onChange: function(e) { upd('focusCustomBreak', parseInt(e.target.value, 10) || 5); }, style: { width: 60, marginLeft: 6, padding: 4, border: '1px solid #cbd5e1', borderRadius: 4 } })
+              h('input', { id: 'ef-cust-brk', type: 'number', min: 1, max: 30, value: custB, onChange: function(e) { upd('focusCustomBreak', parseInt(e.target.value, 10) || 5); }, style: { background: _efC('#fff'), color: _efC('#0f172a'), width: 60, marginLeft: 6, padding: 4, border: '1px solid #cbd5e1', borderRadius: 4 } })
             )
           ),
 
@@ -1064,7 +1066,7 @@ window.SelHub = window.SelHub || {
                 ? h('button', { onClick: pauseTimer, 'aria-label': 'Pause',
                     style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#b45309', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '⏸ Pause')
                 : h('button', { onClick: startTimer, 'aria-label': 'Start',
-                    style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: CYAN, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, fPaused ? '▶ Resume' : '▶ Start'),
+                    style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: CYAN_FILL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, fPaused ? '▶ Resume' : '▶ Start'),
               h('button', { onClick: skipPhase, 'aria-label': 'Skip',
                 style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #cbd5e1', background: _efC('#fff'), color: _efC('#475569'), fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '⏭ Skip phase'),
               h('button', { onClick: resetTimer, 'aria-label': 'Reset',
@@ -1265,7 +1267,7 @@ window.SelHub = window.SelHub || {
           h('h3', { id: 'ef-habits-heading', tabIndex: -1, style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '✅ Habit Tracker'),
           h('p', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '14px', lineHeight: 1.6 } }, 'Small habits, tracked daily. Missed days are gray — they don\'t break anything; this is rhythm, not streak. Best for things tied to a clear cue (morning, after school, before bed).'),
 
-          h('button', { id: 'ef-add-habit', onClick: addHabit, style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: CYAN, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', marginBottom: 14 } }, '+ Add a habit'),
+          h('button', { id: 'ef-add-habit', onClick: addHabit, style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: CYAN_FILL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', marginBottom: 14 } }, '+ Add a habit'),
 
           habits.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#64748b'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed #cbd5e1' } },
             'No habits yet. Tap "Add a habit" to start. Good starters: "Empty my bag at the kitchen table when I get home", "Write tomorrow\'s top 3 before I leave my last class", "10-minute review before bed".'),
@@ -1288,7 +1290,7 @@ window.SelHub = window.SelHub || {
                     'aria-label': d2.iso + (done ? ' done' : ' not done'),
                     'aria-pressed': done,
                     style: { padding: '4px 0', borderRadius: 4, border: '1px solid ' + (d2.today ? CYAN : _efC('#e2e8f0')),
-                      background: done ? CYAN : (d2.today ? CYAN_LIGHT : _efC('#f8fafc')),
+                      background: done ? CYAN_FILL : (d2.today ? CYAN_LIGHT : _efC('#f8fafc')),
                       color: done ? '#fff' : (d2.today ? CYAN_DARK : _efC('#94a3b8')),
                       cursor: 'pointer', fontSize: 9, fontWeight: 700, lineHeight: 1.2 } },
                     h('div', null, d2.dayName),
@@ -1343,7 +1345,7 @@ window.SelHub = window.SelHub || {
           h('p', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '14px', lineHeight: 1.6 } }, 'Sketch today: each block is a task + estimated time. Reorder with the ↑↓ arrows. Check off as you finish. The progress bar shows minutes actually completed, not items checked.'),
 
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
-            h('button', { onClick: addBlock, style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: CYAN, color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '+ Add block'),
+            h('button', { onClick: addBlock, style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: CYAN_FILL, color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '+ Add block'),
             dayBlocks.some(function(b) { return b.done; }) && h('button', { onClick: clearDone, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: _efC('#fff'), color: _efC('#475569'), fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '🧹 Clear completed')
           ),
 
@@ -1353,7 +1355,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 12, color: CYAN_DARK, fontWeight: 700 } }, doneMin + ' of ' + totalMin + ' min · ' + pctDone + '%')
             ),
             h('div', { style: { height: 8, background: _efC('#fff'), borderRadius: 4, overflow: 'hidden' } },
-              h('div', { 'aria-hidden': 'true', style: { width: pctDone + '%', height: '100%', background: CYAN, transition: 'width 0.4s' } })
+              h('div', { 'aria-hidden': 'true', style: { width: pctDone + '%', height: '100%', background: CYAN_FILL, transition: 'width 0.4s' } })
             )
           ),
 
@@ -1403,7 +1405,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: i, style: { display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' } },
                   h('div', { style: { maxWidth: '80%', padding: '10px 14px', borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isUser ? _efC('#f1f5f9') : CYAN_LIGHT, border: '1px solid ' + (isUser ? _efC('#e2e8f0') : _efC('#cffafe')), fontSize: '13px', lineHeight: 1.6, color: _efC('#1f2937') } },
                     isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: _efC('#475569'), marginBottom: '4px' } }, '🗣️ You'),
-                    !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: CYAN, marginBottom: '4px' } }, '🤖 EF Coach'),
+                    !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: CYAN_INK, marginBottom: '4px' } }, '🤖 EF Coach'),
                     msg.text
                   )
                 );
@@ -1445,7 +1447,7 @@ window.SelHub = window.SelHub || {
                 },
                 disabled: coachLoading || !coachInput.trim() || !callGemini,
                 'aria-label': 'Send to coach',
-                style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? CYAN : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
+                style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
               }, coachLoading ? '⏳' : '→')
             ),
             coachHistory.length === 0 && h('div', { style: { marginTop: '14px' } },

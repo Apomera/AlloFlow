@@ -5225,7 +5225,7 @@ window.StemLab = window.StemLab || {
           ),
           h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "transition-colors px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50 active:scale-[0.97]" }, t('stem.dna.genetic_disorders_reference', '\uD83E\uDDA0 Genetic Disorders Reference')),
-            h("div", { className: "p-3 space-y-2 max-h-60 overflow-y-auto" },
+            h("div", { className: "p-3 space-y-2 max-h-60 overflow-y-auto", tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.dna.a11y_genetic_disorders_reference_list', 'Genetic disorders reference list') },
               GENETIC_DISORDERS.map(function(dis) {
                 return h("div", { key: dis.name, className: "p-2 bg-slate-50 rounded-lg" },
                   h("div", { className: "flex items-center gap-2" },
@@ -5621,8 +5621,8 @@ window.StemLab = window.StemLab || {
           ),
           h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "transition-colors px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50 active:scale-[0.97]" }, t('stem.dna.codon_reference_table', "\uD83D\uDCD6 Codon Reference Table")),
-            h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[0.6875rem] font-mono max-h-60 overflow-y-auto" },
-              Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-700" }, "\u2192 " + aa2)); })
+            h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[0.6875rem] font-mono max-h-60 overflow-y-auto", tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.dna.a11y_codon_reference_table', 'Codon reference table') },
+              Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: ({ '#f59e0b': '#b45309', '#ef4444': '#b91c1c', '#3b82f6': '#1d4ed8', '#22c55e': '#15803d', '#a855f7': '#7e22ce', '#888': '#525252' })[pr2.color] || pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-700" }, "\u2192 " + aa2)); })
             )
           )
         ),

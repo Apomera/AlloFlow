@@ -11093,6 +11093,8 @@ var TRAUMA_INFORMED_ADVOCACY = [
       var _adv_FGD = {'#6366f1':'#818cf8'};
       var _advFg = function(h){ return _advHC ? (_adv_FGH[h]||h) : (_advL ? (_adv_FGL[h]||h) : (_adv_FGD[h]||h)); };
       var _advBd = function(h){ return _advHC ? (_adv_BDH[h]||h) : (_advL ? (_adv_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _advSolid = function(c){ return _advHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var Sparkles = ctx.icons.Sparkles;
@@ -11411,7 +11413,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8'), position: 'relative' } },
           '\uD83C\uDFC5',
-          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _advFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _advSolid(ACCENT), color: _advFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
         )
       );
 
@@ -11755,7 +11757,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
             })
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 } },
-            filtered.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _advFg('#64748b'), fontSize: 13 } }, 'No phrases match.'),
+            filtered.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _advFg('#94a3b8'), fontSize: 13 } }, 'No phrases match.'),
             filtered.map(function(p, idx) {
               var origIdx = ADVOCACY_PHRASES.indexOf(p);
               var isFav = phraseFavs.indexOf(origIdx) >= 0;
@@ -11823,7 +11825,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
             filtered.map(function(a, i) {
               return h('details', { key: i, style: { padding: 12, background: _advBg('#0f172a'), borderRadius: 10, border: '1px solid #1e293b' } },
                 h('summary', { style: { cursor: 'pointer', fontSize: 14, color: _advFg('#86efac'), fontWeight: 700 } },
-                  a.name, h('span', { style: { fontSize: 10, color: _advFg('#64748b'), marginLeft: 8, fontWeight: 400 } }, '· ' + a.area)),
+                  a.name, h('span', { style: { fontSize: 10, color: _advFg('#94a3b8'), marginLeft: 8, fontWeight: 400 } }, '· ' + a.area)),
                 h('div', { style: { marginTop: 10, fontSize: 12.5, color: _advFg('#cbd5e1'), lineHeight: 1.65 } },
                   h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: _advFg('#22c55e') } }, 'Who it helps: '), a.helps),
                   h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: _advFg('#0ea5e9') } }, 'Why it works: '), a.why),
@@ -13343,7 +13345,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
             h('button', { 'aria-label': 'Complete & Next',
               onClick: function() { upd('stRevealed', true); if (soundEnabled) sfxReveal(); },
               disabled: stRevealed,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: stRevealed ? _advBg('#334155') : _advFg('#6366f1'), color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: stRevealed ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: stRevealed ? _advBg('#334155') : _advSolid(_advFg('#6366f1')), color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: stRevealed ? 'default' : 'pointer' }
             }, stRevealed ? 'Example shown \u2193' : '\uD83D\uDCA1 Show Example'),
             h('button', { 'aria-label': 'Complete & Next',
               onClick: function() {
@@ -13359,7 +13361,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                 upd({ stIdx: stIdx + 1, stParts: {}, stRevealed: false });
                 ctx.announceToSR && ctx.announceToSR('Next script template loaded');
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _advSolid(ACCENT), color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '\u2705 Complete & Next')
           ),
           // Example reveal
@@ -13556,7 +13558,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                 'aria-busy': voLoading ? 'true' : 'false',
                 onClick: function() { if (voInputText.trim() && !voLoading) sendVoMessage(); },
                 disabled: voLoading || !voInputText.trim(),
-                style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: voLoading ? _advBg('#334155') : ACCENT, color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: voLoading ? 'default' : 'pointer' }
+                style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: voLoading ? _advBg('#334155') : _advSolid(ACCENT), color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: voLoading ? 'default' : 'pointer' }
               }, voLoading ? '...' : '\u2191')
             )
           );
@@ -13678,7 +13680,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
               h('button', { 'aria-label': 'Practice Another',
                 onClick: function() { upd({ voMode: null, voChatHistory: [], voConfidence: 30, voTurnCount: 0, voInputText: '' }); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _advSolid(ACCENT), color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'Practice Another \u2192'),
               h('button', { 'aria-label': 'See Progress',
                 onClick: function() { upd('activeTab', 'progress'); },
@@ -13736,7 +13738,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                           addToast('Phrase practiced!', 'success');
                         }
                       },
-                      style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: practiced ? '#22c55e22' : ACCENT_DIM, color: practiced ? _advFg('#22c55e') : ACCENT, fontSize: 11, fontWeight: 600, cursor: practiced ? 'default' : 'pointer', flexShrink: 0 }
+                      style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: practiced ? '#22c55e22' : ACCENT_DIM, color: practiced ? _advFg('#22c55e') : (_advHC || _advL ? ACCENT : '#a5b4fc'), fontSize: 11, fontWeight: 600, cursor: practiced ? 'default' : 'pointer', flexShrink: 0 }
                     }, practiced ? '\u2713 Practiced' : 'Practice')
                   )
                 );
@@ -13832,7 +13834,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
             h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center', flexWrap: 'wrap' } },
               h('button', { 'aria-label': 'Read Aloud',
                 onClick: function() { speakScript(buildSasScript(curSas, sasParts)); if (soundEnabled) sfxClick(); },
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _advBg('#3b82f6'), color: _advFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _advBg(_advSolid('#3b82f6')), color: _advFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\uD83D\uDD0A Read Aloud'),
               h('button', { 'aria-label': sasPracticeMode ? '\uD83C\uDFA4 Practicing...' : '\uD83C\uDFA4 Practice Mode',
                 onClick: function() { upd('sasPracticeMode', !sasPracticeMode); if (soundEnabled) sfxClick(); },
@@ -13851,7 +13853,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
             h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' } },
               h('button', { 'aria-label': 'Hear It Again',
                 onClick: function() { speakScript(buildSasScript(curSas, sasParts)); },
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _advBg('#3b82f6'), color: _advFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _advBg(_advSolid('#3b82f6')), color: _advFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\uD83D\uDD0A Hear It Again'),
               h('button', { 
                 onClick: function() {
@@ -13894,7 +13896,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                 upd({ sasIdx: sasIdx + 1, sasParts: {}, sasPracticeMode: false });
                 if (soundEnabled) sfxClick();
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _advSolid(ACCENT), color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next \u2192')
           )
         );
@@ -13927,7 +13929,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                     'Every advocate starts somewhere. Run it again - the questions do not change, but you will.'),
                   h('button', {
                     onClick: function() { upd({ kqIdx: 0, kqPicked: null, kqScore: 0, kqDone: false }); if (soundEnabled) sfxClick(); },
-                    style: { marginTop: 16, padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, background: ACCENT, color: '#fff' }
+                    style: { marginTop: 16, padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, background: _advSolid(ACCENT), color: '#fff' }
                   }, 'Start over')
                 )
               )
@@ -13978,7 +13980,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                         else { upd({ kqIdx: kqIdx + 1, kqPicked: null }); if (soundEnabled) sfxClick(); }
                         focusAdvocacyControl('adv-knowquiz-heading');
                       },
-                      style: { marginTop: 4, padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, background: ACCENT, color: '#fff' }
+                      style: { marginTop: 4, padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, background: _advSolid(ACCENT), color: '#fff' }
                     }, kqIdx + 1 >= kqTotal ? 'See results' : 'Next question')
                   )
                 )
@@ -14095,7 +14097,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                         if (soundEnabled) sfxClick();
                       },
                       title: labels[val - 1],
-                      style: { width: 40, height: 40, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : _advBg('#334155')), background: isSelected ? ACCENT : 'transparent', color: isSelected ? _advFg('#fff') : _advFg('#94a3b8'), fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                      style: { width: 40, height: 40, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : _advBg('#334155')), background: isSelected ? _advSolid(ACCENT) : 'transparent', color: isSelected ? _advFg('#fff') : _advFg('#94a3b8'), fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
                     }, String(val));
                   })
                 ),
@@ -14115,7 +14117,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                   if (soundEnabled) sfxResolve();
                   addToast('Assessment complete! See your results above.', 'success');
                 },
-                style: { padding: '12px 28px', borderRadius: 10, border: 'none', background: ACCENT, color: _advFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                style: { padding: '12px 28px', borderRadius: 10, border: 'none', background: _advSolid(ACCENT), color: _advFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, '\u2705 See My Results')
             )
           )
@@ -14183,7 +14185,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                 upd('ltPreview', !ltPreview);
                 if (soundEnabled) sfxReveal();
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ltPreview ? _advBg('#334155') : ACCENT, color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ltPreview ? _advBg('#334155') : _advSolid(ACCENT), color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, ltPreview ? 'Hide Preview' : '\uD83D\uDC41\uFE0F Preview Letter'),
             ltAllFilled && h('button', { 'aria-label': 'Copy & Save',
               onClick: function() {

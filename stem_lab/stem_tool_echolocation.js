@@ -3142,8 +3142,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }),
                 h('div', { className: 'flex justify-between text-[0.6875rem] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                   h('span', null, t('stem.echolocation.20_hz', '20 Hz')),
-                  h('span', { className: 'text-green-500' }, t('stem.echolocation.audible', '\u2190 Audible \u2192')),
-                  h('span', { className: 'text-purple-500' }, t('stem.echolocation.bat_range', '\u2190 Bat range \u2192')),
+                  h('span', { className: isDark ? 'text-green-400' : 'text-green-700' }, t('stem.echolocation.audible', '\u2190 Audible \u2192')),
+                  h('span', { className: isDark ? 'text-purple-300' : 'text-purple-700' }, t('stem.echolocation.bat_range', '\u2190 Bat range \u2192')),
                   h('span', null, t('stem.echolocation.200_khz', '200 kHz')))
               ),
               // Amplitude slider
@@ -3745,7 +3745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             // Frequency readout
             h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
-                h('div', { className: 'text-xs font-black text-indigo-400' }, (dopplerFreq / 1000).toFixed(1) + ' kHz'),
+                h('div', { className: 'text-xs font-black ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, (dopplerFreq / 1000).toFixed(1) + ' kHz'),
                 h('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.emitted', 'Emitted'))),
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                 h('div', { className: 'text-xs font-black ' + (freqDiff > 0 ? 'text-blue-400' : freqDiff < 0 ? 'text-red-400' : (isDark ? 'text-slate-200' : 'text-slate-600')) }, (shiftedFreq / 1000).toFixed(1) + ' kHz'),
@@ -3946,7 +3946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('p', { className: 'text-[0.6875rem] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
                   t('stem.echolocation.fruit_bats_are_critical_for_tropical_e', 'Fruit bats are critical for tropical ecosystems. They eat fruit and deposit seeds far from the parent tree. A single fruit bat can disperse thousands of seeds per night, making them essential for forest regeneration.')))
             ),
-            h('div', { className: 'mt-2 text-[0.6875rem] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
+            h('div', { className: 'mt-2 text-[0.6875rem] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-700') },
               t('stem.echolocation.over_500_plant_species_depend_on_bat_p', 'Over 500 plant species depend on bat pollination or seed dispersal, including mangoes, bananas, agave (tequila!), and durian. Without fruit bats, many tropical foods would not exist.'))
           ),
 
@@ -4322,7 +4322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 ].map(function(ev, ei) {
                   return h('div', { key: ei, className: 'flex gap-3 items-start' },
                     h('div', { className: 'flex-shrink-0 w-16 text-right' },
-                      h('span', { className: 'text-[0.6875rem] font-bold', style: { color: ev.color } }, ev.mya)),
+                      h('span', { className: 'text-[0.6875rem] font-bold', style: { color: (isDark ? { '#6366f1': '#a5b4fc', '#8b5cf6': '#c4b5fd', '#a855f7': '#d8b4fe' } : { '#6366f1': '#4338ca', '#8b5cf6': '#6d28d9', '#a855f7': '#7e22ce', '#c084fc': '#7e22ce', '#22c55e': '#15803d', '#10b981': '#047857', '#f59e0b': '#b45309' })[ev.color] || ev.color } }, ev.mya)),
                     h('div', { className: 'flex-shrink-0 w-3 flex flex-col items-center' },
                       h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: ev.color } }),
                       ei < 6 ? h('div', { style: { width: '2px', height: '16px', background: isDark ? '#334155' : '#e2e8f0' } }) : null),
@@ -4515,7 +4515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('p', { className: 'text-[0.6875rem] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, item.detail));
                 })
               ),
-              h('div', { className: 'mt-2 text-[0.6875rem] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
+              h('div', { className: 'mt-2 text-[0.6875rem] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-700') },
                 t('stem.echolocation.a_single_bat_box_can_house_50_200_bats', 'A single bat box can house 50-200 bats. Those bats will eat millions of insects each summer, naturally reducing mosquitoes and crop pests in your area. Science + engineering + conservation = win!'))
             )
           )
@@ -4685,7 +4685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                       (isActive
                         ? 'text-white shadow-md'
                         : (isDark ? 'bg-slate-700/50 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300')),
-                    style: isActive ? { background: animal.color } : {}
+                    style: isActive ? { background: ({ '#4ade80': '#15803d', '#22d3ee': '#0e7490', '#a78bfa': '#6d28d9', '#f472b6': '#be185d' })[animal.color] || animal.color } : {}
                   }, h('span', { 'aria-hidden': 'true' }, animal.emoji), ' ', animal.name);
                 })
               ),
@@ -4809,7 +4809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'p-3 rounded-lg text-center ' + (isDark ? 'bg-emerald-900/40' : 'bg-emerald-100') },
                 h('div', { className: 'text-xs font-mono font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
                   t('stem.echolocation.t_f_n_40', 'T(\u00B0F) = N\u2081\u2084 + 40')),
-                h('div', { className: 'text-[0.6875rem] mt-1 ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
+                h('div', { className: 'text-[0.6875rem] mt-1 ' + (isDark ? 'text-emerald-400' : 'text-emerald-700') },
                   t('stem.echolocation.where_n_number_of_chirps_in_14_seconds', 'where N\u2081\u2084 = number of chirps in 14 seconds'))),
               h('div', { className: 'mt-3' },
                 h('label', { className: 'text-[0.6875rem] font-bold ' + (isDark ? 'text-emerald-300' : 'text-slate-600') },
@@ -4824,13 +4824,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   h('div', { className: 'text-center p-2 rounded ' + (isDark ? 'bg-emerald-900/40' : 'bg-emerald-100') },
                     h('div', { className: 'text-lg font-black ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
                       ((d.cricketChirps || 30) + 40) + '\u00B0F'),
-                    h('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, t('stem.echolocation.fahrenheit', 'Fahrenheit'))),
+                    h('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-emerald-400' : 'text-emerald-700') }, t('stem.echolocation.fahrenheit', 'Fahrenheit'))),
                   h('div', { className: 'text-center p-2 rounded ' + (isDark ? 'bg-emerald-900/40' : 'bg-emerald-100') },
                     h('div', { className: 'text-lg font-black ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
                       (((d.cricketChirps || 30) + 40 - 32) * 5 / 9).toFixed(1) + '\u00B0C'),
-                    h('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, t('stem.echolocation.celsius', 'Celsius')))
+                    h('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-emerald-400' : 'text-emerald-700') }, t('stem.echolocation.celsius', 'Celsius')))
                 ),
-                h('div', { className: 'text-[0.6875rem] mt-2 italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
+                h('div', { className: 'text-[0.6875rem] mt-2 italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-700') },
                   t('stem.echolocation.the_physics_cricket_muscles_contract_f', 'The physics: cricket muscles contract faster in warm temperatures because chemical reactions speed up. This is the same reason reptiles are sluggish in cold weather \u2014 enzymes work slower at lower temperatures (Arrhenius equation).'))
               )
             ),
@@ -5360,9 +5360,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           else category = 'narrow';
           var cMeta = {
             cf:     { label: t('stem.echolocation.cf_constant_frequency', '🎵 CF (constant-frequency)'),     color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.echolocation.long_narrow_band_call_horseshoe_bat_st', 'Long narrow-band call. Horseshoe-bat style. Detects fluttering prey.') },
-            fm:     { label: t('stem.echolocation.fm_chirp_sweep', '〽️ FM (chirp/sweep)'),            color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echolocation.short_broadband_sweep_most_microbats_e', 'Short broadband sweep. Most microbats. Excellent range/distance.') },
-            mixed:  { label: t('stem.echolocation.mixed_cf_fm', '🎶 Mixed CF-FM'),                 color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.echolocation.long_tailed_bat_style_long_cf_terminal', 'Long-tailed bat style. Long CF + terminal FM chirp.') },
-            narrow: { label: t('stem.echolocation.narrow_short_tone', '🔉 Narrow short tone'),           color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echolocation.limited_band_less_useful_for_echolocat', 'Limited band. Less useful for echolocation.') }
+            fm:     { label: t('stem.echolocation.fm_chirp_sweep', '〽️ FM (chirp/sweep)'),            color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echolocation.short_broadband_sweep_most_microbats_e', 'Short broadband sweep. Most microbats. Excellent range/distance.') },
+            mixed:  { label: t('stem.echolocation.mixed_cf_fm', '🎶 Mixed CF-FM'),                 color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.echolocation.long_tailed_bat_style_long_cf_terminal', 'Long-tailed bat style. Long CF + terminal FM chirp.') },
+            narrow: { label: t('stem.echolocation.narrow_short_tone', '🔉 Narrow short tone'),           color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echolocation.limited_band_less_useful_for_echolocat', 'Limited band. Less useful for echolocation.') }
           }[category];
           return h('div', { className: 'p-4 rounded-xl bg-white border border-purple-300' },
             h('h3', { className: 'text-sm font-black text-purple-700 mb-1' }, t('stem.echolocation.sonar_sweep_discovery', '🎵 Sonar sweep discovery')),

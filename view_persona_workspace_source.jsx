@@ -109,7 +109,7 @@ function PersonaWorkspaceView({
                                         <div className="mt-2 rounded-md border border-sky-100 bg-white/70 p-2">
                                             {sourceTopic && <p className="font-bold text-slate-800">{sourceTopic}</p>}
                                             {sourceFingerprint && (
-                                                <p className="mt-1 break-all font-mono text-[10px] text-slate-500" aria-label={t('persona.source_fingerprint') || 'Source fingerprint'}>
+                                                <p role="group" className="mt-1 break-all font-mono text-[10px] text-slate-500" aria-label={t('persona.source_fingerprint') || 'Source fingerprint'}>
                                                     {sourceFingerprint}
                                                 </p>
                                             )}
@@ -198,7 +198,7 @@ function PersonaWorkspaceView({
                                     </div>
                                     <button
                                         type="button"
-                                        aria-label={(personaState.mode === 'single' ? (t('common.ask_question') || 'Ask a question') : (isSelectedInPanel ? (t('persona.selected') || 'Selected') : (t('persona.add_to_panel') || 'Add to panel'))) + ': ' + String(persona.name || '')}
+                                        aria-label={(personaState.mode === 'single' ? (t('persona.select') || 'Select Interviewee') : (isSelectedInPanel ? (t('persona.selected') || 'Selected') : (t('persona.add_to_panel') || 'Add to panel'))) + ': ' + String(persona.name || '')}
                                         aria-pressed={personaState.mode === 'panel' ? isSelectedInPanel : undefined}
                                         disabled={isProcessing || isGeneratingPersona}
                                         data-help-key="persona_select_button"
@@ -239,7 +239,7 @@ function PersonaWorkspaceView({
                                     <p className="font-bold">{t('persona.instruction_panel', { current: personaState.selectedCharacters.length })}</p>
                                     {personaState.selectedCharacters.length > 0 && <p className="mt-1 text-xs leading-relaxed break-words">{personaState.selectedCharacters.map(person => person.name).join(' · ')}</p>}
                                 </div>
-                                <button type="button" aria-label={t('common.start_panel_chat')}
+                                <button type="button"
                                     onClick={handleStartPanelChat}
                                     disabled={personaState.selectedCharacters.length !== 2 || isProcessing || isGeneratingPersona} aria-busy={isProcessing || isGeneratingPersona}
                                     className="bg-purple-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-purple-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-95 shrink-0"

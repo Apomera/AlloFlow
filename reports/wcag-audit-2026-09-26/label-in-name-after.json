@@ -1,0 +1,58 @@
+{
+ "states": {
+  "workspace": [
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "expanded": [
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "Learning Tools": [
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "Educator Tools": [
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "Teach Live": [
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "Start & setup": [
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ]
+ }
+}

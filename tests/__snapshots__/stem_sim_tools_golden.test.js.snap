@@ -99,7 +99,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for cell 
   "lengthBucket": 444,
   "paths": 2,
   "selects": 0,
-  "sha": "b63e39795273aae2",
+  "sha": "beed44ff108a72e7",
   "svgs": 2,
 }
 `;
@@ -320,7 +320,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rocks
   "lengthBucket": 90,
   "paths": 21,
   "selects": 0,
-  "sha": "e0f396d9e7797512",
+  "sha": "61593e690372d69a",
   "svgs": 1,
 }
 `;
@@ -359,7 +359,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for swimL
   "lengthBucket": 69,
   "paths": 0,
   "selects": 0,
-  "sha": "c6ac39a17d1fbccd",
+  "sha": "3b7c4abc08c30d1c",
   "svgs": 0,
 }
 `;

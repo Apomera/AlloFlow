@@ -160,6 +160,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       var _beaBg = function(h){ return _beaHC ? (_bea_BGH[h]||h) : (_beaL ? (_bea_BGL[h]||h) : (_bea_BGD[h]||h)); };
       var _beaFg = function(h){ return _beaHC ? (_bea_FGH[h]||h) : (_beaL ? (_bea_FGL[h]||h) : h); };
       var _beaBd = function(h){ return _beaHC ? (_bea_BDH[h]||h) : (_beaL ? (_bea_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _beaSolid = function(c){ return _beaHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -261,7 +263,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
             ) : h('div', { style: { fontSize: 11.5, color: _beaFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Check your available energy first. The tool will narrow the library to a few realistic options.'),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { onClick: function() { goto('plan'); }, 'aria-label': 'Plan activities',
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _beaBg('#10b981'), color: _beaFg('#fff'), fontWeight: 800, fontSize: 13 } }, focused ? 'Open action →' : 'Check energy →')
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _beaBg(_beaSolid('#10b981')), color: _beaFg('#fff'), fontWeight: 800, fontSize: 13 } }, focused ? 'Open action →' : 'Check energy →')
             )
           ),
 
@@ -274,7 +276,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           doneCount >= 3 ? h('div', { style: { padding: 14, borderRadius: 10, background: _beaBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _beaFg('#e9d5ff'), marginBottom: 8 } }, '📈 You have enough data to see patterns'),
             h('button', { onClick: function() { goto('patterns'); }, 'aria-label': 'See patterns',
-              style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _beaBg('#a855f7'), color: _beaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ See patterns')
+              style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _beaBg(_beaSolid('#a855f7')), color: _beaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ See patterns')
           ) : null,
 
           softPointer()
@@ -370,7 +372,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
                 h('div', { style: { color: _beaFg('#94a3b8'), fontSize: 10, marginTop: 3 } }, focusCat.label + (focusEnergy ? ' · ' + focusEnergy.label + ' match' : ''))
               )),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
-                h('button', { type: 'button', onClick: finishFocused, style: { padding: '9px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _beaBg('#10b981'), color: _beaFg('#fff'), fontSize: 12, fontWeight: 900 } }, 'I did this — recheck →'),
+                h('button', { type: 'button', onClick: finishFocused, style: { padding: '9px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _beaBg(_beaSolid('#10b981')), color: _beaFg('#fff'), fontSize: 12, fontWeight: 900 } }, 'I did this — recheck →'),
                 h('button', { type: 'button', onClick: function() { setBA({ focusActivityId: null }); }, style: { padding: '9px 12px', borderRadius: 8, border: '1px solid ' + _beaBd('#475569'), cursor: 'pointer', background: 'transparent', color: _beaFg('#cbd5e1'), fontSize: 11, fontWeight: 750 } }, 'Choose another')
               )
             ) : null
@@ -422,7 +424,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
                   onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                   style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _beaBg('#1e293b'), color: _beaFg('#e2e8f0'), fontSize: 13 } }),
                 h('button', { onClick: submit, 'aria-label': 'Add activity',
-                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: cat.color, color: _beaFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _beaSolid(cat.color), color: _beaFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
               ),
               h('details', null,
                 h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _beaFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
@@ -616,7 +618,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
               var inCat = acts.filter(function(a) { return a.category === catId; });
               if (inCat.length === 0) return null;
               return h('div', { key: catId, style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: cat.color, color: _beaFg('#fff') } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: _beaSolid(cat.color), color: _beaFg('#fff') } },
                   h('span', { style: { fontSize: 16 } }, cat.icon),
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, cat.label)
                 ),
@@ -629,7 +631,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _beaFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _beaFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Behavioral Activation from Lewinsohn (1974), Jacobson et al. (1996), and Martell et al. (2010). ',
               'Created with AlloFlow SEL Hub.'
             )

@@ -1543,6 +1543,7 @@ function PersonaChatView(props) {
       className: "shrink-0 text-base transition-transform motion-reduce:transition-none group-open:rotate-180",
       "aria-hidden": "true"
     }, "▾")), /*#__PURE__*/React.createElement("div", {
+      role: "group",
       className: "border-t border-current/10 px-3 py-3 space-y-3 text-left",
       "aria-label": t('persona.panelist_details', {
         name: char?.name || t('persona.character_fallback')
@@ -1655,6 +1656,7 @@ function PersonaChatView(props) {
       key: idx,
       className: `flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`
     }, /*#__PURE__*/React.createElement("div", {
+      role: "group",
       className: `relative overflow-hidden max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border transition-all motion-reduce:transition-none ${isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' : isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' : 'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'} ${isMessagePlayingNow ? 'ring-2 ring-yellow-200 border-yellow-300 shadow-md' : ''}`,
       "aria-label": !isUser ? t('a11y.message_speaker_read_aloud', {
         name: speakerLabel
@@ -2017,7 +2019,6 @@ function PersonaChatView(props) {
     className: "flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
   }, t('persona.back_to_chat')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.submit_reflection_for_grading'),
     "aria-busy": reflectionBusy ? 'true' : 'false',
     onClick: _submitPersonaReflection,
     disabled: !personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt,
@@ -2701,7 +2702,6 @@ function PersonaChatView(props) {
     className: "flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
   }, t('persona.back_to_chat')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.submit_reflection_for_grading'),
     "aria-busy": reflectionBusy ? 'true' : 'false',
     onClick: _submitPersonaReflection,
     "data-help-key": "persona_submit_btn",

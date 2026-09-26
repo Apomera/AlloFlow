@@ -264,6 +264,7 @@ function ActivityArtifactSummary(props) {
     }, entry[1], ": ", statusText[status] || status);
   });
   return /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "flex flex-wrap items-center gap-1.5 mb-3",
     "aria-label": (t('brainstorm.resource_status') || 'Activity resources') + ': ' + readyCount + '/' + definitions.length
   }, /*#__PURE__*/React.createElement("span", {
@@ -490,7 +491,6 @@ function BrainstormView(props) {
   }, /*#__PURE__*/React.createElement("strong", null, "UDL Goal:"), " Providing options for engagement. Connecting concepts to student lives and physical activities increases relevance and motivation."), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.toggle_edit_brainstorm'),
     onClick: handleToggleIsEditingBrainstorm,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingBrainstorm ? 'bg-yellow-700 text-white hover:bg-yellow-700' : 'bg-white text-yellow-700 border border-yellow-200 hover:bg-yellow-50'}`
   }, isEditingBrainstorm ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -582,7 +582,6 @@ function BrainstormView(props) {
   }) : /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none"
   }, renderFormattedText(idea.guide))) : /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.refresh'),
     onClick: () => handleGenerateGuide(idx),
     disabled: isGeneratingGuide[idx],
     "aria-busy": !!isGeneratingGuide[idx],

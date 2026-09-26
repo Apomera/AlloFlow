@@ -101,7 +101,7 @@ function EndSessionPreview({
                 </div>
                 {(organizer.followUpCodenames || []).length > 0 && <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-[10px] font-black text-amber-900">{tx('end_session.may_need_launch_support', '{count} may need launch support', { count: organizer.followUpCodenames.length })}</span>}
               </div>
-              <div className="mt-2 flex flex-wrap gap-1.5" aria-label={tx('end_session.organizer_activity_outcomes', 'Visual organizer activity outcomes')}>
+              <div role="group" className="mt-2 flex flex-wrap gap-1.5" aria-label={tx('end_session.organizer_activity_outcomes', 'Visual organizer activity outcomes')}>
                 {labels.map(([status, label]) => <span key={status} className="rounded-full border border-fuchsia-200 bg-white px-2 py-1 text-[10px] font-bold text-fuchsia-900">{counts[status]} {label}</span>)}
               </div>
               <p className="mt-2 text-[10px] text-slate-600">{tx('end_session.organizer_evidence_privacy', 'Saved evidence contains bounded status and score totals only—not card text, answers, account IDs, or resource IDs.')}</p>
@@ -129,12 +129,12 @@ function EndSessionPreview({
               <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{(endSessionPreview.summary.insightBrief.followUpCodenames || []).length}</div><div className="text-[10px] font-bold text-slate-600">{tx('end_session.follow_up', 'Follow-up')}</div></div>
             </div>
             {(endSessionPreview.summary.insightBrief.byKind || []).length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5" aria-label={tx('end_session.activity_participation_by_type', 'Activity participation by type')}>
+              <div role="group" className="mt-3 flex flex-wrap gap-1.5" aria-label={tx('end_session.activity_participation_by_type', 'Activity participation by type')}>
                 {endSessionPreview.summary.insightBrief.byKind.map(item => <span key={item.kind} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-bold text-indigo-800">{item.kind.replace(/_/g, ' ')} · {item.submitted}/{item.invited}</span>)}
               </div>
             )}
             {(endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && (
-              <div className="mt-3 rounded-xl border border-violet-200 bg-white p-3" aria-label={tx('end_session.evidence_cohorts_follow_up', 'Evidence cohorts and targeted follow-up')}>
+              <div role="group" className="mt-3 rounded-xl border border-violet-200 bg-white p-3" aria-label={tx('end_session.evidence_cohorts_follow_up', 'Evidence cohorts and targeted follow-up')}>
                 <div className="text-[10px] font-black uppercase tracking-wide text-violet-900">{tx('end_session.evidence_cohorts', 'Evidence cohorts')}</div>
                 <p className="mt-1 text-[11px] text-slate-600">{tx('end_session.participation_signals_disclaimer', 'Participation signals are review suggestions, not automatic mastery or misconception labels.')}</p>
                 {(endSessionPreview.followUpResources || []).length > 0 && (

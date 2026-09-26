@@ -18834,9 +18834,9 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id,
                   title: _badgeName(badge) + ': ' + _badgeDesc(badge),
-                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : P.card, border: '1px solid ' + (earned ? '#3b82f6' : P.border), opacity: earned ? 1 : 0.4 }
+                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : P.card, border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? '#3b82f6' : P.border) }
                 },
-                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
+                  h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : P.textMuted } }, _badgeName(badge)),
                   h('div', { style: { fontSize: 11, color: earned ? '#cbd5e1' : P.textMuted, marginTop: 2 } }, _badgeDesc(badge))
                 );

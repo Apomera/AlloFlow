@@ -1173,7 +1173,6 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                             ) : (
                                                 <button type="button"
-                                                    aria-label={t('common.generate_image_for_this_word')}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
@@ -1719,7 +1718,6 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                                 <div className="flex-1 space-y-2">
                                                     <button type="button"
-                                                        aria-label={t('common.refresh')}
                                                         onClick={() => onGenerateImage && onGenerateImage(idx, word.targetWord || word.word)}
                                                         disabled={generatingImageIndex === idx}
                                                         className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all motion-reduce:transition-none ${

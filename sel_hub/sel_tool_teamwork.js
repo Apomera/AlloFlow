@@ -1504,7 +1504,7 @@ window.SelHub = window.SelHub || {
               shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', {                   key: b.id,
-                  style: { padding: 14, borderRadius: 12, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (earned ? ACCENT + '66' : _teaBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 }
+                  style: { padding: 14, borderRadius: 12, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT + '66' : _teaBg('#334155')), textAlign: 'center' }
                 },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? _teaFg('#f1f5f9') : _teaFg('#94a3b8'), marginTop: 4 } }, b.name),
@@ -2581,10 +2581,10 @@ window.SelHub = window.SelHub || {
                   var earned = !!earnedBadges[b.id];
                   return h('div', {
                     key: b.id,
-                    style: { padding: 10, borderRadius: 10, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (earned ? ACCENT + '44' : _teaBg('#1e293b')), textAlign: 'center', opacity: earned ? 1 : 0.4 }
+                    style: { padding: 10, borderRadius: 10, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT + '44' : _teaBg('#475569')), textAlign: 'center' }
                   },
                     h('div', { style: { fontSize: 22 } }, earned ? b.icon : '\uD83D\uDD12'),
-                    h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _teaFg('#f1f5f9') : _teaFg('#475569'), marginTop: 2 } }, b.name)
+                    h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _teaFg('#f1f5f9') : _teaFg('#94a3b8'), marginTop: 2 } }, b.name)
                   );
                 })
               )

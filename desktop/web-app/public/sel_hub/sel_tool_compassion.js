@@ -226,6 +226,8 @@ window.SelHub = window.SelHub || {
       var _coC = function(hex) { return _coHC ? (_CO_HC[hex] || hex) : (_coDark ? (_CO_DARK[hex] || hex) : hex); };
 
       var PURPLE = '#7c3aed'; var PL = _coC('#f5f3ff'); var PD = _coC('#4c1d95');
+      // PURPLE fails 4.5:1 as a white-text fill and as small text on the dark shell (1.4.3)
+      var PURPLE_FILL = _coHC ? PURPLE : '#7c3aed', PURPLE_INK = _coHC ? PURPLE : (_coDark ? '#a78bfa' : '#7c3aed');
 
       // WCAG 2.2.1 triage: Date.now below timestamps saved letters only; this screen has no countdown or user time limit, so pause controls are not applicable.
 
@@ -308,7 +310,7 @@ window.SelHub = window.SelHub || {
             // Decorative hearts floating behind
             [0,1,2,3].map(function(i) {
               return h('div', { key: 'h'+i, style: {
-                position: 'absolute', fontSize: (10 + i * 3) + 'px', opacity: 0.15, color: PURPLE,
+                position: 'absolute', fontSize: (10 + i * 3) + 'px', opacity: 0.15, color: PURPLE_INK,
                 left: (15 + i * 20) + '%', top: (5 + Math.sin(i) * 15) + '%',
                 animation: 'selFloat ' + (2.5 + i * 0.5) + 's ease-in-out infinite',
                 animationDelay: (i * 0.4) + 's'
@@ -366,7 +368,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: _coC('#94a3b8'), margin: 0 } }, 'Transform the harsh voice in your head into one that sounds like someone who loves you.')
           ),
           criticScore > 0 && h('div', { style: { textAlign: 'center', marginBottom: '12px' } },
-            h('span', { style: { background: PL, padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, color: PURPLE } }, '\uD83D\uDC9C ' + criticScore + ' reframed')
+            h('span', { style: { background: PL, padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, color: PURPLE_INK } }, '\uD83D\uDC9C ' + criticScore + ' reframed')
           ),
           // Critic bubble
           h('div', { style: { background: _coC('#fef2f2'), border: '2px solid #fca5a5', borderRadius: '16px', padding: '18px', marginBottom: '10px' } },
@@ -376,9 +378,9 @@ window.SelHub = window.SelHub || {
           // Student input
           !criticShow && h('div', { style: { marginBottom: '10px' } },
             h('label', { style: { fontSize: '12px', fontWeight: 600, color: _coC('#374151'), display: 'block', marginBottom: '4px' } }, '\uD83D\uDC9C What would your Inner Friend say instead?'),
-            h('textarea', { value: criticInput, onChange: function(ev) { upd('criticInput', ev.target.value); }, 'aria-label': 'Write what your inner friend would say', placeholder: 'Speak to yourself the way you\u2019d speak to someone you love...', style: { width: '100%', border: '2px solid #ddd6fe', borderRadius: '10px', padding: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', minHeight: '60px', boxSizing: 'border-box' } }),
+            h('textarea', { value: criticInput, onChange: function(ev) { upd('criticInput', ev.target.value); }, 'aria-label': 'Write what your inner friend would say', placeholder: 'Speak to yourself the way you\u2019d speak to someone you love...', style: { background: _coC('#fff'), color: _coC('#0f172a'), width: '100%', border: '2px solid #ddd6fe', borderRadius: '10px', padding: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', minHeight: '60px', boxSizing: 'border-box' } }),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' } },
-              h('button', { onClick: function() { upd({ criticShow: true, criticScore: criticInput.trim() ? criticScore + 1 : criticScore }); if (soundOn) sfxHeart(); if (criticInput.trim() && awardXP) awardXP(10, 'Transformed your inner critic!'); }, style: { padding: '8px 20px', background: PURPLE, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' } }, '\uD83D\uDC9C Show Inner Friend'),
+              h('button', { onClick: function() { upd({ criticShow: true, criticScore: criticInput.trim() ? criticScore + 1 : criticScore }); if (soundOn) sfxHeart(); if (criticInput.trim() && awardXP) awardXP(10, 'Transformed your inner critic!'); }, style: { padding: '8px 20px', background: PURPLE_FILL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' } }, '\uD83D\uDC9C Show Inner Friend'),
               h('p', { style: { fontSize: '11px', color: _coC('#94a3b8'), margin: 0 } }, curC.note)
             )
           ),
@@ -389,11 +391,11 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontSize: '14px', color: _coC('#1e3a8a'), margin: 0, fontStyle: 'italic' } }, '"' + criticInput + '"')
             ),
             h('div', { style: { background: PL, border: '2px solid #c4b5fd', borderRadius: '16px', padding: '18px', marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE, textTransform: 'uppercase', marginBottom: '4px' } }, '\uD83D\uDC9C A compassionate response:'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE_INK, textTransform: 'uppercase', marginBottom: '4px' } }, '\uD83D\uDC9C A compassionate response:'),
               h('p', { style: { fontSize: '16px', fontWeight: 700, color: PD, margin: '0 0 8px' } }, '"' + curC.friend + '"'),
               h('p', { style: { fontSize: '12px', color: _coC('#94a3b8'), margin: 0, fontStyle: 'italic' } }, curC.note)
             ),
-            h('button', { onClick: function() { upd({ criticIdx: (criticIdx + 1) % reframes.length, criticInput: '', criticShow: false }); }, style: { padding: '10px 24px', background: PURPLE, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'block', margin: '0 auto' } }, 'Next \u2192')
+            h('button', { onClick: function() { upd({ criticIdx: (criticIdx + 1) % reframes.length, criticInput: '', criticShow: false }); }, style: { padding: '10px 24px', background: PURPLE_FILL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'block', margin: '0 auto' } }, 'Next \u2192')
           )
         );
       }
@@ -409,7 +411,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: _coC('#94a3b8'), margin: 0 } }, prompt)
           ),
           h('div', { style: { background: _coC('#faf5ff'), borderRadius: '16px', padding: '20px', border: '2px solid #ddd6fe', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '13px', color: PURPLE, fontStyle: 'italic', marginBottom: '8px' } }, 'Dear Me,'),
+            h('div', { style: { fontSize: '13px', color: PURPLE_INK, fontStyle: 'italic', marginBottom: '8px' } }, 'Dear Me,'),
             h('textarea', { value: letterDraft, onChange: function(ev) { upd('letterDraft', ev.target.value); }, 'aria-label': 'Write a compassionate letter to yourself', placeholder: 'I know you\u2019re going through a hard time right now...', onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }, style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: _coC('#374151'), resize: 'vertical', minHeight: '120px', boxSizing: 'border-box', outline: 'none', borderRadius: '6px' } }),
             h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '8px' } },
               h('button', { onClick: function() {
@@ -417,7 +419,7 @@ window.SelHub = window.SelHub || {
                 var letter = { id: Date.now().toString(), text: letterDraft.trim(), date: new Date().toLocaleDateString(), ts: Date.now() };
                 upd({ savedLetters: [letter].concat(savedLetters), letterDraft: '' });
                 if (soundOn) sfxHeart(); if (awardXP) awardXP(15, 'Wrote a self-compassion letter!');
-              }, disabled: !letterDraft.trim(), style: { padding: '8px 18px', background: letterDraft.trim() ? PURPLE : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: letterDraft.trim() ? 'pointer' : 'not-allowed' }
+              }, disabled: !letterDraft.trim(), style: { padding: '8px 18px', background: letterDraft.trim() ? PURPLE_FILL : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: letterDraft.trim() ? 'pointer' : 'not-allowed' }
               }, '\uD83D\uDC9C Save with Love')
             )
           ),
@@ -470,7 +472,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, style: { display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' } },
                 h('div', { style: { maxWidth: '80%', padding: '10px 14px', borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isUser ? _coC('#fef2f2') : PL, border: '1px solid ' + (isUser ? '#fca5a5' : '#ddd6fe'), fontSize: '13px', lineHeight: 1.6, color: _coC('#1f2937') } },
                   isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: _coC('#dc2626'), marginBottom: '4px' } }, '\uD83D\uDDE3\uFE0F Inner critic says:'),
-                  !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE, marginBottom: '4px' } }, '\uD83D\uDC9C Compassion Coach:'),
+                  !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE_INK, marginBottom: '4px' } }, '\uD83D\uDC9C Compassion Coach:'),
                   msg.text
                 )
               );
@@ -517,7 +519,7 @@ window.SelHub = window.SelHub || {
                 }
               },
               disabled: coachLoading || !coachInput.trim() || !callGemini,
-              style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? PURPLE : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
+              style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? PURPLE_FILL : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, coachLoading ? '\u23F3' : '\uD83D\uDC9C')
           ),
           coachHistory.length === 0 && h('div', { style: { marginTop: '16px' } },
@@ -575,7 +577,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                       h('h4', { style: { fontSize: '15px', fontWeight: 800, color: PD, margin: 0 } }, p.title),
-                      done && h('span', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE, background: PL, padding: '2px 8px', borderRadius: '10px' } }, '\u2713 done')
+                      done && h('span', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE_INK, background: PL, padding: '2px 8px', borderRadius: '10px' } }, '\u2713 done')
                     ),
                     h('p', { style: { fontSize: '12px', color: _coC('#475569'), margin: '4px 0 0' } }, p.steps.length + ' steps \u00b7 ' + p.duration + ' \u00b7 ' + p.source)
                   )
@@ -594,7 +596,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { upd({ practiceId: null, practiceStep: 0, practiceReflection: '' }); },
                 'aria-label': 'Back to practice list',
-                style: { padding: '6px 10px', background: 'transparent', border: '1px solid #ddd6fe', borderRadius: '8px', color: PURPLE, fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 10px', background: 'transparent', border: '1px solid #ddd6fe', borderRadius: '8px', color: PURPLE_INK, fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
               }, '\u2190 All practices'),
               h('span', { style: { fontSize: '14px', fontWeight: 800, color: PD } }, activePractice.icon + ' ' + activePractice.title),
               h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: _coC('#94a3b8'), fontWeight: 600 } },
@@ -610,13 +612,13 @@ window.SelHub = window.SelHub || {
             ),
             // Step card
             curStep && h('div', { style: { background: _coC('#fff'), border: '2px solid #ddd6fe', borderRadius: '16px', padding: '24px', marginBottom: '14px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: PURPLE, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' } }, curStep.label),
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: PURPLE_INK, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' } }, curStep.label),
               h('p', { style: { fontSize: '20px', fontWeight: 800, color: PD, margin: '0 0 14px', lineHeight: 1.4 } }, '\u201C' + curStep.phrase + '\u201D'),
               h('p', { style: { fontSize: '14px', color: _coC('#374151'), margin: 0, lineHeight: 1.7 } }, curStep.body),
               window.speechSynthesis && h('button', {
                 onClick: function() { speakLine(curStep.voiceover); if (soundOn) sfxWarm(); },
                 'aria-label': 'Hear this step read aloud',
-                style: { marginTop: '14px', padding: '6px 12px', background: 'transparent', border: '1px solid ' + PURPLE, color: PURPLE, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                style: { marginTop: '14px', padding: '6px 12px', background: 'transparent', border: '1px solid ' + PURPLE, color: PURPLE_INK, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
               }, '\uD83D\uDD0A Read aloud')
             ),
             // Closing card
@@ -626,13 +628,13 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: '14px', color: _coC('#166534'), margin: 0, lineHeight: 1.7 } }, activePractice.closing)
               ),
               h('div', { style: { background: _coC('#faf5ff'), borderRadius: '12px', padding: '14px', border: '2px solid #ddd6fe', marginBottom: '14px' } },
-                h('label', { style: { fontSize: '12px', fontWeight: 700, color: PURPLE, display: 'block', marginBottom: '6px' } }, '\uD83D\uDCDD One sentence: what shifted?'),
+                h('label', { style: { fontSize: '12px', fontWeight: 700, color: PURPLE_INK, display: 'block', marginBottom: '6px' } }, '\uD83D\uDCDD One sentence: what shifted?'),
                 h('textarea', {
                   value: practiceReflection,
                   onChange: function(ev) { upd('practiceReflection', ev.target.value); },
                   'aria-label': 'Reflection on the practice',
                   placeholder: 'Even if nothing big shifted, what is one small thing you noticed?',
-                  style: { width: '100%', border: '1px solid #ddd6fe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '60px', boxSizing: 'border-box', resize: 'vertical' }
+                  style: { background: _coC('#fff'), color: _coC('#0f172a'), width: '100%', border: '1px solid #ddd6fe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '60px', boxSizing: 'border-box', resize: 'vertical' }
                 })
               )
             ),
@@ -641,12 +643,12 @@ window.SelHub = window.SelHub || {
               practiceStep > 0 ? h('button', {
                 onClick: function() { upd('practiceStep', practiceStep - 1); if (soundOn) sfxClick(); },
                 'aria-label': 'Previous step',
-                style: { padding: '10px 18px', background: 'transparent', border: '1.5px solid #ddd6fe', color: PURPLE, borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
+                style: { padding: '10px 18px', background: 'transparent', border: '1.5px solid #ddd6fe', color: PURPLE_INK, borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
               }, '\u2190 Back') : h('div'),
               !atClosing ? h('button', {
                 onClick: function() { upd('practiceStep', practiceStep + 1); if (soundOn) sfxWarm(); },
                 'aria-label': practiceStep === totalSteps - 1 ? 'Finish practice' : 'Next step',
-                style: { padding: '10px 22px', background: PURPLE, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
+                style: { padding: '10px 22px', background: PURPLE_FILL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
               }, practiceStep === totalSteps - 1 ? 'Finish \u2192' : 'Next \u2192') : h('button', {
                 onClick: function() {
                   var done = Object.assign({}, practiceCompleted); done[activePractice.id] = true;

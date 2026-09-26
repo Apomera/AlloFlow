@@ -292,6 +292,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
       var _bigBg = function(h){ return _bigHC ? (_big_BGH[h]||h) : (_bigL ? (_big_BGL[h]||h) : h); };
       var _bigFg = function(h){ return _bigHC ? (_big_FGH[h]||h) : (_bigL ? (_big_FGL[h]||h) : h); };
       var _bigBd = function(h){ return _bigHC ? (_big_BDH[h]||h) : (_bigL ? (_big_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _bigSolid = function(c){ return _bigHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -530,7 +532,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             h('textarea', { id: 'bf-better', placeholder: 'In hindsight. Specific.',
               style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bigBg('#1e293b'), color: _bigFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginBottom: 10 } }),
             h('button', { onClick: addEntry, 'aria-label': 'Log this incident',
-              style: { padding: '8px 18px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bigBg('#0ea5e9'), color: _bigFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Log incident')
+              style: { padding: '8px 18px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bigBg(_bigSolid('#0ea5e9')), color: _bigFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Log incident')
           ),
 
           // Log
@@ -603,7 +605,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                 style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bigBg('#1e293b'), color: _bigFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: submit, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: color, color: _bigFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bigSolid(color), color: _bigFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
               h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _bigFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
@@ -683,7 +685,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                 style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bigBg('#1e293b'), color: _bigFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: submit, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bigBg('#0ea5e9'), color: _bigFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bigBg(_bigSolid('#0ea5e9')), color: _bigFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
@@ -809,14 +811,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             ) : null,
 
             (d.myBodySigns || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _bigBg('#ef4444'), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🔥 My body signs (early warning)'),
+              h('div', { style: { background: _bigBg(_bigSolid('#ef4444')), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🔥 My body signs (early warning)'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _bigFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.myBodySigns.map(function(t, i) { return h('li', { key: i }, t); })
               )
             ) : null,
 
             (d.myCoolDowns || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _bigBg('#0ea5e9'), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '❄️ My cool-downs that work'),
+              h('div', { style: { background: _bigBg(_bigSolid('#0ea5e9')), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '❄️ My cool-downs that work'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _bigFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.myCoolDowns.map(function(t, i) { return h('li', { key: i }, t); })
               )
@@ -824,7 +826,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
 
             // Hassle log
             log.length > 0 ? h('div', { style: { marginBottom: 14 } },
-              h('div', { style: { background: _bigBg('#0ea5e9'), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📓 Hassle log (' + log.length + ' entries)'),
+              h('div', { style: { background: _bigBg(_bigSolid('#0ea5e9')), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📓 Hassle log (' + log.length + ' entries)'),
               log.map(function(e, i) {
                 return h('div', { key: i, style: { marginBottom: 10, pageBreakInside: 'avoid', padding: '8px 0', borderTop: '1px solid #e2e8f0' } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 3 } },
@@ -837,9 +839,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
                   e.wouldHaveBeen ? h('div', { style: { fontSize: 12, color: _bigFg('#0f172a') } }, h('strong', null, 'Better: '), e.wouldHaveBeen) : null
                 );
               })
-            ) : h('div', { style: { fontSize: 12, color: _bigFg('#94a3b8'), fontStyle: 'italic' } }, 'No hassle log entries yet.'),
+            ) : h('div', { style: { fontSize: 12, color: _bigFg('#475569'), fontStyle: 'italic' } }, 'No hassle log entries yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _bigFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _bigFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Hassle log from Lochman Coping Power (Lochman, Wells, & Lenhart). ',
               'Created with AlloFlow SEL Hub.'
             )

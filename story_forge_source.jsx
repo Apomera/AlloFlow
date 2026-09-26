@@ -8977,7 +8977,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           )}
                         >
                           <div className="text-xs font-black">{item.label}</div>
-                          <div className="text-[10px] leading-snug opacity-75 mt-0.5">{item.desc}</div>
+                          <div className="text-[10px] leading-snug mt-0.5">{item.desc}</div>
                         </button>
                       ))}
                     </div>
@@ -8999,7 +8999,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           }`}
                         >
                           <div className="text-xs font-black">{item.label}</div>
-                          <div className="text-[10px] leading-snug opacity-75 mt-0.5">{item.desc}</div>
+                          <div className="text-[10px] leading-snug mt-0.5">{item.desc}</div>
                         </button>
                       ))}
                     </div>
@@ -10782,7 +10782,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <div className="text-xs font-black uppercase tracking-widest">{ta('a11y.storyforge_ui_interactive_page_preview')}</div>
                     <p className="mt-1 text-[11px] text-slate-300">{ta('a11y.storyforge_ui_drag_panel_corners_and_bubble_handles')}</p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-1.5" aria-label={ta('a11y.storyforge_attr_design_preview_page_navigation')}>
+                  <div role="group" className="flex flex-wrap items-center gap-1.5" aria-label={ta('a11y.storyforge_attr_design_preview_page_navigation')}>
                     <button type="button" onClick={() => setComicPreviewPage(prev => Math.max(1, prev - 1))} disabled={comicPreviewPage <= 1} className="sf-page-nav-button h-9 rounded-md border border-slate-600 px-3 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-40">{ta('a11y.storyforge_ui_previous')}</button>
                     {comicPageGroups.map((page) => (
                       <button
@@ -11048,7 +11048,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <div key={p.id} className={`bg-white rounded-2xl border-2 shadow-sm p-4 sm:p-5 transition-colors ${isCurrentPlayback ? 'border-green-400 bg-green-50/30' : 'border-indigo-100'}`}>
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                       <span className="text-xs font-bold text-indigo-600">{artifactType === 'comic' ? 'Panel' : 'Scene'} {idx + 1} {isCurrentPlayback && '\u25B6 Playing'}</span>
-                      <div className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 sm:w-auto" aria-label={ta('a11y.storyforge_attr_narration_and_voice_practice_actions')}>
+                      <div role="group" className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 sm:w-auto" aria-label={ta('a11y.storyforge_attr_narration_and_voice_practice_actions')}>
                         <span className="w-full text-[10px] font-black uppercase tracking-wider text-indigo-500">{ta('a11y.storyforge_ui_create_narration')}</span>
                         {/* AI Narrate button */}
                         {hasSentenceAudio ? (
@@ -12050,7 +12050,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     </div>
                     <p className="mt-1 text-xs font-medium text-slate-600">{projectReadiness.summary}</p>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-1 text-[10px] font-bold text-slate-600" aria-label={ta('a11y.storyforge_attr_production_coverage')}>
+                  <div role="group" className="grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-1 text-[10px] font-bold text-slate-600" aria-label={ta('a11y.storyforge_attr_production_coverage')}>
                     <span>Words <strong className="text-slate-900">{projectReadiness.metrics.totalWords}</strong></span>
                     <span>{ta('a11y.storyforge_ui_art')} <strong className="text-slate-900">{projectReadiness.metrics.illustratedSections}/{projectReadiness.metrics.totalSections}</strong></span>
                     <span>{ta('a11y.storyforge_ui_audio')} <strong className="text-slate-900">{projectReadiness.metrics.narratedSections}/{projectReadiness.metrics.totalSections}</strong></span>
@@ -12094,7 +12094,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               </section>
 
               {layoutMode === 'comic' && comicExportProof && (
-                <div data-sf-comic-export-proof className="mt-4 border-t-2 border-blue-100 pt-4" aria-label={ta('a11y.storyforge_attr_comic_export_proof')}>
+                <div role="group" data-sf-comic-export-proof className="mt-4 border-t-2 border-blue-100 pt-4" aria-label={ta('a11y.storyforge_attr_comic_export_proof')}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                       <div className="text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2">
@@ -12182,7 +12182,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <div className="text-[11px] font-black uppercase tracking-widest">
                         Page {focusedComicPreviewPage?.page || 1} of {comicPageGroups.length} <span className="text-slate-400">{ta('a11y.storyforge_ui_follow_the_numbered_panels')}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 max-w-full" aria-label={ta('a11y.storyforge_attr_comic_preview_page_navigation')}>
+                      <div role="group" className="flex items-center gap-1.5 max-w-full" aria-label={ta('a11y.storyforge_attr_comic_preview_page_navigation')}>
                         <button
                           type="button"
                           data-sf-focusable
@@ -12402,7 +12402,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   </button>
                 </div>
                 {revisionHistory.length > 0 && (
-                  <div className="mt-4 border-t border-emerald-100 pt-3" aria-label={ta('a11y.storyforge_attr_saved_project_checkpoints')}>
+                  <div role="group" className="mt-4 border-t border-emerald-100 pt-3" aria-label={ta('a11y.storyforge_attr_saved_project_checkpoints')}>
                     <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{ta('a11y.storyforge_ui_recent_checkpoints')}</div>
                     <div className="flex flex-wrap gap-2">
                       {revisionHistory.slice(0, 6).map((revision) => (

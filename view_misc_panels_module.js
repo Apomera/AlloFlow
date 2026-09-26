@@ -1167,7 +1167,6 @@ function GroupSessionModal(props) {
   )))) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-sm text-slate-600 italic" }, t("session.waiting_for_students")))))), /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t border-slate-200 bg-slate-50 flex justify-end flex-shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.confirm"),
       onClick: handleSetShowGroupModalToFalse,
       className: "px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full transition-colors shadow-md flex items-center gap-2"
     },
@@ -2119,7 +2118,6 @@ function SourceGenPanel(props) {
   )))))))), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "aria-label": t("common.generate_source_text"),
       "data-help-key": "source_generate_button",
       onClick: handleGenerateSource,
       disabled: !sourceTopic.trim() && targetStandards.length === 0 || isGeneratingSource,

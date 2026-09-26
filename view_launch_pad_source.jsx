@@ -662,7 +662,7 @@ function LaunchPadView(props) {
             }
           `}</style>
           {/* ── Compact Language Switcher (top-right) ── */}
-          <div className="lp-utility-bar" aria-label={copy('launch_pad.utilities_label', 'Launch Pad settings')}>
+          <div className="lp-utility-bar" role="group" aria-label={copy('launch_pad.utilities_label', 'Launch Pad settings')}>
           {!_isCanvasEnv && (
             <>
               <button

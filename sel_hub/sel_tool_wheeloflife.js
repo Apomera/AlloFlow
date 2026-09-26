@@ -77,6 +77,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       var _wlBg = function(h){ return _wlHC ? (_wl_BGH[h]||h) : (_wlL ? (_wl_BGL[h]||h) : h); };
       var _wlFg = function(h){ return _wlHC ? (_wl_FGH[h]||h) : (_wlL ? (_wl_FGL[h]||h) : h); };
       var _wlBd = function(h){ return _wlHC ? (_wl_BDH[h]||h) : (_wlL ? (_wl_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _wlInk = function(c){ return _wlHC || _wlL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var _wl_DOMAIN_LIGHT = {'#ef4444':'#b91c1c','#f59e0b':'#92400e','#22c55e':'#166534','#ec4899':'#be185d','#0ea5e9':'#0369a1','#6366f1':'#4338ca','#a855f7':'#7e22ce','#eab308':'#854d0e'};
       var _wlDomain = function(h){ return _wlHC ? '#ffff00' : (_wlL ? (_wl_DOMAIN_LIGHT[h] || h) : h); };
       var React = ctx.React;
@@ -348,7 +350,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 26 } }, dom.icon),
                 h('div', { style: { flex: 1, minWidth: 140 } },
-                  h('div', { style: { fontSize: 14, fontWeight: 800, color: domainColor } }, dom.label)
+                  h('div', { style: { fontSize: 14, fontWeight: 800, color: _wlInk(domainColor) } }, dom.label)
                 ),
                 h('div', { style: { fontSize: 22, fontWeight: 900, color: v > 0 ? domainColor : _wlFg('#475569') } }, v || '–')
               ),
@@ -508,7 +510,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _wlFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _wlFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Wheel of Life format from the coaching tradition (commonly attributed to Paul J. Meyer, Success Motivation Institute, 1960s; standardized in Co-Active Coaching). ',
               'Created with AlloFlow SEL Hub.'
             )

@@ -135,7 +135,6 @@ function StudentJoinPanel({
       "button",
       {
         type: "submit",
-        "aria-label": t("common.continue"),
         disabled: !canJoin,
         "aria-disabled": !canJoin,
         className: cx("w-full font-bold text-lg py-3 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primary, styles.focusOffset)
@@ -147,7 +146,7 @@ function StudentJoinPanel({
       "button",
       {
         type: "button",
-        "aria-label": t("common.connect"),
+        "aria-labelledby": collapsedTitleId,
         onClick: handleSetIsJoinPanelExpandedToTrue,
         className: cx("w-full flex items-center justify-between p-2 rounded-2xl transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.hoverPanel, styles.focusOffset)
       },

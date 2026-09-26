@@ -1042,7 +1042,6 @@ const WordSoundsReviewPanel = ({
       "button",
       {
         type: "button",
-        "aria-label": t("common.generate_image_for_this_word"),
         onClick: (e) => {
           e.stopPropagation();
           onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
@@ -1540,7 +1539,6 @@ const WordSoundsReviewPanel = ({
       "button",
       {
         type: "button",
-        "aria-label": t("common.refresh"),
         onClick: () => onGenerateImage && onGenerateImage(idx, word.targetWord || word.word),
         disabled: generatingImageIndex === idx,
         className: `w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all motion-reduce:transition-none ${word.image ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200 border border-indigo-200" : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md"}`

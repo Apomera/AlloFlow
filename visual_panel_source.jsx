@@ -1338,7 +1338,6 @@ Return ONLY valid JSON:
                 {!isStudentChallenge && (
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                     <button type="button"
-                        aria-label={t('common.toggle_labels')}
                         onClick={() => setLabelsHidden(!labelsHidden)}
                         className={labelsHidden ? 'active' : ''}
                         title={labelsHidden ? 'Show Labels' : 'Hide Labels (Self-Test)'}

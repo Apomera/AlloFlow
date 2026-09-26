@@ -1131,7 +1131,6 @@ function AdventureTurnRecovery({
     className: "mt-1 text-sm leading-relaxed text-[var(--av-muted)]"
   }, t('adventure.interrupted_desc')))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.retry_adventure_turn'),
     onClick: onRetry,
     disabled: loading || typeof onRetry !== 'function',
     className: "mt-4 min-h-11 w-full sm:w-auto px-4 py-3 flex items-center justify-center gap-2 rounded-xl border border-[var(--av-control)] bg-[var(--av-wash)] text-[var(--av-ink)] text-sm font-semibold hover:bg-[var(--av-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1364,6 +1363,7 @@ function AdventureConsequenceCard({
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-sm text-[var(--av-muted)]"
     }, change.before), /*#__PURE__*/React.createElement("span", {
+      role: "img",
       className: "text-[var(--av-accent)]",
       "aria-label": label('to', 'to')
     }, "→"), /*#__PURE__*/React.createElement("strong", {
@@ -2696,6 +2696,7 @@ function AdventureView(props) {
   }, adventureState.gold), adventureState.activeGoldBuffTurns > 0 && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] ml-1 bg-yellow-400 text-black px-1 rounded-full"
   }, adventureState.activeGoldBuffTurns)), (adventureState.stats?.conceptsFound || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "bg-[var(--av-wash)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex flex-wrap items-center gap-1.5 text-[var(--av-ink)] min-w-0",
     title: (t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', '),
     "aria-label": (t('adventure.mission_report.concepts_secured') || 'Concepts secured') + ': ' + adventureState.stats.conceptsFound.join(', ')
@@ -2784,7 +2785,6 @@ function AdventureView(props) {
     className: "hidden sm:inline"
   }, t('adventure.view_button'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.start_new_adventure'),
     "data-help-key": "adventure_start_btn",
     onClick: handleStartAdventure,
     disabled: adventureState.isLoading || isProcessing,

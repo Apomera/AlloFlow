@@ -1012,6 +1012,8 @@ window.SelHub = window.SelHub || {
       var _cfl_FGD = {'#3b82f6':'#60a5fa','#a855f7':'#c084fc'};
       var _cflFg = function(h){ return _cflHC ? (_cfl_FGH[h]||h) : (_cflL ? (_cfl_FGL[h]||h) : (_cfl_FGD[h]||h)); };
       var _cflBd = function(h){ return _cflHC ? (_cfl_BDH[h]||h) : (_cflL ? (_cfl_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _cflSolid = function(c){ return _cflHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var Sparkles = ctx.icons.Sparkles;
@@ -1261,7 +1263,7 @@ window.SelHub = window.SelHub || {
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _cflFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _cflFg('#94a3b8'), position: 'relative' } },
           '\uD83C\uDFC5',
-          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _cflFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _cflSolid(ACCENT), color: _cflFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
         )
       );
 
@@ -1506,7 +1508,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { padding: 16, borderRadius: 14, background: _cflBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 12 } },
             h('p', { style: { fontSize: 13, color: _cflFg('#e2e8f0'), lineHeight: 1.6, marginBottom: 10 } }, curIs.situation),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#ef444415', border: '1px solid #ef444433' } },
-              h('p', { style: { fontSize: 10, color: _cflFg('#ef4444'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2, fontWeight: 700 } }, '"You" statement'),
+              h('p', { style: { fontSize: 10, color: _cflHC ? _cflFg('#ef4444') : '#f87171', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2, fontWeight: 700 } }, '"You" statement'),
               h('p', { style: { fontSize: 13, color: _cflFg('#fca5a5'), fontStyle: 'italic' } }, curIs.youStatement)
             )
           ),
@@ -1538,7 +1540,7 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': 'Complete & Next',
               onClick: function() { upd('isRevealed', true); if (soundEnabled) sfxReveal(); },
               disabled: isRevealed,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: isRevealed ? _cflBg('#334155') : _cflFg('#6366f1'), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: isRevealed ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: isRevealed ? _cflBg('#334155') : _cflSolid(_cflFg('#6366f1')), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: isRevealed ? 'default' : 'pointer' }
             }, isRevealed ? 'Example shown \u2193' : '\uD83D\uDCA1 Show Example'),
             h('button', { 'aria-label': 'Complete & Next',
               onClick: function() {
@@ -1555,7 +1557,7 @@ window.SelHub = window.SelHub || {
                 upd({ isIdx: isIdx + 1, isFeeling: '', isBecause: '', isNeed: '', isRevealed: false });
                 ctx.announceToSR && ctx.announceToSR('Next I-statement prompt loaded');
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _cflSolid(ACCENT), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '\u2705 Complete & Next')
           ),
           // Example reveal
@@ -1665,7 +1667,7 @@ window.SelHub = window.SelHub || {
             ),
             // Avoid
             h('div', { style: { padding: 10, borderRadius: 8, background: '#ef444415', border: '1px solid #ef444433' } },
-              h('p', { style: { fontSize: 10, color: _cflFg('#ef4444'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2, fontWeight: 700 } }, '\u26A0\uFE0F Avoid'),
+              h('p', { style: { fontSize: 10, color: _cflHC ? _cflFg('#ef4444') : '#f87171', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2, fontWeight: 700 } }, '\u26A0\uFE0F Avoid'),
               h('p', { style: { fontSize: 12, color: _cflFg('#fca5a5'), fontStyle: 'italic' } }, curRp.avoid)
             )
           ),
@@ -1694,7 +1696,7 @@ window.SelHub = window.SelHub || {
                 ctx.announceToSR && ctx.announceToSR('Repair scenario saved');
               },
               disabled: rpSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: rpSaved ? _cflFg('#22c55e') : ACCENT, color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: rpSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: rpSaved ? _cflFg('#22c55e') : _cflSolid(ACCENT), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: rpSaved ? 'default' : 'pointer' }
             }, rpSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save'),
             rpSaved && h('button', { 'aria-label': 'Next',
               onClick: function() { upd({ rpIdx: rpIdx + 1, rpReflection: '', rpSaved: false }); if (soundEnabled) sfxClick(); },
@@ -2030,7 +2032,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
               h('button', { 'aria-label': 'Next Phase',
                 onClick: function() { upd('cdBreathPhase', (cdBreathPhase + 1)); if (soundEnabled) playTone(220 + (cdBreathPhase % 3) * 110, 0.3, 'sine', 0.06); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _cflSolid(ACCENT), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'Next Phase \u2192'),
               h('button', { 'aria-label': 'Back',
                 onClick: function() { upd({ cdMode: 'menu', cdBreathPhase: 0 }); },
@@ -2137,7 +2139,7 @@ window.SelHub = window.SelHub || {
                       awardXP(10);
                     }
                   },
-                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: scanStep < bodyParts.length - 1 ? '#8b5cf6' : _cflFg('#22c55e'), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: scanStep < bodyParts.length - 1 ? _cflSolid('#8b5cf6') : _cflFg('#22c55e'), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                 }, scanStep < bodyParts.length - 1 ? 'Next Area \u2192' : '\u2705 Complete'),
                 h('button', { 'aria-label': 'Back',
                   onClick: function() { upd({ cdMode: 'menu', cdScanStep: 0 }); },
@@ -2212,7 +2214,7 @@ window.SelHub = window.SelHub || {
                 }).catch(function(err) { upd('medLoading', false); addToast('Error: ' + err.message, 'error'); });
               },
               disabled: medLoading,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: medLoading ? _cflBg('#334155') : ACCENT, color: _cflFg('#fff'), fontWeight: 700, fontSize: 13, cursor: medLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: medLoading ? _cflBg('#334155') : _cflSolid(ACCENT), color: _cflFg('#fff'), fontWeight: 700, fontSize: 13, cursor: medLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
             }, medLoading ? 'Mediating...' : h(Sparkles, { size: 14 }), medLoading ? null : ' Help Me Resolve This')
           ),
           medResponse && h('div', { style: { padding: 20, borderRadius: 12, background: _cflBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
@@ -2391,7 +2393,7 @@ window.SelHub = window.SelHub || {
                 h('button', { 'aria-label': rpLoadingRP ? '...' : '\u2191',
                   onClick: function() { if (rpInputText.trim() && !rpLoadingRP) sendRPMessage(); },
                   disabled: rpLoadingRP || !rpInputText.trim(),
-                  style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: rpLoadingRP ? _cflBg('#334155') : ACCENT, color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: rpLoadingRP ? 'default' : 'pointer' }
+                  style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: rpLoadingRP ? _cflBg('#334155') : _cflSolid(ACCENT), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: rpLoadingRP ? 'default' : 'pointer' }
                 }, rpLoadingRP ? '...' : '\u2191')
               )
             );
@@ -2530,7 +2532,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
                 h('button', { 'aria-label': 'Try Another',
                   onClick: function() { upd({ rpSubMode: 'select', rpChatHistory: [], rpRapport: 50, rpTurnCount: 0, rpInputText: '' }); if (soundEnabled) sfxClick(); },
-                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _cflSolid(ACCENT), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                 }, 'Try Another \u2192'),
                 h('button', { 'aria-label': 'Back to Menu',
                   onClick: function() { upd({ rpModeRP: null, rpSubMode: null, rpChatHistory: [], rpRapport: 50, rpTurnCount: 0, rpInputText: '' }); },
@@ -2651,7 +2653,7 @@ window.SelHub = window.SelHub || {
                 h('button', { 'aria-label': medLoadingRP ? '...' : '\u2191',
                   onClick: function() { if (medInputText.trim() && !medLoadingRP) sendMedMessage(); },
                   disabled: medLoadingRP || !medInputText.trim(),
-                  style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: medLoadingRP ? _cflBg('#334155') : '#8b5cf6', color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: medLoadingRP ? 'default' : 'pointer' }
+                  style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: medLoadingRP ? _cflBg('#334155') : _cflSolid('#8b5cf6'), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: medLoadingRP ? 'default' : 'pointer' }
                 }, medLoadingRP ? '...' : '\u2191')
               )
             );
@@ -2792,7 +2794,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
                 h('button', { 'aria-label': 'Mediate Another',
                   onClick: function() { upd({ rpSubMode: 'select', medChatHistory2: [], medHarmony: 30, medTurnCount: 0, medInputText: '' }); if (soundEnabled) sfxClick(); },
-                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _cflBg('#8b5cf6'), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _cflBg(_cflSolid('#8b5cf6')), color: _cflFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                 }, 'Mediate Another \u2192'),
                 h('button', { 'aria-label': 'Back to Menu',
                   onClick: function() { upd({ rpModeRP: null, rpSubMode: null, medChatHistory2: [], medHarmony: 30, medTurnCount: 0, medInputText: '' }); },

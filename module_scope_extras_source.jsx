@@ -202,7 +202,6 @@ class ErrorBoundary extends React.Component {
           <div className="flex gap-3">
               <button
                 type="button"
-                  aria-label={t('common.refresh')}
                 onClick={() => {
                     if (this.props.onRetry) this.props.onRetry();
                     this.setState({ hasError: false, error: null });

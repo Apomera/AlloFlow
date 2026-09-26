@@ -718,6 +718,7 @@ function OnboardingCoach(props) {
         } }, /* @__PURE__ */ React.createElement("strong", null, t("onboarding.coach_no_backend_title") || "AlloBot Coach needs Google Gemini."), /* @__PURE__ */ React.createElement("br", null), t("onboarding.coach_no_backend_body") || "Switch your AI backend to Google Gemini in Settings, or use the static help cards above."), coachAvailable && conversation.length > 0 && /* @__PURE__ */ React.createElement(
           "div",
           {
+            role: "log",
             ref: chatPaneRef,
             "aria-live": "polite",
             "aria-label": t("onboarding.coach_conversation_aria") || "AlloBot conversation",

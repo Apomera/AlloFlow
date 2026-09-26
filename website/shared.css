@@ -488,7 +488,8 @@ img {
 .footer-links {
     display: flex;
     justify-content: center;
-    gap: 28px;
+    flex-wrap: wrap;
+    gap: 12px 28px;
     font-size: 0.875rem;
     font-weight: 600;
     color: #64748b;
