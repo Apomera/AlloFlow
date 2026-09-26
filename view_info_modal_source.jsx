@@ -1296,7 +1296,7 @@ function AtlasJourneys({ onChooseHub }) {
           <article key={journey.title} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
             <h6 className="text-xs font-black text-slate-800">{journey.title}</h6>
             <p className="text-[10px] leading-relaxed text-slate-500 mt-0.5">{journey.description}</p>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2.5" aria-label={journey.title + ' route'}>
+            <div role="group" className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2.5" aria-label={journey.title + ' route'}>
               {journey.stops.map((stop, index) => {
                 const visual = ATLAS_HUB_VISUALS[stop] || ATLAS_DEFAULT_VISUAL;
                 return (
@@ -2204,7 +2204,6 @@ function InfoModal({
                 <div className="border-t border-slate-200 pt-2 mt-2">
                   <button
                     type="button"
-                    aria-label={t('common.refresh')}
                     onClick={() => {
                       safeRemoveItem('allo_wizard_completed');
                       setShowWizard(true);

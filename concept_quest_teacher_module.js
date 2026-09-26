@@ -312,6 +312,7 @@
   }, /*#__PURE__*/React.createElement("strong", {
     className: "block text-lg text-cyan-700"
   }, (quest.sigils || []).length, "/", neededSigils), tr('concept_sigils', 'Concept sigils'))), /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "mt-3 flex flex-wrap gap-1.5",
     "aria-label": tr('role_distribution_aria', 'Party role distribution')
   }, roleCounts.map(role => /*#__PURE__*/React.createElement("span", {
@@ -468,6 +469,7 @@
     onClick: aiDraft,
     className: "min-h-11 flex-1 rounded-lg bg-indigo-700 px-3 text-sm font-bold text-white disabled:opacity-50"
   }, busy ? tr('working', 'Working…') : tr('ai_draft', 'AI draft'))), gmDraft && /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "mt-3 rounded-lg border-2 border-amber-300 bg-amber-50 p-3",
     "aria-label": tr('draft_preview_aria', 'GM draft preview')
   }, /*#__PURE__*/React.createElement("h5", {
@@ -680,6 +682,7 @@
   }, tr(debrief.rounds === 1 ? 'recent_evidence_one' : 'recent_evidence', debrief.rounds === 1 ? 'Learning evidence · last round' : 'Learning evidence · last {count} rounds', {
     count: debrief.rounds
   })), /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "mt-2 grid grid-cols-2 gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center text-xs sm:grid-cols-6",
     "aria-label": tr('campaign_summary_aria', 'Campaign evidence summary')
   }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", {

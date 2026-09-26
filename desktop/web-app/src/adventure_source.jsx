@@ -120,7 +120,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             )}
         </div>
         <div className="p-4 bg-slate-800 border-t border-slate-700 flex flex-col gap-3 relative z-20 shrink-0">
-             <button aria-label={t('common.create_storybook')}
+             <button
                 onClick={onExport}
                 disabled={isProcessing}
                 className="w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
@@ -143,7 +143,6 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                  </button>
              </div>
              <button
-                 aria-label={t('common.close')}
                 onClick={onClose}
                 className="w-full min-h-11 py-2 text-sm font-bold text-slate-200 hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
              >
@@ -2233,7 +2232,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                     {characters.map((char, i) => (
                         <div key={char.id || i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
                             <button type="button" disabled={isPortraitSanitizing || isPortraitQueueBusy} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
-                            <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
+                            <div role="group" className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
                                 {char.isGenerating ? (
                                     <div className="animate-spin motion-reduce:animate-none w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" aria-hidden="true"></div>
                                 ) : char.portrait ? (

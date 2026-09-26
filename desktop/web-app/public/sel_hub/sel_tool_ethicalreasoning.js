@@ -1107,7 +1107,7 @@ window.SelHub = window.SelHub || {
                     h('label', { id: 'ethical-branch-reflection-label', className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Reflect: Why did you choose this? Would you change your answer?'),
                     h('textarea', { value: d.branchReflection || '', onChange: function(e) { upd('branchReflection', e.target.value); },
                       placeholder: 'I chose this because...',
-                      className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-emerald-300',
+                      className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-emerald-300 bg-white text-slate-800',
                       'aria-labelledby': 'ethical-branch-reflection-label',
                       'aria-label': 'Reflection on ethical choice'
                     })
@@ -1159,7 +1159,7 @@ window.SelHub = window.SelHub || {
 
         // ═══ FRAMEWORKS TAB (Grade-Banded) ═══
         tab === 'frameworks' && h('div', {  className: 'space-y-4' },
-          h('p', { className: 'text-sm text-slate-600 text-center mb-2' }, 'Ethical frameworks are different lenses for examining the same question. No single framework has all the answers.'),
+          h('p', { className: 'text-sm text-slate-300 text-center mb-2' }, 'Ethical frameworks are different lenses for examining the same question. No single framework has all the answers.'),
 
           // Grade band indicator
           h('div', {  className: 'flex justify-center gap-2 mb-3' },
@@ -1211,7 +1211,7 @@ window.SelHub = window.SelHub || {
                 // Try It reflection area
                 h('textarea', { value: d['fwReflect_' + fw.id] || '', onChange: function(e) { upd('fwReflect_' + fw.id, e.target.value); },
                   placeholder: 'Write your thoughts here...',
-                  className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-indigo-300',
+                  className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-indigo-300 bg-white text-slate-800',
                   'aria-label': 'Framework reflection'
                 }),
 
@@ -1300,7 +1300,7 @@ window.SelHub = window.SelHub || {
             h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\uD83E\uDD14 Where do you stand? (Write your reasoning)'),
             h('textarea', { value: d.position || '', onChange: function(e) { upd('position', e.target.value); },
               placeholder: 'I think... because...',
-              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-indigo-300',
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-indigo-300 bg-white text-slate-800',
               'aria-label': 'Your ethical position'
             }),
             d.position && d.position.length > 20 && h('button', { 'aria-label': 'Challenge my reasoning with Socratic dialogue', onClick: function() { upd('tab', 'dialogue'); askSocratic(d.position); },
@@ -1360,7 +1360,7 @@ window.SelHub = window.SelHub || {
               h('input', { 'aria-label': 'Your response to Socratic dialogue', type: 'text', value: d.dialogueInput || '', onChange: function(e) { upd('dialogueInput', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter' && d.dialogueInput && d.dialogueInput.trim()) askSocratic(d.dialogueInput); },
                 placeholder: 'Share your reasoning...', disabled: aiLoading,
-                className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-40'
+                className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-40 bg-white text-slate-800'
               }),
               h('button', { 'aria-label': 'Send response', onClick: function() { if (d.dialogueInput && d.dialogueInput.trim()) askSocratic(d.dialogueInput); }, disabled: aiLoading || !(d.dialogueInput && d.dialogueInput.trim()),
                 className: 'px-4 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40'
@@ -1425,7 +1425,7 @@ window.SelHub = window.SelHub || {
                   upd('kohlbergAnswers', newAnswers);
                 },
                   placeholder: 'I would... because...',
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-purple-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-purple-300 bg-white text-slate-800',
                   'aria-labelledby': 'ethical-kohlberg-question-label',
                   'aria-label': 'Your moral reasoning response'
                 }),
@@ -1513,15 +1513,15 @@ window.SelHub = window.SelHub || {
 
           // Topic selection
           !d.debateTopicObj && h('div', {  className: 'space-y-3' },
-            h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a topic to debate:'),
+            h('p', { className: 'text-sm text-slate-300 text-center' }, 'Choose a topic to debate:'),
             (DEBATE_TOPICS[gradeBand] || DEBATE_TOPICS.elementary).map(function(topic) {
               return h('button', { key: topic.id, onClick: function() { updMulti({ debateTopicObj: topic, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
                 className: 'w-full p-4 rounded-xl border-2 border-slate-200 bg-white text-left hover:border-violet-600 hover:shadow-md transition-all'
               },
                 h('p', { className: 'text-sm font-bold text-slate-800' }, topic.topic),
                 h('div', {  className: 'flex gap-4 mt-2' },
-                  h('p', { className: 'text-xs text-emerald-600 flex-1' }, '\u2713 For: ' + topic.forSide.substring(0, 60) + '...'),
-                  h('p', { className: 'text-xs text-red-500 flex-1' }, '\u2717 Against: ' + topic.againstSide.substring(0, 60) + '...')
+                  h('p', { className: 'text-xs text-emerald-700 flex-1' }, '\u2713 For: ' + topic.forSide.substring(0, 60) + '...'),
+                  h('p', { className: 'text-xs text-red-700 flex-1' }, '\u2717 Against: ' + topic.againstSide.substring(0, 60) + '...')
                 )
               );
             })
@@ -1579,14 +1579,14 @@ window.SelHub = window.SelHub || {
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-1 mt-3' }, '\uD83D\uDCDD Your Main Arguments (build your case):'),
                 h('textarea', { value: d.debateArgs || '', onChange: function(e) { upd('debateArgs', e.target.value); },
                   placeholder: 'My first argument is...\nAnother reason is...\nThe strongest point is...',
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-violet-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-violet-300 bg-white text-slate-800',
                   'aria-label': 'Your debate arguments'
                 }),
 
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-1 mt-3' }, '\uD83D\uDEE1\uFE0F Counterarguments (address the other side):'),
                 h('textarea', { value: d.debateCounter || '', onChange: function(e) { upd('debateCounter', e.target.value); },
                   placeholder: 'Someone might say... but I would respond...\nThe other side argues... however...',
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-violet-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-violet-300 bg-white text-slate-800',
                   'aria-label': 'Your counterarguments'
                 }),
 
@@ -1728,7 +1728,7 @@ window.SelHub = window.SelHub || {
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Your Analysis: What do you think is the right thing to do here, and why?'),
                 h('textarea', { value: d.caseStudyReflection || '', onChange: function(e) { upd('caseStudyReflection', e.target.value); },
                   placeholder: 'I think the ethical choice is... because...',
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800',
                   'aria-label': 'Case study reflection'
                 })
               ),
@@ -1950,7 +1950,7 @@ window.SelHub = window.SelHub || {
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Why did you rank "' + (function() { var v = VALUES_LIST.find(function(val) { return val.id === ranked[0]; }); return v ? v.name : ''; })() + '" highest?'),
                 h('textarea', { value: d.valuesReflection || '', onChange: function(e) { upd('valuesReflection', e.target.value); },
                   placeholder: 'I ranked this highest because...',
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-rose-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-rose-300 bg-white text-slate-800',
                   'aria-label': 'Values reflection'
                 })
               ),
@@ -2067,7 +2067,7 @@ window.SelHub = window.SelHub || {
                 h('p', { id: 'ethical-tree-step-prompt', className: 'text-xs text-slate-600 mb-3' }, currentStep.prompt),
                 h('textarea', { value: d[currentStep.field] || '', onChange: function(e) { upd(currentStep.field, e.target.value); },
                   placeholder: currentStep.placeholder,
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-green-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-green-300 bg-white text-slate-800',
                   'aria-labelledby': 'ethical-tree-step-label',
                   'aria-describedby': 'ethical-tree-step-prompt',
                   'aria-label': currentStep.label
@@ -2213,7 +2213,7 @@ window.SelHub = window.SelHub || {
                 // Reflection area
                 h('textarea', { value: d['philReflect_' + phil.id] || '', onChange: function(e) { upd('philReflect_' + phil.id, e.target.value); },
                   placeholder: 'What do you think about ' + phil.name + '\u2019s ideas? Do you agree or disagree?',
-                  className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-purple-300',
+                  className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-purple-300 bg-white text-slate-800',
                   'aria-label': 'Reflection on ' + phil.name
                 }),
 
@@ -2235,13 +2235,13 @@ window.SelHub = window.SelHub || {
             BADGES.map(function(badge) {
               var earned = badge.check(d);
               return h('div', { key: badge.id,
-                className: 'p-4 rounded-2xl border-2 transition-all ' + (earned ? 'border-amber-300 bg-amber-50 shadow-md' : 'border-slate-200 bg-slate-50 opacity-60')
+                className: 'p-4 rounded-2xl border-2 transition-all ' + (earned ? 'border-amber-300 bg-amber-50 shadow-md' : 'border-dashed border-slate-400 bg-slate-50')
               },
                 h('div', { className: 'flex items-center gap-3' },
-                  h('span', { className: 'text-3xl ' + (earned ? '' : 'grayscale opacity-50') }, badge.emoji),
+                  h('span', { className: 'text-3xl ' + (earned ? '' : 'grayscale') }, badge.emoji),
                   h('div', null,
-                    h('p', { className: 'font-bold text-sm ' + (earned ? 'text-amber-800' : 'text-slate-300') }, badge.name),
-                    h('p', { className: 'text-xs ' + (earned ? 'text-amber-600' : 'text-slate-300') }, badge.desc),
+                    h('p', { className: 'font-bold text-sm ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.name),
+                    h('p', { className: 'text-xs ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.desc),
                     earned && h('p', { className: 'text-xs text-amber-500 font-bold mt-1' }, '\u2713 Earned!')
                   )
                 )

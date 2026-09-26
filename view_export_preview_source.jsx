@@ -9536,7 +9536,7 @@ const _downloadBRF = (brf) => {
                   <details className="rounded-lg border border-slate-300 bg-white p-2" data-builder-resource-list>
                     <summary className="cursor-pointer text-xs font-bold text-slate-700">{includedResourceCount} of {resourceItems.length} resources selected</summary>
                     <ol className="mt-2 space-y-1 text-xs text-slate-700">
-                      {resourceItems.map((item, index) => <li key={item.id + '-' + index} className="flex items-start gap-2"><span aria-label={item.included ? 'Selected' : 'Not selected'}>{item.included ? '✓' : '−'}</span><span>{item.title}<span className="block text-[10px] text-slate-500">{item.type}{item.roleLabel ? ' · ' + item.roleLabel : ''}</span></span></li>)}
+                      {resourceItems.map((item, index) => <li key={item.id + '-' + index} className="flex items-start gap-2"><span role="img" aria-label={item.included ? 'Selected' : 'Not selected'}>{item.included ? '✓' : '−'}</span><span>{item.title}<span className="block text-[10px] text-slate-500">{item.type}{item.roleLabel ? ' · ' + item.roleLabel : ''}</span></span></li>)}
                     </ol>
                   </details>
                 </React.Fragment>)}
@@ -10557,7 +10557,8 @@ const _downloadBRF = (brf) => {
                       {['bold', 'italic', 'underline'].map((command) => <button key={command} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand(command)} aria-label={command === 'bold' ? 'Bold' : command === 'italic' ? 'Italic' : 'Underline'} aria-pressed={formatState[command]} className={'w-8 h-8 rounded text-sm font-bold ' + (formatState[command] ? 'bg-indigo-700 text-white' : 'text-slate-700 hover:bg-indigo-50')}><span style={{ fontStyle: command === 'italic' ? 'italic' : undefined, textDecoration: command === 'underline' ? 'underline' : undefined }}>{command[0].toUpperCase()}</span></button>)}
                       </>}
                     </div>
-                <div className="builder-ribbon-tabs flex flex-wrap items-center gap-1" role="tablist" aria-label="Document Builder ribbon">
+                <div className="builder-ribbon-tabs flex flex-wrap items-center gap-1">
+                  <div role="tablist" aria-label="Document Builder ribbon" className="flex flex-wrap items-center gap-1">
                   {/* The Expert Workbench IS here and always has been — this tab
                       panel mounts it unconditionally. It was called just "Expert",
                       which reads as a difficulty setting rather than as the same
@@ -10579,6 +10580,7 @@ const _downloadBRF = (brf) => {
                       }}
                       className={`shrink-0 rounded px-3 py-1.5 text-[11px] font-bold transition-colors ${selected && !ribbonCollapsed ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white hover:text-indigo-700'}`}>{label}{tab === 'review' && preflightResult && (preflightResult.errors + preflightResult.warnings > 0) ? ` · ${preflightResult.errors + preflightResult.warnings}` : ''}</button>;
                   })}
+                  </div>
                   <button type="button" onClick={() => setRibbonCollapsed((value) => !value)} aria-expanded={!ribbonCollapsed} aria-controls={`builder-ribbon-panel-${activeRibbonTab}`} className="builder-ribbon-toggle ml-auto rounded px-2 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-white hover:text-indigo-700" title={ribbonCollapsed ? 'Expand the ribbon' : 'Collapse the ribbon'}>{ribbonCollapsed ? 'Expand ribbon' : 'Collapse ribbon'}</button>
                 </div>
                   </div>
@@ -10655,7 +10657,7 @@ const _downloadBRF = (brf) => {
                     <button type="button" onClick={() => { setMobileSettingsOpen(true); setRibbonCollapsed(true); window.setTimeout(() => document.querySelector('[data-help-key="doc_builder_wcag_audit_btn"]')?.focus(), 0); }} className="m-2 min-h-8 rounded px-2 text-xs font-bold text-violet-800 hover:bg-violet-50">Accessibility audit & results{exportAuditResult?.score >= 0 ? ' · ' + exportAuditResult.score + '/100' : ''}</button>
                     <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-1.5" role="group" aria-label="Review tools">
                       <button id="builder-track-changes" type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => toggleTrackChanges()} aria-pressed={trackChangesEnabled} aria-keyshortcuts="Control+Shift+E" className={`h-8 rounded px-2.5 text-[11px] font-bold shadow-sm ${trackChangesEnabled ? 'bg-violet-700 text-white hover:bg-violet-800' : 'border border-violet-500 bg-white text-violet-800 hover:bg-violet-50'}`} title="Toggle Track Changes (Ctrl+Shift+E)">Track Changes: {trackChangesEnabled ? 'On' : 'Off'}</button>
-                      <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-pressed={showNavigationPane && navigationPaneTab === 'changes'} aria-controls="document-builder-navigation" className="h-8 rounded border border-violet-500 bg-white px-2.5 text-[11px] font-bold text-violet-800 hover:bg-violet-50">Changes ({pendingTrackedChangeCount})</button>
+                      <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-pressed={showNavigationPane && navigationPaneTab === 'changes'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className="h-8 rounded border border-violet-500 bg-white px-2.5 text-[11px] font-bold text-violet-800 hover:bg-violet-50">Changes ({pendingTrackedChangeCount})</button>
                       <label className="sr-only" htmlFor="builder-ribbon-markup-view">Markup view</label>
                       <select id="builder-ribbon-markup-view" value={trackedMarkupView} onChange={(event) => setTrackedMarkupView(event.target.value)} className="h-8 rounded border border-violet-400 bg-white px-1.5 text-[11px] font-bold text-violet-800" title="Choose how revisions appear">
                         <option value="simple">Simple Markup</option>
@@ -10667,7 +10669,7 @@ const _downloadBRF = (brf) => {
                       <button type="button" disabled={!activeTrackedChange} onClick={() => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, 'reject')} className="h-8 rounded border border-red-400 bg-white px-2 text-[11px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-40">Reject</button>
                       <span className="mx-0.5 h-6 w-px bg-slate-300" aria-hidden="true"></span>
                       <button id="builder-new-comment" type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-700 px-2.5 text-[11px] font-bold text-white shadow-sm hover:bg-amber-800" title="Comment on the selected text (Ctrl+Alt+M)">New Comment</button>
-                      <button type="button" onClick={() => openReviewComments(activeCommentId)} aria-pressed={showNavigationPane && navigationPaneTab === 'comments'} aria-controls="document-builder-navigation" className="h-8 rounded border border-amber-500 bg-white px-2.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50">Comments ({unresolvedReviewCommentCount})</button>
+                      <button type="button" onClick={() => openReviewComments(activeCommentId)} aria-pressed={showNavigationPane && navigationPaneTab === 'comments'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className="h-8 rounded border border-amber-500 bg-white px-2.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50">Comments ({unresolvedReviewCommentCount})</button>
                       <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="h-8 rounded border border-indigo-500 bg-white px-2.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50">Word Count</button>
                       <span className="text-[10px] font-medium text-slate-600">{pendingTrackedChangeCount ? `${pendingTrackedChangeCount} pending change${pendingTrackedChangeCount === 1 ? '' : 's'}` : selectionStatistics.active ? `${selectionStatistics.words.toLocaleString()} selected / ${wordCount.toLocaleString()} total words` : `${wordCount.toLocaleString()} words`} &middot; {documentStatistics.readingMinutes || 0} min reading time</span>
                       <span className="ml-auto text-[10px] text-slate-500">Ctrl+Shift+E track &middot; Ctrl+Alt+M comment &middot; Ctrl+Alt+F footnote &middot; Ctrl+Shift+G word count</span>
@@ -10744,7 +10746,7 @@ const _downloadBRF = (brf) => {
                         </div>
                         <p className="mt-2 font-semibold">Words: {versionComparison.beforeWords.toLocaleString()} → {versionComparison.afterWords.toLocaleString()} ({versionComparison.wordDelta >= 0 ? '+' : ''}{versionComparison.wordDelta}) · Headings: {versionComparison.beforeHeadings} → {versionComparison.afterHeadings}</p>
                         {versionComparison.excerpts.length > 0 ? (
-                          <div className="mt-2 overflow-hidden rounded border border-violet-200 bg-white" aria-label="Side-by-side version comparison">
+                          <div role="group" className="mt-2 overflow-hidden rounded border border-violet-200 bg-white" aria-label="Side-by-side version comparison">
                             <div className="grid grid-cols-2 border-b border-violet-200 bg-violet-100 font-black uppercase tracking-wide text-violet-800"><span className="px-2 py-1">Saved version</span><span className="border-l border-violet-200 px-2 py-1">Current document</span></div>
                             <ol className="max-h-72 divide-y divide-violet-100 overflow-y-auto">
                               {versionComparison.excerpts.map((excerpt, index) => {
@@ -10778,7 +10780,7 @@ const _downloadBRF = (brf) => {
                 )}
                 {(toolSearchOpen || (!ribbonCollapsed && activeRibbonTab === 'home')) && (
                   <div id="builder-ribbon-panel-home" role="tabpanel" aria-labelledby="builder-ribbon-tab-home" className="shrink-0">
-                <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1" aria-label="Styles and Format Painter">
+                <div role="group" className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1" aria-label="Styles and Format Painter">
                   <span className="mr-1 text-[10px] font-black uppercase tracking-wider text-slate-500">Styles</span>
                   <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto py-0.5" role="toolbar" aria-label="Document styles">
                     {builderStyleGallery.map((styleOption) => {
@@ -10806,7 +10808,7 @@ const _downloadBRF = (brf) => {
                         <div><p className="text-[11px] font-black text-slate-800">Custom styles</p><p className="text-[9px] text-slate-500">Saved on this device · {customBuilderStyles.length}/12</p></div>
                         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={saveSelectionAsCustomStyle} className="rounded bg-indigo-700 px-2 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800">Save selection as style</button>
                       </div>
-                      <div className="mt-2 max-h-56 space-y-1 overflow-y-auto" aria-label="Saved custom styles">
+                      <div role="group" className="mt-2 max-h-56 space-y-1 overflow-y-auto" aria-label="Saved custom styles">
                         {customBuilderStyles.length ? customBuilderStyles.map((styleOption) => (
                           <div key={styleOption.id} className="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 p-1">
                             <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyBuilderStyle(styleOption.id)} className="min-w-0 flex-1 truncate rounded px-2 py-1.5 text-left text-[10px] font-bold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800" title={'Apply ' + styleOption.label}>{styleOption.label}</button>
@@ -10966,7 +10968,7 @@ const _downloadBRF = (brf) => {
                       <ImageIcon size={12} aria-hidden="true" /> Add Image
                     </button>
 
-                    <div className="flex flex-wrap items-stretch gap-2 px-2 py-1.5" aria-label="Insert tools">
+                    <div role="group" className="flex flex-wrap items-stretch gap-2 px-2 py-1.5" aria-label="Insert tools">
                       <fieldset className="flex min-w-[22rem] flex-[1.1] flex-wrap items-center gap-1.5 rounded border border-indigo-200 bg-indigo-50/60 px-2 py-1" aria-describedby="builder-structure-help">
                         <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-indigo-800">Document structure</legend>
                         <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-700">TOC depth
@@ -10975,7 +10977,7 @@ const _downloadBRF = (brf) => {
                           </select>
                         </label>
                         <button type="button" onClick={insertOrRefreshTableOfContents} className="h-7 rounded bg-indigo-700 px-2.5 text-[10px] font-bold text-white hover:bg-indigo-800">Insert / refresh TOC</button>
-                        <button type="button" onClick={() => { setNavigationPaneTab('headings'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'headings'} aria-controls="document-builder-navigation" className="h-7 rounded border border-indigo-400 bg-white px-2 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100">Open outline</button>
+                        <button type="button" onClick={() => { setNavigationPaneTab('headings'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'headings'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className="h-7 rounded border border-indigo-400 bg-white px-2 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100">Open outline</button>
                         <details id="builder-document-templates" className="relative">
                           <summary className="flex h-7 cursor-pointer list-none items-center rounded border border-indigo-400 bg-white px-2 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100">Templates</summary>
                           <div className="absolute left-0 top-full z-[85] mt-1 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-slate-300 bg-white p-2 shadow-2xl">
@@ -10983,7 +10985,7 @@ const _downloadBRF = (brf) => {
                               <div><p className="text-[11px] font-black text-slate-800">Document templates</p><p className="text-[9px] text-slate-500">Applying one replaces the document after confirmation.</p></div>
                               <button type="button" onClick={saveCurrentAsDocumentTemplate} className="rounded bg-indigo-700 px-2 py-1.5 text-[9px] font-bold text-white hover:bg-indigo-800">Save current as template</button>
                             </div>
-                            <div className="mt-2 max-h-72 space-y-1.5 overflow-y-auto" aria-label="Available document templates">
+                            <div role="group" className="mt-2 max-h-72 space-y-1.5 overflow-y-auto" aria-label="Available document templates">
                               {documentTemplateGallery.map((templateOption) => (
                                 <div key={templateOption.id} className="rounded border border-slate-200 bg-slate-50 p-2">
                                   <div className="flex items-start gap-2">
@@ -11033,7 +11035,7 @@ const _downloadBRF = (brf) => {
                           </select>
                         </label>
                         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertDocumentCrossReference} disabled={!crossReferenceTarget} className="h-7 rounded border border-cyan-500 bg-white px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-45">Insert cross-reference</button>
-                        <button type="button" onClick={openDocumentReferences} aria-pressed={showNavigationPane && navigationPaneTab === 'references'} aria-controls="document-builder-navigation" className="h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Manage</button>
+                        <button type="button" onClick={openDocumentReferences} aria-pressed={showNavigationPane && navigationPaneTab === 'references'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className="h-7 rounded px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100">Manage</button>
                         <span id="builder-references-help" className={'w-full text-[9px] ' + (documentReferences.brokenCount ? 'font-bold text-red-700' : 'text-slate-500')}>{documentReferences.citations?.length || 0} citation{documentReferences.citations?.length === 1 ? '' : 's'} · {documentReferences.sources?.length || 0} source{documentReferences.sources?.length === 1 ? '' : 's'} · {documentReferences.footnotes.length} footnote{documentReferences.footnotes.length === 1 ? '' : 's'} · {documentReferences.bookmarks.length} bookmark{documentReferences.bookmarks.length === 1 ? '' : 's'}{documentReferences.brokenCount ? ' · ' + documentReferences.brokenCount + ' broken reference' + (documentReferences.brokenCount === 1 ? '' : 's') : ' · Live fields update together.'}</span>
                       </fieldset>
                       <fieldset className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" aria-describedby="builder-table-help">
@@ -11141,12 +11143,12 @@ const _downloadBRF = (brf) => {
                         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => insertSectionBreak('next-page')} className="h-7 rounded border border-violet-400 bg-white px-2 text-[10px] font-bold text-violet-800 hover:bg-violet-50">Next-page section</button>
                         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => insertSectionBreak('continuous')} className="h-7 rounded border border-teal-400 bg-white px-2 text-[10px] font-bold text-teal-800 hover:bg-teal-50">Continuous section</button>
                         <button type="button" onClick={removeActiveSectionBreak} disabled={activeDocumentSection.index === 0} className="h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" title="Merge this section into the preceding section">Remove break</button>
-                        <button type="button" onClick={() => { setNavigationPaneTab('sections'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'sections'} aria-controls="document-builder-navigation" className="h-7 rounded px-2 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50">Open sections</button>
+                        <button type="button" onClick={() => { setNavigationPaneTab('sections'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'sections'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className="h-7 rounded px-2 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50">Open sections</button>
                         <span id="builder-section-help" className="w-full text-[10px] text-slate-500">{activeDocumentSection.name} starts {activeDocumentSection.startType === 'document' ? 'the document' : activeDocumentSection.startType === 'continuous' ? 'on the same page' : `on page ${activeDocumentSection.page + 1}`}.</span>
                       </fieldset>
                       <div className="flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1" role="toolbar" aria-label="Pagination tools">
                         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { restoreEditorSelection(); insertPageBreak(); }} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Insert page break" aria-keyshortcuts="Control+Enter" title="Insert a page break at the caret">Page break</button>
-                        <button type="button" onClick={() => { setNavigationPaneTab('pages'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'pages'} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-controls="document-builder-navigation">Open pages</button>
+                        <button type="button" onClick={() => { setNavigationPaneTab('pages'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'pages'} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined}>Open pages</button>
                       </div>
                     </div>
                   </div>
@@ -11156,7 +11158,7 @@ const _downloadBRF = (brf) => {
                       const active = showNavigationPane && navigationPaneTab === 'headings';
                       if (active) setShowNavigationPane(false);
                       else { setNavigationPaneTab('headings'); setShowNavigationPane(true); }
-                    }} aria-pressed={showNavigationPane && navigationPaneTab === 'headings'} aria-controls="document-builder-navigation"
+                    }} aria-pressed={showNavigationPane && navigationPaneTab === 'headings'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined}
                       className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${showNavigationPane && navigationPaneTab === 'headings' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-700 bg-slate-100 hover:bg-slate-200'}`}
                       title={showNavigationPane && navigationPaneTab === 'headings' ? 'Hide navigation' : 'Open heading navigation'}>
                       <span aria-hidden="true">☷</span> Navigation
@@ -11220,7 +11222,7 @@ const _downloadBRF = (brf) => {
                       <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-200 pt-1" role="group" aria-label="Page and zoom view controls">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">View</span>
                         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { restoreEditorSelection(); insertPageBreak(); }} className="h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Insert page break" aria-keyshortcuts="Control+Enter">Page break</button>
-                        <button type="button" onClick={() => { setNavigationPaneTab('pages'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'pages'} aria-controls="document-builder-navigation" className={`h-7 rounded px-2 text-[10px] font-bold ${showNavigationPane && navigationPaneTab === 'pages' ? 'bg-slate-700 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Pages</button>
+                        <button type="button" onClick={() => { setNavigationPaneTab('pages'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'pages'} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className={`h-7 rounded px-2 text-[10px] font-bold ${showNavigationPane && navigationPaneTab === 'pages' ? 'bg-slate-700 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Pages</button>
                         <button type="button" onClick={() => { setEditorZoomMode('custom'); setEditorPageView((value) => !value); }} aria-pressed={editorPageView} className={`h-7 rounded px-2 text-[10px] font-bold ${editorPageView ? 'bg-indigo-700 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title={editorPageView ? 'Switch to continuous editor view' : 'Switch to paper-like page view'}>{editorPageView ? 'Page view' : 'Continuous'}</button>
                         <button type="button" onClick={() => useEditorZoomPreset('fit-width')} aria-pressed={editorZoomMode === 'fit-width'} className={`h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === 'fit-width' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Fit width</button>
                         <button type="button" onClick={() => useEditorZoomPreset('fit-page')} aria-pressed={editorZoomMode === 'fit-page'} className={`h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === 'fit-page' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Fit page</button>
@@ -11322,7 +11324,7 @@ const _downloadBRF = (brf) => {
                 {/* Agent Activity Feed */}
                 {agentActivityLog.length > 0 && (
                   <div className="bg-slate-900 border-b border-slate-700">
-                    <div className={(agentLogFullView ? 'max-h-64' : 'max-h-24') + ' overflow-y-auto px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-label="Agent activity log">
+                    <div role="log" className={(agentLogFullView ? 'max-h-64' : 'max-h-24') + ' overflow-y-auto px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-label="Agent activity log">
                       {(agentLogFullView ? agentActivityLog : agentActivityLog.slice(-8)).map((entry, i) => (
                         <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
                           <span className="text-slate-400 shrink-0">{entry.time}</span>
@@ -11621,7 +11623,7 @@ const _downloadBRF = (brf) => {
                                 Margin detail
                               </label>
                             </div>
-                            <div className="grid grid-cols-3 gap-1" aria-label="Tracked change filters">
+                            <div role="group" className="grid grid-cols-3 gap-1" aria-label="Tracked change filters">
                               <label className="text-[9px] font-bold text-violet-800">Type
                                 <select value={trackedChangeTypeFilter} onChange={(event) => setTrackedChangeTypeFilter(event.target.value)} className="mt-0.5 h-7 w-full rounded border border-violet-300 bg-white px-1 text-[9px] font-semibold text-slate-700">
                                   <option value="all">All types</option>
@@ -12080,7 +12082,7 @@ const _downloadBRF = (brf) => {
                                 <button key={node.id} type="button" role="treeitem" aria-selected={advancedReviewSelectedId === node.id} aria-level={depth + 1} onClick={() => selectAdvancedReviewNode(node.id)} onDoubleClick={() => { selectAdvancedReviewNode(node.id); setAdvancedReviewTab('properties'); }} style={{ paddingLeft: Math.min(48, 6 + depth * 12) }} className={`flex min-h-8 w-full items-center gap-1.5 rounded pr-2 text-left text-[10px] ${advancedReviewSelectedId === node.id ? 'bg-sky-100 text-sky-950 ring-1 ring-sky-400' : 'text-slate-700 hover:bg-slate-100'}`}>
                                   <span className="w-9 shrink-0 rounded bg-slate-200 px-1 py-0.5 text-center font-black text-slate-700">{node.role}</span>
                                   <span className="min-w-0 flex-1 truncate">{node.text || '(empty)'}</span>
-                                  {node.warnings?.length > 0 && <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-label={`${node.warnings.length} warning${node.warnings.length === 1 ? '' : 's'}`} title={node.warnings.join('; ')}></span>}
+                                  {node.warnings?.length > 0 && <span role="img" className="h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-label={`${node.warnings.length} warning${node.warnings.length === 1 ? '' : 's'}`} title={node.warnings.join('; ')}></span>}
                                 </button>
                               ))}
                               {!advancedReviewOutline.length && !advancedReviewTreeError && <p className="rounded bg-slate-50 p-3 text-center text-[10px] text-slate-500">No semantic source nodes found.</p>}
@@ -12160,7 +12162,7 @@ const _downloadBRF = (brf) => {
                     </aside>
                   )}
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0" aria-label="Document status bar">
+                <div role="group" className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0" aria-label="Document status bar">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-semibold text-slate-700">{isFocusMode ? 'Focus mode' : 'Editing enabled'}</span>
                     <span data-builder-save-status role="status" aria-live="polite" className={`inline-flex items-center gap-1 font-medium ${['capturing', 'captured'].includes(draftCaptureState) ? 'text-amber-800' : draftCaptureState === 'error' ? 'text-red-700' : ['saved', 'restored'].includes(draftCaptureState) ? 'text-emerald-700' : 'text-slate-500'}`}>
@@ -12168,7 +12170,7 @@ const _downloadBRF = (brf) => {
                       {_builderSaveStatusLabel(draftCaptureState, draftCaptureAt)}
                     </span>
                     {['captured', 'error'].includes(draftCaptureState) && <button type="button" onClick={downloadBuilderBackup} className="rounded border border-amber-700 bg-amber-50 px-2 py-1 font-bold text-amber-900 hover:bg-amber-100" title="Download the current document as HTML before closing. Saving on this device is unavailable.">Download backup</button>}
-                    <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-controls="document-builder-navigation" className={`rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? 'bg-violet-100 text-violet-800 hover:bg-violet-200' : pendingTrackedChangeCount ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'text-slate-500 hover:bg-slate-200'}`} title="Open tracked changes review">Track: {trackChangesEnabled ? 'On' : 'Off'} &middot; {pendingTrackedChangeCount} change{pendingTrackedChangeCount === 1 ? '' : 's'}</button>
+                    <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-controls={showNavigationPane ? 'document-builder-navigation' : undefined} className={`rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? 'bg-violet-100 text-violet-800 hover:bg-violet-200' : pendingTrackedChangeCount ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'text-slate-500 hover:bg-slate-200'}`} title="Open tracked changes review">Track: {trackChangesEnabled ? 'On' : 'Off'} &middot; {pendingTrackedChangeCount} change{pendingTrackedChangeCount === 1 ? '' : 's'}</button>
                     <div className="relative">
                       <button ref={wordCountButtonRef} type="button" onClick={(event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event)} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800" title="Open detailed Word Count (Ctrl+Shift+G)">{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
                       {showWordCountDetails && (
@@ -12198,7 +12200,7 @@ const _downloadBRF = (brf) => {
                                   <tr key={label} className="border-t border-slate-100">
                                     <th scope="row" className="px-2 py-1 text-left font-semibold text-slate-600">{label}</th>
                                     <td className="px-2 py-1 text-right tabular-nums">{Number(documentValue || 0).toLocaleString()}</td>
-                                    {selectionStatistics.active && <td className="px-2 py-1 text-right tabular-nums">{selectionValue == null ? <span aria-label="Not applicable">&mdash;</span> : Number(selectionValue || 0).toLocaleString()}</td>}
+                                    {selectionStatistics.active && <td className="px-2 py-1 text-right tabular-nums">{selectionValue == null ? <span role="img" aria-label="Not applicable">&mdash;</span> : Number(selectionValue || 0).toLocaleString()}</td>}
                                   </tr>
                                 ))}
                               </tbody>
@@ -12236,7 +12238,7 @@ const _downloadBRF = (brf) => {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <select aria-label="Preview zoom mode" value={editorZoomMode} onChange={(event) => event.target.value === 'custom' ? setCustomEditorZoom(editorZoom) : useEditorZoomPreset(event.target.value)} className="h-8 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700"><option value="fit-width">Fit width</option><option value="fit-page">Fit page</option><option value="custom">Custom zoom</option></select>
-                    <div className="flex items-center gap-1" aria-label="Editor zoom controls">
+                    <div role="group" className="flex items-center gap-1" aria-label="Editor zoom controls">
                       <button type="button" onClick={() => setCustomEditorZoom((value) => value - 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Zoom out" title="Zoom out">−</button>
                       <input type="range" min="50" max="200" step="5" value={editorZoom} onChange={(event) => setCustomEditorZoom(Number(event.target.value))} className="w-24 accent-indigo-600" aria-label="Editor zoom" aria-valuetext={`${editorZoomMode === 'custom' ? '' : editorZoomMode === 'fit-width' ? 'Fit width, ' : 'Fit page, '}${editorZoom} percent`} />
                       <button type="button" onClick={() => setCustomEditorZoom((value) => value + 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Zoom in" title="Zoom in">+</button>

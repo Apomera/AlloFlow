@@ -1311,7 +1311,7 @@ function PersonaChatView(props) {
                                             {isActivePanelist && <span className="inline-flex items-center gap-1 text-[10px] text-yellow-700"><Volume2 size={12} className="animate-pulse motion-reduce:animate-none" /> {t('persona.active_speaker')}</span>}
                                             <span className="shrink-0 text-base transition-transform motion-reduce:transition-none group-open:rotate-180" aria-hidden="true">▾</span>
                                         </summary>
-                                        <div className="border-t border-current/10 px-3 py-3 space-y-3 text-left" aria-label={t('persona.panelist_details', { name: char?.name || t('persona.character_fallback') })}>
+                                        <div role="group" className="border-t border-current/10 px-3 py-3 space-y-3 text-left" aria-label={t('persona.panelist_details', { name: char?.name || t('persona.character_fallback') })}>
                                             <div>
                                                 <div className="mb-1 flex justify-between font-bold"><span>{t('persona.rapport_label')}</span><span>{rapport}%</span></div>
                                                 <div role="progressbar" aria-label={t('persona.rapport_label')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} className="h-2 overflow-hidden rounded-full border border-slate-300 bg-white">
@@ -1382,7 +1382,7 @@ function PersonaChatView(props) {
                                         const isMessagePlayingNow = _isPersonaMessagePlaying(idx);
                                         return (
                                             <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`}>
-                                                 <div
+                                                 <div role="group"
                                                     className={`relative overflow-hidden max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border transition-all motion-reduce:transition-none ${
                                                     isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' :
                                                     isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' :
@@ -1717,7 +1717,7 @@ function PersonaChatView(props) {
                                         </div>
                                         <div className="mt-6 flex gap-3">
                                             <button type="button" aria-label={t('persona.back_to_chat')} onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={reflectionBusy} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat')}</button>
-                                            <button type="button" aria-label={t('common.submit_reflection_for_grading')} aria-busy={reflectionBusy ? 'true' : 'false'} onClick={_submitPersonaReflection} disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                            <button type="button" aria-busy={reflectionBusy ? 'true' : 'false'} onClick={_submitPersonaReflection} disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                                                 {reflectionBusy ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={18} className="text-yellow-700 fill-current"/>}
                                                 {reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')}
                                             </button>
@@ -2376,7 +2376,7 @@ function PersonaChatView(props) {
                                         >
                                             {t('persona.back_to_chat')}
                                         </button>
-                                        <button type="button" aria-label={t('common.submit_reflection_for_grading')}
+                                        <button type="button"
                                             aria-busy={reflectionBusy ? 'true' : 'false'}
                                             onClick={_submitPersonaReflection} data-help-key="persona_submit_btn"
                                             disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt}

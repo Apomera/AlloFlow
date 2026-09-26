@@ -2406,7 +2406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
             // ── EDM Preset Bar ──
             React.createElement("div", { className: "flex gap-1 mb-3 overflow-x-auto pb-1 bg-gradient-to-r from-slate-900 to-purple-900 rounded-xl p-2 border border-purple-500/30" },
-              React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-400 uppercase tracking-wider self-center px-1 shrink-0" }, "PRESETS"),
+              React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-700 uppercase tracking-wider self-center px-1 shrink-0" }, "PRESETS"),
               EDM_PRESETS.map(function(preset) {
                 var isActive = d.activePreset === preset.name;
                 return React.createElement("button", { key: preset.id, title: preset.desc,
@@ -2416,11 +2416,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               }),
               // Engine selector
               React.createElement("div", { className: "shrink-0 ml-auto flex gap-1 items-center border-l border-purple-500/30 pl-2" },
-                React.createElement("span", { className: "text-[0.6875rem] text-purple-500 font-bold" }, "ENGINE:"),
+                React.createElement("span", { className: "text-[0.6875rem] text-purple-700 font-bold" }, "ENGINE:"),
                 [{ id: 'standard', label: __alloT('stem.music.wave', '\u223F Wave') }, { id: 'supersaw', label: __alloT('stem.music.super', '\u26A1 Super') }, { id: 'fm', label: __alloT('stem.music.fm', '\uD83C\uDF1F FM') }, { id: 'sub', label: __alloT('stem.music.sub', '\uD83C\uDF0A Sub') }, { id: 'pad', label: __alloT('stem.music.pad', '\u2601 Pad') }, { id: 'plucked', label: __alloT('stem.music.pluck_2', '\uD83C\uDFB8 Pluck') }].map(function(eng) {
                   return React.createElement("button", { key: eng.id,
                     onClick: function() { upd('synthEngine', eng.id); upd('activePreset', null); },
-                    className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold transition-all " + ((['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard') === eng.id ? 'bg-purple-600 text-white' : 'text-purple-400 hover:text-white hover:bg-purple-500/30')
+                    className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold transition-all " + ((['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard') === eng.id ? 'bg-purple-600 text-white' : 'text-purple-700 hover:text-white hover:bg-purple-500/30')
                   }, eng.label);
                 })
               )
@@ -2713,12 +2713,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[0.6875rem] font-bold text-amber-700" }, "Mod Ratio: " + (d.fmRatio || 2) + ":1"),
                     React.createElement("input", { 'aria-label': __alloT('stem.music.a11y_mod_ratio', 'Mod Ratio'), type: "range", 'aria-valuetext': ((d.fmRatio || 2) + ' to 1 ratio'), min: "0.5", max: "8", step: "0.5", value: d.fmRatio || 2, onChange: function(e) { upd('fmRatio', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
-                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-amber-500" }, React.createElement("span", null, "Sub-harmonic"), React.createElement("span", null, __alloT('stem.music.bright', "Bright")))
+                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-amber-700" }, React.createElement("span", null, "Sub-harmonic"), React.createElement("span", null, __alloT('stem.music.bright', "Bright")))
                   ),
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[0.6875rem] font-bold text-amber-700" }, "Mod Depth: " + (d.fmDepth || 1.5)),
                     React.createElement("input", { type: "range", 'aria-label': __alloT('stem.music.fm_mod_depth', 'FM modulation depth'), 'aria-valuetext': ('depth ' + (d.fmDepth || 1.5)), min: "0", max: "10", step: "0.1", value: d.fmDepth || 1.5, onChange: function(e) { upd('fmDepth', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
-                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-amber-500" }, React.createElement("span", null, __alloT('stem.music.pure', "Pure")), React.createElement("span", null, __alloT('stem.music.metallic', "Metallic")))
+                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-amber-700" }, React.createElement("span", null, __alloT('stem.music.pure', "Pure")), React.createElement("span", null, __alloT('stem.music.metallic', "Metallic")))
                   )
                 )
               ),
@@ -2731,12 +2731,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[0.6875rem] font-bold text-indigo-700" }, "Voices: " + (d.superVoices || 5)),
                     React.createElement("input", { type: "range", 'aria-label': __alloT('stem.music.supersaw_voice_count', 'Supersaw voice count'), 'aria-valuetext': ((d.superVoices || 5) + ' voices'), min: "2", max: "9", step: "1", value: d.superVoices || 5, onChange: function(e) { upd('superVoices', parseInt(e.target.value)); }, className: "w-full accent-indigo-600" }),
-                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-indigo-500" }, React.createElement("span", null, __alloT('stem.music.thin_2', "Thin (2)")), React.createElement("span", null, __alloT('stem.music.massive_9', "Massive (9)")))
+                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-indigo-700" }, React.createElement("span", null, __alloT('stem.music.thin_2', "Thin (2)")), React.createElement("span", null, __alloT('stem.music.massive_9', "Massive (9)")))
                   ),
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[0.6875rem] font-bold text-indigo-700" }, "Detune: " + (d.superDetune || 15) + " cents"),
                     React.createElement("input", { type: "range", 'aria-label': __alloT('stem.music.supersaw_detune_cents', 'Supersaw detune in cents'), 'aria-valuetext': ((d.superDetune || 15) + ' cents'), min: "2", max: "50", step: "1", value: d.superDetune || 15, onChange: function(e) { upd('superDetune', parseInt(e.target.value)); }, className: "w-full accent-indigo-600" }),
-                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-indigo-500" }, React.createElement("span", null, __alloT('stem.music.tight', "Tight")), React.createElement("span", null, __alloT('stem.music.wide', "Wide")))
+                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-indigo-700" }, React.createElement("span", null, __alloT('stem.music.tight', "Tight")), React.createElement("span", null, __alloT('stem.music.wide', "Wide")))
                   )
                 )
               ),
@@ -3064,13 +3064,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     onChange: function(e) { upd('arpRate', parseInt(e.target.value)); if (arpOn) { stopArpeggiator(); setTimeout(startArpeggiator, 50); } },
                     className: "w-16 accent-indigo-600", title: (d.arpRate || 150) + 'ms'
                   }),
-                  React.createElement("span", { className: "text-[0.6875rem] font-mono text-indigo-500 w-10" }, (d.arpRate || 150) + 'ms'),
+                  React.createElement("span", { className: "text-[0.6875rem] font-mono text-indigo-700 w-10" }, (d.arpRate || 150) + 'ms'),
                   React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 ml-1" }, __alloT('stem.music.gate', "Gate")),
                   React.createElement("input", { type: "range", 'aria-label': __alloT('stem.music.arpeggiator_gate', 'Arpeggiator gate'), 'aria-valuetext': ((d.arpGate || 80) + '% gate'), min: "10", max: "100", step: "5", value: d.arpGate || 80,
                     onChange: function(e) { upd('arpGate', parseInt(e.target.value)); },
                     className: "w-12 accent-indigo-600", title: 'Gate: ' + (d.arpGate || 80) + '%'
                   }),
-                  React.createElement("span", { className: "text-[0.6875rem] font-mono text-indigo-500 w-8" }, (d.arpGate || 80) + '%')
+                  React.createElement("span", { className: "text-[0.6875rem] font-mono text-indigo-700 w-8" }, (d.arpGate || 80) + '%')
                 ),
                 // Arpeggiator science
                 React.createElement("div", { className: "mt-2 bg-indigo-100/50 rounded-lg p-2" },
@@ -3364,9 +3364,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("span", { className: "text-3xl" }, "\uD83E\uDD41"),
                   React.createElement("div", null,
                     React.createElement("div", { className: "transition-colors text-sm font-bold text-purple-700 group-hover:text-purple-800" }, __alloT('stem.music.production_studio', "Production Studio")),
-                    React.createElement("div", { className: "text-[0.6875rem] text-purple-500" }, __alloT('stem.music.sequencer_drum_pads_notation_samples_m', "Sequencer, drum pads, notation, samples & more \u2192"))
+                    React.createElement("div", { className: "text-[0.6875rem] text-purple-700" }, __alloT('stem.music.sequencer_drum_pads_notation_samples_m', "Sequencer, drum pads, notation, samples & more \u2192"))
                   ),
-                  React.createElement("span", { className: "ml-auto text-purple-400 group-hover:text-purple-600 text-lg transition-transform group-hover:translate-x-1" }, "\u2192")
+                  React.createElement("span", { className: "ml-auto text-purple-700 group-hover:text-purple-600 text-lg transition-transform group-hover:translate-x-1" }, "\u2192")
                 )
               )
             ),
@@ -3429,13 +3429,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                           className: "flex-1 py-2 rounded-lg text-center cursor-pointer transition-all bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100"
                         },
                           React.createElement("span", { className: "text-xs font-bold text-purple-700 block" }, NOTE_NAMES[nIdx]),
-                          React.createElement("span", { className: "text-[0.6875rem] text-purple-400" }, degreeLabel)
+                          React.createElement("span", { className: "text-[0.6875rem] text-purple-700" }, degreeLabel)
                         ),
                         gapEl
                       ];
                     })
                   ),
-                  React.createElement("p", { className: "text-[0.625rem] text-purple-500 italic mt-2 text-center" },
+                  React.createElement("p", { className: "text-[0.625rem] text-purple-700 italic mt-2 text-center" },
                     __alloT('stem.music.tags_between_notes', "Tags between notes: "), React.createElement("b", null, "W"), __alloT('stem.music.whole_step', " = whole step · "),
                     React.createElement("b", null, "H"), __alloT('stem.music.half_step', " = half step · "),
                     React.createElement("b", null, "A"), __alloT('stem.music.augmented_2nd', " = augmented 2nd"))
@@ -3513,7 +3513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 selectedChord && CHORDS[selectedChord] && React.createElement("div", { className: "bg-purple-50 rounded-lg p-3" },
                   React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                     React.createElement("span", { className: "text-sm font-bold text-purple-700" }, selectedRoot + CHORDS[selectedChord].symbol),
-                    React.createElement("span", { className: "text-xs text-purple-500" }, CHORDS[selectedChord].desc)
+                    React.createElement("span", { className: "text-xs text-purple-700" }, CHORDS[selectedChord].desc)
                   ),
                   React.createElement("div", { className: "flex gap-1 mb-2" },
                     CHORDS[selectedChord].intervals.map(function (intv, i) {
@@ -3524,7 +3524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         className: "flex-1 py-2 rounded-lg text-center cursor-pointer bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-all"
                       },
                         React.createElement("span", { className: "text-xs font-bold text-purple-700" }, NOTE_NAMES[nIdx]),
-                        React.createElement("span", { className: "text-[0.6875rem] text-purple-400 block" }, i === 0 ? 'Root' : intv + ' semi')
+                        React.createElement("span", { className: "text-[0.6875rem] text-purple-700 block" }, i === 0 ? 'Root' : intv + ' semi')
                       );
                     })
                   ),
@@ -3581,7 +3581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.music.barry_harris_harmony', "\uD83C\uDFB7 Barry Harris Harmony")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-amber-500" }, "(1929-2021)")
+                  React.createElement("span", { className: "text-[0.6875rem] text-amber-700" }, "(1929-2021)")
                 ),
                 React.createElement("p", { className: "text-[0.6875rem] text-amber-700 mb-3 leading-relaxed" }, BARRY_HARRIS.desc),
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
@@ -3624,7 +3624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               // ── Header + Kit Selector ──
               React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
                 React.createElement("span", { className: "text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600" }, __alloT('stem.music.production_studio_2', "\uD83E\uDD41 Production Studio")),
-                d.samplesLoading && React.createElement("span", { className: "text-[0.6875rem] text-amber-500 animate-pulse font-bold" }, __alloT('stem.music.loading_samples', "\u23F3 Loading samples...")),
+                d.samplesLoading && React.createElement("span", { className: "text-[0.6875rem] text-amber-700 animate-pulse font-bold" }, __alloT('stem.music.loading_samples', "\u23F3 Loading samples...")),
                 d.activeKit && React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold" }, "\u2705 " + (SAMPLE_KITS[d.activeKit] || {}).name),
                 React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
                   Object.keys(SAMPLE_KITS).map(function (kitId) {
@@ -3832,7 +3832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 (function () {
                   var scNotes = getScaleNotes();
                   return React.createElement("div", { className: "flex items-center gap-1 mb-1" },
-                    React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-500 w-16 text-right pr-1 truncate" }, __alloT('stem.music.melody', "\uD83C\uDFB9 Melody")),
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-700 w-16 text-right pr-1 truncate" }, __alloT('stem.music.melody', "\uD83C\uDFB9 Melody")),
                     Array.from({ length: 16 }, function (_, i) {
                       var ni = melodySeqBP[i] || 0;
                       var isCur = d.seqPlaying && d.seqCurrentStep === i;
@@ -3853,7 +3853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Drum rows
                 BEAT_PAD_SOUNDS.slice(0, 8).map(function (sound, row) {
                   return React.createElement("div", { key: sound.type, className: "flex items-center gap-1 mb-0.5" },
-                    React.createElement("span", { className: "text-[0.6875rem] font-bold w-16 text-right pr-1 truncate", style: { color: sound.color } }, sound.label),
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold w-16 text-right pr-1 truncate", style: { color: isDark ? sound.color : ({ '#ef4444': '#b91c1c', '#f97316': '#c2410c', '#eab308': '#a16207', '#84cc16': '#4d7c0f', '#22c55e': '#15803d', '#06b6d4': '#0e7490', '#3b82f6': '#1d4ed8', '#8b5cf6': '#6d28d9' })[sound.color] || sound.color } }, sound.label),
                     Array.from({ length: 16 }, function (_, col) {
                       var gKey = row + '_' + col; var grid = d.seqGrid || {}; var isOn = grid[gKey];
                       var isCur = d.seqPlaying && d.seqCurrentStep === col;
@@ -3880,7 +3880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-indigo-800" }, __alloT('stem.music.piano_roll', "\uD83C\uDFB9 Piano Roll")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-indigo-500" }, __alloT('stem.music.click_cells_to_place_notes_visual_melo', "Click cells to place notes \u2014 visual melody editor")),
+                  React.createElement("span", { className: "text-[0.6875rem] text-indigo-700" }, __alloT('stem.music.click_cells_to_place_notes_visual_melo', "Click cells to place notes \u2014 visual melody editor")),
                   React.createElement("button", { onClick: function() { upd('showPianoRoll', !d.showPianoRoll); },
                     className: "ml-auto px-2 py-1 rounded text-[0.6875rem] font-bold " + (d.showPianoRoll ? 'bg-indigo-600 text-white' : 'transition-colors bg-indigo-100 text-indigo-700 hover:bg-indigo-200') + " transition-all"
                   }, d.showPianoRoll ? '\u25BC Hide' : '\u25B6 Show')
@@ -3946,7 +3946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl border border-purple-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-purple-800" }, __alloT('stem.music.chord_progression_builder', "\uD83C\uDFB6 Chord Progression Builder")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-purple-500" }, __alloT('stem.music.build_common_progressions', "Build common progressions")),
+                  React.createElement("span", { className: "text-[0.6875rem] text-purple-700" }, __alloT('stem.music.build_common_progressions', "Build common progressions")),
                   React.createElement("button", { onClick: function() { upd('showChordProg', !d.showChordProg); },
                     className: "ml-auto px-2 py-1 rounded text-[0.6875rem] font-bold " + (d.showChordProg ? 'bg-purple-600 text-white' : 'transition-colors bg-purple-100 text-purple-700 hover:bg-purple-200') + " transition-all"
                   }, d.showChordProg ? '\u25BC Hide' : '\u25B6 Show')
@@ -3986,7 +3986,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                             return React.createElement("span", { key: ci, className: "text-[0.6875rem] font-bold px-1.5 py-0.5 rounded bg-purple-200/50 text-purple-700" }, ch);
                           })
                         ),
-                        React.createElement("div", { className: "text-[0.6875rem] text-purple-500 mt-1 italic" }, prog.genre)
+                        React.createElement("div", { className: "text-[0.6875rem] text-purple-700 mt-1 italic" }, prog.genre)
                       );
                     })
                   ),
@@ -4121,7 +4121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       ),
                       React.createElement("div", { className: "text-[0.6875rem] font-bold text-amber-800" }, note.name),
                       React.createElement("div", { className: "text-[0.6875rem] text-amber-600" }, note.beats),
-                      React.createElement("div", { className: "text-[0.6875rem] text-amber-500 italic mt-0.5" }, note.desc)
+                      React.createElement("div", { className: "text-[0.6875rem] text-amber-700 italic mt-0.5" }, note.desc)
                     );
                   })
                 )
@@ -4374,7 +4374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-700 text-white shadow-md' : 'bg-white border border-amber-600 text-amber-800 hover:bg-amber-100')
                     },
                       React.createElement("div", { className: "text-xs font-bold" }, v.label),
-                      React.createElement("div", { className: "text-[0.6875rem] " + ((d.omniVoice || 'harp') === v.id ? 'text-amber-200' : 'text-amber-500') }, v.desc)
+                      React.createElement("div", { className: "text-[0.6875rem] " + ((d.omniVoice || 'harp') === v.id ? 'text-white' : 'text-amber-700') }, v.desc)
                     );
                   })
                 ),
@@ -4923,7 +4923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   },
                   className: "mt-2 w-full py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
                 }, "\u25B6 Play All Active Harmonics Together (" + (d.activeHarmonics || [1]).length + " partials)"),
-                React.createElement("p", { className: "text-[0.6875rem] text-indigo-500 mt-1 text-center italic" },
+                React.createElement("p", { className: "text-[0.6875rem] text-indigo-700 mt-1 text-center italic" },
                   __alloT('stem.music.this_is_how_different_instruments_get_', "This is how different instruments get their unique sound! A flute is mostly harmonic 1 (sine). A clarinet has odd harmonics (1,3,5,7). A violin has all harmonics. Click to build your own timbre!")
                 )
               ),
@@ -5025,7 +5025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.music.karplus_strong_lab', "\uD83C\uDFB8 Karplus-Strong Lab")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-amber-500 cursor-help", title: EFFECT_TIPS.karplusStrong.text }, "\u2753")
+                  React.createElement("span", { className: "text-[0.6875rem] text-amber-700 cursor-help", title: EFFECT_TIPS.karplusStrong.text }, "\u2753")
                 ),
                 React.createElement("p", { className: "text-[0.6875rem] text-amber-700 mb-3 leading-relaxed" }, __alloT('stem.music.karplus_strong_synthesis_creates_reali', "Karplus-Strong synthesis creates realistic plucked string sounds using a short noise burst fed into a delay line with filtered feedback. Adjust brightness (initial noise color) and damping (sustain length) to shape the string character.")),
                 React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3" },
@@ -5061,7 +5061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, __alloT('stem.music.music_theory_quiz_2', "\uD83E\uDDE0 Music Theory Quiz")),
                   d.quizScore2 > 0 && React.createElement("span", { className: "text-xs font-bold text-green-600 ml-auto" }, "\u2B50 " + d.quizScore2 + "/" + (d.quizTotal2 || 0)),
-                  d.quizStreak2 > 0 && React.createElement("span", { className: "text-xs font-bold text-amber-500" }, "\uD83D\uDD25 " + d.quizStreak2)
+                  d.quizStreak2 > 0 && React.createElement("span", { className: "text-xs font-bold text-amber-700" }, "\uD83D\uDD25 " + d.quizStreak2)
                 ),
                 (function () {
                   var qIdx = d.quizIdx2 || 0; var q = MUSIC_QUIZ[qIdx % MUSIC_QUIZ.length];
@@ -5277,7 +5277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // so the blanket light ink has the ground it assumes; the timbre
                 // hue stays as the label and border.
                 h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: isDark ? '#1f2937' : timbreMeta.bg, border: '2px solid ' + timbreMeta.border } },
-                  h('div', { className: 'text-base font-black', style: { color: timbreMeta.color } }, timbreMeta.label),
+                  h('div', { className: 'text-base font-black', style: { color: (isDark ? { bright: '#facc15', warm: '#fb923c', hollow: '#c4b5fd', dark: '#cbd5e1', balanced: '#34d399' } : { bright: '#a16207', warm: '#c2410c', hollow: '#7c3aed', dark: '#1e293b', balanced: '#047857' })[timbre] } }, timbreMeta.label),
                   h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, timbreMeta.desc),
                   h('div', { className: 'text-[0.625rem] text-slate-600 mt-1 font-mono' }, 'F=' + (f*100).toFixed(0) + '%  M=' + (m*100).toFixed(0) + '%  H=' + (hg*100).toFixed(0) + '%')
                 ),

@@ -1798,7 +1798,7 @@ window.StemLab = window.StemLab || {
   var PLAYLAB_LIGHT_INK = {
     '#fbbf24': '#b45309', '#f59e0b': '#b45309', '#10b981': '#047857',
     '#34d399': '#047857', '#a78bfa': '#6d28d9', '#16a34a': '#166534',
-    '#dc2626': '#b91c1c', '#22c55e': '#166534'
+    '#dc2626': '#b91c1c', '#22c55e': '#166534', '#a5b4fc': '#4338ca'
   };
   var PLAYLAB_DARK_INK = { '#dc2626': '#f87171' };
   function playlabInk(hex, isDark, isContrast) {
@@ -4028,7 +4028,7 @@ window.StemLab = window.StemLab || {
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
                   border: '1px dashed #6366f1', background: 'rgba(99,102,241,0.10)',
-                  color: '#a5b4fc', fontSize: 11, fontWeight: 700
+                  color: tint('#a5b4fc'), fontSize: 11, fontWeight: 700
                 }
               }, __alloT('stem.playlab.run_something_cool', '🎲 Run something cool')),
               h('button', {
@@ -4158,20 +4158,20 @@ window.StemLab = window.StemLab || {
             role: 'table', 'aria-label': __alloT('stem.playlab.session_stats', 'Session stats'),
             style: { marginTop: 10, display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12 }
           },
-            getPlayLabStatsRows(d).reduce(function(acc, row) {
-              acc.push(h('span', {
-                key: 'plsl-' + row.label, role: 'rowheader',
-                style: { color: 'var(--allo-stem-text-soft, #94a3b8)' }
-              }, row.label));
-              acc.push(h('span', {
-                key: 'plsv-' + row.label, role: 'cell',
-                style: {
-                  color: tint('#fbbf24'), fontWeight: 700,
-                  fontFamily: 'ui-monospace, monospace', textAlign: 'right'
-                }
-              }, row.value));
-              return acc;
-            }, [])
+            getPlayLabStatsRows(d).map(function(row) {
+              return h('div', { key: 'plsr-' + row.label, role: 'row', style: { display: 'contents' } },
+                h('span', {
+                  role: 'rowheader',
+                  style: { color: 'var(--allo-stem-text-soft, #94a3b8)' }
+                }, row.label),
+                h('span', {
+                  role: 'cell',
+                  style: {
+                    color: tint('#fbbf24'), fontWeight: 700,
+                    fontFamily: 'ui-monospace, monospace', textAlign: 'right'
+                  }
+                }, row.value));
+            })
           )
         ),
 

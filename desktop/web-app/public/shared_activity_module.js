@@ -1709,6 +1709,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "mt-4",
     "aria-live": "polite"
   }, isRating ? summary?.revealed && distribution.length > 0 ? /*#__PURE__*/React.createElement("div", {
+    role: "group",
     className: "space-y-2 rounded-xl border border-violet-100 bg-white p-4",
     "aria-label": "Anonymous class rating distribution"
   }, distribution.map(item => /*#__PURE__*/React.createElement("div", {

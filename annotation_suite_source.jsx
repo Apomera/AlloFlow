@@ -620,7 +620,7 @@ function HighlightOverlay({ a, onDelete }) {
     <React.Fragment>
       {a.rects.map(function (r, idx) {
         return (
-          <div
+          <div role="img"
             key={a.id + ':' + idx}
             className="absolute pointer-events-none z-40"
             style={{
@@ -781,7 +781,7 @@ function DrawingOverlay({ a, onDelete }) {
   }
   const title = buildStickerTitle(a) || (DRAW_SHAPE_LABELS[shape] || 'Drawing');
   return (
-    <div
+    <div role="group"
       className="absolute pointer-events-none z-40"
       style={{ top: svgY, left: svgX, width: svgW, height: svgH }}
       aria-label={(DRAW_SHAPE_LABELS[shape] || 'Drawing') + ': ' + title}
@@ -1026,7 +1026,7 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
   };
   const cursorStyle = isErase ? 'cell' : 'crosshair';
   return (
-    <div
+    <div role="group"
       ref={hostRef}
       className="absolute inset-0 z-[60]"
       style={{ cursor: cursorStyle, touchAction: 'none' }}

@@ -1087,11 +1087,11 @@ const GuidedNotesView = React.memo((props) => {
                   />
                   <span>{b.after || ''}</span>
                   {revealed && studentAnswer.trim() && isCorrect ? (
-                    <span className="ml-1 text-xs font-black text-emerald-700" aria-label="Correct">✓</span>
+                    <span role="img" className="ml-1 text-xs font-black text-emerald-700" aria-label="Correct">✓</span>
                   ) : null}
                   {revealed && !isCorrect ? (
                     <span className="ml-2 text-xs font-bold text-emerald-700">
-                      {studentAnswer.trim() ? <span className="text-rose-700" aria-label="Incorrect">✗ </span> : null}→ {b.answer}
+                      {studentAnswer.trim() ? <span role="img" className="text-rose-700" aria-label="Incorrect">✗ </span> : null}→ {b.answer}
                     </span>
                   ) : null}
                 </li>

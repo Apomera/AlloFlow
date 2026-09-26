@@ -808,6 +808,15 @@ const AppStyles = ({ disableAnimations = false, baseFontSize = 16, lineHeight = 
             border-color: #334155 !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3) !important;
         } }
+        /* Translucent white "glass" surfaces: text on them is remapped light above, so the
+           surface must go dark too (grading dashboard header measured 1.41:1, WCAG 1.4.3). */
+        @media screen { .theme-dark .bg-white\\/50:not([data-stem-tool-surface] *), .theme-dark .bg-white\\/60:not([data-stem-tool-surface] *),
+        .theme-dark .bg-white\\/70:not([data-stem-tool-surface] *), .theme-dark .bg-white\\/80:not([data-stem-tool-surface] *),
+        .theme-dark .bg-white\\/85:not([data-stem-tool-surface] *), .theme-dark .bg-white\\/90:not([data-stem-tool-surface] *),
+        .theme-dark .bg-white\\/95:not([data-stem-tool-surface] *) {
+            background-color: rgba(22, 32, 50, 0.94) !important;
+            border-color: #334155 !important;
+        } }
         @media screen { .theme-dark .bg-slate-50:not([data-stem-tool-surface] *),
         .theme-dark .bg-slate-50\\/50:not([data-stem-tool-surface] *),
         .theme-dark .bg-slate-50\\/80:not([data-stem-tool-surface] *) {

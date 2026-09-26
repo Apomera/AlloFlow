@@ -11416,7 +11416,7 @@ function updateCoreRig3d(dt3d) {
                 ? h('div', { key: 'active', className: 'mt-1.5', 'data-geology-assignment': activeAssignment.id, 'data-state': runEntry.ready ? 'ready' : 'active' }, [
                     h('div', { key: 'title', className: 'flex items-start justify-between gap-2' }, [
                       h('span', { key: 'name', className: 'text-[11px] font-extrabold ' + ink }, activeAssignment.label),
-                      h('span', { key: 'reward', className: 'shrink-0 text-[10px] font-bold text-emerald-500' }, '+' + fieldRunReward(activeAssignment) + ' XP')
+                      h('span', { key: 'reward', className: 'shrink-0 text-[10px] font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '+' + fieldRunReward(activeAssignment) + ' XP')
                     ]),
                     h('p', { key: 'brief', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, activeAssignment.brief),
                     runEntry.ready
@@ -11425,7 +11425,7 @@ function updateCoreRig3d(dt3d) {
                   ])
                 : h('div', { key: 'choices', className: 'mt-1.5 grid gap-1.5 sm:grid-cols-2', role: 'group', 'aria-label': t('stem.geology.a11y.choose_a_field_assignment', 'Choose a field assignment') }, assignmentChoices.map(function (assignment, assignmentIndex) {
                     return h('button', { key: assignment.id, type: 'button', onClick: function () { startFieldRun(SCENE.id, assignmentIndex); }, className: 'min-h-12 rounded-lg border p-2 text-left transition hover:border-violet-400 ' + btnIdle, 'data-geology-assignment': assignment.id, 'data-state': 'available', 'aria-label': tf('stem.geology.a11y.start_for_field_xp', 'Start {label} for {assignment} field XP', { label: assignment.label, assignment: fieldRunReward(assignment) })}, [
-                      h('span', { key: 'row', className: 'flex items-start justify-between gap-2 text-[10.5px] font-extrabold' }, [h('span', { key: 'name' }, assignment.label), h('span', { key: 'xp', className: 'shrink-0 text-emerald-500' }, '+' + fieldRunReward(assignment))]),
+                      h('span', { key: 'row', className: 'flex items-start justify-between gap-2 text-[10.5px] font-extrabold' }, [h('span', { key: 'name' }, assignment.label), h('span', { key: 'xp', className: 'shrink-0 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '+' + fieldRunReward(assignment))]),
                       h('span', { key: 'brief', className: 'mt-1 block text-[10px] font-normal leading-snug ' + muted }, assignment.brief)
                     ]);
                   }))
@@ -11632,7 +11632,7 @@ function updateCoreRig3d(dt3d) {
               ];
               return entry.discovered
                 ? h('button', { key: entry.key, type: 'button', 'data-geology-journal-entry': entry.key, 'data-state': 'logged', onClick: function () { selectRock(rockFacts(entry.key, DEPTH_GUESS[entry.key] || 4)); }, className: 'flex min-h-12 min-w-0 items-center gap-2 rounded-lg border p-2 text-left transition hover:border-cyan-400 ' + cardBg + ' ' + ink, 'aria-label': tf('stem.geology.a11y.review_logged_specimen_in_the_3d_model', 'Review logged specimen {name} in the 3D model', { name: entry.name })}, body)
-                : h('div', { key: entry.key, 'data-geology-journal-entry': entry.key, 'data-state': 'unlogged', className: 'flex min-h-12 min-w-0 items-center gap-2 rounded-lg border border-dashed p-2 opacity-70 ' + (isDark ? 'border-slate-600' : 'border-slate-300') }, body);
+                : h('div', { key: entry.key, 'data-geology-journal-entry': entry.key, 'data-state': 'unlogged', className: 'flex min-h-12 min-w-0 items-center gap-2 rounded-lg border border-dashed p-2 ' + ink + ' ' + (isDark ? 'border-slate-600' : 'border-slate-300') }, body);
             })),
             progress.complete
               ? h('p', { key: 'complete', className: 'mt-2 rounded-lg border border-emerald-400/50 bg-emerald-500/10 p-2 text-[10.5px] font-bold ' + (isDark ? 'text-emerald-200' : 'text-emerald-800'), role: 'status' }, '✓ Scene journal complete — every safely mineable material is logged.')

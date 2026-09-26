@@ -1354,7 +1354,6 @@ function MathView(props) {
                                             {isIndependentMode ? (
                                                 <button
                                                     type="button"
-                                                    aria-label={t('common.show_math_answers')}
                                                     onClick={handleSetShowMathAnswersToTrue}
                                                     disabled={!canSetShowMathAnswers}
                                                     className="flex min-h-[44px] items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold transition-colors py-2 px-4 hover:bg-white rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
@@ -1581,7 +1580,7 @@ function MathView(props) {
                         ))}
                         {mathProblems.length === 1 && (
                             <div className="mt-8 flex justify-center pb-4">
-                                <button type="button" aria-label={t('common.generate_content')}
+                                <button type="button"
                                     onClick={handleGenerateSimilar}
                                     disabled={!canHandleGenerateSimilar || isProcessing} aria-busy={isProcessing}
                                     className="flex min-h-[44px] items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"

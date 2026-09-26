@@ -1802,6 +1802,7 @@ function GlossaryView(props) {
   function renderFlashcardProgressDots() {
     if (!flashcardDeck.length) return null;
     return /*#__PURE__*/React.createElement("div", {
+      role: "group",
       className: "mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 pr-1",
       "aria-label": t('common.progress')
     }, flashcardDeck.map(function (item, idx) {
@@ -2701,6 +2702,7 @@ function GlossaryView(props) {
     })))), /*#__PURE__*/React.createElement("div", {
       className: "grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]"
     }, /*#__PURE__*/React.createElement("div", {
+      role: "group",
       className: "rounded-lg border border-blue-200 bg-white/80 p-3",
       "aria-labelledby": "glossary-study-tools-title"
     }, /*#__PURE__*/React.createElement("h2", {
@@ -2767,6 +2769,7 @@ function GlossaryView(props) {
       "aria-hidden": "true",
       className: glossaryToolsOpen.teacher ? 'rotate-180' : ''
     })))), glossaryToolsOpen.games && /*#__PURE__*/React.createElement("div", {
+      role: "group",
       id: "glossary-games-tools",
       className: "rounded-lg border border-indigo-200 bg-indigo-50/70 p-3",
       "aria-labelledby": "glossary-games-tools-title"
@@ -2965,6 +2968,7 @@ function GlossaryView(props) {
       id: "glossary-activity-scramble-help",
       className: "block text-xs font-normal text-slate-600"
     }, activityText('glossary.activities.scramble_help', 'Unscramble letters to practice spelling')))))), isTeacherMode && glossaryToolsOpen.teacher && /*#__PURE__*/React.createElement("div", {
+      role: "group",
       id: "glossary-teacher-tools",
       className: "rounded-lg border border-slate-300 bg-white p-3",
       "aria-labelledby": "glossary-teacher-tools-title"
@@ -3643,7 +3647,6 @@ function GlossaryView(props) {
     className: "flex gap-2"
   }, isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.toggle_word_search_answers'),
     onClick: handleToggleShowWordSearchAnswers,
     className: 'min-h-11 text-xs flex items-center gap-1 px-3 py-2 rounded-full font-bold transition-colors ' + (showWordSearchAnswers ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
   }, showWordSearchAnswers ? /*#__PURE__*/React.createElement(Eye, {
@@ -3785,7 +3788,6 @@ function GlossaryView(props) {
     className: "w-full min-w-0 flex-1 text-sm border border-slate-300 sm:border-none py-2 px-2 focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded",
     disabled: isAddingTerm
   }), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.add_glossary_term'),
     onClick: handleAddGlossaryTerm,
     disabled: !newGlossaryTerm.trim() || isAddingTerm,
     className: "w-full sm:w-auto shrink-0 justify-center text-xs font-bold bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -3828,7 +3830,6 @@ function GlossaryView(props) {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.re_run_analysis'),
     "aria-busy": isRunningHealthCheck,
     onClick: () => {
       if (generatedContent?.type === 'glossary' && Array.isArray(generatedContent?.data)) {
@@ -4098,7 +4099,6 @@ function GlossaryView(props) {
     })))), isEditingGlossary && /*#__PURE__*/React.createElement("div", {
       className: "animate-in motion-reduce:animate-none slide-in-from-top-2 mt-1"
     }, /*#__PURE__*/React.createElement("button", {
-      "aria-label": t('common.refresh'),
       onClick: () => handleRefineGlossaryImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
       disabled: isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx],
       className: "w-full mb-1.5 text-[11px] bg-red-50 text-red-800 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 transition-colors font-bold shadow-sm",
@@ -4253,6 +4253,7 @@ function GlossaryView(props) {
         const validRoots = Array.isArray(item.roots) ? item.roots.filter(r => r && typeof r.root === 'string' && r.root.trim()) : [];
         if (validRoots.length === 0) return null;
         return /*#__PURE__*/React.createElement("div", {
+          role: "group",
           className: "space-y-1.5",
           "aria-label": t('glossary.etymology_roots_label') || 'Source roots'
         }, /*#__PURE__*/React.createElement("div", {
@@ -4769,6 +4770,7 @@ function GlossaryView(props) {
         }) : /*#__PURE__*/React.createElement(Volume2, {
           size: 12
         }))), validRootsL.length > 0 && /*#__PURE__*/React.createElement("div", {
+          role: "group",
           className: "space-y-1.5",
           "aria-label": t('glossary.etymology_roots_label') || 'Source roots',
           dir: "ltr"

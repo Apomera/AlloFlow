@@ -597,7 +597,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
               h('p', { style: { margin: '0 0 0 12px', color: _moiFg('#0f172a'), fontSize: 13, lineHeight: 1.75, whiteSpace: 'pre-wrap' } }, d.myReflection)
             ) : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _moiFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _moiFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Motivational Interviewing framework: Miller and Rollnick (2023). ',
               'Created with AlloFlow SEL Hub.'
             )

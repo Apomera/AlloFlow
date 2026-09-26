@@ -229,7 +229,6 @@ function StudentSaveAdventurePanel({
     "button",
     {
       type: "button",
-      "aria-label": t("common.resume_saved_adventure"),
       "data-help-key": "adventure_resume_btn",
       onClick: handleResumeAdventure,
       disabled: isResumingAdventure,
@@ -241,7 +240,6 @@ function StudentSaveAdventurePanel({
     "button",
     {
       type: "button",
-      "aria-label": t("common.start_adventure"),
       "data-help-key": "adventure_start_btn",
       onClick: handleStartAdventure,
       disabled: isResumingAdventure,

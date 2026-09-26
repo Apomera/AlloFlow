@@ -1579,7 +1579,7 @@ window.StemLab = window.StemLab || {
           // ── Random Data Generator ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
             h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, t('stem.dataplot.random_data_generator', '\uD83C\uDFB2 Random Data Generator')),
-            h('div', { className: 'text-[0.6875rem] text-violet-500 mb-2' }, t('stem.dataplot.generate_20_points_with_a_target_corre', 'Generate 20 points with a target correlation strength:')),
+            h('div', { className: 'text-[0.6875rem] text-violet-700 mb-2' }, t('stem.dataplot.generate_20_points_with_a_target_corre', 'Generate 20 points with a target correlation strength:')),
             h('div', { className: 'flex gap-1.5 flex-wrap' },
               [
                 { r: 0.95, label: 'r\u22480.95', color: 'emerald' },
@@ -1599,7 +1599,7 @@ window.StemLab = window.StemLab || {
           // ── Step-Through Mode ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
             h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, t('stem.dataplot.step_through_mode', '\uD83D\uDC63 Step-Through Mode')),
-            h('div', { className: 'text-[0.6875rem] text-violet-500 mb-2' }, t('stem.dataplot.watch_how_statistics_change_as_each_po', 'Watch how statistics change as each point is revealed one-by-one.')),
+            h('div', { className: 'text-[0.6875rem] text-violet-700 mb-2' }, t('stem.dataplot.watch_how_statistics_change_as_each_po', 'Watch how statistics change as each point is revealed one-by-one.')),
             !stepMode
               ? h('button', { onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 disabled:opacity-40' }, '\u25B6 Start Step-Through (' + points.length + ' points)')
               : h('div', { className: 'flex items-center gap-3' },
@@ -1620,7 +1620,7 @@ window.StemLab = window.StemLab || {
                 h('option', { value: '' }, 'Choose a local analysis…'),
                 kernelRecipes.map(function(recipe) { return h('option', { key: recipe.id, value: recipe.id }, recipe.label); })
               ),
-              h('span', { className: 'text-[0.625rem] text-indigo-500' }, 'Recipes use the current column shape.')
+              h('span', { className: 'text-[0.625rem] text-indigo-700' }, 'Recipes use the current column shape.')
             ),
             h('div', { className: 'flex items-center gap-2 mt-2 flex-wrap' },
               h('button', { onClick: runKernelQuery, disabled: kernelBusy || !points.length, className: 'px-3 py-1.5 bg-indigo-700 text-white font-bold rounded-lg text-xs hover:bg-indigo-800 disabled:opacity-40' }, kernelBusy ? '⏳ Loading local engine…' : '▶ Run local query'),

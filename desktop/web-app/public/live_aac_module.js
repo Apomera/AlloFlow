@@ -1057,6 +1057,7 @@ const LiveAacBoardDialog = ({
       padding: '14px 18px'
     }
   }, pages.length > 1 && /*#__PURE__*/React.createElement("div", {
+    role: "group",
     "aria-label": "AAC Board pages",
     style: {
       display: 'flex',

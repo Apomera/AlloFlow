@@ -433,7 +433,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
                   style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #fb7185', background: 'transparent', color: _genFg('#fb7185'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '+ Add')
               ),
               genPeople.length === 0
-                ? h('div', { style: { fontSize: 11, color: _genFg('#64748b'), fontStyle: 'italic', paddingLeft: 14 } }, '(no one added yet)')
+                ? h('div', { style: { fontSize: 11, color: _genFg('#94a3b8'), fontStyle: 'italic', paddingLeft: 14 } }, '(no one added yet)')
                 : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, paddingLeft: 14 } },
                     genPeople.map(function(p) {
                       var sh = (SHAPES.find(function(s) { return s.id === p.shape; }) || SHAPES[0]).label;
@@ -590,7 +590,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _genFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _genFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Genogram notation from McGoldrick, M., Gerson, R., and Petry, S. (2020), Genograms: Assessment and Treatment, W. W. Norton. ',
               'Based on Bowen family systems theory (Bowen, 1978). Created with AlloFlow SEL Hub.'
             )

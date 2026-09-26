@@ -1241,6 +1241,7 @@ function AssessmentReviewDialog(p) {
     }, 'Question ' + (item.questionIdx + 1) + ' · ' + item.type), /*#__PURE__*/React.createElement("span", {
       className: "block text-sm text-slate-800 truncate"
     }, item.label)), item.flagged && /*#__PURE__*/React.createElement("span", {
+      role: "img",
       className: "text-amber-700 font-black",
       "aria-label": "Flagged"
     }, "⚑"));
@@ -3273,12 +3274,14 @@ function LiveResultsDashboard(p) {
         }, "Answered: "), cell.answerSummary) : !cell && /*#__PURE__*/React.createElement("p", {
           className: "text-xs italic text-slate-600"
         }, "No response yet")), cell && cell.aiGraded && /*#__PURE__*/React.createElement("span", {
+          role: "group",
           className: "flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800",
           "aria-label": 'Graded by AI as ' + cell.aiStatus,
           title: 'Graded by AI (' + cell.aiStatus + ')'
         }, /*#__PURE__*/React.createElement("span", {
           "aria-hidden": "true"
         }, "✨ "), "AI"), cell && cell.teacherOverridden && /*#__PURE__*/React.createElement("span", {
+          role: "group",
           className: "flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800",
           "aria-label": 'Teacher override applied, was previously ' + (cell.priorStatus || 'unknown'),
           title: 'Teacher override (was: ' + (cell.priorStatus || '?') + ')'
@@ -6355,6 +6358,7 @@ function AssessmentPresentationItem(p) {
     }, "Also accept: ", alternatives.join(', ')));
   } else if (type === 'short-answer') {
     body = /*#__PURE__*/React.createElement("div", {
+      role: "img",
       className: "h-36 rounded-xl border-2 border-slate-200 bg-[repeating-linear-gradient(to_bottom,white,white_34px,#cbd5e1_35px)]",
       "aria-label": "Short-answer response space"
     });
@@ -6455,6 +6459,7 @@ function AssessmentPresentationItem(p) {
     }, "Expected value: "), String(q.correctValue ?? 'Teacher review'), q.unit ? ' ' + q.unit : '', Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '');
   } else {
     body = /*#__PURE__*/React.createElement("div", {
+      role: "img",
       className: "h-36 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50",
       "aria-label": "Response space"
     });
@@ -9612,7 +9617,6 @@ function QuizViewContent(props) {
     className: "flex items-center gap-2 flex-wrap"
   }, isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.connect'),
     onClick: handleStartLiveSession,
     disabled: !!sessionData?.escapeRoomState?.isActive,
     className: 'flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass,
@@ -9628,7 +9632,6 @@ function QuizViewContent(props) {
     className: "text-xs font-black text-orange-700"
   }, Object.keys(sessionData?.roster || {}).length, " ", t('quiz.lobby_waiting') || "Ready")), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.locked'),
     onClick: handleToggleInteractive,
     className: `flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`,
     title: t('session.toggle_interactive_title')
@@ -9706,7 +9709,6 @@ function QuizViewContent(props) {
     size: 14
   }), " ", t('quiz.export_qti_btn')), !isPresentationMode && !isReviewGame && (isTeacherMode || isParentMode) && /*#__PURE__*/React.createElement(React.Fragment, null, !isIndependentMode && !isParentMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.toggle_edit_quiz'),
     onClick: handleToggleIsEditingQuiz,
     className: `flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm ${isEditingQuiz ? 'bg-teal-700 text-white hover:bg-teal-700' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50'}`
   }, isEditingQuiz ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -9982,7 +9984,6 @@ function QuizViewContent(props) {
       size: 10
     })))), gameTeams.length < 6 && /*#__PURE__*/React.createElement("button", {
       type: "button",
-      "aria-label": t('common.add'),
       onClick: handleAddTeam,
       className: "flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 hover:text-white hover:border-slate-400 transition-colors motion-reduce:transition-none"
     }, /*#__PURE__*/React.createElement(Plus, {
@@ -10180,7 +10181,6 @@ function QuizViewContent(props) {
     className: "text-teal-300"
   }), " ", t('quiz.presentation_board')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.reset_presentation'),
     onClick: () => {
       resetPresentation();
       setPresentationQuestionIndex(0);
@@ -10536,12 +10536,14 @@ function QuizViewContent(props) {
     return /*#__PURE__*/React.createElement("div", {
       className: "mt-1.5 ml-1 flex items-center gap-1.5 flex-wrap"
     }, dq.encodesMisconception ? /*#__PURE__*/React.createElement("span", {
+      role: "group",
       className: "text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800",
       "aria-label": 'This distractor encodes a known student misconception. ' + (dq.reason || ''),
       title: dq.reason || 'Encodes a known student misconception'
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, "🎯 "), "misconception") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      role: "group",
       className: "text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800",
       "aria-label": 'Generic distractor — does not encode a specific misconception. ' + (dq.reason || ''),
       title: dq.reason || 'Generic distractor — does not encode a specific misconception'

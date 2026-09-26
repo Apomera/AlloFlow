@@ -126,6 +126,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       var _bodBg = function(h){ return _bodHC ? (_bod_BGH[h]||h) : (_bodL ? (_bod_BGL[h]||h) : h); };
       var _bodFg = function(h){ return _bodHC ? (_bod_FGH[h]||h) : (_bodL ? (_bod_FGL[h]||h) : h); };
       var _bodBd = function(h){ return _bodHC ? (_bod_BDH[h]||h) : (_bodL ? (_bod_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _bodSolid = function(c){ return _bodHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -473,7 +475,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addInflow(); } },
                 style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: addInflow, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bodBg('#ef4444'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bodBg(_bodSolid('#ef4444')), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
@@ -630,7 +632,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             ),
 
             doneFunctions.length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _bodBg('#0ea5e9'), color: _bodFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🌊 What my body does (function appreciation)'),
+              h('div', { style: { background: _bodBg(_bodSolid('#0ea5e9')), color: _bodFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🌊 What my body does (function appreciation)'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _bodFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 doneFunctions.map(function(label, i) { return h('li', { key: i }, label); })
               )
@@ -649,12 +651,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             ) : null,
 
             d.criticalVoices ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _bodBg('#a855f7'), color: _bodFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '💭 The critical voice'),
+              h('div', { style: { background: _bodBg(_bodSolid('#a855f7')), color: _bodFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '💭 The critical voice'),
               h('p', { style: { margin: '0 0 0 12px', color: _bodFg('#0f172a'), fontSize: 12.5, lineHeight: 1.75, whiteSpace: 'pre-wrap' } }, d.criticalVoices)
             ) : null,
 
             ((d.mediaInflows || []).length > 0 || (d.mediaCuts || []).length > 0) ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _bodBg('#ec4899'), color: _bodFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📺 Media diet'),
+              h('div', { style: { background: _bodBg(_bodSolid('#ec4899')), color: _bodFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📺 Media diet'),
               (d.mediaInflows || []).length > 0 ? h('div', { style: { marginBottom: 8, padding: '0 12px' } },
                 h('div', { style: { fontSize: 10, color: _bodFg('#64748b'), textTransform: 'uppercase', fontWeight: 700, marginBottom: 2 } }, 'Currently letting in'),
                 h('div', { style: { fontSize: 12, color: _bodFg('#0f172a'), lineHeight: 1.7 } }, d.mediaInflows.join('  ·  '))
@@ -665,7 +667,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
               ) : null
             ) : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _bodFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _bodFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Tylka body appreciation framework · Intuitive Eating · Help: National Alliance for Eating Disorders 1-866-662-1235; crisis 988 or text HOME to 741741. ',
               'Created with AlloFlow SEL Hub.'
             )

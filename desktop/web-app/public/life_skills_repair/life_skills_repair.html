@@ -708,7 +708,10 @@
       button.querySelector('strong').textContent = task.label;
       button.querySelector('small').textContent = state.mode === 'challenge' && !done ? 'Use the scene or choose this item.' : task.short;
       button.addEventListener('click', function () { activateTask(task.id, 'checklist'); });
-      taskList.appendChild(button);
+      var item = document.createElement('div');
+      item.setAttribute('role', 'listitem');
+      item.appendChild(button);
+      taskList.appendChild(item);
     });
   }
   function completeScenarioTask() {

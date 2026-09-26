@@ -532,6 +532,7 @@ function FullPackRunView(props) {
     }), /*#__PURE__*/React.createElement("span", {
       className: "truncate"
     }, t('fullpack.provider') || 'Provider', ": ", providerSummary))), /*#__PURE__*/React.createElement("div", {
+      role: "group",
       className: "mt-2 grid gap-1.5",
       "aria-label": t('fullpack.capacity_preview') || 'Capacity preview'
     }, /*#__PURE__*/React.createElement("div", {

@@ -779,7 +779,7 @@ const ReadingResponseView = React.memo((props) => {
       type: "button",
       key: ct.id,
       onClick: () => setConnectionType(ct.id),
-      className: `px-3 py-1 text-xs font-bold rounded-full border ${connection.type === ct.id ? "bg-sky-600 text-white border-sky-700" : "bg-white text-sky-700 border-sky-300 hover:bg-sky-50"}`,
+      className: `px-3 py-1 text-xs font-bold rounded-full border ${connection.type === ct.id ? "bg-sky-700 text-white border-sky-700" : "bg-white text-sky-700 border-sky-300 hover:bg-sky-50"}`,
       "aria-pressed": connection.type === ct.id
     },
     ct.label
@@ -931,7 +931,7 @@ const GuidedNotesView = React.memo((props) => {
         "aria-label": `Blank ${idx + 1}`,
         style: { width: Math.max(110, ((b.answer || "").length + 4) * 9) + "px" }
       }
-    ), /* @__PURE__ */ React.createElement("span", null, b.after || ""), revealed && studentAnswer.trim() && isCorrect ? /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-xs font-black text-emerald-700", "aria-label": "Correct" }, "\u2713") : null, revealed && !isCorrect ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-700" }, studentAnswer.trim() ? /* @__PURE__ */ React.createElement("span", { className: "text-rose-700", "aria-label": "Incorrect" }, "\u2717 ") : null, "\u2192 ", b.answer) : null);
+    ), /* @__PURE__ */ React.createElement("span", null, b.after || ""), revealed && studentAnswer.trim() && isCorrect ? /* @__PURE__ */ React.createElement("span", { role: "img", className: "ml-1 text-xs font-black text-emerald-700", "aria-label": "Correct" }, "\u2713") : null, revealed && !isCorrect ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-700" }, studentAnswer.trim() ? /* @__PURE__ */ React.createElement("span", { role: "img", className: "text-rose-700", "aria-label": "Incorrect" }, "\u2717 ") : null, "\u2192 ", b.answer) : null);
   })), blanks.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-4" }, /* @__PURE__ */ React.createElement(
     "button",
     {

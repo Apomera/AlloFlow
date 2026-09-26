@@ -3034,7 +3034,6 @@ const WS_CORE = createWordSoundsCore();
                                 </div>
                             </div>
                             <button type="button"
-                                aria-label={t('common.show')}
                                 data-help-key="ws_gen_review_btn" onClick={onShowReview}
                                 className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
                             >
@@ -3450,7 +3449,6 @@ const WS_CORE = createWordSoundsCore();
                                                 className="flex-1 p-2 rounded-lg border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                                             />
                                             <button type="button"
-                                                aria-label={t('common.confirm')}
                                                 onClick={handleAiGenerate} disabled={isAiGenerating}
                                                 className="bg-violet-600 text-white px-3 py-1 rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50"
                                             >

@@ -399,7 +399,6 @@ function FaqView(props) {
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
   }), prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : 'Save TTS'), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.toggle_edit_faq'),
     onClick: handleToggleIsEditingFaq,
     "data-help-key": "faq_edit_toggle",
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`

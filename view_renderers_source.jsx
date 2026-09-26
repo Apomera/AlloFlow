@@ -664,7 +664,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-3">
         <div role="toolbar" aria-label={t('outline.flow_view_controls') || 'Flow chart view controls'} className="flex flex-wrap items-center gap-1.5">
           <button type="button" onClick={() => changeZoom(-0.1)} disabled={zoom <= 0.5} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white px-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-40" aria-label={t('outline.zoom_out') || 'Zoom out'} title={t('outline.zoom_out') || 'Zoom out'}>?</button>
-          <span className="min-w-14 text-center text-xs font-black tabular-nums text-slate-700" aria-label={(t('outline.current_zoom') || 'Current zoom') + ' ' + Math.round(zoom * 100) + '%'}>{Math.round(zoom * 100)}%</span>
+          <span role="group" className="min-w-14 text-center text-xs font-black tabular-nums text-slate-700" aria-label={(t('outline.current_zoom') || 'Current zoom') + ' ' + Math.round(zoom * 100) + '%'}>{Math.round(zoom * 100)}%</span>
           <button type="button" onClick={() => changeZoom(0.1)} disabled={zoom >= 1.6} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white px-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-40" aria-label={t('outline.zoom_in') || 'Zoom in'} title={t('outline.zoom_in') || 'Zoom in'}>+</button>
           <button type="button" onClick={fitToScreen} className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 text-xs font-black text-indigo-800 hover:bg-indigo-100">{t('outline.fit_to_screen') || 'Fit'}</button>
           <button type="button" onClick={() => setAllCollapsed(collapsedNodes.size !== branches.length)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100">
@@ -794,7 +794,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
                     </ul>
 
                     {!isCollapsed && outgoing.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3" aria-label={t('outline.outgoing_paths') || 'Outgoing paths'}>
+                      <div role="group" className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3" aria-label={t('outline.outgoing_paths') || 'Outgoing paths'}>
                         {outgoing.map(connection => (
                           <span key={connection.target} className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-800">
                             {(connection.label ? connection.label + ': ' : '') + (t('outline.step') || 'Step') + ' ' + (connection.target + 1)}
@@ -2278,7 +2278,7 @@ const renderOutlineContentCore = (deps) => {
                                          Analyze the results here. Did the proposed solutions effectively address the challenge? What were the trade-offs or final results?
                                      </p>
                                      {isTeacherMode && (
-                                         <button aria-label={t('common.generate_scenario_outcome')}
+                                         <button
                                             onClick={handleGenerateOutcome}
                                             disabled={isProcessing}
                                             className="mt-4 text-xs font-bold bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:cursor-wait"
@@ -2406,7 +2406,7 @@ const renderOutlineContentCore = (deps) => {
                 // visually overlap their headers.
                 const padCls = isBottomRow ? 'px-5 pb-5 pt-10' : 'p-5';
                 return (
-                    <div className={`${c.bg} ${padCls} ${borders}`} aria-label={quadrantLabel}>
+                    <div role="group" className={`${c.bg} ${padCls} ${borders}`} aria-label={quadrantLabel}>
                         <h4 className={`font-black text-sm uppercase tracking-wider mb-3 ${c.header}`}>
                             {branch.title}
                         </h4>
@@ -7648,7 +7648,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         {current.mnemonic ? <span className="block mt-1 text-xs text-slate-600">💡 {current.mnemonic}</span> : null}
                                     </div>
                                     <p className="text-sm leading-relaxed text-slate-700">{t('memory_palace.self_rate_before_reveal') || 'Before revealing the answer, did you remember it? Rate that first recall.'}</p>
-                                    <div className="flex flex-wrap gap-2" aria-label={t('memory_palace.self_check_result') || 'How well did you remember this locus?'}>
+                                    <div role="group" className="flex flex-wrap gap-2" aria-label={t('memory_palace.self_check_result') || 'How well did you remember this locus?'}>
                                         <button
                                             onClick={() => markSelfCheck(true)}
                                             className="min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
@@ -7981,7 +7981,7 @@ const renderInteractiveMap = (deps) => {
               <div className="flex flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-400 justify-between min-h-[50px]">
                   {isVenn ? (
                       <div className="flex items-center justify-center w-full gap-4">
-                          <button aria-label={t('common.reset_venn_diagram')}
+                          <button
                               onClick={handleVennResetBoard}
                               disabled={isMapLocked}
                               className={`flex items-center gap-2 bg-white text-indigo-600 border border-indigo-200 px-4 py-2 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -7989,7 +7989,6 @@ const renderInteractiveMap = (deps) => {
                               <RefreshCw size={14} /> {t('concept_map.venn.reset_board')}
                           </button>
                           <button
-                              aria-label={t('common.reorder_list')}
                               onClick={handleVennScrambleBank}
                               disabled={isMapLocked}
                               className={`flex items-center gap-2 bg-white text-slate-600 border border-slate-400 px-4 py-2 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -8008,7 +8007,6 @@ const renderInteractiveMap = (deps) => {
                           </button>
                           <div className="w-px h-6 bg-slate-300 mx-2"></div>
                           <button
-                              aria-label={t('common.locked')}
                               onClick={handleToggleIsMapLocked}
                               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? 'bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200' : 'bg-white text-slate-600 border border-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                               title={isMapLocked ? t('concept_map.toolbar.unlock_tooltip') : t('concept_map.toolbar.lock_tooltip')}
@@ -8162,7 +8160,7 @@ const renderInteractiveMap = (deps) => {
                                               <RefreshCw size={14} />
                                               <span className="hidden sm:inline">{t('concept_map.challenge.retry')}</span>
                                           </button>
-                                          <button aria-label={t('common.check_challenge_answer')}
+                                          <button
                                               onClick={handleCheckChallengeRouter}
                                               disabled={isCheckingChallenge}
                                               className="flex items-center gap-1 bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"

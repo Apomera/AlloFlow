@@ -607,7 +607,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           );
         }).filter(Boolean);
         var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', style: { background: _oriBg('#0b1220'), borderRadius: 12, border: '1px solid #1e293b', maxWidth: 620, display: 'block' },
-          role: 'img', 'aria-label': 'Scatter of eight traditions. Horizontal axis: ' + aX.left + ' to ' + aX.right + '. Vertical axis: ' + aY.left + ' to ' + aY.right + '. Placements are interpretive; full positions are listed in text below the chart.' },
+          role: 'group', 'aria-label': 'Scatter of eight traditions. Horizontal axis: ' + aX.left + ' to ' + aX.right + '. Vertical axis: ' + aY.left + ' to ' + aY.right + '. Placements are interpretive; full positions are listed in text below the chart.' },
           h('line', { x1: mL, y1: mT + ph, x2: mL + pw, y2: mT + ph, stroke: '#334155' }),
           h('line', { x1: mL, y1: mT, x2: mL, y2: mT + ph, stroke: '#334155' }),
           h('text', { x: mL, y: H - 30, fontSize: 11, fill: _oriFg('#94a3b8') }, '◀ ' + aX.left),

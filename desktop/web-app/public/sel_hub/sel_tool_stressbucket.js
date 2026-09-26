@@ -295,6 +295,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
       var _sbkBg = function(h){ return _sbkHC ? (_sbk_BGH[h]||h) : (_sbkL ? (_sbk_BGL[h]||h) : h); };
       var _sbkFg = function(h){ return _sbkHC ? (_sbk_FGH[h]||h) : (_sbkL ? (_sbk_FGL[h]||h) : h); };
       var _sbkBd = function(h){ return _sbkHC ? (_sbk_BDH[h]||h) : (_sbkL ? (_sbk_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _sbkSolid = function(c){ return _sbkHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -716,7 +718,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 style: { padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } },
                 WEIGHTS.map(function(w) { return h('option', { key: w.value, value: w.value }, w.label); })),
               h('button', { onClick: addStressor, 'aria-label': 'Add stressor',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _sbkBg('#fb7185'), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _sbkBg(_sbkSolid('#fb7185')), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
               h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _sbkFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
@@ -786,7 +788,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addOverflowFromInput(); } },
                 style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: addOverflowFromInput, 'aria-label': 'Add overflow sign',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _sbkBg('#ef4444'), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _sbkBg(_sbkSolid('#ef4444')), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
               h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _sbkFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
@@ -913,14 +915,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
             // Stressors
             h('div', { style: { marginBottom: 16, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _sbkBg('#fb7185'), color: _sbkFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Stressors (inflow)'),
+              h('div', { style: { background: _sbkBg(_sbkSolid('#fb7185')), color: _sbkFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Stressors (inflow)'),
               stressors.length > 0
                 ? h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _sbkFg('#0f172a'), fontSize: 13, lineHeight: 1.65 } },
                     stressors.map(function(s, i) {
                       var w = WEIGHTS.find(function(w) { return w.value === s.weight; }) || WEIGHTS[1];
                       return h('li', { key: i }, s.label + '  (' + w.label + ')');
                     }))
-                : h('div', { style: { fontSize: 11, color: _sbkFg('#94a3b8'), fontStyle: 'italic' } }, '(none added)')
+                : h('div', { style: { fontSize: 11, color: _sbkFg('#475569'), fontStyle: 'italic' } }, '(none added)')
             ),
 
             // Taps
@@ -932,19 +934,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                       var c = CAPACITIES.find(function(c) { return c.value === t.capacity; }) || CAPACITIES[0];
                       return h('li', { key: i }, t.label + '  (' + c.label + ')');
                     }))
-                : h('div', { style: { fontSize: 11, color: _sbkFg('#94a3b8'), fontStyle: 'italic' } }, '(none added)')
+                : h('div', { style: { fontSize: 11, color: _sbkFg('#475569'), fontStyle: 'italic' } }, '(none added)')
             ),
 
             // Overflow
             h('div', { style: { marginBottom: 16, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _sbkBg('#dc2626'), color: _sbkFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'How overflow shows up in me'),
+              h('div', { style: { background: _sbkBg(_sbkSolid('#dc2626')), color: _sbkFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'How overflow shows up in me'),
               overflow.length > 0
                 ? h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _sbkFg('#0f172a'), fontSize: 13, lineHeight: 1.65 } },
                     overflow.map(function(s, i) { return h('li', { key: i }, s); }))
-                : h('div', { style: { fontSize: 11, color: _sbkFg('#94a3b8'), fontStyle: 'italic' } }, '(none added)')
+                : h('div', { style: { fontSize: 11, color: _sbkFg('#475569'), fontStyle: 'italic' } }, '(none added)')
             ),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _sbkFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _sbkFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Stress Bucket model from Brabban, A. and Turkington, D. (2002), adapted widely in NHS IAPT and Mind UK practice. ',
               'Created with AlloFlow SEL Hub.'
             )

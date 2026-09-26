@@ -603,6 +603,8 @@ window.SelHub = window.SelHub || {
       var _comBg = function(h){ return _comHC ? (_com_BGH[h]||h) : (_comL ? (_com_BGL[h]||h) : h); };
       var _comFg = function(h){ return _comHC ? (_com_FGH[h]||h) : (_comL ? (_com_FGL[h]||h) : h); };
       var _comBd = function(h){ return _comHC ? (_com_BDH[h]||h) : (_comL ? (_com_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _comSolid = function(c){ return _comHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       return (function() {
         var React = ctx.React;
         var h = React.createElement;
@@ -970,7 +972,7 @@ window.SelHub = window.SelHub || {
           h('button', { 'aria-label': 'Toggle sound', 'aria-pressed': soundEnabled, onClick: function() { upd({ soundEnabled: !soundEnabled }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _comFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           h('button', { 'aria-label': 'Show community badges', 'aria-expanded': showBadgesPanel, onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _comFg('#94a3b8'), position: 'relative' } },
             '\uD83C\uDFC5',
-            Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _comFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+            Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _comSolid(ACCENT), color: _comFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
           )
         );
 
@@ -1031,7 +1033,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                 shownBadges.map(function(b) {
                   var earned = !!earnedBadges[b.id];
-                  return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
+                  return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center' } },
                     h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
                     h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _comFg('#f1f5f9') : _comFg('#94a3b8'), marginTop: 4 } }, b.name),
@@ -1203,7 +1205,7 @@ window.SelHub = window.SelHub || {
                   checkBadges();
                 },
                 disabled: superpowerSaved,
-                style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: superpowerSaved ? _comBg('#334155') : ACCENT, color: superpowerSaved ? _comFg('#94a3b8') : _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: superpowerSaved ? 'default' : 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: superpowerSaved ? _comBg('#334155') : _comSolid(ACCENT), color: superpowerSaved ? _comFg('#94a3b8') : _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: superpowerSaved ? 'default' : 'pointer' }
               }, superpowerSaved ? '\u2713 Saved' : 'Save My Superpower')
             ),
             // ── Allyship Action Cards ──
@@ -1327,7 +1329,7 @@ window.SelHub = window.SelHub || {
                   upd({ scIdx: newIdx, scChoice: null });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: ACCENT, color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
               }, 'Next \u2192')
             )
           );
@@ -1409,7 +1411,7 @@ window.SelHub = window.SelHub || {
                     upd({ quizIdx: nextIdx });
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, (quizIdx % quizItems.length) + 1 >= quizItems.length ? 'See Results' : 'Next Question \u2192')
               )
             ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
@@ -1423,7 +1425,7 @@ window.SelHub = window.SelHub || {
                   upd({ quizIdx: 0, quizScore: 0, quizAnswered: {}, quizFinished: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: ACCENT, color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Try Again')
             )
           );
@@ -1522,7 +1524,7 @@ window.SelHub = window.SelHub || {
                 h('button', { 'aria-label': 'Next',
                   onClick: function() { if (pwIdx < totalPW - 1) { upd({ pwIdx: pwIdx + 1 }); if (soundEnabled) sfxClick(); } },
                   disabled: pwIdx >= totalPW - 1,
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: pwIdx >= totalPW - 1 ? _comBg('#334155') : ACCENT, color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: pwIdx >= totalPW - 1 ? 'default' : 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: pwIdx >= totalPW - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: pwIdx >= totalPW - 1 ? 'default' : 'pointer' }
                 }, 'Next \u2192')
               )
             ) : h('div', null,
@@ -1563,7 +1565,7 @@ window.SelHub = window.SelHub || {
                     checkBadges();
                   },
                   disabled: pwReflectionSaved,
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: pwReflectionSaved ? _comBg('#334155') : ACCENT, color: pwReflectionSaved ? _comFg('#94a3b8') : _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: pwReflectionSaved ? 'default' : 'pointer' }
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: pwReflectionSaved ? _comBg('#334155') : _comSolid(ACCENT), color: pwReflectionSaved ? _comFg('#94a3b8') : _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: pwReflectionSaved ? 'default' : 'pointer' }
                 }, pwReflectionSaved ? '\u2713 Reflection Saved' : 'Save Reflection')
               ),
               // Reset button
@@ -1640,7 +1642,7 @@ window.SelHub = window.SelHub || {
                         if (soundEnabled) sfxCorrect();
                         awardXP(8);
                       },
-                      style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: ACCENT, color: _comFg('#fff'), fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                      style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 11, fontWeight: 600, cursor: 'pointer' }
                     }, 'Submit My Response')
                   ) : h('div', null,
                     h('div', { style: { padding: '8px 12px', borderRadius: 8, background: _comBg('#0f172a'), border: '1px solid #334155', fontSize: 12, color: _comFg('#cbd5e1'), marginBottom: 8, lineHeight: 1.5 } },
@@ -1681,7 +1683,7 @@ window.SelHub = window.SelHub || {
               h('button', { 'aria-label': 'Next',
                 onClick: function() { if (maIdx < MICROAGGRESSIONS.length - 1) { upd({ maIdx: maIdx + 1 }); if (soundEnabled) sfxClick(); } },
                 disabled: maIdx >= MICROAGGRESSIONS.length - 1,
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: maIdx >= MICROAGGRESSIONS.length - 1 ? _comBg('#334155') : ACCENT, color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: maIdx >= MICROAGGRESSIONS.length - 1 ? 'default' : 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: maIdx >= MICROAGGRESSIONS.length - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: maIdx >= MICROAGGRESSIONS.length - 1 ? 'default' : 'pointer' }
               }, 'Next \u2192')
             )
           );
@@ -1796,7 +1798,7 @@ window.SelHub = window.SelHub || {
                   if (soundEnabled) sfxCorrect();
                   awardXP(10);
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: ACCENT, color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDCCB Export as Text (Copy)')
             )
           );
@@ -1933,7 +1935,7 @@ window.SelHub = window.SelHub || {
                     upd({ battleIdx: nextBIdx });
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: _comBg('#ec4899'), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: _comBg(_comSolid('#ec4899')), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, (battleIdx % battleItems.length) + 1 >= battleItems.length ? 'See Results' : 'Next \u2192')
               )
             ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid #ec489944' } },
@@ -1947,7 +1949,7 @@ window.SelHub = window.SelHub || {
                   upd({ battleIdx: 0, battleScore: 0, battleAnswered: {}, battleFinished: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comBg('#ec4899'), color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comBg(_comSolid('#ec4899')), color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Battle Again')
             )
           );
@@ -2073,7 +2075,7 @@ window.SelHub = window.SelHub || {
                     }).catch(function(err) { upd({ aiLoading: false }); addToast('Error: ' + err.message, 'error'); });
                   },
                   disabled: aiLoading,
-                  style: { padding: '10px 16px', borderRadius: 8, background: ACCENT, color: _comFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' }
+                  style: { padding: '10px 16px', borderRadius: 8, background: _comSolid(ACCENT), color: _comFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' }
                 }, aiLoading ? '\u23F3' : '\u2191')
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
@@ -2091,7 +2093,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 } },
               shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
-                return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.45 } },
+                return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center' } },
                   h('div', { style: { fontSize: 26 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _comFg('#f1f5f9') : _comFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginTop: 2 } }, b.desc)

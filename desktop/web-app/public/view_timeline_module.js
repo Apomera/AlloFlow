@@ -510,7 +510,6 @@ function TimelineView(props) {
   }, /*#__PURE__*/React.createElement(Trash2, {
     size: 16
   })))), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.add'),
     onClick: handleAddTimelineStep,
     className: "w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Plus, {

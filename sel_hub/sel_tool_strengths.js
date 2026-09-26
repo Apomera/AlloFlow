@@ -1136,6 +1136,8 @@ window.SelHub = window.SelHub || {
       var _str_FGD = {'#6366f1':'#818cf8'};
       var _strFg = function(h){ return _strHC ? (_str_FGH[h]||h) : (_strL ? (_str_FGL[h]||h) : (_str_FGD[h]||h)); };
       var _strBd = function(h){ return _strHC ? (_str_BDH[h]||h) : (_strL ? (_str_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _strInk = function(c){ return _strHC || _strL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var toolData = ctx.toolData;
@@ -1428,7 +1430,7 @@ window.SelHub = window.SelHub || {
               shownBadgeIds.map(function(id) {
                 var b = BADGES[id];
                 var earned = !!badges[id];
-                return h('div', { key: id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: earned ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.03)', border: earned ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.1)', opacity: earned ? 1 : 0.5, fontSize: 11 } },
+                return h('div', { key: id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: earned ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.03)', border: earned ? '1px solid rgba(167,139,250,0.3)' : '1px dashed rgba(148,163,184,0.5)', fontSize: 11 } },
                   h('span', null, earned ? b.icon : '\uD83D\uDD12'),
                   h('span', { style: { fontWeight: 'bold', color: earned ? _strFg('#c4b5fd') : _strFg('#94a3b8') } }, b.name)
                 );
@@ -1717,7 +1719,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCD6'),
                   h('p', { style: { fontSize: 14, color: _strFg('#94a3b8') } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: _strFg('#94a3b8'), marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then come back to write stories about using them.'),
-                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
 
@@ -1734,7 +1736,7 @@ window.SelHub = window.SelHub || {
                   stories.length === 0 ?
                     h('div', { style: { textAlign: 'center', padding: 30, color: _strFg('#94a3b8') } },
                       h('p', { style: { fontSize: 13 } }, 'No stories yet. Write your first one!'),
-                      h('button', { 'aria-label': 'Write a Story', onClick: function() { upd({ storyViewMode: 'write' }); }, style: { marginTop: 10, padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u270D\uFE0F Write a Story')
+                      h('button', { 'aria-label': 'Write a Story', onClick: function() { upd({ storyViewMode: 'write' }); }, style: { marginTop: 10, padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u270D\uFE0F Write a Story')
                     ) :
                     stories.slice().reverse().map(function(story, si) {
                       return h('div', { key: 'story' + si, style: { padding: 14, marginBottom: 12, borderRadius: 12, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' } },
@@ -1870,7 +1872,7 @@ window.SelHub = window.SelHub || {
                   h('button', { 'aria-label': 'Previous', onClick: function() { if (storyStep > 0) upd({ storyStep: storyStep - 1 }); }, disabled: storyStep === 0, style: { padding: '8px 16px', borderRadius: 8, background: storyStep > 0 ? 'rgba(255,255,255,0.05)' : 'transparent', color: storyStep > 0 ? _strFg('#94a3b8') : '#334155', border: '1px solid ' + (storyStep > 0 ? 'rgba(99,102,241,0.15)' : 'transparent'), fontSize: 12, cursor: storyStep > 0 ? 'pointer' : 'default' } }, '\u2190 Previous'),
                   h('div', { style: { display: 'flex', gap: 8 } },
                     storyStep < storyPrompts.length - 1 ?
-                      h('button', { 'aria-label': 'Next', onClick: function() { upd({ storyStep: storyStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
+                      h('button', { 'aria-label': 'Next', onClick: function() { upd({ storyStep: storyStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
                       h('div', { style: { display: 'flex', gap: 6 } },
                         callGemini ? h('button', { onClick: getAiFeedback, disabled: !allFilled || storyAiLoading, style: { padding: '8px 14px', borderRadius: 8, background: allFilled ? 'rgba(99,102,241,0.15)' : '#334155', color: allFilled ? _strFg('#a5b4fc') : _strFg('#94a3b8'), border: '1px solid ' + (allFilled ? 'rgba(99,102,241,0.3)' : 'transparent'), fontSize: 12, cursor: allFilled ? 'pointer' : 'default' } }, storyAiLoading ? '\u23F3 Getting feedback...' : '\uD83E\uDD16 Get AI Feedback') : null,
                         h('button', { 'aria-label': 'Save Story', onClick: saveStory, disabled: !allFilled, style: { padding: '8px 20px', borderRadius: 8, background: allFilled ? _strFg('#22c55e') : '#334155', color: allFilled ? _strFg('#0f172a') : _strFg('#94a3b8'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: allFilled ? 'pointer' : 'default' } }, '\uD83D\uDCBE Save Story')
@@ -1904,7 +1906,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDD0D'),
                   h('p', { style: { fontSize: 14, color: _strFg('#94a3b8') } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: _strFg('#94a3b8'), marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then compare them to different roles.'),
-                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
 
@@ -2052,7 +2054,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\u26A1'),
                   h('p', { style: { fontSize: 14, color: _strFg('#94a3b8') } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: _strFg('#94a3b8'), marginTop: 4 } }, 'Go to the Discover tab so we can give you daily challenges based on YOUR strengths.'),
-                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
 
@@ -2258,7 +2260,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCCB'),
                   h('p', { style: { fontSize: 14, color: _strFg('#94a3b8') } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: _strFg('#94a3b8'), marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then come back to plan how to use them.'),
-                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
               return h('div', null,
@@ -2352,7 +2354,7 @@ window.SelHub = window.SelHub || {
                       window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
                         if (addToast) addToast('\uD83D\uDCCB Question copied! Share it with someone you trust.', 'success');
                       }).catch(function() {});
-                    }, style: { padding: '6px 14px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Copy Question'),
+                    }, style: { padding: '6px 14px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Copy Question'),
                     h('button', { 'aria-label': 'Different Question', onClick: function() { upd({ askFriendIdx: (askFriendIdx + 1) % ASK_FRIEND_TEMPLATES.length }); }, style: { padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: _strFg('#94a3b8'), border: '1px solid rgba(99,102,241,0.15)', fontSize: 11, cursor: 'pointer' } }, '\u27A1 Different Question')
                   )
                 ),
@@ -2399,14 +2401,14 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'center' } },
                   STRENGTH_CATEGORIES.map(function(cat) {
                     var active = affirmCat === cat.id;
-                    return h('button', { 'aria-label': '+ cat.label.split(', key: cat.id, onClick: function() { upd({ affirmCat: cat.id, affirmIdx: 0 }); }, style: { padding: '6px 14px', borderRadius: 20, background: active ? cat.color + '22' : 'rgba(255,255,255,0.04)', border: active ? '2px solid ' + cat.color : '1px solid rgba(99,102,241,0.15)', color: active ? cat.color : _strFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, cat.emoji + ' ' + cat.label.split(' ')[0]);
+                    return h('button', { key: cat.id, onClick: function() { upd({ affirmCat: cat.id, affirmIdx: 0 }); }, style: { padding: '6px 14px', borderRadius: 20, background: active ? cat.color + '22' : 'rgba(255,255,255,0.04)', border: active ? '2px solid ' + cat.color : '1px solid rgba(99,102,241,0.15)', color: active ? _strInk(cat.color) : _strFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, cat.emoji + ' ' + cat.label.split(' ')[0]);
                   })
                 ),
 
                 // Card display
                 h('div', { style: { textAlign: 'center', padding: 30, marginBottom: 16, borderRadius: 14, background: catColor + '0a', border: '2px solid ' + catColor + '33', minHeight: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                   h('div', { style: { fontSize: 32, marginBottom: 12 } }, catEmoji),
-                  h('p', { style: { fontSize: 18, fontWeight: 'bold', color: catColor, lineHeight: 1.6, maxWidth: 400 } }, currentAffirmation),
+                  h('p', { style: { fontSize: 18, fontWeight: 'bold', color: _strInk(catColor), lineHeight: 1.6, maxWidth: 400 } }, currentAffirmation),
                   h('div', { style: { fontSize: 10, color: _strFg('#94a3b8'), marginTop: 10 } }, (affirmIdx % cards.length + 1) + ' / ' + cards.length)
                 ),
 
@@ -2453,7 +2455,7 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', { type: 'text', 'aria-label': 'Ask the strengths coach', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) askAI(); }, placeholder: band === 'elementary' ? 'Ask me about your strengths...' : 'Ask about your strengths, growth areas, or how to apply them...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: _strFg('#e2e8f0'), fontSize: 12 } }),
-                h('button', { 'aria-label': aiLoading ? 'Strengths coach is responding' : 'Send question to strengths coach', onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
+                h('button', { 'aria-label': aiLoading ? 'Strengths coach is responding' : 'Send question to strengths coach', onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
               // Quick questions
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
@@ -2479,7 +2481,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\u2B50'),
                   h('p', { style: { fontSize: 14, color: _strFg('#94a3b8') } }, 'No strengths selected yet.'),
                   h('p', { style: { fontSize: 12, color: _strFg('#94a3b8'), marginTop: 4 } }, 'Go to the Discover tab to identify your strengths!'),
-                  h('button', { 'aria-label': 'Start Discovering', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Start Discovering')
+                  h('button', { 'aria-label': 'Start Discovering', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Start Discovering')
                 ) :
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 'bold', color: _strFg('#fbbf24'), marginBottom: 12 } }, '\u2B50 Your Strengths Profile'),

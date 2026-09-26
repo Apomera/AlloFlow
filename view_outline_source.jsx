@@ -214,7 +214,6 @@ function OutlineView(props) {
                                             className="px-3 py-2 rounded-xl border-2 border-indigo-600 text-sm focus:border-indigo-400 outline-none w-32 bg-slate-50 focus:bg-white transition-colors"
                                         />
                                         <button
-                                            aria-label={t('common.add')}
                                             onClick={() => handleAddToMapList(mapAddInput)}
                                             className="bg-indigo-100 text-indigo-600 px-3 py-2 rounded-xl text-xs font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1"
                                         >
@@ -223,7 +222,7 @@ function OutlineView(props) {
                                     </div>
                                 </div>
                                 <p className="text-slate-600 max-w-md mx-auto mb-6">Review and curate the concepts before generating the interactive diagram.</p>
-                                <button aria-label={t('common.initialize_map')}
+                                <button
                                     onClick={handleInitializeMap}
                                     disabled={isProcessing} aria-busy={isProcessing}
                                     className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"

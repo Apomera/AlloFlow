@@ -1215,7 +1215,7 @@ window.SelHub = window.SelHub || {
 
           // Current prompt
           h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 text-center shadow-lg' },
-            h('div', { id: 'rc-circle-round-status', role: 'status', 'aria-live': 'polite', className: 'text-xs font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
+            h('div', { id: 'rc-circle-round-status', role: 'status', 'aria-live': 'polite', className: 'text-xs font-bold text-amber-700 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
             h('p', { id: 'rc-circle-prompt', className: 'text-lg font-bold text-slate-800 leading-relaxed' }, prompts[currentPromptIdx] || 'Circle complete \u2014 thank you for sharing.'),
 
             // Navigation
@@ -1245,7 +1245,7 @@ window.SelHub = window.SelHub || {
             // Speak prompt aloud
             callTTS && h('button', { 'aria-label': 'Read Aloud',
               onClick: function() { callTTS(prompts[currentPromptIdx] || ''); },
-              className: 'mt-3 text-xs text-amber-500 hover:text-amber-700 font-bold'
+              className: 'mt-3 text-xs text-amber-700 hover:text-amber-700 font-bold'
             }, '\uD83D\uDD0A Read Aloud')
           ),
 
@@ -1256,7 +1256,7 @@ window.SelHub = window.SelHub || {
               value: d.currentReflection || '',
               onChange: function(e) { upd('currentReflection', e.target.value); },
               placeholder: 'What came up for you during this round? What did you notice?',
-              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800',
               'aria-labelledby': 'rc-circle-reflection-label',
               'aria-label': 'Circle reflection'
             }),
@@ -1284,7 +1284,7 @@ window.SelHub = window.SelHub || {
         tab === 'scripts' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCDC Circle Scripts'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'Pre-written scripts to guide each phase of your circle. Select a section below, then choose a script to follow.'
             )
           ),
@@ -1312,14 +1312,14 @@ window.SelHub = window.SelHub || {
             // Discussion section is an array of strings
             if (scriptSection === 'discussion') {
               return h('div', { className: 'space-y-2' },
-                h('p', { className: 'text-xs text-slate-600 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' discussion prompts available'),
+                h('p', { className: 'text-xs text-slate-300 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' discussion prompts available'),
                 bandData.map(function(prompt, i) {
                   return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3' },
-                    h('span', { className: 'text-amber-500 font-bold text-sm mt-0.5 shrink-0' }, (i + 1) + '.'),
+                    h('span', { className: 'text-amber-700 font-bold text-sm mt-0.5 shrink-0' }, (i + 1) + '.'),
                     h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, prompt),
                     callTTS && h('button', { 'aria-label': 'Read discussion prompt aloud',
                       onClick: function() { callTTS(prompt); },
-                      className: 'text-xs text-amber-400 hover:text-amber-600 shrink-0'
+                      className: 'text-xs text-amber-700 hover:text-amber-800 shrink-0'
                     }, '\uD83D\uDD0A')
                   );
                 }),
@@ -1332,7 +1332,7 @@ window.SelHub = window.SelHub || {
 
             // Opening, CheckIn, Closing sections are arrays of { title, desc }
             return h('div', { className: 'space-y-3' },
-              h('p', { className: 'text-xs text-slate-600 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' scripts available'),
+              h('p', { className: 'text-xs text-slate-300 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' scripts available'),
               bandData.map(function(script, i) {
                 var isActive = activeScriptIdx === i;
                 return h('div', { key: i, className: 'bg-white rounded-xl border-2 transition-all ' + (isActive ? 'border-amber-400 shadow-md' : 'border-slate-200 hover:border-amber-300') },
@@ -1342,7 +1342,7 @@ window.SelHub = window.SelHub || {
                   },
                     h('div', { className: 'flex items-center justify-between' },
                       h('div', { className: 'font-bold text-sm text-slate-800' }, script.title),
-                      h('span', { className: 'text-xs text-amber-500' }, isActive ? '\u25B2 Collapse' : '\u25BC Expand')
+                      h('span', { className: 'text-xs text-amber-700' }, isActive ? '\u25B2 Collapse' : '\u25BC Expand')
                     )
                   ),
                   isActive && h('div', { className: 'px-4 pb-4 space-y-3' },
@@ -1374,7 +1374,7 @@ window.SelHub = window.SelHub || {
         tab === 'harm-repair' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDE79 Harm Repair Process'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'A guided step-by-step restorative conversation for when harm has occurred. Each step builds understanding and leads to a repair agreement.'
             )
           ),
@@ -1405,7 +1405,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'text-center mb-4' },
                 h('span', { className: 'text-3xl' }, step.icon),
                 h('h4', { id: 'rc-harm-step-title', 'aria-live': 'polite', className: 'text-lg font-bold text-slate-800 mt-2' }, 'Step ' + (harmStep + 1) + ': ' + step.title),
-                h('p', { id: 'rc-harm-step-subtitle', className: 'text-xs text-amber-600 font-medium' }, step.subtitle)
+                h('p', { id: 'rc-harm-step-subtitle', className: 'text-xs text-amber-700 font-medium' }, step.subtitle)
               ),
               h('div', { className: 'bg-amber-50 rounded-lg p-3 mb-4 border border-amber-100' },
                 h('p', { id: 'rc-harm-step-guidance', className: 'text-sm text-amber-800 leading-relaxed' }, guidance)
@@ -1420,11 +1420,11 @@ window.SelHub = window.SelHub || {
                   upd('harmResponses', newResponses);
                 },
                 placeholder: placeholder,
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
               }),
               callTTS && h('button', { 'aria-label': 'Read Guidance Aloud',
                 onClick: function() { callTTS(guidance); },
-                className: 'mt-2 text-xs text-amber-500 hover:text-amber-700 font-bold'
+                className: 'mt-2 text-xs text-amber-700 hover:text-amber-700 font-bold'
               }, '\uD83D\uDD0A Read Guidance Aloud'),
 
               // Navigation
@@ -1462,7 +1462,7 @@ window.SelHub = window.SelHub || {
               HARM_REPAIR_STEPS.slice(0, harmStep).map(function(step, i) {
                 var response = harmResponses[step.id];
                 return h('div', { key: i, className: 'bg-white rounded-lg p-3 border border-slate-100' },
-                  h('div', { className: 'text-xs font-bold text-amber-600' }, step.icon + ' Step ' + (i + 1) + ': ' + step.title),
+                  h('div', { className: 'text-xs font-bold text-amber-700' }, step.icon + ' Step ' + (i + 1) + ': ' + step.title),
                   response ? h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, response) : h('p', { className: 'text-xs text-slate-600 italic mt-1' }, '(No response recorded)')
                 );
               })
@@ -1474,7 +1474,7 @@ window.SelHub = window.SelHub || {
         tab === 'scenarios' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFAD Restorative Scenarios'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'Practice restorative thinking with realistic scenarios. Read the situation, choose a response, and see how the restorative approach unfolds.'
             )
           ),
@@ -1552,7 +1552,7 @@ window.SelHub = window.SelHub || {
                   value: d.scenarioReflection || '',
                   onChange: function(e) { upd('scenarioReflection', e.target.value); },
                   placeholder: 'Think about a real situation where a restorative approach could help...',
-                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800',
                   'aria-label': 'Scenario reflection'
                 })
               )
@@ -1638,12 +1638,12 @@ window.SelHub = window.SelHub || {
           return h('div', { className: 'space-y-4' },
             h('div', { className: 'text-center mb-2' },
               h('h3', { className: 'text-lg font-black text-slate-100' }, '🎭 Rehearse the conversation'),
-              h('p', { className: 'text-xs text-slate-600' }, 'Restorative work is dialogue. Practice what you would actually say before you have to say it for real.')
+              h('p', { className: 'text-xs text-slate-300' }, 'Restorative work is dialogue. Practice what you would actually say before you have to say it for real.')
             ),
             // STEP 1: pick a role to rehearse
             !rcRpRole && h('div', { className: 'space-y-3' },
               h('p', { className: 'text-sm text-slate-300' },
-                h('strong', { className: 'text-amber-700' }, 'Pick what you want to practice. '),
+                h('strong', { className: 'text-amber-300' }, 'Pick what you want to practice. '),
                 'The AI plays the OTHER person. You play yourself. Keep responses short and real — the way you would actually talk.'),
               h('div', { className: 'grid gap-2' },
                 ['facilitator', 'accountability', 'listening'].map(function(roleKey) {
@@ -1670,8 +1670,8 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              rcRpStarting && h('p', { role: 'status', 'aria-live': 'polite', className: 'text-xs italic text-amber-700' }, 'Generating a fresh scene…'),
-              !callGemini && h('p', { className: 'text-xs text-amber-700 italic' }, 'AI features need a connection. Try the Scenarios tab while offline.')
+              rcRpStarting && h('p', { role: 'status', 'aria-live': 'polite', className: 'text-xs italic text-amber-300' }, 'Generating a fresh scene…'),
+              !callGemini && h('p', { className: 'text-xs text-amber-300 italic' }, 'AI features need a connection. Try the Scenarios tab while offline.')
             ),
             // STEP 2: conversation in progress
             rcRpRole && charCfg && h('div', { role: 'region', 'aria-label': charCfg.label, className: 'space-y-3' },
@@ -1725,7 +1725,7 @@ window.SelHub = window.SelHub || {
                   placeholder: 'What would you actually say next? Keep it short — restorative work is more about listening than fixing.',
                   rows: 2,
                   disabled: rcRpLoading,
-                  className: 'w-full p-2 text-sm border border-slate-300 rounded-lg font-inherit resize-y',
+                  className: 'w-full p-2 text-sm border border-slate-300 rounded-lg font-inherit resize-y bg-white text-slate-800',
                   style: { boxSizing: 'border-box', marginBottom: 8 }
                 }),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -1891,7 +1891,7 @@ window.SelHub = window.SelHub || {
         tab === 'agreements' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDD1D Community Agreements Builder'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'Build your class or group agreements together. Select from suggestions or write your own. These become the foundation of your restorative community.'
             )
           ),
@@ -1929,7 +1929,7 @@ window.SelHub = window.SelHub || {
                 value: customAgreement,
                 onChange: function(e) { upd('customAgreement', e.target.value); },
                 placeholder: 'Type a custom agreement...',
-                className: 'flex-1 text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'flex-1 text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800',
                 onKeyDown: function(e) {
                   if (e.key === 'Enter' && customAgreement.trim()) {
                     var newAg = agreements.concat([customAgreement.trim()]);
@@ -1958,7 +1958,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'space-y-2' },
               agreements.map(function(ag, i) {
                 return h('div', { key: i, className: 'flex items-center gap-2 bg-white rounded-lg p-2 border border-amber-100' },
-                  h('span', { className: 'text-amber-500 font-bold text-sm shrink-0' }, (i + 1) + '.'),
+                  h('span', { className: 'text-amber-700 font-bold text-sm shrink-0' }, (i + 1) + '.'),
                   h('span', { className: 'text-sm text-slate-700 flex-1' }, ag),
                   h('button', {
                     onClick: function() {
@@ -2000,7 +2000,7 @@ window.SelHub = window.SelHub || {
             )
           ),
 
-          agreements.length === 0 && h('div', { className: 'text-center py-8 text-slate-400' },
+          agreements.length === 0 && h('div', { className: 'text-center py-8 text-slate-300' },
             h('p', { className: 'text-sm' }, 'No agreements yet. Select from suggestions above or write your own to get started!')
           )
         ),
@@ -2009,7 +2009,7 @@ window.SelHub = window.SelHub || {
         tab === 'talking-piece' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDEB6 The Talking Piece'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'The talking piece is a sacred object passed around the circle. Only the person holding it may speak. This practice teaches us that listening is just as powerful as speaking.'
             )
           ),
@@ -2029,11 +2029,11 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-3xl' }, piece.emoji),
                   h('div', null,
                     h('div', { className: 'font-bold text-sm text-slate-800' }, piece.name),
-                    h('div', { className: 'text-xs text-amber-600 font-medium' }, piece.origin)
+                    h('div', { className: 'text-xs text-amber-700 font-medium' }, piece.origin)
                   )
                 ),
                 h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, piece.significance),
-                isSelected && h('div', { className: 'mt-2 text-xs font-bold text-amber-600 flex items-center gap-1' }, '\u2713 Selected as your talking piece')
+                isSelected && h('div', { className: 'mt-2 text-xs font-bold text-amber-700 flex items-center gap-1' }, '\u2713 Selected as your talking piece')
               );
             })
           ),
@@ -2058,7 +2058,7 @@ window.SelHub = window.SelHub || {
             ),
 
             h('div', { className: 'mt-6 bg-white rounded-xl border border-amber-200 p-4' },
-              h('h4', { id: 'rc-roots-reflection-label', className: 'text-xs font-bold text-amber-600 uppercase tracking-widest mb-2' }, '\uD83D\uDCAD Reflection'),
+              h('h4', { id: 'rc-roots-reflection-label', className: 'text-xs font-bold text-amber-700 uppercase tracking-widest mb-2' }, '\uD83D\uDCAD Reflection'),
               h('p', { id: 'rc-roots-reflection-prompt', className: 'text-sm text-amber-800 italic mb-3' }, INDIGENOUS_ROOTS.reflection),
               h('textarea', {
                 'aria-labelledby': 'rc-roots-reflection-label',
@@ -2066,7 +2066,7 @@ window.SelHub = window.SelHub || {
                 value: d.rootsReflection || '',
                 onChange: function(e) { upd('rootsReflection', e.target.value); },
                 placeholder: 'Write your reflection here...',
-                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300'
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
               })
             ),
 
@@ -2109,7 +2109,7 @@ window.SelHub = window.SelHub || {
         tab === 'questions' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\u2753 Restorative Questions Bank'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'Deep conversation starters organized by purpose. Use these in your circles or anytime you need a thoughtful question to open dialogue.'
             )
           ),
@@ -2137,16 +2137,16 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'flex items-center gap-2 mb-1' },
                 h('span', { className: 'text-xl' }, catData.emoji),
                 h('h4', { className: 'text-sm font-bold', style: { color: catData.color } }, catData.label),
-                h('span', { className: 'text-xs text-slate-600 ml-auto' }, catData.questions.length + ' questions')
+                h('span', { className: 'text-xs text-slate-300 ml-auto' }, catData.questions.length + ' questions')
               ),
               catData.questions.map(function(q, i) {
                 return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3 hover:border-amber-400 transition-all' },
-                  h('span', { className: 'font-bold text-sm mt-0.5 shrink-0', style: { color: catData.color } }, (i + 1) + '.'),
+                  h('span', { className: 'font-bold text-sm mt-0.5 shrink-0 ' + (({ '#f59e0b': 'text-amber-700', '#eab308': 'text-yellow-700', '#f97316': 'text-orange-700', '#3b82f6': 'text-blue-700', '#22c55e': 'text-green-700', '#ef4444': 'text-red-700', '#8b5cf6': 'text-violet-700', '#a855f7': 'text-purple-700' })[catData.color] || ''), style: ({ '#f59e0b': 'text-amber-700', '#eab308': 'text-yellow-700', '#f97316': 'text-orange-700', '#3b82f6': 'text-blue-700', '#22c55e': 'text-green-700', '#ef4444': 'text-red-700', '#8b5cf6': 'text-violet-700', '#a855f7': 'text-purple-700' })[catData.color] ? undefined : { color: catData.color } }, (i + 1) + '.'),
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, q),
                   h('div', { className: 'flex flex-col gap-1 shrink-0' },
                     callTTS && h('button', {
                       onClick: function() { callTTS(q); incrementBadgeStat('questionsUsed', 1); },
-                      className: 'text-xs text-amber-400 hover:text-amber-600',
+                      className: 'text-xs text-amber-700 hover:text-amber-800',
                       'aria-label': 'Read question aloud'
                     }, '\uD83D\uDD0A'),
                     h('button', {
@@ -2182,7 +2182,7 @@ window.SelHub = window.SelHub || {
 
           // Display random question
           d.randomQuestion && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 p-5 text-center' },
-            h('p', { className: 'text-xs font-bold text-amber-500 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
+            h('p', { className: 'text-xs font-bold text-amber-700 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
             h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, d.randomQuestion),
             h('div', { className: 'flex gap-2 justify-center mt-3' },
               callTTS && h('button', { 'aria-label': 'Read Aloud',
@@ -2206,7 +2206,7 @@ window.SelHub = window.SelHub || {
         tab === 'roles' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDE4B Circle Role Cards'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'Every circle participant has a role. Learn what each role involves, the dos and don\'ts, and sample phrases to guide your practice.'
             )
           ),
@@ -2232,9 +2232,9 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-2xl' }, role.emoji),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, role.title),
-                  h('div', { className: 'text-xs text-amber-600 font-medium' }, role.subtitle)
+                  h('div', { className: 'text-xs text-amber-700 font-medium' }, role.subtitle)
                 ),
-                h('span', { className: 'text-xs text-amber-500' }, isExpanded ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-xs text-amber-700' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
@@ -2252,7 +2252,7 @@ window.SelHub = window.SelHub || {
                     h('ul', { className: 'space-y-1.5' },
                       role.dos.map(function(item, i) {
                         return h('li', { key: i, className: 'text-xs text-emerald-800 leading-relaxed flex items-start gap-1.5' },
-                          h('span', { className: 'text-emerald-500 shrink-0 mt-0.5' }, '\u2022'),
+                          h('span', { className: 'text-emerald-700 shrink-0 mt-0.5' }, '\u2022'),
                           h('span', null, item)
                         );
                       })
@@ -2311,7 +2311,7 @@ window.SelHub = window.SelHub || {
         tab === 'empathy-map' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDDE0 Empathy Mapping Exercise'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'Understand different perspectives in a conflict by mapping what each person said, did, thought, and felt. Then find areas of overlap and build bridges.'
             )
           ),
@@ -2340,7 +2340,7 @@ window.SelHub = window.SelHub || {
                 value: d[nameKey] || '',
                 onChange: function(e) { upd(nameKey, e.target.value); },
                 placeholder: 'Enter a name or label...',
-                className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800',
                 'aria-label': 'Person name'
               })
             );
@@ -2357,7 +2357,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: quad.id, className: 'bg-white rounded-xl border-2 p-4', style: { borderColor: quad.color + '40' } },
                   h('div', { className: 'flex items-center gap-2 mb-2' },
                     h('span', { className: 'text-lg' }, quad.emoji),
-                    h('h5', { id: 'rc-empathy-' + activePerson + '-' + quad.id + '-label', className: 'text-xs font-bold', style: { color: quad.color } }, quad.label)
+                    h('h5', { id: 'rc-empathy-' + activePerson + '-' + quad.id + '-label', className: 'text-xs font-bold ' + (({ '#f59e0b': 'text-amber-700', '#eab308': 'text-yellow-700', '#f97316': 'text-orange-700', '#3b82f6': 'text-blue-700', '#22c55e': 'text-green-700', '#ef4444': 'text-red-700', '#8b5cf6': 'text-violet-700', '#a855f7': 'text-purple-700' })[quad.color] || ''), style: ({ '#f59e0b': 'text-amber-700', '#eab308': 'text-yellow-700', '#f97316': 'text-orange-700', '#3b82f6': 'text-blue-700', '#22c55e': 'text-green-700', '#ef4444': 'text-red-700', '#8b5cf6': 'text-violet-700', '#a855f7': 'text-purple-700' })[quad.color] ? undefined : { color: quad.color } }, quad.label)
                   ),
                   h('textarea', {
                     'aria-labelledby': 'rc-empathy-' + activePerson + '-' + quad.id + '-label',
@@ -2368,7 +2368,7 @@ window.SelHub = window.SelHub || {
                       upd('empathyData', newData);
                     },
                     placeholder: quad.placeholder,
-                    className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2',
+                    className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 bg-white text-slate-800',
                     style: { '--tw-ring-color': quad.color + '60' }
                   })
                 );
@@ -2456,7 +2456,7 @@ window.SelHub = window.SelHub || {
         tab === 'compare' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\u2696\uFE0F Restorative vs. Punitive'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               gradeBand === 'elementary'
                 ? 'Learn the difference between punishment and making things right. Which approach helps people learn and grow?'
                 : gradeBand === 'middle'
@@ -2474,13 +2474,13 @@ window.SelHub = window.SelHub || {
               RESTORATIVE_VS_PUNITIVE.principles.map(function(p, i) {
                 return h('div', { key: i, className: 'grid grid-cols-2 gap-2' },
                   h('div', { className: 'bg-red-50 rounded-lg p-3 border border-red-200' },
-                    i === 0 && h('div', { className: 'text-xs font-bold text-red-500 uppercase tracking-widest mb-1' },
+                    i === 0 && h('div', { className: 'text-xs font-bold text-red-700 uppercase tracking-widest mb-1' },
                       gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment Way' : '\uD83D\uDEAB Punitive Approach'
                     ),
                     h('p', { className: 'text-xs text-red-800 leading-relaxed' }, p.punitive)
                   ),
                   h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
-                    i === 0 && h('div', { className: 'text-xs font-bold text-emerald-500 uppercase tracking-widest mb-1' },
+                    i === 0 && h('div', { className: 'text-xs font-bold text-emerald-700 uppercase tracking-widest mb-1' },
                       gradeBand === 'elementary' ? '\uD83D\uDC9A Making-It-Right Way' : '\uD83D\uDC9A Restorative Approach'
                     ),
                     h('p', { className: 'text-xs text-emerald-800 leading-relaxed' }, p.restorative)
@@ -2492,7 +2492,7 @@ window.SelHub = window.SelHub || {
 
           // Scenarios
           h('div', { className: 'space-y-4' },
-            h('h4', { className: 'text-sm font-bold text-slate-800 text-center mt-2' },
+            h('h4', { className: 'text-sm font-bold text-slate-200 text-center mt-2' },
               gradeBand === 'elementary' ? 'What Would Happen?' : 'Scenario Comparison'
             ),
             (function() {
@@ -2527,13 +2527,13 @@ window.SelHub = window.SelHub || {
                   // Side by side
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4' },
                     h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-4' },
-                      h('h6', { className: 'text-xs font-bold text-red-500 uppercase tracking-widest mb-2' },
+                      h('h6', { className: 'text-xs font-bold text-red-700 uppercase tracking-widest mb-2' },
                         gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive Response'
                       ),
                       h('p', { className: 'text-xs text-red-800 leading-relaxed' }, scenario.punitive)
                     ),
                     h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-4' },
-                      h('h6', { className: 'text-xs font-bold text-emerald-500 uppercase tracking-widest mb-2' },
+                      h('h6', { className: 'text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2' },
                         gradeBand === 'elementary' ? '\uD83D\uDC9A Making It Right' : '\uD83D\uDC9A Restorative Response'
                       ),
                       h('p', { className: 'text-xs text-emerald-800 leading-relaxed' }, scenario.restorative)
@@ -2547,7 +2547,7 @@ window.SelHub = window.SelHub || {
 
                   // Rating
                   h('div', { className: 'space-y-2' },
-                    h('p', { className: 'text-xs font-bold text-slate-300' },
+                    h('p', { className: 'text-xs font-bold text-slate-600' },
                       gradeBand === 'elementary'
                         ? 'Which way do you think works better?'
                         : 'Which approach do you think would be more effective and why?'
@@ -2590,7 +2590,7 @@ window.SelHub = window.SelHub || {
                         placeholder: gradeBand === 'elementary'
                           ? 'Tell us why you picked this one...'
                           : 'Explain your reasoning. What makes this approach more effective?',
-                        className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300'
+                        className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
                       })
                     )
                   ),
@@ -2649,7 +2649,7 @@ window.SelHub = window.SelHub || {
         tab === 'badges' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFC5 Restorative Badges'),
-            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-300 leading-relaxed max-w-lg mx-auto' },
               'Earn badges as you deepen your restorative practice. Each badge recognizes growth, courage, and commitment to community.'
             )
           ),
@@ -2667,12 +2667,12 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'flex items-center gap-3 mb-2' },
                   h('span', { className: 'text-3xl ' + (isEarned ? '' : 'grayscale opacity-40') }, badge.emoji),
                   h('div', { className: 'flex-1' },
-                    h('div', { className: 'font-bold text-sm ' + (isEarned ? 'text-amber-700' : 'text-slate-600') }, badge.name),
+                    h('div', { id: 'rc-badge-name-' + badge.id, className: 'font-bold text-sm ' + (isEarned ? 'text-amber-700' : 'text-slate-600') }, badge.name),
                     h('p', { className: 'text-xs text-slate-600' }, badge.desc)
                   )
                 ),
                 h('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-1' },
-                  h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
+                  h('div', { role: 'progressbar', 'aria-labelledby': 'rc-badge-name-' + badge.id, 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': pct,
                     className: 'h-2 rounded-full transition-all ' + (isEarned ? 'bg-amber-500' : 'bg-slate-400'),
                     style: { width: pct + '%' }
                   })
@@ -2689,7 +2689,7 @@ window.SelHub = window.SelHub || {
             h('p', { className: 'text-sm text-amber-700 font-bold' },
               Object.keys(earnedBadges).length + ' of ' + BADGES.length + ' badges earned'
             ),
-            Object.keys(earnedBadges).length === BADGES.length && h('p', { className: 'text-xs text-amber-600 mt-1' }, '\u2728 You are a Restorative Circle master! Every badge earned. \u2728')
+            Object.keys(earnedBadges).length === BADGES.length && h('p', { className: 'text-xs text-amber-700 mt-1' }, '\u2728 You are a Restorative Circle master! Every badge earned. \u2728')
           )
         ),
 
@@ -2711,7 +2711,7 @@ window.SelHub = window.SelHub || {
 
         // ═══ PRINT ═══
         tab === 'print' && h('div', { className: 'space-y-3' },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 12.5, color: _rcFg('#78350f'), lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 12.5, color: _rcHC ? _rcFg('#78350f') : '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '\uD83D\uDDA8 Facilitator pocket reference. '),
             'A one-page circle protocol: structure of the 4 movements, talking-piece norms, opening + closing scripts, role cards, and the questions bank for the three most common circle types. Designed for teachers and Crew leaders to carry.'
           ),

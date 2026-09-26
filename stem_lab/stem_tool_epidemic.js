@@ -4642,9 +4642,9 @@ window.StemLab = window.StemLab || {
           // Three descriptive growth bands in this simplified model. Geographic spread is not modeled.
           var regime = rEff <= 1 ? 'declining' : (rEff < 1.5 ? 'growing' : 'fast_growth');
           var regimeMeta = {
-            declining: { label: __alloT('stem.epidemic.declining', '\uD83D\uDFE2 Declining'), desc: __alloT('stem.epidemic.r_eff_at_or_below_1', 'R_eff <= 1: infections do not sustain growth in this simplified model.'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            declining: { label: __alloT('stem.epidemic.declining', '\uD83D\uDFE2 Declining'), desc: __alloT('stem.epidemic.r_eff_at_or_below_1', 'R_eff <= 1: infections do not sustain growth in this simplified model.'), color: '#047857', bg: '#ecfdf5', border: '#86efac' },
             growing: { label: __alloT('stem.epidemic.growing', '\uD83D\uDFE1 Growing'), desc: __alloT('stem.epidemic.r_eff_between_1_and_1_5', '1 < R_eff < 1.5: infections grow in this simplified model. Growth alone does not establish geographic spread.'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
-            fast_growth: { label: __alloT('stem.epidemic.fast_growth', '\uD83D\uDD34 Faster growth'), desc: __alloT('stem.epidemic.r_eff_at_least_1_5', 'R_eff >= 1.5: infections grow faster in this simplified model. This is not, by itself, a definition of a pandemic.'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+            fast_growth: { label: __alloT('stem.epidemic.fast_growth', '\uD83D\uDD34 Faster growth'), desc: __alloT('stem.epidemic.r_eff_at_least_1_5', 'R_eff >= 1.5: infections grow faster in this simplified model. This is not, by itself, a definition of a pandemic.'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
           }[regime];
           function logObs() {
             var obs = { c: iq.contact, i: iq.intervention, t: iq.transmissibility, rE: parseFloat(rEff.toFixed(2)), reg: regime };

@@ -1186,7 +1186,21 @@ function HistoryPanel(props) {
         className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 cursor-pointer transition-colors hover:border-emerald-300 hover:bg-emerald-50/60"
       },
       /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-emerald-50 text-emerald-700 shrink-0" }, "\u{1F52C}"),
-      /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 truncate" }, st.name), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")),
+      /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: (e) => {
+            e.stopPropagation();
+            setActiveStation(st);
+            setShowStemLab(true);
+            setStemLabTab && setStemLabTab("explore");
+          },
+          className: "min-w-0 flex-grow rounded-lg text-left"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")
+      ),
       /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1223,7 +1237,21 @@ function HistoryPanel(props) {
         className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 cursor-pointer transition-colors hover:border-pink-300 hover:bg-pink-50/60"
       },
       /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-pink-50 text-pink-700 shrink-0" }, "\u{1F496}"),
-      /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 truncate" }, st.name), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "", (st.quests || []).length > 0 ? ` \xB7 ${st.quests.length} quest${st.quests.length !== 1 ? "s" : ""}` : "")),
+      /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: (e) => {
+            e.stopPropagation();
+            setActiveSelStation(st);
+            setShowSelHub(true);
+            setSelHubTab && setSelHubTab("explore");
+          },
+          className: "min-w-0 flex-grow rounded-lg text-left"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "", (st.quests || []).length > 0 ? ` \xB7 ${st.quests.length} quest${st.quests.length !== 1 ? "s" : ""}` : "")
+      ),
       /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1413,7 +1441,6 @@ function HistoryPanel(props) {
             "button",
             {
               type: "button",
-              "aria-label": t("common.edit"),
               "data-help-key": "history_rename_btn",
               onClick: (event) => handleStartEdit(event, item),
               className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
@@ -1539,7 +1566,6 @@ function HistoryPanel(props) {
           /* @__PURE__ */ React.createElement(
             "button",
             {
-              "aria-label": t("common.delete"),
               onClick: (e) => handleDeleteHistoryItem(e, itemPublicId, item),
               className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1",
               title: t("history.tooltips.remove_item"),

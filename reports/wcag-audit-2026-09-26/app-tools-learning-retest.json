@@ -1,0 +1,77 @@
+{
+ "startedAt": "2026-09-26T04:59:19.505Z",
+ "group": "learning",
+ "items": [
+  {
+   "name": "📖 StoryForge Create illustrated stories with AI writing tools",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "SUMMARY Open project menu",
+   "dialogs": [
+    {
+     "name": "StoryForge Creative Writing Studio",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🍃 PoetTree Write poems with form scaffolds, rhyme & meter analysis, AI feedback",
+   "violations": [],
+   "incomplete": [
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "BUTTON Open privacy and data controls",
+   "dialogs": [
+    {
+     "name": "PoetTree",
+     "modal": "true"
+    }
+   ]
+  },
+  {
+   "name": "🎛️ Open Groove Studio Make beats, shape synths, and connect patterns to real composition and notation.",
+   "violations": [],
+   "incomplete": [
+    "aria-prohibited-attr",
+    "color-contrast"
+   ],
+   "overflow": false,
+   "focus": "DIV MILESTONE 0\nOpen Groove Studio\nMusic lea",
+   "dialogs": [
+    {
+     "name": "Open Groove Studio",
+     "modal": "true"
+    }
+   ]
+  }
+ ],
+ "names": [
+  "☆ Favorites",
+  "Learning Web: Explore",
+  "Research Hub",
+  "STEAM Lab",
+  "Reading Library",
+  "Collapse section",
+  "💡 Lumen Study Ask questions, inspect exact supporting passages, and save source-grounded notes.",
+  "📚 Reading Library Browse picture books, longer reads, textbooks, and primary sources",
+  "🔬 STEAM Lab 100+ interactive math & science explorations",
+  "📃 Text Inquiry Studio Inspect frequency and concordance, then test an interpretation against exceptions and context.",
+  "A/文 Lingua Practice Build vocabulary, practice speaking, and rehearse real conversations",
+  "🎯 Test Prep Hub Accessible practice packs for licensure, vocational, and professional exams",
+  "💖 SEL Hub Social-emotional learning for self-awareness & growth",
+  "⏱️ Screen Coach Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work.",
+  "📑 Research Hub Scientific Inquiry, Engineering Design, and Humanities research — one inquiry journal, three lanes.",
+  "🕸️ Learning Web: Explore Explore standards, concepts, lessons, evidence, and word connections in one accessible map.",
+  "🕰️ Timeline Studio Turn readings into interactive timelines, or build one by hand.",
+  "📖 StoryForge Create illustrated stories with AI writing tools",
+  "🎭 LitLab Bring stories to life with character voices & literary analysis",
+  "🍃 PoetTree Write poems with form scaffolds, rhyme & meter analysis, AI feedback",
+  "🎛️ Open Groove Studio Make beats, shape synths, and connect patterns to real composition and notation.",
+  "🌿 AlloHaven A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt."
+ ],
+ "errors": []
+}

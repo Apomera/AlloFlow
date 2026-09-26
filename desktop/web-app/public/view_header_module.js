@@ -914,7 +914,6 @@ function HeaderBar(props) {
       "button",
       {
         type: "button",
-        "aria-label": t("common.toggle_focus_mode"),
         onClick: handleToggleFocusMode,
         "data-help-key": "header_settings_text_bionic",
         "aria-pressed": focusMode,
@@ -1448,7 +1447,6 @@ function HeaderBar(props) {
         "button",
         {
           type: "button",
-          "aria-label": t("common.export_as_slides"),
           onClick: () => openExportPreview("slides"),
           disabled: !pptxLoaded,
           title: t("header.export_slides_tooltip") || "Opens Document Builder in Slides mode",
@@ -1585,7 +1583,7 @@ function HeaderBar(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.connect"),
+      "aria-label": activeSessionCode ? t("header.live_session_code", { code: activeSessionCode }) || `Live: ${activeSessionCode}` : t("session.start") || "Start session",
       onClick: () => activeSessionCode ? setShowSessionModal(true) : startClassSession(),
       className: `px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${activeSessionCode ? "bg-green-700 text-white border-green-400 animate-pulse" : "bg-white/10 hover:bg-white/20 text-white border-white/10 hover:border-white/30"}`,
       "data-help-key": "header_session_start",

@@ -8504,7 +8504,7 @@ function PdfAuditView(props) {
                     </details>
                     {/* Tier 4: Resume previous batch banner */}
                     {!pdfBatchQueue.length && !pdfBatchProcessing && !batchActionBusy && savedBatchLookupStatus !== 'ready' && savedBatchLookupStatus !== 'idle' && (
-                      <div className="pdf-workspace-recovery" aria-label="Saved batch lookup">
+                      <div role="group" className="pdf-workspace-recovery" aria-label="Saved batch lookup">
                         <p role="status">{savedBatchLookupStatus === 'loading' ? 'Checking for a saved batch…' : savedBatchLookupStatus === 'unavailable' ? 'Saved-batch storage is still loading.' : 'Could not check for a saved batch. Your saved files were not discarded.'}</p>
                         {savedBatchLookupStatus !== 'loading' && <button type="button" onClick={refreshSavedBatch}>Retry saved-batch lookup</button>}
                       </div>
@@ -10430,7 +10430,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 )}
                 {(!pdfFixResult || pdfAuditTab === 'original') && (
                 <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${!_auditScoreKnown || (pdfAuditResult._isWebAudit && pdfAuditResult.verificationState !== 'complete') ? 'bg-gradient-to-r from-amber-800 to-orange-800' : pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-800 to-emerald-800' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-800 to-orange-800' : 'bg-gradient-to-r from-red-800 to-rose-800'} text-white rounded-t-2xl`}>
-                  <div className="text-5xl font-black mb-1" aria-label={_auditScoreKnown ? `Score: ${pdfAuditResult.score} out of 100` : 'Score unavailable because audit coverage is incomplete'}>{_auditScoreKnown ? pdfAuditResult.score : '?'}{_auditScoreKnown && <span className="text-2xl opacity-80" aria-hidden="true">/100</span>}</div>
+                  <div role="group" className="text-5xl font-black mb-1" aria-label={_auditScoreKnown ? `Score: ${pdfAuditResult.score} out of 100` : 'Score unavailable because audit coverage is incomplete'}>{_auditScoreKnown ? pdfAuditResult.score : '?'}{_auditScoreKnown && <span className="text-2xl opacity-80" aria-hidden="true">/100</span>}</div>
                   <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._isWebAudit ? 'Static HTML Source Evidence Score' : pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._isWebAudit ? <span className="text-xs font-normal">(available engine evidence; lower score governs)</span> : pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-80">{pdfAuditResult.hasSearchableText === false ? '(AI rubric — automated checks N/A, no text layer)' : '(lower of AI & automated)'}</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-80">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-80">(AI Rubric)</span>}</h3>
                   {pdfAuditResult._isWebAudit && <p className="text-xs mt-1 bg-black/20 inline-block px-2 py-0.5 rounded-full font-bold">Verification: {pdfAuditResult.verificationState || 'partial'} · AI + axe-core + IBM Equal Access</p>}
                   {!_auditScoreKnown && <p className="text-xs mt-1 bg-black/20 inline-block px-3 py-1 rounded-full font-bold">Coverage incomplete - no numeric baseline was assigned</p>}
@@ -10549,7 +10549,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 </div>
                 )}
 
-                <div className="p-5 space-y-4" aria-labelledby="pdf-audit-title">
+                <div role="group" className="p-5 space-y-4" aria-labelledby="pdf-audit-title">
                   {(!pdfFixResult || pdfAuditTab === 'original') && (<>
                   {/* Document info */}
                   <div className="flex gap-2 flex-wrap" role="list" aria-label={t('pdf_audit.doc_props.aria') || 'Document properties'}>
@@ -11759,7 +11759,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     {isWorking && <span className="ml-auto text-indigo-600 font-bold">{trace?.label || 'Fixing...'}</span>}
                                     {isDeferred && <span className="text-amber-700 font-bold">AI deferred - retry verification</span>}
                                     {showAgentTrace && trace?.history?.length > 0 && (
-                                      <div className="basis-full mt-1 flex flex-wrap gap-1" aria-label={'Agent trace for section ' + ((chunk.index || ci) + 1)}>
+                                      <div role="group" className="basis-full mt-1 flex flex-wrap gap-1" aria-label={'Agent trace for section ' + ((chunk.index || ci) + 1)}>
                                         {trace.history.map((item, ti) => <span key={ti} className={'px-1.5 py-0.5 rounded border ' + (item.phase === 'accepted' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' : item.phase === 'fallback' ? 'bg-amber-100 border-amber-200 text-amber-800' : 'bg-white border-indigo-200 text-indigo-700')}>{item.label}</span>)}
                                       </div>
                                     )}
@@ -13796,7 +13796,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-600' : (blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}
                             title={_aiIncomplete ? (t('pdf_audit.score.after_incomplete_title') || 'No verified score yet — the AI semantic audit was throttled and did not finish. Re-run for a full score. The structural-only number is shown below.') : undefined}>
                             {_aiIncomplete
-                              ? (<span aria-label={t('pdf_audit.score.after_incomplete_aria') || 'No verified score yet — re-run for a full score'}>{'—'}</span>)
+                              ? (<span role="img" aria-label={t('pdf_audit.score.after_incomplete_aria') || 'No verified score yet — re-run for a full score'}>{'—'}</span>)
                               : (<>{afterDisplay}<span className="text-sm opacity-60">/100</span></>)}
                           </div>
                           <div className="text-[11px] font-bold text-slate-600 uppercase">After</div>
@@ -16968,7 +16968,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         )}
                         {agentActivityLog.length > 0 && (
                           <div>
-                            <div className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-atomic="true" aria-label={t('pdf_audit.expert.log_aria') || 'Agent activity log'}>
+                            <div role="log" className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-atomic="true" aria-label={t('pdf_audit.expert.log_aria') || 'Agent activity log'}>
                               {(agentLogFullView ? agentActivityLog : agentActivityLog.slice(-6)).map((entry, i) => (
                                 <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
                                   <span className="text-slate-600 shrink-0">{entry.time}</span>

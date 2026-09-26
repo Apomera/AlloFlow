@@ -1282,10 +1282,19 @@ function HistoryPanel(props) {
                                         <div className="p-1.5 rounded-md bg-emerald-50 text-emerald-700 shrink-0">
                                             🔬
                                         </div>
-                                        <div className="min-w-0 flex-grow">
-                                            <div className="text-sm font-bold text-slate-800 truncate">{st.name}</div>
-                                            <div className="text-xs text-slate-500">{st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}</div>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setActiveStation(st);
+                                                setShowStemLab(true);
+                                                setStemLabTab && setStemLabTab('explore');
+                                            }}
+                                            className="min-w-0 flex-grow rounded-lg text-left"
+                                        >
+                                            <span className="block text-sm font-bold text-slate-800 truncate">{st.name}</span>
+                                            <span className="block text-xs text-slate-600">{st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}</span>
+                                        </button>
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -1336,10 +1345,19 @@ function HistoryPanel(props) {
                                         <div className="p-1.5 rounded-md bg-pink-50 text-pink-700 shrink-0">
                                             💖
                                         </div>
-                                        <div className="min-w-0 flex-grow">
-                                            <div className="text-sm font-bold text-slate-800 truncate">{st.name}</div>
-                                            <div className="text-xs text-slate-500">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</div>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setActiveSelStation(st);
+                                                setShowSelHub(true);
+                                                setSelHubTab && setSelHubTab('explore');
+                                            }}
+                                            className="min-w-0 flex-grow rounded-lg text-left"
+                                        >
+                                            <span className="block text-sm font-bold text-slate-800 truncate">{st.name}</span>
+                                            <span className="block text-xs text-slate-600">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</span>
+                                        </button>
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -1582,7 +1600,7 @@ function HistoryPanel(props) {
                                         document.getElementById('history-actions-trigger-' + itemInstanceId)?.focus();
                                     }
                                 }}>
-                                <button type="button" aria-label={t('common.edit')} data-help-key="history_rename_btn"
+                                <button type="button" data-help-key="history_rename_btn"
                                     onClick={event => handleStartEdit(event, item)}
                                     className="min-h-11 rounded-lg px-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50">
                                     {t('actions.rename') || 'Rename'}
@@ -1706,7 +1724,6 @@ function HistoryPanel(props) {
                                     </button>
                                 )}
                                 <button
-                                    aria-label={t('common.delete')}
                                     onClick={(e) => handleDeleteHistoryItem(e, itemPublicId, item)}
                                     className="min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1"
                                     title={t('history.tooltips.remove_item')}

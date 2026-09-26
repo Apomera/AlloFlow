@@ -7006,7 +7006,7 @@ const d = labToolData.rocks || {};
                   React.createElement("p", { className: "text-xs text-slate-700 leading-snug mt-0.5 mb-2" }, __alloT('stem.rocks.cyc_body', "It is a network, not a one-way loop. What happens next depends on where a rock ends up: at the surface, deep in a mountain belt, or deep enough to melt. Pick a family to see its rocks.")),
                   React.createElement("div", { className: "flex flex-wrap gap-3 items-center" },
                     React.createElement("div", { style: { flex: '1 1 300px', maxWidth: 440 } },
-                      h('svg', { viewBox: '0 0 420 240', width: '100%', role: 'img', 'aria-label': __alloT('stem.rocks.cyc_svg_aria', 'Igneous, metamorphic and sedimentary rock, with arrows both ways between every pair.'), style: { display: 'block' } },
+                      h('svg', { viewBox: '0 0 420 240', width: '100%', role: 'group', 'aria-label': __alloT('stem.rocks.cyc_svg_aria', 'Igneous, metamorphic and sedimentary rock, with arrows both ways between every pair.'), style: { display: 'block' } },
                         h('style', null, '.rk-cyc-btn{outline:none}.rk-cyc-btn:focus-visible .rk-cyc-halo{stroke:#0f172a;stroke-opacity:0.5}@media (forced-colors: active){.rk-cyc-btn:focus-visible{outline:2px solid CanvasText}}'),
                         h('defs', null, FAM.map(function (to) {
                           return h('marker', { key: to, id: 'rk-cyc-head-' + to, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' },

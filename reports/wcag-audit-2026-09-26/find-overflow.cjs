@@ -1,0 +1,10 @@
+// Lists the elements whose right edge passes the viewport at 320px.
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http');const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'../..');
+(async()=>{const server=http.createServer((req,res)=>{let p;try{p=decodeURIComponent(new URL(req.url,'http://x').pathname).replace(/^\/+/,'');}catch{return res.writeHead(400).end();}const f=path.resolve(root,p);if(!f.startsWith(root)||!fs.existsSync(f)||fs.statSync(f).isDirectory())return res.writeHead(404).end();res.writeHead(200,{'content-type':{'.html':'text/html','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml'}[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(res);});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
+const b=await chromium.launch({executablePath:fs.existsSync('/opt/pw-browsers/chromium')?'/opt/pw-browsers/chromium':undefined});
+for(const rel of process.argv.slice(2)){const ctx=await b.newContext({viewport:{width:320,height:800}});await ctx.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());const p=await ctx.newPage();await p.goto(origin+'/'+rel,{waitUntil:'load'}).catch(()=>{});await p.waitForTimeout(400);
+const o=await p.evaluate(()=>{const vw=document.documentElement.clientWidth;const out=[];for(const e of document.querySelectorAll('body *')){const r=e.getBoundingClientRect();if(r.width&&r.right>vw+1){let inside=false;for(let a=e.parentElement;a&&a!==document.body;a=a.parentElement){const cs=getComputedStyle(a);if(/(auto|scroll|hidden|clip)/.test(cs.overflowX)){inside=true;break;}}if(!inside)out.push({tag:e.tagName.toLowerCase(),cls:String(e.className).slice(0,60),id:e.id,right:Math.round(r.right),width:Math.round(r.width),text:(e.innerText||'').slice(0,50).replace(/\n/g,' ')});}}return {sw:document.documentElement.scrollWidth,vw,items:out.slice(0,12)};});
+console.log('##',rel,o.sw,'/',o.vw);for(const i of o.items)console.log('  ',JSON.stringify(i));await ctx.close();}
+await b.close();server.close();})();

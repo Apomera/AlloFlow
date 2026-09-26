@@ -6684,10 +6684,10 @@ window.StemLab = window.StemLab || {
               else if (range > 30) state = 'medium';
               else state = 'short';
               var sm = {
-                optimal: { label: __alloT('stem.throwlab.optimal_trajectory', '🎯 Optimal trajectory'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.throwlab.45_near_no_spin_max_distance', '45° near no-spin → max distance.') },
-                long:    { label: __alloT('stem.throwlab.long_throw', '🟡 Long throw'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.throwlab.high_range_but_off_axis', 'High range but off-axis.') },
-                medium:  { label: __alloT('stem.throwlab.medium_throw', '🟠 Medium throw'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.throwlab.acceptable_range', 'Acceptable range.') },
-                short:   { label: __alloT('stem.throwlab.short_throw', '🔴 Short throw'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.throwlab.sub_optimal_angle_or_low_velocity', 'Sub-optimal angle or low velocity.') }
+                optimal: { label: __alloT('stem.throwlab.optimal_trajectory', '🎯 Optimal trajectory'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.throwlab.45_near_no_spin_max_distance', '45° near no-spin → max distance.') },
+                long:    { label: __alloT('stem.throwlab.long_throw', '🟡 Long throw'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.throwlab.high_range_but_off_axis', 'High range but off-axis.') },
+                medium:  { label: __alloT('stem.throwlab.medium_throw', '🟠 Medium throw'), color: '#c2410c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.throwlab.acceptable_range', 'Acceptable range.') },
+                short:   { label: __alloT('stem.throwlab.short_throw', '🔴 Short throw'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.throwlab.sub_optimal_angle_or_low_velocity', 'Sub-optimal angle or low velocity.') }
               }[state];
               return React.createElement('details', { className: 'mt-3 p-3 rounded-xl bg-slate-800 text-slate-100 border border-cyan-700 space-y-2', 'data-throwlab-inquiry-panel': 'true' },
                 React.createElement('summary', { className: 'text-sm font-black text-cyan-300', style: { cursor: 'pointer' } }, __alloT('stem.throwlab.throw_angle_discovery_summary', 'Throw angle discovery')),

@@ -103,6 +103,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       var _ecoBg = function(h){ return _ecoHC ? (_eco_BGH[h]||h) : (_ecoL ? (_eco_BGL[h]||h) : h); };
       var _ecoFg = function(h){ return _ecoHC ? (_eco_FGH[h]||h) : (_ecoL ? (_eco_FGL[h]||h) : h); };
       var _ecoBd = function(h){ return _ecoHC ? (_eco_BDH[h]||h) : (_ecoL ? (_eco_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _ecoInk = function(c){ return _ecoHC || _ecoL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -446,12 +448,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             return h('div', { key: sys.id, style: { padding: 12, borderRadius: 10, background: _ecoBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + sys.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 22 } }, sys.icon),
-                h('div', { style: { fontSize: 13, fontWeight: 800, color: sys.color, flex: 1 } }, sys.label),
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: _ecoInk(sys.color), flex: 1 } }, sys.label),
                 h('button', { onClick: function() { startAdd(sys.id); }, 'aria-label': 'Add a connection in ' + sys.label,
-                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid ' + sys.color, background: 'transparent', color: sys.color, cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '+ Add')
+                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid ' + sys.color, background: 'transparent', color: _ecoInk(sys.color), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '+ Add')
               ),
               sysNodes.length === 0
-                ? h('div', { style: { fontSize: 11, color: _ecoFg('#64748b'), fontStyle: 'italic', paddingLeft: 30 } }, '(nothing in this system yet)')
+                ? h('div', { style: { fontSize: 11, color: _ecoFg('#94a3b8'), fontStyle: 'italic', paddingLeft: 30 } }, '(nothing in this system yet)')
                 : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, paddingLeft: 30 } },
                     sysNodes.map(function(n) {
                       var strengthLbl = (STRENGTHS.find(function(s) { return s.id === n.strength; }) || {}).label || '';
@@ -530,7 +532,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
                   return h('span', { key: n.id }, (sys ? sys.icon + ' ' : '') + n.label + (i < list.length - 1 ? '  ·  ' : ''));
                 })
               )
-            : h('div', { style: { fontSize: 11, color: _ecoFg('#64748b'), fontStyle: 'italic', marginBottom: 6 } }, '(none)'),
+            : h('div', { style: { fontSize: 11, color: _ecoFg('#94a3b8'), fontStyle: 'italic', marginBottom: 6 } }, '(none)'),
           h('div', { style: { fontSize: 11.5, color: _ecoFg('#94a3b8'), lineHeight: 1.55, fontStyle: 'italic' } }, blurb)
         );
       }
@@ -591,7 +593,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _ecoFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _ecoFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Ecomap format from Hartman, A. (1978), "Diagrammatic Assessment of Family Relationships," Social Casework. ',
               'Created with AlloFlow SEL Hub.'
             )

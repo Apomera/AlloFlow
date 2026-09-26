@@ -64,7 +64,7 @@ describe('Additional glossary refinements', () => {
     vi.useFakeTimers(); const onScoreUpdate = vi.fn();
     const {container} = mount('WordScrambleGame', {data: [data[0]], onScoreUpdate});
     click(container.querySelector('[aria-label="games.scramble.get_hint_aria"]'));
-    input(container.querySelector('input'), 'Planet'); click(container.querySelector('[aria-label="common.check"]'));
+    input(container.querySelector('input'), 'Planet'); click([...container.querySelectorAll('button')].find(b => b.textContent.includes('games.scramble.submit')));
     act(() => vi.advanceTimersByTime(1100));
     expect(onScoreUpdate).toHaveBeenCalledExactlyOnceWith(7, 'Word Scramble Complete');
   });
@@ -72,12 +72,12 @@ describe('Additional glossary refinements', () => {
     vi.useFakeTimers(); const onScoreUpdate = vi.fn();
     const {container} = mount('WordScrambleGame', {data: data.slice(0, 2), onScoreUpdate});
     const first = data.find(item => container.textContent.includes(item.def));
-    input(container.querySelector('input'), first.term); click(container.querySelector('[aria-label="common.check"]'));
+    input(container.querySelector('input'), first.term); click([...container.querySelectorAll('button')].find(b => b.textContent.includes('games.scramble.submit')));
     act(() => vi.advanceTimersByTime(1100));
     click(container.querySelector('[aria-label="games.scramble.get_hint_aria"]'));
     expect(container.textContent).toContain('flashcards.score_label 10');
     input(container.querySelector('input'), data.find(item => item.term !== first.term).term);
-    click(container.querySelector('[aria-label="common.check"]')); act(() => vi.advanceTimersByTime(1100));
+    click([...container.querySelectorAll('button')].find(b => b.textContent.includes('games.scramble.submit'))); act(() => vi.advanceTimersByTime(1100));
     expect(onScoreUpdate).toHaveBeenCalledExactlyOnceWith(17, 'Word Scramble Complete');
   });
 });

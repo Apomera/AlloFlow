@@ -674,6 +674,8 @@ window.SelHub = window.SelHub || {
 
       // Colors
       var EMERALD = '#059669';              // accent FILL — semantic, constant across themes
+      // EMERALD fails 4.5:1 as a white-text fill and as small text on the dark shell (1.4.3)
+      var EMERALD_FILL = _gmHC ? EMERALD : '#047857', EMERALD_INK = _gmHC ? EMERALD : (_gmDark ? '#34d399' : '#047857');
       var EMERALD_LIGHT = _gmC('#ecfdf5');  // tinted surface — themes its 5 background usages
       var EMERALD_DARK = _gmC('#064e3b');   // tinted text — themes its 12 color usages
       var AMBER = '#d97706';                // accent text — readable on light + dark, kept
@@ -800,7 +802,7 @@ window.SelHub = window.SelHub || {
                   left: (20 + Math.sin(i * 1.2) * 40 + 50) + '%',
                   top: (10 + Math.cos(i * 0.8) * 30 + 20) + '%',
                   width: (4 + i % 3 * 2) + 'px', height: (4 + i % 3 * 2) + 'px',
-                  borderRadius: '50%', background: EMERALD,
+                  borderRadius: '50%', background: EMERALD_FILL,
                   animation: 'selSparkle ' + (1.5 + i * 0.3) + 's ease-in-out infinite',
                   animationDelay: (i * 0.2) + 's'
                 }});
@@ -831,7 +833,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: '36px', background: 'rgba(255,255,255,0.6)', borderRadius: '14px', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' } }, currentFact.emoji),
                 h('div', null,
                   h('h4', { style: { fontSize: '17px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 2px' } }, currentFact.title),
-                  h('div', { style: { fontSize: '10px', color: EMERALD, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' } }, 'Idea ' + (brainFactIdx % facts.length + 1) + ' of ' + facts.length)
+                  h('div', { style: { fontSize: '10px', color: EMERALD_INK, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' } }, 'Idea ' + (brainFactIdx % facts.length + 1) + ' of ' + facts.length)
                 )
               ),
               h('p', { style: { fontSize: '14px', lineHeight: 1.8, color: _gmC('#1f2937'), margin: 0 } }, currentFact.text)
@@ -1022,7 +1024,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: '36px' } }, currentStory.emoji),
               h('div', null,
                 h('h4', { style: { fontSize: '16px', fontWeight: 800, color: _gmC('#1f2937'), margin: 0 } }, currentStory.name),
-                h('div', { style: { fontSize: '11px', color: EMERALD, fontWeight: 600 } }, currentStory.area)
+                h('div', { style: { fontSize: '11px', color: EMERALD_INK, fontWeight: 600 } }, currentStory.area)
               )
             ),
             h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: _gmC('#374151'), margin: '0 0 14px' } }, currentStory.story),
@@ -1053,7 +1055,7 @@ window.SelHub = window.SelHub || {
                   if (awardXP) awardXP(20, 'Read all Yet Stories!');
                 }
               },
-              style: { padding: '8px 16px', background: EMERALD, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' }
+              style: { padding: '8px 16px', background: EMERALD_FILL, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' }
             }, 'Next Story \u2192')
           )
         );
@@ -1087,7 +1089,7 @@ window.SelHub = window.SelHub || {
                   }
                 },
                 placeholder: band === 'elementary' ? 'e.g. do long division' : band === 'middle' ? 'e.g. write a persuasive essay' : 'e.g. solve differential equations',
-                style: { width: '100%', border: '2px solid #a7f3d0', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+                style: { background: _gmC('#fff'), color: _gmC('#1f2937'), width: '100%', border: '2px solid #a7f3d0', borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
               })
             ),
             h('button', {
@@ -1099,7 +1101,7 @@ window.SelHub = window.SelHub || {
                 if (awardXP) awardXP(5, 'Set a growth goal!');
               },
               disabled: !newGoalText.trim(),
-              style: { padding: '10px 16px', background: newGoalText.trim() ? EMERALD : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: newGoalText.trim() ? 'pointer' : 'not-allowed', fontSize: '13px', alignSelf: 'flex-end' }
+              style: { padding: '10px 16px', background: newGoalText.trim() ? EMERALD_FILL : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: newGoalText.trim() ? 'pointer' : 'not-allowed', fontSize: '13px', alignSelf: 'flex-end' }
             }, '\uD83C\uDF31 Plant Goal')
           ),
           // Goal list
@@ -1119,7 +1121,7 @@ window.SelHub = window.SelHub || {
                     h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
                       h('div', null,
                         h('span', { style: { fontSize: '14px', fontWeight: 700, color: _gmC('#1f2937') } }, 'I can\u2019t '),
-                        h('span', { style: { fontSize: '14px', fontWeight: 700, color: EMERALD, textDecoration: 'underline', textDecorationColor: _gmC('#a7f3d0') } }, goal.text),
+                        h('span', { style: { fontSize: '14px', fontWeight: 700, color: EMERALD_INK, textDecoration: 'underline', textDecorationColor: _gmC('#a7f3d0') } }, goal.text),
                         h('span', { style: { fontSize: '14px', fontWeight: 700, color: _gmC('#1f2937') } }, ' '),
                         h('span', { style: { fontSize: '14px', fontWeight: 800, color: AMBER, background: _gmC('#fef3c7'), padding: '1px 6px', borderRadius: '4px' } }, 'YET')
                       ),
@@ -1209,7 +1211,7 @@ window.SelHub = window.SelHub || {
                   border: '1px solid ' + (isUser ? '#bfdbfe' : _gmC('#a7f3d0')),
                   fontSize: '13px', lineHeight: 1.6, color: _gmC('#1f2937')
                 } },
-                  !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: EMERALD, marginBottom: '4px' } }, '\uD83C\uDF31 Growth Coach'),
+                  !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: EMERALD_INK, marginBottom: '4px' } }, '\uD83C\uDF31 Growth Coach'),
                   msg.text
                 )
               );
@@ -1323,7 +1325,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: coachLoading || !coachInput.trim() || !callGemini,
-              style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? EMERALD : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
+              style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? EMERALD_FILL : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, coachLoading ? '\u23F3' : '\u2728 Send')
           ),
           // Starter prompts
@@ -1420,7 +1422,7 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: _gmC('#374151'), margin: 0, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap' } }, letter.text),
                   // Growth reflection prompt (shows after 7+ days)
                   daysAgo >= 7 && h('div', { style: { marginTop: '12px', background: EMERALD_LIGHT, borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid ' + EMERALD } },
-                    h('div', { style: { fontSize: '11px', fontWeight: 700, color: EMERALD, marginBottom: '4px' } }, '\uD83C\uDF31 Reflection moment'),
+                    h('div', { style: { fontSize: '11px', fontWeight: 700, color: EMERALD_INK, marginBottom: '4px' } }, '\uD83C\uDF31 Reflection moment'),
                     h('p', { style: { fontSize: '12px', color: _gmC('#374151'), margin: 0 } },
                       'You wrote this ' + daysAgo + ' days ago. Has anything changed? What would past-you think about where you are now?')
                   )
@@ -1478,7 +1480,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontSize: '14px', fontWeight: 600, color: _gmC('#7f1d1d'), margin: 0, fontStyle: 'italic' } }, '"' + currentTR.fixed + '"')
             ),
             h('div', { style: { background: EMERALD_LIGHT, border: '2px solid #6ee7b7', borderRadius: '12px', padding: '14px', marginBottom: '8px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: EMERALD, textTransform: 'uppercase', marginBottom: '4px' } }, 'Growth mindset reframe'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: EMERALD_INK, textTransform: 'uppercase', marginBottom: '4px' } }, 'Growth mindset reframe'),
               h('p', { style: { fontSize: '14px', fontWeight: 600, color: EMERALD_DARK, margin: 0 } }, '"' + currentTR.growth + '"')
             ),
             h('div', { style: { background: _gmC('#eff6ff'), borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid #3b82f6', marginBottom: '10px' } },
@@ -1493,7 +1495,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '11px', color: _gmC('#94a3b8') } }, (tReframeIdx % TEACHER_REFRAMES.length + 1) + ' / ' + TEACHER_REFRAMES.length),
               h('button', {
                 onClick: function() { upd('tReframeIdx', (tReframeIdx + 1) % TEACHER_REFRAMES.length); },
-                style: { padding: '6px 14px', background: EMERALD, border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#fff' }
+                style: { padding: '6px 14px', background: EMERALD_FILL, border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#fff' }
               }, 'Next \u2192')
             )
           ),
@@ -1509,7 +1511,7 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { fontSize: '12px', color: _gmC('#94a3b8'), fontStyle: 'italic' } }, '"' + fp.instead + '"')
                     ),
                     h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '4px' } },
-                      h('span', { style: { fontSize: '10px', background: EMERALD_LIGHT, color: EMERALD, padding: '1px 6px', borderRadius: '4px', fontWeight: 600 } }, 'Try'),
+                      h('span', { style: { fontSize: '10px', background: EMERALD_LIGHT, color: EMERALD_INK, padding: '1px 6px', borderRadius: '4px', fontWeight: 600 } }, 'Try'),
                       h('span', { style: { fontSize: '12px', color: _gmC('#1f2937'), fontWeight: 600 } }, '"' + fp.try + '"')
                     ),
                     h('p', { style: { fontSize: '11px', color: _gmC('#94a3b8'), margin: '2px 0 0', lineHeight: 1.4 } }, fp.why)
@@ -1531,7 +1533,7 @@ window.SelHub = window.SelHub || {
             h('span', null, '\uD83C\uDF1F ' + totalStories + ' stories'),
             h('span', null, '\uD83C\uDF31 ' + growthGoals.length + ' goals'),
             savedLetters.length > 0 && h('span', null, '\u2709\uFE0F ' + savedLetters.length + ' letters'),
-            (totalFacts + totalReframes + totalStories) >= 10 && h('span', { style: { color: EMERALD, fontWeight: 700 } }, '\u2728 Growth mindset activated!')
+            (totalFacts + totalReframes + totalStories) >= 10 && h('span', { style: { color: EMERALD_INK, fontWeight: 700 } }, '\u2728 Growth mindset activated!')
           )
         : null;
 

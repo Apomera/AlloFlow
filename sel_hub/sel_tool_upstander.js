@@ -8056,14 +8056,14 @@ var EXTENDED_REFLECTION_PROMPTS = [
                 onChange: function(e) { upd('rhSituation', e.target.value); },
                 placeholder: 'Example: My friend group is making fun of someone behind their back. I want to say something but I don’t want to start a fight.',
                 rows: 3,
-                style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
               }),
               h('label', { htmlFor: 'us-rh-att', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Your draft — what you would say out loud'),
               h('textarea', { id: 'us-rh-att', value: rhAttempt,
                 onChange: function(e) { upd('rhAttempt', e.target.value); },
                 placeholder: 'Type the exact words you would actually say...',
                 rows: 3,
-                style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
               }),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', {
@@ -8461,7 +8461,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                       onChange: function(e) { upd('apHurt', e.target.value); },
                       placeholder: 'Example: My friend J — I told the group their secret as a joke and they heard about it.',
                       rows: 2,
-                      style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                      style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
                     }),
                     h('label', { htmlFor: 'us-ap-draft', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                       'Optional apology draft for feedback'),
@@ -8469,7 +8469,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                       onChange: function(e) { upd('apDraft', e.target.value); },
                       placeholder: 'Type your apology as if you were saying it out loud...',
                       rows: 4,
-                      style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                      style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
                     }),
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                       h('button', {
@@ -9119,7 +9119,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   h('input', { type: 'text', value: newAdultName,
                     onChange: function(e) { upd('newAdultName', e.target.value); },
                     placeholder: 'Ms. Rodriguez',
-                    style: { marginTop: 4, padding: '8px 10px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: _upC('#0f172a') }
+                    style: { background: _upC('#fff'), marginTop: 4, padding: '8px 10px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: _upC('#0f172a') }
                   })
                 ),
                 h('label', { style: { flex: '1 1 140px', display: 'flex', flexDirection: 'column', fontSize: 11, color: _upC('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } },
@@ -9127,7 +9127,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   h('input', { type: 'text', value: newAdultRole,
                     onChange: function(e) { upd('newAdultRole', e.target.value); },
                     placeholder: 'School counselor',
-                    style: { marginTop: 4, padding: '8px 10px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: _upC('#0f172a') }
+                    style: { background: _upC('#fff'), marginTop: 4, padding: '8px 10px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: _upC('#0f172a') }
                   })
                 ),
                 h('button', {
@@ -9160,19 +9160,19 @@ var EXTENDED_REFLECTION_PROMPTS = [
               h('textarea', { id: 'us-wl-saw', value: wlSaw, onChange: function(e) { upd('wlSaw', e.target.value); },
                 placeholder: 'A short description of what happened...',
                 rows: 2,
-                style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
               }),
               h('label', { htmlFor: 'us-wl-did', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What I did \u2014 or did not do'),
               h('textarea', { id: 'us-wl-did', value: wlDid, onChange: function(e) { upd('wlDid', e.target.value); },
                 placeholder: 'Honesty over performance. "I froze" is a valid answer.',
                 rows: 2,
-                style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
               }),
               h('label', { htmlFor: 'us-wl-next', style: { display: 'block', fontSize: 11, fontWeight: 700, color: _upC('#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What I would do next time'),
               h('textarea', { id: 'us-wl-next', value: wlNext, onChange: function(e) { upd('wlNext', e.target.value); },
                 placeholder: 'One specific thing. Even small counts.',
                 rows: 2,
-                style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
               }),
               h('button', {
                 disabled: !wlSaw.trim() && !wlDid.trim() && !wlNext.trim(),
@@ -9339,17 +9339,15 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   var earnedInfo = earnedBadges[bid] || {};
                   return h('div', { key: bid, className: earned ? 'us-card us-pop' : 'us-card', style: {
                     padding: 12, borderRadius: 12,
-                    border: '2px solid ' + (earned ? b.color : _upC('#e5e7eb')),
+                    border: '2px ' + (earned ? 'solid ' : 'dashed ') + (earned ? b.color : _upC('#94a3b8')),
                     background: earned ? _upC('#fff') : _upC('#f8fafc'),
-                    opacity: earned ? 1 : 0.55,
-                    textAlign: 'center',
-                    filter: earned ? 'none' : 'grayscale(40%)'
+                    textAlign: 'center'
                   } },
                     h('div', { 'aria-hidden': 'true', style: {
                       width: 44, height: 44, borderRadius: '50%',
                       background: earned ? 'linear-gradient(135deg, ' + b.color + ' 0%, ' + b.color + 'cc 100%)' : _upC('#cbd5e1'),
                       color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 22, margin: '0 auto 6px',
+                      fontSize: 22, margin: '0 auto 6px', filter: earned ? 'none' : 'grayscale(1)',
                       boxShadow: earned ? '0 3px 8px ' + b.color + '44, inset 0 1px 0 rgba(255, 255, 255, 0.3)' : 'none'
                     } }, b.icon),
                     h('div', { style: { fontWeight: 700, fontSize: 12, color: earned ? b.color : _upC('#475569'), lineHeight: 1.3, marginBottom: 2 } }, b.label),
@@ -9484,7 +9482,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                 onKeyDown: function(ev) { if (ev.key === 'Enter' && coachInput.trim() && !coachLoad && callGemini) sendSafeMessage(coachInput.trim()); },
                 disabled: coachLoad || !callGemini,
                 placeholder: coachLoad ? 'Listening...' : 'Share what happened or how you feel...',
-                style: { flex: 1, border: '2px solid #bfdbfe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+                style: { background: _upC('#fff'), color: _upC('#0f172a'), flex: 1, border: '2px solid #bfdbfe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               h('button', {
                 'aria-label': coachLoad ? 'Upstander coach is responding' : 'Send message to upstander coach',
@@ -9710,7 +9708,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   onChange: function(e) { upd('genFocus', e.target.value); },
                   placeholder: 'e.g. "this is between two friends I have known since elementary school" — or leave blank',
                   rows: 2,
-                  style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                  style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
                 }),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', {
@@ -10107,7 +10105,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                       placeholder: 'What would you actually say next? Keep it short — the way you would really talk.',
                       rows: 2,
                       disabled: rpLoading,
-                      style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
+                      style: { background: _upC('#fff'), color: _upC('#0f172a'), width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
                     }),
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                       // Send turn → AI responds in character

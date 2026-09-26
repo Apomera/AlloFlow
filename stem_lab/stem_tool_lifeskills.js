@@ -7040,7 +7040,7 @@ window.StemLab = window.StemLab || {
             // Summary
             h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
               h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-700 uppercase' }, __alloT('stem.lifeskills.needs', 'Needs')), h('p', { className: 'text-sm font-bold text-blue-700' }, fmtMoney(needsTotal)), h('p', { className: 'text-[11px] ' + (budgetNeedsPct <= 50 ? 'text-emerald-700' : 'text-red-700') }, budgetNeedsPct + '% of income')),
-              h('div', { className: 'text-center p-2 rounded-xl bg-purple-50' }, h('p', { className: 'text-[11px] font-bold text-purple-500 uppercase' }, __alloT('stem.lifeskills.wants', 'Wants')), h('p', { className: 'text-sm font-bold text-purple-700' }, fmtMoney(wantsTotal)), h('p', { className: 'text-[11px] ' + (budgetWantsPct <= 30 ? 'text-emerald-700' : 'text-red-700') }, budgetWantsPct + '% of income')),
+              h('div', { className: 'text-center p-2 rounded-xl bg-purple-50' }, h('p', { className: 'text-[11px] font-bold text-purple-700 uppercase' }, __alloT('stem.lifeskills.wants', 'Wants')), h('p', { className: 'text-sm font-bold text-purple-700' }, fmtMoney(wantsTotal)), h('p', { className: 'text-[11px] ' + (budgetWantsPct <= 30 ? 'text-emerald-700' : 'text-red-700') }, budgetWantsPct + '% of income')),
               h('div', { className: 'text-center p-2 rounded-xl bg-emerald-50' }, h('p', { className: 'text-[11px] font-bold text-emerald-700 uppercase' }, __alloT('stem.lifeskills.savings', 'Savings')), h('p', { className: 'text-sm font-bold text-emerald-700' }, fmtMoney(savesTotal)), h('p', { className: 'text-[11px] ' + (budgetSavesPct >= 20 ? 'text-emerald-700' : 'text-amber-500') }, budgetSavesPct + '% of income'))
             ),
             budgetRemaining !== 0 && h('div', { className: 'text-center p-2 rounded-xl mt-2 ' + (budgetRemaining > 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200') },
@@ -7072,11 +7072,11 @@ window.StemLab = window.StemLab || {
             else if (iq.needsPct > 60) state = 'stretched';
             else state = 'balanced';
             var sm = {
-              balanced:       { label: __alloT('stem.lifeskills.balanced_budget', '\uD83D\uDFE2 Balanced budget'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.lifeskills.50_30_20_sustainable', '50/30/20 sustainable.') },
-              stretched:      { label: __alloT('stem.lifeskills.stretched_needs_60', '\uD83D\uDFE1 Stretched (needs >60%)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.lifeskills.high_fixed_costs', 'High fixed costs.') },
-              noSavings:      { label: __alloT('stem.lifeskills.no_savings_10', '\u26A0\uFE0F No savings (<10%)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.lifeskills.paycheck_to_paycheck_risk', 'Paycheck-to-paycheck risk.') },
-              overspending:   { label: __alloT('stem.lifeskills.over_allocated_110', '\uD83D\uDEA8 Over-allocated (>110%)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Debt-financed.' },
-              underAllocated: { label: __alloT('stem.lifeskills.under_allocated_90', '\uD83E\uDD14 Under-allocated (<90%)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.lifeskills.surplus_uncategorized', 'Surplus uncategorized.') }
+              balanced:       { label: __alloT('stem.lifeskills.balanced_budget', '\uD83D\uDFE2 Balanced budget'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.lifeskills.50_30_20_sustainable', '50/30/20 sustainable.') },
+              stretched:      { label: __alloT('stem.lifeskills.stretched_needs_60', '\uD83D\uDFE1 Stretched (needs >60%)'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.lifeskills.high_fixed_costs', 'High fixed costs.') },
+              noSavings:      { label: __alloT('stem.lifeskills.no_savings_10', '\u26A0\uFE0F No savings (<10%)'), color: '#c2410c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.lifeskills.paycheck_to_paycheck_risk', 'Paycheck-to-paycheck risk.') },
+              overspending:   { label: __alloT('stem.lifeskills.over_allocated_110', '\uD83D\uDEA8 Over-allocated (>110%)'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: 'Debt-financed.' },
+              underAllocated: { label: __alloT('stem.lifeskills.under_allocated_90', '\uD83E\uDD14 Under-allocated (<90%)'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.lifeskills.surplus_uncategorized', 'Surplus uncategorized.') }
             }[state];
             return h('div', { className: glassCard + ' mt-3 space-y-3' },
               h('h4', { className: 'text-sm font-bold text-emerald-700' }, __alloT('stem.lifeskills.budget_allocation_discovery', '\uD83C\uDFAF Budget allocation discovery')),
@@ -7217,7 +7217,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
               h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-700 uppercase' }, __alloT('stem.lifeskills.monthly_payment', 'Monthly Payment')), h('p', { className: 'text-lg font-bold text-blue-700' }, fmtMoney(loanResult.monthly))),
-              h('div', { className: 'text-center p-2 rounded-xl bg-red-50' }, h('p', { className: 'text-[11px] font-bold text-red-700 uppercase' }, __alloT('stem.lifeskills.total_interest', 'Total Interest')), h('p', { className: 'text-lg font-bold text-red-600' }, fmtMoney(loanResult.totalInterest))),
+              h('div', { className: 'text-center p-2 rounded-xl bg-red-50' }, h('p', { className: 'text-[11px] font-bold text-red-700 uppercase' }, __alloT('stem.lifeskills.total_interest', 'Total Interest')), h('p', { className: 'text-lg font-bold text-red-700' }, fmtMoney(loanResult.totalInterest))),
               h('div', { className: 'text-center p-2 rounded-xl bg-slate-100' }, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, __alloT('stem.lifeskills.total_paid', 'Total Paid')), h('p', { className: 'text-sm font-bold text-slate-700' }, fmtMoney(loanResult.totalPaid)))
             ),
             loanResult.totalInterest > 0 && h('div', { className: 'h-4 rounded-full overflow-hidden flex mt-2' },

@@ -1,0 +1,996 @@
+{
+ "states": {
+  "workspace": [
+   {
+    "label": "Search",
+    "visible": "Analyze Source Material",
+    "helpKey": "tool_analysis",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_analysis\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors"
+   },
+   {
+    "label": "Read",
+    "visible": "Text Adaptation",
+    "helpKey": "tool_simplified",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_simplified\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colo"
+   },
+   {
+    "label": "Toggle images",
+    "visible": "Lesson Images",
+    "helpKey": "tool_visual",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_visual\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors m"
+   },
+   {
+    "label": "Check Answer",
+    "visible": "Assess",
+    "helpKey": "tool_quiz",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_quiz\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors mo"
+   },
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "expanded": [
+   {
+    "label": "Search",
+    "visible": "Analyze Source Material",
+    "helpKey": "tool_analysis",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_analysis\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors "
+   },
+   {
+    "label": "Generate",
+    "visible": "Run Analysis",
+    "helpKey": "analysis_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"analysis_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Glossary",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Read",
+    "visible": "Text Adaptation",
+    "helpKey": "tool_simplified",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_simplified\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-color"
+   },
+   {
+    "label": "Generate",
+    "visible": "Rewrite Text",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Open Generator",
+    "helpKey": "wordsounds_open_btn",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"wordsounds_open_btn\" class=\"w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 trans"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Organizer",
+    "helpKey": "outline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"outline_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-2"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate template",
+    "helpKey": "note_taking_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"note_taking_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sla"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate anchor chart",
+    "helpKey": "anchor_chart_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"anchor_chart_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Toggle images",
+    "visible": "Lesson Images",
+    "helpKey": "tool_visual",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_visual\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Visual",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate FAQs",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Frames",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Ideas",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "History",
+    "visible": "Interview Mode",
+    "helpKey": "tool_persona",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_persona\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors m"
+   },
+   {
+    "label": "Refresh",
+    "visible": "Find Interview Candidates",
+    "helpKey": "persona_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Refresh\" data-help-key=\"persona_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group d"
+   },
+   {
+    "label": "Reorder list",
+    "visible": "Sequence Builder",
+    "helpKey": "tool_timeline",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_timeline\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Sequence",
+    "helpKey": "timeline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Filter",
+    "visible": "Concept Sort",
+    "helpKey": "tool_concept_sort",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_concept_sort\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:tran"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Activity",
+    "helpKey": "concept_sort_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"concept_sort_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Document-Based Questions",
+    "visible": "Document Analysis (DBQ)",
+    "helpKey": "tool_dbq",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Document-Based Questions\" data-help-key=\"tool_dbq\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transiti"
+   },
+   {
+    "label": "Generate DBQ",
+    "visible": "Generate DBQ Packet",
+    "helpKey": "dbq_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate DBQ\" data-help-key=\"dbq_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group "
+   },
+   {
+    "label": "Open Math Studio: create problems, assessments, and fluency practice",
+    "visible": "🧮 Math Studio: problems & assessments",
+    "helpKey": "math_open_studio",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"math_open_studio\" class=\"w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-in"
+   },
+   {
+    "label": "Generate math problems",
+    "visible": "Solve Problem",
+    "helpKey": "math_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate math problems\" data-help-key=\"math_generate_button\" disabled=\"\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 b"
+   },
+   {
+    "label": "Check Answer",
+    "visible": "Assess",
+    "helpKey": "tool_quiz",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_quiz\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors mot"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Exit Ticket",
+    "helpKey": "quiz_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"quiz_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group dis"
+   },
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "Learning Tools": [
+   {
+    "label": "Search",
+    "visible": "Analyze Source Material",
+    "helpKey": "tool_analysis",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_analysis\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors "
+   },
+   {
+    "label": "Generate",
+    "visible": "Run Analysis",
+    "helpKey": "analysis_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"analysis_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Glossary",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Read",
+    "visible": "Text Adaptation",
+    "helpKey": "tool_simplified",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_simplified\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-color"
+   },
+   {
+    "label": "Generate",
+    "visible": "Rewrite Text",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Open Generator",
+    "helpKey": "wordsounds_open_btn",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"wordsounds_open_btn\" class=\"w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 trans"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Organizer",
+    "helpKey": "outline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"outline_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-2"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate template",
+    "helpKey": "note_taking_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"note_taking_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sla"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate anchor chart",
+    "helpKey": "anchor_chart_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"anchor_chart_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Toggle images",
+    "visible": "Lesson Images",
+    "helpKey": "tool_visual",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_visual\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Visual",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate FAQs",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Frames",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Ideas",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "History",
+    "visible": "Interview Mode",
+    "helpKey": "tool_persona",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_persona\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors m"
+   },
+   {
+    "label": "Refresh",
+    "visible": "Find Interview Candidates",
+    "helpKey": "persona_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Refresh\" data-help-key=\"persona_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group d"
+   },
+   {
+    "label": "Reorder list",
+    "visible": "Sequence Builder",
+    "helpKey": "tool_timeline",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_timeline\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Sequence",
+    "helpKey": "timeline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Filter",
+    "visible": "Concept Sort",
+    "helpKey": "tool_concept_sort",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_concept_sort\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:tran"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Activity",
+    "helpKey": "concept_sort_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"concept_sort_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Document-Based Questions",
+    "visible": "Document Analysis (DBQ)",
+    "helpKey": "tool_dbq",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Document-Based Questions\" data-help-key=\"tool_dbq\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transiti"
+   },
+   {
+    "label": "Generate DBQ",
+    "visible": "Generate DBQ Packet",
+    "helpKey": "dbq_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate DBQ\" data-help-key=\"dbq_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group "
+   },
+   {
+    "label": "Open Math Studio: create problems, assessments, and fluency practice",
+    "visible": "🧮 Math Studio: problems & assessments",
+    "helpKey": "math_open_studio",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"math_open_studio\" class=\"w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-in"
+   },
+   {
+    "label": "Generate math problems",
+    "visible": "Solve Problem",
+    "helpKey": "math_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate math problems\" data-help-key=\"math_generate_button\" disabled=\"\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 b"
+   },
+   {
+    "label": "Check Answer",
+    "visible": "Assess",
+    "helpKey": "tool_quiz",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_quiz\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors mot"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Exit Ticket",
+    "helpKey": "quiz_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"quiz_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group dis"
+   },
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "Educator Tools": [
+   {
+    "label": "Search",
+    "visible": "Analyze Source Material",
+    "helpKey": "tool_analysis",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_analysis\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors "
+   },
+   {
+    "label": "Generate",
+    "visible": "Run Analysis",
+    "helpKey": "analysis_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"analysis_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Glossary",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Read",
+    "visible": "Text Adaptation",
+    "helpKey": "tool_simplified",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_simplified\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-color"
+   },
+   {
+    "label": "Generate",
+    "visible": "Rewrite Text",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Open Generator",
+    "helpKey": "wordsounds_open_btn",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"wordsounds_open_btn\" class=\"w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 trans"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Organizer",
+    "helpKey": "outline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"outline_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-2"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate template",
+    "helpKey": "note_taking_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"note_taking_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sla"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate anchor chart",
+    "helpKey": "anchor_chart_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"anchor_chart_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Toggle images",
+    "visible": "Lesson Images",
+    "helpKey": "tool_visual",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_visual\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Visual",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate FAQs",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Frames",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Ideas",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "History",
+    "visible": "Interview Mode",
+    "helpKey": "tool_persona",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_persona\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors m"
+   },
+   {
+    "label": "Refresh",
+    "visible": "Find Interview Candidates",
+    "helpKey": "persona_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Refresh\" data-help-key=\"persona_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group d"
+   },
+   {
+    "label": "Reorder list",
+    "visible": "Sequence Builder",
+    "helpKey": "tool_timeline",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_timeline\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Sequence",
+    "helpKey": "timeline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Filter",
+    "visible": "Concept Sort",
+    "helpKey": "tool_concept_sort",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_concept_sort\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:tran"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Activity",
+    "helpKey": "concept_sort_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"concept_sort_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Document-Based Questions",
+    "visible": "Document Analysis (DBQ)",
+    "helpKey": "tool_dbq",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Document-Based Questions\" data-help-key=\"tool_dbq\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transiti"
+   },
+   {
+    "label": "Generate DBQ",
+    "visible": "Generate DBQ Packet",
+    "helpKey": "dbq_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate DBQ\" data-help-key=\"dbq_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group "
+   },
+   {
+    "label": "Open Math Studio: create problems, assessments, and fluency practice",
+    "visible": "🧮 Math Studio: problems & assessments",
+    "helpKey": "math_open_studio",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"math_open_studio\" class=\"w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-in"
+   },
+   {
+    "label": "Generate math problems",
+    "visible": "Solve Problem",
+    "helpKey": "math_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate math problems\" data-help-key=\"math_generate_button\" disabled=\"\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 b"
+   },
+   {
+    "label": "Check Answer",
+    "visible": "Assess",
+    "helpKey": "tool_quiz",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_quiz\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors mot"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Exit Ticket",
+    "helpKey": "quiz_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"quiz_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group dis"
+   },
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "Teach Live": [
+   {
+    "label": "Search",
+    "visible": "Analyze Source Material",
+    "helpKey": "tool_analysis",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_analysis\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors "
+   },
+   {
+    "label": "Generate",
+    "visible": "Run Analysis",
+    "helpKey": "analysis_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"analysis_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Glossary",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Read",
+    "visible": "Text Adaptation",
+    "helpKey": "tool_simplified",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_simplified\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-color"
+   },
+   {
+    "label": "Generate",
+    "visible": "Rewrite Text",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Open Generator",
+    "helpKey": "wordsounds_open_btn",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"wordsounds_open_btn\" class=\"w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 trans"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Organizer",
+    "helpKey": "outline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"outline_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-2"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate template",
+    "helpKey": "note_taking_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"note_taking_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sla"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate anchor chart",
+    "helpKey": "anchor_chart_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"anchor_chart_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Toggle images",
+    "visible": "Lesson Images",
+    "helpKey": "tool_visual",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_visual\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Visual",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate FAQs",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Frames",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Ideas",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "History",
+    "visible": "Interview Mode",
+    "helpKey": "tool_persona",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_persona\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors m"
+   },
+   {
+    "label": "Refresh",
+    "visible": "Find Interview Candidates",
+    "helpKey": "persona_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Refresh\" data-help-key=\"persona_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group d"
+   },
+   {
+    "label": "Reorder list",
+    "visible": "Sequence Builder",
+    "helpKey": "tool_timeline",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_timeline\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Sequence",
+    "helpKey": "timeline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Filter",
+    "visible": "Concept Sort",
+    "helpKey": "tool_concept_sort",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_concept_sort\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:tran"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Activity",
+    "helpKey": "concept_sort_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"concept_sort_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Document-Based Questions",
+    "visible": "Document Analysis (DBQ)",
+    "helpKey": "tool_dbq",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Document-Based Questions\" data-help-key=\"tool_dbq\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transiti"
+   },
+   {
+    "label": "Generate DBQ",
+    "visible": "Generate DBQ Packet",
+    "helpKey": "dbq_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate DBQ\" data-help-key=\"dbq_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group "
+   },
+   {
+    "label": "Open Math Studio: create problems, assessments, and fluency practice",
+    "visible": "🧮 Math Studio: problems & assessments",
+    "helpKey": "math_open_studio",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"math_open_studio\" class=\"w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-in"
+   },
+   {
+    "label": "Generate math problems",
+    "visible": "Solve Problem",
+    "helpKey": "math_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate math problems\" data-help-key=\"math_generate_button\" disabled=\"\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 b"
+   },
+   {
+    "label": "Check Answer",
+    "visible": "Assess",
+    "helpKey": "tool_quiz",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_quiz\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors mot"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Exit Ticket",
+    "helpKey": "quiz_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"quiz_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group dis"
+   },
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ],
+  "Start & setup": [
+   {
+    "label": "Search",
+    "visible": "Analyze Source Material",
+    "helpKey": "tool_analysis",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_analysis\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors "
+   },
+   {
+    "label": "Generate",
+    "visible": "Run Analysis",
+    "helpKey": "analysis_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"analysis_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Glossary",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Read",
+    "visible": "Text Adaptation",
+    "helpKey": "tool_simplified",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_simplified\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-color"
+   },
+   {
+    "label": "Generate",
+    "visible": "Rewrite Text",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Open Generator",
+    "helpKey": "wordsounds_open_btn",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"wordsounds_open_btn\" class=\"w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 trans"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Organizer",
+    "helpKey": "outline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"outline_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-2"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate template",
+    "helpKey": "note_taking_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"note_taking_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sla"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate anchor chart",
+    "helpKey": "anchor_chart_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"anchor_chart_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Toggle images",
+    "visible": "Lesson Images",
+    "helpKey": "tool_visual",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_visual\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Visual",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate FAQs",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Frames",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Ideas",
+    "helpKey": null,
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "History",
+    "visible": "Interview Mode",
+    "helpKey": "tool_persona",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_persona\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors m"
+   },
+   {
+    "label": "Refresh",
+    "visible": "Find Interview Candidates",
+    "helpKey": "persona_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Refresh\" data-help-key=\"persona_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group d"
+   },
+   {
+    "label": "Reorder list",
+    "visible": "Sequence Builder",
+    "helpKey": "tool_timeline",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_timeline\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors mo"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Sequence",
+    "helpKey": "timeline_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left tra"
+   },
+   {
+    "label": "Filter",
+    "visible": "Concept Sort",
+    "helpKey": "tool_concept_sort",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_concept_sort\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:tran"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Activity",
+    "helpKey": "concept_sort_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"concept_sort_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-sl"
+   },
+   {
+    "label": "Document-Based Questions",
+    "visible": "Document Analysis (DBQ)",
+    "helpKey": "tool_dbq",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Document-Based Questions\" data-help-key=\"tool_dbq\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transiti"
+   },
+   {
+    "label": "Generate DBQ",
+    "visible": "Generate DBQ Packet",
+    "helpKey": "dbq_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate DBQ\" data-help-key=\"dbq_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group "
+   },
+   {
+    "label": "Open Math Studio: create problems, assessments, and fluency practice",
+    "visible": "🧮 Math Studio: problems & assessments",
+    "helpKey": "math_open_studio",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"math_open_studio\" class=\"w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-in"
+   },
+   {
+    "label": "Generate math problems",
+    "visible": "Solve Problem",
+    "helpKey": "math_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate math problems\" data-help-key=\"math_generate_button\" disabled=\"\" class=\"group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 b"
+   },
+   {
+    "label": "Check Answer",
+    "visible": "Assess",
+    "helpKey": "tool_quiz",
+    "id": "",
+    "html": "<button type=\"button\" data-help-key=\"tool_quiz\" aria-expanded=\"true\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-emerald-50 transition-colors mot"
+   },
+   {
+    "label": "Generate",
+    "visible": "Generate Exit Ticket",
+    "helpKey": "quiz_generate_button",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"quiz_generate_button\" disabled=\"\" aria-busy=\"false\" class=\"w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group dis"
+   },
+   {
+    "label": "Plan Full Pack",
+    "visible": "Plan full pack Start with a resource list you can review and edit before generation.",
+    "helpKey": "fullpack_generate",
+    "id": "",
+    "html": "<button type=\"button\" aria-label=\"Plan Full Pack\" data-help-key=\"fullpack_generate\" data-testid=\"full-pack-primary-action\" disabled=\"\" aria-busy=\"false\" class=\"group w-full p-3 bg-white rounded-2xl te"
+   }
+  ]
+ }
+}

@@ -665,6 +665,8 @@ window.SelHub = window.SelHub || {
       var _saf_FGD = {'#ef4444':'#f87171'};
       var _safFg = function(h){ return _safHC ? (_saf_FGH[h]||h) : (_safL ? (_saf_FGL[h]||h) : (_saf_FGD[h]||h)); };
       var _safBd = function(h){ return _safHC ? (_saf_BDH[h]||h) : (_safL ? (_saf_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _safSolid = function(c){ return _safHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       return (function() {
         var React = ctx.React;
         var h = React.createElement;
@@ -1232,7 +1234,7 @@ window.SelHub = window.SelHub || {
                 ? '\uD83D\uDD10 The internet can be fun AND safe \u2014 when you know the rules!'
                 : '\uD83D\uDD10 Your digital life is real life. What you do online matters.'
             ),
-            h('div', { style: { fontSize: 11, color: '#93c5fd88' } },
+            h('div', { style: { fontSize: 11, color: '#93c5fd' } },
               'Read all 8 cards and track what you already knew vs. what is new. ' + dsViewedCount + '/8 explored.')
           );
 
@@ -1357,7 +1359,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, style: { padding: '6px 0', borderBottom: i < CRISIS_RESOURCES.length - 1 ? '1px solid #991b1b' : 'none' } },
                 h('div', { style: { fontWeight: 600, fontSize: 13, color: _safFg('#fde2e2') } }, cr.icon + ' ' + cr.name),
                 h('div', { style: { fontSize: 12, color: _safFg('#fca5a5') } }, cr.contact),
-                h('div', { style: { fontSize: 11, color: '#fca5a588' } }, cr.desc)
+                h('div', { style: { fontSize: 11, color: '#fecaca' } }, cr.desc)
               );
             }),
             !crisisViewed && h('button', { 'aria-label': 'I have seen these resources',
@@ -1366,7 +1368,7 @@ window.SelHub = window.SelHub || {
                 tryAwardBadge('help_seeker');
                 if (soundEnabled) sfxResolve();
               },
-              style: { marginTop: 10, padding: '6px 14px', borderRadius: 8, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+              style: { marginTop: 10, padding: '6px 14px', borderRadius: 8, border: 'none', background: _safSolid(ACCENT), color: _safFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
             }, '\u2764\uFE0F I have seen these resources'),
             crisisViewed && h('div', { style: { marginTop: 8, fontSize: 11, color: _safFg('#fca5a5'), fontStyle: 'italic' } }, '\u2705 You have these resources. You are never alone.')
           );
@@ -1415,7 +1417,7 @@ window.SelHub = window.SelHub || {
                 // Circle of Trust badge
                 if (updated.length >= 3) tryAwardBadge('circle_trust');
               },
-              style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+              style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _safSolid(ACCENT), color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
             }, 'Add to My Circle')
           );
 
@@ -1478,7 +1480,7 @@ window.SelHub = window.SelHub || {
                 awardXP(15);
                 tryAwardBadge('boundary_builder');
               },
-              style: { marginTop: 8, padding: '8px 16px', borderRadius: 8, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+              style: { marginTop: 8, padding: '8px 16px', borderRadius: 8, border: 'none', background: _safSolid(ACCENT), color: _safFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
             }, 'Save Reflection'),
             circleSaved && h('div', { style: { marginTop: 8, fontSize: 12, color: _safFg('#4ade80') } }, '\u2705 Reflection saved')
           );
@@ -1909,7 +1911,7 @@ window.SelHub = window.SelHub || {
               isAnsweredQ && h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
                 quizIdx < totalQ - 1 && h('button', { 'aria-label': 'Next Question',
                   onClick: function() { upd({ quizIdx: quizIdx + 1, quizAnswer: null }); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                  style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: _safSolid(ACCENT), color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
                 }, 'Next Question \u25B6')
               )
             );
@@ -1929,7 +1931,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 13, color: _safFg('#cbd5e1'), marginBottom: 16, lineHeight: '1.5' } }, msg),
               h('button', { 'aria-label': 'Try Again',
                 onClick: function() { upd({ quizIdx: 0, quizAnswer: null, quizAnswered: {}, quizScore: 0, quizDone: false }); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 14, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: _safSolid(ACCENT), color: _safFg('#fff'), fontSize: 14, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Try Again'),
               h('div', {
                 style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, fontSize: 12, color: _safFg(ACCENT), fontWeight: 500, lineHeight: '1.4' }
@@ -2038,7 +2040,7 @@ window.SelHub = window.SelHub || {
               isFlagAnswered && flagIdx < totalFlags - 1 && h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
                 h('button', { 'aria-label': 'Next Card',
                   onClick: function() { upd({ flagIdx: flagIdx + 1, flagChoice: null }); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                  style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: _safSolid(ACCENT), color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
                 }, 'Next Card \u25B6')
               )
             );
@@ -2059,7 +2061,7 @@ window.SelHub = window.SelHub || {
               ),
               h('button', { 'aria-label': 'Play Again',
                 onClick: function() { upd({ flagIdx: 0, flagChoice: null, flagAnswered: {}, flagCorrect: 0, flagDone: false }); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 14, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: _safSolid(ACCENT), color: _safFg('#fff'), fontSize: 14, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Play Again'),
               h('div', {
                 style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, fontSize: 12, color: _safFg(ACCENT), fontWeight: 500, lineHeight: '1.4' }
@@ -2286,7 +2288,7 @@ window.SelHub = window.SelHub || {
                   tryAwardBadge('safety_planner');
                   if (announceToSR) announceToSR('Safety plan saved');
                 },
-                style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: _safSolid(ACCENT), color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save My Plan'),
               safetyPlanSaved && h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                 h('span', { style: { fontSize: 12, color: _safFg('#4ade80') } }, '\u2705 Plan saved!'),
@@ -2450,7 +2452,7 @@ window.SelHub = window.SelHub || {
                 var earned = !!earnedBadges[b.id];
                 return h('div', {
                   key: b.id,
-                  style: { padding: 14, borderRadius: 12, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _safBg('#1e293b')), textAlign: 'center', opacity: earned ? 1 : 0.5, transition: 'all 0.2s' }
+                  style: { padding: 14, borderRadius: 12, background: earned ? '#0f172a' : '#0f172a88', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _safBg('#475569')), textAlign: 'center', transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontSize: 30 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? _safFg('#f1f5f9') : _safFg('#94a3b8'), marginTop: 6 } }, b.name),

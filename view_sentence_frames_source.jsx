@@ -100,7 +100,6 @@ function SentenceFramesView(props) {
                             )}
                             {isTeacherMode && (
                             <button
-                                aria-label={t('common.toggle_edit_scaffolds')}
                                 onClick={handleToggleIsEditingScaffolds}
                                 data-help-key="scaffolds_edit_toggle"
                                 className={`min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`}
@@ -227,7 +226,7 @@ function SentenceFramesView(props) {
                                 </h4>
                                 <div className="flex items-center gap-2">
                                     {!isParentMode && (
-                                        <button aria-label={t('common.generate_content')}
+                                        <button
                                         onClick={handleGenerateRubric}
                                         disabled={isGeneratingRubric}
                                         className="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
@@ -241,7 +240,6 @@ function SentenceFramesView(props) {
                                     {generatedContent?.data.rubric && (
                                         <>
                                             <button
-                                                aria-label={t('common.maximize')}
                                                 onClick={handleToggleRubricZoom}
                                                 className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors border ${rubricZoom ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-white text-slate-600 hover:text-indigo-600 border-slate-200'}`}
                                                 title={t('scaffolds.rubric_toggle_tooltip')}
@@ -298,7 +296,7 @@ function SentenceFramesView(props) {
                                             className="w-full p-3 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none resize-y h-32 bg-white"
                                             placeholder={t('dashboard.grading.work_placeholder')}
                                         />
-                                        <button aria-label={t('common.auto_grade')}
+                                        <button
                                             onClick={handleAutoGrade}
                                             disabled={!studentWorkInput.trim() || isGrading}
                                             className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"

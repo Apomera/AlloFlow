@@ -1558,7 +1558,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           {isRating
             ? (summary?.revealed && distribution.length > 0
                 ? (
-                  <div className="space-y-2 rounded-xl border border-violet-100 bg-white p-4" aria-label="Anonymous class rating distribution">
+                  <div role="group" className="space-y-2 rounded-xl border border-violet-100 bg-white p-4" aria-label="Anonymous class rating distribution">
                     {distribution.map(item => (
                       <div key={item.value} className="grid grid-cols-[minmax(5rem,auto)_1fr_auto] items-center gap-2">
                         <span className="text-xs font-black text-slate-800">{item.value}{item.label !== String(item.value) ? ` · ${item.label}` : ''}</span>

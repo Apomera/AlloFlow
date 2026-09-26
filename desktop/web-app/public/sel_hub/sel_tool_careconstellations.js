@@ -91,6 +91,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       var _cnsBg = function(h){ return _cnsHC ? (_cns_BGH[h]||h) : (_cnsL ? (_cns_BGL[h]||h) : (_cns_BGD[h]||h)); };
       var _cnsFg = function(h){ return _cnsHC ? (_cns_FGH[h]||h) : (_cnsL ? (_cns_FGL[h]||h) : h); };
       var _cnsBd = function(h){ return _cnsHC ? (_cns_BDH[h]||h) : (_cnsL ? (_cns_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _cnsInk = function(c){ return _cnsHC || _cnsL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -488,7 +490,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                 onChange: function(e) { update('strength', parseInt(e.target.value, 10)); },
                 style: { width: '100%' }, 'aria-label': 'Strength of connection 1 to 5'
               }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: _cnsFg('#64748b'), marginTop: 2 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: _cnsFg('#94a3b8'), marginTop: 2 } },
                 h('span', null, 'Newer / distant'),
                 h('span', null, 'Deep / sustaining')
               )
@@ -634,7 +636,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
           // Pointer toward the Orientations tool
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 13, color: _cnsFg('#e9d5ff'), lineHeight: 1.6, marginBottom: 14 } },
-            h('strong', { style: { color: _cnsFg('#a855f7') } }, '🧭 More philosophical orientations: '),
+            h('strong', { style: { color: _cnsInk(_cnsFg('#a855f7')) } }, '🧭 More philosophical orientations: '),
             'Care of self is one tradition among many. If you want to see how different philosophies answer "what is the good life," "how should I act," and "what do I do with suffering," the ',
             h('strong', null, 'Orientations'),
             ' tool in the Inner Work category compares eight traditions (Daoism, Zen, Stoicism, Existentialism, Confucian ethics, Ubuntu, Indigenous relationality, Care Ethics) without trying to convince you any single one is right.'

@@ -833,7 +833,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, r
               <Trophy size={40} className="fill-current" aria-hidden="true" />
             </div>
             <h2 className={`text-2xl font-black mb-3 ${isFullscreen ? 'text-white' : 'text-slate-800'}`}>{t('memory.victory')}</h2>
-            <div className={`flex items-center gap-1 mb-4 ${!useReducedMotion() ? 'animate-in zoom-in duration-500' : ''}`} aria-label={`${stars} out of 3 stars`}>
+            <div role="group" className={`flex items-center gap-1 mb-4 ${!useReducedMotion() ? 'animate-in zoom-in duration-500' : ''}`} aria-label={`${stars} out of 3 stars`}>
               {[0, 1, 2].map(i => (
                 <Star
                   key={i}
@@ -862,7 +862,6 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, r
             <button
               ref={memoryPlayAgainRef}
               type="button"
-              aria-label={t('common.start_game')}
               onClick={initializeGame}
               className="min-h-11 bg-gradient-to-br from-indigo-700 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 motion-safe:hover:shadow-indigo-500/50 motion-safe:hover:scale-105 motion-safe:transition-all motion-safe:active:scale-95 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
@@ -3064,7 +3063,6 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                   </div>
                   <GameThemeToggle />
                   <button
-                      aria-label={t('common.close')}
                       onClick={onClose}
                       ref={vennCloseRef}
                        type="button"
@@ -5001,7 +4999,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   `}
                 >
                   {/* Drag grip handle */}
-                  <div
+                  <div role="img"
                     onMouseDown={(e) => handleGripDown(e, step.id)}
                     onTouchStart={(e) => handleGripDown(e, step.id)}
                     className="absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-600 hover:text-indigo-400 hover:bg-indigo-50 transition-colors"
@@ -5892,7 +5890,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                 <p role="status" aria-live="polite" aria-atomic="true" className="min-h-6 text-center text-sm font-bold text-slate-700">{announcement}</p>
                 <div className="min-h-12">
                     {gameStatus === 'correct' ? (
-                        <button type="button" aria-label={t('common.next')}
+                        <button type="button"
                             data-help-key="syntax_next" onClick={nextRound}
                             autoFocus
                             className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in motion-reduce:animate-none bounce-in"
@@ -7112,7 +7110,6 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                                     {t('games.scramble.skip')}
                                 </button>
                                 <button type="button"
-                                    aria-label={t('common.check')}
                                     onClick={handleCheck}
                                     disabled={feedback === 'correct' || !guess.trim()}
                                     className="flex-[2] py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all motion-safe:active:scale-95 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"

@@ -33891,11 +33891,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                 style: {
                   textAlign: 'center', padding: 12, borderRadius: 12,
                   background: earned ? _zoBg('#1e1b4b') : _zoBg('#1e293b'),
-                  border: '1px solid ' + (earned ? '#7c3aed' : '#334155'),
-                  opacity: earned ? 1 : 0.4
-                }
+                  border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? '#7c3aed' : '#334155') }
               },
-                h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
+                h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
                 h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _zoFg('#e2e8f0') : _zoFg('#94a3b8') } }, badge.name),
                 h('div', { style: { fontSize: 11, color: _zoFg('#94a3b8'), marginTop: 2 } }, badge.desc)
               );
@@ -33908,9 +33906,26 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         );
       }
 
+      // ══════════════════════════════════════════════════════════
+      // ── CSS Keyframes (injected once) — above the badges early return: a hook after it changed the hook count (React #300) ──
+      // ══════════════════════════════════════════════════════════
+      React.useEffect && React.useEffect(function() {
+        if (document.getElementById('sel-zones-keyframes')) return;
+        var s = document.createElement('style');
+        s.id = 'sel-zones-keyframes';
+        s.textContent = [
+          '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }',
+          '@keyframes scaleIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }',
+          '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }',
+          '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }'
+        ].join('\n');
+        document.head.appendChild(s);
+        return function() { var el = document.getElementById('sel-zones-keyframes'); if (el) el.remove(); };
+      }, []);
+
       // If badges panel is showing, render only that
       if (showBadgesPanel) {
-        return h('div', { style: { minHeight: '100%' } }, tabBar, badgesPanel, badgePopup);
+        return h('div', { style: { minHeight: '100%' } }, tabBar, h('div', { id: 'zones-tab-panel', role: 'tabpanel', 'aria-labelledby': 'zones-tab-' + activeTab }, badgesPanel), badgePopup);
       }
 
       // ══════════════════════════════════════════════════════════
@@ -35071,23 +35086,6 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       }
 
       // ══════════════════════════════════════════════════════════
-      // ── CSS Keyframes (injected once) ──
-      // ══════════════════════════════════════════════════════════
-      React.useEffect && React.useEffect(function() {
-        if (document.getElementById('sel-zones-keyframes')) return;
-        var s = document.createElement('style');
-        s.id = 'sel-zones-keyframes';
-        s.textContent = [
-          '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }',
-          '@keyframes scaleIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }',
-          '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }',
-          '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }'
-        ].join('\n');
-        document.head.appendChild(s);
-        return function() { var el = document.getElementById('sel-zones-keyframes'); if (el) el.remove(); };
-      }, []);
-
-      // ══════════════════════════════════════════════════════════
       // ── Re-check expiry banner (v3) ──
       // When the 10-minute timer has elapsed, surface a top-level banner across
       // every tab inviting the student to do a follow-up check-in. Closes the
@@ -36213,12 +36211,12 @@ if (activeTab === 'triggers') {
           return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[t.typicallyShiftsTo] } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' } },
               h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, t.trigger),
-              h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[t.typicallyShiftsTo] + '33', color: _zoFg(ZONE_COLORS)[t.typicallyShiftsTo], fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, t.typicallyShiftsTo)
+              h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[t.typicallyShiftsTo] + '33', color: _zoHC ? ZONE_COLORS[t.typicallyShiftsTo] : ({ '#f87171': '#fca5a5', '#60a5fa': '#93c5fd' }[ZONE_COLORS[t.typicallyShiftsTo]] || ZONE_COLORS[t.typicallyShiftsTo]), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, t.typicallyShiftsTo)
             ),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, t.category),
             t.whyItTriggers ? h('p', { style: { margin: '6px 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, t.whyItTriggers) : null,
             h('button', { onClick: function() { upd({ trOpen: isOpen ? null : t.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 4, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : _zoFg('#3b82f6'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 4, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : (_zoHC ? _zoFg('#3b82f6') : '#1d4ed8'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'View strategies'),
             isOpen ? h('div', { style: { marginTop: 10 } },
               t.earlyWarningSigns && t.earlyWarningSigns.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#451a03') } },
@@ -36297,10 +36295,10 @@ if (activeTab === 'plans') {
           return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[p.fromZone] } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } },
               h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, p.scenario),
-              p.fromZone ? h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[p.fromZone] + '33', color: _zoFg(ZONE_COLORS)[p.fromZone], fontSize: 9, fontWeight: 800, textTransform: 'uppercase' } }, p.fromZone + (p.toZone ? ' → ' + p.toZone : '')) : null
+              p.fromZone ? h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[p.fromZone] + '33', color: _zoHC ? ZONE_COLORS[p.fromZone] : ({ '#f87171': '#fca5a5', '#60a5fa': '#93c5fd' }[ZONE_COLORS[p.fromZone]] || ZONE_COLORS[p.fromZone]), fontSize: 9, fontWeight: 800, textTransform: 'uppercase' } }, p.fromZone + (p.toZone ? ' → ' + p.toZone : '')) : null
             ),
             h('button', { onClick: function() { upd({ plOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : _zoFg('#3b82f6'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : (_zoHC ? _zoFg('#3b82f6') : '#1d4ed8'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Open plan'),
             isOpen ? h('div', { style: { marginTop: 10 } },
               p.earlyWarnings && p.earlyWarnings.length ? h('div', { style: { marginBottom: 8 } },

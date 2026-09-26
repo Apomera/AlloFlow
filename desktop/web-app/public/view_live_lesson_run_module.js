@@ -1486,6 +1486,7 @@ function LiveLessonRunPanel(props) {
     !preparationOnly && activityPulse && /* @__PURE__ */ React.createElement(
       "div",
       {
+        role: "group",
         "aria-label": t("live_lesson.activity_pulse") || "Activity pulse",
         style: {
           marginTop: 7,
@@ -1607,7 +1608,7 @@ function LiveLessonRunPanel(props) {
           /* @__PURE__ */ React.createElement("span", null, cohort.count)
         );
       })),
-      Object.entries(companionModel.moderation).some(([, count]) => count > 0) && /* @__PURE__ */ React.createElement("div", { "aria-label": t("live_lesson.moderation_counts") || "Moderation counts", style: { display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 } }, Object.entries(companionModel.moderation).filter(([, count]) => count > 0).map(([key, count]) => /* @__PURE__ */ React.createElement("span", { key, style: { borderRadius: 999, background: "#ede9fe", color: "#5b21b6", padding: "0.15rem 0.36rem", fontSize: "0.55rem", fontWeight: 900 } }, key.replace(/([A-Z])/g, " $1").toLowerCase(), " ", count))),
+      Object.entries(companionModel.moderation).some(([, count]) => count > 0) && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("live_lesson.moderation_counts") || "Moderation counts", style: { display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 } }, Object.entries(companionModel.moderation).filter(([, count]) => count > 0).map(([key, count]) => /* @__PURE__ */ React.createElement("span", { key, style: { borderRadius: 999, background: "#ede9fe", color: "#5b21b6", padding: "0.15rem 0.36rem", fontSize: "0.55rem", fontWeight: 900 } }, key.replace(/([A-Z])/g, " $1").toLowerCase(), " ", count))),
       /* @__PURE__ */ React.createElement("p", { style: { margin: "0.4rem 0 0", color: "#6d28d9", fontSize: "0.56rem", lineHeight: 1.3 } }, t("live_lesson.companion_selection_hint") || "Select a cohort, then use the existing resource sender below. Larger cohorts are delivered automatically in privacy-safe batches of 25."),
       attentionQueue.length === 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
         "button",
@@ -1749,6 +1750,7 @@ function LiveLessonRunPanel(props) {
           /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 900, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, name), /* @__PURE__ */ React.createElement("div", { style: { color: "#92400e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, liveAttentionReasonLabel(item.reasons[0]), item.reasons.length > 1 ? ` +${item.reasons.length - 1}` : ""), evidenceSources.length > 0 && /* @__PURE__ */ React.createElement(
             "div",
             {
+              role: "group",
               "data-live-attention-provenance": "status-metadata-only",
               "aria-label": "Evidence sources: " + evidenceSources.map(liveAttentionSourceLabel).join(", "),
               style: { display: "flex", flexWrap: "wrap", gap: 3, marginTop: 3 }
@@ -1930,6 +1932,7 @@ function LiveLessonRunPanel(props) {
       ), /* @__PURE__ */ React.createElement(
         "div",
         {
+          role: "group",
           "aria-label": t("live_lesson.next_step_preparation") || "Next step preparation",
           style: { display: "flex", flexWrap: "wrap", gap: 4, marginTop: 3, color: "#0369a1", fontSize: "0.55rem", fontWeight: 800 }
         },

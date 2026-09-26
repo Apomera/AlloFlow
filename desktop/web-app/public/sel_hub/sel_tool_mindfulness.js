@@ -22480,9 +22480,9 @@ var VISUAL_ANCHORS = [
               BADGES.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
-                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _minBg('#1e293b'), border: '1px solid ' + (earned ? '#8b5cf6' : _minBg('#334155')), opacity: earned ? 1 : 0.4 }
+                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _minBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? '#8b5cf6' : _minBg('#334155')) }
                 },
-                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
+                  h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _minFg('#e2e8f0') : _minFg('#94a3b8') } }, badge.name),
                   h('div', { style: { fontSize: 11, color: _minFg('#94a3b8'), marginTop: 2 } }, badge.desc)
                 );

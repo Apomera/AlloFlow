@@ -1143,7 +1143,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
                 h('span', { 'aria-hidden': 'true', style: { color: colors.accent, fontSize: 24, width: 28, textAlign: 'center' } }, item.icon),
                 h('span', null,
                   h('span', { style: { display: 'block', fontSize: 13, fontWeight: 850 } }, item.label),
-                  h('span', { style: { display: 'block', marginTop: 3, color: colors.muted, fontSize: 11, lineHeight: 1.35 } }, item.prompt)
+                  h('span', { style: { display: 'block', marginTop: 3, color: chosen && !isDark && !isContrast ? '#475569' : colors.muted, fontSize: 11, lineHeight: 1.35 } }, item.prompt)
                 )
               );
             }))

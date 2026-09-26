@@ -11526,7 +11526,7 @@ function LiveAacBoardDialog(props) {
 function AppStyles(props) {
   const Real = window.AlloModules && window.AlloModules.AppStyles && window.AlloModules.AppStyles.AppStyles;
   if (Real && Real !== AppStyles) return React.createElement(Real, props);
-  return React.createElement('style', null, '@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}} header.min-w-max{min-width:0!important} button:focus-visible,a:focus-visible,[role="button"]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #6366f1!important;outline-offset:2px!important}');
+  return React.createElement('style', null, '@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}} header.min-w-max{min-width:0!important} button:focus-visible,a:focus-visible,[role="button"]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,[tabindex]:focus-visible:not([tabindex="-1"]){outline:3px solid #6366f1!important;outline-offset:2px!important}');
 }
 const AlloFlowContent = () => {
   // Wave-3 host handlers live in host_handlers_module.js (boot-critical). `__alloHostDeps`
@@ -14382,7 +14382,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
     loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=29d9f6add');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=29d9f6add');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=6142f6d7');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=3958c542');
     window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=29d9f6add'); };
     loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=29d9f6add');
     loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=29d9f6add');
@@ -14489,8 +14489,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=29d9f6add'); }; })();
     window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=29d9f6add'); }; })();
     window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=29d9f6add'); }; })();
-    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=b0452fdc'); }; })();
-    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=dabce57a'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=6de49b92'); }; })();
+    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=c7e326f0'); }; })();
     window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=4fbf452c'); }; })();
     window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=5f13b334'); }; })();
     window.__alloLazyColdPathSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ColdPathSurfaces', 'https://alloflow-cdn.pages.dev/view_cold_path_surfaces_module.js?v=2ce0737b'); }; })();
@@ -14503,8 +14503,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=29d9f6add'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
     loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=29d9f6add');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=bbc2e62f');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea0793fd');
+    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=9db10860');
+    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=e1dfc85a');
     loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=29d9f6add');
     loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=29d9f6add');
     loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=29d9f6add');
@@ -14697,13 +14697,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=29d9f6add');
     loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=29d9f6add');
     loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=29d9f6add');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=5091efdb');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=83d72094');
     loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=29d9f6add');
     loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=29d9f6add');
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=29d9f6add');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=29d9f6add');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=29d9f6add');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=1f430ca2'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=7f551a54'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=29d9f6add');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=29d9f6add');
@@ -14711,7 +14711,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=29d9f6add');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=29d9f6add');
     loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=29d9f6add');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=eab8a9e0'); }; })();
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=043e2b05'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
     loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=29d9f6add');
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=29d9f6add');
@@ -34933,7 +34933,7 @@ const parseTaggedContent = (text) => {
                 : 'Encryption has not been enabled yet. Save and re-enter this key before AlloFlow commits protection.'}
               {' '}{t('storage.the_key_cannot_be_looked_up') || 'The key cannot be looked up later and is not stored in readable form.'}
             </p>
-            <div className="mt-3 select-all break-all rounded-xl border border-amber-300 bg-white p-3 font-mono text-sm font-black tracking-wide text-slate-900"
+            <div role="group" className="mt-3 select-all break-all rounded-xl border border-amber-300 bg-white p-3 font-mono text-sm font-black tracking-wide text-slate-900"
               aria-label={t('saved_work.recovery_key_aria') || 'Shown-once AlloFlow recovery key'}>
               {canvasRecoveryVaultForm.recoveryCode}
             </div>
@@ -39935,7 +39935,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-md focus:font-bold focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-xl"
       >
-        {t('a11y.skip_content')}
+        {t('a11y.skip_content') || 'Skip to content'}
       </a>
       {/* Straight to the resource: #main-content also holds the sidebar. */}
       <a
@@ -40222,7 +40222,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         <>
           <button type="button" onClick={() => setShowSharedHostedActivity(true)} className="fixed bottom-20 left-4 z-[140] flex min-h-11 items-center gap-2 rounded-full border-2 border-sky-300 bg-white px-4 py-2 text-sm font-black text-sky-900 shadow-xl hover:border-sky-500 no-print" aria-haspopup="dialog">
             <span aria-hidden="true" className="text-[10px] tracking-tight">{_alloSharedActivityUiMeta(sharedHostedActivity.activity).shortLabel}</span> {_alloSharedActivityUiMeta(sharedHostedActivity.activity).title}
-            {(sharedHostedActivity.activity?.type === 'rating' || sharedHostedActivity.activity?.revealPolicy === 'auto_publish') && <span className="h-2 w-2 rounded-full bg-emerald-500" aria-label={t('share_collect.auto_updates_aria') || 'Updates automatically'}></span>}
+            {(sharedHostedActivity.activity?.type === 'rating' || sharedHostedActivity.activity?.revealPolicy === 'auto_publish') && <span role="img" className="h-2 w-2 rounded-full bg-emerald-500" aria-label={t('share_collect.auto_updates_aria') || 'Updates automatically'}></span>}
           </button>
           {showSharedHostedActivity && (
             <div className="fixed inset-0 z-[160] flex items-center justify-center bg-slate-950/75 p-4 no-print" role="presentation" onClick={() => setShowSharedHostedActivity(false)}>
@@ -40563,7 +40563,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               >
                 Preview
                 {!!generatedContent && workspacePane !== 'preview' && (
-                  <span className="absolute right-2 top-2 flex h-2 w-2" aria-label={t('a11y.result_ready') || 'A result is ready'}>
+                  <span role="group" className="absolute right-2 top-2 flex h-2 w-2" aria-label={t('a11y.result_ready') || 'A result is ready'}>
                     <span className="absolute inline-flex h-full w-full rounded-full bg-indigo-300 opacity-70"></span>
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-600"></span>
                   </span>
@@ -41337,7 +41337,6 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     <AlertCircle size={48} className="mb-4 text-red-200" />
                     <p className="text-lg font-medium">{error}</p>
                     <button
-                        aria-label={t('common.generate')}
                         onClick={handleSetErrorToNull}
                         className="mt-6 px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-full transition-colors"
                     >
@@ -41416,7 +41415,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                           </span>
                           <span className="min-w-0">
                             <span className="block text-sm font-bold text-slate-800">{a.label}</span>
-                            <span className="mt-1 block text-xs leading-snug text-slate-500">{a.sub}</span>
+                            <span className="mt-1 block text-xs leading-snug text-slate-600">{a.sub}</span>
                           </span>
                         </button>
                         );
@@ -42338,7 +42337,6 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                                             </pre>
                                             <div className="flex justify-end pt-2 border-t border-slate-700/50">
                                                 <button
-                                                    aria-label={t('common.copy')}
                                                     onClick={() => copyToClipboard(promptStep)}
                                                     className="flex items-center gap-2 text-[11px] font-bold bg-slate-700 hover:bg-green-700 text-white px-3 py-1.5 rounded transition-colors uppercase tracking-wider"
                                                 >

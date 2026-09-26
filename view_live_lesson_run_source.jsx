@@ -1929,7 +1929,7 @@ function LiveLessonRunPanel(props) {
       )}
 
       {!preparationOnly && activityPulse && (
-        <div
+        <div role="group"
           aria-label={t('live_lesson.activity_pulse') || 'Activity pulse'}
           style={{
             marginTop: 7,
@@ -2063,7 +2063,7 @@ function LiveLessonRunPanel(props) {
             })}
           </div>
           {Object.entries(companionModel.moderation).some(([, count]) => count > 0) && (
-            <div aria-label={t('live_lesson.moderation_counts') || 'Moderation counts'} style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
+            <div role="group" aria-label={t('live_lesson.moderation_counts') || 'Moderation counts'} style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
               {Object.entries(companionModel.moderation)
                 .filter(([, count]) => count > 0)
                 .map(([key, count]) => (
@@ -2269,7 +2269,7 @@ function LiveLessonRunPanel(props) {
                           {item.reasons.length > 1 ? ` +${item.reasons.length - 1}` : ''}
                         </div>
                         {evidenceSources.length > 0 && (
-                          <div
+                          <div role="group"
                             data-live-attention-provenance="status-metadata-only"
                             aria-label={'Evidence sources: ' + evidenceSources.map(liveAttentionSourceLabel).join(', ')}
                             style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 3 }}
@@ -2535,7 +2535,7 @@ function LiveLessonRunPanel(props) {
                 >
                   {nextIndex + 1}. {nextItemTitle}
                 </div>
-                <div
+                <div role="group"
                   aria-label={t('live_lesson.next_step_preparation') || 'Next step preparation'}
                   style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 3, color: '#0369a1', fontSize: '0.55rem', fontWeight: 800 }}
                 >

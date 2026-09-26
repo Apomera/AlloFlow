@@ -3538,7 +3538,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 color: '#fde68a', fontSize: 13, lineHeight: 1.55
               }
             },
-              h('strong', { style: { color: '#fbbf24' } }, 'Classroom task: '),
+              h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Classroom task: '),
               t('stem.fireecology.land_all_four_sliders_inside_their_ide', 'compare how four inputs affect this classroom score. A high score is not authorization or evidence that a real burn is safe.'),
               d.burnRevealed ? h('div', { style: { marginTop: 6, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 }, 'data-fe-burn-ranges': 'revealed' },
                 h('div', null, 'Ideal Temperature: 50 to 70 ' + '\u00B0F'),
@@ -5920,7 +5920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     t('stem.fireecology.this_sim_is_a_teaching_tool_wabanaki_f', 'This sim is a teaching tool. Wabanaki fire stewardship is a living practice held by living people, not a historical artifact. The simulation is intentionally a simplification across an 8-year window; real stewardship operates on multi-generational time horizons, ties into ceremony, language, and treaty relationships, and is led by Wabanaki nations themselves.')
                   ),
                   h('p', { style: { margin: '0 0 8px' } },
-                    h('strong', { style: { color: '#fbbf24' } }, t('stem.fireecology.for_pairing_with_classroom_work_consid', 'For pairing with classroom work, consider these resources:')),
+                    h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, t('stem.fireecology.for_pairing_with_classroom_work_consid', 'For pairing with classroom work, consider these resources:')),
                   ),
                   h('ul', { style: { margin: '0 0 8px 18px', padding: 0 } },
                     h('li', null, t('stem.fireecology.wabanaki_public_health_and_wellness_wa', 'Wabanaki Public Health and Wellness (wabanakipublichealth.org) for community-led programming.')),
@@ -5929,7 +5929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('li', null, t('stem.fireecology.each_nation_s_cultural_offices_penobsc', 'Each nation\'s cultural offices: Penobscot Cultural and Historic Preservation Department; Passamaquoddy Cultural Heritage Museum; Maliseet, Mi\'kmaq, and Abenaki community resources.'))
                   ),
                   h('p', { style: { margin: '0 0 8px' } },
-                    h('strong', { style: { color: '#fbbf24' } }, t('stem.fireecology.discussion_prompts_after_the_campaign', 'Discussion prompts after the campaign:'))
+                    h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, t('stem.fireecology.discussion_prompts_after_the_campaign', 'Discussion prompts after the campaign:'))
                   ),
                   h('ul', { style: { margin: '0 0 0 18px', padding: 0 } },
                     h('li', null, t('stem.fireecology.where_in_your_local_landscape_do_you_s', 'Where in your local landscape do you see evidence of past or ongoing Indigenous fire stewardship?')),
@@ -7238,7 +7238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   }
                 },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 17, lineHeight: 1 } }, b.icon),
-                  h('span', { style: { fontSize: 12, fontWeight: 700, color: got ? '#fcd34d' : 'var(--allo-stem-text-soft, #94a3b8)' } }, b.label),
+                  h('span', { style: { fontSize: 12, fontWeight: 700, color: got ? 'var(--allo-stem-text, #fcd34d)' : 'var(--allo-stem-text-soft, #94a3b8)' } }, b.label),
                   got ? h('span', { 'aria-hidden': 'true', style: { fontSize: 12, color: '#4ade80' } }, '\u2713') : null
                 );
               })

@@ -77,6 +77,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
       var _sfBg = function(h){ return _sfHC ? (_sf_BGH[h]||h) : (_sfL ? (_sf_BGL[h]||h) : h); };
       var _sfFg = function(h){ return _sfHC ? (_sf_FGH[h]||h) : (_sfL ? (_sf_FGL[h]||h) : h); };
       var _sfBd = function(h){ return _sfHC ? (_sf_BDH[h]||h) : (_sfL ? (_sf_BDL[h]||h) : h); };
+      // white text needs a 700-weight fill (1.4.3)
+      var _sfSolid = function(c){ return _sfHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -256,7 +258,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
             h('input', { id: 'sf-now', type: 'range', min: 0, max: 10, value: d.scaleNow !== undefined ? d.scaleNow : 5,
               onChange: function(e) { setSF({ scaleNow: parseInt(e.target.value, 10) }); },
               style: { width: '100%' }, 'aria-label': 'Where am I now, 0 to 10' }),
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: _sfFg('#64748b'), marginTop: 4 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: _sfFg('#94a3b8'), marginTop: 4 } },
               h('span', null, '0 = worst it has ever been'),
               h('span', null, '10 = miracle')
             )
@@ -364,7 +366,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
             d.problem ? printSection('What I am working on', d.problem, '#7c3aed') : null,
             d.miracle || d.miracleDifferences || d.miracleAlreadyHappening
               ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-                  h('div', { style: { background: _sfBg('#a855f7'), color: _sfFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '✨ The Miracle Question'),
+                  h('div', { style: { background: _sfBg(_sfSolid('#a855f7')), color: _sfFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '✨ The Miracle Question'),
                   d.miracle ? printSubLine('First small sign', d.miracle) : null,
                   d.miracleDifferences ? printSubLine('What would be different', d.miracleDifferences) : null,
                   d.miracleAlreadyHappening ? printSubLine('Already happening sometimes', d.miracleAlreadyHappening) : null
@@ -372,7 +374,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
               : null,
 
             h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _sfBg('#3b82f6'), color: _sfFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📊 Scaling'),
+              h('div', { style: { background: _sfBg(_sfSolid('#3b82f6')), color: _sfFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📊 Scaling'),
               printSubLine('Right now', (d.scaleNow !== undefined ? d.scaleNow : '–') + ' / 10'),
               printSubLine('Realistic goal', (d.scaleGoal !== undefined ? d.scaleGoal : '–') + ' / 10'),
               d.scaleEvidence ? printSubLine('Why not lower', d.scaleEvidence) : null,
@@ -381,13 +383,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
 
             d.exceptions || d.compliments
               ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-                  h('div', { style: { background: _sfBg('#16a34a'), color: _sfFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🔍 Exceptions and Strengths'),
+                  h('div', { style: { background: _sfBg(_sfSolid('#16a34a')), color: _sfFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🔍 Exceptions and Strengths'),
                   d.exceptions ? printSubLine('When the problem does not happen', d.exceptions) : null,
                   d.compliments ? printSubLine('Strengths I am already using', d.compliments) : null
                 )
               : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _sfFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _sfFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Solution-Focused Brief Therapy techniques from de Shazer and Berg, Brief Family Therapy Center. ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -399,7 +401,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
 
       function printSection(title, content, color) {
         return h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-          h('div', { style: { background: color, color: _sfFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, title),
+          h('div', { style: { background: _sfSolid(color), color: _sfFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, title),
           h('p', { style: { margin: '0 8px', color: _sfFg('#0f172a'), fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, content)
         );
       }

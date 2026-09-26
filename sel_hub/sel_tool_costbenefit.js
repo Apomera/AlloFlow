@@ -76,6 +76,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
       var _cobBg = function(h){ return _cobHC ? (_cob_BGH[h]||h) : (_cobL ? (_cob_BGL[h]||h) : h); };
       var _cobFg = function(h){ return _cobHC ? (_cob_FGH[h]||h) : (_cobL ? (_cob_FGL[h]||h) : h); };
       var _cobBd = function(h){ return _cobHC ? (_cob_BDH[h]||h) : (_cobL ? (_cob_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _cobInk = function(c){ return _cobHC || _cobL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -242,7 +244,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
                 el.value = '';
               }
               return h('div', { key: cell.id, style: { padding: 12, borderRadius: 10, background: _cobBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cell.color } },
-                h('div', { style: { fontSize: 13, color: cell.color, fontWeight: 800, marginBottom: 6 } }, cell.icon + ' ' + cell.label),
+                h('div', { style: { fontSize: 13, color: _cobInk(cell.color), fontWeight: 800, marginBottom: 6 } }, cell.icon + ' ' + cell.label),
                 h('div', { style: { fontSize: 11, color: _cobFg('#94a3b8'), marginBottom: 10, fontStyle: 'italic', lineHeight: 1.5 } }, cell.blurb),
 
                 items.length > 0 ? h('div', { style: { marginBottom: 10 } },
@@ -391,7 +393,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
               h('p', { style: { margin: 0, color: _cobFg('#0f172a'), fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, d.finalChoice)
             ) : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _cobFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _cobFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Cost-Benefit Grid from Linehan, M. M. (1993), Dialectical Behavior Therapy. ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -406,7 +408,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
           items && items.length > 0
             ? h('ul', { style: { margin: 0, padding: '0 0 0 18px', color: _cobFg('#0f172a'), fontSize: 12, lineHeight: 1.55 } },
                 items.map(function(it, i) { return h('li', { key: i, style: { marginBottom: 3 } }, it); }))
-            : h('div', { style: { fontSize: 11, color: _cobFg('#94a3b8'), fontStyle: 'italic' } }, '(none)')
+            : h('div', { style: { fontSize: 11, color: _cobFg('#475569'), fontStyle: 'italic' } }, '(none)')
         );
       }
 

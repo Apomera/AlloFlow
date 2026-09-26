@@ -1147,9 +1147,9 @@ window.SelHub = window.SelHub || {
               BADGES.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
-                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _socBg('#1e293b'), border: '1px solid ' + (earned ? '#0ea5e9' : _socBg('#334155')), opacity: earned ? 1 : 0.4 }
+                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _socBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? '#0ea5e9' : _socBg('#334155')) }
                 },
-                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
+                  h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _socFg('#e2e8f0') : _socFg('#94a3b8') } }, badge.name),
                   h('div', { style: { fontSize: 11, color: _socFg('#94a3b8'), marginTop: 2 } }, badge.desc)
                 );

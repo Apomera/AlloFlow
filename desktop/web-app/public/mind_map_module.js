@@ -2397,7 +2397,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             ? ('“' + unit.essentialQuestion + '”')
             : (t('throughline.set_eq') || 'Click the title to set an essential question'))
       ),
-      h('div', { style: { fontSize: 11, color: '#94a3b8', whiteSpace: 'nowrap' } },
+      h('div', { style: { fontSize: 11, color: '#475569', whiteSpace: 'nowrap' } },
         unit.nodes.length + ' ' + (t('throughline.nodes') || 'nodes') + ' · ' + unit.edges.length + ' ' + (t('throughline.links') || 'links')),
       h('button', { onClick: onClose, 'aria-label': t('common.close') || 'Close',
         style: { padding: 8, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#475569' } }, '✕')
@@ -2485,7 +2485,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     var quotaNudge = quotaFailed && h('div', { style: { background: '#fef2f2', borderBottom: '1px solid #fecaca', padding: '6px 18px', fontSize: 11, color: '#991b1b', fontWeight: 700 } },
       '⚠️ ' + (t('throughline.quota_fail') || 'This unit could not be auto-saved to the browser. Export it to a file now so you do not lose your work.'));
 
-    var canvas = h('div', { style: { flex: 1, position: 'relative', overflow: 'auto', background: '#ffffff' } },
+    var canvas = h('div', { style: { flex: 1, position: 'relative', overflow: 'auto', background: '#ffffff' }, tabIndex: 0, role: 'region', 'aria-label': t('throughline.canvas_region') || 'Unit path canvas' },
       h('svg', {
         ref: svgRef, width: CANVAS_W, height: CANVAS_H,
         onClick: onCanvasClick, onMouseMove: onCanvasMouseMove, onMouseUp: onCanvasMouseUp, onMouseLeave: onCanvasMouseUp,

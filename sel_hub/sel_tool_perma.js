@@ -160,6 +160,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       var _perBg = function(h){ return _perHC ? (_per_BGH[h]||h) : (_perL ? (_per_BGL[h]||h) : h); };
       var _perFg = function(h){ return _perHC ? (_per_FGH[h]||h) : (_perL ? (_per_FGL[h]||h) : h); };
       var _perBd = function(h){ return _perHC ? (_per_BDH[h]||h) : (_perL ? (_per_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _perInk = function(c){ return _perHC || _perL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -304,8 +306,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
 
           // Progress
           h('div', { style: { marginBottom: 14 } },
-            h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), marginBottom: 4 } }, rated + ' of ' + ITEMS.length + ' rated'),
-            h('div', { style: { height: 6, borderRadius: 3, background: _perBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct },
+            h('div', { id: 'perma-selfcheck-progress-label', style: { fontSize: 12, color: _perFg('#94a3b8'), marginBottom: 4 } }, rated + ' of ' + ITEMS.length + ' rated'),
+            h('div', { style: { height: 6, borderRadius: 3, background: _perBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-labelledby': 'perma-selfcheck-progress-label', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct },
               h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #d97706, #f59e0b)' } })
             )
           ),
@@ -331,7 +333,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
                       'aria-label': 'Rate: ' + item.text }),
                     h('span', { style: { fontSize: 14, fontWeight: 800, color: hasRating ? dom.color : _perFg('#475569'), minWidth: 40, textAlign: 'right' } }, hasRating ? v + '/10' : '–'),
                     !hasRating ? h('button', { onClick: function() { setRating(item.id, 5); }, 'aria-label': 'Set this rating',
-                      style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + dom.color, background: 'transparent', color: dom.color, cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Set') : null
+                      style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + dom.color, background: 'transparent', color: _perInk(dom.color), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Set') : null
                   )
                 );
               })
@@ -554,9 +556,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
                   ': ', scores[k] + ' / 10  — ', dom.summary
                 );
               })
-            ) : h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), fontStyle: 'italic' } }, 'Self-check not complete yet.'),
+            ) : h('div', { style: { fontSize: 12, color: _perFg('#475569'), fontStyle: 'italic' } }, 'Self-check not complete yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _perFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _perFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'PERMA wellbeing model from Seligman, M. (2011), Flourish. ',
               'Created with AlloFlow SEL Hub.'
             )

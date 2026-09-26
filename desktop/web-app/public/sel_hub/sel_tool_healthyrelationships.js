@@ -762,7 +762,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
                 return h('div', { key: dim.id, style: { padding: 10, border: '1px solid #cbd5e1', borderRadius: 8, marginBottom: 6, pageBreakInside: 'avoid' } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 } },
                     h('div', { style: { fontSize: 13, fontWeight: 700, color: _hreFg('#0f172a') } }, dim.label),
-                    r ? h('div', { style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + (ratingColor[r] || _hreFg('#475569')), color: _hreFg(ratingColor)[r] || _hreFg('#475569') } }, ratingLabel[r] || r) : h('div', { style: { fontSize: 10.5, color: _hreFg('#94a3b8') } }, 'not rated')
+                    r ? h('div', { style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + (ratingColor[r] || _hreFg('#475569')), color: _hreFg(ratingColor)[r] || _hreFg('#475569') } }, ratingLabel[r] || r) : h('div', { style: { fontSize: 10.5, color: _hreFg('#475569') } }, 'not rated')
                   ),
                   r ? h('div', { style: { fontSize: 11.5, color: _hreFg('#475569'), lineHeight: 1.55 } }, dim[r] || '') : null
                 );

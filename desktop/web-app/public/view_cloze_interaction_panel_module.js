@@ -1,7 +1,7 @@
 /**
  * AlloFlow ClozeInteractionPanel Module
  * Auto-generated. Source: view_cloze_interaction_panel_source.jsx
- * Source SHA-256: 49f178843f02b0a4
+ * Source SHA-256: 808c5d9dba9011ce
  */
 (function() {
   'use strict';
@@ -56,7 +56,6 @@ function ClozeInteractionPanel(props) {
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
         "button",
         {
-          "aria-label": t("common.refresh"),
           onClick: () => {
             setClozeCompletedSet(/* @__PURE__ */ new Set());
             if (typeof setClozeInstanceSet === "function") setClozeInstanceSet(/* @__PURE__ */ new Set());

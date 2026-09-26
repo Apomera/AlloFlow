@@ -438,7 +438,6 @@ function ImageView(props) {
   }, t('visuals.image_not_saved')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs"
   }, t('visuals.image_stripped'))), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.restore_image'),
     onClick: handleRestoreImage,
     disabled: isProcessing,
     "aria-busy": isProcessing,

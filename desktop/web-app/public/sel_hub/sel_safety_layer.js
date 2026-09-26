@@ -138,7 +138,8 @@
       : (isYoung
         ? 'A grown-up can only help if a person tells them. You can always ask a trusted adult for help \u2014 about anything.'
         : 'We tell you this up front so you can make an informed choice about what to share \u2014 and so you never assume an adult has been told when they haven\u2019t.');
-    return h('div', { style: { padding: '24px', maxWidth: '520px', margin: '0 auto', textAlign: 'center' } },
+    // Light-designed card: give it its own white surface, or its dark ink lands on the tool's dark shell (1.22:1).
+    return h('div', { style: { padding: '24px', maxWidth: '520px', margin: '0 auto', textAlign: 'center', background: '#ffffff', borderRadius: '16px' } },
       h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83D\uDD12'),
       h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b', margin: '0 0 12px' } }, 'Before We Start'),
       h('div', { style: { background: '#f0f9ff', borderRadius: '14px', padding: '18px', border: '1px solid #bae6fd', textAlign: 'left', marginBottom: '16px' } },
@@ -154,7 +155,7 @@
         'aria-label': 'I understand the safety guidelines',
         style: { padding: '12px 32px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }
       }, isYoung ? 'I Understand \u2014 Let\u2019s Talk' : 'I Understand the Guidelines'),
-      h('p', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '10px' } }, 'This appears once per session for your awareness.')
+      h('p', { style: { fontSize: '11px', color: '#64748b', marginTop: '10px' } }, 'This appears once per session for your awareness.')
     );
   };
 
@@ -510,8 +511,10 @@
     var body = live
       ? 'Your teacher is hosting a live session. Anything you save or submit here can be seen by them, and serious safety concerns raise an alert on their dashboard (an alert, not your words). Your words are sent to the AI service to write its replies. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.'
       : 'Your words are sent to the AI service to write its replies, and your conversation is saved with your project on this device. No adult is notified automatically. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.';
+    var flags = (window.SelHub && window.SelHub._themeFlags) || {};
+    var ink = flags.isContrast ? '#ffff00' : (flags.isDark !== false ? '#94a3b8' : '#64748b');   // shell is dark by default
     return h('p', {
-      style: { fontSize: '11px', color: '#64748b', margin: '4px 0 0', lineHeight: 1.5 }
+      style: { fontSize: '11px', color: ink, margin: '4px 0 0', lineHeight: 1.5 }
     }, body);
   };
 

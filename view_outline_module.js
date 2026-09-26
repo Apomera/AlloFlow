@@ -243,7 +243,6 @@
     placeholder: t('concept_map.setup.add_concept_placeholder'),
     className: "px-3 py-2 rounded-xl border-2 border-indigo-600 text-sm focus:border-indigo-400 outline-none w-32 bg-slate-50 focus:bg-white transition-colors"
   }), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.add'),
     onClick: () => handleAddToMapList(mapAddInput),
     className: "bg-indigo-100 text-indigo-600 px-3 py-2 rounded-xl text-xs font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Plus, {
@@ -251,7 +250,6 @@
   }), " ", t('concept_map.setup.add_concept_btn')))), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 max-w-md mx-auto mb-6"
   }, "Review and curate the concepts before generating the interactive diagram."), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.initialize_map'),
     onClick: handleInitializeMap,
     disabled: isProcessing,
     "aria-busy": isProcessing,

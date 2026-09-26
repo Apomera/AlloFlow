@@ -694,9 +694,11 @@ function AlignmentEvidenceMap(p) {
       id: headingId,
       className: "font-bold text-slate-900"
     }, entry.label), /*#__PURE__*/React.createElement("span", {
+      role: "group",
       className: 'flex-shrink-0 text-[10px] uppercase font-bold px-2 py-1 rounded ' + alignmentMapBadgeClass(entry.status),
       "aria-label": 'Overall status: ' + alignmentMapStatus(entry.status)
     }, alignmentMapStatus(entry.status))), entry.context && /*#__PURE__*/React.createElement("div", {
+      role: "group",
       className: "mt-2 rounded border border-indigo-100 bg-indigo-50 p-2 text-xs",
       "aria-label": 'Standards context for ' + entry.label
     }, /*#__PURE__*/React.createElement("div", {

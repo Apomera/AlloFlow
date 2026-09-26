@@ -107,6 +107,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
       var _traBg = function(h){ return _traHC ? (_tra_BGH[h]||h) : (_traL ? (_tra_BGL[h]||h) : h); };
       var _traFg = function(h){ return _traHC ? (_tra_FGH[h]||h) : (_traL ? (_tra_FGL[h]||h) : h); };
       var _traBd = function(h){ return _traHC ? (_tra_BDH[h]||h) : (_traL ? (_tra_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _traInk = function(c){ return _traHC || _traL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -223,7 +225,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
           style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _traBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _traFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: _traInk(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _traFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
@@ -361,7 +363,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
             return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: _traBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + p.color, marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 22 } }, p.icon),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: p.color } }, p.label)
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _traInk(p.color) } }, p.label)
               ),
               h('p', { style: { margin: 0, color: _traFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } }, p.what)
             );

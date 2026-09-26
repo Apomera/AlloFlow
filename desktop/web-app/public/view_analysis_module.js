@@ -283,7 +283,6 @@ function AnalysisView(props) {
         text: d
       })));
     })), isTeacherMode && /*#__PURE__*/React.createElement("button", {
-      "aria-label": t('common.auto_correct_selected_errors'),
       onClick: handleAutoCorrectSource,
       disabled: isProcessing || selectedDiscrepancies.size === 0,
       "aria-busy": isProcessing,
@@ -487,18 +486,16 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
         className: "shrink-0 ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"
       }, t('analysis.grammar_restore_one') || 'Restore'));
     })), isTeacherMode && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("button", {
-      "aria-label": t('common.fix_grammar_errors'),
       onClick: handleFixGrammarErrors,
       disabled: isProcessing || selectedGrammarErrors.size === 0,
       "aria-busy": isProcessing,
-      className: "w-full flex items-center justify-center gap-2 bg-white border border-amber-600 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      className: "w-full flex items-center justify-center gap-2 bg-white border border-amber-700 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
     }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
       className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Wand2, {
       size: 12
     }), t('analysis.fix_grammar_button') || 'Fix Grammar Errors', " (", selectedGrammarErrors.size, ")"), isTeacherMode && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("button", {
-      "aria-label": t('common.check'),
       onClick: () => {
         updateAnalysisResource(prev => ({
           ...prev,
@@ -526,7 +523,6 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   }, t('output.common_original')), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.download_audio'),
     title: t('common.download_audio'),
     "data-help-key": "analysis_download_audio",
     onClick: () => handleDownloadAudio && handleDownloadAudio(generatedContent?.data?.originalText, 'original-source-text', 'dl-analysis-source'),
@@ -538,7 +534,6 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   }) : /*#__PURE__*/React.createElement(Download, {
     size: 14
   }), downloadingContentId === 'dl-analysis-source' ? t('common.downloading') : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.toggle_edit_analysis'),
     onClick: handleToggleIsEditingAnalysis,
     className: `flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isEditingAnalysis ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100'}`
   }, isEditingAnalysis ? /*#__PURE__*/React.createElement(CheckCircle2, {

@@ -1891,7 +1891,7 @@ window.SelHub = window.SelHub || {
                   });
                 },
                 disabled: dtAiLoad,
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: dtAiLoad ? _decBg('#334155') : '#6366f1', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: dtAiLoad ? 'default' : 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: dtAiLoad ? _decBg('#334155') : '#4f46e5', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: dtAiLoad ? 'default' : 'pointer' }
               }, dtAiLoad ? 'Analyzing...' : '\u2728 Get Feedback'),
               // Complete
               h('button', { 'aria-label': 'Complete & Next',
@@ -2057,7 +2057,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: edAiLoad,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: edAiLoad ? _decBg('#334155') : '#6366f1', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: edAiLoad ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: edAiLoad ? _decBg('#334155') : '#4f46e5', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: edAiLoad ? 'default' : 'pointer' }
             }, edAiLoad ? 'Thinking...' : '\u2728 Explore This Dilemma'),
             // Next
             h('button', { 'aria-label': 'Complete & Next',
@@ -2442,7 +2442,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: rwAiLoad,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: rwAiLoad ? _decBg('#334155') : '#6366f1', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: rwAiLoad ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: rwAiLoad ? _decBg('#334155') : '#4f46e5', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: rwAiLoad ? 'default' : 'pointer' }
             }, rwAiLoad ? 'Analyzing...' : '\u2728 Discuss With AI'),
             // Complete & Next
             h('button', { 'aria-label': 'Complete & Next',
@@ -2692,7 +2692,7 @@ window.SelHub = window.SelHub || {
       var printContent = null;
       if (activeTab === 'print') {
         printContent = h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: _decFg('#78350f'), lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: _decHC ? _decFg('#78350f') : '#fde68a', lineHeight: 1.65 } },
             h('strong', null, '\uD83D\uDDA8 Decision template. '),
             'A one-page structured-decision worksheet you can carry. Apply it to anything from "what classes do I sign up for?" to "do I confront this friend?" The structure slows down the choice enough that the wise answer can show up.'
           ),

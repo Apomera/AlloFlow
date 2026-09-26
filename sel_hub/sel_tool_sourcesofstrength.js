@@ -112,6 +112,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
       var _sou_FGD = {'#6366f1':'#818cf8'};
       var _souFg = function(h){ return _souHC ? (_sou_FGH[h]||h) : (_souL ? (_sou_FGL[h]||h) : (_sou_FGD[h]||h)); };
       var _souBd = function(h){ return _souHC ? (_sou_BDH[h]||h) : (_souL ? (_sou_BDL[h]||h) : h); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3)
+      var _souInk = function(c){ return _souHC || _souL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -322,7 +324,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: _souFg(s.color) } }, s.label)
               ),
               h('div', { style: { padding: 10, borderRadius: 6, background: _souBg('#1e293b'), marginBottom: 8, fontSize: 12, color: _souFg('#cbd5e1'), lineHeight: 1.65, fontStyle: 'italic' } },
-                h('strong', { style: { color: _souFg(s.color) } }, 'How to build this: '), s.ifLow
+                h('strong', { style: { color: _souInk(_souFg(s.color)) } }, 'How to build this: '), s.ifLow
               ),
               h('label', { htmlFor: 'sos-plan-' + s.id, style: { display: 'block', fontSize: 11, color: _souFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My specific move (one small action I will take)'),
               h('textarea', { id: 'sos-plan-' + s.id, value: plan,
@@ -380,14 +382,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
               return h('div', { key: s.id, style: { marginBottom: 14, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + s.color, background: _souBg('#f8fafc') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                   h('strong', { style: { fontSize: 13, color: _souFg('#0f172a') } }, s.icon + ' ' + s.label),
-                  v ? h('span', { style: { fontSize: 13, fontWeight: 800, color: _souFg(s.color) } }, v + ' / 5') : h('span', { style: { fontSize: 11, color: _souFg('#94a3b8'), fontStyle: 'italic' } }, '(not rated)')
+                  v ? h('span', { style: { fontSize: 13, fontWeight: 800, color: _souFg(s.color) } }, v + ' / 5') : h('span', { style: { fontSize: 11, color: _souFg('#475569'), fontStyle: 'italic' } }, '(not rated)')
                 ),
                 details.who ? h('div', { style: { fontSize: 12, color: _souFg('#0f172a'), marginBottom: 4 } }, h('strong', null, 'Who/what: '), details.who) : null,
                 plan ? h('div', { style: { fontSize: 12, color: _souFg('#0f172a'), fontStyle: 'italic' } }, h('strong', null, 'My move: '), plan) : null
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _souFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _souFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Sources of Strength framework (Wyman et al., University of Rochester). ',
               'For acute crisis: 988 Suicide and Crisis Lifeline · 741741 Crisis Text Line (text HOME). ',
               'Created with AlloFlow SEL Hub.'

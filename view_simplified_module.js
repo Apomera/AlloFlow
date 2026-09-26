@@ -212,6 +212,7 @@ function renderDictionaryPanel(dict, t, renderRecording) {
 function renderReadingLevelExplanation(definitionData, t, renderFormattedText) {
   if (!definitionData || !definitionData.text) return null;
   return React.createElement('div', {
+    role: "group",
     className: 'rounded-lg bg-indigo-50/60 border border-indigo-100 px-3 py-2.5',
     'aria-label': t('glossary.popups.reading_level_explanation') || 'Reading-level explanation'
   }, React.createElement('div', {
@@ -4590,6 +4591,7 @@ function SimplifiedView(props) {
         dir: "auto",
         className: "text-sm font-medium leading-relaxed text-slate-800"
       }, sentence), /*#__PURE__*/React.createElement("div", {
+        role: "group",
         className: "mt-1.5 flex items-center gap-1.5 flex-wrap",
         "aria-label": `${simplifiedAudioEditLabel} ${sentenceNumber}: ${statusLabel}. ${provenance.label}.`
       }, /*#__PURE__*/React.createElement("span", {
@@ -6242,6 +6244,7 @@ function SimplifiedView(props) {
           return /*#__PURE__*/React.createElement(React.Fragment, {
             key: index
           }, node, glosses.map(entry => /*#__PURE__*/React.createElement("span", {
+            role: "group",
             key: entry.id,
             "data-reading-gloss": true,
             className: "mx-1 rounded bg-indigo-50 px-1 text-base text-indigo-900",
@@ -7689,7 +7692,6 @@ function SimplifiedView(props) {
     className: "text-sm text-slate-600 italic mb-2"
   }, "\"", generatedContent.alignmentCheck.improvement, "\""), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.regenerate_with_rigor'),
     onClick: handleRegenerateWithRigor,
     disabled: isProcessing,
     "aria-busy": isProcessing,
@@ -8072,7 +8074,6 @@ function SimplifiedView(props) {
     className: "text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3"
   }, renderFormattedText(revisionData.result, false)), isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.apply_text_revision'),
     onClick: applyTextRevision,
     className: "min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(RefreshCw, {

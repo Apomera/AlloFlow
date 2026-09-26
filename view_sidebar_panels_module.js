@@ -1263,7 +1263,6 @@ function AdventurePanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.resume_saved_adventure"),
       "data-help-key": "adventure_resume_btn",
       onClick: handleResumeAdventure,
       disabled: isResumingAdventure,
@@ -1410,7 +1409,6 @@ function SimplifiedPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       onClick: () => handleGenerate("simplified"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
@@ -1524,8 +1522,7 @@ function MathPanel(props) {
       type: "button",
       "data-help-key": "math_open_studio",
       onClick: openMathCreate,
-      className: "w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-indigo-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2",
-      "aria-label": t("math_create.open_aria") || "Open Math Studio: create problems, assessments, and fluency practice"
+      className: "w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-indigo-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
     },
     "\u{1F9EE} ",
     t("math_create.open_button") || "Math Studio: problems & assessments"
@@ -1687,7 +1684,6 @@ function MathPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate_math_problems"),
       "data-help-key": "math_generate_button",
       onClick: handleGenerateMath,
       disabled: !mathInput.trim() || isProcessing || mathMode === "Fluency Probe" || !aiTextAvailable,
@@ -1909,7 +1905,6 @@ function DbqPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("dbq.generate_aria") || "Generate DBQ",
       "data-help-key": "dbq_generate_button",
       onClick: () => handleGenerate("dbq"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
@@ -2021,7 +2016,6 @@ function SourceInputPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.search_by_url"),
       onClick: handleAiUrlSearch,
       disabled: !urlSearchQuery.trim() || isExtracting,
       className: "bg-teal-700 text-white text-sm font-medium px-4 rounded-md hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
@@ -2072,7 +2066,6 @@ function SourceInputPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.download"),
       onClick: () => handleUrlFetch(),
       disabled: !urlToFetch.trim() || isExtracting,
       className: "bg-indigo-600 text-white text-sm font-medium px-4 rounded-md hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
@@ -2281,7 +2274,6 @@ function GlossaryPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       onClick: () => handleGenerate("glossary"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
@@ -2565,7 +2557,6 @@ function QuizPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       onClick: () => handleGenerate("quiz", null, false, null, {
         quizMode,
         quizMcqCount: clampCount(effectiveMix.mcq || 0, 20),
@@ -2670,7 +2661,6 @@ function TimelinePanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       onClick: () => handleGenerate("timeline"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
@@ -2771,7 +2761,6 @@ function ConceptSortPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       "data-help-key": "concept_sort_generate_button",
       onClick: () => handleGenerate("concept-sort"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
@@ -2870,7 +2859,6 @@ function BrainstormPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       onClick: () => handleGenerate("brainstorm", null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } }),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
@@ -2905,7 +2893,6 @@ function BrainstormPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.refresh"),
       "data-help-key": "brainstorm_generate_button",
       onClick: () => handleGenerate("gemini-bridge"),
       disabled: !hasSourceOrAnalysis || isProcessing,
@@ -3022,7 +3009,6 @@ function ImagePanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       onClick: () => handleGenerate("image"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
@@ -3077,7 +3063,6 @@ function PersonaPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.ask_question"),
       "aria-current": activeView === "persona" ? "page" : void 0,
       onClick: handleSetActiveViewToPersona,
       className: `w-full p-3 text-left hover:bg-indigo-50 flex justify-between items-center group border-b border-slate-100 ${activeView === "persona" ? "bg-indigo-50 text-indigo-900 font-bold" : "text-slate-600"}`
@@ -3088,7 +3073,6 @@ function PersonaPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.refresh"),
       "data-help-key": "persona_generate_button",
       onClick: () => {
         handleGeneratePersonas();
@@ -3157,7 +3141,6 @@ function OutlinePanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       "data-help-key": "outline_generate_button",
       onClick: () => handleGenerate("outline"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
@@ -3212,7 +3195,6 @@ function NoteTakingPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate") || "Generate",
       "data-help-key": "note_taking_generate_button",
       onClick: () => handleGenerate("note-taking"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
@@ -3273,7 +3255,6 @@ function AnchorChartPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate") || "Generate",
       "data-help-key": "anchor_chart_generate_button",
       onClick: () => handleGenerate("anchor-chart"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
@@ -3326,7 +3307,6 @@ function FaqPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       onClick: () => handleGenerate("faq"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
@@ -3378,7 +3358,6 @@ function SentenceFramesPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       onClick: () => handleGenerate("sentence-frames"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
@@ -3455,7 +3434,6 @@ function AnalysisPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       "data-help-key": "analysis_generate_button",
       onClick: () => handleGenerate("analysis", null, false, inputText, { selectedReadingSourceId: "__input__" }),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
@@ -3477,7 +3455,6 @@ function UiToolWordsoundsPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate"),
       "data-help-key": "wordsounds_open_btn",
       onClick: handleOpenWordSounds,
       className: "w-full py-2 bg-pink-600 text-white rounded-lg font-bold text-sm shadow-md hover:bg-pink-700 active:scale-95 transition-all motion-reduce:transition-none flex items-center justify-center gap-2"
@@ -4048,7 +4025,6 @@ function GeneratorActionsView(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.search"),
       "data-help-key": "tool_analysis",
       "aria-expanded": expandedTools.includes("analysis"),
       onClick: () => toggleTool("analysis"),
@@ -4106,7 +4082,6 @@ function GeneratorActionsView(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.read"),
       "data-help-key": "tool_simplified",
       "aria-expanded": expandedTools.includes("simplified"),
       onClick: () => toggleTool("simplified"),
@@ -4295,7 +4270,6 @@ function GeneratorActionsView(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.toggle_images"),
       "data-help-key": "tool_visual",
       "aria-expanded": expandedTools.includes("image"),
       onClick: () => toggleTool("image"),
@@ -4405,7 +4379,6 @@ function GeneratorActionsView(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.history"),
       "data-help-key": "tool_persona",
       "aria-expanded": expandedTools.includes("persona"),
       onClick: () => toggleTool("persona"),
@@ -4437,7 +4410,6 @@ function GeneratorActionsView(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.reorder_list"),
       "data-help-key": "tool_timeline",
       "aria-expanded": expandedTools.includes("timeline"),
       onClick: () => toggleTool("timeline"),
@@ -4468,7 +4440,6 @@ function GeneratorActionsView(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.filter"),
       "data-help-key": "tool_concept_sort",
       onClick: () => toggleTool("concept-sort"),
       className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:transition-none"
@@ -4501,7 +4472,6 @@ function GeneratorActionsView(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("sidebar.tool_dbq_aria") || "Document-Based Questions",
       "data-help-key": "tool_dbq",
       onClick: () => toggleTool("dbq"),
       className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
@@ -4692,7 +4662,6 @@ function GeneratorActionsView(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.check"),
       "data-help-key": "tool_quiz",
       "aria-expanded": expandedTools.includes("quiz"),
       onClick: () => toggleTool("quiz"),
@@ -5192,7 +5161,6 @@ function SourceInputShellView(props) {
       "button",
       {
         type: "button",
-        "aria-label": t("common.generate"),
         "data-help-key": "source_generate_btn",
         onClick: () => {
           if (!showSourceGen && !expandedTools.includes("source-input")) {

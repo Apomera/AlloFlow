@@ -713,7 +713,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _deFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _deFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'DEAR MAN from Linehan, M. M. (2014), DBT Skills Training Manual (Interpersonal Effectiveness module). ',
               'Created with AlloFlow SEL Hub.'
             )

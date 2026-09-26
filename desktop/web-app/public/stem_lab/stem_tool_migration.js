@@ -2026,8 +2026,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var borderCol = isDark ? 'border-slate-700' : 'border-slate-200';
       var textPrimary = isDark ? 'text-white' : 'text-slate-900';
       var textSecondary = isDark ? 'text-slate-300' : 'text-slate-600';
-      var textMuted = isDark ? 'text-slate-400' : 'text-slate-500'; // was 'text-slate-200' on both branches → ~1.6:1 on the light surface, failed WCAG AA
-      var accent = 'text-sky-500';
+      var textMuted = isDark ? 'text-slate-400' : 'text-slate-600'; // slate-500 was 4.46:1 on bg-sky-50; was 'text-slate-200' on both branches → ~1.6:1 on the light surface, failed WCAG AA
+      var accent = isDark ? 'text-sky-400' : 'text-sky-700'; // sky-500 was 2.6:1 on the light cards
+      var dangerText = isDark ? 'text-red-400' : 'text-red-700', goodText = isDark ? 'text-green-400' : 'text-green-700';
       var accentBg = isDark ? 'bg-sky-900/40' : 'bg-sky-50';
       var btnPrimary = 'bg-sky-700 hover:bg-sky-800 text-white';
       var btnSecondary = isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-slate-200 hover:bg-slate-300 text-slate-700';
@@ -3885,7 +3886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.fat_required', 'fat required'))
                 ),
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
-                  h('div', { className: 'text-lg font-black ' + (percentBodyWeight > 80 ? 'text-red-500' : accent) }, Math.round(percentBodyWeight) + '%'),
+                  h('div', { className: 'text-lg font-black ' + (percentBodyWeight > 80 ? dangerText : accent) }, Math.round(percentBodyWeight) + '%'),
                   h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.of_body_weight', 'of body weight'))
                 ),
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
@@ -3896,7 +3897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', { className: 'mt-2 text-[0.6875rem] leading-relaxed ' + textSecondary },
                 h('p', null, '\uD83D\uDD2C ', h('strong', null, t('stem.migration.the_science', 'The science: ')), t('stem.migration.flight_cost_is_drag_times_distance', 'This costs the flight the way an engineer would: the bird has to overcome drag, and drag over distance is energy. Two things drag on it \u2014 holding its weight up on a wing of limited span, and pushing its body through the air. Fat provides 9 kcal per gram, the most energy-dense fuel in biology. Before migration birds enter '), h('strong', null, t('stem.migration.hyperphagia_word', 'hyperphagia')), t('stem.migration.a_feeding_frenzy_where_they_may_double', ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through '), h('strong', null, t('stem.migration.55_of_its_body_weight', '55% of its body weight')), t('stem.migration.during_its_record_non_stop_flight_2026', ' during a record non-stop flight of 8,425 miles, Alaska to Tasmania.')),
                 h('p', { className: 'mt-1 italic ' + textMuted }, t('stem.migration.same_model_as_inquiry', 'The Energy Inquiry tab runs this same model, so the two tabs agree. It assumes a typical wingspan for the bird\'s mass; the inquiry tab lets you set span yourself.')),
-                percentBodyWeight > 100 && h('p', { className: 'mt-1 font-bold text-red-500' }, t('stem.migration.this_journey_requires_more_fat_than_th', '\u26A0\uFE0F This journey requires more fat than the bird weighs! It would need stopovers to refuel \u2014 or V-formation to cut costs.'))
+                percentBodyWeight > 100 && h('p', { className: 'mt-1 font-bold ' + dangerText }, t('stem.migration.this_journey_requires_more_fat_than_th', '\u26A0\uFE0F This journey requires more fat than the bird weighs! It would need stopovers to refuel \u2014 or V-formation to cut costs.'))
               )
             );
           })(),
@@ -3927,7 +3928,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                     h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 ' + (oxygenPercent < 50 ? 'bg-red-500' : oxygenPercent < 70 ? 'bg-amber-500' : 'bg-green-500'), style: { height: oxygenPercent + '%' } })
                   ),
-                  h('div', { className: 'text-sm font-black mt-1 ' + (oxygenPercent < 50 ? 'text-red-500' : textPrimary) }, Math.round(oxygenPercent) + '%'),
+                  h('div', { className: 'text-sm font-black mt-1 ' + (oxygenPercent < 50 ? dangerText : textPrimary) }, Math.round(oxygenPercent) + '%'),
                   h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, 'O\u2082')
                 ),
                 h('div', { className: 'text-center' },
@@ -6355,16 +6356,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               className: 'flex-1 accent-sky-500',
               onChange: function(e) { upd('aoa', parseInt(e.target.value, 10)); }
             }),
-            h('span', { className: 'text-sm font-bold min-w-[40px] text-right ' + (isStalling ? 'text-red-500' : accent) }, aoa + '\u00B0'),
-            isStalling && h('span', { className: 'text-xs font-bold text-red-500' }, t('stem.migration.stall', '\u26A0 STALL'))
+            h('span', { className: 'text-sm font-bold min-w-[40px] text-right ' + (isStalling ? dangerText : accent) }, aoa + '\u00B0'),
+            isStalling && h('span', { className: 'text-xs font-bold ' + dangerText }, t('stem.migration.stall', '\u26A0 STALL'))
           ),
 
           // Stats readout
           h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
             [
-              { label: t('stem.migration.lift_coeff_c', 'Lift Coeff (C\u2097)'), value: cl.toFixed(3), color: '#3b82f6' },
-              { label: t('stem.migration.drag_coeff_c', 'Drag Coeff (C\u2091)'), value: cd.toFixed(4), color: '#ef4444' },
-              { label: t('stem.migration.l_d_ratio', 'L/D Ratio'), value: ldRatio.toFixed(1), color: '#22c55e' }
+              { label: t('stem.migration.lift_coeff_c', 'Lift Coeff (C\u2097)'), value: cl.toFixed(3), color: isDark ? '#60a5fa' : '#1d4ed8' },
+              { label: t('stem.migration.drag_coeff_c', 'Drag Coeff (C\u2091)'), value: cd.toFixed(4), color: isDark ? '#f87171' : '#b91c1c' },
+              { label: t('stem.migration.l_d_ratio', 'L/D Ratio'), value: ldRatio.toFixed(1), color: isDark ? '#4ade80' : '#15803d' }
             ].map(function(s) {
               return h('div', { key: s.label, className: 'rounded-lg p-2 border ' + borderCol + ' ' + cardBg },
                 h('div', { className: 'text-sm font-black', style: { color: s.color } }, s.value),
@@ -6415,7 +6416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', null,
                 h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.angle_of_attack_stall', 'Angle of Attack & Stall')),
                 h('p', null, t('stem.migration.as_the_angle_of_attack_increases_lift_', 'As the angle of attack increases, lift increases \u2014 up to a point. Beyond the '), h('strong', null, t('stem.migration.critical_angle', 'critical angle')), t('stem.migration.stall_angle_airflow_separates_from_the', ' (stall angle), airflow separates from the upper surface. The wing loses its smooth airflow, lift drops dramatically, and drag spikes. This is a "stall."')),
-                h('p', { className: 'mt-1' }, t('stem.migration.current_wing_s_stall_angle', 'Current wing\'s stall angle: '), h('strong', { className: 'text-red-500' }, wing.stallAngle + '\u00B0'), t('stem.migration.best_l_d_at', '. Best L/D at: '), h('strong', { className: 'text-green-500' }, migrBestLD(wing).angle.toFixed(1) + '\u00B0'), '.')
+                h('p', { className: 'mt-1' }, t('stem.migration.current_wing_s_stall_angle', 'Current wing\'s stall angle: '), h('strong', { className: dangerText }, wing.stallAngle + '\u00B0'), t('stem.migration.best_l_d_at', '. Best L/D at: '), h('strong', { className: goodText }, migrBestLD(wing).angle.toFixed(1) + '\u00B0'), '.')
               ),
               h('div', null,
                 h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.lift_to_drag_ratio_l_d', 'Lift-to-Drag Ratio (L/D)')),
@@ -7129,9 +7130,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     },
                       h('div', { className: 'text-xs font-bold ' + textPrimary }, ch.label),
                       h('div', { className: 'flex gap-3 mt-1 text-[0.6875rem]' },
-                        h('span', { className: (ch.energy_cost || 0) > 0 ? 'text-green-600 font-bold' : 'text-red-500 font-bold' }, '\u26A1 ' + (ch.energy_cost > 0 ? '+' : '') + ch.energy_cost + (ch.energy_cost > 0 ? ' gain' : ' cost')),
-                        h('span', { className: 'text-sky-500 font-bold' }, '\uD83D\uDCCD +' + (ch.distance_gain || 0) + ' mi'),
-                        ch.flock_change !== 0 && h('span', { className: (ch.flock_change > 0 ? 'text-green-600' : 'text-red-500') + ' font-bold' }, '\uD83E\uDEBF ' + (ch.flock_change > 0 ? '+' : '') + ch.flock_change + (ch.flock_change > 0 ? ' birds join' : ' birds lost'))
+                        h('span', { className: (ch.energy_cost || 0) > 0 ? goodText + ' font-bold' : dangerText + ' font-bold' }, '\u26A1 ' + (ch.energy_cost > 0 ? '+' : '') + ch.energy_cost + (ch.energy_cost > 0 ? ' gain' : ' cost')),
+                        h('span', { className: 'text-sky-700 font-bold' }, '\uD83D\uDCCD +' + (ch.distance_gain || 0) + ' mi'),
+                        ch.flock_change !== 0 && h('span', { className: (ch.flock_change > 0 ? goodText : dangerText) + ' font-bold' }, '\uD83E\uDEBF ' + (ch.flock_change > 0 ? '+' : '') + ch.flock_change + (ch.flock_change > 0 ? ' birds join' : ' birds lost'))
                       )
                     );
                   })

@@ -391,7 +391,6 @@ function BridgeSendModal(props) {
                     else text = JSON.stringify(src).substring(0, 500);
                     if (text) { ta.value = text; const counter = document.getElementById('bridge-char-count'); if (counter) counter.textContent = text.length + ' chars'; addToast('Loaded current generated content', 'info'); }
                   }}
-                  aria-label={t('common.use_current_generated_text')}
                   style={{background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.25)',borderRadius:'10px',padding:'8px 14px',color:_bt.secondaryAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
                 ><span>📎</span> {t('resource_builder.use_current_text')}</button>
                 <input
@@ -421,7 +420,6 @@ function BridgeSendModal(props) {
                   data-help-key="bridge_send_attach_image_btn"
                   id="bridge-attach-image-btn"
                   onClick={() => document.getElementById('bridge-image-file-input')?.click()}
-                  aria-label={t('common.upload_and_attach_an_image')}
                   style={{background:'rgba(168,85,247,0.1)',border:'1px solid rgba(168,85,247,0.25)',borderRadius:'10px',padding:'8px 14px',color:_bt.purpleAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
                 ><span>🖼️</span> {t('resource_builder.attach_image')}</button>
                 <button type="button"
@@ -446,7 +444,6 @@ function BridgeSendModal(props) {
                       if (removeBtn) removeBtn.style.display = 'flex';
                       addToast('Generated image attached', 'success');
                     }}
-                    aria-label={t('common.use_current_generated_image')}
                     style={{background:'rgba(20,184,166,0.1)',border:'1px solid rgba(20,184,166,0.25)',borderRadius:'10px',padding:'8px 14px',color:_bt.textAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
                   ><span>🎨</span> {t('bridge.use_generated_button') || 'Use Generated'}</button>
                 )}

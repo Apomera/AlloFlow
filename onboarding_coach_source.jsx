@@ -736,7 +736,7 @@ function OnboardingCoach(props) {
 
                     {/* Conversation pane */}
                     {coachAvailable && conversation.length > 0 && (
-                      <div
+                      <div role="log"
                         ref={chatPaneRef}
                         aria-live="polite"
                         aria-label={t('onboarding.coach_conversation_aria') || 'AlloBot conversation'}

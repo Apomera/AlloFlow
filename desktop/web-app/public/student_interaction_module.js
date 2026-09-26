@@ -528,7 +528,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       },
       /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 })
     )))),
-    /* @__PURE__ */ React.createElement("div", { className: cx("rounded-xl p-4 mb-6", styles.panelSoft), "aria-labelledby": summaryId }, /* @__PURE__ */ React.createElement("h4", { id: summaryId, className: cx("text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2", styles.muted) }, t("modals.work_summary")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16, className: "text-teal-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.quizzes), " ", t("modals.summary_quizzes")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16, className: "text-green-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.readings), " ", t("modals.summary_readings")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, className: "text-purple-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.adventures), " ", t("modals.summary_adventures")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(Quote, { size: 16, className: "text-rose-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.scaffolds), " ", t("modals.summary_scaffolds"))), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs italic text-center mt-2 pt-2 border-t", styles.muted) }, '"', getSummaryString(), '"')),
+    /* @__PURE__ */ React.createElement("div", { role: "group", className: cx("rounded-xl p-4 mb-6", styles.panelSoft), "aria-labelledby": summaryId }, /* @__PURE__ */ React.createElement("h4", { id: summaryId, className: cx("text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2", styles.muted) }, t("modals.work_summary")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16, className: "text-teal-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.quizzes), " ", t("modals.summary_quizzes")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16, className: "text-green-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.readings), " ", t("modals.summary_readings")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, className: "text-purple-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.adventures), " ", t("modals.summary_adventures")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(Quote, { size: 16, className: "text-rose-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.scaffolds), " ", t("modals.summary_scaffolds"))), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs italic text-center mt-2 pt-2 border-t", styles.muted) }, '"', getSummaryString(), '"')),
     /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -546,7 +546,6 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       "button",
       {
         type: "button",
-        "aria-label": t("common.close"),
         onClick: onClose,
         disabled: submitting,
         className: cx("w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95", styles.secondary)
@@ -591,7 +590,6 @@ const DraftFeedbackInterface = React.memo(({
       "button",
       {
         type: "button",
-        "aria-label": t("common.next"),
         onClick: onSubmit,
         disabled: !draftText.trim(),
         className: cx("font-bold py-3 px-8 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 flex items-center gap-2", styles.primary)
@@ -618,7 +616,6 @@ const DraftFeedbackInterface = React.memo(({
       "button",
       {
         type: "button",
-        "aria-label": t("common.next"),
         onClick: onSubmit,
         className: cx("font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95", styles.primary)
       },
@@ -632,7 +629,6 @@ const DraftFeedbackInterface = React.memo(({
       "button",
       {
         type: "button",
-        "aria-label": t("common.cancel"),
         onClick: onCancel,
         className: cx("font-bold py-3 px-12 rounded-full shadow-lg transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95", styles.primary)
       },
