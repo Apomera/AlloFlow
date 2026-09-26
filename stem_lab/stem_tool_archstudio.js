@@ -453,22 +453,59 @@ function __alloAST(k, fb) {
     };
   }
 
+  // Zoom is a multiple of "whole build fits". Steps multiply so each press
+  // feels the same size whether the student is far out or close in.
+  var ARCH_ZOOM_MIN = 0.25, ARCH_ZOOM_MAX = 6;
+  // Above this many blocks the shadow pass is skipped to keep orbiting smooth.
+  var ARCH_SHADOW_LIMIT = 3000;
+  // Tilt stops a little below eye level, and applyCam keeps the eye above
+  // the ground: under the see-through floor students lose their bearings.
+  var ARCH_TILT_MAX = 10;
+  function clampArchTilt(rotX) { return Math.max(-88, Math.min(ARCH_TILT_MAX, rotX)); }
+  var ARCH_VIEW_PRESETS = {
+    viewIso: { rotX: -24, rotY: -38 }, viewFront: { rotX: 0, rotY: 0 },
+    viewSide: { rotX: 0, rotY: -90 }, viewTop: { rotX: -88, rotY: 0 }
+  };
+  // Camera axes for an eye at elevation el and azimuth az (radians):
+  // fwd points from the target to the eye.
+  function archViewBasis(el, az) {
+    var fwd = { x: Math.cos(el) * Math.sin(az), y: Math.sin(el), z: Math.cos(el) * Math.cos(az) };
+    var right = { x: Math.cos(az), y: 0, z: -Math.sin(az) };
+    var up = { x: fwd.y * right.z - fwd.z * right.y, y: fwd.z * right.x - fwd.x * right.z, z: fwd.x * right.y - fwd.y * right.x };
+    return { fwd: fwd, right: right, up: up };
+  }
+  // Screen direction of each world axis, for the orientation compass.
+  function archCompassAxes(el, az) {
+    var b = archViewBasis(el, az);
+    return ['x', 'y', 'z'].map(function (k) {
+      return { axis: k, dx: b.right[k], dy: -b.up[k] };
+    });
+  }
   function changeArchCamera(current, action) {
     var base = current || {};
     var next = {
-      rotX: isFinite(base.rotX) ? base.rotX : -24,
-      rotY: isFinite(base.rotY) ? base.rotY : -38,
-      scale: isFinite(base.scale) ? base.scale : 1
+      rotX: isFinite(base.rotX) ? +base.rotX : -24,
+      rotY: isFinite(base.rotY) ? +base.rotY : -38,
+      scale: isFinite(base.scale) && +base.scale > 0 ? +base.scale : 1,
+      panX: isFinite(base.panX) ? +base.panX : 0,
+      panY: isFinite(base.panY) ? +base.panY : 0,
+      panZ: isFinite(base.panZ) ? +base.panZ : 0
     };
-    if (action === 'reset') return { rotX: -24, rotY: -38, scale: 1 };
-    if (action === 'left') next.rotY -= 15;
+    if (action === 'reset') return { rotX: -24, rotY: -38, scale: 1, panX: 0, panY: 0, panZ: 0 };
+    var preset = ARCH_VIEW_PRESETS[action];
+    if (preset) {
+      // Turn the short way round rather than unwinding earlier orbits.
+      next.rotX = preset.rotX;
+      next.rotY = preset.rotY + Math.round((next.rotY - preset.rotY) / 360) * 360;
+    }
+    else if (action === 'left') next.rotY -= 15;
     else if (action === 'right') next.rotY += 15;
     else if (action === 'up') next.rotX -= 10;
     else if (action === 'down') next.rotX += 10;
-    else if (action === 'zoomIn') next.scale += 0.15;
-    else if (action === 'zoomOut') next.scale -= 0.15;
-    next.rotX = Math.max(-88, Math.min(88, next.rotX));
-    next.scale = Math.max(0.3, Math.min(3, Math.round(next.scale * 100) / 100));
+    else if (action === 'zoomIn') next.scale *= 1.15;
+    else if (action === 'zoomOut') next.scale /= 1.15;
+    next.rotX = clampArchTilt(next.rotX);
+    next.scale = Math.max(ARCH_ZOOM_MIN, Math.min(ARCH_ZOOM_MAX, Math.round(next.scale * 100) / 100));
     return next;
   }
 
@@ -481,10 +518,230 @@ function __alloAST(k, fb) {
     var customMeshes = [];
     var raycaster = null, pointer = null, latestBlocks = [], latestAllBlocks = [];
     var rafId = 0, capacity = 0, resizeObs = null;
-    var pending = null, appliedSig = '', appliedCamSig = '', previewSig = '', dirty = true;
-    var gridLineCount = 0;
-    var extent = { w: 1, d: 1, h: 1 }, centre = { x: 0, z: 0 };
+    var pending = null, appliedSig = '', previewSig = '', dirty = true;
+    var gridLineCount = 0, sun = null, shadowCatcher = null;
+    var extent = { w: 1, d: 1, h: 1 };
     var mountGeneration = 0, contextCanvas = null, contextRestoreTimer = 0;
+    // Camera state is owned here, not by React: a drag used to write tool
+    // state on every pointermove, re-rendering the whole studio per event.
+    // `view` eases toward `goal`; tool state is written once a gesture ends.
+    // Scene coordinates are world cells, and `frame` (fx..fh, animated with
+    // the camera) is what zoom 1 fits. It only changes on first load, Reset,
+    // or a bulk edit, so placing a block no longer shifts the whole view.
+    var view = null, goal = null, tau = 0.14, lastT = 0, stateCamSig = '', frameKeys = null;
+    var nav = { pointers: {}, count: 0, start: null, moved: false }, wheelTimer = 0, wheelAt = 0;
+
+    function num(v, fallback) { v = Number(v); return isFinite(v) ? v : fallback; }
+    function viewFrom(m) {
+      return {
+        rotX: clampArchTilt(num(m.rotX, -24)), rotY: num(m.rotY, -38),
+        scale: Math.max(ARCH_ZOOM_MIN, Math.min(ARCH_ZOOM_MAX, num(m.scale, 1) || 1)),
+        panX: num(m.panX, 0), panY: num(m.panY, 0), panZ: num(m.panZ, 0),
+        fx: goal ? goal.fx : 0, fy: goal ? goal.fy : 0.5, fz: goal ? goal.fz : 0,
+        fw: goal ? goal.fw : 8, fd: goal ? goal.fd : 8, fh: goal ? goal.fh : 2,
+        bp: m.blueprintView ? 1 : 0
+      };
+    }
+    function framedFor(list) {
+      var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, maxY = 0;
+      (list || []).forEach(function (b) {
+        var bx = b.x || 0, by = b.y || 0, bz = b.z || 0;
+        if (bx < minX) minX = bx; if (bx > maxX) maxX = bx;
+        if (bz < minZ) minZ = bz; if (bz > maxZ) maxZ = bz;
+        if (by > maxY) maxY = by;
+      });
+      if (minX === Infinity) { minX = maxX = minZ = maxZ = 0; }
+      var h = maxY + 1;
+      return { fx: (minX + maxX) / 2, fz: (minZ + maxZ) / 2, fy: h / 2,
+        fw: Math.max(7, maxX - minX + 1), fd: Math.max(7, maxZ - minZ + 1), fh: h };
+    }
+    function refit(list) {
+      var f = framedFor(list);
+      Object.keys(f).forEach(function (k) { goal[k] = f[k]; });
+      goal.panX = goal.panY = goal.panZ = 0;
+      goal.scale = 1;
+      tau = 0.16; invalidate();
+    }
+    function interacting() {
+      return nav.count > 0 || (Date.now() - wheelAt) < 400;
+    }
+    function reduceMotion() {
+      if (pending && pending.reduceMotion) return true;
+      try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+    }
+    function eyeAngles(v) {
+      // Blueprint is this camera looking straight down (bp eases 0 -> 1), so
+      // switching into it animates instead of cutting.
+      var el = -clampArchTilt(v.rotX) * DEG, az = -v.rotY * DEG;
+      var north = Math.round(az / (2 * Math.PI)) * 2 * Math.PI;
+      return { el: el + (89.9 * DEG - el) * v.bp, az: az + (north - az) * v.bp };
+    }
+    // Smallest distance at which all eight corners of the framed box sit
+    // inside the view frustum for this viewing direction.
+    function fitDistance(v, el, az) {
+      var halfV = Math.tan(22.5 * DEG), halfH = halfV * (camera.aspect || 1.6);
+      var basis = archViewBasis(el, az), fwd = basis.fwd, right = basis.right, up = basis.up;
+      var need = 3;
+      [-0.5, 0.5].forEach(function (sx) { [-0.5, 0.5].forEach(function (sy) { [-0.5, 0.5].forEach(function (sz) {
+        var p = { x: sx * v.fw, y: sy * v.fh, z: sz * v.fd };
+        var toward = p.x * fwd.x + p.y * fwd.y + p.z * fwd.z;
+        var px = Math.abs(p.x * right.x + p.y * right.y + p.z * right.z);
+        var py = Math.abs(p.x * up.x + p.y * up.y + p.z * up.z);
+        need = Math.max(need, px / halfH + toward, py / halfV + toward);
+      }); }); });
+      return need * 1.1;
+    }
+    function clampPan(v) {
+      var reach = Math.max(v.fw, v.fd, v.fh) + 24;
+      v.panX = Math.max(-reach, Math.min(reach, v.panX));
+      v.panZ = Math.max(-reach, Math.min(reach, v.panZ));
+      v.panY = Math.max(-v.fy, Math.min(ARCH_Y_MAX + 2, v.panY));
+    }
+    function stepView(dt) {
+      if (!view || !goal) return false;
+      var k = reduceMotion() ? 1 : 1 - Math.exp(-dt / tau), moving = false;
+      Object.keys(goal).forEach(function (key) {
+        var a = view[key], b = goal[key];
+        if (key === 'scale') { a = Math.log(a); b = Math.log(b); }
+        var n = Math.abs(b - a) < 1e-3 ? b : a + (b - a) * k;
+        if (n !== b) moving = true;
+        view[key] = key === 'scale' ? Math.exp(n) : n;
+      });
+      return moving;
+    }
+    function commitView() {
+      if (!goal || !pending || typeof pending.onViewCommit !== 'function') return;
+      var r = function (n, p) { return Math.round(n * p) / p; };
+      goal.rotX = r(goal.rotX, 10); goal.rotY = r(goal.rotY, 10); goal.scale = r(goal.scale, 100);
+      goal.panX = r(goal.panX, 100); goal.panY = r(goal.panY, 100); goal.panZ = r(goal.panZ, 100);
+      var out = { rotX: goal.rotX, rotY: goal.rotY, scale: goal.scale, panX: goal.panX, panY: goal.panY, panZ: goal.panZ };
+      stateCamSig = [out.rotX, out.rotY, out.scale, out.panX, out.panY, out.panZ].join(',') + (pending.blueprintView ? ',bp' : '');
+      try { pending.onViewCommit(out); } catch (e) {}
+    }
+    function camBasis() {
+      var e = camera.matrixWorld.elements;
+      return { right: { x: e[0], y: e[1], z: e[2] }, up: { x: e[4], y: e[5], z: e[6] } };
+    }
+    function unitsPerPixel() {
+      var h = (canvasEl && canvasEl.clientHeight) || 1;
+      var d = camera.position.distanceTo(new T.Vector3(view.fx + view.panX, view.fy + view.panY, view.fz + view.panZ));
+      return 2 * d * Math.tan(22.5 * DEG) / h;
+    }
+    function panPixels(base, basis, upp, dx, dy) {
+      goal.panX = base.panX - dx * upp * basis.right.x + dy * upp * basis.up.x;
+      goal.panY = base.panY - dx * upp * basis.right.y + dy * upp * basis.up.y;
+      goal.panZ = base.panZ - dx * upp * basis.right.z + dy * upp * basis.up.z;
+      clampPan(goal);
+    }
+    // Moves the goal so the world point under the cursor stays under it.
+    function zoomAt(factor, clientX, clientY) {
+      var before = goal.scale;
+      goal.scale = Math.max(ARCH_ZOOM_MIN, Math.min(ARCH_ZOOM_MAX, goal.scale * factor));
+      var point = clientX == null ? null : worldPoint(clientX, clientY);
+      if (point) {
+        var keep = 1 - before / goal.scale;
+        goal.panX += (point.x - (goal.fx + goal.panX)) * keep;
+        goal.panY += (point.y - (goal.fy + goal.panY)) * keep;
+        goal.panZ += (point.z - (goal.fz + goal.panZ)) * keep;
+        clampPan(goal);
+      }
+      tau = 0.07; invalidate();
+    }
+    function worldPoint(clientX, clientY, hitsOnly) {
+      if (!aimRay(clientX, clientY)) return null;
+      var targets = [];
+      if (batch && batch.mesh && latestBlocks.length) targets.push(batch.mesh);
+      customMeshes.forEach(function (mesh) { targets.push(mesh); });
+      targets.push(groundMesh);
+      var hits = raycaster.intersectObjects(targets, false);
+      if (hits.length) return hits[0].point;
+      if (hitsOnly) return null;
+      var centre = new T.Vector3(view.fx + view.panX, view.fy + view.panY, view.fz + view.panZ);
+      var normal = new T.Vector3().subVectors(camera.position, centre).normalize();
+      var out = new T.Vector3();
+      return raycaster.ray.intersectPlane(new T.Plane().setFromNormalAndCoplanarPoint(normal, centre), out);
+    }
+    function aimRay(clientX, clientY) {
+      if (state !== 'ready' || !renderer || !camera || !raycaster || !pointer || !canvasEl || !groundMesh) return false;
+      var rect = canvasEl.getBoundingClientRect();
+      if (!rect.width || !rect.height) return false;
+      pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      return true;
+    }
+    function onWheel(ev) {
+      if (state !== 'ready' || !goal) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      var px = ev.deltaY * (ev.deltaMode === 1 ? 16 : ev.deltaMode === 2 ? 400 : 1);
+      px = Math.max(-240, Math.min(240, px));
+      // Trackpad pinch arrives as ctrl+wheel with small deltas.
+      zoomAt(Math.exp(-px * (ev.ctrlKey ? 0.01 : 0.0015)), ev.clientX, ev.clientY);
+      wheelAt = Date.now();
+      if (wheelTimer) clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(function () { wheelTimer = 0; commitView(); }, 350);
+    }
+    // Safari trackpad pinch.
+    var gestureScale = 1;
+    function onGesture(ev) {
+      if (state !== 'ready' || !goal) return;
+      ev.preventDefault();
+      if (ev.type === 'gesturestart') { gestureScale = 1; return; }
+      var s = ev.scale || 1;
+      zoomAt(s / gestureScale, ev.clientX, ev.clientY);
+      gestureScale = s;
+      wheelAt = Date.now();
+      if (wheelTimer) clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(function () { wheelTimer = 0; commitView(); }, 350);
+    }
+    // Orbiting turns the camera about the model point that was under the
+    // cursor when the drag began, so that point stays under the cursor.
+    // The target is re-solved from the point's offset in camera axes; the
+    // in-plane part is rescaled because zoom-1 distance depends on angle.
+    function startPivot(point) {
+      var a = eyeAngles(goal), b = archViewBasis(a.el, a.az);
+      var dx = goal.fx + goal.panX - point.x, dy = goal.fy + goal.panY - point.y, dz = goal.fz + goal.panZ - point.z;
+      return { p: { x: point.x, y: point.y, z: point.z },
+        a: dx * b.right.x + dy * b.right.y + dz * b.right.z,
+        b: dx * b.up.x + dy * b.up.y + dz * b.up.z,
+        c: dx * b.fwd.x + dy * b.fwd.y + dz * b.fwd.z,
+        depth: fitDistance(goal, a.el, a.az) / goal.scale };
+    }
+    function applyPivot(pv) {
+      var a = eyeAngles(goal), b = archViewBasis(a.el, a.az);
+      var depth = pv.c + fitDistance(goal, a.el, a.az) / goal.scale, was = pv.c + pv.depth;
+      var k = depth > 0.1 && was > 0.1 ? depth / was : 1;
+      ['x', 'y', 'z'].forEach(function (axis) {
+        var t = pv.p[axis] + pv.a * k * b.right[axis] + pv.b * k * b.up[axis] + pv.c * b.fwd[axis];
+        goal['pan' + axis.toUpperCase()] = t - goal['f' + axis];
+      });
+      clampPan(goal);
+    }
+    var pivotMesh = null;
+    function showPivot(pv) {
+      if (!scene || !T) return;
+      if (!pv) { if (pivotMesh) pivotMesh.visible = false; invalidate(); return; }
+      if (!pivotMesh) {
+        pivotMesh = new T.Mesh(new T.SphereGeometry(1, 12, 8),
+          new T.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.9, depthTest: false, depthWrite: false }));
+        pivotMesh.renderOrder = 7;
+        scene.add(pivotMesh);
+      }
+      var r = Math.max(0.04, (pv.depth + pv.c) * 0.009);
+      pivotMesh.scale.set(r, r, r);
+      pivotMesh.position.set(pv.p.x, pv.p.y, pv.p.z);
+      pivotMesh.visible = true;
+      invalidate();
+    }
+    function navSnapshot() {
+      var ids = Object.keys(nav.pointers), a = nav.pointers[ids[0]], b = nav.pointers[ids[1]] || a;
+      return {
+        x: (a.x + b.x) / 2, y: (a.y + b.y) / 2,
+        spread: Math.max(1, Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y))),
+        goal: Object.assign({}, goal), basis: camBasis(), upp: unitsPerPixel()
+      };
+    }
 
     function scheduleFrame() {
       if (!rafId && state === 'ready') rafId = requestAnimationFrame(frame);
@@ -508,9 +765,16 @@ function __alloAST(k, fb) {
       raycaster = new T.Raycaster();
       pointer = new T.Vector2();
       scene.add(new T.HemisphereLight(0xe2e8f0, 0x1e293b, 0.9));
-      var sun = new T.DirectionalLight(0xffffff, 0.62);
+      sun = new T.DirectionalLight(0xffffff, 0.62);
       sun.position.set(24, 40, 30);
+      // Soft shadows are the depth cue that shows what rests on what and
+      // how far apart things are. The catcher draws only the shadow.
+      sun.castShadow = true;
+      sun.shadow.mapSize.set(1024, 1024);
+      sun.shadow.bias = -0.0006;
+      sun.shadow.normalBias = 0.02;
       scene.add(sun);
+      scene.add(sun.target);
       groundMesh = new T.Mesh(
         new T.PlaneGeometry(400, 400),
         new T.MeshBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.16, depthWrite: false })
@@ -518,15 +782,63 @@ function __alloAST(k, fb) {
       groundMesh.rotation.x = -Math.PI / 2;
       groundMesh.position.y = -0.02;
       scene.add(groundMesh);
+      shadowCatcher = new T.Mesh(new T.PlaneGeometry(1, 1), new T.ShadowMaterial({ opacity: 0.42, depthWrite: false }));
+      shadowCatcher.rotation.x = -Math.PI / 2;
+      shadowCatcher.position.y = 0.002;
+      shadowCatcher.receiveShadow = true;
+      scene.add(shadowCatcher);
+    }
+    // Aim the sun's shadow box at the build so its resolution is spent there.
+    function fitSun(minX, maxX, minZ, maxZ, maxY) {
+      if (!sun) return;
+      var cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+      var half = Math.max(maxX - minX, maxZ - minZ, maxY) / 2 + 6;
+      sun.target.position.set(cx, 0, cz);
+      // Upper left of the default view, so shadows fall where it can see them.
+      sun.position.set(cx - 26, 40 + maxY, cz + 14);
+      var c = sun.shadow.camera;
+      c.left = -half * 1.4; c.right = half * 1.4; c.top = half * 1.4; c.bottom = -half * 1.4;
+      c.near = 1; c.far = 120 + maxY * 2;
+      c.updateProjectionMatrix();
+      var on = latestAllBlocks.length <= ARCH_SHADOW_LIMIT;
+      if (renderer && renderer.shadowMap.enabled !== on) {
+        renderer.shadowMap.enabled = on;
+        // Materials compile shadow support in, so they must rebuild.
+        scene.traverse(function (o) { if (o.material) o.material.needsUpdate = true; });
+      }
+      shadowCatcher.visible = on;
     }
 
     function clearCustomMeshes() {
       customMeshes.forEach(function (mesh) {
         if (scene) scene.remove(mesh);
-        if (mesh.geometry) mesh.geometry.dispose();
-        if (mesh.material) mesh.material.dispose();
+        if (typeof mesh.dispose === 'function') mesh.dispose();
       });
       customMeshes = [];
+    }
+    // Geometry per shape and material per look are shared by every instanced
+    // group, and released only when the renderer is torn down.
+    var geometryCache = {}, materialCache = {};
+    function archLook(material) {
+      return material === 'glass' ? 'glass' : material === 'metal' ? 'metal' : material === 'marble' ? 'marble'
+        : (material === 'stone' || material === 'brick') ? 'faceted' : 'plain';
+    }
+    function cachedGeometry(shape) {
+      return geometryCache[shape] || (geometryCache[shape] = makeArchGeometry(shape));
+    }
+    function cachedMaterial(look) {
+      return materialCache[look] || (materialCache[look] = new T.MeshPhongMaterial({
+        color: 0xffffff, transparent: look === 'glass', opacity: look === 'glass' ? 0.48 : 1,
+        shininess: look === 'metal' ? 100 : look === 'marble' ? 80 : 40, flatShading: look === 'faceted'
+      }));
+    }
+    function releaseCaches() {
+      Object.keys(geometryCache).forEach(function (k) { geometryCache[k].dispose(); });
+      Object.keys(materialCache).forEach(function (k) { materialCache[k].dispose(); });
+      geometryCache = {}; materialCache = {};
+    }
+    function customCount() {
+      return customMeshes.reduce(function (n, mesh) { return n + mesh.count; }, 0);
     }
 
     function clearPreview() {
@@ -579,15 +891,15 @@ function __alloAST(k, fb) {
         gz1 = Math.min(ARCH_XZ_MAX, gz0 + 9);
         gz0 = Math.max(ARCH_XZ_MIN, gz1 - 9);
       }
-      var xStart = gx0 - 0.5 - centre.x, xEnd = gx1 + 0.5 - centre.x;
-      var zStart = gz0 - 0.5 - centre.z, zEnd = gz1 + 0.5 - centre.z;
+      var xStart = gx0 - 0.5, xEnd = gx1 + 0.5;
+      var zStart = gz0 - 0.5, zEnd = gz1 + 0.5;
       var vertices = [];
       for (var gx = gx0; gx <= gx1 + 1; gx++) {
-        var wx = gx - 0.5 - centre.x;
+        var wx = gx - 0.5;
         vertices.push(wx, 0.006, zStart, wx, 0.006, zEnd);
       }
       for (var gz = gz0; gz <= gz1 + 1; gz++) {
-        var wz = gz - 0.5 - centre.z;
+        var wz = gz - 0.5;
         vertices.push(xStart, 0.006, wz, xEnd, 0.006, wz);
       }
       var geometry = new T.BufferGeometry();
@@ -599,6 +911,9 @@ function __alloAST(k, fb) {
       groundMesh.scale.set(Math.max(1, xEnd - xStart) / 400, Math.max(1, zEnd - zStart) / 400, 1);
       groundMesh.position.x = (xStart + xEnd) / 2;
       groundMesh.position.z = (zStart + zEnd) / 2;
+      shadowCatcher.scale.set(Math.max(1, xEnd - xStart), Math.max(1, zEnd - zStart), 1);
+      shadowCatcher.position.x = groundMesh.position.x;
+      shadowCatcher.position.z = groundMesh.position.z;
     }
 
     // The host's voxel batch is ideal for ordinary blocks. Architecture Studio
@@ -653,7 +968,7 @@ function __alloAST(k, fb) {
         wireframe: true, depthWrite: false
       }));
       var yOffset = shape === 'slab' ? 0.23 : shape === 'dome' ? 0 : 0.5;
-      previewMesh.position.set(cell.x - centre.x, cell.y + yOffset, cell.z - centre.z);
+      previewMesh.position.set(cell.x, cell.y + yOffset, cell.z);
       previewMesh.rotation.y = rotation * DEG;
       previewMesh.renderOrder = 4;
       scene.add(previewMesh);
@@ -672,7 +987,7 @@ function __alloAST(k, fb) {
         if (batch) batch.dispose(scene);
         capacity = Math.min(ARCH_MAX_BLOCKS, Math.max(64, cubeCount, capacity ? capacity * 2 : 64));
         batch = window.StemLab.makeVoxelBatch(T, {
-          capacity: capacity, size: 0.94, edges: true, edgeOpacity: 0.26
+          capacity: capacity, size: 0.94, edges: true, edgeOpacity: 0.26, castShadow: true, receiveShadow: true
         });
         batch.addTo(scene);
       }
@@ -687,32 +1002,56 @@ function __alloAST(k, fb) {
         if (b.y > maxY) maxY = b.y;
       });
       if (!bs.length) { minX = maxX = minZ = maxZ = 0; }
-      centre = { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2 };
       extent = { w: maxX - minX + 1, d: maxZ - minZ + 1, h: maxY + 1 };
+      // Re-frame only when the live build changed in bulk (template, clear,
+      // import, a large undo). Single placements keep the camera still.
+      var live = m.frameBlocks || bs, keys = {}, changed = 0;
+      live.forEach(function (b) { keys[b.x + ',' + b.y + ',' + b.z] = true; });
+      if (frameKeys) {
+        Object.keys(keys).forEach(function (k) { if (!frameKeys[k]) changed++; });
+        Object.keys(frameKeys).forEach(function (k) { if (!keys[k]) changed++; });
+      }
+      if (!frameKeys || changed > 3) {
+        if (frameKeys) refit(live);
+        else { Object.assign(goal, framedFor(live)); Object.assign(view, goal); }
+      }
+      frameKeys = keys;
 
       for (var i = 0; i < cubeCount; i++) {
         var b = cubeBlocks[i];
         // A block's own colour wins when the student has painted it; otherwise
         // the material decides. Both arrive as hex from the caller.
-        batch.set(i, b.x - centre.x, b.y + 0.5, b.z - centre.z, 1, b.hex);
+        batch.set(i, b.x, b.y + 0.5, b.z, 1, b.hex);
       }
       if (batch) batch.commit(cubeCount);
 
+      // Non-cube objects are drawn as one instanced mesh per shape and
+      // material look, with per-instance colour; a mesh per object meant
+      // hundreds of draw calls and a geometry rebuild for each on every edit.
+      var groups = {};
       bs.forEach(function (b) {
         var shape = b.shape || 'block';
         if (shape === 'block') return;
-        var isGlass = b.material === 'glass';
-        var mesh = new T.Mesh(makeArchGeometry(shape), new T.MeshPhongMaterial({
-          color: b.hex,
-          transparent: isGlass,
-          opacity: isGlass ? 0.48 : 1,
-          shininess: b.material === 'metal' ? 100 : b.material === 'marble' ? 80 : 40,
-          flatShading: b.material === 'stone' || b.material === 'brick'
-        }));
-        var yOffset = shape === 'slab' ? 0.23 : shape === 'dome' ? 0 : 0.5;
-        mesh.position.set(b.x - centre.x, b.y + yOffset, b.z - centre.z);
-        mesh.rotation.y = ((b.rotation || 0) % 360) * DEG;
-        mesh.userData.archBlock = b;
+        var key = shape + '|' + archLook(b.material);
+        (groups[key] = groups[key] || { shape: shape, look: archLook(b.material), list: [] }).list.push(b);
+      });
+      var dummy = new T.Object3D(), tint = new T.Color();
+      Object.keys(groups).forEach(function (key) {
+        var g = groups[key];
+        var mesh = new T.InstancedMesh(cachedGeometry(g.shape), cachedMaterial(g.look), g.list.length);
+        mesh.frustumCulled = false;
+        g.list.forEach(function (b, n) {
+          var yOffset = g.shape === 'slab' ? 0.23 : g.shape === 'dome' ? 0 : 0.5;
+          dummy.position.set(b.x, b.y + yOffset, b.z);
+          dummy.rotation.set(0, ((b.rotation || 0) % 360) * DEG, 0);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(n, dummy.matrix);
+          mesh.setColorAt(n, tint.setHex(b.hex));
+        });
+        mesh.instanceMatrix.needsUpdate = true;
+        if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+        mesh.castShadow = mesh.receiveShadow = true;
+        mesh.userData.archBlocks = g.list;
         scene.add(mesh);
         customMeshes.push(mesh);
       });
@@ -727,7 +1066,7 @@ function __alloAST(k, fb) {
           depthTest: false, depthWrite: false
         }));
         var selectedYOffset = selectedShape === 'slab' ? 0.23 : selectedShape === 'dome' ? 0 : 0.5;
-        selectionMesh.position.set(selected.x - centre.x, selected.y + selectedYOffset, selected.z - centre.z);
+        selectionMesh.position.set(selected.x, selected.y + selectedYOffset, selected.z);
         selectionMesh.rotation.y = ((selected.rotation || 0) % 360) * DEG;
         selectionMesh.scale.set(1.08, 1.08, 1.08);
         selectionMesh.renderOrder = 5;
@@ -739,45 +1078,46 @@ function __alloAST(k, fb) {
         var boxGeometry = new T.BoxGeometry(rb.maxX - rb.minX + 1.08, rb.maxY - rb.minY + 1.08, rb.maxZ - rb.minZ + 1.08);
         var edges = new T.EdgesGeometry(boxGeometry); boxGeometry.dispose();
         designRegionMesh = new T.LineSegments(edges, new T.LineBasicMaterial({ color: 0x38bdf8, depthTest: false, transparent: true, opacity: 0.95 }));
-        designRegionMesh.position.set((rb.minX + rb.maxX) / 2 - centre.x, (rb.minY + rb.maxY + 1) / 2, (rb.minZ + rb.maxZ) / 2 - centre.z);
+        designRegionMesh.position.set((rb.minX + rb.maxX) / 2, (rb.minY + rb.maxY + 1) / 2, (rb.minZ + rb.maxZ) / 2);
         designRegionMesh.renderOrder = 6; scene.add(designRegionMesh);
       }
       buildPlacementGrid(minX, maxX, minZ, maxZ);
+      fitSun(minX, maxX, minZ, maxZ, maxY);
     }
 
-    function applyCam(m) {
-      if (m.blueprintView) {
-        camera.up.set(0, 0, -1);
-        var topHalfV = Math.tan(22.5 * DEG);
-        var topHalfH = topHalfV * (camera.aspect || 1.6);
-        var topDist = Math.max((extent.w / 2) / topHalfH, (extent.d / 2) / topHalfV, 3) * 1.25
-                    / Math.max(0.25, m.scale);
-        camera.position.set(0, extent.h / 2 + topDist, 0.001);
-        camera.lookAt(0, extent.h / 2, 0);
-        camera.updateProjectionMatrix();
-        return;
-      }
+    function applyCam() {
+      var v = view, a = eyeAngles(v);
+      var dist = fitDistance(v, a.el, a.az) / Math.max(ARCH_ZOOM_MIN, v.scale);
+      var tx = v.fx + v.panX, ty = v.fy + v.panY, tz = v.fz + v.panZ;
       camera.up.set(0, 1, 0);
-      var el = Math.max(-88, Math.min(88, -m.rotX)) * DEG;
-      var az = -m.rotY * DEG;
-      // Fit the projected box: a long low building and a narrow tower need
-      // very different distances, and a bounding sphere over-pads both.
-      var ca = Math.abs(Math.cos(az)), sa = Math.abs(Math.sin(az));
-      var projW = extent.w * ca + extent.d * sa;
-      var projH = extent.h * Math.abs(Math.cos(el))
-                + (extent.w * sa + extent.d * ca) * Math.abs(Math.sin(el));
-      var halfV = Math.tan(22.5 * DEG);
-      var halfH = halfV * (camera.aspect || 1.6);
-      var dist = Math.max((projW / 2) / halfH, (projH / 2) / halfV, 3) * 1.25
-                 / Math.max(0.25, m.scale);
-      var ty = extent.h / 2;
       camera.position.set(
-        dist * Math.cos(el) * Math.sin(az),
-        ty + dist * Math.sin(el),
-        dist * Math.cos(el) * Math.cos(az)
+        tx + dist * Math.cos(a.el) * Math.sin(a.az),
+        Math.max(0.35, ty + dist * Math.sin(a.el)),
+        tz + dist * Math.cos(a.el) * Math.cos(a.az)
       );
-      camera.lookAt(0, ty, 0);
+      camera.far = Math.max(3000, dist * 4);
+      camera.lookAt(tx, ty, tz);
       camera.updateProjectionMatrix();
+      camera.updateMatrixWorld();
+      updateHud(a);
+    }
+
+    // The compass and zoom readout follow the live camera by direct DOM
+    // writes; React only draws them from the saved camera.
+    var hudZoom = '';
+    function updateHud(a) {
+      var host = canvasEl && canvasEl.parentElement;
+      if (!host) return;
+      var compass = host.querySelector('[data-arch-compass]');
+      if (compass) archCompassAxes(a.el, a.az).forEach(function (ax) {
+        var line = compass.querySelector('[data-axis="' + ax.axis + '"]');
+        var label = compass.querySelector('[data-axis-label="' + ax.axis + '"]');
+        if (line) { line.setAttribute('x2', (ax.dx * 15).toFixed(2)); line.setAttribute('y2', (ax.dy * 15).toFixed(2)); }
+        if (label) { label.setAttribute('x', (ax.dx * 19).toFixed(2)); label.setAttribute('y', (ax.dy * 19 + 3).toFixed(2)); }
+      });
+      var zoom = Math.round(view.scale * 100) + '%';
+      var readout = zoom !== hudZoom && host.querySelector('[data-arch-zoom-readout]');
+      if (readout) { readout.textContent = zoom; hudZoom = zoom; }
     }
 
     function resize() {
@@ -787,26 +1127,30 @@ function __alloAST(k, fb) {
       renderer.setSize(w, hh, false);
       camera.aspect = w / hh;
       camera.updateProjectionMatrix();
-      appliedCamSig = '';
       invalidate();
     }
 
-    function frame() {
+    function frame(now) {
       if (state !== 'ready' || !pending) { rafId = 0; return; }
       var m = pending;
+      now = now || (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      var dt = lastT ? Math.min(0.1, Math.max(0.001, (now - lastT) / 1000)) : 1 / 60;
+      lastT = now;
       try {
-        if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; appliedCamSig = ''; }
-        var cs = m.rotX + ',' + m.rotY + ',' + m.scale + ',' + (m.blueprintView ? 1 : 0);
-        if (cs !== appliedCamSig) { applyCam(m); appliedCamSig = cs; dirty = true; }
-        if (!dirty) { rafId = 0; return; }
+        if (!view) { goal = viewFrom(m); view = Object.assign({}, goal); }
+        if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; }
+        var moving = stepView(dt);
+        if (moving || dirty) { applyCam(); dirty = true; }
+        if (!dirty) { rafId = 0; lastT = 0; return; }
         dirty = false;
         renderer.render(scene, camera);
+        rafId = 0;
+        if (moving) scheduleFrame(); else lastT = 0;
       } catch (err) {
         console.error('[archStudio] WebGL frame failed, falling back to floor plans', err);
         fail('frame');
         return;
       }
-      rafId = 0;
     }
 
     function handleContextLost(ev) {
@@ -825,21 +1169,23 @@ function __alloAST(k, fb) {
       if (!contextCanvas || contextCanvas !== canvasEl || !renderer || state !== 'recovering') return;
       if (contextRestoreTimer) { clearTimeout(contextRestoreTimer); contextRestoreTimer = 0; }
       state = 'ready';
-      appliedSig = ''; appliedCamSig = ''; dirty = true;
+      appliedSig = ''; dirty = true;
       scheduleFrame();
       if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e) {} }
     }
 
     function attachContextHandlers(el) {
       if (contextCanvas === el) return;
-      if (contextCanvas) {
-        contextCanvas.removeEventListener('webglcontextlost', handleContextLost, false);
-        contextCanvas.removeEventListener('webglcontextrestored', handleContextRestored, false);
-      }
+      if (contextCanvas) detachContextHandlers();
       contextCanvas = el;
       if (contextCanvas) {
         contextCanvas.addEventListener('webglcontextlost', handleContextLost, false);
         contextCanvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+        // Native and non-passive: React's onWheel is passive, so its
+        // preventDefault was ignored and zooming also scrolled the page.
+        contextCanvas.addEventListener('wheel', onWheel, { passive: false });
+        contextCanvas.addEventListener('gesturestart', onGesture, false);
+        contextCanvas.addEventListener('gesturechange', onGesture, false);
       }
     }
 
@@ -847,19 +1193,95 @@ function __alloAST(k, fb) {
       if (!contextCanvas) return;
       contextCanvas.removeEventListener('webglcontextlost', handleContextLost, false);
       contextCanvas.removeEventListener('webglcontextrestored', handleContextRestored, false);
+      contextCanvas.removeEventListener('wheel', onWheel, { passive: false });
+      contextCanvas.removeEventListener('gesturestart', onGesture, false);
+      contextCanvas.removeEventListener('gesturechange', onGesture, false);
+      if (wheelTimer) { clearTimeout(wheelTimer); wheelTimer = 0; }
       contextCanvas = null;
     }
 
     return {
       isReady: function () { return state === 'ready'; },
-      submit: function (m) { pending = m; scheduleFrame(); },
+      submit: function (m) {
+        pending = m;
+        var sig = [m.rotX, m.rotY, m.scale, m.panX || 0, m.panY || 0, m.panZ || 0].join(',') + (m.blueprintView ? ',bp' : '');
+        if (goal && sig !== stateCamSig && !interacting()) {
+          var next = viewFrom(m);
+          Object.keys(next).forEach(function (k) { goal[k] = next[k]; });
+          clampPan(goal);
+          tau = 0.14;
+          invalidate();
+        }
+        stateCamSig = sig;
+        scheduleFrame();
+      },
+      // Live camera (what a button press should step from), or null.
+      getView: function () {
+        if (!goal) return null;
+        return { rotX: goal.rotX, rotY: goal.rotY, scale: goal.scale, panX: goal.panX, panY: goal.panY, panZ: goal.panZ };
+      },
+      // Pointer navigation. Left drag orbits (pans in Blueprint); right,
+      // middle or Shift drag pans; two fingers pinch-zoom and pan.
+      navDown: function (p) {
+        if (state !== 'ready' || !goal) return;
+        nav.pointers[p.id] = { x: p.x, y: p.y };
+        nav.count = Object.keys(nav.pointers).length;
+        if (nav.count === 1) nav.moved = false;
+        nav.panMode = nav.count > 1 || p.button === 1 || p.button === 2 || !!p.shift || goal.bp > 0.5;
+        nav.start = navSnapshot();
+        var hit = !nav.panMode && worldPoint(p.x, p.y, true);
+        nav.start.pivot = hit ? startPivot(hit) : null;
+      },
+      navMove: function (p) {
+        if (!nav.pointers[p.id] || !nav.start) return false;
+        nav.pointers[p.id] = { x: p.x, y: p.y };
+        var now = navSnapshot(), st = nav.start, dx = now.x - st.x, dy = now.y - st.y;
+        if (dx * dx + dy * dy > 25 || Math.abs(now.spread - st.spread) > 6) nav.moved = true;
+        if (!nav.moved) return false;
+        if (canvasEl && nav.cursor == null) { nav.cursor = canvasEl.style.cursor; canvasEl.style.cursor = nav.panMode ? 'move' : 'grabbing'; }
+        if (nav.count > 1) {
+          goal.scale = Math.max(ARCH_ZOOM_MIN, Math.min(ARCH_ZOOM_MAX, st.goal.scale * now.spread / st.spread));
+        }
+        if (nav.panMode) panPixels(st.goal, st.basis, st.upp, dx, dy);
+        else {
+          goal.rotY = st.goal.rotY + dx * 0.4;
+          goal.rotX = clampArchTilt(st.goal.rotX + dy * 0.4);
+          if (st.pivot) { applyPivot(st.pivot); if (!pivotMesh || !pivotMesh.visible) showPivot(st.pivot); }
+        }
+        tau = 0.05; invalidate();
+        return true;
+      },
+      navUp: function (id) {
+        if (!nav.pointers[id]) return;
+        delete nav.pointers[id];
+        nav.count = Object.keys(nav.pointers).length;
+        if (nav.count) { nav.start = navSnapshot(); return; }
+        nav.start = null;
+        showPivot(null);
+        if (canvasEl && nav.cursor != null) { canvasEl.style.cursor = nav.cursor; nav.cursor = null; }
+        if (nav.moved) commitView();
+      },
+      navActive: function () { return nav.count > 0; },
+      // Keyboard helpers: pan by a screen-space step, zoom at the centre,
+      // and centre the view on a cell (or refit the whole build).
+      panBy: function (dx, dy) {
+        if (state !== 'ready' || !goal) return;
+        panPixels(Object.assign({}, goal), camBasis(), unitsPerPixel(), dx, dy);
+        tau = 0.14; invalidate(); commitView();
+      },
+      focusOn: function (cell) {
+        if (state !== 'ready' || !goal) return;
+        if (!cell) { refit((pending && pending.frameBlocks) || latestAllBlocks); commitView(); return; }
+        goal.panX = cell.x - goal.fx; goal.panY = cell.y + 0.5 - goal.fy; goal.panZ = cell.z - goal.fz;
+        goal.scale = Math.max(goal.scale, 2);
+        clampPan(goal); tau = 0.16; invalidate(); commitView();
+      },
+      refit: function () {
+        if (state !== 'ready' || !goal) return;
+        refit((pending && pending.frameBlocks) || latestAllBlocks);
+      },
       pick: function (clientX, clientY) {
-        if (state !== 'ready' || !renderer || !camera || !raycaster || !pointer || !canvasEl || !groundMesh) return null;
-        var rect = canvasEl.getBoundingClientRect();
-        if (!rect.width || !rect.height) return null;
-        pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-        pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-        raycaster.setFromCamera(pointer, camera);
+        if (!aimRay(clientX, clientY)) return null;
         var targets = [];
         if (batch && batch.mesh && latestBlocks.length) targets.push(batch.mesh);
         customMeshes.forEach(function (mesh) { targets.push(mesh); });
@@ -867,17 +1289,24 @@ function __alloAST(k, fb) {
         var hits = raycaster.intersectObjects(targets, false);
         for (var hi = 0; hi < hits.length; hi++) {
           var hit = hits[hi];
-          if ((batch && hit.object === batch.mesh && hit.instanceId != null) || (hit.object.userData && hit.object.userData.archBlock)) {
-            var b = batch && hit.object === batch.mesh ? latestBlocks[hit.instanceId] : hit.object.userData.archBlock;
+          var group = hit.object.userData && hit.object.userData.archBlocks;
+          if (hit.instanceId != null && ((batch && hit.object === batch.mesh) || group)) {
+            var b = group ? group[hit.instanceId] : latestBlocks[hit.instanceId];
             if (!b) continue;
             var normal = hit.face && hit.face.normal ? hit.face.normal : { x: 0, y: 1, z: 0 };
             if (normal.clone) {
               normal = normal.clone();
-              if (hit.object !== (batch && batch.mesh) && normal.transformDirection) normal.transformDirection(hit.object.matrixWorld);
+              // A rotated ramp's face normal is in its own frame.
+              if (group && normal.transformDirection) {
+                var placed = new T.Matrix4();
+                hit.object.getMatrixAt(hit.instanceId, placed);
+                normal.transformDirection(placed.premultiply(hit.object.matrixWorld));
+              }
             }
             var step = getArchDominantNormalStep(normal);
             return {
               kind: 'block',
+              point: { x: hit.point.x, y: hit.point.y, z: hit.point.z },
               block: { x: b.x, y: b.y, z: b.z },
               place: {
                 x: b.x + step.x,
@@ -890,9 +1319,9 @@ function __alloAST(k, fb) {
             return {
               kind: 'ground', block: null,
               place: {
-                x: Math.round(hit.point.x + centre.x),
+                x: Math.round(hit.point.x),
                 y: 0,
-                z: Math.round(hit.point.z + centre.z)
+                z: Math.round(hit.point.z)
               }
             };
           }
@@ -906,19 +1335,24 @@ function __alloAST(k, fb) {
         latestAllBlocks.forEach(function (b) { var sid = b.shape || 'block'; shapeCounts[sid] = (shapeCounts[sid] || 0) + 1; });
         return {
           state: state,
-          blockCount: (batch ? batch.drawnCount() : 0) + customMeshes.length,
-          outlineCount: (batch ? batch.outlinedCount() : 0) + customMeshes.length,
-          customShapeCount: customMeshes.length,
+          blockCount: (batch ? batch.drawnCount() : 0) + customCount(),
+          outlineCount: (batch ? batch.outlinedCount() : 0) + customCount(),
+          customShapeCount: customCount(),
+          customDrawCalls: customMeshes.length,
           shapeCounts: shapeCounts,
           selectedCount: latestAllBlocks.filter(function (b) { return b.selected; }).length,
           selectionOutlineVisible: !!selectionMesh,
           gridLineCount: gridLineCount,
           previewVisible: !!previewMesh,
+          pivotVisible: !!(pivotMesh && pivotMesh.visible),
+          shadows: !!(renderer.shadowMap.enabled && sun && sun.castShadow && shadowCatcher && shadowCatcher.visible),
           renderHexes: latestAllBlocks.map(function (b) { return b.hex; }),
           viewMode: pending && pending.blueprintView ? 'blueprint' : 'perspective',
           styleMode: pending && pending.styleMode ? pending.styleMode : 'architect',
           extent: extent,
           regionSelection: !!designRegionMesh,
+          camera: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+          view: goal ? { scale: goal.scale, panX: goal.panX, panY: goal.panY, panZ: goal.panZ, bp: goal.bp, frame: [goal.fx, goal.fy, goal.fz, goal.fw, goal.fd, goal.fh] } : null,
           canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
           contextLost: gl ? gl.isContextLost() : null
         };
@@ -962,6 +1396,8 @@ function __alloAST(k, fb) {
           } catch (e) { fail('no-webgl'); return; }
           attachContextHandlers(el);
           renderer.setClearColor(0x000000, 0);
+          renderer.shadowMap.enabled = true;
+          renderer.shadowMap.type = T.PCFSoftShadowMap;
           build();
           resize();
           if (typeof ResizeObserver === 'function') {
@@ -969,7 +1405,7 @@ function __alloAST(k, fb) {
             resizeObs.observe(canvasEl);
           } else { window.addEventListener('resize', resize); }
           state = 'ready';
-          appliedSig = ''; appliedCamSig = ''; dirty = true;
+          appliedSig = ''; dirty = true;
           scheduleFrame();
           if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e2) {} }
         }).catch(function () {
@@ -991,6 +1427,11 @@ function __alloAST(k, fb) {
           clearGroundGrid();
           clearCustomMeshes();
           if (groundMesh) { scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
+          if (pivotMesh) { scene.remove(pivotMesh); pivotMesh.geometry.dispose(); pivotMesh.material.dispose(); pivotMesh = null; }
+          releaseCaches();
+          if (shadowCatcher) { scene.remove(shadowCatcher); shadowCatcher.geometry.dispose(); shadowCatcher.material.dispose(); shadowCatcher = null; }
+          if (sun && sun.shadow && sun.shadow.map) { sun.shadow.map.dispose(); }
+          sun = null;
         }
         if (renderer) {
           // dispose() releases three.js objects but NOT the browser's GL context. Browsers cap live
@@ -1004,7 +1445,9 @@ function __alloAST(k, fb) {
         batch = null; groundMesh = null; groundGrid = null; previewMesh = null; selectionMesh = null; customMeshes = [];
         renderer = scene = camera = null; canvasEl = null; pending = null;
         raycaster = pointer = null; latestBlocks = []; latestAllBlocks = [];
-        capacity = 0; gridLineCount = 0; appliedSig = ''; appliedCamSig = ''; previewSig = '';
+        capacity = 0; gridLineCount = 0; appliedSig = ''; previewSig = '';
+        view = goal = null; frameKeys = null; stateCamSig = ''; lastT = 0; wheelAt = 0; hudZoom = '';
+        nav = { pointers: {}, count: 0, start: null, moved: false };
         state = 'idle';
       }
     };
@@ -1013,6 +1456,13 @@ function __alloAST(k, fb) {
   // Hook-free tool, so the drag anchor lives at module scope alongside the
   // renderer rather than in a useRef.
   var archDrag = { current: null, suppressClick: false };
+  // Hover previews raycast the whole model, so they run at most once per
+  // frame with the latest pointer position.
+  var archHover = { raf: 0, run: null };
+  function cancelArchHover() {
+    if (archHover.raf) { cancelAnimationFrame(archHover.raf); archHover.raf = 0; }
+    archHover.run = null;
+  }
 
   // Pure authoring reducer shared by the 3D picker and the accessible floor
   // grid. Returning the original array means the requested edit was a no-op.
@@ -2757,7 +3207,9 @@ function __alloAST(k, fb) {
     var archShow3d = d.hide3d !== true;
     var archRot = d.rot3d || { rotX: -24, rotY: -38, scale: 1 };
     var setArchCamera = function (action) {
-      var nextCamera = changeArchCamera(archRot, action);
+      // Step from the live camera: a drag or zoom may not be saved yet.
+      if (action === 'reset') ArchGL.refit();
+      var nextCamera = changeArchCamera(ArchGL.getView() || archRot, action);
       if (action === 'reset' || (blueprintView && action !== 'zoomIn' && action !== 'zoomOut')) upd({ rot3d: nextCamera, blueprintView: false });
       else upd('rot3d', nextCamera);
     };
@@ -2783,12 +3235,11 @@ function __alloAST(k, fb) {
       var m = ARCH_MAT_HEX[b.material || 'stone'];
       return m == null ? 0x94a3b8 : m;
     }
-    var archGlAlt = 'Three-dimensional view of your build: ' + archDisplayBlocks.length
-      + (archDisplayBlocks.length === 1 ? ' visible block' : ' visible blocks')
-      + (archDisplayBlocks.length !== blocks.length ? ' of ' + blocks.length + ' total' : '')
-      + (selectedBlock ? '. Selected block at X ' + selectedBlock.x + ', Y ' + selectedBlock.y + ', Z ' + selectedBlock.z : '')
-      + (showHeatmap ? '. Structural load heatmap is active' : '')
-      + '. Use the camera controls to look around it.';
+    var archGlAlt = (archDisplayBlocks.length === 1 ? t('stem.archstudio.view3d_alt_one', 'Three-dimensional view of your build: {count} visible block') : t('stem.archstudio.view3d_alt_many', 'Three-dimensional view of your build: {count} visible blocks')).replace('{count}', archDisplayBlocks.length)
+      + (archDisplayBlocks.length !== blocks.length ? t('stem.archstudio.view3d_alt_total', ' of {total} total').replace('{total}', blocks.length) : '')
+      + (selectedBlock ? t('stem.archstudio.view3d_alt_selected', '. Selected block at X {x}, Y {y}, Z {z}').replace('{x}', selectedBlock.x).replace('{y}', selectedBlock.y).replace('{z}', selectedBlock.z) : '')
+      + (showHeatmap ? t('stem.archstudio.view3d_alt_heatmap', '. Structural load heatmap is active') : '')
+      + t('stem.archstudio.view3d_alt_controls', '. Use the camera controls to look around it.');
     var mainUse3d = archShow3d && editorView !== 'grid';
     var designSelectionBounds = d.showDesign && d.designTab === 'region' && !showReplay
       ? archDesignBounds(archDesignSelection(blocks, d.designRegion || { minX: 0, maxX: 5, minY: 0, maxY: 3, minZ: 0, maxZ: 4 })) : null;
@@ -2804,6 +3255,10 @@ function __alloAST(k, fb) {
         blocks: archRenderBlocks,
         regionBounds: designSelectionBounds,
         rotX: archRot.rotX, rotY: archRot.rotY, scale: archRot.scale || 1,
+        panX: archRot.panX || 0, panY: archRot.panY || 0, panZ: archRot.panZ || 0,
+        frameBlocks: blocks,
+        reduceMotion: !!ctx.reduceMotion,
+        onViewCommit: function (next) { upd('rot3d', next); },
         blueprintView: blueprintView,
         styleMode: styleMode,
         onReady: function () { upd('gl3dReadyAt', Date.now()); },
@@ -5197,6 +5652,49 @@ function __alloAST(k, fb) {
               mode === 'paint' && el('span', { className: 'arch-workspace-detail' }, workspaceText('paint_help')))));
     }
 
+    // Orientation aids over the model: a compass of the X/Y/Z axes, preset
+    // views, fit/focus, and the zoom level. ArchGL keeps the compass and
+    // zoom live while a gesture is in progress.
+    function renderViewNavigator() {
+      var rx = isFinite(archRot.rotX) ? +archRot.rotX : -24, ry = isFinite(archRot.rotY) ? +archRot.rotY : -38;
+      var az = -ry * Math.PI / 180;
+      var axes = blueprintView ? archCompassAxes(89.9 * Math.PI / 180, Math.round(az / (2 * Math.PI)) * 2 * Math.PI)
+        : archCompassAxes(-clampArchTilt(rx) * Math.PI / 180, az);
+      var colors = { x: '#f87171', y: '#4ade80', z: '#60a5fa' };
+      var presets = [['viewIso', t('stem.archstudio.nav_view_3d', '3D'), t('stem.archstudio.nav_view_3d_label', 'Three-quarter view')], ['viewFront', t('stem.archstudio.nav_view_front', 'Front'), t('stem.archstudio.nav_view_front_label', 'Front view, looking along Z')],
+        ['viewSide', t('stem.archstudio.nav_view_side', 'Side'), t('stem.archstudio.nav_view_side_label', 'Side view, looking along X')], ['viewTop', t('stem.archstudio.nav_view_top', 'Top'), t('stem.archstudio.nav_view_top_label', 'Top view, looking down')]];
+      var nearAngle = function (a, b) { return Math.abs(((a - b) % 360 + 540) % 360 - 180) < 0.5; };
+      var btn = { minWidth: 34, height: 30, padding: '0 7px', borderRadius: 6, border: '1px solid #475569', background: 'rgba(30,41,59,.92)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11, fontWeight: 800 };
+      var focusLabel = selectedBlock ? t('stem.archstudio.nav_focus_label', 'Centre the view on the selected block (F)') : t('stem.archstudio.nav_fit_label', 'Fit the whole build in view (F)');
+      return el('div', { className: 'arch-view-nav', 'data-arch-view-nav': 'true', role: 'group', 'aria-label': t('stem.archstudio.nav_presets', 'View presets'), style: {
+        position: 'absolute', top: 8, left: 8, zIndex: 6, display: 'flex', alignItems: 'center', gap: 4, padding: 4,
+        borderRadius: 10, background: 'rgba(15,23,42,.88)', border: '1px solid #334155', backdropFilter: 'blur(8px)' } },
+        el('svg', { 'data-arch-compass': 'true', 'aria-hidden': 'true', width: 40, height: 40, viewBox: '-24 -24 48 48', style: { flex: '0 0 auto' } },
+          el('circle', { r: 23, fill: 'rgba(2,6,23,.7)', stroke: '#334155' }),
+          axes.map(function (ax) {
+            return el('g', { key: ax.axis },
+              el('line', { 'data-axis': ax.axis, x1: 0, y1: 0, x2: (ax.dx * 15).toFixed(2), y2: (ax.dy * 15).toFixed(2), stroke: colors[ax.axis], strokeWidth: 2.5, strokeLinecap: 'round' }),
+              el('text', { 'data-axis-label': ax.axis, x: (ax.dx * 19).toFixed(2), y: (ax.dy * 19 + 3).toFixed(2), fill: colors[ax.axis], fontSize: 9, fontWeight: 800, textAnchor: 'middle' }, ax.axis.toUpperCase()));
+          })),
+        presets.map(function (p) {
+          var active = !blueprintView && nearAngle(rx, ARCH_VIEW_PRESETS[p[0]].rotX) && nearAngle(ry, ARCH_VIEW_PRESETS[p[0]].rotY);
+          return el('button', { key: p[0], type: 'button', 'data-arch-view': p[0], 'aria-label': p[2], title: p[2], 'aria-pressed': active,
+            style: Object.assign({}, btn, active ? { borderColor: '#38bdf8', background: '#075985', color: '#f0f9ff' } : null),
+            onClick: function () { setArchCamera(p[0]); if (announceToSR) announceToSR(p[2] + '.'); } }, p[1]);
+        }),
+        el('button', { type: 'button', 'data-arch-view': 'focus', 'aria-label': focusLabel, title: focusLabel, style: btn,
+          onClick: function () {
+            ArchGL.focusOn(selectedBlock ? { x: selectedBlock.x, y: selectedBlock.y, z: selectedBlock.z } : null);
+            if (announceToSR) announceToSR(selectedBlock ? t('stem.archstudio.sr_view_centred', 'View centred on the selected block.') : t('stem.archstudio.sr_view_fitted', 'View fitted to the whole build.'));
+          } }, el('span', { 'aria-hidden': 'true' }, '\u2316 '), selectedBlock ? t('stem.archstudio.nav_focus', 'Focus') : t('stem.archstudio.nav_fit', 'Fit')),
+        typeof window.__alloStemFS === 'function' && el('button', { type: 'button', 'data-allo-fs-btn': 'true', 'aria-pressed': 'false',
+          'aria-label': t('stem.archstudio.nav_fullscreen', 'View the 3D model fullscreen'), title: t('stem.archstudio.nav_fullscreen', 'View the 3D model fullscreen'),
+          'data-fs-out': t('stem.archstudio.nav_fullscreen', 'View the 3D model fullscreen'), 'data-fs-in': t('stem.archstudio.nav_fullscreen_exit', 'Exit fullscreen 3D view (Escape)'), style: Object.assign({}, btn, { fontSize: 14 }) },
+          el('span', { 'aria-hidden': 'true' }, '\u26F6')),
+        el('span', { 'data-arch-zoom-readout': 'true', 'aria-hidden': 'true', title: t('stem.archstudio.nav_zoom', 'Zoom'), style: { minWidth: 38, textAlign: 'center', fontSize: 11, fontWeight: 800, color: '#94a3b8', fontVariantNumeric: 'tabular-nums' } },
+          Math.round((isFinite(archRot.scale) && +archRot.scale > 0 ? +archRot.scale : 1) * 100) + '%'));
+    }
+
     var cameraBtn = function (label, glyph, action) {
       return el('button', { key: action, type: 'button', className: action === 'reset' ? 'arch-camera-reset' : undefined, 'data-arch-camera': action, 'aria-label': label, title: label, onClick: function () { setArchCamera(action); }, style: {
         width: 30, height: 28, padding: 0, borderRadius: 6, border: '1px solid #475569', background: 'rgba(30,41,59,.92)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800
@@ -6214,6 +6712,8 @@ function __alloAST(k, fb) {
         + '#arch-studio-region .arch-sidebar-toggle{display:flex;align-items:center;justify-content:center;gap:7px;flex:none;padding:9px 12px;border:1px solid #7189a1;border-radius:8px;background:#1c3047;color:#f1f5f9;}'
         + '#arch-studio-region .arch-sidebar-toggle>span{font-size:19px;font-weight:400;}'
         + '#arch-studio-region .arch-workspace-brush{display:flex;align-items:center;flex-wrap:wrap;gap:7px 12px;margin-top:9px;font-size:12px;line-height:1.4;min-width:0;}'
+        // Wide screens: view switch, palette summary and Hide tools on one line.
+        + '@media(min-width:1101px){#arch-studio-region .arch-workspace-bar{display:flex;align-items:center;gap:14px;padding:6px 12px;}#arch-studio-region .arch-workspace-navigation{display:contents;}#arch-studio-region .arch-workspace-brush{order:1;flex:1 1 auto;margin-top:0;}#arch-studio-region .arch-sidebar-toggle{order:2;flex:0 0 auto;}}'
         + '#arch-studio-region .arch-workspace-mode{padding:4px 8px;border:1px solid;border-radius:6px;font-size:11px;font-weight:750;white-space:nowrap;}'
         + '#arch-studio-region .arch-workspace-palette{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:650;}'
         + '#arch-studio-region .arch-workspace-palette>span:first-child{font-size:18px;}'
@@ -6225,6 +6725,9 @@ function __alloAST(k, fb) {
         + '#arch-studio-region .arch-studio-camera-controls button{min-width:44px;min-height:44px;width:auto!important;height:auto!important;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px!important;border:1px solid #7189a1!important;border-radius:8px!important;background:#1c3047!important;color:#f1f5f9!important;font-size:19px!important;line-height:1;box-sizing:border-box;}'
         + '#arch-studio-region .arch-studio-camera-controls .arch-camera-reset{margin-left:5px;}#arch-studio-region .arch-camera-reset>span:last-child{font-size:12px;font-weight:750;}'
         + '#arch-studio-region .arch-studio-camera-controls .arch-camera-separator{height:24px;border-left:1px solid #64748b;margin:0 3px;}'
+        + '#arch-studio-region .arch-view-nav button:focus-visible{outline:2px solid #38bdf8;outline-offset:1px;}'
+        + '.theme-contrast #arch-studio-region .arch-view-nav{background:#000!important;border-color:#ffff00!important;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-view-nav{right:8px;flex-wrap:wrap;}#arch-studio-region .arch-view-nav button{min-width:44px!important;min-height:44px!important;}#arch-studio-region [data-arch-empty-state]{top:112px!important;}}'
         + '#arch-studio-region .arch-grid-editor{padding-top:14px!important;}'
         + '#arch-studio-region .arch-studio-stage .arch-studio-selection-chip{bottom:8px!important;}'
         + '.theme-contrast #arch-studio-region .arch-workspace-bar,.theme-contrast #arch-studio-region .arch-studio-camera-controls{background:#000!important;border-color:#ffff00!important;}'
@@ -6514,8 +7017,11 @@ function __alloAST(k, fb) {
         + '#arch-studio-region .arch-studio-brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 auto!important;}'
         + '#arch-studio-region .arch-studio-quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}'
         + '#arch-studio-region .arch-studio-quick-actions button{min-height:40px;font-size:12px!important;}'
-        + '#arch-studio-region .arch-studio-workspaces{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:5px 0 2px;}'
-        + '#arch-studio-region .arch-workspace-button{min-width:0;min-height:44px;padding:8px!important;border-radius:9px!important;font-size:13px!important;line-height:1.25;white-space:normal;}'
+        // Workspaces sit in the title row on wide screens, saving the 3D view a
+        // whole row, and take their own full-width row again when space is short.
+        + '#arch-studio-region .arch-studio-workspaces{display:flex;gap:6px;padding:0;flex:0 1 auto;}'
+        + '#arch-studio-region .arch-workspace-button{min-width:0;min-height:40px;padding:6px 13px!important;border-radius:9px!important;font-size:12px!important;line-height:1.25;white-space:nowrap;}'
+        + '@media(max-width:1100px){#arch-studio-region .arch-studio-workspaces{order:3;flex:1 1 100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}#arch-studio-region .arch-workspace-button{min-height:44px;padding:8px!important;font-size:13px!important;white-space:normal;}}'
         + '#arch-studio-region .arch-workspace-button[aria-expanded=true]{box-shadow:inset 0 -3px 0 currentColor;}'
         + '#arch-studio-region .arch-studio-feature-strip button{min-height:36px;color:#e2e8f0!important;}'
         + '#arch-studio-region .arch-studio-feature-strip{padding-top:7px!important;border-top:1px solid #334155;}'
@@ -6549,6 +7055,17 @@ function __alloAST(k, fb) {
             el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 1 } }, totalBlocks + ' blocks \u2022 ' + (blocks.length ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : 'ready to design'))
           )
           ),
+          el('nav', { className: 'arch-studio-workspaces', 'aria-label': uxText('workspaces') },
+          el('button', { id: 'arch-design-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDesign && !showDrawings, 'aria-controls': showDesign && !showDrawings ? 'arch-design-panel' : undefined,
+            onClick: function () { upd({ showDesign: showDrawings || !showDesign, showProject: false, showDrawings: false, showBOM: false, showTemplates: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+              border: '1px solid #38bdf8', color: '#e0f2fe', background: showDesign ? '#075985' : '#164e63', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+          }, t('stem.archstudio.design_open', 'Design workbench')),
+          el('button', { id: 'arch-drawings-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDrawings, 'aria-controls': showDrawings ? 'arch-drawings-desk' : undefined, onClick: function () { upd('showDrawings', !showDrawings); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20, border: '1px solid #2dd4bf', color: '#ccfbf1', background: showDrawings ? '#115e59' : '#134e4a', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, drawingText('title')),
+          el('button', { id: 'arch-project-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showProject && !showDrawings, 'aria-controls': showProject && !showDrawings ? 'arch-project-panel' : undefined,
+            onClick: function () { upd({ showProject: showDrawings || !showProject, showDesign: false, showDrawings: false, showBOM: false, showTemplates: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+              border: '1px solid #818cf8', color: '#e0e7ff', background: showProject ? '#3730a3' : '#312e81', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+          }, t('stem.archstudio.project_open_panel', 'Project & revisions'))
+          ),
           el('div', { className: 'arch-studio-quick-actions', role: 'group', 'aria-label': uxText('quick_actions') },
 
           el('button', { type: 'button', onClick: doUndo, disabled: showReplay || !undoStack.length, title: showReplay ? 'Exit construction replay to undo' : t('stem.archstudio.undo_multi_level', 'Undo (multi-level)'), style: { flex: '0 0 auto', background: 'rgba(71,85,105,.42)', border: '1px solid rgba(100,116,139,.4)', color: !showReplay && undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && undoStack.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\u21A9 Undo' + (undoStack.length ? ' ' + undoStack.length : '')),
@@ -6556,17 +7073,6 @@ function __alloAST(k, fb) {
           el('button', { type: 'button', onClick: saveBuild, disabled: !blocks.length, title: t('stem.archstudio.save_to_gallery', 'Save to gallery'), style: { flex: '0 0 auto', background: blocks.length ? 'rgba(34,197,94,.16)' : 'rgba(71,85,105,.25)', border: blocks.length ? '1px solid rgba(34,197,94,.55)' : '1px solid transparent', color: blocks.length ? '#86efac' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' } }, '\uD83D\uDCBE Save'),
           el('button', { type: 'button', onClick: clearAll, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to clear the build' : 'Clear the live build', style: { flex: '0 0 auto', background: !showReplay && blocks.length ? 'rgba(239,68,68,.14)' : 'rgba(71,85,105,.25)', border: !showReplay && blocks.length ? '1px solid rgba(239,68,68,.45)' : '1px solid transparent', color: !showReplay && blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDD1\uFE0F Clear')
           )
-        ),
-        el('nav', { className: 'arch-studio-workspaces', 'aria-label': uxText('workspaces') },
-        el('button', { id: 'arch-design-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDesign && !showDrawings, 'aria-controls': showDesign && !showDrawings ? 'arch-design-panel' : undefined,
-          onClick: function () { upd({ showDesign: showDrawings || !showDesign, showProject: false, showDrawings: false, showBOM: false, showTemplates: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
-            border: '1px solid #38bdf8', color: '#e0f2fe', background: showDesign ? '#075985' : '#164e63', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
-        }, t('stem.archstudio.design_open', 'Design workbench')),
-        el('button', { id: 'arch-drawings-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDrawings, 'aria-controls': showDrawings ? 'arch-drawings-desk' : undefined, onClick: function () { upd('showDrawings', !showDrawings); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20, border: '1px solid #2dd4bf', color: '#ccfbf1', background: showDrawings ? '#115e59' : '#134e4a', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, drawingText('title')),
-        el('button', { id: 'arch-project-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showProject && !showDrawings, 'aria-controls': showProject && !showDrawings ? 'arch-project-panel' : undefined,
-          onClick: function () { upd({ showProject: showDrawings || !showProject, showDesign: false, showDrawings: false, showBOM: false, showTemplates: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
-            border: '1px solid #818cf8', color: '#e0e7ff', background: showProject ? '#3730a3' : '#312e81', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
-        }, t('stem.archstudio.project_open_panel', 'Project & revisions'))
         ),
         !showDrawings && renderFeatureTools([
           { id: 'style', node: el('div', { role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_editor_style', 'Editor style'), style: { flex: '0 0 auto', display: 'flex', padding: 2, gap: 2, borderRadius: 20, border: '1px solid #475569', background: 'rgba(2,6,23,.42)' } },
@@ -7088,7 +7594,9 @@ function __alloAST(k, fb) {
         el('div', { className: 'arch-studio-viewport' + (activeViewChips.length ? ' arch-studio-has-view-hud' : ''), style: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' } },
           renderWorkspaceBar(),
           el('div', { className: 'arch-workspace-content', style: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative' } },
-          el('div', { className: 'arch-studio-stage', 'data-arch-stage': 'true', style: { flex: 1, minHeight: 260, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative' } },
+          el('div', { className: 'arch-studio-stage', 'data-arch-stage': 'true', 'data-allo-fs-stage': 'true',
+            ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-arch-view-nav] [data-allo-fs-btn]'), node); },
+            style: { flex: 1, minHeight: 260, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative' } },
           // The build itself. This viewport previously rendered a spinner that
           // never resolved: threeReady reads a host flag this tool never set,
           // and the canvas behind it had no ref and no renderer anywhere in the
@@ -7106,46 +7614,63 @@ function __alloAST(k, fb) {
             'aria-label': archGlAlt,
             style: { flex: 1, width: '100%', display: 'block', minHeight: 260, visibility: archGlLive ? 'visible' : 'hidden', cursor: showReplay ? 'default' : mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : mode === 'pick' ? 'copy' : 'pointer', touchAction: 'none' },
             onPointerDown: function (ev) {
+              cancelArchHover();
               ArchGL.clearPreview();
-              archDrag.suppressClick = false;
-              archDrag.current = { x: ev.clientX, y: ev.clientY, rx: archRot.rotX, ry: archRot.rotY };
+              if (!ArchGL.navActive()) archDrag.suppressClick = false;
+              ArchGL.navDown({ id: ev.pointerId, x: ev.clientX, y: ev.clientY, button: ev.button, shift: ev.shiftKey });
               try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
             },
             onPointerMove: function (ev) {
-              if (!archDrag.current) {
+              if (!ArchGL.navActive()) {
                 if (showReplay) { ArchGL.clearPreview(); return; }
-                var hoverTarget = ArchGL.pick(ev.clientX, ev.clientY);
-                ArchGL.preview(hoverTarget, {
-                  mode: mode, shape: activeShape, rotation: activeRotation,
-                  hex: archHexFor({ x: hoverTarget && hoverTarget.place ? hoverTarget.place.x : 0, y: hoverTarget && hoverTarget.place ? hoverTarget.place.y : 0, z: hoverTarget && hoverTarget.place ? hoverTarget.place.z : 0, material: activeMaterial, color: activeColor })
+                var hx = ev.clientX, hy = ev.clientY;
+                archHover.run = function () {
+                  var hoverTarget = ArchGL.pick(hx, hy);
+                  ArchGL.preview(hoverTarget, {
+                    mode: mode, shape: activeShape, rotation: activeRotation,
+                    hex: archHexFor({ x: hoverTarget && hoverTarget.place ? hoverTarget.place.x : 0, y: hoverTarget && hoverTarget.place ? hoverTarget.place.y : 0, z: hoverTarget && hoverTarget.place ? hoverTarget.place.z : 0, material: activeMaterial, color: activeColor })
+                  });
+                };
+                if (!archHover.raf) archHover.raf = requestAnimationFrame(function () {
+                  archHover.raf = 0;
+                  var run = archHover.run; archHover.run = null;
+                  if (run) run();
                 });
                 return;
               }
-              var dx = ev.clientX - archDrag.current.x;
-              var dy = ev.clientY - archDrag.current.y;
-              if (dx * dx + dy * dy > 25) archDrag.suppressClick = true;
-              upd('rot3d', Object.assign({}, archRot, {
-                rotX: Math.max(-88, Math.min(88, archDrag.current.rx + dy * 0.4)),
-                rotY: archDrag.current.ry + dx * 0.4
-              }));
+              if (ArchGL.navMove({ id: ev.pointerId, x: ev.clientX, y: ev.clientY })) archDrag.suppressClick = true;
             },
             onPointerUp: function (ev) {
-              archDrag.current = null;
+              ArchGL.navUp(ev.pointerId);
               try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (_) {}
             },
-            onPointerCancel: function () { archDrag.current = null; archDrag.suppressClick = false; ArchGL.clearPreview(); },
-            onPointerLeave: function () { if (!archDrag.current) ArchGL.clearPreview(); },
+            onPointerCancel: function (ev) { ArchGL.navUp(ev.pointerId); archDrag.suppressClick = false; ArchGL.clearPreview(); },
+            onPointerLeave: function () { cancelArchHover(); if (!ArchGL.navActive()) ArchGL.clearPreview(); },
+            // Right-drag pans, so the browser menu must not open over it.
+            onContextMenu: function (ev) { ev.preventDefault(); },
             onClick: editAtPointer,
             onKeyDown: function (ev) {
               var cameraKeys = {
                 ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down',
                 '+': 'zoomIn', '=': 'zoomIn', '-': 'zoomOut', '_': 'zoomOut', Home: 'reset', '0': 'reset'
               };
+              if (ev.shiftKey && /^Arrow/.test(ev.key)) {
+                ev.preventDefault();
+                ArchGL.panBy(ev.key === 'ArrowLeft' ? -60 : ev.key === 'ArrowRight' ? 60 : 0, ev.key === 'ArrowUp' ? -60 : ev.key === 'ArrowDown' ? 60 : 0);
+                if (announceToSR) announceToSR(t('stem.archstudio.sr_view_moved', 'View moved.'));
+                return;
+              }
+              if ((ev.key === 'f' || ev.key === 'F') && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+                ev.preventDefault();
+                ArchGL.focusOn(selectedBlock ? { x: selectedBlock.x, y: selectedBlock.y, z: selectedBlock.z } : null);
+                if (announceToSR) announceToSR(selectedBlock ? t('stem.archstudio.sr_view_centred', 'View centred on the selected block.') : t('stem.archstudio.sr_view_fitted', 'View fitted to the whole build.'));
+                return;
+              }
               var cameraAction = cameraKeys[ev.key];
               if (cameraAction) {
                 ev.preventDefault();
                 setArchCamera(cameraAction);
-                if (announceToSR) announceToSR(cameraAction === 'reset' ? 'Three-dimensional view reset.' : 'Three-dimensional view adjusted.');
+                if (announceToSR) announceToSR(cameraAction === 'reset' ? t('stem.archstudio.view3d_sr_reset', 'Three-dimensional view reset.') : t('stem.archstudio.view3d_sr_adjusted', 'Three-dimensional view adjusted.'));
                 return;
               }
               if (ev.key === 'Enter' || ev.key === ' ') {
@@ -7153,71 +7678,66 @@ function __alloAST(k, fb) {
                 openArchGridForKeyboard();
               }
             },
-            onWheel: function (ev) {
-              ev.preventDefault();
-              ev.stopPropagation();
-              upd('rot3d', Object.assign({}, archRot, {
-                scale: Math.max(0.3, Math.min(3, (archRot.scale || 1) + (ev.deltaY > 0 ? -0.12 : 0.12)))
-              }));
-            }
           }),
           mainUse3d && !archGlLive && el('div', { role: 'status', 'aria-live': 'polite', 'aria-busy': 'true', style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, padding: 20 } },
             el('div', { style: { width: 'min(300px,90%)', textAlign: 'center', padding: '20px 18px', borderRadius: 16, background: 'rgba(15,23,42,.78)', border: '1px solid rgba(100,116,139,.55)', boxShadow: '0 18px 42px rgba(2,6,23,.35)', backdropFilter: 'blur(10px)' } },
               el('div', { 'aria-hidden': 'true', style: { display: 'grid', placeItems: 'center', width: 46, height: 46, margin: '0 auto 10px', borderRadius: 14, fontSize: 25, background: 'rgba(56,189,248,.1)', border: '1px solid rgba(56,189,248,.3)', animation: 'spin 2s linear infinite' } }, '⚙️'),
-              el('div', { style: { color: '#e2e8f0', fontWeight: 800, fontSize: 13 } }, 'Preparing your 3D studio'),
-              el('div', { style: { marginTop: 4, fontSize: 10, lineHeight: 1.45 } }, 'The editable floor grid is ready while the renderer starts.'),
-              el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { marginTop: 12, padding: '7px 12px', borderRadius: 8, border: '1px solid #2dd4bf', background: 'rgba(45,212,191,.15)', color: '#99f6e4', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, 'Open Floor Grid')
+              el('div', { style: { color: '#e2e8f0', fontWeight: 800, fontSize: 13 } }, t('stem.archstudio.view3d_preparing', 'Preparing your 3D studio')),
+              el('div', { style: { marginTop: 4, fontSize: 10, lineHeight: 1.45 } }, t('stem.archstudio.view3d_preparing_help', 'The editable floor grid is ready while the renderer starts.')),
+              el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { marginTop: 12, padding: '7px 12px', borderRadius: 8, border: '1px solid #2dd4bf', background: 'rgba(45,212,191,.15)', color: '#99f6e4', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, t('stem.archstudio.view3d_open_grid', 'Open Floor Grid'))
             )
           ),
           !mainUse3d && renderBuildGrid(),
-          mainUse3d && archGlLive && archDisplayBlocks.length === 0 && el('div', { className: 'arch-studio-empty-state', 'data-arch-empty-state': 'true', role: 'status', style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'auto', width: 'min(330px,calc(100% - 32px))', padding: '16px 18px', borderRadius: 16, background: 'rgba(15,23,42,.9)', border: '1px solid rgba(100,116,139,.7)', color: '#e2e8f0', textAlign: 'center', backdropFilter: 'blur(12px)', zIndex: 5 } },
-            el('div', { 'aria-hidden': 'true', style: { fontSize: 28, marginBottom: 6 } }, blocks.length === 0 ? (mode === 'pick' ? '\uD83C\uDFAF' : '\uD83C\uDFD7\uFE0F') : (showReplay ? '\u23EA' : '\uD83D\uDC41\uFE0F')),
-            el('div', { style: { fontSize: 14, fontWeight: 850, color: '#f8fafc' } }, blocks.length === 0 ? (mode === 'pick' ? 'Nothing to pick yet' : 'Start your first structure') : (showReplay ? 'No blocks at this replay step' : 'Nothing matches this view')),
-            el('div', { style: { marginTop: 4, fontSize: 10, lineHeight: 1.5, color: '#94a3b8' } }, blocks.length === 0 ? (mode === 'pick' ? 'Switch to Place, then click the ground or use the floor grid.' : 'Click the ground to place a ' + activeShape + ', or begin precisely in the floor grid.') : (showReplay ? 'Move to another step or return to the live build.' : 'A layer, slice, or filter is hiding the live structure.')),
-            el('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 6, marginTop: 11 } },
+          mainUse3d && archGlLive && archDisplayBlocks.length === 0 && el('div', { className: 'arch-studio-empty-state', 'data-arch-empty-state': 'true', role: 'status', style: { position: 'absolute', left: '50%', top: 56, transform: 'translateX(-50%)', pointerEvents: 'none', width: 'min(360px,calc(100% - 24px))', padding: '9px 14px', borderRadius: 16, background: 'rgba(15,23,42,.9)', border: '1px solid rgba(100,116,139,.7)', color: '#e2e8f0', textAlign: 'center', backdropFilter: 'blur(12px)', zIndex: 5 } },
+            el('div', { style: { fontSize: 13, fontWeight: 850, color: '#f8fafc' } }, el('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, blocks.length === 0 ? (mode === 'pick' ? '\uD83C\uDFAF' : '\uD83C\uDFD7\uFE0F') : (showReplay ? '\u23EA' : '\uD83D\uDC41\uFE0F')), blocks.length === 0 ? (mode === 'pick' ? t('stem.archstudio.view3d_empty_pick', 'Nothing to pick yet') : t('stem.archstudio.view3d_empty_start', 'Start your first structure')) : (showReplay ? t('stem.archstudio.view3d_empty_replay', 'No blocks at this replay step') : t('stem.archstudio.view3d_empty_hidden', 'Nothing matches this view'))),
+            el('div', { style: { marginTop: 2, fontSize: 10, lineHeight: 1.4, color: '#94a3b8' } }, blocks.length === 0 ? (mode === 'pick' ? t('stem.archstudio.view3d_empty_pick_help', 'Switch to Place, then click the ground or use the floor grid.') : t('stem.archstudio.view3d_empty_start_help', 'Click the ground to place a {shape}, or begin precisely in the floor grid.').replace('{shape}', activeShape)) : (showReplay ? t('stem.archstudio.view3d_empty_replay_help', 'Move to another step or return to the live build.') : t('stem.archstudio.view3d_empty_hidden_help', 'A layer, slice, or filter is hiding the live structure.'))),
+            el('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 6, marginTop: 7, pointerEvents: 'auto' } },
               blocks.length === 0 && el('button', { type: 'button', onClick: function () { upd({ showDesign: true, designTab: 'build', showProject: false }); },
                 style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #38bdf8', background: '#075985', color: '#e0f2fe', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
               }, t('stem.archstudio.design_start', 'Design a room')),
-              blocks.length === 0 && mode === 'pick' && el('button', { type: 'button', onClick: function () { upd('mode', 'place'); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #22c55e', background: 'rgba(34,197,94,.16)', color: '#86efac', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Switch to Place'),
-              blocks.length === 0 && el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #2dd4bf', background: 'rgba(45,212,191,.16)', color: '#99f6e4', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Open Floor Grid'),
-              blocks.length > 0 && showReplay && replayStep < replayFrames && el('button', { type: 'button', onClick: function () { stepReplay(1); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #fbbf24', background: 'rgba(251,191,36,.14)', color: '#fde68a', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Next Step'),
-              blocks.length > 0 && showReplay && el('button', { type: 'button', onClick: exitReplay, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #64748b', background: 'rgba(71,85,105,.3)', color: '#cbd5e1', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Return to Live Build'),
-              blocks.length > 0 && !showReplay && el('button', { type: 'button', onClick: function () { upd({ viewLayer: -1, showSlice: false, sliceZSelected: false, filterMaterial: '', filterShape: '' }); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.16)', color: '#bfdbfe', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Show Entire Build')
+              blocks.length === 0 && mode === 'pick' && el('button', { type: 'button', onClick: function () { upd('mode', 'place'); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #22c55e', background: 'rgba(34,197,94,.16)', color: '#86efac', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, t('stem.archstudio.view3d_switch_place', 'Switch to Place')),
+              blocks.length === 0 && el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #2dd4bf', background: 'rgba(45,212,191,.16)', color: '#99f6e4', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, t('stem.archstudio.view3d_open_grid', 'Open Floor Grid')),
+              blocks.length > 0 && showReplay && replayStep < replayFrames && el('button', { type: 'button', onClick: function () { stepReplay(1); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #fbbf24', background: 'rgba(251,191,36,.14)', color: '#fde68a', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, t('stem.archstudio.view3d_next_step', 'Next Step')),
+              blocks.length > 0 && showReplay && el('button', { type: 'button', onClick: exitReplay, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #64748b', background: 'rgba(71,85,105,.3)', color: '#cbd5e1', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, t('stem.archstudio.view3d_return_live', 'Return to Live Build')),
+              blocks.length > 0 && !showReplay && el('button', { type: 'button', onClick: function () { upd({ viewLayer: -1, showSlice: false, sliceZSelected: false, filterMaterial: '', filterShape: '' }); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.16)', color: '#bfdbfe', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, t('stem.archstudio.view3d_show_all', 'Show Entire Build'))
             )
           ),
           el('p', { id: 'arch-gl-description', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } },
             showReplay
-              ? 'Read-only construction replay. Use the replay controls to inspect earlier build steps. Exit replay before changing blocks.'
-              : 'A three-dimensional view of the structure you have built, coloured by material. Click the ground or a block face to build, or choose Pick to copy an existing block\'s properties. Drag or use the arrow keys to orbit, scroll or use plus and minus to zoom, and press Home or zero to reset. Press Enter to open the keyboard-authoring floor grid, then use arrow keys to move between cells.'),
+              ? t('stem.archstudio.view3d_replay_description', 'Read-only construction replay. Use the replay controls to inspect earlier build steps. Exit replay before changing blocks.')
+              : t('stem.archstudio.nav_description', 'A three-dimensional view of the structure you have built, coloured by material. Click the ground or a block face to build, or choose Pick to copy an existing block\'s properties. Drag or use the arrow keys to orbit. Right-drag, Shift-drag, two fingers, or Shift with the arrow keys pans. Scroll, pinch, or plus and minus zooms toward the pointer. Press F to centre the selected block, and Home or zero to reset. Press Enter to open the keyboard-authoring floor grid, then use arrow keys to move between cells.')),
 
           // Controls overlay (top-right)
           mainUse3d && el('div', { className: 'arch-studio-help-overlay', style: { position: 'absolute', top: 8, right: 8, pointerEvents: 'none', background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
-            el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
-            el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
-            el('div', { style: { opacity: 0.9 } }, showReplay ? '\u23EA Replay is read-only' : '\uD83D\uDC49 Click \u2014 ' + activeModeVisual.action),
-            archDisplayBlocks.length !== blocks.length && el('div', { style: { color: '#93c5fd', fontWeight: 700 } }, '\uD83D\uDC41 ' + archDisplayBlocks.length + '/' + blocks.length + ' visible'),
-            symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
+            el('div', null, blueprintView ? '\u270B ' + t('stem.archstudio.help_drag_pan', 'Drag \u2014 Pan') : '\uD83D\uDD04 ' + t('stem.archstudio.help_drag_orbit', 'Drag \u2014 Orbit')),
+            !blueprintView && el('div', null, '\u270B ' + t('stem.archstudio.help_right_drag_pan', 'Right-drag / Shift \u2014 Pan')),
+            el('div', null, '\uD83D\uDD0D ' + t('stem.archstudio.help_scroll_zoom', 'Scroll \u2014 Zoom to pointer')),
+            el('div', null, '\uD83C\uDFAF ' + (selectedBlock ? t('stem.archstudio.help_f_centre', 'F \u2014 Centre selection') : t('stem.archstudio.help_f_fit', 'F \u2014 Fit build'))),
+            el('div', { style: { opacity: 0.9 } }, showReplay ? '\u23EA ' + t('stem.archstudio.view3d_help_replay', 'Replay is read-only') : '\uD83D\uDC49 ' + t('stem.archstudio.view3d_help_click', 'Click \u2014 {action}').replace('{action}', activeModeVisual.action)),
+            archDisplayBlocks.length !== blocks.length && el('div', { style: { color: '#93c5fd', fontWeight: 700 } }, '\uD83D\uDC41 ' + t('stem.archstudio.view3d_help_visible', '{visible}/{total} visible').replace('{visible}', archDisplayBlocks.length).replace('{total}', blocks.length)),
+            symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E ' + t('stem.archstudio.view3d_help_symmetry', 'Symmetry ON'))
           ),
+          mainUse3d && renderViewNavigator(),
 
 
 
 
           mainUse3d && selectedBlock && el('div', { className: 'arch-studio-empty-state arch-studio-selection-chip', 'data-arch-selection-chip': 'true', 'aria-hidden': 'true', style: { position: 'absolute', left: 8, bottom: 8, pointerEvents: 'none', zIndex: 7, maxWidth: 230, padding: '6px 9px', borderRadius: 9, background: 'rgba(15,23,42,.92)', border: '1px solid #f59e0b', boxShadow: '0 0 20px rgba(245,158,11,.16)', color: '#fde68a', fontSize: 10, fontWeight: 750 } },
-            '\uD83D\uDCCC Selected X ' + selectedBlock.x + ' \u2022 Y ' + selectedBlock.y + ' \u2022 Z ' + selectedBlock.z + ' \u2022 ' + (selectedShapeMeta ? selectedShapeMeta.label : 'Block')),
+            '\uD83D\uDCCC ' + t('stem.archstudio.view3d_selected_chip', 'Selected X {x} \u2022 Y {y} \u2022 Z {z} \u2022 {shape}').replace('{x}', selectedBlock.x).replace('{y}', selectedBlock.y).replace('{z}', selectedBlock.z).replace('{shape}', selectedShapeMeta ? selectedShapeMeta.label : 'Block')),
 
           ),
           mainUse3d && el('div', { className: 'arch-studio-camera-controls', role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_three_dimensional_camera_controls', 'Three-dimensional camera controls'), style: {
             position: 'absolute', right: 8, bottom: 8, zIndex: 7, display: 'flex', flexWrap: 'wrap', gap: 3,
             width: 'max-content', maxWidth: 'calc(100% - 16px)', padding: 4, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155'
           } },
-            cameraBtn('Rotate view left', '\u21B6', 'left'),
-            cameraBtn('Rotate view right', '\u21B7', 'right'),
-            cameraBtn('Tilt view up', '\u2191', 'up'),
-            cameraBtn('Tilt view down', '\u2193', 'down'),
+            cameraBtn(t('stem.archstudio.view3d_rotate_left', 'Rotate view left'), '\u21B6', 'left'),
+            cameraBtn(t('stem.archstudio.view3d_rotate_right', 'Rotate view right'), '\u21B7', 'right'),
+            cameraBtn(t('stem.archstudio.view3d_tilt_up', 'Tilt view up'), '\u2191', 'up'),
+            cameraBtn(t('stem.archstudio.view3d_tilt_down', 'Tilt view down'), '\u2193', 'down'),
             el('span', { key: 'orbit-zoom', className: 'arch-camera-separator', 'aria-hidden': true }),
-            cameraBtn('Zoom in', '+', 'zoomIn'),
-            cameraBtn('Zoom out', '\u2212', 'zoomOut'),
-            cameraBtn('Reset three-dimensional view', '\u27F2', 'reset')
+            cameraBtn(t('stem.archstudio.view3d_zoom_in', 'Zoom in'), '+', 'zoomIn'),
+            cameraBtn(t('stem.archstudio.view3d_zoom_out', 'Zoom out'), '\u2212', 'zoomOut'),
+            cameraBtn(t('stem.archstudio.view3d_reset', 'Reset three-dimensional view'), '\u27F2', 'reset')
           ),
 
           activeViewChips.length > 0 && el('div', {

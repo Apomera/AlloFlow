@@ -28,14 +28,14 @@ exports[`science-sim + studio render goldens > renders + pins a digest for anato
 
 exports[`science-sim + studio render goldens > renders + pins a digest for archStudio [ssr] 1`] = `
 {
-  "buttons": 101,
+  "buttons": 106,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 567,
+  "lengthBucket": 589,
   "paths": 12,
   "selects": 0,
-  "sha": "bc0f6b252bbf3d34",
-  "svgs": 12,
+  "sha": "b35d40953460693a",
+  "svgs": 13,
 }
 `;
 

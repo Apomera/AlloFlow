@@ -172,7 +172,9 @@ describe('Architecture Studio authoring', () => {
 
       expect(edit.changeCamera({ rotX: -24, rotY: -38, scale: 1 }, 'left')).toMatchObject({ rotY: -53 });
       expect(edit.changeCamera({ rotX: -86, rotY: 0, scale: 2.95 }, 'up')).toMatchObject({ rotX: -88 });
-      expect(edit.changeCamera({ rotX: 0, rotY: 0, scale: 2.95 }, 'zoomIn')).toMatchObject({ scale: 3 });
+      expect(edit.changeCamera({ rotX: 0, rotY: 0, scale: 5.9 }, 'zoomIn')).toMatchObject({ scale: 6 });
+      expect(edit.changeCamera({ scale: 1, panX: 2, panZ: -3 }, 'zoomOut')).toMatchObject({ scale: 0.87, panX: 2, panZ: -3 });
+      expect(edit.changeCamera({ scale: 1, panX: 2 }, 'reset')).toMatchObject({ panX: 0, panY: 0, panZ: 0 });
       expect(edit.changeCamera({}, 'reset')).toMatchObject({ rotX: -24, rotY: -38, scale: 1 });
 
       expect(edit.dominantNormalStep).toBeTypeOf('function');
