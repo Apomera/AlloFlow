@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const hostBundles = [
   path.resolve(process.cwd(), 'stem_lab/stem_lab_module.js'),
@@ -30,7 +31,7 @@ describe('Architecture Studio renderer ownership', () => {
       expect(source).toContain("if (state === 'recovering') fail('context-lost')");
       expect(source).toContain('var generation = ++mountGeneration');
       expect(source).toContain('generation !== mountGeneration || canvasEl !== el');
-      const submitBody = source.slice(source.indexOf('submit: function (m) {'), source.indexOf('getView: function ()'));
+      const submitBody = sliceBetween(source, 'submit: function (m) {', 'getView: function ()', { file, label: 'ArchGL.submit' });
       expect(submitBody).toContain('pending = m;');
       expect(submitBody).toContain('scheduleFrame();');
       expect(submitBody).not.toContain('renderer.render');
@@ -60,7 +61,7 @@ describe('Architecture Studio renderer ownership', () => {
       expect(resizeBody).toContain('camera.aspect = w / hh;');
       expect(resizeBody).toContain('invalidate();');
       // A dirty frame always re-applies the camera, so the new aspect refits.
-      const frameBody = source.slice(frameStart, source.indexOf('function handleContextLost', frameStart));
+      const frameBody = sliceBetween(source, 'function frame(', 'function handleContextLost', { file, label: 'ArchGL frame loop' });
       expect(frameBody).toContain('if (moving || dirty) { applyCam();');
     }
   });
