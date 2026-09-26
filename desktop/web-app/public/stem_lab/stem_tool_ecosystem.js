@@ -1137,6 +1137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     if(a.footPlants&&b.footPlants)out.footPlants=a.footPlants.map(function(f,k){var g=b.footPlants[k];return g?Object.assign({},f,{x:f.x+(g.x-f.x)*alpha,z:f.z+(g.z-f.z)*alpha}):f;});
     return out;
   }
+  var ECO_MEADOW_PREVIEW_STEPS=600;
   function ecoMeadowBlendFrame(a,b,alpha,before,after) {
     if(!a||!b||!(alpha>0))return a;
     var out={};Object.keys(a).forEach(function(id){out[id]=a[id].map(function(pose,i){return ecoMeadowBlendPose(pose,b[id]&&b[id][i],alpha,id,before&&before[id]&&before[id][i],after&&after[id]&&after[id][i]);});});
@@ -1236,6 +1237,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     var orbitState = React.useState(0.65), orbit = orbitState[0], setOrbit = orbitState[1];
     var elevationState=React.useState(0.42),observationElevation=elevationState[0],setObservationElevation=elevationState[1];
     var zoomState = React.useState(19), zoom = zoomState[0], setZoom = zoomState[1];
+    var liftState=React.useState(0),lift=liftState[0],setLift=liftState[1];
+    var speedState=React.useState(1),timelineSpeed=speedState[0],setTimelineSpeed=speedState[1];
+    var loopState=React.useState(false),loopTimeline=loopState[0],setLoopTimeline=loopState[1];
+    var cameraControls=React.useRef(null);
     var breezeState=React.useState(true),breeze=breezeState[0],setBreeze=breezeState[1];
     var lightingState = React.useState('daylight'), lighting = lightingState[0], setLighting = lightingState[1];
     var markersState = React.useState(false), markers = markersState[0], setMarkers = markersState[1];
@@ -1262,7 +1267,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     var reducedState = React.useState(function() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); });
     var reduced = reducedState[0], setReduced = reducedState[1];
     var view = React.useRef({});
-    view.current = { orbit: orbit, observationElevation:observationElevation, zoom: zoom, branch: branch, reduced: reduced, cameraMode: cameraMode, markers: markers, lighting: lighting, breeze:breeze, isolate:isolate, showTrail:showTrail, showInteraction:showInteraction, cameraTracking:cameraTracking };
+    view.current = { orbit: orbit, observationElevation:observationElevation, lift:lift, zoom: zoom, timelineSpeed:timelineSpeed, branch: branch, reduced: reduced, cameraMode: cameraMode, markers: markers, lighting: lighting, breeze:breeze, isolate:isolate, showTrail:showTrail, showInteraction:showInteraction, cameraTracking:cameraTracking };
+    // Pointer gestures share the same camera state as the buttons and slider.
+    cameraControls.current={
+      orbitBy:function(delta){setOrbit(function(value){return value+delta;});},
+      tiltBy:function(delta){
+        if(view.current.cameraMode==='detail'&&latest.current.focus!=='plants'&&!view.current.showInteraction)setObservationElevation(function(value){return Math.max(0.1,Math.min(1.5,value+delta));});
+        else setLift(function(value){return Math.max(-0.2,Math.min(0.6,value+delta));});
+      },
+      zoomBy:function(factor){setZoom(function(value){return Math.max(15,Math.min(30,Math.round(value*factor*10)/10));});}
+    };
     var sample = props.result ? props.result[branch][props.cursor].values : props.config.initial;
     var focusedSpecies=ECO_WEB_SPECIES.find(function(sp){return sp.id===props.focus;});
     var representativeCount=props.focus!=='plants'&&props.config.enabled[props.focus]&&sample[props.focus]>0?Math.min(16,Math.max(1,Math.ceil(sample[props.focus]/focusedSpecies.initial*7))):0;
@@ -1273,7 +1287,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       return {baseline:ecoMeadowBehaviorTimeline(props.config,props.result.baseline),experiment:ecoMeadowBehaviorTimeline(props.config,props.result.experiment)};
     },[props.result,JSON.stringify(props.config)]);
     var behaviorRef=React.useRef(behaviorRuns);behaviorRef.current=behaviorRuns;
-    var behaviorFrame=behaviorRuns[branch][reduced?0:props.result?props.cursor:0];
+    // Live preview: before a comparison exists, animals act out a one-minute,
+    // looping behavior run with every population held at its starting value.
+    var previewState=React.useState(false),previewing=previewState[0]&&!props.result&&!reduced,setPreviewing=previewState[1];
+    var previewStepState=React.useState(0),previewStep=previewStepState[0],setPreviewStep=previewStepState[1];
+    var previewRuns=React.useMemo(function(){
+      if(!previewing)return null;
+      var rows=[];for(var r=0;r<=ECO_MEADOW_PREVIEW_STEPS;r++)rows.push({values:props.config.initial,cover:props.config.cover});
+      return ecoMeadowBehaviorTimeline(props.config,rows);
+    },[previewing,JSON.stringify(props.config)]);
+    var previewRef=React.useRef(null),previewHead=React.useRef(null);previewRef.current=previewRuns;
+    React.useEffect(function(){if(props.result)setPreviewing(false);},[props.result]);
+    var behaviorFrame=previewRuns?previewRuns[Math.min(previewStep,ECO_MEADOW_PREVIEW_STEPS)]:behaviorRuns[branch][reduced?0:props.result?props.cursor:0];
     var inspectedBehavior=behaviorFrame[props.focus]&&behaviorFrame[props.focus][representativeIndex];
     var behaviorLabel=!props.config.enabled[props.focus]||sample[props.focus]===0?'Not present':reduced&&props.focus!=='plants'?'Starting pose':inspectedBehavior?inspectedBehavior.state:'Growing';
     var behaviorMoments=React.useMemo(function(){return ecoMeadowBehaviorMoments(behaviorRuns[branch],props.focus,representativeIndex).filter(function(moment){return moment.active||representativeIndex===0;});},[behaviorRuns,branch,props.focus,representativeIndex]);
@@ -1320,12 +1345,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       if (query.addEventListener) query.addEventListener('change', change);
       return function() { if (query.removeEventListener) query.removeEventListener('change', change); };
     }, []);
+    React.useEffect(function() {
+      if (!previewing || status !== 'ready') return;
+      var frameId=0,last=null,lastStep=0,head=0;previewHead.current=0;
+      function frame(now) {
+        frameId=0;if (document.hidden) { last=null; frameId=requestAnimationFrame(frame); return; }
+        var dt=last==null?0:Math.min(100,now-last);last=now;
+        head+=dt/100*view.current.timelineSpeed;
+        // Wrapping restarts the run; everyone regrows in place of a jump cut.
+        if(head>=ECO_MEADOW_PREVIEW_STEPS){head=0;if(engine.current)engine.current.regrow();}
+        previewHead.current=head;
+        if(now-lastStep>=250){lastStep=now;setPreviewStep(Math.floor(head));}
+        if(engine.current)engine.current.frame(dt);
+        frameId=requestAnimationFrame(frame);
+      }
+      frameId=requestAnimationFrame(frame);
+      return function() { if(frameId)cancelAnimationFrame(frameId); previewHead.current=null; setPreviewStep(0); };
+    }, [previewing, status, previewRuns]);
     // Playback runs on the display's frame clock: the scene advances ten samples
     // per second at normal pace and is drawn between samples every frame. The
     // shared cursor is committed a few times a second, and exactly on stop.
     React.useEffect(function() {
       if (!playing || !props.result || reduced || status !== 'ready') return;
-      var epoch=playbackEpoch.current,clip=replaySession.current,pace=clip?replayPace:1,frameId=0,last=null,lastCommit=0,start=latest.current;
+      var epoch=playbackEpoch.current,clip=replaySession.current,pace=clip?replayPace:timelineSpeed,frameId=0,last=null,lastCommit=0,start=latest.current;
       var head=playhead.current!=null?playhead.current:clip?clip.cursor:start.cursor;
       playhead.current=head;loopInfo.current={result:start.result,committed:Math.floor(head+1e-9)};
       if(engine.current)engine.current.stepMs=100/pace;
@@ -1338,7 +1380,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         if(clip&&(p.result!==clip.result||p.focus!==clip.id||v.branch!==clip.branch||v.representativeIndex!==clip.index||v.cameraMode!=='detail'||p.inspectionVersion!==clip.inspectionVersion)) {setPlaying(false);return;}
         var dt=last==null?0:Math.min(100,now-last),end=clip?clip.end:240;last=now;
         head=Math.min(end,head+dt/100*pace);playhead.current=head;
-        if(head>=end){setPlaying(false);if(clip)setReplay({start:clip.start,end:clip.end,state:clip.state,status:'complete'});return;}
+        if(head>=end&&!clip&&loopTimeline){head=0;playhead.current=0;info.committed=0;lastCommit=now;p.onCursor(0);}
+        else if(head>=end){setPlaying(false);if(clip)setReplay({start:clip.start,end:clip.end,state:clip.state,status:'complete'});return;}
         var step=Math.floor(head+1e-9);
         if(step!==info.committed&&now-lastCommit>=250){info.committed=step;lastCommit=now;if(clip)clip.cursor=step;p.onCursor(step);}
         if(engine.current)engine.current.frame(dt);
@@ -1346,7 +1389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       }
       frameId=requestAnimationFrame(frame);
       return function() { if(frameId)cancelAnimationFrame(frameId); };
-    }, [playing, !!props.result, reduced, status, replay, replayPace]);
+    }, [playing, !!props.result, reduced, status, replay, replayPace, timelineSpeed, loopTimeline]);
     React.useEffect(function() { setPlaying(false); }, [props.result, props.inspectionVersion]);
     React.useEffect(function(){if(replaySession.current)setPlaying(false);else setReplay(null);},[branch,props.focus,representativeIndex,cameraMode]);
     React.useEffect(function() {
@@ -2055,10 +2098,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               if(sp.id!=='plants') {
                 var body=new T.Group(),size=(sp.id==='caterpillars'?0.65:sp.id==='bluetits'?0.8:sp.id==='voles'?0.57:sp.id==='rabbits'?0.86:1)*(0.94+(i%5)*0.028);
                 animal.children.slice().forEach(function(part){if(part!==ringMarker && part!==animal.userData.shadow)body.add(part);});
-                animal.add(body);body.scale.setScalar(size);animal.userData.body=body;
+                animal.add(body);body.scale.setScalar(size);animal.userData.body=body;animal.userData.bodySize=size;
                 animal.userData.shadow.scale.multiplyScalar(size);
               }
-              list.push(animal);
+              animal.userData.baseScale=animal.scale.clone();list.push(animal);
             }
             groups[sp.id] = list;
           });
@@ -2204,9 +2247,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var p = latest.current, v = view.current;
             function attr(key,value){if(!live)renderer.domElement.setAttribute(key,typeof value==='function'?value():value);}
             inspectionScenery.forEach(function(object){object.visible=true;});
-            var head=v.reduced||!p.result?0:playingNow.current&&playhead.current!=null?Math.min(240,playhead.current):p.cursor;
-            var sampleStep=Math.floor(head+1e-9),blendAmount=head-sampleStep,runs=behaviorRef.current[v.branch];
-            var behaviorFrame=blendAmount>1e-6&&sampleStep<240?ecoMeadowBlendFrame(runs[sampleStep],runs[sampleStep+1],blendAmount,runs[sampleStep-1],runs[sampleStep+2]):runs[sampleStep];
+            var preview=!p.result&&!v.reduced&&previewHead.current!=null&&previewRef.current;
+            var head=preview?previewHead.current:v.reduced||!p.result?0:playingNow.current&&playhead.current!=null?Math.min(240,playhead.current):p.cursor;
+            var sampleStep=Math.floor(head+1e-9),blendAmount=head-sampleStep,runs=preview||behaviorRef.current[v.branch];
+            var behaviorFrame=blendAmount>1e-6&&sampleStep<runs.length-1?ecoMeadowBlendFrame(runs[sampleStep],runs[sampleStep+1],blendAmount,runs[sampleStep-1],runs[sampleStep+2]):runs[sampleStep];
             var dataStep=p.result?(v.reduced?p.cursor:sampleStep):0;
             var values = p.result ? p.result[v.branch][dataStep].values : p.config.initial;
             // Lighting is a viewing preference, not model time or weather.
@@ -2237,7 +2281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var currentCover = p.result ? p.result[v.branch][dataStep].cover : p.config.cover;
             refugePatches.forEach(function(patch, i) { patch.visible = currentCover > i * 10; patch.scale.setScalar(Math.min(1, Math.max(0.3, (currentCover - i * 10) / 10))); });
             attr('data-refuge-cover', String(currentCover));
-            var ratio=playingNow.current?quality.ratio:basePixelRatio;if(Math.abs(renderer.getPixelRatio()-ratio)>1e-3)renderer.setPixelRatio(ratio);
+            var ratio=playingNow.current||previewHead.current!=null?quality.ratio:basePixelRatio;if(Math.abs(renderer.getPixelRatio()-ratio)>1e-3)renderer.setPixelRatio(ratio);
             attr('data-render-scale',String(ratio));attr('data-playback-step-ms',String(engineState.stepMs));
             var width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
             if (renderer.domElement.width !== Math.floor(width * renderer.getPixelRatio()) || renderer.domElement.height !== Math.floor(height * renderer.getPixelRatio())) renderer.setSize(width, height, false);
@@ -2268,7 +2312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               distance=Math.max(distance,radius/Math.sin(Math.min(verticalHalf,horizontalHalf))*1.2*Math.max(1,v.zoom/19));
               cameraAngle=v.orbit;
             }
-            var elevation=soilView?0.75:detail?(v.showInteraction?0.42:v.observationElevation):wide?0.78:0.40;
+            var elevation=soilView?0.75:detail?(v.showInteraction?0.42:v.observationElevation):(wide?0.78:0.40)+(v.lift||0);
             // Keep the camera-to-subject distance consistent across inspection
             // heights, so looking down does not make the animal shrink away.
             var horizontalDistance=detail?distance*Math.sqrt(1+0.42*0.42)/Math.sqrt(1+elevation*elevation):distance;
@@ -2324,7 +2368,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               var value = values[sp.id], max = groups[sp.id].length;
               var count = p.config.enabled[sp.id] && value > 0 ? Math.min(max, Math.max(1, Math.ceil(value / sp.initial * (sp.id === 'plants' ? 40 : 7)))) : 0;
               groups[sp.id].forEach(function(g, i) {
-                g.visible = i < count && !!(!isolating||(sp.id===p.focus&&i===v.representativeIndex)||(pair&&sp.id===pair.id&&i===pair.index));
+                var shown = i < count && !!(!isolating||(sp.id===p.focus&&i===v.representativeIndex)||(pair&&sp.id===pair.id&&i===pair.index));
+                // During playback arrivals grow in and departures shrink away; a
+                // still frame always shows exactly the sampled set.
+                var presence=live&&g.userData.presence!=null?Math.max(0,Math.min(1,g.userData.presence+(shown?1:-1)*engineState.lastDt/450)):shown?1:0;
+                g.userData.presence=presence;g.visible=presence>0.001;g.scale.copy(g.userData.baseScale).multiplyScalar(presence*presence*(3-2*presence));
                 var home=g.userData.home, pose=sp.id==='plants'?ecoMeadowPose(sp.id,i,time,v.reduced):behaviorFrame[sp.id][i];
                 var px=sp.id==='plants'?home[0]:pose.x,pz=sp.id==='plants'?home[1]:pose.z,altitude=sp.id==='plants'?0.025:pose.altitude;
                 g.position.set(px,groundHeight(px,pz)+altitude,pz);
@@ -2355,6 +2403,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 if(g.userData.body&&sp.id==='foxes'){g.userData.body.rotation.z=-(pose.pounce||0)*0.12;g.userData.body.position.y=posture.drop;}
                 if(g.userData.tail){g.userData.tail.rotation.y=v.reduced?0:Math.sin(time*1.1+pose.phase)*0.12*(1-posture.settle)+posture.settle*0.9;g.userData.tail.rotation.z=-posture.settle*0.12;}
                 if(g.userData.body && sp.id==='owls')g.userData.body.rotation.x=pose.bank||0;
+                // Breathing follows timeline time: quicker when active, slow at rest.
+                if(g.userData.body&&sp.id!=='caterpillars'){var breath=v.reduced?0:Math.sin(time*((pose.rest||0)>0.5?1.7:3.2)+pose.phase*1.3)*((pose.rest||0)>0.5?0.016:0.009),bodySize=g.userData.bodySize;g.userData.body.scale.set(bodySize,bodySize*(1+breath),bodySize*(1+breath*0.6));}
                 if(g.userData.segments)g.userData.segments.forEach(function(joint,index){var local=ecoMeadowSegmentPose(pose,index),size=g.userData.body.scale.x,localX=joint.userData.homeX+local.x;var surface=groundHeight(px+Math.cos(pose.yaw)*localX*size,pz-Math.sin(pose.yaw)*localX*size);joint.position.set(localX,0.102+local.y+(surface-(g.position.y-altitude))/size,0);joint.rotation.z=local.pitch;joint.scale.x=local.stretch;});
                 if(g.userData.wings)g.userData.wings.forEach(function(wing){wing.rotation.x=wing.userData.side*(v.reduced?0.08:Math.sin(time*3.8+pose.phase)*0.3*(pose.wingFlap==null?1:pose.wingFlap));});
                 g.rotation.y=sp.id==='plants'?g.userData.phase:pose.yaw;
@@ -2373,17 +2423,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             renderer.render(scene, camera);
           }
           var ray = new T.Raycaster(), pointer = new T.Vector2();ray.layers.enable(1);
-          function pick(e) {
+          function speciesAt(e) {
             var rect = renderer.domElement.getBoundingClientRect();
             pointer.set((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1);
             ray.setFromCamera(pointer, camera);
             var hit = ray.intersectObjects(meshes).find(function(hit) { var node=hit.object;while(node){if(!node.visible)return false;node=node.parent;}return true; });
-            if (hit) latest.current.onFocus(hit.object.userData.species);
+            return hit ? hit.object.userData.species : null;
+          }
+          function pick(e) { var id = speciesAt(e); if (id) latest.current.onFocus(id); }
+          // Hovering names the organism under the pointer (throttled raycast).
+          var hover={at:0,id:null};
+          function hoverMove(e){
+            if(e.pointerType!=='mouse'||e.buttons||Object.keys(gesture.pointers).length)return;
+            var now=performance.now();if(now-hover.at<120)return;hover.at=now;
+            var id=speciesAt(e);if(id===hover.id)return;hover.id=id;
+            var sp=id&&ECO_WEB_SPECIES.find(function(entry){return entry.id===id;});
+            renderer.domElement.style.cursor=sp?'pointer':'';renderer.domElement.title=sp?sp.name+' · click to inspect':'';
           }
           function lost(e) { e.preventDefault(); fail(); }
-          renderer.domElement.addEventListener('click', pick);
-          renderer.domElement.addEventListener('webglcontextlost', lost);
-          disposeListeners = function() { renderer.domElement.removeEventListener('click', pick); renderer.domElement.removeEventListener('webglcontextlost', lost); };
+          // Drag orbits and tilts; two pointers pinch to zoom. A drag never
+          // counts as a click, so it does not change the selected species.
+          var gesture={pointers:{},dragged:false,startX:0,startY:0};
+          function pointerDown(e){
+            if(e.pointerType==='mouse'&&e.button!==0)return;
+            gesture.pointers[e.pointerId]={x:e.clientX,y:e.clientY};
+            if(Object.keys(gesture.pointers).length===1){gesture.dragged=false;gesture.startX=e.clientX;gesture.startY=e.clientY;}
+          }
+          function pointerMove(e){
+            var prior=gesture.pointers[e.pointerId],controls=cameraControls.current;if(!prior||!controls)return;
+            var ids=Object.keys(gesture.pointers);
+            if(ids.length>=2){
+              var a=gesture.pointers[ids[0]],b=gesture.pointers[ids[1]],before=Math.hypot(a.x-b.x,a.y-b.y);
+              prior.x=e.clientX;prior.y=e.clientY;var after=Math.hypot(a.x-b.x,a.y-b.y);
+              if(before>0&&after>0)controls.zoomBy(before/after);gesture.dragged=true;return;
+            }
+            var dx=e.clientX-prior.x,dy=e.clientY-prior.y;prior.x=e.clientX;prior.y=e.clientY;
+            if(!gesture.dragged&&Math.hypot(e.clientX-gesture.startX,e.clientY-gesture.startY)<6)return;
+            if(!gesture.dragged){try{renderer.domElement.setPointerCapture(e.pointerId);}catch(err){}}
+            gesture.dragged=true;controls.orbitBy(-dx*0.008);controls.tiltBy(dy*0.004);
+          }
+          function pointerUp(e){delete gesture.pointers[e.pointerId];}
+          function click(e){if(gesture.dragged){gesture.dragged=false;return;}pick(e);}
+          // Wheel zoom needs Ctrl/Cmd (trackpad pinch) or fullscreen, so the page still scrolls.
+          function wheel(e){if(!(e.ctrlKey||e.metaKey||document.fullscreenElement)||!cameraControls.current)return;e.preventDefault();cameraControls.current.zoomBy(Math.exp(Math.max(-60,Math.min(60,e.deltaY))*0.004));}
+          var canvasEvents=[['click',click],['pointerdown',pointerDown],['pointermove',pointerMove],['pointermove',hoverMove],['pointerup',pointerUp],['pointercancel',pointerUp],['webglcontextlost',lost]];
+          canvasEvents.forEach(function(entry){renderer.domElement.addEventListener(entry[0],entry[1]);});
+          renderer.domElement.addEventListener('wheel',wheel,{passive:false});
+          disposeListeners = function() { canvasEvents.forEach(function(entry){renderer.domElement.removeEventListener(entry[0],entry[1]);}); renderer.domElement.removeEventListener('wheel',wheel,{passive:false}); };
           // Playback frames adapt resolution to the device; a still frame always
           // renders at full quality. Off-screen playback skips drawing entirely.
           function frame(dt) {
@@ -2393,9 +2479,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               if(quality.slow>40&&quality.ratio>0.75){quality.ratio=Math.max(0.75,quality.ratio-0.25);quality.slow=0;quality.ema=24;}
               if(quality.fast>120&&quality.ratio<basePixelRatio){quality.ratio=Math.min(basePixelRatio,quality.ratio+0.25);quality.fast=0;}
             }
-            if(engineState.onScreen)draw(true);
+            engineState.lastDt=dt;if(engineState.onScreen)draw(true);
           }
-          var engineState = { draw: draw, frame: frame, stepMs: 100, onScreen: true };
+          var engineState = { draw: draw, frame: frame, stepMs: 100, onScreen: true, lastDt: 0, regrow: function() { ECO_WEB_SPECIES.forEach(function(sp) { if (sp.id !== 'plants') groups[sp.id].forEach(function(g) { g.userData.presence = 0; }); }); } };
           engine.current = engineState;
           if (window.IntersectionObserver) { visibility = new IntersectionObserver(function(entries) { engineState.onScreen = entries[entries.length - 1].isIntersecting; }); visibility.observe(container); }
           if (window.ResizeObserver) { observer = new ResizeObserver(draw); observer.observe(container); }
@@ -2417,9 +2503,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         if (renderer) { renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); }
       };
     }, []);
-    React.useEffect(function() { if (engine.current && status === 'ready') engine.current.draw(); }, [props.result, props.cursor, props.focus, JSON.stringify(props.config), orbit, zoom, branch, reduced, status, cameraMode, markers, lighting, isolate, representativeIndex, showTrail, showInteraction, cameraTracking, observationElevation, breeze, playing]);
+    React.useEffect(function() { if (engine.current && status === 'ready') engine.current.draw(); }, [props.result, props.cursor, props.focus, JSON.stringify(props.config), orbit, zoom, branch, reduced, status, cameraMode, markers, lighting, isolate, representativeIndex, showTrail, showInteraction, cameraTracking, observationElevation, breeze, playing, lift, previewing, previewStep]);
     return h('section', { className: 'efw-card efw-stack', 'data-efw-meadow': 'true', 'aria-label': __alloT('stem.ecosystem.3d_meadow_habitat','3D meadow habitat') },
-      h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, '3D woodland clearing'), h('strong', { 'data-efw-scene-time': 'true' }, props.result ? (branch === 'baseline' ? 'Baseline' : 'Experiment') + ' · time ' + (props.cursor / 10).toFixed(1) : 'Starting community')),
+      h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, '3D woodland clearing'), h('strong', { 'data-efw-scene-time': 'true' }, props.result ? (branch === 'baseline' ? 'Baseline' : 'Experiment') + ' · time ' + (props.cursor / 10).toFixed(1) : previewing ? 'Live preview · starting community' : 'Starting community')),
       h('p', null, 'Explore a meadow clearing within a larger woodland. Select an organism for a close-up, or use Forest overview to see the surrounding landscape.'),
       h('p', { 'data-efw-scene-cover': 'true' }, h('strong', null, 'Refuge cover: ' + (props.result ? props.result[branch][props.cursor].cover : props.config.cover) + '%'), ' · Leafy thickets represent shelter; upright flowering tufts represent food plants.'),
       h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
@@ -2490,13 +2576,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         cameraMode==='detail'&&props.focus!=='plants'&&h('button',{type:'button','aria-pressed':showTrail,onClick:function(){setShowTrail(!showTrail);}},'Recent movement trail'),
         h('button', { type: 'button', onClick: function() { setOrbit(orbit - Math.PI / 6); } }, 'Rotate left'),
         h('button', { type: 'button', onClick: function() { setOrbit(orbit + Math.PI / 6); } }, 'Rotate right'),
-        h('button', { type: 'button', onClick: function() { setOrbit(0.65); setObservationElevation(0.42); setZoom(19); setCameraMode('habitat');setIsolate(false);setShowTrail(false);setShowInteraction(false);setCameraTracking('steady');setRepresentative({id:props.focus,index:0}); } }, 'Reset camera'),
-        h('label', { style: { flex: '1 1 180px' } }, 'Camera distance', h('input', { type: 'range', min: 15, max: 30, value: zoom, 'aria-label': __alloT('stem.ecosystem.meadow_camera_distance','Meadow camera distance'), onChange: function(e) { setZoom(Number(e.target.value)); } }))),
+        h('button', { type: 'button', onClick: function() { cameraControls.current.tiltBy(0.12); } }, 'Raise view'),
+        h('button', { type: 'button', onClick: function() { cameraControls.current.tiltBy(-0.12); } }, 'Lower view'),
+        h('button', { type: 'button', onClick: function() { setOrbit(0.65); setObservationElevation(0.42); setZoom(19); setLift(0); setCameraMode('habitat');setIsolate(false);setShowTrail(false);setShowInteraction(false);setCameraTracking('steady');setRepresentative({id:props.focus,index:0}); } }, 'Reset camera'),
+        h('label', { style: { flex: '1 1 180px' } }, 'Camera distance', h('input', { type: 'range', min: 15, max: 30, value: zoom, step: 'any', 'aria-label': __alloT('stem.ecosystem.meadow_camera_distance','Meadow camera distance'), onChange: function(e) { setZoom(Number(e.target.value)); } }))),
       h('div', { className: 'efw-meadow-species', role: 'group', 'aria-label': __alloT('stem.ecosystem.meadow_species_selection','Meadow species selection') }, ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||props.config.enabled[sp.id];}).map(function(sp) { return h('button', { type: 'button', key: sp.id, 'aria-pressed': props.focus === sp.id, onClick: function() { props.onFocus(sp.id); } }, sp.icon + ' ' + sp.name, h('strong', { style: { display: 'block' } }, props.config.enabled[sp.id] ? ecoWebFormat(sample[sp.id]) + ' biomass' : 'Not included')); })),
+      !props.result && !reduced && status === 'ready' && h('div', { className: 'efw-row', 'data-efw-live-preview': 'true' },
+        h('button', { type: 'button', 'aria-pressed': previewing, onClick: function() { setPreviewing(!previewing); } }, previewing ? 'Stop live behavior' : 'Watch live behavior'),
+        h('label', null, 'Playback speed', h('select', { 'aria-label': __alloT('stem.ecosystem.meadow_playback_speed','Meadow playback speed'), value: timelineSpeed, onChange: function(e) { setTimelineSpeed(Number(e.target.value)); } }, [0.5,1,2,4].map(function(speed) { return h('option', { key: speed, value: speed }, speed + '×'); }))),
+        h('small', null, previewing ? 'Animals act out their behavior while every population stays at its starting value. Run a comparison to see populations change.' : 'Watch the starting community move in real time. Populations stay fixed until you run a comparison.')),
       props.result && h('div', { className: 'efw-row' },
         h('label', null, 'Scene data', h('select', { 'aria-label': __alloT('stem.ecosystem.meadow_scene_data','Meadow scene data'), value: branch, onChange: function(e) { setBranch(e.target.value); } }, h('option', { value: 'experiment' }, 'Experiment'), h('option', { value: 'baseline' }, 'Baseline'))),
         !reduced && status === 'ready' && h('button', { type: 'button', onClick: function() { replaySession.current=null;setReplay(null);if (!playing && props.cursor === 240) props.onCursor(0); setPlaying(!playing); } }, playing ? 'Pause meadow timeline' : 'Play meadow timeline'),
+        !reduced && status === 'ready' && h('label', null, 'Playback speed', h('select', { 'aria-label': __alloT('stem.ecosystem.meadow_playback_speed','Meadow playback speed'), value: timelineSpeed, onChange: function(e) { setTimelineSpeed(Number(e.target.value)); } }, [0.5,1,2,4].map(function(speed) { return h('option', { key: speed, value: speed }, speed + '×'); }))),
+        !reduced && status === 'ready' && h('label', null, h('input', { type: 'checkbox', checked: loopTimeline, onChange: function(e) { setLoopTimeline(e.target.checked); } }), ' Loop timeline'),
         h('label', { style: { flex: '1 1 240px' } }, 'Inspect time: ' + (props.cursor / 10).toFixed(1), h('input', { type: 'range', min: 0, max: 240, value: props.cursor, 'aria-label': __alloT('stem.ecosystem.meadow_timeline','Meadow timeline'), onChange: function(e) { setPlaying(false); props.onCursor(Number(e.target.value)); } }))),
+      status==='ready'&&h('small',{'data-efw-camera-gesture-help':'true',style:{display:'block'}},'Drag the scene to orbit and tilt. Pinch, or hold Ctrl (⌘ on Mac) and scroll, to zoom. The buttons above do the same.'),
       status==='ready'&&h('small',{'data-efw-foliage-help':'true'},reduced?'Reduced motion keeps foliage still.':!breeze?'Foliage is still for observation.':!props.result?'Run a comparison and play the meadow timeline to see the gentle breeze.':'Playback moves smoothly between samples. Pause to hold an exact sample; rewind to restore the same leaf positions.'),
       h('details',{'data-efw-behavior-guide':'true'},h('summary',null,'About animal behavior'),
         h('p',null,'Foxes alternate searching, listening, stalking, resting and short pounce attempts. A pounce includes preparation, a committed leap and recovery. A fox can abandon preparation if nearby prey disappears; once airborne it completes the landing. Each animal walks to its own chosen destinations: foxes spread out and patrol the woodland margin, and each fox follows a different prey animal. Rabbits and voles graze with short head-up scans, notice a slowly stalking fox later than a trotting one, and keep running until they have opened a safe gap; when refuge cover is present, rabbits run for the nearest thicket and wait there. Voles freeze under an owl rather than bolt. Blue tits hop, peck and preen; caterpillars alternate crawling and feeding with articulated body segments; owls bank into their turns, ease between slow wingbeats and gliding, and drop to a low quartering height over nearby voles.'),
@@ -2774,7 +2869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         .efw button{cursor:pointer;font-weight:650}.efw button:disabled{cursor:default}.efw .efw-moment-nav:disabled{opacity:.55;border-style:dashed}.efw .efw-primary{background:#155e75;color:#fff;border-color:#155e75}.efw :is(button,input,select,textarea):focus-visible{outline:3px solid var(--fw-accent);outline-offset:3px}
         .efw-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}.efw-card{background:var(--fw-panel);border:1px solid var(--fw-line);border-radius:12px;padding:16px;min-width:0}.efw-stack{display:grid;gap:12px}.efw-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.efw-row>*{min-width:0}.efw-species{display:grid;grid-template-columns:minmax(0,1fr) 86px;gap:8px;align-items:center}.efw label{display:block;font-weight:600}.efw input[type=checkbox]{width:18px;height:18px;vertical-align:middle;margin-right:8px;accent-color:#155e75}.efw input[type=range]{width:100%;accent-color:#155e75;min-height:28px}.efw textarea{width:100%;min-height:80px}.efw textarea::placeholder{color:var(--fw-muted);opacity:1}.efw .efw-node:focus-visible{outline:3px solid #fde68a;outline-offset:3px}.efw select{width:100%}
         .efw-soil-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px}.efw-soil-pool{border:1px solid var(--fw-line);border-radius:10px;padding:14px;min-width:0;display:grid;gap:10px}.efw-soil-pool h5{font-size:17px;margin:0}.efw-soil-pool p{font-size:13px;margin:0}.efw-soil-values{display:grid;gap:7px;font-variant-numeric:tabular-nums}.efw-soil-values>span{display:flex;justify-content:space-between;gap:12px}.efw-soil-values strong{font-size:20px}.efw-soil-loop{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}.efw-soil-loop li{background:#142f2b;color:#ecfdf5;border:1px solid #5c9284;border-radius:8px;padding:12px;display:flex;align-items:center;gap:12px;font-size:14px}.efw-soil-loop span{color:#a7f3d0;font-size:11px;font-weight:700}.efw-soil-setup{display:grid;gap:12px;min-width:0;padding:12px;border:1px solid var(--fw-line);border-radius:8px}.efw-soil-setup legend{font-weight:700;padding:0 5px}
-        .efw-notebook-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}.efw-note{border:1px solid var(--fw-line);border-radius:10px;padding:14px;min-width:0}.efw-note-prose{white-space:pre-wrap;overflow-wrap:anywhere}.efw-overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}.efw .efw-overview-group{display:grid;gap:8px;min-width:0;text-align:left;font-weight:400;padding:10px}.efw .efw-overview-group[aria-pressed=true]{border:2px solid var(--fw-accent);box-shadow:0 0 0 1px var(--fw-accent)}.efw-overview-name{font-weight:750}.efw-overview-plot{width:100%;display:block;background:#0f172a;border-radius:8px}.efw-overview-values{display:grid;gap:3px;font-size:12px;font-variant-numeric:tabular-nums}.efw-overview-values>span{display:flex;justify-content:space-between;gap:8px}.efw-overview-delta{border-top:1px solid var(--fw-line);padding-top:6px;font-size:13px;font-weight:700}.efw-overview-legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--fw-muted)}.efw-meadow-stage{position:relative;height:510px;min-width:0;background:radial-gradient(ellipse at 45% 25%,#426575 0%,#203b4a 48%,#122538 100%);border:1px solid #64748b;border-radius:12px;overflow:hidden}.efw-meadow-overlay{position:absolute;z-index:1;top:14px;left:14px;max-width:calc(100% - 76px);overflow-wrap:anywhere;display:grid;gap:3px;padding:10px 14px;background:#102331;color:#f8fafc;border:1px solid #7895a1;border-radius:9px;pointer-events:none;font-size:12px;line-height:1.4}.efw-meadow-overlay strong{font-size:17px}.efw-meadow-overlay>span:first-child{font-size:10px;letter-spacing:1.5px;color:#c3d9e1}.efw-meadow-stage canvas{width:100%;height:100%;display:block;cursor:pointer}.efw-meadow-species{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.efw-meadow-species button[aria-pressed=true]{outline:3px solid var(--fw-accent);outline-offset:1px}.efw-network{position:relative;height:382px;background:radial-gradient(ellipse at 50% 100%,#164e3c,#0f172a 75%);border:1px solid #64748b;border-radius:12px;overflow:hidden}.efw-network>svg{position:absolute;inset:0;width:100%;height:100%}.efw button.efw-node{position:absolute;transform:translate(-50%,-50%);width:142px;min-height:86px;background:#172b3a;color:#f8fafc;border:2px solid #94a3b8;display:grid;gap:0;padding:5px;font-size:13px;line-height:1.3;text-align:center}.efw button.efw-node[aria-pressed=true]{border-color:#fff;box-shadow:0 0 0 3px #67e8f9}.efw-node strong{font-size:18px;font-variant-numeric:tabular-nums}.efw-node small{color:#cbd5e1;font-size:11px}.efw-network-caption{color:var(--fw-muted);font-size:12px}.efw-chart{width:100%;display:block;background:#0f172a;border-radius:10px}.efw-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px}.efw-legend span:before{content:'';display:inline-block;width:24px;border-top:3px solid var(--fw-accent);vertical-align:middle;margin-right:6px}.efw-legend span:first-child:before{border-top-style:dashed;border-color:var(--fw-muted)}
+        .efw-notebook-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}.efw-note{border:1px solid var(--fw-line);border-radius:10px;padding:14px;min-width:0}.efw-note-prose{white-space:pre-wrap;overflow-wrap:anywhere}.efw-overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}.efw .efw-overview-group{display:grid;gap:8px;min-width:0;text-align:left;font-weight:400;padding:10px}.efw .efw-overview-group[aria-pressed=true]{border:2px solid var(--fw-accent);box-shadow:0 0 0 1px var(--fw-accent)}.efw-overview-name{font-weight:750}.efw-overview-plot{width:100%;display:block;background:#0f172a;border-radius:8px}.efw-overview-values{display:grid;gap:3px;font-size:12px;font-variant-numeric:tabular-nums}.efw-overview-values>span{display:flex;justify-content:space-between;gap:8px}.efw-overview-delta{border-top:1px solid var(--fw-line);padding-top:6px;font-size:13px;font-weight:700}.efw-overview-legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--fw-muted)}.efw-meadow-stage{position:relative;height:510px;min-width:0;background:radial-gradient(ellipse at 45% 25%,#426575 0%,#203b4a 48%,#122538 100%);border:1px solid #64748b;border-radius:12px;overflow:hidden}.efw-meadow-overlay{position:absolute;z-index:1;top:14px;left:14px;max-width:calc(100% - 76px);overflow-wrap:anywhere;display:grid;gap:3px;padding:10px 14px;background:#102331;color:#f8fafc;border:1px solid #7895a1;border-radius:9px;pointer-events:none;font-size:12px;line-height:1.4}.efw-meadow-overlay strong{font-size:17px}.efw-meadow-overlay>span:first-child{font-size:10px;letter-spacing:1.5px;color:#c3d9e1}.efw-meadow-stage canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:pan-y}.efw-meadow-stage canvas:active{cursor:grabbing}.efw-meadow-species{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.efw-meadow-species button[aria-pressed=true]{outline:3px solid var(--fw-accent);outline-offset:1px}.efw-network{position:relative;height:382px;background:radial-gradient(ellipse at 50% 100%,#164e3c,#0f172a 75%);border:1px solid #64748b;border-radius:12px;overflow:hidden}.efw-network>svg{position:absolute;inset:0;width:100%;height:100%}.efw button.efw-node{position:absolute;transform:translate(-50%,-50%);width:142px;min-height:86px;background:#172b3a;color:#f8fafc;border:2px solid #94a3b8;display:grid;gap:0;padding:5px;font-size:13px;line-height:1.3;text-align:center}.efw button.efw-node[aria-pressed=true]{border-color:#fff;box-shadow:0 0 0 3px #67e8f9}.efw-node strong{font-size:18px;font-variant-numeric:tabular-nums}.efw-node small{color:#cbd5e1;font-size:11px}.efw-network-caption{color:var(--fw-muted);font-size:12px}.efw-chart{width:100%;display:block;background:#0f172a;border-radius:10px}.efw-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px}.efw-legend span:before{content:'';display:inline-block;width:24px;border-top:3px solid var(--fw-accent);vertical-align:middle;margin-right:6px}.efw-legend span:first-child:before{border-top-style:dashed;border-color:var(--fw-muted)}
         .efw table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}.efw th,.efw td{padding:9px 7px;border-bottom:1px solid var(--fw-line);text-align:right}.efw th:first-child{ text-align:left}.efw a{color:var(--fw-accent);text-decoration:underline}.efw-scroll{overflow-x:auto}.efw .efw-result{border-left:4px solid var(--fw-accent);padding-left:12px}.efw details>summary{cursor:pointer;font-weight:700}
         @media(max-width:800px){.efw-meadow-stage{height:420px}.efw-meadow-overlay{top:10px;left:10px;padding:8px 10px;max-width:calc(100% - 72px);font-size:11px}.efw-meadow-overlay strong{font-size:15px}.efw-chart text{font-size:20px}.efw-grid{grid-template-columns:1fr}.efw{padding:12px;gap:14px}.efw button.efw-node{width:min(128px,44%)}.efw-card{padding:12px}}
       `),
