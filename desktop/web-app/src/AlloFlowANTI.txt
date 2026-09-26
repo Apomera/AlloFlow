@@ -14285,7 +14285,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=29d9f6add');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=29d9f6add');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=bfd0c4f4');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=4875db2b');
     loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=29d9f6add');
     loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=29d9f6add');
     loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=29d9f6add');
@@ -44241,7 +44241,6 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                       break;
               }
           }
-      
           }) : null)
       })}
       {/* Agentic AlloBot S0 (docs/allobot_agentic_design.md): the command
