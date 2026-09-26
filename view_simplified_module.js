@@ -7341,7 +7341,6 @@ function SimplifiedView(props) {
     size: 14
   })), isTeacherMode && !protectedOriginal && !isZenMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.toggle_edit_text'),
     onClick: handleToggleIsEditingLeveledText,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`,
     "data-help-key": "simplified_edit"

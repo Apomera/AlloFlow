@@ -313,6 +313,6 @@ describe('the adaptation helper', () => {
     const d = deps({ adaptationPlan: { apply: { resourceId: 'r1', baseData: 'Older text.', data: 'Previewed text.' } } });
     expect(await helpers.handleComplexityAdjustment(d)).toEqual({ status: 'stale' });
     expect(d.setGeneratedContent).not.toHaveBeenCalled();
-    expect(d.addToast).toHaveBeenCalledWith('The text changed after this preview. Prepare the change again.', 'warning');
+    expect(d.addToast).toHaveBeenCalledWith('simplified.adapt_preview_stale', 'warning');
   });
 });

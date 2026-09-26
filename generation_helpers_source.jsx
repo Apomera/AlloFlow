@@ -3511,7 +3511,7 @@ const handleComplexityAdjustment = async (deps) => {
     const canUpdateResource = item => item?.id === requestResourceId && item.data === requestResourceData
         && (item.type !== 'simplified' || !['original', 'same-text-supported'].includes(item.instructionalText?.form || item.config?.instructionalText?.form));
     if (prepared && (prepared.resourceId !== requestResourceId || prepared.baseData !== requestResourceData)) {
-        addToast('The text changed after this preview. Prepare the change again.', 'warning');
+        addToast(t('simplified.adapt_preview_stale'), 'warning');
         return { status: 'stale' };
     }
     setIsProcessing(true);

@@ -3087,7 +3087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         h('g', { key: 'oc' }, renderHabitatOccluders(h, habitatKey))
       ];
     }
-    return h('svg', Object.assign({ viewBox: '0 0 900 500', width: width, height: Math.round(width * 500 / 900), 'aria-hidden': 'true', focusable: 'false',
+    return h('svg', Object.assign({ viewBox: '0 0 900 500', width: width, height: typeof width === "number" ? Math.round(width * 500 / 900) : undefined, 'aria-hidden': 'true', focusable: 'false',
       preserveAspectRatio: 'xMidYMid slice', 'data-birdlab-habitat-thumb': habitatKey, className: 'birdlab-habitat-thumb' }, extraProps || {}),
       HABITAT_THUMB_CACHE[habitatKey]);
   }

@@ -11440,7 +11440,7 @@
           ),
           // Validated alternative to AI generation: search the Mulberry set (a
           // hand-designed, CC BY-SA AAC symbol library) for the current label.
-          e('button', { onClick: openPhotoPicker, 'aria-label': t('symbol_studio.find_a_photo','Find a photo'), title: 'Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety', style: S.btn('#f0f9ff', '#075985', false) }, '\uD83D\uDCF7 Find photo'),
+          e('button', { onClick: openPhotoPicker, 'aria-label': t('symbol_studio.find_a_photo','Find a photo'), title: t('symbol_studio.photo_search_help', 'Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety'), style: S.btn('#f0f9ff', '#075985', false) }, '\uD83D\uDCF7 Find photo'),
           e('button', { onClick: openMulberryPicker, disabled: symMode === 'single' && !symLabel.trim(), 'aria-label': t('symbol_studio.find_a_validated_mulberry_symbol_2','Find a validated Mulberry symbol'), title: 'Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)', style: S.btn('#ecfeff', '#0e7490', symMode === 'single' && !symLabel.trim()) }, '🔎 Find validated symbol'),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use ', e('b', { style: { color: '#0e7490' } }, 'Find validated symbol'), ' for hand-designed Mulberry symbols.'),
           gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),

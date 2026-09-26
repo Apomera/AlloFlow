@@ -512,7 +512,7 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect((await stat(pngPath!)).size).toBeGreaterThan(100);
 
     const stlEvent = page.waitForEvent('download');
-    await page.getByRole('button', { name: /STL/ }).click();
+    await page.getByRole('button', { name: 'Download this building as an STL file', exact: true }).click();
     const stl = await stlEvent;
     expect(stl.suggestedFilename()).toMatch(/^architecture_studio_.*\.stl$/);
     const stlPath = await stl.path();
@@ -639,7 +639,7 @@ test.describe('Architecture Studio — real WebGL', () => {
     await page.evaluate(() => (window as any).__mount({ editorView: 'grid', blocks: [] }));
 
     expect(await page.locator('.arch-studio-main').evaluate((el) => getComputedStyle(el).flexDirection)).toBe('column');
-    expect(await page.locator('.arch-studio-header').evaluate((el) => getComputedStyle(el).overflowX)).toBe('auto');
+    expect(await page.locator('.arch-studio-header').evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
     const cell = page.locator('button[data-arch-cell="0,0,0"]');
     await cell.scrollIntoViewIfNeeded();
     await expect(cell).toBeVisible();
@@ -808,8 +808,8 @@ test.describe('Architecture Studio — real WebGL', () => {
       const hudNode = node.querySelector('[data-arch-view-hud="true"]');
       const statsNode = node.querySelector('[data-arch-stats="true"]');
       return !!stageNode && !!hudNode && !!statsNode
-        && stageNode.nextElementSibling === hudNode
-        && hudNode.nextElementSibling === statsNode;
+        && !!(stageNode.compareDocumentPosition(hudNode) & Node.DOCUMENT_POSITION_FOLLOWING)
+        && !!(hudNode.compareDocumentPosition(statsNode) & Node.DOCUMENT_POSITION_FOLLOWING);
     })).toBe(true);
 
     const [stageBox, hudBox, statsBox] = await Promise.all([

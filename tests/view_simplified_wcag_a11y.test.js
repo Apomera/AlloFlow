@@ -38,7 +38,7 @@ describe('Simplified View read-aloud sentence alignment', () => {
 
     // Sentence enumeration is centralized so display, playback, preparation,
     // and Edit Audio cannot independently drift on bilingual/duplicate text.
-    expect(source).toContain('var getReadAloudSentenceEntriesForText = function (rawText) {');
+    expect(source).toContain('var getReadAloudSentenceEntriesForText = function (rawText, sourceLanguage) {');
     expect(source).toContain('var parts = getSideBySideContent(text);');
     const entryConsumers =
       source.match(/getReadAloudSentenceEntriesForText\(simplifiedReadAloudText\)/g) || [];

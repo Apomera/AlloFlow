@@ -6630,6 +6630,7 @@
     "adapt_keep_terms": "Preserve these essential terms",
     "adapt_keep_terms_hint": "Separate terms with commas. They stay exactly as written.",
     "adapt_preview": "Preview change",
+    "adapt_preview_stale": "The text changed after this preview. Prepare the change again.",
     "adapt_preview_title": "Preview of the change",
     "adapt_preview_hint": "Removed words are struck through and new words are underlined. Nothing changes until you apply it.",
     "adapt_preview_plain": "The proposed text is shown below. Nothing changes until you apply it.",
@@ -18697,6 +18698,8 @@
       "circuit_clash_battle_log_newest_first": "Circuit Clash battle log, newest first"
     },
     "archstudio": {
+      "ux_enter_fullscreen": "View the drawing fullscreen",
+      "ux_exit_fullscreen": "Exit fullscreen drawing (Escape)",
       "composition_title": "Build composition",
       "composition_close": "Close build composition",
       "composition_close_short": "Close",
@@ -117954,6 +117957,7 @@
     }
   },
   "symbol_studio": {
+    "photo_search_help": "Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety",
     "add_selected_symbols_to_a_visual_pack": "Add selected symbols to a Visual Pack",
     "destination_visual_pack": "Destination Visual Pack",
     "name_for_selected_symbol_visual_pack": "Name for selected-symbol Visual Pack",

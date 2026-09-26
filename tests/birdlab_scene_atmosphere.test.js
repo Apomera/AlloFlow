@@ -233,6 +233,17 @@ describe('Bird Lab illustrated reference views', () => {
     expect(view('ispy').querySelectorAll('[role="tab"] [data-birdlab-habitat-thumb]').length).toBe(5);
   });
 
+  it('keeps responsive habitat illustration dimensions valid', () => {
+    for (const name of ['ispy', 'habitatMatch']) {
+      const thumbs = view(name).querySelectorAll('[data-birdlab-habitat-thumb]');
+      expect(thumbs.length, name).toBeGreaterThan(0);
+      for (const thumb of thumbs) {
+        expect(thumb.outerHTML, name).not.toContain('NaN');
+        expect(thumb.getAttribute('viewBox')).toBe('0 0 900 500');
+      }
+    }
+  });
+
   it('draws every feeder type, each with its own illustration', () => {
     const kinds = [...view('feeder').querySelectorAll('[data-birdlab-feeder-art]')].map((el) => el.getAttribute('data-birdlab-feeder-art'));
     expect(kinds).toHaveLength(10);

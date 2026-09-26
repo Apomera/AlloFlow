@@ -37,9 +37,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 127,
   "inputs": 1,
-  "lengthBucket": 746,
+  "lengthBucket": 750,
   "selects": 0,
-  "sha": "b738695b5a948920",
+  "sha": "e3b85d0b56b1205e",
   "svgs": 2,
 }
 `;
@@ -112,11 +112,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for roadReady 1`] = `
 {
-  "buttons": 17,
+  "buttons": 77,
   "inputs": 5,
-  "lengthBucket": 108,
+  "lengthBucket": 376,
   "selects": 2,
-  "sha": "8e0c34049faf9c17",
+  "sha": "1e5a6087daa3155e",
   "svgs": 1,
 }
 `;

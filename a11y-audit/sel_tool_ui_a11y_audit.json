@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T15:07:08.688Z",
+  "generatedAt": "2026-09-26T19:02:31.034Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 430254,
+      "renderedBytes": 430245,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 143418,
+          "renderedBytes": 143415,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 143418,
+          "renderedBytes": 143415,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 143418,
+          "renderedBytes": 143415,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -337,7 +337,7 @@
     {
       "id": "civicAction",
       "label": "Civic Action & Hope",
-      "renderedBytes": 52098,
+      "renderedBytes": 52170,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -345,7 +345,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17366,
+          "renderedBytes": 17390,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -354,7 +354,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17366,
+          "renderedBytes": 17390,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -363,7 +363,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17366,
+          "renderedBytes": 17390,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -688,7 +688,7 @@
     {
       "id": "cultureExplorer",
       "label": "Culture Explorer",
-      "renderedBytes": 100923,
+      "renderedBytes": 100995,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -696,7 +696,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 33641,
+          "renderedBytes": 33665,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -705,7 +705,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 33641,
+          "renderedBytes": 33665,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -714,7 +714,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 33641,
+          "renderedBytes": 33665,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1273,7 +1273,7 @@
     {
       "id": "howlTracker",
       "label": "HOWL Tracker",
-      "renderedBytes": 73281,
+      "renderedBytes": 73503,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1281,7 +1281,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 24424,
+          "renderedBytes": 24498,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1290,7 +1290,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 24424,
+          "renderedBytes": 24498,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1299,7 +1299,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 24433,
+          "renderedBytes": 24507,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1819,7 +1819,7 @@
     {
       "id": "quietQuestions",
       "label": "Quiet Questions",
-      "renderedBytes": 25164,
+      "renderedBytes": 25314,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1827,7 +1827,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8386,
+          "renderedBytes": 8436,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1836,7 +1836,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8386,
+          "renderedBytes": 8436,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1845,7 +1845,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8392,
+          "renderedBytes": 8442,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

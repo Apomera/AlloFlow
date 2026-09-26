@@ -8,5 +8,7 @@
   "stem.archstudio.ux_viewport": "Drawing viewport",
   "stem.archstudio.ux_zoom_help": "Focus the drawing to pan with arrow keys. Use + and − to zoom, and 0 to fit. Measurements can also be entered in the coordinate fields.",
   "stem.archstudio.ux_display": "Drawing display controls",
-  "stem.archstudio.ux_summary": "Drawing summary"
+  "stem.archstudio.ux_summary": "Drawing summary",
+  "stem.archstudio.ux_enter_fullscreen": "View the drawing fullscreen",
+  "stem.archstudio.ux_exit_fullscreen": "Exit fullscreen drawing (Escape)"
 }
