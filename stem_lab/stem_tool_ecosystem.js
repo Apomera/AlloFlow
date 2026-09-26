@@ -2098,7 +2098,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               if(sp.id!=='plants') {
                 var body=new T.Group(),size=(sp.id==='caterpillars'?0.65:sp.id==='bluetits'?0.8:sp.id==='voles'?0.57:sp.id==='rabbits'?0.86:1)*(0.94+(i%5)*0.028);
                 animal.children.slice().forEach(function(part){if(part!==ringMarker && part!==animal.userData.shadow)body.add(part);});
-                animal.add(body);body.scale.setScalar(size);animal.userData.body=body;animal.userData.bodySize=size;
+                animal.add(body);body.scale.setScalar(size);animal.userData.body=body;
+                // Breathing moves only the largest torso part, so feet stay planted.
+                var torso=body.children.filter(function(part){return part.isMesh;}).sort(function(a,b){return b.scale.x*b.scale.y*b.scale.z-a.scale.x*a.scale.y*a.scale.z;})[0];
+                if(torso){animal.userData.torso=torso;torso.userData.baseScale=torso.scale.clone();}
                 animal.userData.shadow.scale.multiplyScalar(size);
               }
               animal.userData.baseScale=animal.scale.clone();list.push(animal);
@@ -2404,7 +2407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 if(g.userData.tail){g.userData.tail.rotation.y=v.reduced?0:Math.sin(time*1.1+pose.phase)*0.12*(1-posture.settle)+posture.settle*0.9;g.userData.tail.rotation.z=-posture.settle*0.12;}
                 if(g.userData.body && sp.id==='owls')g.userData.body.rotation.x=pose.bank||0;
                 // Breathing follows timeline time: quicker when active, slow at rest.
-                if(g.userData.body&&sp.id!=='caterpillars'){var breath=v.reduced?0:Math.sin(time*((pose.rest||0)>0.5?1.7:3.2)+pose.phase*1.3)*((pose.rest||0)>0.5?0.016:0.009),bodySize=g.userData.bodySize;g.userData.body.scale.set(bodySize,bodySize*(1+breath),bodySize*(1+breath*0.6));}
+                if(g.userData.torso&&sp.id!=='caterpillars'){var breath=v.reduced?0:Math.sin(time*((pose.rest||0)>0.5?1.7:3.2)+pose.phase*1.3)*((pose.rest||0)>0.5?0.03:0.018),torsoBase=g.userData.torso.userData.baseScale;g.userData.torso.scale.set(torsoBase.x,torsoBase.y*(1+breath),torsoBase.z*(1+breath*0.6));}
                 if(g.userData.segments)g.userData.segments.forEach(function(joint,index){var local=ecoMeadowSegmentPose(pose,index),size=g.userData.body.scale.x,localX=joint.userData.homeX+local.x;var surface=groundHeight(px+Math.cos(pose.yaw)*localX*size,pz-Math.sin(pose.yaw)*localX*size);joint.position.set(localX,0.102+local.y+(surface-(g.position.y-altitude))/size,0);joint.rotation.z=local.pitch;joint.scale.x=local.stretch;});
                 if(g.userData.wings)g.userData.wings.forEach(function(wing){wing.rotation.x=wing.userData.side*(v.reduced?0.08:Math.sin(time*3.8+pose.phase)*0.3*(pose.wingFlap==null?1:pose.wingFlap));});
                 g.rotation.y=sp.id==='plants'?g.userData.phase:pose.yaw;
