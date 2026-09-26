@@ -80,3 +80,31 @@ blindly merged over the current application.
 Deployment uses the existing `deploy.sh` workflow. The checkout's Firebase project
 is `YOUR_PROJECT_ID`, so the script intentionally skips Firebase and publishes the
 public Cloudflare `/app/` shell through Git, with its configured Codeberg backup.
+
+## Release execution
+
+`deploy.sh` completed with exit code 0. It created source commit `55e824a46` and
+generated-asset commit `6cab3a919`, and pushed both to GitHub and Codeberg. The
+hosted and isolated desktop production builds succeeded; the desktop key scan,
+remediation parity, manifest, and service-worker checks passed. The deploy script's
+affected-test gate passed all 47 tests.
+
+Post-deploy verification confirmed the source hash, core CDN modules, validator
+page, and real veraPDF JAR. Its only warning was asynchronous propagation of
+`app/index.html` and `app/sw.js`; live verification continued after script exit.
+Separate byte comparisons confirmed the updated Reader, Moon Mission, Plate
+Tectonics, Bird Lab, Auto Repair, Architecture Studio, Ecosystem, and Sourcebook
+modules on the public CDN. A final remote-branch check found exactly nine Claude
+branches and no new commits beyond the integrated tips.
+
+GitHub CI reproduced the six existing toast-localization failures above. The
+STEM recovery job passed its four isolated browser tests, then its full-app dev
+server exhausted Node's default 4 GB heap before starting the next two tests.
+The test-server configuration now defaults to the production build's 8 GB heap
+allowance, while preserving an explicitly supplied `NODE_OPTIONS`. Playwright
+successfully loaded that configuration and discovered both full-app tests. This
+configuration check alone does not establish a successful CI rerun.
+
+The build also regenerated the root educator-evaluation standalone bundle but
+left it unstaged. Its bytes match the public copy already committed by the deploy
+script; the final cleanup commit preserves that generated root copy as well.

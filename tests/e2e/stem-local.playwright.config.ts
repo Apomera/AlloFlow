@@ -29,6 +29,9 @@ export default defineConfig({
       PORT: '3000',
       DISABLE_ESLINT_PLUGIN: 'true',
       GENERATE_SOURCEMAP: 'false',
+      // Match the production build's heap allowance: compiling the full host
+      // exceeds Node's default 4 GB before these browser tests can start.
+      NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=8192',
     },
   },
 });
