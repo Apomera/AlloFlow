@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-26",
+  "status": "complete",
+  "unit": {
+    "passed": 192,
+    "total": 192,
+    "files": 9,
+    "note": "Full focused suite before the last environment polish."
+  },
+  "finalContracts": {
+    "passed": 77,
+    "total": 77
+  },
+  "browser": {
+    "passed": 23,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "retries": 0
+  },
+  "visual": {
+    "forms": [
+      "humboldtSquid",
+      "commonOcto",
+      "cuttlefish",
+      "vampireSquid",
+      "bobtailSquid",
+      "nautilus",
+      "dumboOcto"
+    ],
+    "mobile": true,
+    "browserErrors": 0,
+    "note": "Final source, captured after at least two seconds of simulation for each form."
+  },
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "2bb4a9d9c99d8121e5feb174734961c7353027c444a9b81a40a28823097f3011"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "2bb4a9d9c99d8121e5feb174734961c7353027c444a9b81a40a28823097f3011"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "2bb4a9d9c99d8121e5feb174734961c7353027c444a9b81a40a28823097f3011"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+      "sha256": "2bb4a9d9c99d8121e5feb174734961c7353027c444a9b81a40a28823097f3011"
+    }
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "deployed": false
+}

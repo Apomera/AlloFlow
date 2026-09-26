@@ -84,3 +84,54 @@ test('rock cover blocks awareness and a spatial ink cloud interrupts pursuit',as
   await expect.poll(()=>page.evaluate(()=>(window as any).__predator.userData.state)).toBe('patrol');
   await expect(page.locator('[data-hud=ink]')).toContainText('2/3');
 });
+
+test('inspection freezes the world while orbit and zoom still render; Escape restores play',async({page})=>{
+  await mount(page,'humboldtSquid','observe');
+  await page.evaluate(()=>{const w=window as any,original=w.THREE.Camera.prototype.updateMatrixWorld;w.THREE.Camera.prototype.updateMatrixWorld=function(...args:any[]){w.__inspectionCamera=this;return original.apply(this,args);};});
+  await page.getByRole('button',{name:'Inspect [F]',exact:true}).click();
+  await expect(page.getByRole('region',{name:'Specimen inspection'})).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>!!(window as any).__inspectionCamera)).toBe(true);
+  const state=await page.evaluate(()=>{const w=window as any;return {position:w.__player.position.toArray(),arm:Array.from(w.__player.getObjectByName('cl-arm-0').geometry.attributes.position.array),time:document.querySelector('[data-hud=time]')!.textContent,energy:document.querySelector('[data-hud=energy]')!.textContent};});
+  await page.waitForTimeout(500);
+  const cameraBefore=await page.evaluate(()=>(window as any).__inspectionCamera.position.toArray());
+  await page.getByRole('button',{name:'Orbit right',exact:true}).click();
+  await expect.poll(()=>page.evaluate((prior)=>{const p=(window as any).__inspectionCamera.position;return Math.hypot(p.x-prior[0],p.z-prior[2]);},cameraBefore)).toBeGreaterThan(0.6);
+  await page.waitForTimeout(400);
+  const distance=await page.evaluate(()=>{const w=window as any;return w.__inspectionCamera.position.distanceTo(w.__player.position);});
+  await page.getByRole('button',{name:'Closer',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>{const w=window as any;return w.__inspectionCamera.position.distanceTo(w.__player.position);})).toBeLessThan(distance-0.3);
+  expect(await page.evaluate(()=>{const w=window as any;return {position:w.__player.position.toArray(),arm:Array.from(w.__player.getObjectByName('cl-arm-0').geometry.attributes.position.array),time:document.querySelector('[data-hud=time]')!.textContent,energy:document.querySelector('[data-hud=energy]')!.textContent};})).toEqual(state);
+  await page.getByRole('button',{name:'Anatomy labels',exact:true}).click();await expect(page.locator('.cl-anatomy-label:visible')).toHaveCount(0);
+  await page.keyboard.press('Escape');await expect(page.getByRole('region',{name:'Specimen inspection'})).toBeHidden();
+  await expect(page.locator('[data-hud=burn]')).not.toContainText('Paused');
+  await harness.unmount(page);expect(await harness.leakedAfterUnmount(page)).toEqual([]);await expect(page.locator('.cl-inspection')).toHaveCount(0);
+});
+
+test('inspection preserves a paused dive and releases movement keys',async({page})=>{
+  await mount(page,'humboldtSquid','observe');await page.locator(sel).focus();await page.keyboard.down('KeyW');await page.keyboard.press('KeyF');await page.keyboard.up('KeyW');
+  await expect(page.getByRole('region',{name:'Specimen inspection'})).toBeVisible();await page.keyboard.press('KeyF');
+  const after=await player(page);await page.waitForTimeout(400);expect((await player(page))[2]).toBeCloseTo(after[2],4);
+  await page.keyboard.press('Escape');await expect(page.locator('[data-hud=burn]')).toHaveText('Paused');await page.keyboard.press('KeyF');await page.keyboard.press('Escape');
+  await expect(page.locator('[data-hud=burn]')).toHaveText('Paused');await expect(page.locator('.cl-inspection')).toBeHidden();
+});
+
+test('mobile inspection controls fit the stage and return to touch movement',async({page})=>{
+  await page.setViewportSize({width:390,height:844});await mount(page,'humboldtSquid','observe');await page.evaluate(()=>{document.getElementById('wrap')!.style.width='100%';window.dispatchEvent(new Event('resize'));});
+  await page.getByRole('button',{name:'Inspect [F]',exact:true}).click();
+  const bounds=await page.locator(sel).boundingBox();
+  for(const name of ['Orbit left','Orbit right','Higher','Lower','Closer','Farther','Anatomy labels','Return to dive']){const button=page.getByRole('button',{name,exact:true});await expect(button).toBeVisible();const box=await button.boundingBox();expect(box!.x).toBeGreaterThanOrEqual(bounds!.x);expect(box!.x+box!.width).toBeLessThanOrEqual(bounds!.x+bounds!.width+1);expect(box!.y+box!.height).toBeLessThanOrEqual(bounds!.y+bounds!.height);}
+  await page.getByRole('button',{name:'Return to dive',exact:true}).click();await expect(page.getByRole('button',{name:'Forward',exact:true})).toBeVisible();
+});
+
+test('a rock blocks prey capture and the target cue; removing it makes that same prey catchable',async({page})=>{
+  await mount(page,'commonOcto','observe');
+  await page.evaluate(()=>{const w=window as any,rocks=w.__scene.children.filter((o:any)=>o.userData.substrate==='rock');rocks.forEach((r:any)=>{r.position.set(300,1,300);r.userData.substrateRadius=0;});
+    const crabs=w.__scene.children.filter((o:any)=>o.userData.alive&&o.userData.cfg);crabs.forEach((c:any)=>{c.position.set(40,0.18,40);c.userData.speed=0;});w.__blockedCrab=crabs[0];w.__blockedCrab.position.set(w.__player.position.x,0.18,w.__player.position.z+1.4);
+    w.__strikeCover=rocks[0];w.__strikeCover.geometry.dispose();w.__strikeCover.geometry=new w.THREE.BoxGeometry(8,3,0.16);w.__strikeCover.rotation.set(0,0,0);w.__strikeCover.scale.set(1,1,1);w.__strikeCover.position.set(w.__player.position.x,1,w.__player.position.z+0.7);w.__scene.updateMatrixWorld(true);
+  });
+  await page.locator(sel).focus();await page.keyboard.press('KeyT');await expect(page.locator('.cl-hunt-mission')).toContainText('COVER BLOCKS STRIKE');await page.keyboard.press('KeyE');
+  await expect(page.locator('.cl-hunt-mission')).toContainText('Strike blocked');expect(await page.evaluate(()=>(window as any).__blockedCrab.userData.alive)).toBe(true);await expect(page.locator('[data-hud=score]')).toHaveText('0');
+  await page.evaluate(()=>{(window as any).__strikeCover.position.set(300,1,300);});
+  await expect(page.locator('.cl-hunt-mission')).toContainText('IN RANGE');await page.keyboard.press('KeyE');
+  await expect.poll(()=>page.evaluate(()=>(window as any).__blockedCrab.userData.alive)).toBe(false);await expect.poll(()=>page.evaluate(()=>(window as any).__toolData.cephalopodLab.huntsSuccessful)).toBe(1);
+});

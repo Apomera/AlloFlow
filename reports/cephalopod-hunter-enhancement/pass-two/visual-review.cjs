@@ -1,0 +1,11 @@
+const fs=require('fs'),path=require('path'),{chromium}=require('playwright');
+(async()=>{const browser=await chromium.launch({headless:true}),p=await browser.newPage({viewport:{width:1280,height:1100}}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+const url=fs.readFileSync(path.join(__dirname,'../preview-url.txt'),'utf8').trim();
+await p.goto(url+'?species=humboldtSquid&mode=observe');
+const canvas=p.locator('canvas[role=application]');await canvas.waitFor();await p.waitForFunction(()=>parseInt(document.querySelector('[data-hud=time]')?.textContent||'0')>=2);await canvas.focus();await p.keyboard.press('KeyV');await p.waitForTimeout(600);await canvas.screenshot({path:path.join(__dirname,'humboldt-swimming.png')});
+await p.getByRole('button',{name:'Inspect [F]',exact:true}).click();await p.waitForTimeout(900);await canvas.screenshot({path:path.join(__dirname,'humboldt-inspection.png')});
+await p.getByRole('button',{name:'Orbit left',exact:true}).click();await p.waitForTimeout(300);await p.getByRole('button',{name:'Return to dive',exact:true}).click();
+for(const species of ['commonOcto','cuttlefish','vampireSquid','bobtailSquid','nautilus','dumboOcto']){await p.evaluate(s=>{__unmount();__mount({cephalopodLab:{activeSection:'hunt',hunt3DActive:true,huntSpeciesId:s,_threeLoaded:true,huntMode:'observe',huntQuality:'balanced'}});},species);await p.waitForFunction(()=>parseInt(document.querySelector('[data-hud=time]')?.textContent||'0')>=2);await p.getByRole('button',{name:'Inspect [F]',exact:true}).click();await p.waitForTimeout(650);await canvas.screenshot({path:path.join(__dirname,species+'-inspection.png')});}
+await p.setViewportSize({width:390,height:844});await p.evaluate(()=>{document.getElementById('wrap').style.width='100%';});await p.getByRole('button',{name:'Return to dive',exact:true}).click();await p.getByRole('button',{name:'Inspect [F]',exact:true}).click();await p.waitForTimeout(600);await canvas.screenshot({path:path.join(__dirname,'mobile-inspection.png')});
+console.log(JSON.stringify({errors},null,2));await browser.close();if(errors.length)process.exitCode=1;
+})().catch(e=>{console.error(e);process.exitCode=1});
