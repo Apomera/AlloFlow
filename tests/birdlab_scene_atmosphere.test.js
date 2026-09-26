@@ -132,7 +132,7 @@ describe('Bird Lab sky and light conditions', () => {
 
 describe('Bird Lab habitat art', () => {
   it('draws the mountain as two shaded, snow-capped ranges over a fall foothill', () => {
-    const host = ispy('mountain', 'day');
+    const host = ispy('mountain', 'day').querySelector('svg[data-birdlab-realistic-scene]');
     const ranges = host.querySelector('[data-birdlab-mountain-ranges="two"]');
     expect(ranges).toBeTruthy();
     expect(ranges.children.length).toBe(2);
@@ -145,10 +145,12 @@ describe('Bird Lab habitat art', () => {
   });
 
   it('adds floor, garden, island and water detail without moving any perch', () => {
-    expect(ispy('forest', 'day').querySelectorAll('[data-birdlab-forest-floor="fern"]').length).toBe(2);
-    expect(ispy('forest', 'day').querySelector('[data-birdlab-forest-floor="log"]')).toBeTruthy();
-    expect(ispy('backyard', 'day').querySelector('[data-birdlab-yard="flower-border"]')).toBeTruthy();
-    expect(ispy('marsh', 'day').querySelectorAll('[data-birdlab-marsh="lily"]').length).toBe(3);
+    // Scoped to the live scene: the habitat-picker thumbnails reuse this art.
+    const scene = (habitat) => ispy(habitat, 'day').querySelector('svg[data-birdlab-realistic-scene]');
+    expect(scene('forest').querySelectorAll('[data-birdlab-forest-floor="fern"]').length).toBe(2);
+    expect(scene('forest').querySelector('[data-birdlab-forest-floor="log"]')).toBeTruthy();
+    expect(scene('backyard').querySelector('[data-birdlab-yard="flower-border"]')).toBeTruthy();
+    expect(scene('marsh').querySelectorAll('[data-birdlab-marsh="lily"]').length).toBe(3);
     // Perch coordinates the birds are placed against.
     for (const perch of ["species: 'pileated',    x: 60,  y: 200", "species: 'nuthatch',    x: 760, y: 180", "species: 'baldEagle', x: 800, y: 83", "species: 'junco', x: 450, y: 362"]) {
       expect(source).toContain(perch);
@@ -202,5 +204,70 @@ describe('Bird Lab animated views', () => {
     expect(source).toContain("'data-birdlab-track-art': sessionBird.speciesKey");
     expect(source).toMatch(/var calm = !!\(window\.matchMedia && window\.matchMedia\('\(prefers-reduced-motion: reduce\)'\)\.matches\);/);
     expect(source).toContain('b.dartCdMs -= calm ? 0 : dt;');
+  });
+});
+
+describe('Bird Lab illustrated reference views', () => {
+  const view = (name, extra) => {
+    const host = document.createElement('div');
+    host.innerHTML = renderTool('birdLab', { birdLab: Object.assign({ view: name }, extra || {}) });
+    return host;
+  };
+
+  it('never repeats an element id on a page (gradients, filters and clips are scoped)', () => {
+    for (const name of ['ispy', 'habitatMatch', 'feeder', 'physiology', 'art', 'behaviors', 'iconic', 'wingHunt', 'menu']) {
+      const ids = [...view(name).querySelectorAll('[id]')].map((el) => el.id);
+      const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
+      expect(dupes, name + ' duplicate ids').toEqual([]);
+    }
+  });
+
+  it('shows real habitat thumbnails instead of emoji in the habitat pickers', () => {
+    const match = view('habitatMatch');
+    const thumbs = [...match.querySelectorAll('[data-birdlab-habitat-thumb]')].map((el) => el.getAttribute('data-birdlab-habitat-thumb'));
+    expect(thumbs).toEqual(['forest', 'marsh', 'backyard', 'coast', 'mountain']);
+    for (const thumb of match.querySelectorAll('[data-birdlab-habitat-thumb]')) {
+      expect(thumb.getAttribute('aria-hidden')).toBe('true');
+      expect(thumb.querySelectorAll('path').length, 'thumbnail carries the scene art').toBeGreaterThan(10);
+    }
+    expect(view('ispy').querySelectorAll('[role="tab"] [data-birdlab-habitat-thumb]').length).toBe(5);
+  });
+
+  it('draws every feeder type, each with its own illustration', () => {
+    const kinds = [...view('feeder').querySelectorAll('[data-birdlab-feeder-art]')].map((el) => el.getAttribute('data-birdlab-feeder-art'));
+    expect(kinds).toHaveLength(10);
+    expect(new Set(kinds).size).toBe(10);
+    // Visitors are birds the guide lists for that feeder.
+    const html = view('feeder').innerHTML;
+    expect(html).toContain('data-birdlab-feeder-art="suet"');
+    expect(source).toContain("feederBird(h, 'nuthatch', 102, 60, 1.25, true, 90)");
+  });
+
+  it('gives each physiology topic a diagram of its own mechanism', () => {
+    const diagrams = [...view('physiology').querySelectorAll('[data-birdlab-physiology-diagram]')];
+    expect(diagrams).toHaveLength(8);
+    const text = diagrams.map((d) => d.textContent);
+    expect(text[1]).toContain('one way');
+    expect(text[3]).toContain('grit');
+    expect(text[5]).toContain('four bird cone types');
+    expect(text[6]).toContain('1 to 4 kHz');
+  });
+
+  it('paints the chickadee in each art era, and leaves the Indigenous era unimitated', () => {
+    const host = view('art');
+    const eras = [...host.querySelectorAll('[data-birdlab-art-era]')].map((el) => el.getAttribute('data-birdlab-art-era'));
+    expect(eras).toEqual(['audubon', 'peterson', 'photo', 'app', 'print', 'tattoo']);
+    const firstCard = host.querySelector('.space-y-3 > div');
+    expect(firstCard.textContent).toContain('Indigenous');
+    expect(firstCard.querySelector('[data-birdlab-art-era]')).toBeNull();
+  });
+
+  it('illustrates every behavior topic', () => {
+    expect(view('behaviors').querySelector('[data-birdlab-behavior-vignette="Courtship Displays"]')).toBeTruthy();
+    const start = source.indexOf('function renderBehaviorVignette');
+    const fn = source.slice(start, source.indexOf('// ── Light-condition atmosphere', start));
+    for (const key of ['courtship', 'territor', 'parental', 'pair', 'migration', 'communication', 'mobbing']) {
+      expect(fn, key).toContain("t.indexOf('" + key + "')");
+    }
   });
 });

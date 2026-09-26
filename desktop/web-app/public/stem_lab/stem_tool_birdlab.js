@@ -582,6 +582,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-iconic-ripple { animation: birdlab-iconic-ripple 6s ease-in-out infinite; }',
       '.birdlab-iconic-enter { animation: birdlab-iconic-enter 420ms ease-out both; }',
       '@media (prefers-reduced-motion: reduce) { .birdlab-iconic-bob, .birdlab-iconic-idle, .birdlab-iconic-snow, .birdlab-iconic-ripple, .birdlab-iconic-enter { animation: none !important; transform: none !important; } }',
+      '.birdlab-thumb-frame .birdlab-habitat-thumb { transition: transform 260ms ease; }',
+      'button:hover .birdlab-thumb-frame .birdlab-habitat-thumb, button:focus-visible .birdlab-thumb-frame .birdlab-habitat-thumb { transform: scale(1.06); }',
+      '@media (prefers-reduced-motion: reduce) { .birdlab-thumb-frame .birdlab-habitat-thumb { transition: none !important; transform: none !important; } }',
+      '@keyframes birdlab-feeder-sway { 0%, 100% { transform: rotate(-1.6deg); } 50% { transform: rotate(1.6deg); } }',
+      '@keyframes birdlab-feeder-peck { 0%, 62%, 100% { transform: rotate(0deg) translateY(0); } 70% { transform: rotate(10deg) translateY(1px); } 78% { transform: rotate(0deg); } 84% { transform: rotate(9deg) translateY(1px); } }',
+      '@keyframes birdlab-feeder-hover { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-2px, -3px); } }',
+      '@keyframes birdlab-feeder-hum { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(-.6); } }',
+      '@keyframes birdlab-feeder-wiggle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.2px); } }',
+      '.birdlab-feeder-sway { animation: birdlab-feeder-sway 5.5s ease-in-out infinite; }',
+      '.birdlab-feeder-peck { animation: birdlab-feeder-peck 4.2s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 90%; }',
+      '.birdlab-feeder-hover { animation: birdlab-feeder-hover 1.6s ease-in-out infinite; }',
+      '.birdlab-feeder-hum-wing { animation: birdlab-feeder-hum .09s linear infinite; transform-box: fill-box; transform-origin: 70% 100%; }',
+      '.birdlab-feeder-wiggle { animation: birdlab-feeder-wiggle 1.3s ease-in-out infinite; }',
+      '@media (prefers-reduced-motion: reduce) { .birdlab-feeder-sway, .birdlab-feeder-peck, .birdlab-feeder-hover, .birdlab-feeder-hum-wing, .birdlab-feeder-wiggle { animation: none !important; transform: none !important; } }',
+      '@keyframes birdlab-phys-beat { 0%, 100% { transform: scale(1); } 14% { transform: scale(1.14); } 28% { transform: scale(1); } 40% { transform: scale(1.08); } }',
+      '@keyframes birdlab-phys-ecg { 0% { transform: translateX(0); } 100% { transform: translateX(33px); } }',
+      '@keyframes birdlab-phys-breathe { 0%, 100% { transform: scale(.82); } 50% { transform: scale(1.08); } }',
+      '@keyframes birdlab-phys-flow { 0% { stroke-dashoffset: 16; } 100% { stroke-dashoffset: 0; } }',
+      '@keyframes birdlab-phys-air { 0% { transform: translateX(0); opacity: 0; } 15%, 85% { opacity: .9; } 100% { transform: translateX(150px); opacity: 0; } }',
+      '@keyframes birdlab-phys-swallow { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(40px); opacity: 0; } }',
+      '@keyframes birdlab-phys-grind { 0% { transform: rotate(0deg); } 50% { transform: rotate(-40deg); } 100% { transform: rotate(0deg); } }',
+      '@keyframes birdlab-phys-scan { 0%, 100% { transform: translateX(-22px); } 50% { transform: translateX(22px); } }',
+      '@keyframes birdlab-phys-draw { 0% { stroke-dashoffset: 320; } 100% { stroke-dashoffset: 0; } }',
+      '@keyframes birdlab-phys-ring { 0% { transform: scale(.4); opacity: .9; } 100% { transform: scale(5.5); opacity: 0; } }',
+      '@keyframes birdlab-phys-sky { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }',
+      '@keyframes birdlab-phys-needle { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(5deg); } }',
+      '.birdlab-phys-beat-slow { animation: birdlab-phys-beat .86s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '.birdlab-phys-beat-fast { animation: birdlab-phys-beat .25s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '.birdlab-phys-ecg { animation: birdlab-phys-ecg .86s linear infinite; }',
+      '.birdlab-phys-breathe { animation: birdlab-phys-breathe 3.6s ease-in-out infinite; }',
+      '.birdlab-phys-flow { animation: birdlab-phys-flow .9s linear infinite; }',
+      '.birdlab-phys-air { animation: birdlab-phys-air 5.5s linear infinite; }',
+      '.birdlab-phys-swallow { animation: birdlab-phys-swallow 3.6s ease-in infinite; }',
+      '.birdlab-phys-grind { animation: birdlab-phys-grind 2.4s ease-in-out infinite; }',
+      '.birdlab-phys-scan { animation: birdlab-phys-scan 5s ease-in-out infinite; }',
+      '.birdlab-phys-draw { stroke-dasharray: 320; animation: birdlab-phys-draw 1.8s ease-out both; }',
+      '.birdlab-phys-ring { animation: birdlab-phys-ring 2.7s ease-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '.birdlab-phys-sky { animation: birdlab-phys-sky 60s linear infinite; }',
+      '.birdlab-phys-needle { animation: birdlab-phys-needle 4s ease-in-out infinite; }',
+      '@media (prefers-reduced-motion: reduce) { [class*="birdlab-phys-"] { animation: none !important; } .birdlab-phys-breathe, .birdlab-phys-grind, .birdlab-phys-scan, .birdlab-phys-sky, .birdlab-phys-needle, .birdlab-phys-ecg { transform: none !important; } .birdlab-phys-ring { opacity: .35; } }',
+      '@keyframes birdlab-art-paint { 0% { clip-path: inset(0 100% 0 0); } 100% { clip-path: inset(0 0 0 0); } }',
+      '@keyframes birdlab-art-arrow { 0% { opacity: 0; transform: translateX(-6px); } 100% { opacity: 1; transform: none; } }',
+      '@keyframes birdlab-art-focus { 0%, 100% { transform: scale(1.08); opacity: .6; } 30%, 80% { transform: scale(1); opacity: 1; } }',
+      '@keyframes birdlab-art-scan { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(66px); } }',
+      '.birdlab-art-paint-in { animation: birdlab-art-paint 2.4s ease-out both; }',
+      '.birdlab-art-arrow { animation: birdlab-art-arrow .6s ease-out both; }',
+      '.birdlab-art-focus { animation: birdlab-art-focus 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '.birdlab-art-scan { animation: birdlab-art-scan 2.6s ease-in-out infinite; }',
+      '.birdlab-art-line * { fill: none !important; stroke: #1e293b !important; stroke-width: .55px !important; filter: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { .birdlab-art-paint-in, .birdlab-art-arrow, .birdlab-art-focus, .birdlab-art-scan { animation: none !important; transform: none !important; } }',
+      '@keyframes birdlab-bv-strut { 0%, 100% { transform: scale(.72, .6); } 40%, 70% { transform: scale(1); } }',
+      '@keyframes birdlab-bv-song { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(5); opacity: 0; } }',
+      '@keyframes birdlab-bv-intruder { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(14px) translateY(-6px); } }',
+      '@keyframes birdlab-bv-gape { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.35); } }',
+      '@keyframes birdlab-bv-feed { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-10px, 10px); } }',
+      '@keyframes birdlab-bv-paddle { 0% { transform: translateX(-14px); } 100% { transform: translateX(8px); } }',
+      '@keyframes birdlab-bv-link { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }',
+      '@keyframes birdlab-bv-route { 0% { stroke-dashoffset: 32; } 100% { stroke-dashoffset: 0; } }',
+      '@keyframes birdlab-bv-dee { 0% { opacity: 0; transform: translateY(4px); } 100% { opacity: 1; transform: none; } }',
+      '@keyframes birdlab-bv-mob { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }',
+      '@keyframes birdlab-bv-hop { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(-8px, -2px); } 60% { transform: translate(6px, 1px); } }',
+      '.birdlab-bv-strut { animation: birdlab-bv-strut 4s ease-in-out infinite; }',
+      '.birdlab-bv-snood { animation: birdlab-bv-gape 4s ease-in-out infinite; transform-box: fill-box; transform-origin: top; }',
+      '.birdlab-bv-song { animation: birdlab-bv-song 2.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '.birdlab-bv-intruder { animation: birdlab-bv-intruder 3.2s ease-in-out infinite; }',
+      '.birdlab-bv-gape { animation: birdlab-bv-gape .7s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom; }',
+      '.birdlab-bv-feed { animation: birdlab-bv-feed 3s ease-in-out infinite; }',
+      '.birdlab-bv-paddle { animation: birdlab-bv-paddle 6s ease-in-out infinite alternate; }',
+      '.birdlab-bv-link { animation: birdlab-bv-link 2.4s ease-in-out infinite; }',
+      '.birdlab-bv-route { animation: birdlab-bv-route 1.4s linear infinite; }',
+      '.birdlab-bv-dee { animation: birdlab-bv-dee .4s ease-out both; }',
+      '.birdlab-bv-mob { animation: birdlab-bv-mob 16s linear infinite; }',
+      '.birdlab-bv-hop { animation: birdlab-bv-hop 3.4s ease-in-out infinite; }',
+      '@media (prefers-reduced-motion: reduce) { [class*="birdlab-bv-"] { animation: none !important; transform: none !important; } }',
       '.birdlab-track-flap { animation: birdlab-hero-flap .24s linear infinite; transform-box: fill-box; transform-origin: center bottom; }',
       '@media (prefers-reduced-motion: reduce) { .birdlab-hero-flyer, .birdlab-hero-flap, .birdlab-track-flap, .birdlab-hero-skein, .birdlab-hero-clouds, .birdlab-hero-sun-glow, .birdlab-hero-singer { animation: none !important; transform: none !important; } .birdlab-hero-notes { animation: none !important; opacity: .6; } }',
       '.birdlab-lighthouse-beam { opacity: 0; transform-box: fill-box; transform-origin: right center; }',
@@ -2982,6 +3056,569 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('g', { className: 'birdlab-ambient-motion birdlab-cloud-drift-far', opacity: Math.min(0.62, palette.cloudOpacity * 2.6), style: { animationDelay: '-21s' } }, depth('far')),
       h('g', { className: 'birdlab-ambient-motion birdlab-cloud-drift', opacity: Math.min(0.84, palette.cloudOpacity * 3.4), style: { animationDelay: '-9s' } }, depth('near'))
     );
+  }
+
+  // ── Habitat thumbnails ─────────────────────────────────────────────────
+  // The real scene art at postcard size, for habitat pickers that showed
+  // only an emoji. Same layers as the I-Spy scene minus birds, fauna and
+  // motion; gradient ids are thumbnail-scoped so they never collide with the
+  // live scene's. React elements are immutable, so each habitat is built once.
+  var HABITAT_THUMB_CACHE = {};
+  function renderHabitatThumb(h, habitatKey, width, extraProps) {
+    var habitat = HABITATS[habitatKey];
+    if (!habitat) return null;
+    if (!HABITAT_THUMB_CACHE[habitatKey]) {
+      var palette = HABITAT_SCENE_PALETTES[habitatKey] || HABITAT_SCENE_PALETTES.forest;
+      var id = 'blThumb-' + habitatKey;
+      HABITAT_THUMB_CACHE[habitatKey] = [
+        h('defs', { key: 'd' },
+          h('linearGradient', { id: id + '-sky', x1: 0, y1: 0, x2: 0, y2: 1 },
+            h('stop', { offset: '0%', stopColor: palette.skyTop }),
+            h('stop', { offset: '60%', stopColor: palette.skyBottom })
+          )
+        ),
+        h('rect', { key: 'sky', x: 0, y: 0, width: 900, height: 500, fill: 'url(#' + id + '-sky)' }),
+        h('circle', { key: 'sun', cx: palette.sunX, cy: palette.sunY, r: 34, fill: '#fff7d6', opacity: 0.85 }),
+        h('g', { key: 'c', opacity: 0.8 }, (HABITAT_CLOUD_BANKS[habitatKey] || []).map(renderCloudBank.bind(null, h))),
+        h('g', { key: 'l0' }, habitat.renderLayer(h, 0)),
+        h('g', { key: 'l1' }, habitat.renderLayer(h, 1)),
+        h('g', { key: 'l3' }, habitat.renderLayer(h, 3)),
+        h('g', { key: 'l4' }, habitat.renderLayer(h, 4)),
+        h('g', { key: 'oc' }, renderHabitatOccluders(h, habitatKey))
+      ];
+    }
+    return h('svg', Object.assign({ viewBox: '0 0 900 500', width: width, height: Math.round(width * 500 / 900), 'aria-hidden': 'true', focusable: 'false',
+      preserveAspectRatio: 'xMidYMid slice', 'data-birdlab-habitat-thumb': habitatKey, className: 'birdlab-habitat-thumb' }, extraProps || {}),
+      HABITAT_THUMB_CACHE[habitatKey]);
+  }
+
+  // ── Feeder illustrations ───────────────────────────────────────────────
+  // One drawing per FEEDER_GUIDE type (matched by name), each with a bird the
+  // guide lists for it. Hanging feeders sway from their hook; visitors peck.
+  // Birds without a BIRDS portrait (goldfinch, hummingbird, oriole) get a
+  // small drawing of their own. Box: 140 x 140.
+  function feederBird(h, key, x, y, s, flip, rot) {
+    var bird = BIRDS[key];
+    if (!bird) return null;
+    return h('g', { transform: 'translate(' + x + ' ' + y + ') rotate(' + (rot || 0) + ') scale(' + (flip ? -s : s) + ' ' + s + ')' },
+      h('g', { className: 'birdlab-feeder-peck' }, h('g', { transform: 'translate(-15 -15)' }, bird.svg(h))));
+  }
+  function feederGoldfinch(h, x, y) {
+    return h('g', { transform: 'translate(' + x + ' ' + y + ')' }, h('g', { className: 'birdlab-feeder-peck' },
+      h('path', { d: 'M -9 2 Q -8 -7 2 -7 Q 8 -8 10 -4 L 13 -3 L 10 -1 Q 8 5 0 6 Q -6 6 -9 2 Z', fill: '#facc15' }),
+      h('path', { d: 'M 3 -8 Q 8 -9 10 -5 L 5 -5 Z', fill: '#111827' }),
+      h('path', { d: 'M -8 -1 Q -2 -5 4 -2 Q -2 2 -8 2 Z', fill: '#111827' }),
+      h('path', { d: 'M -6 0 L 1 -2', stroke: '#f8fafc', strokeWidth: 1 }),
+      h('path', { d: 'M -9 1 L -15 3 L -9 4 Z', fill: '#111827' }),
+      h('path', { d: 'M 10 -4 L 13.5 -3 L 10 -2 Z', fill: '#f5a3a3' }),
+      h('circle', { cx: 7, cy: -4.4, r: 0.9, fill: '#111827' })));
+  }
+  function feederHummer(h, x, y) {
+    return h('g', { transform: 'translate(' + x + ' ' + y + ') scale(-1 1)' }, h('g', { className: 'birdlab-feeder-hover' },
+      h('ellipse', { className: 'birdlab-feeder-hum-wing', cx: -2, cy: -8, rx: 10, ry: 4, fill: '#cbd5e1', opacity: 0.55, transform: 'rotate(-30 -2 -8)' }),
+      h('path', { d: 'M -8 3 Q -6 -4 2 -4 Q 6 -4 7 -1 Q 6 4 0 5 Q -5 5 -8 3 Z', fill: '#4d7c3a' }),
+      h('path', { d: 'M 2 -1 Q 6 0 6 3 Q 2 4 0 2 Z', fill: '#dc2626' }),
+      h('path', { d: 'M -8 3 L -14 6 L -8 5 Z', fill: '#374151' }),
+      h('path', { d: 'M 7 -1.5 L 18 -2.5', stroke: '#111827', strokeWidth: 1.1, strokeLinecap: 'round' }),
+      h('circle', { cx: 4.2, cy: -2, r: 0.8, fill: '#111827' })));
+  }
+  function feederOriole(h, x, y) {
+    return h('g', { transform: 'translate(' + x + ' ' + y + ') scale(-1 1)' }, h('g', { className: 'birdlab-feeder-peck' },
+      h('path', { d: 'M -11 3 Q -9 -7 2 -7 Q 8 -8 10 -4 L 14 -3 L 10 -1 Q 8 6 -1 7 Q -8 7 -11 3 Z', fill: '#f97316' }),
+      h('path', { d: 'M 0 -8 Q 8 -9 10 -4 L 10 -1 Q 4 0 1 -3 Z', fill: '#111827' }),
+      h('path', { d: 'M -10 0 Q -4 -5 3 -3 Q -3 2 -10 2 Z', fill: '#111827' }),
+      h('path', { d: 'M -7 -1 L 0 -3', stroke: '#f8fafc', strokeWidth: 1 }),
+      h('path', { d: 'M -11 2 L -18 5 L -11 5 Z', fill: '#111827' }),
+      h('path', { d: 'M 10 -4 L 14.5 -3 L 10 -2 Z', fill: '#94a3b8' })));
+  }
+  function renderFeederArt(h, feederType) {
+    var t = String(feederType || '').toLowerCase();
+    var kind = t.indexOf('hummingbird') > -1 ? 'hummer' : t.indexOf('oriole') > -1 ? 'oriole' : t.indexOf('nyjer') > -1 ? 'nyjer'
+      : t.indexOf('suet log') > -1 ? 'log' : t.indexOf('suet') > -1 ? 'suet' : t.indexOf('tube') > -1 ? 'tube' : t.indexOf('hopper') > -1 ? 'hopper'
+      : t.indexOf('platform') > -1 ? 'platform' : t.indexOf('mealworm') > -1 ? 'mealworm' : t.indexOf('ground') > -1 ? 'ground' : 'tube';
+    var hook = function(x, y) { return h('path', { d: 'M ' + x + ' 0 L ' + x + ' ' + y, stroke: '#475569', strokeWidth: 1.4 }); };
+    var seeds = function(x0, y0, w, n, col) {
+      var out = [];
+      for (var i = 0; i < n; i++) out.push(h('ellipse', { key: 'sd' + i, cx: x0 + ((i * 37) % w), cy: y0 + ((i * 13) % 5), rx: 1.6, ry: 1, fill: col || (i % 3 ? '#3f2a1a' : '#e7d7b1') }));
+      return out;
+    };
+    var art;
+    if (kind === 'tube' || kind === 'nyjer') {
+      var nj = kind === 'nyjer';
+      art = h('g', null,
+        h('g', { className: 'birdlab-feeder-sway', style: { transformOrigin: '70px 4px' } },
+          hook(70, 16),
+          h('path', { d: 'M 56 24 Q 70 12 84 24 Z', fill: nj ? '#15803d' : '#b91c1c' }),
+          h('rect', { x: nj ? 62 : 58, y: 24, width: nj ? 16 : 24, height: 80, rx: 4, fill: '#e2f1f8', stroke: '#94a3b8', strokeWidth: 1.2 }),
+          h('rect', { x: nj ? 63 : 59, y: 32, width: nj ? 14 : 22, height: 71, rx: 3, fill: nj ? '#1f1a17' : '#b08a5a', opacity: 0.85 }),
+          nj ? seeds(64, 36, 12, 18, '#3b2f28') : seeds(60, 36, 20, 22),
+          [48, 78].map(function(py, pi) { return h('g', { key: 'port' + pi },
+            h('circle', { cx: nj ? 62 : 58, cy: py, r: 3, fill: '#374151' }),
+            h('path', { d: 'M ' + (nj ? 62 : 58) + ' ' + (py + 5) + ' L ' + (nj ? 44 : 40) + ' ' + (py + 5), stroke: '#6b7280', strokeWidth: 2, strokeLinecap: 'round' })); }),
+          h('rect', { x: 52, y: 104, width: 36, height: 6, rx: 2, fill: nj ? '#15803d' : '#b91c1c' }),
+          nj ? feederGoldfinch(h, 38, 76) : feederBird(h, 'chickadee', 38, 69, 1.05, false, 0)
+        )
+      );
+    } else if (kind === 'hopper') {
+      art = h('g', null,
+        h('rect', { x: 67, y: 88, width: 6, height: 52, fill: '#374151' }),
+        h('path', { d: 'M 36 42 L 70 20 L 104 42 Z', fill: '#7c4a25' }),
+        h('rect', { x: 42, y: 42, width: 56, height: 36, fill: '#e2f1f8', stroke: '#8a5a33', strokeWidth: 3 }),
+        h('rect', { x: 45, y: 54, width: 50, height: 22, fill: '#b08a5a', opacity: 0.85 }),
+        seeds(46, 60, 46, 18),
+        h('rect', { x: 34, y: 78, width: 72, height: 10, rx: 2, fill: '#8a5a33' }),
+        seeds(38, 78, 60, 8),
+        feederBird(h, 'cardinal', 100, 66, 1.1, true, 0));
+    } else if (kind === 'suet') {
+      art = h('g', null,
+        h('g', { className: 'birdlab-feeder-sway', style: { transformOrigin: '70px 4px' } },
+          hook(70, 38),
+          h('rect', { x: 48, y: 38, width: 44, height: 44, rx: 3, fill: '#e9d9a8' }),
+          h('circle', { cx: 60, cy: 52, r: 2, fill: '#b45309' }), h('circle', { cx: 78, cy: 62, r: 2, fill: '#7c2d12' }), h('circle', { cx: 66, cy: 72, r: 1.6, fill: '#b45309' }),
+          h('g', { stroke: '#334155', strokeWidth: 1.4, fill: 'none' },
+            h('rect', { x: 48, y: 38, width: 44, height: 44, rx: 3 }),
+            h('path', { d: 'M 59 38 L 59 82 M 70 38 L 70 82 M 81 38 L 81 82 M 48 49 L 92 49 M 48 60 L 92 60 M 48 71 L 92 71' })),
+          // White-breasted nuthatch working the cage head-down, its trademark.
+          feederBird(h, 'nuthatch', 102, 60, 1.25, true, 90)
+        ));
+    } else if (kind === 'platform') {
+      art = h('g', null,
+        h('rect', { x: 66, y: 96, width: 8, height: 44, fill: '#6b4a2e' }),
+        h('path', { d: 'M 22 92 L 118 92 L 112 100 L 28 100 Z', fill: '#8a5a33' }),
+        h('rect', { x: 26, y: 86, width: 88, height: 6, fill: '#a4744a' }),
+        seeds(30, 84, 80, 20),
+        h('circle', { cx: 50, cy: 83, r: 3, fill: '#c2410c' }), h('circle', { cx: 92, cy: 84, r: 2.6, fill: '#b91c1c' }),
+        feederBird(h, 'bluejay', 76, 66, 1.25, false, 0));
+    } else if (kind === 'log') {
+      art = h('g', null,
+        h('g', { className: 'birdlab-feeder-sway', style: { transformOrigin: '70px 4px' } },
+          hook(70, 16),
+          h('rect', { x: 58, y: 16, width: 24, height: 100, rx: 8, fill: '#7a5a3a' }),
+          h('path', { d: 'M 62 24 L 61 110 M 71 20 L 72 114 M 78 26 L 77 108', stroke: '#5a3f28', strokeWidth: 1.4, opacity: 0.7 }),
+          [34, 58, 82].map(function(hy, hi) { return h('g', { key: 'hole' + hi },
+            h('circle', { cx: hi % 2 ? 76 : 64, cy: hy, r: 5.5, fill: '#3a2a1a' }),
+            h('circle', { cx: hi % 2 ? 76 : 64, cy: hy, r: 4.2, fill: '#e9d9a8' })); }),
+          h('ellipse', { cx: 70, cy: 16, rx: 12, ry: 3.5, fill: '#b08a5a' })
+        ));
+    } else if (kind === 'mealworm') {
+      art = h('g', null,
+        h('rect', { x: 67, y: 96, width: 6, height: 44, fill: '#374151' }),
+        h('path', { d: 'M 34 70 Q 70 36 106 70 Z', fill: '#bfe3f2', stroke: '#64748b', strokeWidth: 1.2, opacity: 0.85 }),
+        h('path', { d: 'M 38 92 L 102 92 L 96 100 L 44 100 Z', fill: '#475569' }),
+        h('rect', { x: 36, y: 70, width: 68, height: 4, fill: '#64748b' }),
+        [0, 1, 2, 3, 4, 5].map(function(i) { return h('path', { key: 'mw' + i, className: 'birdlab-feeder-wiggle', style: { animationDelay: (-i * 0.4) + 's' }, d: 'M ' + (48 + i * 9) + ' 89 q 2 -3 4 0 q 2 3 4 0', fill: 'none', stroke: '#d6a355', strokeWidth: 2.4, strokeLinecap: 'round' }); }),
+        feederBird(h, 'robin', 112, 104, 1.2, true, 0));
+    } else if (kind === 'hummer') {
+      art = h('g', null,
+        h('g', { className: 'birdlab-feeder-sway', style: { transformOrigin: '70px 4px' } },
+          hook(70, 30),
+          h('path', { d: 'M 60 30 Q 70 22 80 30 L 80 58 Q 70 64 60 58 Z', fill: '#fecaca', stroke: '#ef4444', strokeWidth: 1, opacity: 0.8 }),
+          h('path', { d: 'M 34 66 Q 70 52 106 66 Q 70 84 34 66 Z', fill: '#dc2626' }),
+          [48, 70, 92].map(function(fx, fi) { return h('g', { key: 'fl' + fi },
+            h('circle', { cx: fx, cy: 64, r: 4, fill: '#fde047' }), h('circle', { cx: fx, cy: 64, r: 1.4, fill: '#b91c1c' })); })
+        ),
+        // Ruby-throated: the only hummingbird that breeds in Maine.
+        feederHummer(h, 122, 60));
+    } else if (kind === 'oriole') {
+      art = h('g', null,
+        h('g', { className: 'birdlab-feeder-sway', style: { transformOrigin: '70px 4px' } },
+          hook(70, 34),
+          h('rect', { x: 36, y: 34, width: 68, height: 6, rx: 3, fill: '#ea580c' }),
+          h('path', { d: 'M 44 40 L 44 62 M 96 40 L 96 62', stroke: '#ea580c', strokeWidth: 2 }),
+          h('circle', { cx: 44, cy: 70, r: 9, fill: '#f97316' }), h('circle', { cx: 44, cy: 70, r: 7, fill: '#fdba74' }),
+          h('path', { d: 'M 64 48 L 76 48 L 74 58 L 66 58 Z', fill: '#f8fafc', stroke: '#94a3b8' }),
+          h('path', { d: 'M 66 50 L 74 50 L 73 56 L 67 56 Z', fill: '#7c2d12' }),
+          h('circle', { cx: 96, cy: 70, r: 9, fill: '#f97316' }), h('circle', { cx: 96, cy: 70, r: 7, fill: '#fdba74' })
+        ),
+        feederOriole(h, 112, 86));
+    } else {
+      art = h('g', null,
+        h('path', { d: 'M 0 116 Q 70 106 140 116 L 140 140 L 0 140 Z', fill: '#7aa05a' }),
+        h('path', { d: 'M 26 108 L 114 108 L 110 118 L 30 118 Z', fill: '#6b7280' }),
+        h('path', { d: 'M 30 110 L 110 110', stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '2 2' }),
+        seeds(32, 105, 76, 16),
+        feederBird(h, 'junco', 64, 92, 1.2, false, 0));
+    }
+    return h('svg', { viewBox: '0 0 140 140', width: 120, height: 120, 'aria-hidden': 'true', focusable: 'false', 'data-birdlab-feeder-art': kind, style: { display: 'block', flexShrink: 0, overflow: 'visible' } }, art);
+  }
+
+  // ── Physiology diagrams ────────────────────────────────────────────────
+  // One animated mechanism per PHYSIOLOGY topic, matched by topic name. Each
+  // shows the claim its card makes (one-way airflow, grit grinding, four cone
+  // types...) rather than decorating it. Box: 260 x 130.
+  function physHeart(h, x, y, s, cls, fill) {
+    return h('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + s + ')' },
+      h('path', { className: cls, d: 'M 0 7 C -12 -2 -13 -13 -6 -15 C -2 -16 0 -13 0 -11 C 0 -13 2 -16 6 -15 C 13 -13 12 -2 0 7 Z', fill: fill }));
+  }
+  function renderPhysiologyDiagram(h, topic) {
+    var t = String(topic || '').toLowerCase();
+    var txt = function(x, y, str, anchor, col, size) { return h('text', { x: x, y: y, textAnchor: anchor || 'middle', fontSize: size || 9, fontWeight: 700, fill: col || '#334155' }, str); };
+    var body;
+    if (t.indexOf('heart') > -1) {
+      body = h('g', null,
+        physHeart(h, 70, 60, 2.2, 'birdlab-phys-beat-slow', '#e11d48'),
+        physHeart(h, 190, 60, 1.2, 'birdlab-phys-beat-fast', '#e11d48'),
+        txt(70, 104, 'Human ~70 beats/min'),
+        txt(190, 104, 'Hummingbird to 1,200+'),
+        txt(190, 116, '(animation slowed ~5x)', 'middle', '#64748b', 7.5),
+        // ECG strip scrolling under both.
+        h('g', { transform: 'translate(0 20)' },
+          h('g', { className: 'birdlab-phys-ecg' },
+            h('path', { d: 'M -260 0 ' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(function(i) { var x0 = -260 + i * 33; return 'L ' + (x0 + 14) + ' 0 L ' + (x0 + 17) + ' -8 L ' + (x0 + 20) + ' 6 L ' + (x0 + 23) + ' 0 L ' + (x0 + 33) + ' 0'; }).join(' '), fill: 'none', stroke: '#fb7185', strokeWidth: 1.2, opacity: 0.6 })
+          )
+        ));
+    } else if (t.indexOf('respirat') > -1) {
+      // Side view, head right. Inhale fills both sac groups; the lung sits
+      // between them and the arrows through it never reverse.
+      body = h('g', null,
+        h('path', { d: 'M 40 72 Q 50 36 120 34 Q 176 32 200 50 Q 214 44 226 50 L 240 54 L 226 58 Q 214 66 200 64 Q 190 96 120 100 Q 60 102 40 72 Z', fill: '#fef3c7', stroke: '#b45309', strokeWidth: 1.2 }),
+        h('g', { className: 'birdlab-phys-breathe', style: { transformOrigin: '84px 76px' } },
+          h('ellipse', { cx: 76, cy: 76, rx: 26, ry: 16, fill: '#bae6fd', stroke: '#0284c7' }),
+          h('ellipse', { cx: 100, cy: 84, rx: 16, ry: 10, fill: '#bae6fd', stroke: '#0284c7' })),
+        h('g', { className: 'birdlab-phys-breathe', style: { transformOrigin: '170px 72px' } },
+          h('ellipse', { cx: 168, cy: 74, rx: 18, ry: 12, fill: '#c7d2fe', stroke: '#4f46e5' })),
+        h('path', { d: 'M 108 50 Q 128 42 150 50 L 150 62 Q 128 66 108 62 Z', fill: '#fda4af', stroke: '#be123c' }),
+        h('path', { className: 'birdlab-phys-flow', d: 'M 234 54 Q 200 54 186 60 Q 140 90 90 80 Q 70 66 104 56 L 154 56 Q 172 62 176 70', fill: 'none', stroke: '#0f172a', strokeWidth: 1.6, strokeDasharray: '4 4' }),
+        h('path', { d: 'M 136 52 L 144 56 L 136 60', fill: 'none', stroke: '#be123c', strokeWidth: 1.6 }),
+        txt(129, 30, 'lung: air moves one way', 'middle', '#be123c'),
+        txt(78, 114, 'posterior air sacs'),
+        txt(172, 114, 'anterior air sacs'));
+    } else if (t.indexOf('skeleton') > -1) {
+      var struts = [];
+      for (var si = 0; si < 9; si++) struts.push(h('path', { key: 'st' + si, d: 'M ' + (56 + si * 18) + ' ' + (si % 2 ? 52 : 80) + ' L ' + (74 + si * 18) + ' ' + (si % 2 ? 80 : 52), stroke: '#a16207', strokeWidth: 2 }));
+      body = h('g', null,
+        h('path', { d: 'M 30 50 Q 20 66 30 82 Q 40 90 50 84 L 210 84 Q 220 90 230 82 Q 240 66 230 50 Q 220 42 210 48 L 50 48 Q 40 42 30 50 Z', fill: '#fef9c3', stroke: '#a16207', strokeWidth: 2 }),
+        h('rect', { x: 50, y: 52, width: 160, height: 28, fill: '#fffbeb' }),
+        struts,
+        [0, 1, 2, 3, 4].map(function(i) { return h('circle', { key: 'air' + i, className: 'birdlab-phys-air', style: { animationDelay: (-i * 1.1) + 's' }, cx: 60, cy: 60 + (i % 3) * 6, r: 1.8, fill: '#38bdf8' }); }),
+        txt(130, 36, 'cut-away: hollow, braced by struts'),
+        txt(130, 104, 'air spaces link to the air sacs', 'middle', '#0369a1'));
+    } else if (t.indexOf('gizzard') > -1) {
+      body = h('g', null,
+        h('path', { d: 'M 40 10 L 40 40 Q 20 44 22 62 Q 26 78 44 72 L 46 80 Q 44 96 60 100 L 80 100', fill: 'none', stroke: '#d97706', strokeWidth: 8, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.55 }),
+        h('ellipse', { cx: 34, cy: 60, rx: 18, ry: 14, fill: '#fde68a', stroke: '#b45309' }),
+        [0, 1, 2, 3].map(function(i) { return h('ellipse', { key: 'seed' + i, className: 'birdlab-phys-swallow', style: { animationDelay: (-i * 0.9) + 's' }, cx: 40, cy: 12, rx: 2.4, ry: 1.6, fill: '#7c2d12' }); }),
+        h('ellipse', { cx: 30, cy: 58, rx: 2.4, ry: 1.6, fill: '#7c2d12' }), h('ellipse', { cx: 37, cy: 63, rx: 2.4, ry: 1.6, fill: '#7c2d12' }), h('ellipse', { cx: 29, cy: 65, rx: 2.4, ry: 1.6, fill: '#7c2d12' }),
+        h('ellipse', { cx: 150, cy: 70, rx: 46, ry: 36, fill: '#fca5a5', stroke: '#991b1b', strokeWidth: 2 }),
+        h('ellipse', { cx: 150, cy: 70, rx: 30, ry: 22, fill: '#fee2e2' }),
+        h('path', { d: 'M 80 100 Q 96 100 106 86', fill: 'none', stroke: '#d97706', strokeWidth: 8, strokeLinecap: 'round', opacity: 0.55 }),
+        h('g', { className: 'birdlab-phys-grind', style: { transformOrigin: '150px 70px' } },
+          [[136, 64, 4], [158, 60, 3.4], [150, 78, 4.4], [166, 74, 3], [140, 78, 2.8]].map(function(g, gi) { return h('path', { key: 'grit' + gi, d: birdlabLeafBlob(g[0], g[1], g[2], g[2] * 0.8, 3, gi, 0.7), fill: '#78716c' }); })),
+        txt(34, 90, 'crop', 'middle', '#92400e'),
+        txt(150, 124, 'gizzard: muscle + grit grind seeds', 'middle', '#991b1b'),
+        txt(214, 40, 'no teeth', 'middle', '#64748b'));
+    } else if (t === 'vision') {
+      var wedge = function(cx, cy, r, a0, a1, fill, op) {
+        var p = function(a) { var rad = (a - 90) * Math.PI / 180; return (cx + r * Math.cos(rad)).toFixed(1) + ' ' + (cy + r * Math.sin(rad)).toFixed(1); };
+        return h('path', { d: 'M ' + cx + ' ' + cy + ' L ' + p(a0) + ' A ' + r + ' ' + r + ' 0 ' + ((a1 - a0) > 180 ? 1 : 0) + ' 1 ' + p(a1) + ' Z', fill: fill, opacity: op });
+      };
+      body = h('g', null,
+        wedge(70, 78, 54, -55, 55, '#bae6fd', 0.8), wedge(70, 78, 54, -30, 30, '#38bdf8', 0.7),
+        h('circle', { cx: 70, cy: 78, r: 10, fill: '#a8a29e' }), h('circle', { cx: 66, cy: 72, r: 2.4, fill: '#eab308' }), h('circle', { cx: 74, cy: 72, r: 2.4, fill: '#eab308' }),
+        wedge(190, 70, 50, -170, 170, '#bbf7d0', 0.8), wedge(190, 70, 50, -8, 8, '#22c55e', 0.7),
+        h('circle', { cx: 190, cy: 70, r: 9, fill: '#a16207' }), h('circle', { cx: 184, cy: 68, r: 2, fill: '#111827' }), h('circle', { cx: 196, cy: 68, r: 2, fill: '#111827' }),
+        h('circle', { className: 'birdlab-phys-scan', cx: 70, cy: 34, r: 2.6, fill: '#b91c1c' }),
+        txt(70, 124, 'Owl: ~110°, wide binocular'),
+        txt(190, 124, 'Woodcock: nearly 360°'),
+        txt(130, 12, 'dark wedge = seen by both eyes (depth)', 'middle', '#64748b', 8));
+    } else if (t.indexOf('color') > -1) {
+      var curve = function(peak, col, cls, dash) {
+        var x = 30 + (peak - 300) * 0.5, d = 'M ' + (x - 40) + ' 100';
+        for (var k = -40; k <= 40; k += 4) d += ' L ' + (x + k).toFixed(1) + ' ' + (100 - 70 * Math.exp(-(k * k) / 380)).toFixed(1);
+        return h('path', { className: cls, d: d, fill: 'none', stroke: col, strokeWidth: 2.2, strokeDasharray: dash });
+      };
+      body = h('g', null,
+        h('defs', null, h('linearGradient', { id: 'blPhysSpectrum', x1: 0, y1: 0, x2: 1, y2: 0 },
+          h('stop', { offset: '0%', stopColor: '#7c3aed' }), h('stop', { offset: '25%', stopColor: '#2563eb' }), h('stop', { offset: '45%', stopColor: '#16a34a' }),
+          h('stop', { offset: '65%', stopColor: '#facc15' }), h('stop', { offset: '82%', stopColor: '#f97316' }), h('stop', { offset: '100%', stopColor: '#dc2626' }))),
+        h('rect', { x: 30, y: 104, width: 50, height: 8, fill: '#475569' }),
+        h('text', { x: 55, y: 110.5, textAnchor: 'middle', fontSize: 6.5, fontWeight: 800, fill: '#f8fafc' }, 'invisible to us'),
+        h('rect', { x: 80, y: 104, width: 200 - 50, height: 8, fill: 'url(#blPhysSpectrum)' }),
+        curve(370, '#7c3aed', 'birdlab-phys-draw'), curve(450, '#2563eb', 'birdlab-phys-draw'), curve(505, '#16a34a', 'birdlab-phys-draw'), curve(565, '#dc2626', 'birdlab-phys-draw'),
+        txt(55, 124, 'UV: birds only', 'middle', '#6d28d9', 8),
+        txt(160, 124, 'wavelength 300 to 700 nm', 'middle', '#475569', 8),
+        txt(130, 16, 'four bird cone types (humans have three)'));
+    } else if (t.indexOf('hearing') > -1) {
+      var band = function(y, f0, f1, col, label) {
+        var fx = function(f) { return 132 + (Math.log(f) / Math.LN10 - 1.3) * 40; };
+        return h('g', null, h('rect', { x: fx(f0), y: y, width: fx(f1) - fx(f0), height: 12, rx: 3, fill: col }), txt(fx(f0) - 4, y + 9, label, 'end', '#334155', 8));
+      };
+      body = h('g', null,
+        h('ellipse', { cx: 50, cy: 50, rx: 34, ry: 30, fill: '#d6c3a5', stroke: '#78716c' }),
+        h('circle', { cx: 38, cy: 46, r: 6, fill: '#1f2937' }), h('circle', { cx: 62, cy: 46, r: 6, fill: '#1f2937' }),
+        h('path', { d: 'M 50 52 L 47 60 L 53 60 Z', fill: '#57534e' }),
+        h('ellipse', { cx: 18, cy: 36, rx: 3, ry: 6, fill: '#57534e' }),
+        h('ellipse', { cx: 82, cy: 58, rx: 3, ry: 6, fill: '#57534e' }),
+        [0, 1, 2].map(function(i) { return h('circle', { key: 'ring' + i, className: 'birdlab-phys-ring', style: { animationDelay: (-i * 0.9) + 's' }, cx: 50, cy: 118, r: 10, fill: 'none', stroke: '#0ea5e9', strokeWidth: 1.4 }); }),
+        h('ellipse', { cx: 50, cy: 118, rx: 5, ry: 3, fill: '#78716c' }),
+        txt(50, 94, 'ears at different heights', 'middle', '#57534e', 7.5),
+        band(34, 20, 20000, '#cbd5e1', 'human'),
+        band(58, 100, 10000, '#a7f3d0', 'bird'),
+        band(58, 1000, 4000, '#10b981', ''),
+        txt(200, 92, 'best 1 to 4 kHz', 'middle', '#047857', 8),
+        txt(192, 20, 'hearing range (log scale)', 'middle', '#475569', 8));
+    } else {
+      var stars = [];
+      for (var k2 = 0; k2 < 18; k2++) {
+        var ang = k2 * 2.4, rr = 12 + (k2 * 17) % 48;
+        stars.push(h('circle', { key: 'ns' + k2, cx: (70 + Math.cos(ang) * rr).toFixed(1), cy: (62 + Math.sin(ang) * rr).toFixed(1), r: k2 % 4 ? 1.1 : 1.8, fill: '#fef9c3' }));
+      }
+      body = h('g', null,
+        h('circle', { cx: 70, cy: 62, r: 58, fill: '#0f172a' }),
+        h('g', { className: 'birdlab-phys-sky', style: { transformOrigin: '70px 62px' } }, stars,
+          h('path', { d: 'M 100 40 L 110 34 L 118 38 L 124 30', fill: 'none', stroke: '#fef9c3', strokeWidth: 0.6, opacity: 0.6 })),
+        h('circle', { cx: 70, cy: 62, r: 2.6, fill: '#fde047' }),
+        txt(70, 54, 'Polaris', 'middle', '#fde047', 7.5),
+        h('circle', { cx: 190, cy: 62, r: 34, fill: '#f8fafc', stroke: '#475569', strokeWidth: 2 }),
+        h('g', { className: 'birdlab-phys-needle', style: { transformOrigin: '190px 62px' } },
+          h('path', { d: 'M 190 34 L 196 62 L 184 62 Z', fill: '#dc2626' }), h('path', { d: 'M 190 90 L 196 62 L 184 62 Z', fill: '#64748b' })),
+        txt(190, 26, 'N', 'middle', '#0f172a', 9),
+        txt(70, 128, 'the sky turns around one point', 'middle', '#334155', 8),
+        txt(190, 112, 'magnetic compass', 'middle', '#334155', 8));
+    }
+    return h('svg', { viewBox: '0 0 260 130', width: '100%', role: 'img', 'aria-label': topic + ' diagram', 'data-birdlab-physiology-diagram': topic,
+      style: { display: 'block', maxWidth: 320, background: '#fff7f7', borderRadius: 10 } }, body);
+  }
+
+  // ── Bird art through the eras ──────────────────────────────────────────
+  // The same Black-capped Chickadee (Maine's state bird) rendered the way
+  // each era of BIRD_ART saw birds: a watercolor plate, a Peterson plate
+  // with field-mark arrows, a shallow-focus photograph, an ID app, a Maine
+  // print, tattoo line art. The Indigenous-art era deliberately gets no
+  // imitation plate: that is a living tradition to meet through its artists.
+  function artChickadee(h, x, y, s, extra) {
+    var bird = BIRDS.chickadee;
+    return h('g', Object.assign({ transform: 'translate(' + x + ' ' + y + ') scale(' + s + ') translate(-15 -15)' }, extra || {}), bird.svg(h));
+  }
+  function renderArtEraPlate(h, period) {
+    var p = String(period || '').toLowerCase();
+    var W = 240, H = 150, body, era;
+    var branch = h('path', { d: 'M 10 118 Q 90 104 160 112 Q 200 116 232 102', fill: 'none', stroke: '#6b4a2e', strokeWidth: 5, strokeLinecap: 'round' });
+    if (p.indexOf('audubon') > -1) {
+      era = 'audubon';
+      body = h('g', null,
+        h('defs', null,
+          h('filter', { id: 'blArtWatercolor', x: '-10%', y: '-10%', width: '120%', height: '120%' },
+            h('feTurbulence', { type: 'fractalNoise', baseFrequency: 0.05, numOctaves: 2, seed: 4, result: 'n' }),
+            h('feDisplacementMap', { in: 'SourceGraphic', in2: 'n', scale: 3.2 }),
+            h('feGaussianBlur', { stdDeviation: 0.35 })),
+          h('filter', { id: 'blArtPaper' },
+            h('feTurbulence', { type: 'fractalNoise', baseFrequency: 0.9, numOctaves: 1, seed: 2 }),
+            h('feColorMatrix', { values: '0 0 0 0 0.55  0 0 0 0 0.45  0 0 0 0 0.3  0 0 0 0.12 0' }),
+            h('feComposite', { in2: 'SourceGraphic', operator: 'in' }))),
+        h('rect', { width: W, height: H, fill: '#f6ecd4' }),
+        h('rect', { width: W, height: H, fill: '#f6ecd4', filter: 'url(#blArtPaper)' }),
+        h('g', { className: 'birdlab-art-paint-in', filter: 'url(#blArtWatercolor)' },
+          branch,
+          h('path', { d: 'M 150 110 Q 160 90 176 88 Q 168 102 150 110 Z M 190 108 Q 204 92 220 94 Q 208 108 190 108 Z', fill: '#5f7f3a', opacity: 0.8 }),
+          h('circle', { cx: 176, cy: 118, r: 3, fill: '#b91c1c' }), h('circle', { cx: 182, cy: 120, r: 3, fill: '#b91c1c' }),
+          artChickadee(h, 104, 86, 3.3)),
+        h('text', { x: 12, y: 142, fontSize: 8, fontStyle: 'italic', fill: '#78532d', fontFamily: 'Georgia, serif' }, 'Black-capped Chickadee, Poecile atricapillus'));
+    } else if (p.indexOf('peterson') > -1) {
+      era = 'peterson';
+      var arrow = function(x1, y1, x2, y2, i) {
+        return h('g', { key: 'ar' + i, className: 'birdlab-art-arrow', style: { animationDelay: (0.35 * i) + 's' } },
+          h('path', { d: 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2, stroke: '#0f172a', strokeWidth: 1.6 }),
+          h('path', { d: 'M ' + x2 + ' ' + y2 + ' l -5 -3 l 1 6 Z', fill: '#0f172a', transform: 'rotate(' + (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI) + ' ' + x2 + ' ' + y2 + ')' }));
+      };
+      body = h('g', null,
+        h('rect', { width: W, height: H, fill: '#fbfaf5' }),
+        artChickadee(h, 110, 76, 3.4),
+        arrow(20, 36, 70, 50, 0), arrow(20, 86, 68, 78, 1), arrow(210, 60, 150, 82, 2),
+        h('text', { x: 16, y: 30, fontSize: 8, fontWeight: 700, fill: '#0f172a' }, 'black cap'),
+        h('text', { x: 14, y: 100, fontSize: 8, fontWeight: 700, fill: '#0f172a' }, 'black bib'),
+        h('text', { x: 234, y: 54, textAnchor: 'end', fontSize: 8, fontWeight: 700, fill: '#0f172a' }, 'white wing edges'),
+        h('text', { x: 12, y: 142, fontSize: 8, fill: '#475569' }, 'Arrows point only to what separates it from look-alikes.'));
+    } else if (p.indexOf('photograph') > -1) {
+      era = 'photo';
+      body = h('g', null,
+        h('defs', null, h('filter', { id: 'blArtBokeh' }, h('feGaussianBlur', { stdDeviation: 6 }))),
+        h('rect', { width: W, height: H, fill: '#5b7a4b' }),
+        h('g', { filter: 'url(#blArtBokeh)' },
+          h('circle', { cx: 40, cy: 30, r: 26, fill: '#a3c26a' }), h('circle', { cx: 200, cy: 40, r: 30, fill: '#dbe7a1' }),
+          h('circle', { cx: 190, cy: 120, r: 28, fill: '#39502f' }), h('circle', { cx: 60, cy: 124, r: 22, fill: '#8aa55a' })),
+        h('path', { d: 'M 40 112 Q 120 100 200 108', fill: 'none', stroke: '#4a3525', strokeWidth: 6, strokeLinecap: 'round' }),
+        artChickadee(h, 120, 76, 3.2),
+        h('g', { className: 'birdlab-art-focus', fill: 'none', stroke: '#f8fafc', strokeWidth: 1.6 },
+          h('path', { d: 'M 84 40 l 0 -8 l 8 0 M 148 32 l 8 0 l 0 8 M 156 108 l 0 8 l -8 0 M 92 116 l -8 0 l 0 -8' })),
+        h('text', { x: 12, y: 142, fontSize: 8, fontWeight: 700, fill: '#f8fafc', fontFamily: 'monospace' }, '1/2000 s  f/6.3  ISO 800'));
+    } else if (p.indexOf('digital') > -1) {
+      era = 'app';
+      body = h('g', null,
+        h('rect', { width: W, height: H, fill: '#e2e8f0' }),
+        h('rect', { x: 70, y: 6, width: 100, height: 138, rx: 14, fill: '#0f172a' }),
+        h('rect', { x: 76, y: 16, width: 88, height: 70, rx: 4, fill: '#9cc28a' }),
+        artChickadee(h, 120, 50, 1.9),
+        h('rect', { className: 'birdlab-art-scan', x: 76, y: 16, width: 88, height: 3, fill: '#38bdf8', opacity: 0.8 }),
+        h('rect', { x: 76, y: 90, width: 88, height: 20, rx: 4, fill: '#1e293b' }),
+        h('text', { x: 82, y: 103, fontSize: 7, fontWeight: 800, fill: '#f8fafc' }, 'Black-capped Chickadee'),
+        h('rect', { x: 76, y: 114, width: 88, height: 14, rx: 4, fill: '#1e293b', opacity: 0.7 }),
+        h('text', { x: 82, y: 124, fontSize: 6.5, fill: '#cbd5e1' }, 'Also: Boreal Chickadee'),
+        h('text', { x: 180, y: 70, fontSize: 7.5, fill: '#334155' }, 'Suggestions,'),
+        h('text', { x: 180, y: 80, fontSize: 7.5, fill: '#334155' }, 'not verdicts:'),
+        h('text', { x: 180, y: 90, fontSize: 7.5, fill: '#334155' }, 'check marks.'));
+    } else if (p.indexOf('maine art') > -1) {
+      era = 'print';
+      body = h('g', null,
+        h('defs', null, h('filter', { id: 'blArtPoster' },
+          h('feComponentTransfer', null,
+            h('feFuncR', { type: 'discrete', tableValues: '0.1 0.45 0.8 0.97' }),
+            h('feFuncG', { type: 'discrete', tableValues: '0.1 0.4 0.75 0.95' }),
+            h('feFuncB', { type: 'discrete', tableValues: '0.15 0.45 0.7 0.9' })))),
+        h('rect', { width: W, height: H, fill: '#f2e3c6' }),
+        h('circle', { cx: 176, cy: 44, r: 26, fill: '#e76f51' }),
+        h('path', { d: 'M 0 96 L 60 84 L 110 96 L 170 82 L 240 94 L 240 150 L 0 150 Z', fill: '#264653' }),
+        h('path', { d: 'M 184 96 L 190 58 L 198 58 L 204 96 Z', fill: '#f8fafc' }), h('path', { d: 'M 186 58 L 194 50 L 202 58 Z', fill: '#e63946' }),
+        h('path', { d: 'M 0 116 Q 60 106 120 116 T 240 114 L 240 150 L 0 150 Z', fill: '#2a9d8f' }),
+        h('g', { filter: 'url(#blArtPoster)' }, artChickadee(h, 80, 76, 3.2)),
+        h('text', { x: 12, y: 142, fontSize: 9, fontWeight: 900, fill: '#f2e3c6', letterSpacing: 2 }, 'MAINE'));
+    } else if (p.indexOf('tattoo') > -1) {
+      era = 'tattoo';
+      body = h('g', null,
+        h('rect', { width: W, height: H, fill: '#f3d9c4' }),
+        h('g', { className: 'birdlab-art-line' }, artChickadee(h, 120, 68, 3.3)),
+        h('path', { d: 'M 60 118 Q 120 106 180 118 L 172 126 L 180 134 Q 120 122 60 134 L 68 126 Z', fill: '#b91c1c', stroke: '#1e293b', strokeWidth: 1.4 }),
+        h('text', { x: 120, y: 125, textAnchor: 'middle', fontSize: 8, fontWeight: 900, fill: '#fef3c7' }, 'HOME'));
+    } else {
+      return null;
+    }
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': period + ': the chickadee in this style', 'data-birdlab-art-era': era,
+      style: { display: 'block', maxWidth: 300, borderRadius: 8, boxShadow: '0 6px 16px rgba(15,23,42,.18)', border: '6px solid #fff' } }, body);
+  }
+
+  // ── Behavior vignettes ─────────────────────────────────────────────────
+  // One animated scene per BEHAVIORS topic, drawn from that card's own
+  // examples (turkey strut, song-post territory, altricial vs precocial
+  // young, mating systems, Arctic Tern, chickadee dee-count, mobbing,
+  // MacArthur's warblers). Box: 260 x 140.
+  function tinyBird(h, x, y, s, col, flip, cls, key) {
+    return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') scale(' + (flip ? -s : s) + ' ' + s + ')' },
+      h('g', { className: cls || null },
+        h('path', { d: 'M -7 2 Q -6 -5 1 -5 Q 5 -6 7 -3 L 10 -2 L 7 -1 Q 5 4 -1 4 Q -5 4 -7 2 Z M -7 1 L -12 3 L -7 3 Z', fill: col || '#334155' }),
+        h('circle', { cx: 4.6, cy: -3.2, r: 0.7, fill: '#fff' })));
+  }
+  function renderBehaviorVignette(h, topic) {
+    var t = String(topic || '').toLowerCase();
+    var txt = function(x, y, str, anchor, col, size) { return h('text', { x: x, y: y, textAnchor: anchor || 'middle', fontSize: size || 8.5, fontWeight: 700, fill: col || '#334155' }, str); };
+    var body, bg = '#f5f3ff';
+    if (t.indexOf('courtship') > -1) {
+      var fan = [];
+      for (var f = 0; f < 11; f++) fan.push(h('path', { key: 'fan' + f, d: 'M 0 0 L -4 -46 Q 0 -52 4 -46 Z', fill: f % 2 ? '#5b3a22' : '#3f2716', stroke: '#d6b88a', strokeWidth: 0.6, transform: 'rotate(' + (-75 + f * 15) + ')' }));
+      body = h('g', null,
+        h('path', { d: 'M 0 118 L 260 118 L 260 140 L 0 140 Z', fill: '#a3b86c' }),
+        h('g', { transform: 'translate(96 88)' }, h('g', { className: 'birdlab-bv-strut' }, fan)),
+        h('ellipse', { cx: 100, cy: 92, rx: 26, ry: 20, fill: '#2e1f14' }),
+        h('path', { d: 'M 118 84 Q 128 60 134 58 Q 140 58 138 66 Q 132 74 124 88 Z', fill: '#3a2618' }),
+        h('circle', { cx: 136, cy: 60, r: 5, fill: '#93c5fd' }),
+        h('path', { className: 'birdlab-bv-snood', d: 'M 139 60 Q 142 70 138 76', fill: 'none', stroke: '#dc2626', strokeWidth: 3, strokeLinecap: 'round' }),
+        h('path', { d: 'M 130 66 Q 128 74 132 80', fill: 'none', stroke: '#dc2626', strokeWidth: 4, strokeLinecap: 'round' }),
+        h('path', { d: 'M 92 110 L 90 118 M 104 110 L 106 118', stroke: '#b45309', strokeWidth: 2 }),
+        h('path', { d: 'M 76 100 Q 70 110 82 112', fill: 'none', stroke: '#3a2618', strokeWidth: 3 }),
+        h('ellipse', { cx: 206, cy: 100, rx: 18, ry: 13, fill: '#8a6a44' }),
+        h('path', { d: 'M 218 96 Q 226 80 230 80 Q 234 82 230 88 L 222 100 Z', fill: '#8a6a44' }),
+        h('path', { d: 'M 204 112 L 202 118 M 210 112 L 212 118', stroke: '#b45309', strokeWidth: 1.6 }),
+        txt(100, 20, 'Gobbler "strut": fan, puff, drag wings'),
+        txt(206, 76, 'hen', 'middle', '#57534e'));
+    } else if (t.indexOf('territor') > -1) {
+      body = h('g', null,
+        h('ellipse', { cx: 110, cy: 80, rx: 92, ry: 50, fill: '#dcfce7', stroke: '#16a34a', strokeWidth: 1.4, strokeDasharray: '5 4' }),
+        h('path', { d: 'M 110 128 L 110 60', stroke: '#6b4a2e', strokeWidth: 3 }),
+        [0, 1, 2].map(function(i) { return h('circle', { key: 'song' + i, className: 'birdlab-bv-song', style: { animationDelay: (-i * 0.8) + 's' }, cx: 110, cy: 52, r: 8, fill: 'none', stroke: '#16a34a', strokeWidth: 1.2 }); }),
+        tinyBird(h, 110, 54, 1.5, '#1f2937', false, null, 'singer'),
+        h('path', { d: 'M 104 50 L 100 51 L 103 55 Z', fill: '#dc2626' }),
+        tinyBird(h, 226, 60, 1.3, '#1f2937', true, 'birdlab-bv-intruder', 'intruder'),
+        txt(110, 20, 'Song post: a "this is mine" billboard'),
+        txt(226, 90, 'intruder', 'middle', '#b91c1c'),
+        txt(40, 124, 'boundary', 'middle', '#15803d', 7.5));
+    } else if (t.indexOf('parental') > -1) {
+      body = h('g', null,
+        h('path', { d: 'M 20 96 Q 70 126 120 96 Q 108 110 70 112 Q 32 110 20 96 Z', fill: '#8a6a44' }),
+        [40, 62, 84].map(function(cx, i) { return h('g', { key: 'chick' + i },
+          h('circle', { cx: cx, cy: 94, r: 8, fill: '#fbcfe8' }),
+          h('path', { className: 'birdlab-bv-gape', style: { animationDelay: (-i * 0.25) + 's' }, d: 'M ' + (cx - 5) + ' 86 L ' + cx + ' 76 L ' + (cx + 5) + ' 86 Z', fill: '#facc15', stroke: '#f97316', strokeWidth: 1 })); }),
+        h('g', { className: 'birdlab-bv-feed' }, tinyBird(h, 112, 56, 1.8, '#475569', true, null, 'parent'), h('path', { d: 'M 90 51 q 4 -3 8 0', stroke: '#65a30d', strokeWidth: 2, fill: 'none' })),
+        txt(70, 20, 'Altricial: helpless, fed'),
+        h('path', { d: 'M 140 110 Q 200 104 256 110 L 256 140 L 140 140 Z', fill: '#93c5fd', opacity: 0.6 }),
+        h('g', { className: 'birdlab-bv-paddle' },
+          h('ellipse', { cx: 214, cy: 100, rx: 14, ry: 7, fill: '#7c5a3a' }), h('circle', { cx: 226, cy: 92, r: 5, fill: '#7c5a3a' }), h('path', { d: 'M 230 92 L 236 93 L 230 95 Z', fill: '#f59e0b' }),
+          [190, 176, 162].map(function(dx, i) { return h('g', { key: 'dl' + i },
+            h('ellipse', { cx: dx, cy: 104, rx: 5, ry: 3.2, fill: '#facc15' }), h('circle', { cx: dx + 3, cy: 100.5, r: 2.2, fill: '#fde047' })); })),
+        txt(200, 20, 'Precocial: up and following'),
+        txt(200, 32, 'within hours', 'middle', '#64748b', 7.5));
+    } else if (t.indexOf('pair') > -1) {
+      var node = function(x, y, sym, col, key) { return h('g', { key: key }, h('circle', { cx: x, cy: y, r: 9, fill: col }), h('text', { x: x, y: y + 3.5, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#fff' }, sym)); };
+      var link = function(x1, y1, x2, y2, i) { return h('path', { key: 'lk' + i + x1 + y2, className: 'birdlab-bv-link', style: { animationDelay: (-i * 0.3) + 's' }, d: 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2, stroke: '#7c3aed', strokeWidth: 2 }); };
+      body = h('g', null,
+        link(40, 60, 40, 100, 0), node(40, 60, '♂', '#2563eb', 'm1'), node(40, 100, '♀', '#db2777', 'f1'),
+        txt(40, 126, 'monogamy', 'middle'), txt(40, 136, 'Bald Eagle', 'middle', '#64748b', 7),
+        link(130, 60, 102, 100, 0), link(130, 60, 130, 100, 1), link(130, 60, 158, 100, 2),
+        node(130, 60, '♂', '#2563eb', 'm2'), node(102, 100, '♀', '#db2777', 'f2'), node(130, 100, '♀', '#db2777', 'f3'), node(158, 100, '♀', '#db2777', 'f4'),
+        txt(130, 126, 'polygyny', 'middle'), txt(130, 136, 'Red-winged Blackbird', 'middle', '#64748b', 7),
+        link(220, 60, 200, 100, 0), link(220, 60, 240, 100, 1),
+        node(220, 60, '♀', '#db2777', 'f5'), node(200, 100, '♂', '#2563eb', 'm3'), node(240, 100, '♂', '#2563eb', 'm4'),
+        txt(220, 126, 'polyandry', 'middle'), txt(220, 136, 'phalaropes', 'middle', '#64748b', 7),
+        txt(130, 22, 'Who pairs with whom'));
+      bg = '#fdf4ff';
+    } else if (t.indexOf('migration') > -1) {
+      body = h('g', null,
+        h('rect', { width: 260, height: 140, fill: '#dbeafe' }),
+        h('path', { d: 'M 0 12 Q 130 2 260 12 L 260 0 L 0 0 Z', fill: '#f8fafc' }),
+        h('path', { d: 'M 0 128 Q 130 138 260 128 L 260 140 L 0 140 Z', fill: '#f8fafc' }),
+        h('path', { d: 'M 70 16 Q 40 40 70 60 Q 96 76 80 100 Q 70 118 92 126', fill: 'none', stroke: '#94a3b8', strokeWidth: 1, opacity: 0.8 }),
+        h('path', { d: 'M 150 16 Q 176 44 160 70 Q 140 96 170 126', fill: 'none', stroke: '#94a3b8', strokeWidth: 1, opacity: 0.8 }),
+        h('path', { d: 'M 118 16 C 210 40 60 80 150 126', fill: 'none', stroke: '#0ea5e9', strokeWidth: 2.2, strokeDasharray: '3 5', className: 'birdlab-bv-route' }),
+        h('path', { d: 'M 150 126 C 230 96 20 50 118 16', fill: 'none', stroke: '#6366f1', strokeWidth: 1.6, strokeDasharray: '3 5', opacity: 0.6, className: 'birdlab-bv-route' }),
+        txt(40, 10, 'Arctic', 'start', '#334155', 7.5), txt(40, 138, 'Antarctic', 'start', '#334155', 7.5),
+        txt(206, 60, 'Arctic Tern', 'middle', '#0369a1', 9),
+        txt(206, 72, '~44,000 mi/yr', 'middle', '#0369a1', 8),
+        txt(206, 90, 'two summers a year', 'middle', '#64748b', 7.5));
+    } else if (t.indexOf('communication') > -1) {
+      var dees = function(y, n, key) {
+        var out = [];
+        for (var d = 0; d < n; d++) out.push(h('text', { key: key + d, className: 'birdlab-bv-dee', style: { animationDelay: (d * 0.22) + 's' }, x: 110 + d * 22, y: y, fontSize: 9, fontWeight: 900, fill: '#0f766e' }, 'dee'));
+        return out;
+      };
+      body = h('g', null,
+        h('text', { x: 68, y: 48, fontSize: 9, fontWeight: 900, fill: '#0f766e' }, 'chick-a'),
+        dees(48, 2, 'big'),
+        h('text', { x: 68, y: 98, fontSize: 9, fontWeight: 900, fill: '#0f766e' }, 'chick-a'),
+        dees(98, 6, 'small'),
+        h('ellipse', { cx: 36, cy: 44, rx: 16, ry: 18, fill: '#7c5a3a' }), h('path', { d: 'M 24 28 L 28 36 M 48 28 L 44 36', stroke: '#7c5a3a', strokeWidth: 4 }), h('circle', { cx: 30, cy: 40, r: 3.6, fill: '#facc15' }), h('circle', { cx: 42, cy: 40, r: 3.6, fill: '#facc15' }),
+        h('ellipse', { cx: 36, cy: 96, rx: 8, ry: 9, fill: '#7c5a3a' }), h('circle', { cx: 33, cy: 94, r: 2, fill: '#facc15' }), h('circle', { cx: 39, cy: 94, r: 2, fill: '#facc15' }),
+        txt(36, 72, 'Great Horned Owl', 'middle', '#57534e', 7), txt(36, 118, 'pygmy-owl', 'middle', '#57534e', 7),
+        txt(150, 128, 'more "dee"s = smaller, more dangerous predator', 'middle', '#0f766e', 7.5),
+        txt(150, 16, 'The chickadee alarm call'));
+      bg = '#f0fdfa';
+    } else if (t.indexOf('mobbing') > -1) {
+      body = h('g', null,
+        h('path', { d: 'M 20 100 Q 130 90 240 100', fill: 'none', stroke: '#6b4a2e', strokeWidth: 6, strokeLinecap: 'round' }),
+        h('ellipse', { cx: 130, cy: 80, rx: 16, ry: 20, fill: '#7c5a3a' }),
+        h('path', { d: 'M 118 62 L 122 70 M 142 62 L 138 70', stroke: '#7c5a3a', strokeWidth: 5 }),
+        h('circle', { cx: 124, cy: 74, r: 4, fill: '#facc15' }), h('circle', { cx: 136, cy: 74, r: 4, fill: '#facc15' }),
+        h('g', { className: 'birdlab-bv-mob', style: { transformOrigin: '130px 76px' } },
+          [[70, 40], [190, 36], [200, 90], [60, 90], [130, 18]].map(function(b, i) {
+            return h('g', { key: 'mb' + i }, tinyBird(h, b[0], b[1], 1.4, i % 2 ? '#2563eb' : '#1f2937', b[0] > 130, null, 'mob' + i),
+              h('text', { x: b[0] + 8, y: b[1] - 8, fontSize: 9, fontWeight: 900, fill: '#b91c1c' }, '!'));
+          })),
+        txt(130, 132, 'Jays, crows and songbirds mob a roosting owl', 'middle', '#334155', 8));
+      bg = '#fff7ed';
+    } else {
+      var zone = function(y0, y1, col, label, key) { return h('g', { key: key }, h('path', { d: 'M ' + (96 - (y0 - 10) * 0.52) + ' ' + y0 + ' L ' + (96 + (y0 - 10) * 0.52) + ' ' + y0 + ' L ' + (96 + (y1 - 10) * 0.52) + ' ' + y1 + ' L ' + (96 - (y1 - 10) * 0.52) + ' ' + y1 + ' Z', fill: col, opacity: 0.35, clipPath: 'url(#blBvSpruce)' }), h('path', { d: 'M ' + (100 + (y1 - 10) * 0.3) + ' ' + ((y0 + y1) / 2) + ' L 164 ' + ((y0 + y1) / 2), stroke: col, strokeWidth: 1.2 }), txt(168, (y0 + y1) / 2 + 3, label, 'start', '#334155', 7.5)); };
+      body = h('g', null,
+        h('defs', null, h('clipPath', { id: 'blBvSpruce' }, h('path', { d: birdlabFirPath(96, 132, 124, 124) }))),
+        h('path', { d: birdlabFirPath(96, 132, 124, 124), fill: '#1f4d2c' }),
+        zone(10, 42, '#facc15', 'Cape May: top tips', 'z1'),
+        zone(46, 88, '#fb923c', 'Bay-breasted: inner mid', 'z2'),
+        zone(92, 132, '#60a5fa', 'Yellow-rumped: low', 'z3'),
+        tinyBird(h, 96, 30, 0.9, '#ca8a04', false, 'birdlab-bv-hop', 'w1'),
+        tinyBird(h, 92, 70, 0.9, '#9a3412', true, 'birdlab-bv-hop', 'w2'),
+        tinyBird(h, 78, 116, 0.9, '#1d4ed8', false, 'birdlab-bv-hop', 'w3'),
+        txt(210, 16, 'One spruce, three niches', 'middle', '#334155', 8),
+        txt(252, 134, 'MacArthur 1958', 'end', '#64748b', 7));
+      bg = '#f0fdf4';
+    }
+    return h('svg', { viewBox: '0 0 260 140', width: '100%', role: 'img', 'aria-label': topic + ' illustration', 'data-birdlab-behavior-vignette': topic,
+      style: { display: 'block', maxWidth: 340, background: bg, borderRadius: 10 } }, body);
   }
 
   // ── Light-condition atmosphere ─────────────────────────────────────────
@@ -20256,7 +20893,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     className: 'px-3 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                       (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-500')
                   },
-                    h('span', { className: 'mr-1', 'aria-hidden': true }, habitatIcon),
+                    h('span', { className: 'mr-1.5 inline-block align-middle overflow-hidden rounded-md border border-black/10', 'aria-hidden': true, title: habitatIcon },
+                      renderHabitatThumb(h, hid, 40, { style: { display: 'block' } })),
                     hab.name,
                     h('span', { className: 'ml-2 text-[0.6875rem] font-mono ' + (sel ? 'text-emerald-100' : 'text-slate-700') },
                       hfCount + '/' + hbCount),
@@ -22850,7 +23488,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         'aria-disabled': picked != null ? 'true' : 'false',
                         className: btnClass
                       },
-                        h('div', { className: 'text-2xl mb-1', 'aria-hidden': true }, hab.icon),
+                        h('div', { className: 'mb-1.5 overflow-hidden rounded-lg border border-black/10 birdlab-thumb-frame', 'aria-hidden': true },
+                          renderHabitatThumb(h, hid, '100%', { style: { display: 'block', width: '100%', height: 'auto', aspectRatio: '9 / 5' } })),
                         h('div', null, hab.label)
                       );
                     })
@@ -22908,7 +23547,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       className: 'px-3 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-lime-500/40 ' +
                         (sel ? 'bg-lime-700 text-white border-lime-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-lime-500')
                     },
-                      h('span', { className: 'mr-1', 'aria-hidden': true }, hab.icon),
+                      h('span', { className: 'mr-1.5 inline-block align-middle overflow-hidden rounded-md border border-black/10', 'aria-hidden': true },
+                        renderHabitatThumb(h, hid, 40, { style: { display: 'block' } })),
                       hab.label
                     );
                   })
@@ -28813,6 +29453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               }, b.topic);
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-violet-200 p-5' },
+            h('div', { key: 'bv-' + idx, className: 'mb-4 birdlab-iconic-enter' }, renderBehaviorVignette(h, cur.topic)),
             h('h2', { className: 'text-xl font-black text-violet-900 mb-2 tracking-tight' }, '🧠 ' + cur.topic),
             h('div', { className: 'space-y-2 text-sm text-slate-700' },
               h('div', { className: 'p-3 bg-violet-50 rounded' }, h('b', null, 'Mechanism: '), cur.mechanism),
@@ -28831,12 +29472,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.heart_lungs_bones_vision_hearing_navig', 'Heart, lungs, bones, vision, hearing, navigation. Birds are physiological athletes — every system optimized for flight.')),
           h('div', { className: 'space-y-3' },
             PHYSIOLOGY.map(function(p, i) {
-              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_17rem] items-start' },
+                h('div', { className: 'min-w-0' },
                 h('h2', { className: 'text-lg font-black text-rose-900 mb-2 tracking-tight' }, '🫀 ' + p.topic),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-rose-50 rounded' }, h('b', null, 'Detail: '), p.detail),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, 'Function: '), p.function),
-                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Example: '), p.example)));
+                  h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, 'Example: '), p.example))),
+                renderPhysiologyDiagram(h, p.topic));
             })));
       }
 
@@ -29323,12 +29966,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.feeder_types_foods_birds_setup_tips_fo', 'Feeder types + foods + birds + setup tips for your Maine backyard.')),
           h('div', { className: 'space-y-3' },
             FEEDER_GUIDE.map(function(f, i) {
-              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4 flex gap-4 items-start flex-wrap sm:flex-nowrap' },
+                h('div', { className: 'rounded-xl p-2 mx-auto sm:mx-0', style: { background: 'linear-gradient(180deg, #e0f2fe 0%, #f0fdf4 100%)' } }, renderFeederArt(h, f.feeder_type)),
+                h('div', { className: 'flex-1 min-w-[14rem]' },
                 h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🏠 ' + f.feeder_type),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, __alloT('stem.birdlab.foods', '🌾 Foods: ')), f.foods),
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, __alloT('stem.birdlab.birds', '🐦 Birds: ')), f.birds),
-                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.tips', '💡 Tips: ')), f.tips)));
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.tips', '💡 Tips: ')), f.tips))));
             })));
       }
 
@@ -30951,11 +31596,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.7_eras_of_bird_visual_representation_f', '7 eras of bird visual representation — from Indigenous art through Audubon through modern AI.')),
           h('div', { className: 'space-y-3' },
             BIRD_ART.map(function(b, i) {
-              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4' },
+              var plate = renderArtEraPlate(h, b.period);
+              return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-violet-500 p-4 ' + (plate ? 'grid gap-4 md:grid-cols-[minmax(0,1fr)_18rem] items-start' : '') },
+                h('div', { className: 'min-w-0' },
                 h('h2', { className: 'text-lg font-black text-violet-900 mb-2 tracking-tight' }, '🎨 ' + b.period),
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-violet-50 rounded' }, h('b', null, 'Details: '), b.details),
-                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.maine_29', '📍 Maine: ')), b.maine)));
+                  h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.maine_29', '📍 Maine: ')), b.maine))),
+                plate);
             })));
       }
 
