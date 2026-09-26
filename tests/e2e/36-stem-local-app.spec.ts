@@ -16,13 +16,15 @@ for (const viewport of viewports) {
   test('Heat and Nuclear labs open, recover, and render in the local app on ' + viewport.name, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     const failedOnce = new Map(labs.map((lab) => [lab.id, false]));
+    const recoveryAllowed = new Set<string>();
 
     // Register both failures before boot. The STEAM loader may start fetching
-    // either plugin as soon as its card is hovered or focused.
+    // either plugin as soon as its card is hovered or focused. Keep every
+    // background/fallback attempt unavailable until the explicit Retry action.
     for (const lab of labs) {
       const source = fs.readFileSync(path.join(process.cwd(), lab.file), 'utf8');
       await page.route('**/' + lab.file + '*', async (route) => {
-        if (!failedOnce.get(lab.id)) {
+        if (!recoveryAllowed.has(lab.id)) {
           failedOnce.set(lab.id, true);
           await route.abort('failed');
           return;
@@ -66,6 +68,7 @@ for (const viewport of viewports) {
       await expect(retry).toBeVisible({ timeout: 30000 });
       await retry.focus();
       await expect(retry).toBeFocused();
+      recoveryAllowed.add(lab.id);
       await retry.click();
       const labRoot = page.locator(lab.marker);
       await expect(labRoot).toBeVisible({ timeout: 30000 });

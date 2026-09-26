@@ -108,3 +108,16 @@ configuration check alone does not establish a successful CI rerun.
 The build also regenerated the root educator-evaluation standalone bundle but
 left it unstaged. Its bytes match the public copy already committed by the deploy
 script; the final cleanup commit preserves that generated root copy as well.
+
+Cloudflare subsequently completed publication. The live app shell, service worker,
+and regenerated standalone bundle now match their committed bytes, resolving the
+deploy script's propagation warning.
+
+Both full-app recovery/interaction scenarios passed against the live production
+site (desktop and phone, 40.2 seconds). The initial attempt incorrectly let the
+service-worker cache bypass Playwright's simulated download failure. The test
+configuration now blocks service workers for interception, and the outage remains
+in effect across background/fallback attempts until the explicit Retry action.
+All original layout, keyboard, scrolling, focus, and tool-interaction assertions
+remain in place. These tests passed; the full repository CI suite is not claimed
+green because the baseline failures above remain.
