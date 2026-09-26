@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt, setupChecks: arShopSetupChecks, controlEffect: arShopControlEffect, completion: arShopCompletion, report: arShopReport };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt, setupChecks: arShopSetupChecks, controlEffect: arShopControlEffect, completion: arShopCompletion, report: arShopReport, objective: arShopObjective };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1626,4 +1626,89 @@ it('labels an unverified previous attempt for review before restoration',()=>{
   const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,shopPreviousAttempts:{brakes:previous}}});
   expect(host.querySelector('[data-ar-previous-attempt]').textContent).toContain('Saved position: Review saved record');
   expect(host.querySelector('[data-ar-previous-attempt]').textContent).not.toContain('Completed work order');
+});
+describe('Immersive workshop HUD', () => {
+  // Follow only the HUD: its CTA for movement, pickup and performing, and the
+  // step() helper for the judgement work the HUD deliberately leaves to the learner.
+  it.each(model.jobs)('guides $id from intake to a completed job with one objective at a time', job => {
+    let state = model.initial(job.id), seen = new Set();
+    for (let guard = 0; guard < 120; guard++) {
+      const o = model.objective(state);
+      seen.add(o.id);
+      if (o.id === 'complete') break;
+      expect(o.title.length, JSON.stringify(o)).toBeGreaterThan(0);
+      if (o.cta && o.cta.type === 'tool') { expect(o.target).toBe(o.cta.id); state = model.direct(state, o.cta.id); continue; }
+      if (o.cta && o.cta.type === 'station') { expect(o.target).toBe(o.cta.id); state = { ...state, station: o.cta.id }; continue; }
+      const before = state.step;
+      state = step(state, { notes: 'Found the fault, completed the specified service and verified the result.' });
+      expect(state.step).toBe(before + 1);
+    }
+    expect(model.objective(state).id).toBe('complete');
+    expect([...seen]).toEqual(expect.arrayContaining(['ready', 'tool', 'station', 'complete']));
+  });
+  it('names the missing tool and outlines its bench kit, then the task station', () => {
+    let state = model.advance({ ...model.initial('brakes') });
+    const grab = model.objective(state);
+    expect(grab).toMatchObject({ id: 'tool', cta: { type: 'tool' } });
+    expect(grab.title).toMatch(/lift inspection card/i);
+    expect(model.tools(state).map(t => t[0])).toContain('lift-card');
+    state = model.direct(state, grab.cta.id);
+    expect(model.objective(state)).toMatchObject({ id: 'station', target: 'lift', cta: { type: 'station', id: 'lift' } });
+    expect(model.objective({ ...state, station: 'lift' })).toMatchObject({ id: 'ready', target: model.token(state, 'task') });
+  });
+  it('keeps calculation and handoff fields in place whether or not the entry is correct yet', () => {
+    const job = model.jobs[0];
+    let state = model.initial(job.id);
+    while (job.tasks[state.step].id !== 'measure') state = step(state);
+    state = model.operate({ ...state, station: 'brakes', tool: 'gauge' }, { type: 'read' });
+    const wrong = model.objective({ ...state, answer: '2' }), right = model.objective({ ...state, answer: '6' });
+    expect(wrong).toMatchObject({ calc: true, title: right.title, cta: { type: 'pick' } });
+    expect(right.calc).toBe(true);
+    expect(model.advance({ ...state, answer: '2' }).step).toBe(state.step);
+    const release = { ...model.initial('electrical'), step: job.tasks.length, verified: true };
+    const r = { ...release, step: model.jobs[2].tasks.length - 1, station: 'intake', tool: 'job-card' };
+    expect(model.objective({ ...r, notes: '' })).toMatchObject({ handoff: true });
+    expect(model.objective({ ...r, notes: 'Cleaned the clamp and retested at 0.08 V.' })).toMatchObject({ handoff: true });
+  });
+  it('offers setup chips without a do-it button while evidence is missing, marking the current probe contact', () => {
+    let state = model.initial('electrical');
+    state = step(step(state));
+    state = { ...state, station: 'engine', tool: 'meter' };
+    const o = model.objective(state);
+    expect(o.id).toBe('evidence');
+    expect(o.cta).toBeNull();
+    expect(o.controls.map(c => c.label)).toEqual(expect.arrayContaining(['Place black probe on positive cable clamp', 'Place black probe on negative battery post']));
+    expect(o.controls[o.controls.length - 1].label).toBe('Capture instrument reading');
+    expect(o.controls.find(c => c.label === 'Place black probe on negative battery post').pressed).toBe(true);
+  });
+  it('asks to clear and reset a latched lift stop before anything else', () => {
+    const state = { ...model.initial('brakes'), step: 2, station: 'lift', tool: 'lift-controls', lift: 'prepared', liftStopped: true };
+    expect(model.objective(state)).toMatchObject({ id: 'lift-stop', cta: { id: model.token(state, 'lift-clear') } });
+    expect(model.objective({ ...state, liftBayClear: true }).cta.id).toBe(model.token(state, 'lift-reset'));
+  });
+  describe('layout', () => {
+    beforeEach(() => { resetStemLab(); loadTool(file, 'autoRepair'); });
+    const mount = data => { const host = document.createElement('div'); host.innerHTML = renderTool('autoRepair', { autoRepair: { view: 'workshop', ...data } }); return host; };
+    it('opens immersive, with every classic panel kept in the clipboard', () => {
+      const host = mount({});
+      expect(host.querySelector('[data-ar-hud-objective]')).not.toBeNull();
+      const clip = host.querySelector('details[data-ar-shop-clipboard]');
+      expect(clip).not.toBeNull();
+      expect(clip.hasAttribute('open')).toBe(false);
+      expect(clip.querySelectorAll('[data-ar-shop-station]')).toHaveLength(7);
+      expect(clip.querySelector('#ar-shop-work-order')).not.toBeNull();
+      expect(host.querySelectorAll('#ar-shop-bay')).toHaveLength(1);
+      expect(host.querySelectorAll('.ar-bay-viewport')).toHaveLength(1);
+    });
+    it('returns to the classic layout on request or when 3D fails', () => {
+      for (const data of [{ shopLayout: 'panels' }, { uh3dStatus: 'failed' }]) {
+        const host = mount(data);
+        expect(host.querySelector('[data-ar-hud-objective]'), JSON.stringify(data)).toBeNull();
+        expect(host.querySelector('details[data-ar-shop-clipboard]')).toBeNull();
+        expect(host.querySelectorAll('[data-ar-shop-station]')).toHaveLength(7);
+      }
+      expect(mount({ shopLayout: 'panels' }).querySelector('[data-ar-shop-layout="immersive"]')).not.toBeNull();
+      expect(mount({ uh3dStatus: 'failed' }).querySelector('[data-ar-shop-layout="immersive"]')).toBeNull();
+    });
+  });
 });

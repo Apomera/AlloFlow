@@ -10178,6 +10178,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return view && !view.blocked ? item.id : '';
   }
 
+  // Immersive HUD: one next objective from the same readiness checks, plus the
+  // 3D object to outline. Movement and pickup get a CTA; judgement steps do not.
+  function arShopObjective(raw) {
+    var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step];
+    var readiness = arShopReadiness(state), next = readiness.next, coach = arShopInstrumentGuide(state);
+    function label(list, id) { return (list.filter(function (x) { return (x.id || x[0]) === id; })[0] || {}); }
+    var o = { id: 'ready', title: '', detail: '', target: '', cta: null, controls: [], calc: false, handoff: false };
+    if (!task) return Object.assign(o, { id: readiness.complete ? 'complete' : 'review', title: readiness.complete ? 'Job done. Nice work.' : 'Review this saved job',
+      detail: readiness.message, cta: { type: 'clipboard', label: 'Open the clipboard' } });
+    var station = label(SHOP_STATIONS, task.station).label, tool = label(SHOP_TOOLS, task.tool)[1];
+    var id = next ? next.id : 'ready';
+    o.id = id;
+    if (id === 'lift-stop') {
+      var act = state.liftBayClear ? 'lift-reset' : 'lift-clear';
+      return Object.assign(o, { title: 'The lift stop is latched', detail: next.message, target: arShop3DToken(state, act),
+        cta: { type: 'pick', id: arShop3DToken(state, act), label: state.liftBayClear ? 'Reset the lift stop' : 'Check the bay is clear' } });
+    }
+    if (id === 'prerequisites') return Object.assign(o, { title: 'The car is not ready for this step', detail: next.message, cta: { type: 'clipboard', label: 'Check the work order' } });
+    if (id === 'tool') return Object.assign(o, { title: 'Grab the ' + tool.toLowerCase(), detail: 'It is on the tool bench at the back of the shop, with a few other kits. You need it to ' + task.label.charAt(0).toLowerCase() + task.label.slice(1) + '.',
+      target: arShop3DToken(state, 'equip-' + task.tool), cta: { type: 'tool', id: arShop3DToken(state, 'equip-' + task.tool), label: 'Pick up the ' + tool.toLowerCase() } });
+    if (id === 'station') return Object.assign(o, { title: 'Head to the ' + station.toLowerCase(), detail: 'You have the ' + tool.toLowerCase() + '. Take it to the ' + station.toLowerCase() + '.',
+      target: task.station, cta: { type: 'station', id: task.station, label: 'Walk to the ' + station.toLowerCase() } });
+    if (id === 'evidence' && coach) {
+      var kind = coach.kind;
+      o.controls = arShop3DActions(state).filter(function (a) { return a.action && a.id !== 'meter-contact' && a.id !== 'gauge-surface'; })
+        .map(function (a) {
+          var on = { 'gauge-lining': state.instrument.surface === 'lining', 'gauge-backing': state.instrument.surface === 'backing', 'meter-posts': state.instrument.contact === 'posts', 'meter-joint': state.instrument.contact === 'joint' }[a.id];
+          return { id: arShop3DToken(state, a.id), label: a.label, pressed: on };
+        });
+      if (kind === 'torque' && coach.lug !== null) o.controls.push({ id: 'shop-lug-' + coach.lug, label: 'Check fastener ' + (coach.lug + 1) });
+      if (kind === 'alignment' && task.id === 'service') o.controls = ['left', 'right'].map(function (side) { return { id: 'shop-toe-' + side, label: 'Select ' + side + ' tie rod', pressed: state.alignment.selected === side }; }).concat(o.controls);
+      var read = arShop3DToken(state, 'read');
+      // Set up first, capture last.
+      o.controls = o.controls.filter(function (c) { return c.id !== read; }).concat(o.controls.filter(function (c) { return c.id === read; }));
+      return Object.assign(o, { title: { meter: 'Test the connection', gauge: 'Measure the pad', jug: 'Measure out the oil', torque: 'Refit the wheel', alignment: 'Line up the front wheels' }[kind] || coach.title,
+        detail: coach.detail, target: coach.lug !== null ? 'shop-lug-' + coach.lug : coach.status === 'capture' ? read : '', instrument: coach });
+    }
+    // Calculation and handoff stay on screen once correct: the card must not flip
+    // mid-typing and reveal the answer. Advancing re-checks them.
+    var release = task.id === 'release', calc = task.id === 'measure' || task.id === 'refill';
+    return Object.assign(o, { title: release ? 'Tell the customer what you did' : calc ? 'Do the math, then record it' : task.label,
+      detail: release ? 'Write at least a sentence: what you found, what you changed, and how you checked it.' : calc ? 'The reading is in. ' + task.why : task.why,
+      target: arShop3DToken(state, 'task'), calc: calc, handoff: release,
+      cta: { type: 'pick', id: arShop3DToken(state, 'task'), label: release ? 'Finish the job' : 'Do it' } });
+  }
+
   function buildWorkshopScene(THREE, api) {
     var state = arShopState(api.sceneProps), scene = api.scene;
     // Preserve dark/light part separation; the shared contrast trim is uniformly white.
@@ -20837,7 +20883,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             SHOP3D.focus(id, { distance: 2.8, target: { x: -1.3, y: (shop.lift === 'locked' ? 1.58 : shop.lift === 'raised' ? 1.68 : 0) + 0.5, z: 0.65 }, immediate: true });
           } else SHOP3D.focus(id, { distance: id === 'lift' ? 5.8 : 3.7 });
         }
-        var inspectionId = arShopInspectionTarget(shop, d.shopInteraction, d.shopInspectPick);
+        var immersive = d.shopLayout !== 'panels' && SHOP3D.status() !== 'failed' && d.uh3dStatus !== 'failed';
+        var objective = arShopObjective(shop);
+        var inspectionId = arShopInspectionTarget(shop, d.shopInteraction, d.shopInspectPick) || (immersive && d.shopInteraction !== 'inspect' ? objective.target : '');
         var instrumentKind = arShopInstrumentKind(shop);
         var instrumentVisible = instrumentKind && task && shop.station === task.station && shop.tool === task.tool;
         var equipmentState = instrumentVisible ? JSON.stringify([instrumentKind, shop.instrument, shop.reading ? shop.reading.key : '']) : '';
@@ -20852,7 +20900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function calculationField(location) {
           var calc = arShopCalculation(shop);
           if (!calc) return null;
-          var id = location === 'scene' ? 'ar-shop-scene-answer' : 'ar-shop-answer', checked = d.shopCalculationCheck === calc.key, hintOpen = d.shopCalculationHint === shop.job;
+          var id = location === 'scene' ? 'ar-shop-scene-answer' : location === 'hud' ? 'ar-shop-hud-answer' : 'ar-shop-answer', checked = d.shopCalculationCheck === calc.key, hintOpen = d.shopCalculationHint === shop.job;
           var described = [checked ? id + '-check' : '', hintOpen ? id + '-hint' : ''].filter(Boolean).join(' ');
           return h('div', { 'data-ar-calculation-coach': location, style: { marginTop: 12, padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt, color: T.text } },
             h('label', { htmlFor: id, style: { display: 'block', fontSize: 13, lineHeight: 1.5, marginBottom: 6 } }, job.question + ' (' + job.unit + ')'),
@@ -20933,6 +20981,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var target = section === 'equipment' ? root.querySelector('[data-ar-shop-instrument]') || root.querySelector('#ar-shop-tool') : root.querySelector(selectors[section]);
           if (!target) target = root.querySelector('#ar-shop-work-order');
           if (!target) return;
+          var clip = target.closest('details[data-ar-shop-clipboard]');
+          if (clip) clip.open = true;
           target.focus({ preventScroll: true });
           target.scrollIntoView({ block: 'start', behavior: 'auto' });
         }
@@ -21477,6 +21527,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var link = document.createElement('a'); link.href = url; link.download = 'auto-workshop-' + job.id + '.txt'; link.click();
           setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
         }
+        // Glide rather than cut, so moving between stations reads as walking the shop.
+        function walkTo(id) {
+          if (!SHOP3D.focus || SHOP3D.status() === 'failed') return;
+          if (id === 'oil' || id === 'exhaust') { stationCamera(id); return; }
+          var opts = { duration: 1100 }, here = task && task.station === id;
+          if (here && (instrumentKind === 'meter' || instrumentKind === 'jug')) { opts.distance = 2.6; opts.target = { x: -2.4, y: 1.25, z: 1.0 }; }
+          else if (here && instrumentKind === 'alignment') { opts.distance = 5.8; opts.target = { x: -1.6, y: 0.65, z: 0 }; }
+          else { var v = arShopControlView(shop, id); if (v) { opts.distance = v.distance; if (v.target) opts.target = v.target; } }
+          SHOP3D.focus(id, opts);
+        }
+        function hudGo(cta) {
+          if (!cta) return;
+          if (cta.type === 'clipboard') { workshopJump('order'); return; }
+          if (cta.type === 'tool') { walkTo('tools'); pick(cta.id); return; }
+          if (cta.type === 'station') { pick(cta.id); walkTo(cta.id); return; }
+          pick(cta.id);
+        }
+        function immersiveStage() {
+          var o = objective, hc = isContrast, n = job.tasks.length;
+          var glass = { background: hc ? '#000' : 'rgba(8,15,28,.88)', color: '#f1f5f9', border: '1px solid ' + (hc ? '#fff' : 'rgba(148,163,184,.35)'), borderRadius: 12,
+            boxShadow: hc ? 'none' : '0 10px 30px rgba(0,0,0,.35)', backdropFilter: 'blur(6px)' };
+          function chip(label, fn, attrs, primary) {
+            return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn, className: primary ? 'ar-hud-cta' : 'ar-hud-chip' }, attrs || {}), label);
+          }
+          var held = (SHOP_TOOLS.filter(function (t) { return t[0] === shop.tool; })[0] || ['', 'Nothing'])[1];
+          var ins = o.instrument;
+          return h('div', { id: 'ar-shop-bay', tabIndex: -1, className: 'ar-shop-stage', 'data-ar-shop-immersive': o.id, role: 'region', 'aria-label': __alloT('stem.autorepair.immersive_workshop','Immersive workshop') },
+            bayViewport({ viewer: SHOP3D, height: '100%', selected: shop.station, selectedLabel: station.label,
+              label: 'Full vehicle in a mechanic workshop', failText: '3D view unavailable. Open the clipboard below; every task remains available.', loadText: 'Opening the shop…' }),
+            h('section', { className: 'ar-hud ar-hud-ticket', 'aria-label': __alloT('stem.autorepair.job_ticket','Job ticket'), style: glass },
+              h('div', { className: 'ar-hud-kicker' }, 'Work order'),
+              h('label', { htmlFor: 'ar-shop-hud-job', className: 'ar-sr-only' }, 'Service job'),
+              h('select', { id: 'ar-shop-hud-job', value: job.id, onChange: function (e) { selectJob(e.target.value, false); } }, SHOP_JOBS.map(function (j) { return h('option', { key: j.id, value: j.id }, j.title); })),
+              h('p', { className: 'ar-hud-concern' }, '“' + job.concern + '”'),
+              h('ol', { className: 'ar-hud-pips', 'aria-label': 'Step ' + Math.min(shop.step + 1, n) + ' of ' + n }, job.tasks.map(function (t, i) {
+                return h('li', { key: t.id + i, title: (i + 1) + '. ' + t.label, 'data-state': i < shop.step ? 'done' : i === shop.step ? 'now' : 'todo' });
+              })),
+              h('div', { className: 'ar-hud-status' }, task ? 'Step ' + (shop.step + 1) + ' of ' + n + ' · ' + task.label : completion.label)),
+            h('section', { className: 'ar-hud ar-hud-objective', 'data-ar-hud-objective': o.id, 'aria-labelledby': 'ar-hud-title', style: glass },
+              h('div', { className: 'ar-hud-kicker' }, task ? 'Next · ' + (SHOP_STATIONS.filter(function (s) { return s.id === task.station; })[0].label) : 'Finished'),
+              h('h2', { id: 'ar-hud-title' }, o.title),
+              o.detail && h('p', { className: 'ar-hud-detail' }, o.detail),
+              ins && h('div', { className: 'ar-hud-readout', 'data-ar-hud-readout': ins.captured ? 'valid' : 'pending' },
+                h('span', null, ins.summary),
+                ins.capture && h('strong', null, ins.capture)),
+              o.controls.length > 0 && h('div', { className: 'ar-hud-row', role: 'group', 'aria-label': __alloT('stem.autorepair.equipment_controls','Equipment controls') }, o.controls.map(function (c) {
+                return chip(c.label, function () { pick(c.id); }, { key: c.id, 'data-ar-hud-control': c.id, 'aria-pressed': c.pressed === undefined ? undefined : c.pressed });
+              })),
+              o.calc && calculationField('hud'),
+              o.handoff && h('div', null, h('label', { htmlFor: 'ar-shop-hud-notes', className: 'ar-sr-only' }, 'Customer handoff'),
+                h('textarea', { id: 'ar-shop-hud-notes', rows: 3, maxLength: 2000, value: shop.notes, placeholder: 'I found… I replaced/adjusted… I checked it by…', onChange: function (e) { change({ notes: e.target.value }); } })),
+              shop.feedback && h('p', { className: 'ar-hud-feedback', role: 'status', 'aria-live': 'polite' }, shop.feedback),
+              h('div', { className: 'ar-hud-row' },
+                o.cta && chip(o.cta.label, function () { hudGo(o.cta); }, { 'data-ar-hud-cta': o.cta.type }, true)),
+              o.target && h('p', { className: 'ar-hud-hint' }, 'Or click the outlined object in the shop.')),
+            h('section', { className: 'ar-hud ar-hud-belt', 'aria-label': __alloT('stem.autorepair.tool_belt','Tool bench'), style: glass },
+              h('div', { className: 'ar-hud-kicker' }, 'In hand: ' + held),
+              h('div', { className: 'ar-hud-row' }, arShop3DTools(shop).map(function (tool) {
+                return chip(tool[1], function () { walkTo('tools'); pick(arShop3DToken(shop, 'equip-' + tool[0])); }, { key: tool[0], 'data-ar-hud-tool': tool[0], 'aria-pressed': shop.tool === tool[0] });
+              })),
+              h('div', { className: 'ar-hud-row ar-hud-links' },
+                chip('Whole shop', function () { SHOP3D.reset(); }, { 'data-ar-hud-home': true }),
+                chip('Clipboard', function () { workshopJump('order'); }, { 'data-ar-hud-clipboard': true }),
+                chip('Classic layout', function () { upd('shopLayout', 'panels'); }, { 'data-ar-shop-layout': 'panels' }))));
+        }
+        var immersiveCss = '.ar-shop-stage{position:relative;height:clamp(520px,76vh,820px);margin:0 0 14px}' +
+          '.ar-hud{position:absolute;z-index:12;padding:12px 14px;font-size:13px;line-height:1.5;box-sizing:border-box}' +
+          '.ar-hud-ticket{top:12px;left:12px;width:min(330px,42%)}.ar-hud-ticket select{width:100%;min-height:36px;margin:4px 0;padding:4px 8px;border-radius:8px;background:#0f1d33;color:#f1f5f9;border:1px solid #475569;font:inherit;font-weight:700}' +
+          '.ar-hud-concern{margin:4px 0 8px;font-style:italic;color:#cbd5e1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}' +
+          '.ar-hud-pips{display:flex;gap:3px;list-style:none;margin:0;padding:0}.ar-hud-pips li{flex:1;height:6px;border-radius:3px;background:#334155}.ar-hud-pips li[data-state=done]{background:#34d399}.ar-hud-pips li[data-state=now]{background:#67e8f9}' +
+          '.ar-hud-status{margin-top:6px;font-size:12px;color:#a5f3fc}' +
+          '.ar-hud-links{border-top:1px solid #334155;padding-top:8px}.ar-hud-belt .ar-hud-links .ar-hud-chip{flex:1 1 auto;min-height:32px;padding:4px 8px;font-size:11.5px;text-align:center}' +
+          '.ar-hud-objective{left:50%;bottom:14px;transform:translateX(-50%);width:min(560px,calc(100% - 24px))}' +
+          '.ar-hud-objective h2{margin:2px 0 4px;font-size:19px;line-height:1.3}.ar-hud-detail{margin:0 0 8px;color:#cbd5e1}' +
+          '.ar-hud-kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;font-weight:700}' +
+          '.ar-hud-readout{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 10px;margin:6px 0;border-radius:8px;background:#06121f;color:#a5f3fc;font-size:12px}.ar-hud-readout strong{font:700 20px ui-monospace,monospace;white-space:nowrap}' +
+          '.ar-hud-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}' +
+          '.ar-hud-chip,.ar-hud-cta{min-height:40px;padding:8px 12px;border-radius:9px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid #64748b;background:#16263d;color:#e2e8f0}' +
+          '.ar-hud-chip[aria-pressed=true]{border-color:#34d399;background:#0f3b33}.ar-hud-cta{background:#0891b2;border-color:#67e8f9;color:#fff;font-size:14px;font-weight:800;padding:9px 18px}' +
+          '.ar-hud-chip:focus-visible,.ar-hud-cta:focus-visible{outline:3px solid #fde047;outline-offset:2px}' +
+          '.ar-hud-feedback{margin:8px 0 0;padding:6px 10px;border-left:3px solid #fbbf24;background:rgba(251,191,36,.08);font-size:12.5px}' +
+          '.ar-hud-hint{margin:6px 0 0;font-size:11.5px;color:#94a3b8}' +
+          '.ar-hud-objective textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:8px;border-radius:8px;font:inherit;background:#f8fafc;color:#0f172a}' +
+          '.ar-hud-objective [data-ar-calculation-coach]{margin-top:6px!important;padding:8px!important}' +
+          '.ar-hud-belt{right:12px;top:52px;width:min(220px,30%)}.ar-hud-belt .ar-hud-chip{flex:1 1 100%;text-align:left}' +
+          '.ar-sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}' +
+          '.ar-shop-clipboard>summary{cursor:pointer;min-height:44px;padding:12px 14px;font-weight:800;border:1px solid var(--shop-border);border-radius:10px;background:var(--shop-card)}' +
+          '@media(max-width:760px){.ar-shop-stage{height:auto;display:flex;flex-direction:column}.ar-hud-objective{order:1}.ar-hud-ticket{order:2}.ar-hud-belt{order:3}.ar-shop-stage .ar-bay-viewport{height:52vh!important;min-height:300px}.ar-hud-objective,.ar-hud-belt,.ar-hud-ticket{position:static;transform:none;width:auto;margin-top:8px}}' +
+          '@media(prefers-reduced-motion:reduce){.ar-hud{backdrop-filter:none!important}}';
         return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.full_mechanic_workshop','Full mechanic workshop'), 'data-ar-workshop': true,
           style: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', padding: 'clamp(12px,2.5vw,24px)', maxWidth: 1360, margin: '0 auto', background: T.bg, color: T.text, borderRadius: 16 } },
           h('style', null,
@@ -21492,8 +21631,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             '.ar-shop-card label{display:block;font-size:13px;font-weight:700;margin:14px 0 7px}' +
             '.ar-shop-card button{white-space:normal}.ar-shop-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}' +
             '@media(max-width:850px){.ar-shop-layout{grid-template-columns:minmax(0,1fr)}.ar-shop-stations{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-shop-viewport .ar-bay-viewport{height:340px!important}}' +
-            '@media(forced-colors:active){.ar-shop-card,.ar-shop-metrics span{border-color:CanvasText}.ar-shop-card progress{forced-color-adjust:auto}}'),
+            '@media(forced-colors:active){.ar-shop-card,.ar-shop-metrics span{border-color:CanvasText}.ar-shop-card progress{forced-color-adjust:auto}}' + immersiveCss),
           backBar('Full mechanic workshop / 3D'),
+          immersive && immersiveStage(),
+          h(immersive ? 'details' : 'div', { className: immersive ? 'ar-shop-clipboard' : undefined, 'data-ar-shop-clipboard': immersive || undefined, style: { '--shop-border': T.border, '--shop-card': T.card } },
+          immersive ? h('summary', null, 'Clipboard: work order, service sheet, records and every control') :
+            d.shopLayout === 'panels' && SHOP3D.status() !== 'failed' && d.uh3dStatus !== 'failed' && h('div', { className: 'ar-shop-actions', style: { marginTop: 0 } }, control('Switch to immersive view', function () { upd('shopLayout', 'immersive'); }, { 'data-ar-shop-layout': 'immersive' })),
           h('p', { style: { margin: '4px 0 14px', lineHeight: 1.6, fontSize: 14, color: T.muted } },
             'A whole vehicle. A real sequence of decisions. Move between the service desk, lift and work stations to complete a training work order.'),
           h('div', { className: 'ar-shop-metrics', 'aria-label': __alloT('stem.autorepair.workshop_status','Workshop status') },
@@ -21503,8 +21646,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           workshopShortcuts(),
           h('div', { className: 'ar-shop-layout', style: { '--shop-border': T.border, '--shop-card': T.card, '--shop-input': T.cardAlt } },
             h('section', { 'aria-label': __alloT('stem.autorepair.workshop_scene_and_stations','Workshop scene and stations'), style: { minWidth: 0 } },
-              h('div', { id: 'ar-shop-bay', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.autorepair.3d_workshop_bay_and_camera_controls','3D workshop bay and camera controls'), className: 'ar-bay-viewer-frame ar-shop-viewport' },
-                bayViewport({ viewer: SHOP3D, height: 470, selected: shop.station, selectedLabel: station.label,
+              h('div', { id: immersive ? undefined : 'ar-shop-bay', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.autorepair.3d_workshop_bay_and_camera_controls','3D workshop bay and camera controls'), className: 'ar-bay-viewer-frame ar-shop-viewport' },
+                !immersive && bayViewport({ viewer: SHOP3D, height: 470, selected: shop.station, selectedLabel: station.label,
                   label: 'Full vehicle in a mechanic workshop', failText: '3D view unavailable. Use the station buttons and work order below; all tasks and findings remain available.', loadText: 'Loading the full mechanic workshop…' }),
                 workshopResponsePanel(),
                 controlInspector(),
@@ -21579,7 +21722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 control('Restart this job', function () { requestAttempt('restart'); }, { 'data-ar-attempt-open': 'restart' })),
               attemptPanel(),
               h('p', { style: { color: T.muted, fontSize: 12 } }, 'Each job keeps its own progress while you explore other activities. Training steps summarize supervised work; they are not a complete repair manual.'),
-              h('a', { href: 'https://www.autolift.org/be-a-smart-auto-lift-user/', target: '_blank', rel: 'noopener noreferrer', style: { color: T.link, fontSize: 12 } }, 'Lift training guidance / Automotive Lift Institute (opens in a new tab)'))),
+              h('a', { href: 'https://www.autolift.org/be-a-smart-auto-lift-user/', target: '_blank', rel: 'noopener noreferrer', style: { color: T.link, fontSize: 12 } }, 'Lift training guidance / Automotive Lift Institute (opens in a new tab)')))),
           disclaimerFooter());
       }
 
