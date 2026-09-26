@@ -30,7 +30,10 @@ describe('Architecture Studio renderer ownership', () => {
       expect(source).toContain("if (state === 'recovering') fail('context-lost')");
       expect(source).toContain('var generation = ++mountGeneration');
       expect(source).toContain('generation !== mountGeneration || canvasEl !== el');
-      expect(source).toContain('submit: function (m) { pending = m; scheduleFrame(); }');
+      const submitBody = source.slice(source.indexOf('submit: function (m) {'), source.indexOf('getView: function ()'));
+      expect(submitBody).toContain('pending = m;');
+      expect(submitBody).toContain('scheduleFrame();');
+      expect(submitBody).not.toContain('renderer.render');
       expect(source).toContain('function scheduleFrame()');
       expect(source).not.toContain('rafId = requestAnimationFrame(frame);\n      if (state !==');
     }
@@ -49,13 +52,16 @@ describe('Architecture Studio renderer ownership', () => {
     for (const file of archBundles) {
       const source = fs.readFileSync(file, 'utf8');
       const resizeStart = source.indexOf('function resize()');
-      const frameStart = source.indexOf('function frame()', resizeStart);
+      const frameStart = source.indexOf('function frame(', resizeStart);
       expect(resizeStart).toBeGreaterThan(-1);
       expect(frameStart).toBeGreaterThan(resizeStart);
 
       const resizeBody = source.slice(resizeStart, frameStart);
       expect(resizeBody).toContain('camera.aspect = w / hh;');
-      expect(resizeBody).toContain("appliedCamSig = '';");
+      expect(resizeBody).toContain('invalidate();');
+      // A dirty frame always re-applies the camera, so the new aspect refits.
+      const frameBody = source.slice(frameStart, source.indexOf('function handleContextLost', frameStart));
+      expect(frameBody).toContain('if (moving || dirty) { applyCam();');
     }
   });
 

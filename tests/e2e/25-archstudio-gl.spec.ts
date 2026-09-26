@@ -972,6 +972,328 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect(gl.contextLost).toBe(false);
   });
 
+  // Navigation used to write tool state on every pointermove and wheel tick,
+  // re-rendering the whole studio per event; the wheel handler was passive,
+  // so zooming also scrolled the page; and every placed block re-centred the
+  // camera. These pin the replacements.
+  const pointer = async (page: Pg, steps: Array<[string, number, number]>, init: Record<string, unknown> = {}) =>
+    page.evaluate(([list, extra]) => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const r = c.getBoundingClientRect();
+      const seen: unknown[] = [];
+      for (const [type, x, y] of list as Array<[string, number, number]>) {
+        c.dispatchEvent(new PointerEvent(type, Object.assign({ clientX: r.left + x, clientY: r.top + y, bubbles: true, cancelable: true, pointerId: 1 }, extra)));
+        seen.push((window as any).__bucket().rot3d);
+      }
+      return seen;
+    }, [steps, init] as const);
+  const settle = (page: Pg) => page.waitForTimeout(700);
+  const camera = async (page: Pg) => (await page.evaluate(() => (window as any).__gl())).camera;
+
+  test('drag orbits live and saves the camera once, on release', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    const seen = await pointer(page, [['pointerdown', 300, 140], ['pointermove', 340, 140], ['pointermove', 380, 150], ['pointermove', 420, 150]]);
+    expect(seen.every((v) => v === undefined)).toBe(true);
+    await page.waitForTimeout(200);
+    const mid = await page.evaluate(() => (window as any).__gl().view);
+    expect(mid).not.toBeNull();
+    await pointer(page, [['pointerup', 420, 150]]);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.rotY)).toBeCloseTo(-38 + 120 * 0.4, 1);
+    expect((await page.evaluate(() => (window as any).__bucket().rot3d)).rotX).toBeCloseTo(-24 + 4, 1);
+  });
+
+  test('wheel zooms toward the pointer without scrolling the page and saves once idle', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    const result = await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const r = c.getBoundingClientRect();
+      const prevented: boolean[] = [];
+      for (let i = 0; i < 4; i++) {
+        const ev = new WheelEvent('wheel', { deltaY: -100, clientX: r.left + r.width * 0.8, clientY: r.top + r.height * 0.5, bubbles: true, cancelable: true });
+        c.dispatchEvent(ev);
+        prevented.push(ev.defaultPrevented);
+      }
+      return { prevented, saved: (window as any).__bucket().rot3d };
+    });
+    expect(result.prevented).toEqual([true, true, true, true]);
+    expect(result.saved).toBeUndefined();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.scale), { timeout: 3000 }).toBeCloseTo(Math.exp(0.6), 1);
+    const saved = await page.evaluate(() => (window as any).__bucket().rot3d);
+    // Zooming at a point right of centre moves the view toward it.
+    expect(Math.abs(saved.panX) + Math.abs(saved.panZ)).toBeGreaterThan(0.2);
+    const small = await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      c.dispatchEvent(new WheelEvent('wheel', { deltaY: 4, bubbles: true, cancelable: true }));
+      return (window as any).__gl().view.scale;
+    });
+    // A trackpad's small delta makes a small change, not a full step.
+    expect(small).toBeGreaterThan(saved.scale * 0.98);
+    expect(small).toBeLessThan(saved.scale);
+  });
+
+  test('right-drag and Shift+arrows pan without orbiting, and Reset recentres', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    await pointer(page, [['pointerdown', 300, 140], ['pointermove', 360, 170], ['pointerup', 360, 170]], { button: 2 });
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.panX ?? 0)).not.toBe(0);
+    const panned = await page.evaluate(() => (window as any).__bucket().rot3d);
+    expect(panned).toMatchObject({ rotX: -24, rotY: -38, scale: 1 });
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(tower().length);
+
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    await canvas.focus();
+    await canvas.press('Shift+ArrowRight');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d.panX)).not.toBe(panned.panX);
+    expect((await page.evaluate(() => (window as any).__bucket().rot3d)).rotY).toBe(-38);
+
+    await page.getByRole('button', { name: 'Reset three-dimensional view' }).click();
+    expect(await page.evaluate(() => (window as any).__bucket().rot3d)).toMatchObject({ panX: 0, panY: 0, panZ: 0, scale: 1 });
+  });
+
+  test('two-finger touch pinches to zoom', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const r = c.getBoundingClientRect();
+      const t = (type: string, id: number, x: number) => c.dispatchEvent(new PointerEvent(type, { clientX: r.left + x, clientY: r.top + 140, bubbles: true, cancelable: true, pointerId: id, pointerType: 'touch' }));
+      t('pointerdown', 11, 300); t('pointerdown', 12, 400);
+      t('pointermove', 11, 250); t('pointermove', 12, 450);
+      t('pointerup', 11, 250); t('pointerup', 12, 450);
+    });
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.scale)).toBeCloseTo(2, 1);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(tower().length);
+  });
+
+  test('placing one block keeps the camera still, and a bulk change refits', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), undoStack: [[]] });
+    await settle(page);
+    const before = await camera(page);
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    // Find open ground beyond the build, so the new block grows its bounds.
+    const spot = await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const r = c.getBoundingClientRect();
+      for (let fy = 0.2; fy < 0.95; fy += 0.05) for (let fx = 0.05; fx < 0.95; fx += 0.05) {
+        const x = r.left + r.width * fx, y = r.top + r.height * fy;
+        const hit = (window as any).__alloArchGL.pick(x, y);
+        if (hit && hit.kind === 'ground' && hit.place.x >= 5 && document.elementFromPoint(x, y) === c) return { x, y };
+      }
+      return null;
+    });
+    expect(spot).not.toBeNull();
+    await page.mouse.click(spot!.x, spot!.y);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(tower().length + 1);
+    expect(Math.max(...(await page.evaluate(() => (window as any).__bucket().blocks.map((b: any) => b.x))))).toBeGreaterThanOrEqual(5);
+    await settle(page);
+    const after = await camera(page);
+    expect(after.x).toBeCloseTo(before.x, 3);
+    expect(after.y).toBeCloseTo(before.y, 3);
+    expect(after.z).toBeCloseTo(before.z, 3);
+
+    await canvas.focus();
+    await canvas.press('Control+z');
+    await canvas.press('Control+z');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(0);
+    await settle(page);
+    const refit = await page.evaluate(() => (window as any).__gl().view.frame);
+    expect(refit[0]).toBe(0);
+    expect(refit[2]).toBe(0);
+  });
+
+  test('F centres the selected block and fits the build when nothing is selected', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), selectedBlockKey: '3,0,0' });
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    await canvas.focus();
+    await canvas.press('f');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.scale)).toBe(2);
+    const view = await page.evaluate(() => (window as any).__gl().view);
+    expect(view.frame[0] + view.panX).toBeCloseTo(3, 2);
+    expect(view.frame[2] + view.panZ).toBeCloseTo(0, 2);
+  });
+
+  test('Blueprint animates to a top view and dragging it pans instead of orbiting', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), blueprintView: true });
+    await settle(page);
+    const top = await camera(page);
+    const view = await page.evaluate(() => (window as any).__gl().view);
+    expect(view.bp).toBe(1);
+    expect(top.y - (view.frame[1] + view.panY)).toBeGreaterThan(5);
+    await pointer(page, [['pointerdown', 300, 140], ['pointermove', 380, 140], ['pointerup', 380, 140]]);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.panX ?? 0)).not.toBe(0);
+    expect((await page.evaluate(() => (window as any).__bucket().rot3d)).rotY).toBe(-38);
+  });
+
+  test('view presets turn the short way round and the compass follows the live camera', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), rot3d: { rotX: -24, rotY: 700, scale: 1.5 } });
+    const nav = page.getByRole('group', { name: 'View presets' });
+    const compassX = () => page.evaluate(() => {
+      const line = document.querySelector('[data-arch-compass] [data-axis="x"]')!;
+      return { x: +line.getAttribute('x2')!, y: +line.getAttribute('y2')! };
+    });
+    await nav.getByRole('button', { name: /^Front view/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d)).toMatchObject({ rotX: 0, rotY: 720, scale: 1.5 });
+    await expect(nav.getByRole('button', { name: /^Front view/ })).toHaveAttribute('aria-pressed', 'true');
+    await settle(page);
+    // Looking along Z, +X points straight right.
+    expect((await compassX()).x).toBeCloseTo(15, 0);
+    expect((await compassX()).y).toBeCloseTo(0, 0);
+
+    await nav.getByRole('button', { name: /^Side view/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d.rotY)).toBe(630);
+    await settle(page);
+    // Looking along X, the X axis points at the viewer and shrinks to a dot.
+    expect(Math.hypot((await compassX()).x, (await compassX()).y)).toBeLessThan(1);
+
+    await nav.getByRole('button', { name: /^Top view/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d.rotX)).toBe(-88);
+    await nav.getByRole('button', { name: /^Three-quarter view/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d)).toMatchObject({ rotX: -24, rotY: 682 });
+  });
+
+  test('the zoom readout tracks a wheel gesture live and the fit button refits', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    await expect(page.locator('[data-arch-zoom-readout]')).toHaveText('100%');
+    await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      for (let i = 0; i < 3; i++) c.dispatchEvent(new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true }));
+    });
+    // Before the save lands, the readout already shows the live zoom.
+    await page.waitForTimeout(150);
+    expect(await page.evaluate(() => (window as any).__bucket().rot3d)).toBeUndefined();
+    expect(parseInt(await page.locator('[data-arch-zoom-readout]').textContent() || '0', 10)).toBeGreaterThan(110);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.scale)).toBeCloseTo(Math.exp(0.45), 1);
+    await page.getByRole('button', { name: 'Fit the whole build in view (F)' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.scale)).toBe(1);
+    await settle(page);
+    await expect(page.locator('[data-arch-zoom-readout]')).toHaveText('100%');
+  });
+
+  test('dragging shows a grab cursor and restores the tool cursor on release', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    const cursor = () => page.evaluate(() => (document.querySelector('canvas[data-arch-gl="true"]') as HTMLElement).style.cursor);
+    const before = await cursor();
+    await pointer(page, [['pointerdown', 300, 140], ['pointermove', 360, 140]]);
+    expect(await cursor()).toBe('grabbing');
+    await pointer(page, [['pointerup', 360, 140]]);
+    expect(await cursor()).toBe(before);
+    await pointer(page, [['pointerdown', 300, 140], ['pointermove', 360, 140]], { button: 2 });
+    expect(await cursor()).toBe('move');
+    await pointer(page, [['pointerup', 360, 140]], { button: 2 });
+    expect(await cursor()).toBe(before);
+  });
+
+  test('fullscreen gives the 3D view the whole screen and keeps the camera and build', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await mount3d(page, { blocks: tower(), rot3d: { rotX: -30, rotY: 10, scale: 1.4 } });
+    const before = (await page.evaluate(() => (window as any).__gl())).canvas;
+    const button = page.getByRole('button', { name: 'View the 3D model fullscreen' });
+    await button.click();
+    await expect(page.getByRole('button', { name: 'Exit fullscreen 3D view (Escape)' })).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(async () => (await page.evaluate(() => (window as any).__gl())).canvas.h).toBeGreaterThan(before.h + 250);
+    expect(await page.locator('[data-arch-view-nav]').isVisible()).toBe(true);
+    // Escape is the browser's own exit from real fullscreen, which synthetic
+    // key presses do not reach, so leave through the same button.
+    await page.getByRole('button', { name: 'Exit fullscreen 3D view (Escape)' }).click();
+    await expect(page.getByRole('button', { name: 'View the 3D model fullscreen' })).toHaveAttribute('aria-pressed', 'false');
+    await expect.poll(async () => (await page.evaluate(() => (window as any).__gl())).canvas.h).toBe(before.h);
+    expect(await page.evaluate(() => (window as any).__bucket().rot3d)).toMatchObject({ rotX: -30, rotY: 10, scale: 1.4 });
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(tower().length);
+    expect((await page.evaluate(() => (window as any).__gl())).state).toBe('ready');
+  });
+
+  test('tilting stops just below eye level instead of going under the ground', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    await pointer(page, [['pointerdown', 300, 60], ['pointermove', 300, 400], ['pointerup', 300, 400]]);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.rotX)).toBe(10);
+    for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Tilt view down' }).click();
+    expect((await page.evaluate(() => (window as any).__bucket().rot3d)).rotX).toBe(10);
+    await settle(page);
+    const view = await page.evaluate(() => (window as any).__gl());
+    expect(view.camera.y).toBeGreaterThan(0);
+  });
+
+  test('orbiting turns about the model point under the cursor, which stays put', async ({ page }) => {
+    const slab: Array<Record<string, unknown>> = [];
+    for (let x = 0; x < 8; x++) for (let z = 0; z < 6; z++) slab.push({ x, y: 0, z, shape: 'block', material: 'stone' });
+    await mount3d(page, { blocks: slab });
+    await settle(page);
+    // A top face well away from the centre of the view.
+    const start = await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const r = c.getBoundingClientRect();
+      for (let fx = 0.2; fx < 0.45; fx += 0.02) for (let fy = 0.35; fy < 0.9; fy += 0.02) {
+        const x = r.left + r.width * fx, y = r.top + r.height * fy;
+        const hit = (window as any).__alloArchGL.pick(x, y);
+        if (hit && hit.kind === 'block' && hit.place.y === 1) return { x: x - r.left, y: y - r.top, block: hit.block };
+      }
+      return null;
+    });
+    expect(start).not.toBeNull();
+    await pointer(page, [['pointerdown', start!.x, start!.y], ['pointermove', start!.x + 50, start!.y]]);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().pivotVisible)).toBe(true);
+    await pointer(page, [['pointermove', start!.x + 100, start!.y], ['pointerup', start!.x + 100, start!.y]]);
+    await settle(page);
+    expect(await page.evaluate(() => (window as any).__gl().pivotVisible)).toBe(false);
+    const saved = await page.evaluate(() => (window as any).__bucket().rot3d);
+    expect(saved.rotY).toBeCloseTo(-38 + 40, 1);
+    expect(Math.abs(saved.panX) + Math.abs(saved.panZ)).toBeGreaterThan(0.3);
+    const again = await page.evaluate((s) => {
+      const r = (document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement).getBoundingClientRect();
+      return (window as any).__alloArchGL.pick(r.left + s.x, r.top + s.y);
+    }, start!);
+    expect(again.block).toEqual(start!.block);
+
+    // Starting in empty sky keeps the old behaviour: turn about the view centre.
+    await page.getByRole('button', { name: 'Reset three-dimensional view' }).click();
+    await settle(page);
+    await pointer(page, [['pointerdown', 20, 12], ['pointermove', 80, 12], ['pointerup', 80, 12]]);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d.rotY)).toBeCloseTo(-38 + 24, 1);
+    expect(await page.evaluate(() => (window as any).__bucket().rot3d)).toMatchObject({ panX: 0, panY: 0, panZ: 0 });
+  });
+
+  test('draws non-cube objects in a few instanced batches and keeps rotated faces pickable', async ({ page }) => {
+    const blocks: Array<Record<string, unknown>> = [];
+    for (let x = 0; x < 6; x++) for (let z = 0; z < 6; z++) {
+      blocks.push({ x: x * 2, y: 0, z: z * 2, shape: (x + z) % 2 ? 'ramp' : 'column', material: 'stone', rotation: 90 * ((x + 2 * z) % 4) });
+    }
+    await mount3d(page, { blocks });
+    const gl = await page.evaluate(() => (window as any).__gl());
+    expect(gl.customShapeCount).toBe(36);
+    expect(gl.customDrawCalls).toBe(2);
+    expect(gl.blockCount).toBe(36);
+    // Every side-face hit must place on the side that was clicked, which
+    // needs each instance's own rotation applied to the face normal.
+    const checked = await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const r = c.getBoundingClientRect();
+      let sides = 0, wrong = 0;
+      for (let fx = 0.05; fx < 0.95; fx += 0.01) for (let fy = 0.05; fy < 0.95; fy += 0.02) {
+        const hit = (window as any).__alloArchGL.pick(r.left + r.width * fx, r.top + r.height * fy);
+        if (!hit || hit.kind !== 'block' || hit.place.y !== hit.block.y) continue;
+        const dx = hit.place.x - hit.block.x, dz = hit.place.z - hit.block.z;
+        const px = hit.point.x - hit.block.x, pz = hit.point.z - hit.block.z;
+        if (Math.max(Math.abs(px), Math.abs(pz)) < 0.44) continue;
+        sides++;
+        if (Math.abs(px) > Math.abs(pz) ? dx !== Math.sign(px) || dz !== 0 : dz !== Math.sign(pz) || dx !== 0) wrong++;
+      }
+      return { sides, wrong };
+    });
+    expect(checked.sides).toBeGreaterThan(20);
+    expect(checked.wrong).toBe(0);
+  });
+
+  test('casts soft shadows, and skips them on very large builds', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    expect((await page.evaluate(() => (window as any).__gl())).shadows).toBe(true);
+    await page.evaluate(() => (window as any).__destroy());
+    const big: Array<Record<string, unknown>> = [];
+    for (let x = 0; x < 40; x++) for (let z = 0; z < 40; z++) for (let y = 0; y < 2; y++) big.push({ x, y, z, shape: 'block', material: 'stone' });
+    await mount3d(page, { blocks: big });
+    const gl = await page.evaluate(() => (window as any).__gl());
+    expect(gl.blockCount).toBe(3200);
+    expect(gl.shadows).toBe(false);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
   test('adding blocks does not remount the canvas', async ({ page }) => {
     await mount3d(page, { blocks: tower() });
     for (let i = 0; i < 3; i++) {

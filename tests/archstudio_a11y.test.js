@@ -86,7 +86,8 @@ describe('ArchStudio accessibility parity', () => {
       const source = fs.readFileSync(file, 'utf8');
       expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_three_dimensional_camera_controls', 'Three-dimensional camera controls'");
       for (const label of ['Rotate view left', 'Rotate view right', 'Tilt view up', 'Tilt view down', 'Zoom in', 'Zoom out', 'Reset three-dimensional view']) {
-        expect(source).toContain(`cameraBtn('${label}'`);
+        // Bare, or wrapped in t() with the same English fallback.
+        expect(source).toMatch(new RegExp(`cameraBtn\\((?:t\\('stem\\.archstudio\\.[a-z0-9_]+', )?'${label}'`));
       }
       expect(source).toContain("ArrowLeft: 'left'");
       expect(source).toContain("Home: 'reset'");
