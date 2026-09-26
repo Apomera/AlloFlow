@@ -27388,6 +27388,8 @@
       "quotes_from_roger_tory_peterson_john_m": "Quotes from Roger Tory Peterson, John Muir, Rachel Carson, Emily Dickinson, Mary Oliver + more. Birding wisdom across generations.",
       "soon": "Soon",
       "birdlab_hero_illustration_sky_with_fly": "BirdLab hero illustration: sky with flying birds over Maine pine silhouettes",
+      "a11y_iconic_scene": "{value1} in its Maine setting",
+      "a11y_wing_planform": "Wing planform: span {value1} units, chord {value2}, {value3} tips; flight style {value4}",
       "birdlab": "🪶 BirdLab",
       "i_spy_ornithology_real_movement_real_f": "I-Spy ornithology. Real movement, real field marks, real Cornell Lab science.",
       "today_s_bird": "🪶 Today's bird",
