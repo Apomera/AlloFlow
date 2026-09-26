@@ -872,3 +872,15 @@ Pick the work. Pick it carefully. Do it well.
 *Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
 
 ---
+
+## [auto-draft] Session fc3ea5de — 2026-09-26
+
+**Turns**: 206 user / 402 assistant
+
+**Session opened with**: please do a deep analysis of the ecosystem tool and why the 3d visuals don't seem to work well, performance, stutter, lack of realistic actions and behaviors (it should operate more like a real time experience if that's possible). It could be that the logic is also faulty. Please do a deep improveme...
+
+**Last assistant turn closed with**: The full browser test run caught one real bug in the new work: the breathing effect lifted fox and rabbit paws off the ground by about 1 mm. It's fixed and pushed to [Apomera/AlloFlow#11](https://github.com/Apomera/AlloFlow/pull/11) as `c0adde7b`. - **Full run on the previous commit (`a3810f47`):**...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
