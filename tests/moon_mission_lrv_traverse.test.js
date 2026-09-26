@@ -160,7 +160,7 @@ describe('Moon Mission optional LRV traverse', () => {
   it('uses a shared analytic vertex generator and exact allocation-free mesh interpolation for hot probes', () => {
     expect(source).toContain('var _lunarTerrainHeightAt = function(worldX, worldZ)');
     expect(source).toContain('tPos[vi + 2] = _lunarTerrainHeightAt(px, -py)');
-    expect(source).toContain('var _lunarTerrainGrid = new Float32Array(101 * 101)');
+    expect(source).toContain('var _lunarTerrainGrid = new Float32Array(_LUNAR_N * _LUNAR_N)');
     expect(source).toContain('_lunarTerrainGrid[vi / 3] = tPos[vi + 2]');
     const runtimeSampler = source.match(
       /var _terrainHeightAt = function\(x, z\) \{[\s\S]*?\n\s*\};/,
@@ -168,8 +168,8 @@ describe('Moon Mission optional LRV traverse', () => {
     expect(runtimeSampler).toBeTruthy();
     expect(runtimeSampler).toContain("typeof x !== 'number' || typeof z !== 'number'");
     expect(runtimeSampler).toContain('!isFinite(x) || !isFinite(z)');
-    expect(runtimeSampler).toContain('var gridX = (x + 100) * 0.5, gridZ = (z + 100) * 0.5');
-    expect(runtimeSampler).toContain('var cellX = Math.min(99, Math.floor(gridX))');
+    expect(runtimeSampler).toContain('var gridX = (x + 100) / _LUNAR_STEP, gridZ = (z + 100) / _LUNAR_STEP');
+    expect(runtimeSampler).toContain('var cellX = Math.min(_LUNAR_SEG - 1, Math.floor(gridX))');
     expect(runtimeSampler).toContain('var hA = _lunarTerrainGrid[row0]');
     expect(runtimeSampler).toContain('var hB = _lunarTerrainGrid[row1]');
     expect(runtimeSampler).toContain('var hC = _lunarTerrainGrid[row1 + 1]');
@@ -180,7 +180,9 @@ describe('Moon Mission optional LRV traverse', () => {
     expect(runtimeSampler).not.toContain('Raycaster');
     expect(runtimeSampler).not.toContain('new THREE.Vector3');
     expect(source).not.toContain('var _terrainRay = new THREE.Raycaster()');
-    expect(source).toContain('[15, -20, 10], [-25, 15, 7], [40, 30, 12], [-10, -35, 5], [30, 40, 8]');
+    // The vertex generator is the seeded mmLunarField, blended onto the far field's seam.
+    expect(source).toContain('var _lunarField = mmLunarField(_evaLowPower)');
+    expect(source).toContain('var h2 = _lunarField.height(worldX, worldZ)');
   });
 
   it('orbits the chase camera independently and does not let an occupied rover mask landmarks', () => {
@@ -201,7 +203,7 @@ describe('Moon Mission optional LRV traverse', () => {
     expect(source).toContain('lrvDustVY[dustN] -= 1.62 * evaDt');
     expect(source).toContain('(1 + lrvSlipSignal * 2.2)');
     expect(source).toContain('Samples are an on-foot EVA activity.');
-    expect(source).toContain('if (!roverBoarded && dir.length() > 0.01');
+    expect(source).toContain('if (!roverBoarded && dir.length() > 0.0005');
   });
 
   it('keeps drive sonification opt-in, gesture-created, stateful, and honest about lunar vacuum', () => {
@@ -505,7 +507,7 @@ describe('Moon Mission optional LRV traverse', () => {
     expect(source).toContain('gtContactGeo.dispose()');
   });
 
-  it('adds deterministic linear microdetail and a distant unshadowed lunar horizon', () => {
+  it('adds deterministic world-space microdetail and a curving, unshadowed far field', () => {
     expect(source).toContain('var lunarMicroSeed = 0x6d2b79f5');
     expect(source).toContain('new THREE.CanvasTexture(lunarMicroCv)');
     expect(source).toContain('map: terrainTex, bumpMap: lunarMicroTex');
@@ -515,17 +517,18 @@ describe('Moon Mission optional LRV traverse', () => {
     expect(source).toContain('renderer.outputEncoding = THREE.sRGBEncoding');
     expect(source).toContain('lunarMicroTex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy())');
     expect(source).not.toContain('lunarMicroTex.encoding = THREE.sRGBEncoding');
-    expect(source).toContain('var lhr = 224 +');
-    expect(source).toContain('new THREE.SphereGeometry(360, 32, 16)');
-    expect(source).toContain('map: skyTex, side: THREE.BackSide, depthWrite: false');
-    expect(source).toContain('Math.cos(lha) * (lhr - 10)');
+    // Stars are crisp points riding with the camera, drawn first so terrain occludes them.
+    expect(source).toContain('var pts = new THREE.Points(g, m);');
+    expect(source).toContain('pts.renderOrder = -10;');
+    expect(source).not.toContain('new THREE.SphereGeometry(360, 32, 16)');
+    // The far field replaces the old 224 m horizon ring and never casts or receives.
+    expect(source).toContain('while (d < 3400)');
     expect(source).toContain('n3 === terrain || n3 === lunarHorizon');
     expect(source).toContain('lunarHorizon.castShadow = false; lunarHorizon.receiveShadow = false');
-    expect(source).toContain("'microdetail-low+horizon-32'");
-    expect(source).toContain("'microdetail-high+horizon-48'");
-    const playableCorner = Math.hypot(92, 92);
-    const minimumInnerRidge = 224 - 4 - 2 - 10;
-    expect(minimumInnerRidge - playableCorner).toBeGreaterThan(70);
+    expect(source).toContain("'regolith-low+farfield+massifs'");
+    expect(source).toContain("'regolith-high+farfield+massifs'");
+    // Walking stays clamped well inside the fine square the far field wraps.
+    expect(source).toContain('if (Math.abs(playerPos.x) > 96)');
   });
 
   it('derives dt-stable rover impacts from armed exact contact targets without idle false positives', () => {

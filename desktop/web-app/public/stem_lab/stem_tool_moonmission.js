@@ -1382,6 +1382,575 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
 
   // ═══════════════════════════════════════════════════════════════
+  // THE MOONWALK SURFACE  (mmLunarField and its helpers)
+  // ═══════════════════════════════════════════════════════════════
+  // One seeded height field owns the EVA landscape from the boots to the skyline:
+  // rolling mare swells, a power-law crater population (bowl, raised rim, ejecta,
+  // each new crater erasing the relief it landed on), a sinuous rille, boulders
+  // thrown out of the one fresh crater, and massifs whose feet sit below the Moon's
+  // own curvature. Seeded, never Math.random: a retry lands at the same site, and
+  // the e2e suite pins Math.random for the sample scatter.
+  var MM_MOON_RADIUS = 1737400;
+  // An Apollo-style morning Sun, 17 degrees up in the east-north-east. Low enough
+  // for the long, hard shadows that make lunar relief readable at all.
+  var MM_EVA_SUN = (function () {
+    var el = 17 * Math.PI / 180, az = Math.atan2(15, 40);
+    return { x: Math.cos(el) * Math.cos(az), y: Math.sin(el), z: Math.cos(el) * Math.sin(az), tan: Math.tan(el) };
+  })();
+  // Fixtures the terrain keeps clear: LM, spawn, rover, flag, ALSEP [x, z, radius].
+  var MM_EVA_KEEP = [[0, 0, 7.5], [3, 3, 2.6], [8, -4, 3], [4, 2, 1.6], [-6, 5, 3.6]];
+
+  function mmLunarRng(seed) {
+    var s = seed >>> 0;
+    return function () {
+      s = (s + 0x6D2B79F5) >>> 0;
+      var t = Math.imul(s ^ (s >>> 15), s | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function mmLunarHash(ix, iz, seed) {
+    var h = (Math.imul(ix | 0, 374761393) + Math.imul(iz | 0, 668265263) + Math.imul(seed | 0, 1442695041)) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  }
+  // Smooth value noise in -1..1; `period` (optional) makes it tile for textures.
+  function mmLunarNoise(x, z, seed, period) {
+    var ix = Math.floor(x), iz = Math.floor(z), fx = x - ix, fz = z - iz;
+    var ux = fx * fx * fx * (fx * (fx * 6 - 15) + 10), uz = fz * fz * fz * (fz * (fz * 6 - 15) + 10);
+    var x0 = ix, x1 = ix + 1, z0 = iz, z1 = iz + 1;
+    if (period) { x0 = ((x0 % period) + period) % period; x1 = ((x1 % period) + period) % period; z0 = ((z0 % period) + period) % period; z1 = ((z1 % period) + period) % period; }
+    var a = mmLunarHash(x0, z0, seed), b = mmLunarHash(x1, z0, seed), c = mmLunarHash(x0, z1, seed), d = mmLunarHash(x1, z1, seed);
+    return (a + (b - a) * ux + (c - a) * uz + (a - b - c + d) * ux * uz) * 2 - 1;
+  }
+  function mmSmooth(e0, e1, v) { var t = Math.max(0, Math.min(1, (v - e0) / (e1 - e0))); return t * t * (3 - 2 * t); }
+
+  // The crater profile, with r the rim radius. Fresh craters are deep paraboloids with
+  // a sharp crest; degraded ones flatten into shallow dishes with rounded rims. Depth
+  // to diameter runs from ~0.2 (fresh) down to ~0.04, as it does on the real Moon.
+  function mmCraterShape(t, c) {
+    if (t < 1) {
+      var tt = t * t, s = tt * (3 - 2 * t);
+      var par = -c.depth + (c.depth + c.rim) * tt, sub = -c.depth + (c.depth + c.rim) * s;
+      return sub + (par - sub) * c.fresh;
+    }
+    var q = t - 1, fade = Math.max(0, 1 - q / 1.6);
+    return c.rim * Math.exp(-q * 3.0) * fade * fade;
+  }
+
+  function mmLunarField(lowPower) {
+    var rand = mmLunarRng(0x4c554e41);
+    var craters = [];
+    var CELL = 40, HALF = 3700, NC = Math.ceil(HALF * 2 / CELL), cells = {};
+    function relief(x, z) {
+      var h = mmLunarNoise(x / 90, z / 90, 11) * 1.5 + mmLunarNoise(x / 34, z / 34, 12) * 0.5 +
+        mmLunarNoise(x / 11, z / 11, 13) * 0.15 + mmLunarNoise(x / 3.7, z / 3.7, 14) * 0.04;
+      var r = Math.sqrt(x * x + z * z);
+      if (r > 140) {
+        // Out past the walkable ground the plain swells into low hills, tapered to
+        // nothing before the far edge so that edge always sits below the horizon.
+        var w = mmSmooth(140, 600, r) * (1 - mmSmooth(2400, 3300, r));
+        h += (mmLunarNoise(x / 700, z / 700, 15) * 16 + mmLunarNoise(x / 240, z / 240, 16) * 5) * w;
+      }
+      return h;
+    }
+    function keepClear(x, z, pad) {
+      for (var k = 0; k < MM_EVA_KEEP.length; k++) {
+        var kp = MM_EVA_KEEP[k];
+        if (Math.hypot(x - kp[0], z - kp[1]) < kp[2] + pad) return true;
+      }
+      return false;
+    }
+    function add(x, z, r, fresh) {
+      var c = { x: x, z: z, r: r, fresh: fresh, depth: r * (0.08 + 0.32 * fresh * fresh + 0.04 * fresh),
+        rim: r * (0.012 + 0.04 * fresh), h0: relief(x, z) };
+      c.depth = Math.min(c.depth, r * 0.42);
+      c.reach = r * 2.6;
+      craters.push(c);
+    }
+    // Hand-placed: one fresh, blocky crater in view of the spawn, and older, softened
+    // ones around it. The fresh crater is the one whose boulders litter its rim.
+    [[-20, -46, 11, 0.95], [46, -34, 20, 0.28], [-58, 22, 15, 0.35], [30, 66, 11, 0.55],
+      [-66, -70, 17, 0.45], [72, 58, 13, 0.4], [60, 8, 7, 0.72], [-30, 64, 8, 0.6]].forEach(function (b) { add(b[0], b[1], b[2], b[3]); });
+    // Medium and small craters on a power law: many small, few large.
+    var nMed = lowPower ? 26 : 36, nSmall = lowPower ? 240 : 420, tries = 0;
+    for (var mi = 0; mi < nMed && tries < 4000; tries++) {
+      var mr = 2.5 * Math.pow(1 - rand() * 0.84, -0.9);
+      if (mr > 7.5) continue;
+      var mx = (rand() - 0.5) * 190, mz = (rand() - 0.5) * 190;
+      if (Math.hypot(mx, mz) < 13 + mr || keepClear(mx, mz, mr + 2)) continue;
+      add(mx, mz, mr, Math.pow(rand(), 1.6)); mi++;
+    }
+    for (var si = 0; si < nSmall && tries < 20000; tries++) {
+      var sr = 0.9 * Math.pow(1 - rand() * 0.86, -0.75);
+      if (sr > 2.6) continue;
+      var sx = (rand() - 0.5) * 194, sz = (rand() - 0.5) * 194;
+      if (keepClear(sx, sz, sr * 0.9)) continue;
+      add(sx, sz, sr, Math.pow(rand(), 2.2)); si++;
+    }
+    // The far plain: bigger, older craters out to the curving horizon.
+    var nFar = lowPower ? 110 : 170;
+    for (var fi = 0; fi < nFar && tries < 40000; tries++) {
+      var fr = 16 * Math.pow(1 - rand() * 0.93, -0.85);
+      if (fr > 260) continue;
+      var fa = rand() * Math.PI * 2, fd = Math.sqrt(0.004 + rand() * 0.996) * 3300;
+      if (fd < 150 + fr * 1.3) continue;
+      add(Math.cos(fa) * fd, Math.sin(fa) * fd, fr, Math.pow(rand(), 1.3)); fi++;
+    }
+    // Oldest first, so each crater erases the relief of those it landed on.
+    craters.sort(function (a, b) { return a.fresh - b.fresh; });
+    craters.forEach(function (c, ci) {
+      var i0 = Math.max(0, Math.floor((c.x - c.reach + HALF) / CELL)), i1 = Math.min(NC - 1, Math.floor((c.x + c.reach + HALF) / CELL));
+      var j0 = Math.max(0, Math.floor((c.z - c.reach + HALF) / CELL)), j1 = Math.min(NC - 1, Math.floor((c.z + c.reach + HALF) / CELL));
+      for (var i = i0; i <= i1; i++) for (var j = j0; j <= j1; j++) {
+        var key = i * NC + j;
+        (cells[key] || (cells[key] = [])).push(ci);
+      }
+    });
+    // A small sinuous rille: a lava channel carved INTO the ground, with low levees.
+    var rille = [];
+    for (var ri = -3; ri < 34; ri++) rille.push([-40 + ri * 3 + Math.sin(ri * 0.5) * 5, 30 + Math.cos(ri * 0.3) * 8]);
+    var RILLE_W = 2.4, RILLE_D = 1.25;
+    function rilleCut(x, z) {
+      if (x < -55 || x > 65 || z < 14 || z > 46) return 0;
+      var best = 1e9;
+      for (var k = 0; k < rille.length - 1; k++) {
+        var ax = rille[k][0], az = rille[k][1], bx = rille[k + 1][0] - ax, bz = rille[k + 1][1] - az;
+        var t = Math.max(0, Math.min(1, ((x - ax) * bx + (z - az) * bz) / (bx * bx + bz * bz)));
+        var dx = x - ax - bx * t, dz = z - az - bz * t, d2 = dx * dx + dz * dz;
+        if (d2 < best) best = d2;
+      }
+      var u = Math.sqrt(best) / RILLE_W;
+      if (u > 2.2) return 0;
+      var cut = u < 1 ? -RILLE_D * Math.pow(1 - u * u, 0.8) : 0;
+      return cut + 0.14 * Math.exp(-((u - 1.25) * (u - 1.25)) / 0.08);
+    }
+    function height(x, z) {
+      var h = relief(x, z);
+      var i = Math.floor((x + HALF) / CELL), j = Math.floor((z + HALF) / CELL);
+      var list = (i >= 0 && j >= 0 && i < NC && j < NC) ? cells[i * NC + j] : null;
+      if (list) {
+        for (var k = 0; k < list.length; k++) {
+          var c = craters[list[k]];
+          var dx = x - c.x, dz = z - c.z, d2 = dx * dx + dz * dz;
+          if (d2 >= c.reach * c.reach) continue;
+          var t = Math.sqrt(d2) / c.r;
+          if (t < 1) {
+            var er = c.fresh * 0.85 * (1 - mmSmooth(0.72, 1.0, t));
+            h = c.h0 + (h - c.h0) * (1 - er);
+          }
+          h += mmCraterShape(t, c);
+        }
+      }
+      h += rilleCut(x, z);
+      // The descent engine swept the landing site smooth.
+      var lr = Math.sqrt(x * x + z * z);
+      if (lr < 9) h += (relief(0, 0) - h) * (1 - mmSmooth(3, 9, lr)) * 0.6;
+      return h;
+    }
+    // Albedo: fresh ejecta is bright (unweathered), and the engine blast left a halo.
+    function albedo(x, z) {
+      var a = 1 + mmLunarNoise(x / 41, z / 41, 20) * 0.08 + mmLunarNoise(x / 17, z / 17, 21) * 0.06 + mmLunarNoise(x / 6, z / 6, 22) * 0.04;
+      var i = Math.floor((x + HALF) / CELL), j = Math.floor((z + HALF) / CELL);
+      var list = (i >= 0 && j >= 0 && i < NC && j < NC) ? cells[i * NC + j] : null;
+      if (list) {
+        for (var k = 0; k < list.length; k++) {
+          var c = craters[list[k]];
+          if (c.fresh < 0.45) continue;
+          var dx = x - c.x, dz = z - c.z, t = Math.sqrt(dx * dx + dz * dz) / c.r;
+          if (t > 2.6) continue;
+          var f = (c.fresh - 0.45) / 0.55, ray = 0.75 + 0.25 * mmLunarNoise(Math.atan2(dz, dx) * 5, t * 0.8, 23);
+          a += f * f * (t < 1 ? 0.28 : 0.34 * Math.exp(-(t - 1) * 1.6) * ray);
+        }
+      }
+      var lr = Math.sqrt(x * x + z * z);
+      a += 0.1 * (1 - mmSmooth(6, 16, lr));
+      return a;
+    }
+    // Boulders: most from the fresh crater, a scatter elsewhere, and a cobble field
+    // densest around the landing site where you actually walk.
+    var rocks = [], rr = mmLunarRng(0x524f434b);
+    function addRock(x, z, s, blocky) {
+      if (Math.abs(x) > 97 || Math.abs(z) > 97) return;
+      rocks.push({ x: x, z: z, s: s, sy: 0.55 + rr() * 0.4 * (blocky ? 1 : 0.7), yaw: rr() * Math.PI * 2, tilt: (rr() - 0.5) * 0.5,
+        v: (rr() * 3) | 0, tint: 0.82 + rr() * 0.34 });
+    }
+    craters.forEach(function (c) {
+      if (c.fresh < 0.7 || c.r < 6 || Math.hypot(c.x, c.z) > 95) return;
+      var n = Math.round(c.r * (lowPower ? 2.6 : 4.4));
+      for (var b = 0; b < n; b++) {
+        var ang = rr() * Math.PI * 2, t = rr() < 0.18 ? 0.35 + rr() * 0.6 : 1.0 + Math.pow(rr(), 1.8) * 1.5;
+        var bs = 0.18 + Math.pow(rr(), 3.2) * 1.7 * (t < 1.4 ? 1 : 0.6);
+        addRock(c.x + Math.cos(ang) * t * c.r, c.z + Math.sin(ang) * t * c.r, bs, true);
+      }
+    });
+    var nScatter = lowPower ? 34 : 60;
+    for (var bi = 0; bi < nScatter; bi++) {
+      var bx = (rr() - 0.5) * 190, bz = (rr() - 0.5) * 190, bsz = 0.16 + Math.pow(rr(), 2.4) * 0.8;
+      if (Math.hypot(bx, bz) < 15 || keepClear(bx, bz, 2)) continue;
+      addRock(bx, bz, bsz, false);
+    }
+    var nCobble = lowPower ? 110 : 520;
+    for (var ci2 = 0; ci2 < nCobble; ci2++) {
+      var cd = 2.5 + Math.pow(rr(), 1.7) * 70, ca = rr() * Math.PI * 2;
+      var cx = 3 + Math.cos(ca) * cd, cz = 3 + Math.sin(ca) * cd;
+      if (keepClear(cx, cz, -1.2)) continue;
+      addRock(cx, cz, 0.035 + Math.pow(rr(), 2.2) * 0.2, rr() < 0.4);
+    }
+    // Massifs past the horizon, like the walls of Taurus-Littrow: smooth, rounded,
+    // sandblasted by four billion years of micrometeorites. [dist m, bearing deg, height, radius]
+    var massifs = [[9000, -120, 1900, 4200], [12500, -68, 1350, 3600], [7200, 172, 950, 2700],
+      [14000, 100, 1650, 4800], [10500, 32, 720, 3000], [16000, -158, 1150, 3800], [11000, 138, 800, 2600]].map(function (m, mk) {
+      var a = m[1] * Math.PI / 180;
+      return { x: Math.cos(a) * m[0], z: Math.sin(a) * m[0], h: m[2], r: m[3], seed: 40 + mk };
+    });
+    // Each massif is three overlapping lobes: rounded crests, long straight
+    // flanks near the 25-30 degrees real massif slopes hold, and radial gullies.
+    massifs.forEach(function (m) {
+      var lr = mmLunarRng(m.seed * 977);
+      m.lobes = [[0, 0, 1, 1]];
+      for (var k = 0; k < 2; k++) {
+        var a = lr() * Math.PI * 2, d = m.r * (0.35 + lr() * 0.3);
+        m.lobes.push([Math.cos(a) * d, Math.sin(a) * d, 0.55 + lr() * 0.3, 0.5 + lr() * 0.25]);
+      }
+    });
+    function massifLobe(m, dx, dz, rr) {
+      var ang = Math.atan2(dz, dx);
+      var warp = 1 + 0.22 * mmLunarNoise(Math.cos(ang) * 1.6 + 7, Math.sin(ang) * 1.6 + 3, m.seed) + 0.1 * mmLunarNoise(Math.cos(ang) * 4, Math.sin(ang) * 4, m.seed + 9);
+      var u = Math.sqrt(dx * dx + dz * dz) / (rr * warp);
+      if (u >= 1) return 0;
+      var k = 0.28, cone = (Math.sqrt(1 + k * k) - Math.sqrt(u * u + k * k)) / (Math.sqrt(1 + k * k) - k);
+      var foot = 1 - mmSmooth(0.7, 1, u) * 0.35;
+      var gully = 1 - Math.abs(mmLunarNoise(ang * 7 * rr / m.r, u * 2.5, m.seed + 4));
+      return cone * foot * (1 + 0.16 * (gully - 0.6) * Math.sin(Math.PI * u));
+    }
+    function massifHeight(m, x, z) {
+      var dx = x - m.x, dz = z - m.z, best = 0;
+      for (var k = 0; k < m.lobes.length; k++) {
+        var lb = m.lobes[k], hk = massifLobe(m, dx - lb[0], dz - lb[1], m.r * lb[3]) * lb[2];
+        best = Math.max(best, hk) + Math.min(best, hk) * 0.25;
+      }
+      if (best <= 0) return 0;
+      return m.h * best * (1 + 0.06 * mmLunarNoise(dx / 700, dz / 700, m.seed + 1) + 0.025 * mmLunarNoise(dx / 220, dz / 220, m.seed + 2));
+    }
+    function curvature(x, z) { return Math.max(0, x * x + z * z - 20000) / (2 * MM_MOON_RADIUS); }
+    return { height: height, relief: relief, albedo: albedo, craters: craters, rocks: rocks, rille: rille,
+      massifs: massifs, massifHeight: massifHeight, curvature: curvature };
+  }
+
+  // A regular height grid over [x0, x0 + span]^2, sampled bilinearly. The sun and
+  // ambient bakes march across these rather than the analytic field.
+  function mmLunarGrid(fn, x0, span, n) {
+    var g = new Float32Array(n * n), step = span / (n - 1);
+    for (var j = 0; j < n; j++) for (var i = 0; i < n; i++) g[j * n + i] = fn(x0 + i * step, x0 + j * step);
+    return {
+      x0: x0, span: span, n: n, data: g,
+      at: function (x, z) {
+        var gx = (x - x0) / step, gz = (z - x0) / step;
+        if (gx < 0 || gz < 0 || gx > n - 1 || gz > n - 1) return NaN;
+        var i = Math.min(n - 2, Math.floor(gx)), j = Math.min(n - 2, Math.floor(gz)), u = gx - i, v = gz - j, o = j * n + i;
+        return (g[o] * (1 - u) + g[o + 1] * u) * (1 - v) + (g[o + n] * (1 - u) + g[o + n + 1] * u) * v;
+      }
+    };
+  }
+  // Sun clearance at a point: tan(sun elevation) minus the steepest terrain rise
+  // toward the Sun. Positive is sunlit. It is a smooth field, so the shader can cut a
+  // crisp shadow edge through it at sub-vertex precision with one smoothstep.
+  // solidAt (optional) adds static objects that overhang the ground, like the LM.
+  function mmSunClearance(hAt, x, z, h0, maxDist, solidAt) {
+    var hx = MM_EVA_SUN.x, hz = MM_EVA_SUN.z, hl = Math.sqrt(hx * hx + hz * hz);
+    hx /= hl; hz /= hl;
+    var worst = -1e9, s = 0.3;
+    while (s < maxDist) {
+      var px = x + hx * s, pz = z + hz * s, h = hAt(px, pz);
+      if (h === h) { var sl = (h - h0) / s; if (sl > worst) worst = sl; }
+      if (solidAt && s < 24 && solidAt(px, pz, h0 + s * MM_EVA_SUN.tan)) return Math.min(-0.04, MM_EVA_SUN.tan - worst);
+      s *= 1.17;
+    }
+    return MM_EVA_SUN.tan - worst;
+  }
+  // Sky visibility from the horizon angle in a few directions: crater floors and the
+  // feet of rocks see less of the bright surroundings than an open plain does.
+  function mmSkyView(hAt, x, z, h0, dirs, steps, reach) {
+    var sum = 0;
+    for (var d = 0; d < dirs; d++) {
+      var a = (d + 0.37) / dirs * Math.PI * 2, cx = Math.cos(a), cz = Math.sin(a), worst = 0, s = 0.45;
+      for (var k = 0; k < steps; k++) {
+        var h = hAt(x + cx * s, z + cz * s);
+        if (h === h) { var e = (h - h0) / Math.sqrt((h - h0) * (h - h0) + s * s); if (e > worst) worst = e; }
+        s *= Math.pow(reach / 0.45, 1 / steps);
+      }
+      sum += 1 - worst;
+    }
+    return sum / dirs;
+  }
+
+  // The regolith's own photometry, patched into MeshStandardMaterial. The Moon is not
+  // a Lambertian surface: it barely darkens toward grazing view (Lommel-Seeliger, the
+  // reason the full Moon looks like a flat disc), and it brightens sharply looking
+  // straight down-Sun (the opposition surge: the bright halo around an astronaut's
+  // shadow in the Apollo photographs). Both are here, with the baked terrain shadow
+  // and a weak bounce light in place of an atmosphere's sky fill.
+  function mmLunarShade(THREE, mat, kind, lowPower) {
+    var rock = kind === 'rock';
+    mat.onBeforeCompile = function (shader) {
+      shader.uniforms.uLunarOpp = { value: rock ? 0.4 : 0.62 };
+      shader.uniforms.uLunarBounce = { value: rock ? 0.34 : 0.3 };
+      var vary = rock ? 'varying vec2 vLunarInst;\n' : 'varying vec3 vLunarBake;\n';
+      shader.vertexShader = (rock ? 'attribute vec2 lunarInst;\n' : 'attribute vec3 lunarBake;\n') + vary +
+        'varying vec2 vLunarXZ;\n' + shader.vertexShader.replace('#include <project_vertex>',
+        '#include <project_vertex>\nvec4 lunarW = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\nlunarW = instanceMatrix * lunarW;\n#endif\n' +
+        'vLunarXZ = (modelMatrix * lunarW).xz;\n' + (rock ? 'vLunarInst = lunarInst;\n' : 'vLunarBake = lunarBake;\n'));
+      var head = vary + 'varying vec2 vLunarXZ;\nuniform float uLunarOpp;\nuniform float uLunarBounce;\nfloat lunarSunVis = 1.0;\nfloat lunarAO = 1.0;\n';
+      var fs = shader.fragmentShader;
+      fs = fs.replace('#include <map_fragment>', rock ? '#include <map_fragment>\ndiffuseColor.rgb *= vLunarInst.y;' :
+        '#ifdef USE_MAP\nvec3 lunarT1 = mapTexelToLinear(texture2D(map, vLunarXZ * 0.29)).rgb;\n' +
+        'vec3 lunarT2 = mapTexelToLinear(texture2D(map, mat2(0.8, -0.6, 0.6, 0.8) * vLunarXZ * 0.061 + 0.37)).rgb;\n' +
+        'diffuseColor.rgb *= lunarT1 * lunarT2 * 21.0;\n#endif\ndiffuseColor.rgb *= vLunarBake.z;');
+      if (!rock) {
+        fs = fs.replace('#include <bumpmap_pars_fragment>', THREE.ShaderChunk.bumpmap_pars_fragment.replace(
+          /vec2 dHdxy_fwd\(\) \{[\s\S]*?return vec2\( dBx, dBy \);\s*\}/,
+          'float lunarBumpH(vec2 p) {\n  return texture2D(bumpMap, p * 0.29).x' +
+          (lowPower ? '' : ' + 1.6 * texture2D(bumpMap, mat2(0.8, -0.6, 0.6, 0.8) * p * 0.083 + 0.21).x') + ';\n}\n' +
+          'vec2 dHdxy_fwd() {\n  vec2 dx = dFdx(vLunarXZ), dy = dFdy(vLunarXZ);\n  float H = bumpScale * lunarBumpH(vLunarXZ);\n' +
+          '  return vec2(bumpScale * lunarBumpH(vLunarXZ + dx) - H, bumpScale * lunarBumpH(vLunarXZ + dy) - H);\n}'));
+      }
+      fs = fs.replace('#include <lights_physical_pars_fragment>', '#include <lights_physical_pars_fragment>\n#undef RE_Direct\n' +
+        'void RE_Direct_Lunar(const in IncidentLight directLight, const in GeometricContext geometry, const in PhysicalMaterial material, inout ReflectedLight reflectedLight) {\n' +
+        '  float mu0 = saturate(dot(geometry.normal, directLight.direction));\n' +
+        '  float mu = max(dot(geometry.normal, geometry.viewDir), 0.0);\n' +
+        '  float ls = 2.0 * mu0 / max(mu0 + mu, 0.08);\n' +
+        '  float cg = clamp(dot(directLight.direction, geometry.viewDir), -0.999, 1.0);\n' +
+        '  float tg = sqrt((1.0 - cg) / (1.0 + cg));\n' +
+        '  float surge = 1.0 + uLunarOpp / (1.0 + tg / 0.07);\n' +
+        '  float phase = mix(1.0, 0.62, smoothstep(0.0, 1.0, 0.5 - 0.5 * cg));\n' +
+        '  reflectedLight.directDiffuse += directLight.color * (ls * surge * phase * lunarSunVis) * material.diffuseColor;\n' +
+        '}\n#define RE_Direct RE_Direct_Lunar\n');
+      fs = fs.replace('#include <lights_fragment_begin>', (rock ? 'lunarSunVis = vLunarInst.x;\n' :
+        'float lunarEdge = 0.018 + length(vViewPosition) * 0.00004;\nlunarSunVis = smoothstep(-lunarEdge, lunarEdge, vLunarBake.x);\nlunarAO = vLunarBake.y;\n') + '#include <lights_fragment_begin>');
+      fs = fs.replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n' +
+        'reflectedLight.indirectDiffuse = material.diffuseColor * uLunarBounce * (0.25 + 0.75 * lunarAO * lunarAO);\n' +
+        'reflectedLight.indirectSpecular = vec3(0.0);\n');
+      shader.fragmentShader = head + fs;
+    };
+    mat.customProgramCacheKey = function () { return 'mm-lunar-' + kind + (lowPower ? '-lo' : '-hi'); };
+    return mat;
+  }
+
+  // Tileable regolith detail, height and albedo, painted once. Height carries the
+  // micro-craters and pebbles that catch the low Sun; albedo carries glass beads and
+  // rock chips. Both are sampled in world space at two scales in the shader, rotated
+  // against each other, so the tiling never lines up into a visible grid.
+  function mmRegolithDetail(size, seed) {
+    var N = size, H = new Float32Array(N * N), A = new Float32Array(N * N), rnd = mmLunarRng(seed);
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+      var h = 0, a = 0, amp = 0.5, per = 4;
+      for (var o = 0; o < 5; o++) {
+        h += mmLunarNoise(x / N * per, y / N * per, 70 + o, per) * amp;
+        if (o > 1) a += mmLunarNoise(x / N * per, y / N * per, 90 + o, per) * amp;
+        per *= 2; amp *= 0.55;
+      }
+      H[y * N + x] = h * 0.35;
+      A[y * N + x] = 1 + a * 0.28;
+    }
+    function stamp(cx, cy, rad, fn) {
+      var r0 = Math.ceil(rad * 2.2);
+      for (var dy = -r0; dy <= r0; dy++) for (var dx = -r0; dx <= r0; dx++) {
+        var t = Math.sqrt(dx * dx + dy * dy) / rad;
+        if (t > 2.2) continue;
+        var px = ((Math.round(cx) + dx) % N + N) % N, py = ((Math.round(cy) + dy) % N + N) % N;
+        fn(py * N + px, t);
+      }
+    }
+    var nCr = Math.round(N * N / 4200);
+    for (var c = 0; c < nCr; c++) {
+      var cr = 2.5 * Math.pow(1 - rnd() * 0.9, -0.8) * N / 512, fresh = rnd();
+      if (cr > 30 * N / 512) continue;
+      var dep = 0.15 + fresh * fresh * 0.9;
+      stamp(rnd() * N, rnd() * N, cr, function (i, t) {
+        H[i] += t < 1 ? (-dep + (dep + 0.12) * t * t) : 0.12 * Math.exp(-(t - 1) * 3.5);
+        if (t < 1.4 && fresh > 0.7) A[i] += 0.08;
+      });
+    }
+    var nPeb = Math.round(N * N / 330);
+    for (var p = 0; p < nPeb; p++) {
+      var pr = (1 + rnd() * rnd() * 4.5) * N / 512, pb = 0.35 + rnd() * 0.5, tint = (rnd() - 0.45) * 0.5;
+      stamp(rnd() * N, rnd() * N, pr, function (i, t) {
+        if (t < 1) { H[i] += pb * Math.sqrt(1 - t * t); A[i] += tint * (1 - t); }
+      });
+    }
+    for (var g = 0; g < N * N / 160; g++) {
+      var gi = (rnd() * N * N) | 0;
+      A[gi] += rnd() < 0.55 ? 0.35 : -0.25;
+    }
+    var lo = 1e9, hi = -1e9;
+    for (var k = 0; k < N * N; k++) { if (H[k] < lo) lo = H[k]; if (H[k] > hi) hi = H[k]; }
+    return { size: N, height: H, albedo: A, lo: lo, hi: hi };
+  }
+
+  // One boulder shape: an icosahedron pushed about by noise and cut flat underneath.
+  // Faces stay flat-normalled, because lunar boulders are angular, not pebbles.
+  function mmBoulderGeometry(THREE, seed) {
+    var g = new THREE.IcosahedronGeometry(1, 1), p = g.attributes.position.array;
+    for (var i = 0; i < p.length; i += 3) {
+      var x = p[i], y = p[i + 1], z = p[i + 2];
+      var n = 1 + 0.26 * mmLunarNoise(x * 1.7 + seed, z * 1.7 - seed, seed) + 0.12 * mmLunarNoise(y * 3.1 + seed * 2, x * 3.1, seed + 5);
+      x *= n; y *= n; z *= n;
+      if (y < -0.25) y = -0.25 + (y + 0.25) * 0.25;
+      p[i] = x; p[i + 1] = y; p[i + 2] = z;
+    }
+    g.computeVertexNormals();
+    return g;
+  }
+
+  // The Lunar Module as it stood on the surface, at 0.78 scale so it fits the site.
+  // Origin is the ground at the centre of the four pads; the ladder faces +Z.
+  function mmBuildSurfaceLM(THREE, envMap, lowPower) {
+    var S = 0.78, lm = new THREE.Group();
+    var foilCv = document.createElement('canvas'); foilCv.setAttribute('aria-hidden', 'true');
+    foilCv.width = foilCv.height = lowPower ? 128 : 256;
+    var fc = foilCv.getContext('2d'), fr = mmLunarRng(0x464f494c), FN = foilCv.width;
+    fc.fillStyle = '#a97f30'; fc.fillRect(0, 0, FN, FN);
+    // Crinkled Kapton: facets of slightly different tone catch the Sun one by one.
+    for (var fi = 0; fi < (lowPower ? 160 : 520); fi++) {
+      var fx = fr() * FN, fy = fr() * FN, fw = 4 + fr() * FN * 0.12, fh = 3 + fr() * FN * 0.06, l = fr();
+      fc.fillStyle = 'rgba(' + (l > 0.5 ? '255,226,150,' : '70,45,10,') + (0.1 + fr() * 0.25).toFixed(2) + ')';
+      fc.beginPath(); fc.moveTo(fx, fy); fc.lineTo(fx + fw, fy + (fr() - 0.5) * fh); fc.lineTo(fx + fw * (0.3 + fr() * 0.5), fy + fh); fc.closePath(); fc.fill();
+    }
+    var foilTex = new THREE.CanvasTexture(foilCv); foilTex.encoding = THREE.sRGBEncoding;
+    foilTex.wrapS = foilTex.wrapT = THREE.RepeatWrapping; foilTex.repeat.set(2, 1);
+    var gold = new THREE.MeshStandardMaterial({ color: 0xffffff, map: foilTex, bumpMap: foilTex, bumpScale: 0.02, metalness: 0.62, roughness: 0.34, envMap: envMap, envMapIntensity: 1.2 });
+    var blackFoil = new THREE.MeshStandardMaterial({ color: 0x0e0f11, metalness: 0.15, roughness: 0.62, envMap: envMap });
+    var panel = new THREE.MeshStandardMaterial({ color: 0x8d9197, metalness: 0.5, roughness: 0.42, envMap: envMap, flatShading: true });
+    var panelDark = new THREE.MeshStandardMaterial({ color: 0x2a2c30, metalness: 0.35, roughness: 0.58, envMap: envMap, flatShading: true });
+    var strutMat = new THREE.MeshStandardMaterial({ color: 0xb08d4a, metalness: 0.65, roughness: 0.38, envMap: envMap });
+    var silverMat = new THREE.MeshStandardMaterial({ color: 0xb4b8bd, metalness: 0.8, roughness: 0.3, envMap: envMap });
+    var glass = new THREE.MeshStandardMaterial({ color: 0x0b0f16, metalness: 0.9, roughness: 0.08, envMap: envMap });
+    var mats = [gold, blackFoil, panel, panelDark, strutMat, silverMat, glass];
+    function mesh(geo, mat, x, y, z) { var m = new THREE.Mesh(geo, mat); m.position.set(x * S, y * S, z * S); lm.add(m); return m; }
+    // Descent stage: the octagonal gold-foil box, sitting 1.5 m up on its gear.
+    var ds = mesh(new THREE.CylinderGeometry(2.25 * S, 2.25 * S, 1.75 * S, 8), gold, 0, 2.45, 0);
+    ds.rotation.y = Math.PI / 8;
+    var dsBase = mesh(new THREE.CylinderGeometry(2.0 * S, 2.2 * S, 0.22 * S, 8), blackFoil, 0, 1.47, 0);
+    dsBase.rotation.y = Math.PI / 8;
+    var dsTop = mesh(new THREE.CylinderGeometry(2.27 * S, 2.27 * S, 0.12 * S, 8), blackFoil, 0, 3.3, 0);   // black blanket rim
+    dsTop.rotation.y = Math.PI / 8;
+    var bell = mesh(new THREE.CylinderGeometry(0.34 * S, 0.8 * S, 0.95 * S, 18, 1, true),
+      new THREE.MeshStandardMaterial({ color: 0x3a342f, metalness: 0.7, roughness: 0.45, side: THREE.DoubleSide, envMap: envMap }), 0, 1.02, 0);
+    mats.push(bell.material);
+    // Ascent stage: the crew cabin is a drum lying on its side, with a flat faceted
+    // front carrying the two triangular windows, and an equipment bay behind.
+    var cabin = mesh(new THREE.CylinderGeometry(1.2 * S, 1.2 * S, 2.35 * S, 10), panel, 0, 4.25, 0.25);
+    cabin.rotation.z = Math.PI / 2;
+    var face = mesh(new THREE.BoxGeometry(2.35 * S, 1.55 * S, 0.7 * S), panel, 0, 4.05, 1.35);
+    face.rotation.x = -0.12;
+    var aft = mesh(new THREE.BoxGeometry(2.7 * S, 1.45 * S, 1.3 * S), panelDark, 0, 4.05, -1.25);
+    aft.rotation.x = 0.06;
+    mesh(new THREE.BoxGeometry(2.9 * S, 0.5 * S, 3.4 * S), panelDark, 0, 3.35, 0);
+    mesh(new THREE.CylinderGeometry(0.5 * S, 0.55 * S, 0.55 * S, 12), panel, 0, 5.6, 0.1);      // docking tunnel
+    mesh(new THREE.CylinderGeometry(0.6 * S, 0.6 * S, 0.06 * S, 12), panelDark, 0, 5.9, 0.1);
+    [-1, 1].forEach(function (sx) {
+      var w = mesh(new THREE.CylinderGeometry(0.34 * S, 0.34 * S, 0.06 * S, 3), glass, sx * 0.62, 4.45, 1.72);
+      w.rotation.x = Math.PI / 2 - 0.35; w.rotation.y = sx * 0.25;
+      // RCS thruster quads on outriggers at the four corners.
+      [-1, 1].forEach(function (sz) {
+        var quad = mesh(new THREE.BoxGeometry(0.34 * S, 0.34 * S, 0.34 * S), panelDark, sx * 1.95, 4.5, sz * 1.05);
+        for (var nz = 0; nz < 4; nz++) {
+          var na = nz * Math.PI / 2;
+          var nzl = mesh(new THREE.CylinderGeometry(0.03 * S, 0.08 * S, 0.22 * S, 6), strutMat, sx * 1.95 + Math.cos(na) * 0.26, 4.5, sz * 1.05 + Math.sin(na) * 0.26);
+          nzl.rotation.z = na === 0 ? -Math.PI / 2 : (na === Math.PI ? Math.PI / 2 : 0);
+          nzl.rotation.x = Math.abs(na - Math.PI / 2) < 0.1 ? Math.PI / 2 : (Math.abs(na - 3 * Math.PI / 2) < 0.1 ? -Math.PI / 2 : 0);
+        }
+        quad.rotation.y = 0.05;
+      });
+    });
+    var hatch = mesh(new THREE.BoxGeometry(0.8 * S, 0.8 * S, 0.06 * S), panelDark, 0, 3.7, 1.72);
+    hatch.rotation.x = -0.12;
+    // Steerable S-band dish and the rendezvous radar.
+    var boom = mesh(new THREE.CylinderGeometry(0.035 * S, 0.035 * S, 1.1 * S, 6), strutMat, -1.1, 5.35, -0.9);
+    boom.rotation.z = 0.7;
+    var dish = mesh(new THREE.SphereGeometry(0.45 * S, 14, 6, 0, Math.PI * 2, 0, 0.9), panel, -1.5, 5.8, -0.9);
+    dish.rotation.x = -1.1; dish.material = new THREE.MeshStandardMaterial({ color: 0xd8dade, metalness: 0.3, roughness: 0.5, side: THREE.DoubleSide, envMap: envMap });
+    mats.push(dish.material);
+    var radar = mesh(new THREE.SphereGeometry(0.34 * S, 12, 5, 0, Math.PI * 2, 0, 1.0), dish.material, 0.9, 5.4, 1.35);
+    radar.rotation.x = 1.0;
+    mesh(new THREE.CylinderGeometry(0.02 * S, 0.02 * S, 1.4 * S, 4), strutMat, 1.25, 5.3, -1.5);   // VHF whip
+    // Landing gear: primary strut, two secondary struts and a dish pad on each leg.
+    var up = new THREE.Vector3(0, 1, 0), tmp = new THREE.Vector3();
+    function rod(ax, ay, az, bx, by, bz, r, mat) {
+      tmp.set((bx - ax) * S, (by - ay) * S, (bz - az) * S);
+      var len = tmp.length(), m = new THREE.Mesh(new THREE.CylinderGeometry(r * S, r * S, len, 6), mat);
+      m.quaternion.setFromUnitVectors(up, tmp.normalize());
+      m.position.set((ax + bx) * 0.5 * S, (ay + by) * 0.5 * S, (az + bz) * 0.5 * S);
+      lm.add(m); return m;
+    }
+    for (var li = 0; li < 4; li++) {
+      var la = li * Math.PI / 2, lx = Math.sin(la), lz = Math.cos(la), tx2 = Math.cos(la), tz2 = -Math.sin(la);
+      var padR = 4.7, hipR = 2.15, hipY = 3.1, kneeR = 3.7, kneeY = 1.25;
+      rod(lx * hipR, hipY, lz * hipR, lx * padR, 0.35, lz * padR, 0.11, strutMat);
+      rod(lx * kneeR, kneeY, lz * kneeR, lx * 1.7 + tx2 * 1.2, 1.55, lz * 1.7 + tz2 * 1.2, 0.05, silverMat);
+      rod(lx * kneeR, kneeY, lz * kneeR, lx * 1.7 - tx2 * 1.2, 1.55, lz * 1.7 - tz2 * 1.2, 0.05, silverMat);
+      var pad = mesh(new THREE.CylinderGeometry(0.47 * S, 0.3 * S, 0.2 * S, 16), silverMat, lx * padR, 0.12, lz * padR);
+      pad.userData.mmPad = true;
+      if (li === 0) {
+        // The ladder down the front leg, and the porch outside the hatch.
+        for (var side = -1; side <= 1; side += 2) {
+          rod(lx * 2.45 + tx2 * 0.28 * side, 3.1, lz * 2.45 + tz2 * 0.28 * side, lx * 4.35 + tx2 * 0.28 * side, 0.8, lz * 4.35 + tz2 * 0.28 * side, 0.025, strutMat);
+        }
+        for (var rg = 0; rg < 8; rg++) {
+          var f = (rg + 0.5) / 8, rx = lx * (2.45 + 1.9 * f), ry = 3.1 - 2.3 * f, rz = lz * (2.45 + 1.9 * f);
+          rod(rx - tx2 * 0.28, ry, rz - tz2 * 0.28, rx + tx2 * 0.28, ry, rz + tz2 * 0.28, 0.018, strutMat);
+        }
+        var porch = mesh(new THREE.BoxGeometry(0.9 * S, 0.05 * S, 0.8 * S), strutMat, lx * 2.35, 3.28, lz * 2.35);
+        porch.rotation.y = la;
+      }
+    }
+    lm.traverse(function (o) { if (o.isMesh && mats.indexOf(o.material) === -1) mats.push(o.material); });
+    lm.userData.mmMaterials = mats;
+    lm.userData.mmTextures = [foilTex];
+    return lm;
+  }
+
+  // ── Suit locomotion in one-sixth gravity ──
+  // What makes the Moon feel like the Moon underfoot is not the jump height, it is
+  // the grip: boots push against the ground with friction, and friction is weight
+  // times mu, a sixth of what it is at home. You get going slowly, you stop slowly,
+  // hills bite, and at a brisk pace you settle into the Apollo lope. Air control is
+  // nil: once you leave the ground you follow a ballistic arc.
+  var MM_EVA_GAIT = { g: 1.62, walk: 1.25, lope: 2.3, comfort: 0.7, grip: 1.9, brake: 1.45, air: 0.12, lopeAfter: 1.1 };
+  // v: {x, z} velocity (m/s), mutated. wishX/wishZ: unit direction or zero.
+  // grade: rise per metre along +x and +z. Returns v.
+  function mmEvaFootVelocity(v, wishX, wishZ, lope, comfort, grounded, gradeX, gradeZ, dt) {
+    var G = MM_EVA_GAIT, wl = Math.sqrt(wishX * wishX + wishZ * wishZ);
+    if (!grounded) {
+      if (wl > 0) { v.x += wishX / wl * G.air * dt; v.z += wishZ / wl * G.air * dt; }
+      return v;
+    }
+    var tx = 0, tz = 0;
+    if (wl > 0) {
+      wishX /= wl; wishZ /= wl;
+      var target = (lope ? G.lope : G.walk) * (comfort ? G.comfort : 1) * Math.min(1, wl);
+      // Uphill costs speed, downhill gives a little back.
+      var along = gradeX * wishX + gradeZ * wishZ;
+      target *= Math.max(0.3, Math.min(1.2, 1 - 1.7 * along));
+      tx = wishX * target; tz = wishZ * target;
+    }
+    // Past about 30 degrees the regolith will not hold a boot: traction fades, and
+    // you slide.
+    var slope = Math.sqrt(gradeX * gradeX + gradeZ * gradeZ);
+    var dx = tx - v.x, dz = tz - v.z, dl = Math.sqrt(dx * dx + dz * dz);
+    var maxDv = (wl > 0 ? G.grip : G.brake) * dt * Math.max(0, 1 - Math.max(0, slope - 0.58) * 4);
+    if (dl > maxDv) { dx *= maxDv / dl; dz *= maxDv / dl; }
+    v.x += dx; v.z += dz;
+    if (slope > 0.58) {
+      var a = G.g * (slope - 0.58) / Math.sqrt(1 + slope * slope);
+      v.x -= gradeX / slope * a * dt; v.z -= gradeZ / slope * a * dt;
+    }
+    return v;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { lunarField: mmLunarField, lunarGrid: mmLunarGrid, sunClearance: mmSunClearance, skyView: mmSkyView, evaSun: function () { return MM_EVA_SUN; }, evaGait: function () { return MM_EVA_GAIT; }, evaFootVelocity: mmEvaFootVelocity, craterShape: mmCraterShape, regolithDetail: mmRegolithDetail }); } catch (e) {}
+
+  // ═══════════════════════════════════════════════════════════════
   // 3D POWERED DESCENT  (mmBuildDescent3D)
   // ═══════════════════════════════════════════════════════════════
   // The landing is the mission's one graded piloting task, and it teaches the
@@ -5422,7 +5991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   function doEvaInit(THREE) {
                     var W = canvasEl.clientWidth || 800, H2 = canvasEl.clientHeight || 500;
                     var scene = new THREE.Scene();
-                    var camera = new THREE.PerspectiveCamera(70, W / H2, 0.1, 500);
+                    var camera = new THREE.PerspectiveCamera(70, W / H2, 0.1, 30000);   // far enough for massifs 16 km out
                     camera.position.set(0, 1.8, 0); // astronaut eye height in 1/6 gravity suit
                     var renderer;
                     try {
@@ -5438,6 +6007,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     renderer.setSize(W, H2);
                     renderer.setClearColor(0x000000);
                     renderer.outputEncoding = THREE.sRGBEncoding;
+                    // Filmic tone mapping rolls sunlit regolith and foil highlights off the
+                    // way the Hasselblad film did, instead of clipping them flat white.
+                    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                    renderer.toneMappingExposure = 1.05;
 
                     // ── WebGL context loss ──
                     // Creation failure is handled (the webglError panel), but a context
@@ -5491,176 +6064,128 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
                           var lowPower = reduce || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
                           var res = lowPower ? 0.5 : 1;
-                          var c = new T.EffectComposer(renderer);
+                          // A half-float buffer on WebGL2: an 8-bit linear one bands the
+                          // dark shadow gradients and clips highlights before tone mapping.
+                          var rtHdr = null;
+                          if (!lowPower && renderer.capabilities.isWebGL2 && T.HalfFloatType) {
+                            var dbs = renderer.getDrawingBufferSize(new T.Vector2());
+                            rtHdr = new T.WebGLRenderTarget(Math.max(1, dbs.x), Math.max(1, dbs.y), { minFilter: T.LinearFilter, magFilter: T.LinearFilter, format: T.RGBAFormat, type: T.HalfFloatType });
+                          }
+                          var c = rtHdr ? new T.EffectComposer(renderer, rtHdr) : new T.EffectComposer(renderer);
                           c.addPass(new T.RenderPass(scene, camera));
-                          // dark lunar scene → lower threshold so the bright Earth + sun glow.
-                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.7 : 1.0, 0.35, 0.82));
+                          // Threshold above sunlit regolith, so only the Sun, Earth and foil glints glow.
+                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.55 : 0.75, 0.4, 0.9));
                           composer = c;
                         } catch (e) { composer = null; }
                       });
                     })();
 
-                    // ── Lunar sky (black + stars only — Earth is a separate
-                    // sprite below to avoid the equirectangular wrap distortion
-                    // that turned the marble into a teardrop). Stars are tiny
-                    // dots so the projection stretching is invisible at that scale.
-                    // Keep the star shell behind the distant terrain silhouette even
-                    // from the playable square's corners; it never writes scene depth.
-                    var skyGeo = new THREE.SphereGeometry(360, 32, 16);
-                    var skyCv = document.createElement('canvas'); skyCv.setAttribute('aria-hidden', 'true'); skyCv.width = 512; skyCv.height = 256;
-                    var sCtx = skyCv.getContext('2d');
-                    sCtx.fillStyle = '#000000'; sCtx.fillRect(0, 0, 512, 256);
-                    // Dense starfield
-                    for (var si = 0; si < 400; si++) {
-                      sCtx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.7) + ')';
-                      sCtx.beginPath();
-                      sCtx.arc(Math.random() * 512, Math.random() * 256, Math.random() * 1.2, 0, Math.PI * 2);
-                      sCtx.fill();
-                    }
-                    var skyTex = new THREE.CanvasTexture(skyCv);
-                    scene.add(new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({
-                      map: skyTex, side: THREE.BackSide, depthWrite: false
-                    })));
+                    var _evaLowPower = false;
+                    try { _evaLowPower = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); } catch (eLP) {}
+
+                    // ── Lunar sky: black, with faint, crisp stars ──
+                    // Points, not a texture: the old 512x256 sphere map stretched every star
+                    // into a blurry square. Faint on purpose, because with sunlit ground in
+                    // view the eye stops down and only the brightest survive, which is why
+                    // the Apollo photographs show a black sky. Two in five crowd a tilted
+                    // band, a hint of the Milky Way. The shell rides with the camera, so the
+                    // stars sit at infinity, and draws first so every hill occludes it.
+                    var skyGroup = new THREE.Group();
+                    var skyGeos = [], skyMats = [];
+                    (function addStars() {
+                      var sr = mmLunarRng(0x53544152);
+                      [[1.2, 0.3, _evaLowPower ? 700 : 1500], [1.8, 0.5, _evaLowPower ? 200 : 420], [2.6, 0.78, _evaLowPower ? 36 : 70]].forEach(function (tier) {
+                        var n = tier[2], pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+                        for (var i = 0; i < n; i++) {
+                          var band = sr() < 0.4, lon = sr() * Math.PI * 2;
+                          var lat = band ? (sr() + sr() + sr() - 1.5) * 0.16 : Math.asin(sr() * 2 - 1);
+                          var sx = Math.cos(lat) * Math.cos(lon), sy = Math.sin(lat), sz = Math.cos(lat) * Math.sin(lon);
+                          pos[i * 3] = sx * 9000; pos[i * 3 + 1] = (sy * 0.5 - sz * 0.866) * 9000; pos[i * 3 + 2] = (sy * 0.866 + sz * 0.5) * 9000;
+                          var b = tier[1] * (0.4 + sr() * 0.6), warm = sr();
+                          col[i * 3] = b * (warm > 0.8 ? 1 : 0.86); col[i * 3 + 1] = b * 0.92; col[i * 3 + 2] = b * (warm < 0.25 ? 1 : 0.82);
+                        }
+                        var g = new THREE.BufferGeometry();
+                        g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                        g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+                        var m = new THREE.PointsMaterial({ size: tier[0], sizeAttenuation: false, vertexColors: true, depthWrite: false, toneMapped: false });
+                        var pts = new THREE.Points(g, m);
+                        pts.renderOrder = -10; pts.frustumCulled = false;
+                        skyGroup.add(pts); skyGeos.push(g); skyMats.push(m);
+                      });
+                    })();
+                    scene.add(skyGroup);
 
                     // ── Earth as a billboard sprite ──
-                    // Draw the marble onto a 256×256 canvas (centered, square),
-                    // then attach as a Three.js Sprite so it always faces the
-                    // camera and never gets distorted by sphere-projection math.
-                    // Position high in the sky and off to one side, matching the
-                    // actual Apollo EVA view (Earth was a fixed point in the
-                    // lunar sky throughout the surface ops).
-                    var earthCv = document.createElement('canvas'); earthCv.setAttribute('aria-hidden', 'true'); earthCv.width = 256; earthCv.height = 256;
+                    // Draw the marble onto a canvas (centered, square), then attach as a
+                    // Three.js Sprite so it always faces the camera and never gets distorted
+                    // by sphere-projection math. Earth hangs at a fixed point in the lunar
+                    // sky, and its phase follows from the same Sun that lights the ground:
+                    // lit on the side facing it, gibbous at this morning site. About 3
+                    // degrees across; the real Earth is 1.9, slightly enlarged to read.
+                    var earthCv = document.createElement('canvas'); earthCv.setAttribute('aria-hidden', 'true'); earthCv.width = 512; earthCv.height = 512;
                     var eCtx = earthCv.getContext('2d');
-                    eCtx.clearRect(0, 0, 256, 256);
-                    drawDetailedEarth(eCtx, 128, 128, 86, 500); // r86: halo (r*1.45=125) now fits the 256px texture instead of square-clipping
+                    eCtx.clearRect(0, 0, 512, 512);
+                    var _earthDir = new THREE.Vector3(-60, 68, -120).normalize();
+                    var _earthRight = new THREE.Vector3().crossVectors(_earthDir, new THREE.Vector3(0, 1, 0)).normalize();
+                    var _earthUp = new THREE.Vector3().crossVectors(_earthRight, _earthDir);
+                    var _evaSunV = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z);
+                    var earthLit = (1 - _evaSunV.dot(_earthDir)) / 2;
+                    var earthSunAng = Math.atan2(-_evaSunV.dot(_earthUp), _evaSunV.dot(_earthRight));
+                    drawDetailedEarth(eCtx, 256, 256, 172, 500, earthSunAng, earthLit); // halo (r*1.45) fits the texture
                     var earthTex = new THREE.CanvasTexture(earthCv);
+                    earthTex.encoding = THREE.sRGBEncoding;
                     var earthSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: earthTex, transparent: true, depthWrite: false }));
                     earthSprite.position.set(-60, 70, -120);
-                    earthSprite.scale.set(23, 23, 1); // compensates r 100->86 so the visible disc size is unchanged
+                    earthSprite.scale.set(12, 12, 1);
                     scene.add(earthSprite);
 
-                    // ── Lunar terrain (grey regolith with craters) ──
+                    // ── The lunar surface ──
+                    // mmLunarField owns the landscape and this builds three meshes from it:
+                    // the walkable 200 m square, a far field of coarser, curving ground out
+                    // to the horizon, and the massifs beyond it. Every vertex carries a baked
+                    // [sun clearance, sky view, albedo] for mmLunarShade, so crater shadows
+                    // fall across the whole landscape, not only inside the small frustum the
+                    // shadow map covers around you.
                     // One world-space function owns vertex generation. PlaneGeometry's
                     // local +Y becomes world -Z after its -90-degree X rotation, hence
                     // negated py at construction. Runtime probes interpolate the exact
-                    // cached Float32 vertices below, matching the rendered triangles even
-                    // across the crater profile's deliberate rim discontinuities.
-                    var _lunarCraters = [
-                      [15, -20, 10], [-25, 15, 7], [40, 30, 12], [-10, -35, 5], [30, 40, 8]
-                    ];
+                    // cached Float32 vertices below, matching the rendered triangles.
+                    var _lunarField = mmLunarField(_evaLowPower);
+                    var _LUNAR_SEG = _evaLowPower ? 160 : 256, _LUNAR_N = _LUNAR_SEG + 1, _LUNAR_STEP = 200 / _LUNAR_SEG;
+                    // The far field meets this square on a coarser lattice. Near the seam the
+                    // square blends onto that lattice's straight edges, so the two meshes
+                    // share one boundary and no crack can open between them.
+                    var _LUNAR_SEAM = _evaLowPower ? 12.5 : 6.25;
+                    var _lunarSeamGrid = mmLunarGrid(_lunarField.height, -100, 200, Math.round(200 / _LUNAR_SEAM) + 1);
                     var _lunarTerrainHeightAt = function(worldX, worldZ) {
-                      var h2 = Math.sin(worldX * 0.05) * Math.cos(worldZ * 0.04) * 1.5;
-                      h2 += Math.sin(worldX * 0.15 - worldZ * 0.1) * 0.3;
-                      for (var ci = 0; ci < _lunarCraters.length; ci++) {
-                        var crater = _lunarCraters[ci];
-                        var cdx = worldX - crater[0], cdz = worldZ - crater[1];
-                        var cdSq = cdx * cdx + cdz * cdz;
-                        var cr = crater[2];
-                        if (cdSq < cr * cr) {
-                          var cd = Math.sqrt(cdSq);
-                          var rim = 1 - cd / cr;
-                          h2 += cd < cr * 0.8 ? -rim * 2 : rim * 1.5;
-                        }
+                      var h2 = _lunarField.height(worldX, worldZ);
+                      var edge = Math.max(Math.abs(worldX), Math.abs(worldZ));
+                      if (edge > 84) {
+                        h2 += (_lunarSeamGrid.at(Math.max(-100, Math.min(100, worldX)), Math.max(-100, Math.min(100, worldZ))) - h2) * mmSmooth(84, 100, edge);
                       }
                       return h2;
                     };
-                    var terrainGeo = new THREE.PlaneGeometry(200, 200, 100, 100);
+                    var terrainGeo = new THREE.PlaneGeometry(200, 200, _LUNAR_SEG, _LUNAR_SEG);
                     var tPos = terrainGeo.attributes.position.array;
-                    var _lunarTerrainGrid = new Float32Array(101 * 101);
+                    var _lunarTerrainGrid = new Float32Array(_LUNAR_N * _LUNAR_N);
                     for (var vi = 0; vi < tPos.length; vi += 3) {
                       var px = tPos[vi], py = tPos[vi + 1];
                       tPos[vi + 2] = _lunarTerrainHeightAt(px, -py);
                       _lunarTerrainGrid[vi / 3] = tPos[vi + 2];
                     }
                     terrainGeo.computeVertexNormals();
-                    var _evaLowPower = false;
-                    try { _evaLowPower = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); } catch (eLP) {}
-                    // Regolith texture via ImageData (the old per-pixel fillRect loop made 65k
-                    // canvas calls at init AND its sin() term printed visible diagonal stripes
-                    // that tiled 8× across the plain). Isotropic value noise, no banding.
-                    var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 256; tCv.height = 256;
-                    var tCx = tCv.getContext('2d');
-                    (function paintRegolith() {
-                      var img = tCx.createImageData(256, 256);
-                      var dpx = img.data;
-                      for (var tp = 0; tp < 256 * 256; tp++) {
-                        var txx = tp % 256, tyy = (tp / 256) | 0;
-                        var n = 128 + (Math.random() - 0.5) * 22;                       // fine grain
-                        n += Math.sin(txx * 0.055 + Math.sin(tyy * 0.061) * 3.1) * 5;   // broad soft mottling (non-directional)
-                        n += Math.sin(tyy * 0.047 + Math.sin(txx * 0.052) * 2.7) * 5;
-                        if (Math.random() < 0.004) n -= 34;                             // occasional pebble fleck
-                        var ni = Math.max(70, Math.min(190, n | 0));
-                        var o4 = tp * 4;
-                        dpx[o4] = ni; dpx[o4 + 1] = ni - 2; dpx[o4 + 2] = ni - 5; dpx[o4 + 3] = 255;
-                      }
-                      tCx.putImageData(img, 0, 0);
-                    })();
-                    var terrainTex = new THREE.CanvasTexture(tCv);
-                    terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(8, 8);
-                    terrainTex.encoding = THREE.sRGBEncoding;
-                    var lunarMicroSize = _evaLowPower ? 128 : 256;
-                    var lunarMicroCv = document.createElement('canvas');
-                    lunarMicroCv.setAttribute('aria-hidden', 'true');
-                    lunarMicroCv.width = lunarMicroCv.height = lunarMicroSize;
-                    var lunarMicroCtx = lunarMicroCv.getContext('2d');
-                    var lunarMicroImg = lunarMicroCtx.createImageData(lunarMicroSize, lunarMicroSize);
-                    var lunarMicroPx = lunarMicroImg.data;
-                    var lunarMicroSeed = 0x6d2b79f5;
-                    function lunarMicroRand() {
-                      lunarMicroSeed = (Math.imul(lunarMicroSeed, 1664525) + 1013904223) >>> 0;
-                      return lunarMicroSeed / 4294967296;
-                    }
-                    for (var lmi = 0; lmi < lunarMicroSize * lunarMicroSize; lmi++) {
-                      var lmx = lmi % lunarMicroSize, lmy = (lmi / lunarMicroSize) | 0;
-                      var lmTone = Math.max(55, Math.min(205, 150 +
-                        (lunarMicroRand() - 0.5) * 30 +
-                        Math.sin(lmx * 0.19 + lmy * 0.07) * 5 +
-                        Math.sin(lmy * 0.23 - lmx * 0.05) * 4)) | 0;
-                      var lmO = lmi * 4;
-                      lunarMicroPx[lmO] = lunarMicroPx[lmO + 1] = lunarMicroPx[lmO + 2] = lmTone;
-                      lunarMicroPx[lmO + 3] = 255;
-                    }
-                    lunarMicroCtx.putImageData(lunarMicroImg, 0, 0);
-                    var lunarPitCount = _evaLowPower ? 18 : 42;
-                    for (var lmp = 0; lmp < lunarPitCount; lmp++) {
-                      var lmpx = lunarMicroRand() * lunarMicroSize, lmpy = lunarMicroRand() * lunarMicroSize;
-                      var lmpr = 1.5 + lunarMicroRand() * (_evaLowPower ? 2.5 : 4.5);
-                      var lmg = lunarMicroCtx.createRadialGradient(lmpx, lmpy, 0, lmpx, lmpy, lmpr);
-                      lmg.addColorStop(0, 'rgba(45,45,45,0.7)');
-                      lmg.addColorStop(0.68, 'rgba(100,100,100,0.35)');
-                      lmg.addColorStop(1, 'rgba(195,195,195,0)');
-                      lunarMicroCtx.fillStyle = lmg; lunarMicroCtx.beginPath();
-                      lunarMicroCtx.arc(lmpx, lmpy, lmpr, 0, Math.PI * 2); lunarMicroCtx.fill();
-                    }
-                    var lunarMicroTex = new THREE.CanvasTexture(lunarMicroCv);
-                    lunarMicroTex.wrapS = lunarMicroTex.wrapT = THREE.RepeatWrapping;
-                    lunarMicroTex.repeat.set(8, 8);
-                    lunarMicroTex.generateMipmaps = true;
-                    lunarMicroTex.minFilter = THREE.LinearMipmapLinearFilter;
-                    lunarMicroTex.magFilter = THREE.LinearFilter;
-                    lunarMicroTex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
-                    var terrainMat = new THREE.MeshStandardMaterial({
-                      map: terrainTex, bumpMap: lunarMicroTex,
-                      bumpScale: _evaLowPower ? 0.045 : 0.075,
-                      roughness: 0.96,
-                      metalness: 0.01, flatShading: true
-                    });
-                    var terrain = new THREE.Mesh(terrainGeo, terrainMat);
-                    terrain.rotation.x = -Math.PI / 2;
-                    terrain.receiveShadow = true;   // lunar scene sells on hard black shadows (sun.castShadow above)
-                    scene.add(terrain);
                     var _terrainHeightAt = function(x, z) {
                       if (typeof x !== 'number' || typeof z !== 'number' ||
                           !isFinite(x) || !isFinite(z) ||
                           x < -100 || x > 100 || z < -100 || z > 100) return 0;
-                      // PlaneGeometry(200,200,100,100) lays out 101x101 vertices,
+                      // PlaneGeometry(200,200,SEG,SEG) lays out (SEG+1)^2 vertices,
                       // row-major from world z=-100 to +100 after rotation.x=-PI/2.
-                      var gridX = (x + 100) * 0.5, gridZ = (z + 100) * 0.5;
-                      var cellX = Math.min(99, Math.floor(gridX));
-                      var cellZ = Math.min(99, Math.floor(gridZ));
+                      var gridX = (x + 100) / _LUNAR_STEP, gridZ = (z + 100) / _LUNAR_STEP;
+                      var cellX = Math.min(_LUNAR_SEG - 1, Math.floor(gridX));
+                      var cellZ = Math.min(_LUNAR_SEG - 1, Math.floor(gridZ));
                       var u = gridX - cellX, v = gridZ - cellZ;
-                      var row0 = cellZ * 101 + cellX;
-                      var row1 = row0 + 101;
+                      var row0 = cellZ * _LUNAR_N + cellX;
+                      var row1 = row0 + _LUNAR_N;
                       var hA = _lunarTerrainGrid[row0];
                       var hB = _lunarTerrainGrid[row1];
                       var hC = _lunarTerrainGrid[row1 + 1];
@@ -5670,14 +6195,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       return hC + (1 - u) * (hB - hC) + (1 - v) * (hD - hC);
                     };
 
+                    // Heights for the bakes: the exact mesh inside the square, then coarser
+                    // grids of the curving far field out to the horizon.
+                    var _lunarFarHeight = function (x, z) { return _lunarField.height(x, z) - _lunarField.curvature(x, z); };
+                    var _lunarMidGrid = mmLunarGrid(_lunarFarHeight, -1200, 2400, _evaLowPower ? 151 : 241);
+                    var _lunarOuterGrid = mmLunarGrid(_lunarFarHeight, -3600, 7200, _evaLowPower ? 121 : 161);
+                    var _lunarBakeHeight = function (x, z) {
+                      if (x >= -100 && x <= 100 && z >= -100 && z <= 100) return _terrainHeightAt(x, z);
+                      var hm = _lunarMidGrid.at(x, z);
+                      return hm === hm ? hm : _lunarOuterGrid.at(x, z);
+                    };
+                    // The LM and the bigger boulders cast into the bake too, so their
+                    // shadows exist without a shadow map (low-power tier) and beyond its reach.
+                    var _lmBaseY = (_terrainHeightAt(3.67, 0) + _terrainHeightAt(-3.67, 0) + _terrainHeightAt(0, 3.67) + _terrainHeightAt(0, -3.67)) / 4 - 0.04;
+                    var _bakeRockCells = {};
+                    _lunarField.rocks.forEach(function (r) {
+                      if (r.s < 0.45) return;
+                      var ck = Math.floor(r.x / 4) * 1000 + Math.floor(r.z / 4), gy = _terrainHeightAt(r.x, r.z);
+                      (_bakeRockCells[ck] || (_bakeRockCells[ck] = [])).push([r.x, r.z, r.s * 0.8, gy + r.s * r.sy * 1.05]);
+                    });
+                    var _bakeSolidAt = function (x, z, y) {
+                      var lr2 = x * x + z * z, ly = y - _lmBaseY;
+                      if (lr2 < 3.1 && ly > 1.05 && ly < 2.6) return true;      // descent stage
+                      if (lr2 < 1.9 && ly >= 2.6 && ly < 4.5) return true;      // ascent stage
+                      var list = _bakeRockCells[Math.floor(x / 4) * 1000 + Math.floor(z / 4)];
+                      if (list) for (var k = 0; k < list.length; k++) {
+                        var rk = list[k], rdx = x - rk[0], rdz = z - rk[1];
+                        if (rdx * rdx + rdz * rdz < rk[2] * rk[2] && y < rk[3]) return true;
+                      }
+                      return false;
+                    };
+                    var terrainBake = new Float32Array(_LUNAR_N * _LUNAR_N * 3);
+                    (function bakeTerrain() {
+                      var N = _LUNAR_N, dirs = _evaLowPower ? 6 : 7, steps = _evaLowPower ? 6 : 8;
+                      for (var bj = 0; bj < N; bj++) for (var bi = 0; bi < N; bi++) {
+                        var bo = bj * N + bi, bx = -100 + bi * _LUNAR_STEP, bz = -100 + bj * _LUNAR_STEP;
+                        terrainBake[bo * 3] = mmSunClearance(_lunarBakeHeight, bx, bz, _lunarTerrainGrid[bo], 70, _bakeSolidAt);
+                        terrainBake[bo * 3 + 2] = _lunarField.albedo(bx, bz);
+                        // Sky view varies slowly: bake every second vertex, fill between.
+                        if (bi % 2 === 0 && bj % 2 === 0) {
+                          terrainBake[bo * 3 + 1] = mmSkyView(_lunarBakeHeight, bx, bz, _lunarTerrainGrid[bo], dirs, steps, 24);
+                        }
+                      }
+                      for (bj = 0; bj < N; bj++) for (bi = 0; bi < N; bi++) {
+                        if (bi % 2 === 0 && bj % 2 === 0) continue;
+                        var i0 = bi - (bi % 2), j0 = bj - (bj % 2), i1 = Math.min(N - 1, i0 + 2), j1 = Math.min(N - 1, j0 + 2);
+                        var fu = (bi - i0) / 2, fv = (bj - j0) / 2;
+                        terrainBake[(bj * N + bi) * 3 + 1] =
+                          (terrainBake[(j0 * N + i0) * 3 + 1] * (1 - fu) + terrainBake[(j0 * N + i1) * 3 + 1] * fu) * (1 - fv) +
+                          (terrainBake[(j1 * N + i0) * 3 + 1] * (1 - fu) + terrainBake[(j1 * N + i1) * 3 + 1] * fu) * fv;
+                      }
+                    })();
+                    terrainGeo.setAttribute('lunarBake', new THREE.BufferAttribute(terrainBake, 3));
+
+                    // Regolith detail, height and albedo, painted once and sampled in world
+                    // space at two rotated scales (see mmLunarShade), so it never tiles into
+                    // a visible grid. The old texture was one 256 px noise tile repeated 8x.
+                    var lunarMicroSize = _evaLowPower ? 256 : 512;
+                    var lunarMicroSeed = 0x6d2b79f5;
+                    var _lunarDetail = mmRegolithDetail(lunarMicroSize, lunarMicroSeed);
+                    var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = tCv.height = lunarMicroSize;
+                    var tCx = tCv.getContext('2d');
+                    var lunarMicroCv = document.createElement('canvas');
+                    lunarMicroCv.setAttribute('aria-hidden', 'true');
+                    lunarMicroCv.width = lunarMicroCv.height = lunarMicroSize;
+                    var lunarMicroCtx = lunarMicroCv.getContext('2d');
+                    (function paintRegolith() {
+                      var N = lunarMicroSize, img = tCx.createImageData(N, N), hImg = lunarMicroCtx.createImageData(N, N);
+                      var span = (_lunarDetail.hi - _lunarDetail.lo) || 1;
+                      for (var k = 0; k < N * N; k++) {
+                        var a = Math.max(0.35, Math.min(1.8, _lunarDetail.albedo[k])) * 118, o4 = k * 4;
+                        img.data[o4] = Math.min(255, a) | 0; img.data[o4 + 1] = Math.min(255, a * 0.99) | 0;
+                        img.data[o4 + 2] = Math.min(255, a * 0.965) | 0; img.data[o4 + 3] = 255;
+                        hImg.data[o4] = hImg.data[o4 + 1] = hImg.data[o4 + 2] = ((_lunarDetail.height[k] - _lunarDetail.lo) / span * 255) | 0;
+                        hImg.data[o4 + 3] = 255;
+                      }
+                      tCx.putImageData(img, 0, 0);
+                      lunarMicroCtx.putImageData(hImg, 0, 0);
+                    })();
+                    var terrainTex = new THREE.CanvasTexture(tCv);
+                    terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping;
+                    terrainTex.encoding = THREE.sRGBEncoding;
+                    terrainTex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+                    var lunarMicroTex = new THREE.CanvasTexture(lunarMicroCv);
+                    lunarMicroTex.wrapS = lunarMicroTex.wrapT = THREE.RepeatWrapping;
+                    lunarMicroTex.generateMipmaps = true;
+                    lunarMicroTex.minFilter = THREE.LinearMipmapLinearFilter;
+                    lunarMicroTex.magFilter = THREE.LinearFilter;
+                    lunarMicroTex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+                    var terrainMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({
+                      color: 0x2a2927, map: terrainTex, bumpMap: lunarMicroTex,
+                      bumpScale: _evaLowPower ? 0.03 : 0.022,
+                      roughness: 0.96,
+                      metalness: 0.0
+                    }), 'ground', _evaLowPower);
+                    var terrain = new THREE.Mesh(terrainGeo, terrainMat);
+                    terrain.rotation.x = -Math.PI / 2;
+                    terrain.receiveShadow = true;   // lunar scene sells on hard black shadows (sun.castShadow above)
+                    scene.add(terrain);
+
                     // ── Lighting (harsh unfiltered sunlight + no atmosphere) ──
-                    // Real lunar look = pitch-black SHADOWS under a single hard sun, with a
-                    // faint warm ground-bounce (regolith reflects ~12%) instead of a flat grey
-                    // ambient. Shadow map skipped on low-power devices (same tier as bloom).
-                    scene.add(new THREE.AmbientLight(0x1a1a1e, 0.35));
-                    scene.add(new THREE.HemisphereLight(0x050508, 0x35302a, 0.35));   // black sky above, regolith bounce below
-                    var _sunOffset = new THREE.Vector3(40, 25, 15);
-                    var sun = new THREE.DirectionalLight(0xfff8e1, 1.6);
+                    // Real lunar look = near-black SHADOWS under a single hard sun, filled
+                    // only by bounce off the regolith (it reflects ~12%) instead of a sky.
+                    // The ground's own bounce is in mmLunarShade; these two lights fill the
+                    // hardware. Shadow map skipped on low-power devices (same tier as bloom).
+                    scene.add(new THREE.AmbientLight(0x1a1a1e, 0.12));
+                    scene.add(new THREE.HemisphereLight(0x050508, 0x4a433a, 0.32));   // black sky above, regolith bounce below
+                    var _sunOffset = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z).multiplyScalar(60);
+                    var sun = new THREE.DirectionalLight(0xfff6e8, 2.3);
                     sun.position.copy(_sunOffset);
                     // The shadow frustum TRACKS the astronaut instead of covering the whole
                     // 120x120 plain from a fixed point. At ±60 with a 1024 map each texel
@@ -5722,34 +6347,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       sg.fillStyle = grad; sg.fillRect(0, 0, 128, 128);
                       var st = new THREE.CanvasTexture(sc);
                       var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: st, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-                      var sd = new THREE.Vector3(40, 25, 15).normalize().multiplyScalar(170);
+                      var sd = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z).multiplyScalar(170);
                       sunSprite.position.copy(sd);
-                      sunSprite.scale.set(26, 26, 1);
+                      sunSprite.scale.set(15, 15, 1);
                       scene.add(sunSprite);
                       _sunSprite = sunSprite;
                     })();
 
+                    // ── Reflections for the hardware ──
+                    // Foil, the rover and the suit reflect what is actually around them:
+                    // bright regolith below the horizon, black sky above. Without an
+                    // environment every metal rendered as flat, dark plastic.
+                    var _evaEnvRT = null, _evaEnvMap = null;
+                    try {
+                      var envScene = new THREE.Scene();
+                      var envGeo = new THREE.SphereGeometry(50, 48, 24);
+                      var envPos = envGeo.attributes.position, envCol = new Float32Array(envPos.count * 3);
+                      for (var evi = 0; evi < envPos.count; evi++) {
+                        var ey = envPos.getY(evi) / 50, eg = ey < 0.02 ? 0.17 * (0.55 + 0.45 * Math.min(1, -ey * 4 + 0.08)) : 0.004;
+                        envCol[evi * 3] = eg * 1.02; envCol[evi * 3 + 1] = eg; envCol[evi * 3 + 2] = eg * 0.94;
+                      }
+                      envGeo.setAttribute('color', new THREE.BufferAttribute(envCol, 3));
+                      var envMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide });
+                      envScene.add(new THREE.Mesh(envGeo, envMat));
+                      var envGen = new THREE.PMREMGenerator(renderer);
+                      _evaEnvRT = envGen.fromScene(envScene, 0.03);
+                      _evaEnvMap = _evaEnvRT.texture;
+                      envGen.dispose(); envGeo.dispose(); envMat.dispose();
+                    } catch (_envErr) { _evaEnvRT = null; _evaEnvMap = null; }
+
                     // ── Lunar Module on surface ──
-                    var lmGroup = new THREE.Group();
-                    // Descent stage (gold)
-                    var dsGeo = new THREE.BoxGeometry(2.5, 1.5, 2.5);
-                    lmGroup.add(new THREE.Mesh(dsGeo, new THREE.MeshStandardMaterial({ color: 0xc9a04a, metalness: 0.4, roughness: 0.6 })));
-                    // Ascent stage (silver)
-                    var asGeo = new THREE.BoxGeometry(2, 2, 2);
-                    var asMesh = new THREE.Mesh(asGeo, new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.5, roughness: 0.4 }));
-                    asMesh.position.y = 1.8; lmGroup.add(asMesh);
-                    // Legs (4)
-                    [[-1.3, 0, -1.3], [1.3, 0, -1.3], [-1.3, 0, 1.3], [1.3, 0, 1.3]].forEach(function(lp) {
-                      var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2, 4), new THREE.MeshStandardMaterial({ color: 0x888888 }));
-                      leg.position.set(lp[0], -0.8, lp[2]);
-                      leg.rotation.z = lp[0] > 0 ? 0.3 : -0.3;
-                      leg.rotation.x = lp[2] > 0 ? -0.3 : 0.3;
-                      lmGroup.add(leg);
-                      // Foot pad
-                      var pad = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 8), new THREE.MeshStandardMaterial({ color: 0x888888 }));
-                      pad.position.set(lp[0] * 1.5, -1.7, lp[2] * 1.5);
-                      lmGroup.add(pad);
-                    });
+                    // mmBuildSurfaceLM: gold-foil descent stage on four legs with struts and
+                    // pads, the faceted ascent stage with its windows, RCS quads and dishes,
+                    // and the ladder down the front leg. It replaced two boxes on sticks.
+                    var lmGroup = mmBuildSurfaceLM(THREE, _evaEnvMap, _evaLowPower);
                     // ── Flag (grouped, terrain-anchored, real stripes + canton texture, and a
                     // FROZEN ripple — Apollo flags hung from a stiffening rod and kept the
                     // crinkle from handling; there's no air, so it must not animate) ──
@@ -5787,7 +6418,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     flagGroup.position.set(4, _terrainHeightAt(4, 2), 2);
                     scene.add(flagGroup);
 
-                    lmGroup.position.set(0, _terrainHeightAt(0, 0) + 1.7, 0);
+                    // Settled on the four pads, a few centimetres into the regolith.
+                    lmGroup.position.set(0, _lmBaseY, 0);
                     scene.add(lmGroup);
 
                     // ── ALSEP Science Station ──
@@ -6049,130 +6681,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       canvasEl.dataset.lrvImpactCount = String(lrvImpactCount);
                     }
 
-                    // ── Scattered boulders ──
-                    for (var bi = 0; bi < 30; bi++) {
-                      var bx = (Math.random() - 0.5) * 100, bz = (Math.random() - 0.5) * 100;
-                      var bScale = 0.2 + Math.random() * 1.2;
-                      var bGeo = new THREE.DodecahedronGeometry(bScale, 0);
-                      var bPos2 = bGeo.attributes.position.array;
-                      for (var bvi = 0; bvi < bPos2.length; bvi += 3) {
-                        bPos2[bvi] *= 0.6 + Math.random() * 0.8;
-                        bPos2[bvi + 1] *= 0.4 + Math.random() * 0.6;
-                      }
-                      bGeo.computeVertexNormals();
-                      var boulder = new THREE.Mesh(bGeo, new THREE.MeshStandardMaterial({ color: 0x8a8278, roughness: 0.95, flatShading: true }));
-                      boulder.position.set(bx, _terrainHeightAt(bx, bz) + bScale * 0.2, bz);
-                      boulder.rotation.set(Math.random(), Math.random(), 0);
-                      scene.add(boulder);
-                    }
-
-                    // ── Hadley Rille (sinuous lava channel) ──
-                    // A real trench ribbon along the path. (Replaces a LineBasicMaterial line —
-                    // WebGL ignores linewidth, so it rendered as a 1-pixel scratch — plus a chain
-                    // of small disconnected wall planes that floated above the terrain.)
-                    (function addRille() {
-                      var rPts = [];
-                      for (var ri2 = 0; ri2 < 30; ri2++) {
-                        var rx2 = -40 + ri2 * 3 + Math.sin(ri2 * 0.5) * 5;
-                        var rz2 = 30 + Math.cos(ri2 * 0.3) * 8;
-                        rPts.push(new THREE.Vector3(rx2, _terrainHeightAt(rx2, rz2), rz2));
-                      }
-                      var HALF_W = 1.6, DEPTH = 1.1;
-                      var verts = [], idx = [];
-                      for (var rp = 0; rp < rPts.length; rp++) {
-                        var tangent = (rp < rPts.length - 1)
-                          ? new THREE.Vector3().subVectors(rPts[rp + 1], rPts[rp])
-                          : new THREE.Vector3().subVectors(rPts[rp], rPts[rp - 1]);
-                        var norm = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-                        var P = rPts[rp];
-                        // left rim → channel floor (sunken) → right rim: a shallow V trench
-                        verts.push(P.x + norm.x * HALF_W, P.y + 0.05, P.z + norm.z * HALF_W);
-                        verts.push(P.x, P.y - DEPTH, P.z);
-                        verts.push(P.x - norm.x * HALF_W, P.y + 0.05, P.z - norm.z * HALF_W);
-                        if (rp > 0) {
-                          var a0 = (rp - 1) * 3, b0 = rp * 3;
-                          idx.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1);        // left wall
-                          idx.push(a0 + 1, b0 + 1, a0 + 2, b0 + 1, b0 + 2, a0 + 2); // right wall
-                        }
-                      }
-                      var rGeo = new THREE.BufferGeometry();
-                      rGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-                      rGeo.setIndex(idx);
-                      rGeo.computeVertexNormals();
-                      var rille = new THREE.Mesh(rGeo, new THREE.MeshStandardMaterial({ color: 0x3d3833, roughness: 0.98, side: THREE.DoubleSide, flatShading: true }));
-                      scene.add(rille);
-                    })();
-
-                    // ── Highland ridge in the distance ──
-                    var ridgeGeo = new THREE.BoxGeometry(60, 6, 4);
-                    var ridgePos = ridgeGeo.attributes.position.array;
-                    for (var rpi = 0; rpi < ridgePos.length; rpi += 3) {
-                      ridgePos[rpi] *= 0.8 + Math.random() * 0.4;
-                      ridgePos[rpi + 1] *= 0.6 + Math.random() * 0.8;
-                      ridgePos[rpi + 2] *= 0.7 + Math.random() * 0.6;
-                    }
-                    ridgeGeo.computeVertexNormals();
-                    var ridgeMat = new THREE.MeshStandardMaterial({ color: 0x9a9288, roughness: 0.95, flatShading: true });
-                    var ridge = new THREE.Mesh(ridgeGeo, ridgeMat);
-                    ridge.position.set(0, _terrainHeightAt(0, -70) + 2, -70);
-                    scene.add(ridge);
-
-                    // ── Distant highland mountains ringing the horizon ──
-                    // (Replaces the old "Earthrise glow" — a solid untextured blue ball + halos
-                    // that sat on the horizon while the REAL Earth billboard already hung in the
-                    // sky: two Earths at once, and the ball read as a flat blue blob. The Earth
-                    // sprite up at (-60,70,-120) is the one true Earth, per the Apollo EVA view.)
-                    (function addHorizonMountains() {
-                      var mmSpots = [[-80, -60, 14, 9], [-95, 10, 18, 7], [70, -80, 16, 10], [95, 30, 20, 8], [-30, -95, 22, 11], [40, 90, 17, 8], [-90, 70, 15, 7]];
-                      mmSpots.forEach(function (ms, mi) {
-                        var mGeo = new THREE.ConeGeometry(ms[2], ms[3], 7, 1);
-                        var mp = mGeo.attributes.position.array;
-                        for (var mvi = 0; mvi < mp.length; mvi += 3) {         // roughen the silhouette
-                          mp[mvi] *= 0.85 + ((mi * 131 + mvi * 17) % 100) / 100 * 0.3;
-                          mp[mvi + 2] *= 0.85 + ((mi * 57 + mvi * 29) % 100) / 100 * 0.3;
-                        }
-                        mGeo.computeVertexNormals();
-                        var m = new THREE.Mesh(mGeo, new THREE.MeshStandardMaterial({ color: 0x86807a, roughness: 0.98, flatShading: true }));
-                        m.position.set(ms[0], ms[3] * 0.35, ms[1]);
-                        scene.add(m);
+                    // ── Rocks: the fresh crater's blocky ejecta, a scatter, and a cobble field ──
+                    // Three instanced shapes, so hundreds of rocks cost three draw calls. Each
+                    // carries a baked sun visibility (a boulder down in a shadowed crater bowl
+                    // must not glow) and a tint; the big ones are solid to walk into.
+                    var _rockGeos = [0, 1, 2].map(function (k) { return mmBoulderGeometry(THREE, 3 + k * 7); });
+                    var _rockMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({ color: 0x191816, roughness: 1, metalness: 0 }), 'rock', _evaLowPower);
+                    var _rockMeshes = [], _evaRockObstacles = [];
+                    (function placeRocks() {
+                      var byShape = [[], [], []], dummy = new THREE.Object3D();
+                      _lunarField.rocks.forEach(function (r) { byShape[r.v].push(r); });
+                      byShape.forEach(function (list, v) {
+                        if (!list.length) return;
+                        var im = new THREE.InstancedMesh(_rockGeos[v], _rockMat, list.length);
+                        var inst = new Float32Array(list.length * 2);
+                        list.forEach(function (r, k) {
+                          var gy = _terrainHeightAt(r.x, r.z), ry = r.s * r.sy;
+                          dummy.position.set(r.x, gy + ry * 0.12, r.z);
+                          dummy.rotation.set(r.tilt, r.yaw, r.tilt * 0.6);
+                          dummy.scale.set(r.s, ry, r.s * (0.8 + 0.08 * (k % 5)));
+                          dummy.updateMatrix();
+                          im.setMatrixAt(k, dummy.matrix);
+                          inst[k * 2] = mmSmooth(-0.03, 0.03, mmSunClearance(_lunarBakeHeight, r.x, r.z, gy + ry * 0.6, 60));
+                          inst[k * 2 + 1] = r.tint;
+                          if (r.s >= 0.35) _evaRockObstacles.push([r.x, r.z, r.s * 0.85, gy + ry * 0.8]);
+                        });
+                        _rockGeos[v].setAttribute('lunarInst', new THREE.InstancedBufferAttribute(inst, 2));
+                        im.instanceMatrix.needsUpdate = true;
+                        im.frustumCulled = false;     // r128 culls an InstancedMesh by its one source shape
+                        im.receiveShadow = true;
+                        scene.add(im);
+                        _rockMeshes.push(im);
                       });
                     })();
 
-                    // One unshadowed terrain silhouette closes the plane edge without haze.
-                    var lunarHorizonSegments = _evaLowPower ? 32 : 48;
+                    // ── The far field: curving ground out to the horizon ──
+                    // A lattice that is fine at the square's edge and coarsens outward to
+                    // ~3.4 km, with the Moon's curvature taken off (3.4 m at the edge), so
+                    // the ground rolls over a true horizon about 2.5 km away instead of
+                    // stopping at a cliff. Cells inside the walkable square are skipped.
                     var lunarHorizonGeo = new THREE.BufferGeometry();
-                    var lunarHorizonPos = new Float32Array((lunarHorizonSegments + 1) * 6);
-                    var lunarHorizonIdx = [];
-                    for (var lhi = 0; lhi <= lunarHorizonSegments; lhi++) {
-                      var lha = lhi / lunarHorizonSegments * Math.PI * 2;
-                      // Beyond the complete +/-92 m drive square, including its corners:
-                      // even the inner ridge stays at least ~70 m outside playable space.
-                      var lhr = 224 + Math.sin(lha * 5) * 4 + Math.sin(lha * 11 + 0.7) * 2;
-                      var lhh = 4.2 + Math.sin(lha * 3 + 0.4) * 2.1 + Math.sin(lha * 9) * 1.1;
-                      var lho = lhi * 6;
-                      lunarHorizonPos[lho] = Math.cos(lha) * lhr;
-                      lunarHorizonPos[lho + 1] = -18;
-                      lunarHorizonPos[lho + 2] = Math.sin(lha) * lhr;
-                      lunarHorizonPos[lho + 3] = Math.cos(lha) * (lhr - 10);
-                      lunarHorizonPos[lho + 4] = Math.max(0.8, lhh);
-                      lunarHorizonPos[lho + 5] = Math.sin(lha) * (lhr - 10);
-                      if (lhi < lunarHorizonSegments) {
-                        var lhb = lhi * 2;
-                        lunarHorizonIdx.push(lhb, lhb + 1, lhb + 2, lhb + 1, lhb + 3, lhb + 2);
+                    (function buildFarField() {
+                      var coords = [], inner = [], outer = [], d = 100, st = _LUNAR_SEAM;
+                      for (var c = -100; c <= 100.001; c += _LUNAR_SEAM) inner.push(c);
+                      while (d < 3400) { st *= _evaLowPower ? 1.15 : 1.09; d += st; outer.push(d); }
+                      for (var k = outer.length - 1; k >= 0; k--) coords.push(-outer[k]);
+                      coords = coords.concat(inner);
+                      for (k = 0; k < outer.length; k++) coords.push(outer[k]);
+                      var n = coords.length, pos = new Float32Array(n * n * 3), bake = new Float32Array(n * n * 3), idx = [];
+                      var hAt = function (x, z) { var hm = _lunarMidGrid.at(x, z); return hm === hm ? hm : _lunarOuterGrid.at(x, z); };
+                      for (var j = 0; j < n; j++) for (var i = 0; i < n; i++) {
+                        var fx = coords[i], fz = coords[j], o = j * n + i;
+                        var inSq = Math.abs(fx) <= 100.001 && Math.abs(fz) <= 100.001;
+                        var fh = inSq ? _lunarSeamGrid.at(fx, fz) : _lunarFarHeight(fx, fz);
+                        if (i === 0 || j === 0 || i === n - 1 || j === n - 1) fh -= 60;   // skirt under the far edge
+                        pos[o * 3] = fx; pos[o * 3 + 1] = fh; pos[o * 3 + 2] = fz;
+                        var reach = Math.max(80, Math.hypot(fx, fz) * 0.25);
+                        bake[o * 3] = inSq ? 1 : mmSunClearance(hAt, fx, fz, fh, reach);
+                        bake[o * 3 + 1] = inSq ? 1 : mmSkyView(hAt, fx, fz, fh, 4, 5, reach * 0.5);
+                        bake[o * 3 + 2] = _lunarField.albedo(fx, fz);
                       }
-                    }
-                    lunarHorizonGeo.setAttribute('position', new THREE.BufferAttribute(lunarHorizonPos, 3));
-                    lunarHorizonGeo.setIndex(lunarHorizonIdx);
-                    lunarHorizonGeo.computeVertexNormals();
-                    var lunarHorizonMat = new THREE.MeshStandardMaterial({
-                      color: 0x4b4845, roughness: 1, metalness: 0,
-                      flatShading: true, side: THREE.DoubleSide
-                    });
+                      for (j = 0; j < n - 1; j++) for (i = 0; i < n - 1; i++) {
+                        if (coords[i] >= -100.001 && coords[i + 1] <= 100.001 && coords[j] >= -100.001 && coords[j + 1] <= 100.001) continue;
+                        var a = j * n + i, b = (j + 1) * n + i, cc = (j + 1) * n + i + 1, dd = j * n + i + 1;
+                        idx.push(a, b, dd, b, cc, dd);
+                      }
+                      lunarHorizonGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                      lunarHorizonGeo.setAttribute('lunarBake', new THREE.BufferAttribute(bake, 3));
+                      lunarHorizonGeo.setIndex(idx);
+                      lunarHorizonGeo.computeVertexNormals();
+                    })();
+                    var lunarHorizonMat = terrainMat;
                     var lunarHorizon = new THREE.Mesh(lunarHorizonGeo, lunarHorizonMat);
                     lunarHorizon.castShadow = false; lunarHorizon.receiveShadow = false;
+                    lunarHorizon.frustumCulled = false;
                     scene.add(lunarHorizon);
+
+                    // ── Massifs beyond the horizon ──
+                    // 7 to 16 km out and up to 1.9 km high, their feet hidden by the curve
+                    // of the ground, as the valley walls stood around Apollo 15 and 17.
+                    // Highland rock is brighter than the dark mare plain you stand on.
+                    var _massifMeshes = [];
+                    _lunarField.massifs.forEach(function (m) {
+                      var n = _evaLowPower ? 30 : 64, span = m.r * 2.4, x0 = m.x - span / 2, z0 = m.z - span / 2, step = span / (n - 1);
+                      var mh = function (x, z) { return _lunarField.massifHeight(m, x, z) - _lunarField.curvature(x, z); };
+                      var pos = new Float32Array(n * n * 3), bake = new Float32Array(n * n * 3), idx = [];
+                      for (var j = 0; j < n; j++) for (var i = 0; i < n; i++) {
+                        var x = x0 + i * step, z = z0 + j * step, o = j * n + i, h = mh(x, z);
+                        if (i === 0 || j === 0 || i === n - 1 || j === n - 1) h -= 150;
+                        pos[o * 3] = x; pos[o * 3 + 1] = h; pos[o * 3 + 2] = z;
+                        bake[o * 3] = 1;   // shaded by facing alone: a coarse baked edge breaks up into shards
+                        bake[o * 3 + 1] = 1;
+                        bake[o * 3 + 2] = 0.95 + 0.12 * mmLunarNoise(x / 1400, z / 1400, m.seed + 3);
+                        if (j < n - 1 && i < n - 1) idx.push(o, o + n, o + 1, o + n, o + n + 1, o + 1);
+                      }
+                      var geo = new THREE.BufferGeometry();
+                      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                      geo.setAttribute('lunarBake', new THREE.BufferAttribute(bake, 3));
+                      geo.setIndex(idx);
+                      geo.computeVertexNormals();
+                      var mesh = new THREE.Mesh(geo, terrainMat);
+                      mesh._mmNoCast = true;
+                      scene.add(mesh);
+                      _massifMeshes.push(mesh);
+                    });
                     canvasEl.dataset.lunarSurfaceProfile = _evaLowPower
-                      ? 'microdetail-low+horizon-32' : 'microdetail-high+horizon-48';
+                      ? 'regolith-low+farfield+massifs' : 'regolith-high+farfield+massifs';
 
                     // All static scenery built → mark it as shadow CASTERS in one pass (the
                     // terrain receives). Sample orbs / bootprints are added after this on
@@ -6180,10 +6794,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // keeps the shadow pass cheap. No-op when shadows are off (low-power).
                     if (!_evaLowPower) {
                       scene.traverse(function (n3) {
-                        if (!n3.isMesh || n3 === terrain || n3 === lunarHorizon) return;
+                        if (!n3.isMesh || n3 === terrain || n3 === lunarHorizon || n3._mmNoCast) return;
                         var m3 = n3.material;
                         if (m3 && (m3.isSpriteMaterial || m3.side === THREE.BackSide)) return;   // sky shell must NEVER cast — it surrounds the shadow frustum
                         n3.castShadow = true;
+                      });
+                    }
+                    // The rover, ALSEP and flag hardware reflect the same surroundings as the LM.
+                    if (_evaEnvMap) {
+                      scene.traverse(function (n4) {
+                        var m4 = n4.isMesh && n4.material;
+                        if (!m4 || !m4.isMeshStandardMaterial || m4.envMap || m4 === terrainMat || m4 === _rockMat) return;
+                        m4.envMap = _evaEnvMap; m4.needsUpdate = true;
                       });
                     }
 
@@ -6787,7 +7409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // turnLeft/turnRight exist because yaw was mouse-ONLY: arrow keys and A/D
                     // both strafe, so a keyboard-only student could slide around the regolith
                     // but never turn to face anything. Q/E steer the suit.
-                    var moveState = { forward: false, back: false, left: false, right: false, sample: false, turnLeft: false, turnRight: false };
+                    var moveState = { forward: false, back: false, left: false, right: false, sample: false, turnLeft: false, turnRight: false, lope: false };
                     // Height reserved along the bottom edge for the on-screen control pad.
                     // Every other bottom-anchored overlay offsets by this, or the pad simply
                     // covers it — on a phone that hid the rover's own Board button.
@@ -6804,7 +7426,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // lasting 2.1 s, the "three feet" the LMP's radio line describes.
                     var EVA_G = 1.62, EVA_JUMP_V0 = 1.7;
                     var evaHopStart = 0;   // wall clock at take-off, for the hop timer
-                    var speed3d = 0.06; // slower in spacesuit
+                    // Suit state for mmEvaFootVelocity: horizontal velocity, time spent
+                    // striding, and the visual bob and knee flex riding on the physics.
+                    var evaVel = { x: 0, z: 0 }, evaStrideTime = 0, evaGaitPhase = 0, evaBob = 0, evaKnee = 0, evaKneeVel = 0, evaLope = false;
+                    // Things you cannot walk through: the descent stage and its four pads,
+                    // the ALSEP central station, the bigger boulders, and the parked rover.
+                    // [x, z, radius, top]; you can sail over anything lower than your boots.
+                    var _evaSolids = [[0, 0, 1.8, lmGroup.position.y + 4.6], [alsepX, alsepZ, 0.42, alsepY + 0.3]]
+                      .concat([[3.67, 0], [-3.67, 0], [0, 3.67], [0, -3.67]].map(function (pd) { return [pd[0], pd[1], 0.4, lmGroup.position.y + 0.22]; }))
+                      .concat(_evaRockObstacles);
+                    function evaPushOut(ox, oz, r, top, footY) {
+                      if (footY > top) return;
+                      var dx = playerPos.x - ox, dz = playerPos.z - oz, rr = r + 0.3, d2 = dx * dx + dz * dz;
+                      if (d2 >= rr * rr || d2 < 1e-8) return;
+                      var d = Math.sqrt(d2), nx = dx / d, nz = dz / d;
+                      playerPos.x = ox + nx * rr; playerPos.z = oz + nz * rr;
+                      var vn = evaVel.x * nx + evaVel.z * nz;
+                      if (vn < 0) { evaVel.x -= vn * nx; evaVel.z -= vn * nz; }
+                    }
+                    function evaCollide() {
+                      var footY = playerPos.y - 1.8;
+                      for (var k = 0; k < _evaSolids.length; k++) {
+                        var so = _evaSolids[k];
+                        if (Math.abs(playerPos.x - so[0]) < so[2] + 0.3 && Math.abs(playerPos.z - so[1]) < so[2] + 0.3) evaPushOut(so[0], so[1], so[2], so[3], footY);
+                      }
+                      if (!roverBoarded) evaPushOut(roverGrp.position.x, roverGrp.position.z, 0.9, roverGrp.position.y + 1.2, footY);
+                    }
 
                     // ── The astronaut's own body ──
                     // You were a floating camera: no suit, and — because a camera casts
@@ -6820,8 +7467,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // sun sails past the bloom threshold and the chest renders as a glowing
                     // ball hanging in the middle of the down-view. Apollo suits do blow out
                     // in the real photographs, but not into a light source.
-                    var suitWhite = new THREE.MeshStandardMaterial({ color: 0xbfbfba, roughness: 0.97, metalness: 0.0 });
-                    var suitDark = new THREE.MeshStandardMaterial({ color: 0x8a9096, roughness: 0.9, metalness: 0.08 });
+                    var suitWhite = new THREE.MeshStandardMaterial({ color: 0xbfbfba, roughness: 0.97, metalness: 0.0, envMap: _evaEnvMap });
+                    var suitDark = new THREE.MeshStandardMaterial({ color: 0x8a9096, roughness: 0.9, metalness: 0.08, envMap: _evaEnvMap });
                     // CapsuleGeometry landed in three r141 and this app pins r128, so the
                     // constructor must be TESTED, not invoked, before choosing.
                     // Sized and placed off the EYE, which sits 1.8 above the ground: chest
@@ -6869,7 +7516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (!_evaLowPower) sun.shadow.camera.layers.enable(1);
                     scene.add(suitGroup);
                     // Unit vector toward the sun, matching the DirectionalLight above.
-                    var _sunDir = new THREE.Vector3(40, 25, 15).normalize();
+                    var _sunDir = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z);
                     var _glareFwd = new THREE.Vector3();   // reused so the loop allocates nothing
                     var _glarePrev = -1;
 
@@ -6894,7 +7541,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var lookSensitivity = 0.003;
                     var applyComfortFactors = function() {
                       lookSensitivity = comfortMode ? 0.0012 : 0.003; // ~2.5x slower in comfort mode
-                      speed3d = comfortMode ? 0.04 : 0.06;
                     };
                     applyComfortFactors();
                     // Click-to-move toggle (motor-impaired students: point-and-click instead of WASD)
@@ -6950,6 +7596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       applyLrvVisualSteering(0);
                       refreshLrvWheelContacts(0);
                       clickTarget = null;
+                      evaVel.x = evaVel.z = 0; evaStrideTime = 0;   // step off standing, not sliding
                       isJumping = false;
                       playerVelY = 0;
                       moveState.sample = false;
@@ -7173,6 +7820,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         case 'b': if (!e.repeat) toggleLrvAudio(); break;
                         case 'q': moveState.turnLeft = true; break;   // keyboard yaw — no mouse required
                         case 'e': moveState.turnRight = true; break;
+                        case 'shift': moveState.lope = true; break;   // lope now; a sustained stride gets there anyway
                         case ' ': if (!roverBoarded && !isJumping) { playerVelY = EVA_JUMP_V0; isJumping = true; evaHopStart = performance.now(); } break; // 1/6 gravity jump!
                         case 'c':
                           // Toggle comfort mode
@@ -7211,6 +7859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         case 'f': moveState.sample = false; break;
                         case 'q': moveState.turnLeft = false; break;
                         case 'e': moveState.turnRight = false; break;
+                        case 'shift': moveState.lope = false; break;
                       }
                     }
                     var isLooking = false;
@@ -7291,7 +7940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       '<div style="color:#fbbf24;font-size:9px;font-weight:bold;margin-bottom:2px">CUFF CHECKLIST</div>' +
                       '<div id="eva-tasks" style="font-size:9px;line-height:1.5;color:#cbd5e1"></div>' +
                       '</div>' +
-                      '<div id="eva-key-legend" style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:9px;line-height:1.4">ON FOOT: WASD move \u2022 Q/E turn \u2022 SPACE jump \u2022 F collect / deploy<br>LRV: V board / exit \u2022 W/S drive \u2022 A/D steer \u2022 B audio \u2022 samples on foot<br>Mouse look \u2022 C comfort \u2022 M click-to-move</div>';
+                      '<div id="eva-key-legend" style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:9px;line-height:1.4">ON FOOT: WASD move \u2022 SHIFT lope \u2022 Q/E turn \u2022 SPACE jump \u2022 F collect / deploy<br>LRV: V board / exit \u2022 W/S drive \u2022 A/D steer \u2022 B audio \u2022 samples on foot<br>Mouse look \u2022 C comfort \u2022 M click-to-move</div>';
                     canvasEl.parentElement.appendChild(evaHud);
 
                     // ── On-screen surface controls ──
@@ -7404,8 +8053,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // Keyboard yaw (Q/E). Comfort mode turns at the slower rate, matching
                       // the mouse-sensitivity reduction.
                       if (!roverBoarded) {
-                        if (moveState.turnLeft) yaw += comfortMode ? 0.012 : 0.028;
-                        if (moveState.turnRight) yaw -= comfortMode ? 0.012 : 0.028;
+                        if (moveState.turnLeft) yaw += (comfortMode ? 0.72 : 1.68) * evaDt;
+                        if (moveState.turnRight) yaw -= (comfortMode ? 0.72 : 1.68) * evaDt;
                       }
 
                       // Movement
@@ -7627,7 +8276,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         lrvGradeRatio = 0;
                         lrvCrossSlopeRatio = 0;
                         lrvGripState = 'Grip';
-                        // Click-to-move: auto-walk toward clickTarget; cancels on arrival or manual key press.
+                        // Suit locomotion (mmEvaFootVelocity): grip-limited, so starting,
+                        // stopping and turning take the time they took on the Moon, and a
+                        // sustained stride settles into the lope. Frame-rate independent.
+                        var evaWishX = 0, evaWishZ = 0;
                         if (clickTarget && !moveState.forward && !moveState.back && !moveState.left && !moveState.right) {
                           var dx = clickTarget.x - playerPos.x;
                           var dz = clickTarget.z - playerPos.z;
@@ -7639,28 +8291,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                             var yawDelta = walkAngle - yaw;
                             while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
                             while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
-                            yaw += yawDelta * (comfortMode ? 0.05 : 0.1);
-                            dir.set(Math.sin(walkAngle), 0, -Math.cos(walkAngle)).multiplyScalar(speed3d);
-                            playerPos.add(dir);
+                            yaw += yawDelta * (1 - Math.exp(-(comfortMode ? 3 : 6) * evaDt));
+                            // Ease off near the target: at the grip limit a stop takes a metre.
+                            var evaEase = Math.min(1, dist2d / 1.6);
+                            evaWishX = Math.sin(walkAngle) * evaEase; evaWishZ = -Math.cos(walkAngle) * evaEase;
                           }
                         } else {
-                          if (moveState.forward) dir.z -= 1;
-                          if (moveState.back) dir.z += 1;
-                          if (moveState.left) dir.x -= 1;
-                          if (moveState.right) dir.x += 1;
-                          dir.normalize().multiplyScalar(speed3d);
-                          dir.applyAxisAngle(evaUpAxis, yaw);
-                          playerPos.add(dir);
+                          dir.set((moveState.right ? 1 : 0) - (moveState.left ? 1 : 0), 0, (moveState.back ? 1 : 0) - (moveState.forward ? 1 : 0));
+                          if (dir.lengthSq() > 0) {
+                            dir.normalize().applyAxisAngle(evaUpAxis, yaw);
+                            evaWishX = dir.x; evaWishZ = dir.z;
+                          }
+                        }
+                        var evaMoveDt = Math.min(0.25, evaHopDt);
+                        evaStrideTime = (evaWishX !== 0 || evaWishZ !== 0) ? evaStrideTime + evaMoveDt : 0;
+                        evaLope = !!moveState.lope || (!comfortMode && evaStrideTime > MM_EVA_GAIT.lopeAfter);
+                        var evaGx = _terrainHeightAt(playerPos.x + 0.5, playerPos.z) - _terrainHeightAt(playerPos.x - 0.5, playerPos.z);
+                        var evaGz = _terrainHeightAt(playerPos.x, playerPos.z + 0.5) - _terrainHeightAt(playerPos.x, playerPos.z - 0.5);
+                        mmEvaFootVelocity(evaVel, evaWishX, evaWishZ, evaLope, comfortMode, !isJumping, evaGx, evaGz, evaMoveDt);
+                        var evaPrevX = playerPos.x, evaPrevZ = playerPos.z;
+                        playerPos.x += evaVel.x * evaMoveDt;
+                        playerPos.z += evaVel.z * evaMoveDt;
+                        evaCollide();
+                        if (Math.abs(playerPos.x) > 96) { playerPos.x = playerPos.x > 0 ? 96 : -96; evaVel.x = 0; }
+                        if (Math.abs(playerPos.z) > 96) { playerPos.z = playerPos.z > 0 ? 96 : -96; evaVel.z = 0; }
+                        dir.set(playerPos.x - evaPrevX, 0, playerPos.z - evaPrevZ);   // this frame's stride, for steps and prints
+                        var evaSpdH = Math.sqrt(evaVel.x * evaVel.x + evaVel.z * evaVel.z);
+                        // Over a crest the ground can curve away faster than one-sixth g can
+                        // pull you down after it, and at a lope you sail off crater rims.
+                        // Judged on the ground's curvature a quarter-second either side of
+                        // you, so the mesh's facet edges never trip it.
+                        if (!isJumping && evaSpdH > 0.6) {
+                          var evaLook = 0.22, evaUx = evaVel.x * evaLook, evaUz = evaVel.z * evaLook;
+                          var evaG0 = _terrainHeightAt(playerPos.x, playerPos.z);
+                          var evaGBack = _terrainHeightAt(playerPos.x - evaUx, playerPos.z - evaUz);
+                          var evaGFwd = _terrainHeightAt(playerPos.x + evaUx, playerPos.z + evaUz);
+                          if ((evaGFwd - 2 * evaG0 + evaGBack) / (evaLook * evaLook) < -EVA_G * 1.15) {
+                            isJumping = true;
+                            playerVelY = Math.max(-1.5, Math.min(1.2, (evaG0 - evaGBack) / evaLook));
+                            evaHopStart = 0;
+                          }
                         }
                         // Real-time ballistic hop in lunar gravity. The downward speed at
                         // touchdown (about 1.7 m/s) is only normalized into a landing cue.
                         var evaWasAirborne = isJumping;
-                        // Exact for constant gravity at any step size, so a slow frame
-                        // cannot change the arc.
-                        playerPos.y += playerVelY * evaHopDt - 0.5 * EVA_G * evaHopDt * evaHopDt;
-                        playerVelY -= EVA_G * evaHopDt;
                         var footGroundH = _terrainHeightAt(playerPos.x, playerPos.z) + 1.8;
-                        if (playerPos.y <= footGroundH) {
+                        if (isJumping) {
+                          // Exact for constant gravity at any step size, so a slow frame
+                          // cannot change the arc.
+                          playerPos.y += playerVelY * evaHopDt - 0.5 * EVA_G * evaHopDt * evaHopDt;
+                          playerVelY -= EVA_G * evaHopDt;
+                        }
+                        if (playerPos.y <= footGroundH || !isJumping) {
                           if (evaWasAirborne && playerVelY < -1.0) {
                             evaLandingImpact = Math.min(1, (-playerVelY - 1.0) / 1.5);
                             evaLandingImpactEnvelope = evaLandingImpact;
@@ -7677,9 +8359,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                             upd('evaHopTime', hopSecs);
                             if (typeof announceToSR === 'function') announceToSR('Hop: ' + hopSecs + ' seconds in the air.');
                           }
+                          // The knees soak up the landing: a slow, springy dip in low g.
+                          if (evaWasAirborne) evaKneeVel -= Math.min(0.9, Math.max(0, -playerVelY) * 0.3) * (comfortMode || gtReducedMotion ? 0.35 : 1);
                           playerPos.y = footGroundH;
                           playerVelY = 0;
                           isJumping = false;
+                        }
+                        // Lope bob and knee flex are visual; the physics above is the truth.
+                        // Each loping footfall kicks a little regolith that arcs and falls clean.
+                        if (!isJumping && evaSpdH > 0.1) {
+                          var evaPrevPhase = evaGaitPhase;
+                          evaGaitPhase += evaSpdH * evaMoveDt / (evaLope ? 1.9 : 1.3);
+                          if (Math.floor(evaGaitPhase) !== Math.floor(evaPrevPhase) && evaSpdH > 1.1) {
+                            emitLunarDustBurst(playerPos.x, playerPos.z, evaVel.x / evaSpdH, evaVel.z / evaSpdH,
+                              Math.min(0.45, evaSpdH * 0.15), _evaLowPower ? 1 : 3);
+                          }
+                        }
+                        var evaBobScale = comfortMode ? 0.3 : (gtReducedMotion ? 0.35 : 1);
+                        evaBob = isJumping ? evaBob * Math.exp(-10 * evaMoveDt)
+                          : Math.abs(Math.sin(Math.PI * evaGaitPhase)) * Math.min(0.06, evaSpdH * 0.026) * evaBobScale;
+                        for (var evaKs = Math.ceil(evaMoveDt / 0.02), evaKi = 0; evaKi < evaKs; evaKi++) {
+                          var evaKdt = evaMoveDt / evaKs;
+                          evaKneeVel += (-64 * evaKnee - 9.6 * evaKneeVel) * evaKdt;
+                          evaKnee = Math.max(-0.3, Math.min(0.06, evaKnee + evaKneeVel * evaKdt));
                         }
                       }
                       var groundH = _terrainHeightAt(playerPos.x, playerPos.z) + 1.8;
@@ -7719,7 +8421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                       // Distance-coupled gait evidence is stable across frame rates.
                       // Reduced/low-power tiers alter print density only, never movement.
-                      if (!roverBoarded && dir.length() > 0.01 && !isJumping) {
+                      if (!roverBoarded && dir.length() > 0.0005 && !isJumping) {
                         var evaFootTravel = dir.length();
                         evaStepDistanceAccumulator += evaFootTravel;
                         while (evaStepDistanceAccumulator >= EVA_STEP_STRIDE) {
@@ -7776,6 +8478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         camera.lookAt(lrvCamTarget);
                       } else {
                         camera.position.copy(playerPos);
+                        camera.position.y += evaBob + evaKnee;
                         camera.rotation.order = 'YXZ';
                         camera.rotation.y = yaw;
                         camera.rotation.x = pitch;
@@ -7784,6 +8487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // Body follows the camera (yaw only — it should not tip when you look up).
                       if (!roverBoarded) {
                         suitGroup.position.copy(playerPos);
+                        suitGroup.position.y += evaBob + evaKnee;
                         suitGroup.rotation.y = yaw;
                       }
                       // Allocation-free terrain-conforming contact cues. Local +Z is
@@ -7806,6 +8510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       sun.position.copy(sunTarget.position).add(_sunOffset);
                       if (_sunSprite) _sunSprite.position.copy(playerPos).addScaledVector(_sunDir, 170);
                       earthSprite.position.set(playerPos.x - 60, playerPos.y + 68, playerPos.z - 120);
+                      skyGroup.position.copy(camera.position);
 
                       // ── Visor glare ──
                       // With no atmosphere the sun is a bare arc-lamp: turning into it washes
@@ -8272,6 +8977,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         lunarHorizonMat.dispose();
                         lunarMicroTex = null;
                         lunarHorizonGeo = lunarHorizonMat = lunarHorizon = null;
+                        terrainTex.dispose(); earthTex.dispose(); terrainGeo.dispose();
+                        skyGeos.forEach(function (g) { g.dispose(); });
+                        skyMats.forEach(function (m) { m.dispose(); });
+                        _rockMeshes.forEach(function (m) { scene.remove(m); });
+                        _rockGeos.forEach(function (g) { g.dispose(); });
+                        _rockMat.dispose();
+                        _massifMeshes.forEach(function (m) { scene.remove(m); m.geometry.dispose(); });
+                        lmGroup.traverse(function (n) { if (n.isMesh && n.geometry) n.geometry.dispose(); });
+                        (lmGroup.userData.mmMaterials || []).forEach(function (m) { m.dispose(); });
+                        (lmGroup.userData.mmTextures || []).forEach(function (tx) { tx.dispose(); });
+                        if (_evaEnvRT) { _evaEnvRT.dispose(); _evaEnvRT = _evaEnvMap = null; }
                       } catch (_lrvDisposeErr) {}
                       if (document.pointerLockElement === canvasEl) document.exitPointerLock();
                       if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
