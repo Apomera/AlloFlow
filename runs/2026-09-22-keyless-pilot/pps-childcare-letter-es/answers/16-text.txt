@@ -1,0 +1,13 @@
+{
+  "score": 100,
+  "summary": "The closing section gives the signature image a concise Spanish alternative, marks the English interface text and reference line as English, and places the notice in a footer landmark with sufficient contrast.",
+  "issues": [],
+  "passes": [
+    "5. IMAGES: the signature image alt reads 'Firma de Xavier Botana'.",
+    "4. LANDMARKS: main closes after the P517 line and the notice sits in a footer with role contentinfo.",
+    "7. CONTRAST: captions and footer text #475569 on white are about 7.6:1; the Replace label is white on #475569.",
+    "Language of parts: the Replace label, the Purpose note, the P517 line and the footer paragraph carry lang=\"en\".",
+    "11. FORMS: the Replace file input sits inside a label with visible text.",
+    "6. TABLES and 9. LISTS: none present in this section."
+  ]
+}

@@ -1,0 +1,289 @@
+{
+  "input": "C:\\tmp\\remediation_corpus\\new\\pps-childcare-letter-ar-2020-12.pdf",
+  "files": {
+    "accessibleHtml": "C:\\tmp\\alloflow_dispatch\\wave1\\R2_scratch\\bridge_stdio\\pps-ar\\output\\pps-childcare-letter-ar-2020-12-accessible.html",
+    "report": "C:\\tmp\\alloflow_dispatch\\wave1\\R2_scratch\\bridge_stdio\\pps-ar\\output\\pps-childcare-letter-ar-2020-12-remediation-report.json",
+    "completionManifest": "C:\\tmp\\alloflow_dispatch\\wave1\\R2_scratch\\bridge_stdio\\pps-ar\\output\\pps-childcare-letter-ar-2020-12-remediation-completion.json"
+  },
+  "pdfUa": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "not-applicable",
+    "reason": "No tagged PDF was produced."
+  },
+  "verdict": {
+    "level": "review",
+    "reviewCount": 2,
+    "cautionCount": 1
+  },
+  "beforeScore": 25,
+  "afterScore": 85,
+  "aiVerificationIncomplete": false,
+  "scoreSource": "min",
+  "estimatedMinimumScore": null,
+  "contentCoverage": {
+    "status": "review_required",
+    "reviewRequired": true,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 400,
+    "outputTokens": 505,
+    "matchedTokens": 361,
+    "missingTokens": 39,
+    "tokenRecall": 0.9025,
+    "missingPassages": [
+      {
+        "sourceUnit": 1,
+        "startToken": 0,
+        "expectedTokens": 40,
+        "missingTokens": 6
+      },
+      {
+        "sourceUnit": 2,
+        "startToken": 40,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 3,
+        "startToken": 80,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 4,
+        "startToken": 120,
+        "expectedTokens": 40,
+        "missingTokens": 6
+      },
+      {
+        "sourceUnit": 5,
+        "startToken": 160,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 6,
+        "startToken": 200,
+        "expectedTokens": 40,
+        "missingTokens": 6
+      },
+      {
+        "sourceUnit": 7,
+        "startToken": 240,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 8,
+        "startToken": 280,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 10,
+        "startToken": 360,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      }
+    ],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "pdfjs",
+      "pagesExamined": 1,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "cc4a0571544ca409854c87b99430b4b77e0499a4c5d3f10f52d94b3b1411688a",
+    "htmlSha256": "84ee4a00a5136d38c0ece24e448273d90b09717f19e5fa8d21f348ab3910c7ad"
+  },
+  "integrityCoverage": 100,
+  "integrityWarning": null,
+  "fidelityNotes": [],
+  "candidateRejectionCount": 1,
+  "candidateRejections": [
+    {
+      "chunkId": "1",
+      "phase": "single",
+      "reason": "math-content-changed",
+      "pass": 1,
+      "sourceLocation": "document"
+    }
+  ],
+  "verification": {
+    "ai": {
+      "score": 85,
+      "issueCount": 3,
+      "reviewIssueCount": 3,
+      "passCount": 25,
+      "chunksAudited": 2,
+      "chunksRequested": 2,
+      "partial": false,
+      "scoreDegraded": false,
+      "issues": [
+        {
+          "ruleId": "other",
+          "severity": "moderate",
+          "wcag": "1.3.1",
+          "issue": "The link to the expense summary displays literal markup (<span lang='en'> and </span>) as visible text.",
+          "location": "ملخص للنفقات",
+          "requiresManualReview": true
+        },
+        {
+          "ruleId": "other",
+          "severity": "moderate",
+          "wcag": "1.3.1",
+          "issue": "The P517 reference line displays literal markup (<span lang='en'> and </span>) as visible text.",
+          "location": "P517- ARA Childcare Letter to Families December 2020",
+          "requiresManualReview": true
+        },
+        {
+          "ruleId": "other",
+          "severity": "moderate",
+          "wcag": "3.1.2",
+          "issue": "The English footer notice inside the Arabic document carries no lang=\"en\" marking.",
+          "location": "This document was automatically transformed for accessibility",
+          "requiresManualReview": true
+        }
+      ]
+    },
+    "axe": {
+      "score": 100,
+      "totalViolations": 0,
+      "totalIncomplete": 0,
+      "violations": []
+    },
+    "equalAccess": {
+      "score": 92,
+      "failViolations": 0,
+      "potentialViolations": 2,
+      "manualViolations": 2,
+      "reviewFindingCount": 4,
+      "fails": [],
+      "reviewFindings": [
+        {
+          "id": "style_color_misuse",
+          "nodes": 1,
+          "description": "Verify color is not used as the only visual means of conveying information"
+        },
+        {
+          "id": "text_quoted_correctly",
+          "nodes": 1,
+          "description": "If the following text is a quotation, mark it as a <q> or <blockquote> element: 'prepared & empowered'"
+        },
+        {
+          "id": "style_highcontrast_visible",
+          "nodes": 1,
+          "description": "Confirm Windows high contrast mode is supported when using CSS to include, position or alter non-decorative content"
+        },
+        {
+          "id": "download_keyboard_controllable",
+          "nodes": 1,
+          "description": "Verify that the file download mechanism does not cause a keyboard trap"
+        }
+      ]
+    }
+  },
+  "verificationChecks": {
+    "ai": {
+      "status": "failed",
+      "findings": 3,
+      "reviewFindings": 3
+    },
+    "axe": {
+      "status": "passed",
+      "findings": 0,
+      "reviewFindings": 0
+    },
+    "equalAccess": {
+      "status": "review-required",
+      "findings": 0,
+      "reviewFindings": 4
+    },
+    "pdfUa": {
+      "standard": "PDF/UA-1 (ISO 14289-1)",
+      "profile": "ua1",
+      "scope": "machine-verifiable PDF/UA checks",
+      "status": "not-applicable",
+      "reason": "No tagged PDF was produced."
+    }
+  },
+  "reviewTriage": {
+    "attempted": 4,
+    "applied": 0,
+    "resolved": 0,
+    "remaining": 4,
+    "skipped": null,
+    "dispositions": [
+      {
+        "key": "equalAccess|potential|style_color_misuse",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "This style block only darkens utility-class text colors to raise contrast; no information in the letter is conveyed by color, and its one link keeps the default underline.",
+        "skipReason": null
+      },
+      {
+        "key": "equalAccess|potential|text_quoted_correctly",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "'prepared & empowered' is the logo tagline quoted inside an image description that is hidden from assistive technology, not a quotation from another source.",
+        "skipReason": null
+      },
+      {
+        "key": "equalAccess|manual|style_highcontrast_visible",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "This style block only shortens animations and transitions for reduced-motion users and does not add, position or alter any content.",
+        "skipReason": null
+      },
+      {
+        "key": "equalAccess|manual|download_keyboard_controllable",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "The download is a plain link to a PDF, which a keyboard user activates and leaves like any other link, so it cannot trap focus.",
+        "skipReason": null
+      }
+    ]
+  },
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": null,
+  "activeContentScanVerified": true,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 3,
+    "sliced": false
+  },
+  "taggedPdfError": "content_coverage_requires_review",
+  "runId": "run-mudbzqbh-cbyxyf",
+  "stats": {
+    "apiCalls": 12,
+    "visionCalls": 6,
+    "retries": 0,
+    "recoveredRetries": 0,
+    "authThrottles": 0,
+    "terminalFailures": 0
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+  "htmlVerificationState": "review-required",
+  "deliveryReviewReasons": [],
+  "reviewRequired": true,
+  "deliveryStatus": "review-required"
+}

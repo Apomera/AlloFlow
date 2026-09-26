@@ -1,0 +1,12 @@
+{
+  "score": 75,
+  "summary": "The document head declares Arabic (lang=\"ar\") and a stylesheet whose text colors meet contrast minimums, but it sets no right-to-left direction for this Arabic letter and its title is generic English boilerplate plus the file name.",
+  "issues": [
+    {"ruleId": "document-title", "claimKind": "quality", "issue": "The title element is generic English boilerplate followed by the file name, so it does not describe the topic of this Arabic letter to families.", "wcag": "2.4.2", "severity": "serious", "count": 1, "location": "document"},
+    {"ruleId": "reading-order", "claimKind": "absence", "issue": "The html element has no dir=\"rtl\", so the Arabic paragraphs render left to right and mixed Arabic and Latin text (numbers, COVID, CRF, FY21) can display in the wrong order.", "wcag": "1.3.2", "severity": "serious", "count": 1, "location": "document"}
+  ],
+  "passes": [
+    "1. LANGUAGE: the html element declares lang=\"ar\", matching the Arabic body text.",
+    "7. CONTRAST: the declared colors meet 4.5:1 on white: body text #1e293b, links #2563eb, figure captions #64748b."
+  ]
+}

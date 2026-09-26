@@ -91,14 +91,38 @@
   async function loadProject(ctx) {
     var store = openStore(ctx);
     if (!store || typeof store.load !== 'function') return null;
-    try { return await store.load(); } catch (_) { return null; }
+    try { return researchProject(await store.load()); } catch (_) { return null; }
+  }
+
+  // Lumen also saves the current/adapted reading here. Those app-created
+  // readings are not imported research documents. Filter a copy for research;
+  // never delete the reading or its notes from the shared study project.
+  function isResearchSource(source) {
+    return !!source && source.type !== 'reading'
+      && source.importMethod !== 'reading-workspace'
+      && source.importMethod !== 'alloflow-current-source'
+      && source.id !== 'source-current'
+      && !/^src_reading_/.test(String(source.id || ''));
+  }
+
+  function researchProject(project) {
+    if (!project || !Array.isArray(project.sources)) return null;
+    var sources = project.sources.filter(isResearchSource);
+    var ids = new Set(sources.map(function (source) { return source.id; }));
+    return Object.assign({}, project, {
+      sources: sources,
+      evidenceNodes: (project.evidenceNodes || []).filter(function (node) { return ids.has(node.sourceId); }),
+      // The generator's Include/Exclude controls select its sources. A label
+      // selected in Lumen must not silently narrow this separate workflow.
+      retrievalLabel: '',
+    });
   }
 
   // Only ACTIVE sources, because that is exactly the set retrieval will search:
   // a count that includes excluded sources promises more than the AI will see.
   function activeSourceCount(project) {
     if (!project || !Array.isArray(project.sources)) return 0;
-    return project.sources.filter(function (source) { return source && source.active !== false; }).length;
+    return project.sources.filter(function (source) { return isResearchSource(source) && source.active !== false; }).length;
   }
 
   /*
@@ -127,7 +151,21 @@
   // Shared tail for the two mutating operations: apply, persist, report. A save
   // that failed must not be reported as done — the teacher would believe a
   // document was removed when it is still there.
+  var mutationQueues = Object.create(null);
+  function withMutation(ctx, operation) {
+    var key = JSON.stringify([ctx && ctx.isTeacherMode === false ? 'learner' : 'teacher',
+      ctx && ctx.activeProfileId || '', ctx && ctx.studentNickname || 'default']);
+    var pending = (mutationQueues[key] || Promise.resolve()).catch(function () {}).then(operation);
+    mutationQueues[key] = pending;
+    var cleanup = function () { if (mutationQueues[key] === pending) delete mutationQueues[key]; };
+    pending.then(cleanup, cleanup);
+    return pending;
+  }
+
   async function commit(ctx, mutate) {
+    // Exclude/Remove used to report "unavailable" at once when Lumen had not
+    // loaded yet, so the buttons silently did nothing. Wait as import does.
+    if (!evidenceApi()) await ensureLumen(8000);
     var E = evidenceApi();
     if (!E) return { ok: false, reason: 'unavailable', count: 0, sources: [] };
     var store = openStore(ctx);
@@ -141,23 +179,27 @@
     var saved = { ok: false };
     if (store && typeof store.save === 'function') {
       try { saved = await store.save(next); } catch (_) { saved = { ok: false }; }
-      if (!saved || saved.ok !== true) {
-        return { ok: false, reason: 'storage', count: activeSourceCount(project), sources: [] };
-      }
+    }
+    if (!saved || saved.ok !== true) {
+      return { ok: false, reason: 'storage', count: activeSourceCount(project), sources: [] };
     }
     return { ok: true, reason: '', count: activeSourceCount(next), sources: await listSources(ctx) };
   }
 
   async function removeSource(sourceId, ctx) {
     if (!sourceId) return { ok: false, reason: 'failed', count: 0, sources: [] };
-    return commit(ctx, function (E, project) { return E.removeSource(project, sourceId, Date.now()); });
+    return withMutation(ctx, function () {
+      return commit(ctx, function (E, project) { return E.removeSource(project, sourceId, Date.now()); });
+    });
   }
 
   // Excluding a source keeps the document but takes it out of retrieval — the
   // gentler option when a teacher wants this unit's sources only.
   async function setSourceActive(sourceId, active, ctx) {
     if (!sourceId) return { ok: false, reason: 'failed', count: 0, sources: [] };
-    return commit(ctx, function (E, project) { return E.setSourceActive(project, sourceId, active !== false, Date.now()); });
+    return withMutation(ctx, function () {
+      return commit(ctx, function (E, project) { return E.setSourceActive(project, sourceId, active !== false, Date.now()); });
+    });
   }
 
   async function countSources(ctx) {
@@ -175,7 +217,12 @@
    * separately: one unreadable scan among five documents should not read as
    * "import failed".
    */
-  async function importFiles(fileList, ctx) {
+  function importFiles(fileList, ctx) {
+    var files = Array.prototype.slice.call(fileList || []);
+    return withMutation(ctx, function () { return importFilesNow(files, ctx); });
+  }
+
+  async function importFilesNow(fileList, ctx) {
     // The teacher just picked files, so it is worth waiting for the reader.
     await ensureLumen(8000);
     var E = evidenceApi();
@@ -221,9 +268,15 @@
       try { saved = await store.save(project); } catch (_) { saved = { ok: false }; }
       // A save that silently failed would leave the teacher believing their
       // documents are stored. Report it instead.
-      if (!saved || saved.ok !== true) {
-        return { ok: false, reason: 'storage', imported: 0, failed: failed + imported, results: results, count: activeSourceCount(project) };
-      }
+    }
+    if (imported && (!saved || saved.ok !== true)) {
+      return {
+        ok: false, reason: 'storage', imported: 0, failed: results.length,
+        results: results.map(function (row) {
+          return row.ok ? Object.assign({}, row, { ok: false, message: 'This document could not be saved on this device.' }) : row;
+        }),
+        count: await countSources(ctx),
+      };
     }
 
     return {

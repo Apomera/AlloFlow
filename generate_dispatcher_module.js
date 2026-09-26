@@ -447,11 +447,21 @@ function protectAdaptationCitations(value) {
   return { text: protectedText, citations, original: text };
 }
 
+// True when text handed to a model carries protection tokens. Prompts describe
+// the tokens only then: told about tokens that were not there, a model invented
+// its own from plain citations like "[Source 4]".
+function hasProtectedCitationTokens(value) {
+  return /⟦ALLOFLOW_CITATION_[^⟧]*⟧/.test(String(value || ''));
+}
+
 function restoreProtectedAdaptationCitations(envelope, transformedValue) {
   const transformed = String(transformedValue || '');
   if (!envelope || !Array.isArray(envelope.citations) || envelope.citations.length === 0) {
     const conservation = validateAdaptationCitationConservation(envelope?.original || '', transformed);
-    return { text: transformed, valid: conservation.valid, conservation };
+    // Nothing was protected, so a token here was invented by the model. This
+    // branch skipped the leftover check, and invented tokens reached the page.
+    const tokenValid = !/⟦ALLOFLOW_CITATION_[^⟧]*⟧/.test(transformed);
+    return { text: transformed, valid: conservation.valid && tokenValid, conservation, tokenValid };
   }
   let restored = transformed;
   let tokenValid = true;
@@ -4208,11 +4218,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       const translateCitationSafe = async (sourceText, stage) => {
           return runCitationGuardedTransform(sourceText, async (protectedText, isRetry) => callGemini(`
               Translate the following ${effectiveLanguage} text into ${glossLang}.
-              Maintain the formatting, tone, emojis, and every protected citation token exactly.
+              ${hasProtectedCitationTokens(protectedText)
+                  ? `Maintain the formatting, tone, emojis, and every protected citation token exactly.
               Each token matching ⟦ALLOFLOW_CITATION_####⟧ must appear exactly once.
-              Do not add, remove, duplicate, reorder, translate, or alter a citation token.
+              Do not add, remove, duplicate, reorder, translate, or alter a citation token.`
+                  : 'Maintain the formatting, tone, and emojis. Keep any citation exactly as written and do not add citation markers or tokens.'}
               Return ONLY the ${glossLang} translation.
-              ${isRetry ? 'RETRY: The prior response failed citation validation. Copy every protected token exactly once.' : ''}
+              ${isRetry ? (hasProtectedCitationTokens(protectedText)
+                  ? 'RETRY: The prior response failed citation validation. Copy every protected token exactly once.'
+                  : 'RETRY: The prior response failed citation validation. Do not add citation markers or tokens.') : ''}
               Text to Translate:
               "${protectedText}"
           `), stage, sourceText);
@@ -4241,7 +4255,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
               ${useEmojis ? '- Use emojis liberally throughout the text to provide visual cues and engagement (e.g., "The sun ☀️ is a star ⭐").' : '- Do not use emojis.'}
               ${keepCitations
-                  ? '- CITATION PRESERVATION (CRITICAL): Citations are protected as tokens matching ⟦ALLOFLOW_CITATION_####⟧. Copy every token exactly once. Do not add, remove, duplicate, reorder, translate, or alter a token. The app restores the links after validation.'
+                  ? (hasProtectedCitationTokens(protectedSegment)
+                      ? '- CITATION PRESERVATION (CRITICAL): Citations are protected as tokens matching ⟦ALLOFLOW_CITATION_####⟧. Copy every token exactly once. Do not add, remove, duplicate, reorder, translate, or alter a token. The app restores the links after validation.'
+                      : '- CITATIONS: Keep any citation or source reference in the text exactly as written. Do not add citation markers or tokens.')
                   : '- Remove all hyperlinks and citations.'}
               - DO NOT emit any "Sources", "References", "Bibliography", "Verified Sources", "Références", "Sources du texte", "Referencias", "Quellen", or equivalent section. The references list is appended automatically by the app — any references section you produce will be discarded and may cause duplicates.
               ${includeCharts ? `- DATA VISUALIZATION: Analyze the text for structured data.
@@ -4256,7 +4272,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${dokLevel ? `- Target Webb's Depth of Knowledge (DOK): ${dokLevel}` : ''}
               ${dialectInstruction}
               ${differentiationContext}
-              ${isRetry ? 'RETRY: The prior response failed citation validation. Copy every protected token exactly once.' : ''}
+              ${isRetry ? (hasProtectedCitationTokens(protectedSegment)
+                  ? 'RETRY: The prior response failed citation validation. Copy every protected token exactly once.'
+                  : 'RETRY: The prior response failed citation validation. Do not add citation markers or tokens.') : ''}
               CRITICAL: Return ONLY the ${effectiveLanguage} text.${_xlate.enabled ? ` Do NOT provide a ${glossLang} translation yet.` : ' Do NOT add a translation into any other language.'}
               Text Segment: "${protectedSegment}"
           `), `adapt-section-${i + 1}`, chunks[i]);
@@ -4341,7 +4359,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                       protectedText,
                       repairIssue,
                       targetWords,
-                      `${repairCtx}. Protected citation tokens matching ⟦ALLOFLOW_CITATION_####⟧ must each remain exactly once.${isRetry ? ' This is a retry after citation validation failed.' : ''}`,
+                      `${repairCtx}.${hasProtectedCitationTokens(protectedText) ? ' Protected citation tokens matching ⟦ALLOFLOW_CITATION_####⟧ must each remain exactly once.' : ' Do not add citation markers or tokens.'}${isRetry ? ' This is a retry after citation validation failed.' : ''}`,
                       false
                   ),
                   `length-repair-${repairIssue}`,
@@ -8790,6 +8808,7 @@ window.AlloModules.GenDispatcher = {
   validateAdaptationCitationConservation,
   protectAdaptationCitations,
   restoreProtectedAdaptationCitations,
+  hasProtectedCitationTokens,
   composeAdaptedLeveledText,
   // Activities redesign (2026-08-16): pure structured-activity normalizers +
   // the shared per-kind serializer (ladder prompts + export both use it).

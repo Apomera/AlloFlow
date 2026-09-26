@@ -34,7 +34,7 @@ describe('the toggle is offered where source material is generated', () => {
   it('stays hidden until the teacher has actually imported something', () => {
     // An always-visible control that cannot do anything is worse than no
     // control, so both surfaces gate on a real count.
-    expect(read('view_misc_panels_source.jsx')).toMatch(/ownSourceCount !== null && ownSourceCount > 0 &&/);
+    expect(read('view_misc_panels_source.jsx')).toMatch(/ownSourceCount !== null && ownSourceList.length > 0 &&/);
     expect(read('quickstart_source.jsx')).toMatch(/\{wizOwnSourceCount > 0 && \(/);
   });
 

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "alloflow-remediation-completion",
+  "source": {
+    "path": "C:\\tmp\\remediation_corpus\\new\\pps-childcare-letter-ar-2020-12.pdf",
+    "sizeBytes": 507382,
+    "sha256": "cc4a0571544ca409854c87b99430b4b77e0499a4c5d3f10f52d94b3b1411688a"
+  },
+  "compatibility": {
+    "optionsSha256": "fe513ac22652f83dbdd5ac8b1e53f0a3a1935425d36d7af99320fe4531c6ce5a",
+    "engineSha256": "f569e9920c770f3e8ffbc59e380afc81b6fea0abb2dd5ff9427648add5a38b6f"
+  },
+  "attempt": {
+    "jobId": null,
+    "attemptId": null,
+    "attemptNumber": 0
+  },
+  "completedAt": "2026-09-23T00:30:20.825Z",
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "pps-childcare-letter-ar-2020-12-accessible.html",
+      "sizeBytes": 43127,
+      "sha256": "84ee4a00a5136d38c0ece24e448273d90b09717f19e5fa8d21f348ab3910c7ad"
+    },
+    {
+      "role": "report",
+      "relativePath": "pps-childcare-letter-ar-2020-12-remediation-report.json",
+      "sizeBytes": 9215,
+      "sha256": "326ea88cff4c503054e321d5d9b60858e1b83416a2f3bc8bb38c79260b8aef07"
+    }
+  ]
+}

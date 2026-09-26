@@ -157,6 +157,8 @@ describe('importing documents', () => {
       expect(outcome.ok).toBe(false);
       expect(outcome.reason).toBe('storage');
       expect(outcome.imported).toBe(0);
+      expect(outcome.count).toBe(0);
+      expect(outcome.results.every((row) => row.ok === false)).toBe(true);
     } finally {
       Object.defineProperty(global, 'localStorage', { value: localStore, configurable: true, writable: true });
     }
@@ -188,6 +190,69 @@ describe('importing documents', () => {
     // It must give up, not hang forever.
     expect(Date.now() - started).toBeLessThan(12000);
   }, 20000);
+});
+
+describe('research documents are isolated from the reading workspace', () => {
+  it('keeps generated readings out of research without deleting them or inheriting the study label filter', async () => {
+    const device = makeDevice();
+    const store = E.createProjectStore({ storageDB: device.db, scope: E.readingScope({}) });
+    let project = E.connectReadingSource(E.makeProject({}), {
+      title: 'Adapted reading', text: 'Clouds in an earlier generated reading.', anchor: { kind: 'adapted' },
+    });
+    project = E.upsertSource(project, {
+      id: 'source-current', title: 'Current AI draft', content: 'Clouds in the current generated draft.', importMethod: 'alloflow-current-source',
+    });
+    project = E.upsertSource(project, {
+      id: 'notes', title: 'Cloud notes', content: 'Clouds form when water vapor condenses.', importMethod: 'local-file', labels: ['science'],
+    });
+    project = E.upsertSource(project, {
+      id: 'history', title: 'History notes', content: 'Historical observations of clouds.', importMethod: 'paste', labels: ['history'],
+    });
+    project = E.setRetrievalLabel(project, 'history');
+    await store.save(project);
+    const helper = loadHelper({ documents: docAdapter(), storageDB: device.db });
+    try {
+      expect((await helper.api.listSources({})).map((row) => row.id)).toEqual(['notes', 'history']);
+      expect(await helper.api.countSources({})).toBe(2);
+      const research = await helper.api.loadProject({});
+      expect(research.retrievalLabel).toBe('');
+      expect(E.retrieve(research, 'water vapor condenses', { forAI: true }).map((hit) => hit.node.sourceId)).toContain('notes');
+      expect(research.evidenceNodes.every((node) => ['notes', 'history'].includes(node.sourceId))).toBe(true);
+      await helper.api.setSourceActive('notes', false, {});
+      await helper.api.importFiles([{ name: 'new.pdf' }], {});
+      const saved = await store.load();
+      expect(saved.sources.find((row) => row.title === 'Adapted reading')).toBeTruthy();
+      expect(saved.sources.find((row) => row.id === 'source-current')).toBeTruthy();
+      expect(saved.sources.find((row) => row.id === 'notes').active).toBe(false);
+      expect(saved.retrievalLabel).toBe('history');
+    } finally { helper.restore(); }
+  });
+
+  it('does not resurrect a removed document when an import is still extracting', async () => {
+    const device = makeDevice();
+    let release;
+    let extractionStarted;
+    const started = new Promise((resolve) => { extractionStarted = resolve; });
+    const helper = loadHelper({ storageDB: device.db, documents: docAdapter({
+      extractLocalDocument: async (file) => {
+        if (file.name === 'slow.pdf') {
+          extractionStarted();
+          await new Promise((resolve) => { release = resolve; });
+        }
+        return docAdapter().extractLocalDocument(file);
+      },
+    }) });
+    try {
+      await helper.api.importFiles([{ name: 'old.pdf' }], {});
+      const importing = helper.api.importFiles([{ name: 'slow.pdf' }], {});
+      await started;
+      const removing = helper.api.removeSource('src_old.pdf', {});
+      release();
+      expect((await importing).ok).toBe(true);
+      expect((await removing).ok).toBe(true);
+      expect((await helper.api.listSources({})).map((row) => row.id)).toEqual(['src_slow.pdf']);
+    } finally { helper.restore(); }
+  });
 });
 
 describe('the import control in the source panel', () => {
@@ -343,7 +408,8 @@ describe('the manage list in the source panel', () => {
   it('lists stored documents with exclude and remove', () => {
     expect(panel).toContain("t('input.my_sources_manage'");
     expect(panel).toContain('handleToggleOwnSource(source)');
-    expect(panel).toContain('handleRemoveOwnSource(source)');
+    expect(panel).toContain('handleRemoveOwnSource(source, false)');
+    expect(panel).toContain('handleRemoveOwnSource(source, true)');
   });
 
   it('asks before deleting, because removal is not undoable here', () => {
@@ -351,12 +417,16 @@ describe('the manage list in the source panel', () => {
       panel.indexOf('handleRemoveOwnSource = React.useCallback'),
       panel.indexOf('const handleImportOwnSources'),
     );
-    const askAt = handler.indexOf('if (ask && !ask(');
+    // The first click only asks; the delete sits behind the confirmed branch.
+    const askAt = handler.indexOf('if (!confirmed) { setPendingRemoveId(source.id); return; }');
     const removeAt = handler.indexOf('ownSourcesApi.removeSource(');
     expect(askAt).toBeGreaterThan(-1);
     // The confirm must GATE the call, not follow it.
     expect(removeAt).toBeGreaterThan(askAt);
-    expect(handler).toContain('my_sources_remove_confirm');
+    // Asked in the panel: window.confirm returns false in Gemini Canvas, which
+    // made Remove do nothing there (behaviour: own_source_controls_load_timing).
+    expect(handler).not.toContain('window.confirm');
+    expect(panel).toContain("t('input.my_sources_remove_confirm'");
   });
 
   it('names the document in the remove button for a screen reader', () => {
@@ -395,6 +465,7 @@ describe('the helper is wired into the app', () => {
       expect(strings.input[key], key).toBeTruthy();
     }
     // The privacy claim is the reason a teacher will trust this control.
-    expect(strings.input.my_sources_empty).toMatch(/stay on this device/i);
+    expect(strings.input.my_sources_empty).toMatch(/stored on this device/i);
+    expect(strings.input.my_sources_empty).toMatch(/excerpts are shared with your selected AI provider/i);
   });
 });

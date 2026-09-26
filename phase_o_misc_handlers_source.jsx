@@ -489,6 +489,8 @@ const handleWizardComplete = (data, deps) => {
               grade: finalData.grade,
               standards: finalData.standards ? finalData.standards.join('; ') : '',
               includeCitations: finalData.verification,
+              // The wizard's "use my own sources" box was never forwarded.
+              useOwnSources: finalData.useOwnSources === true,
               length: parseInt(finalData.length),
               tone: finalData.tone,
               dokLevel: finalData.dokLevel,

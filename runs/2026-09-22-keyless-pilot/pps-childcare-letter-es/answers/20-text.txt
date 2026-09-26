@@ -1,0 +1,18 @@
+{
+  "score": 100,
+  "summary": "The document declares Spanish as its language, has a descriptive Spanish title, a skip link, a main landmark, one h1, concise Spanish image alternatives and a descriptive link, and it marks its English interface text as English.",
+  "issues": [],
+  "passes": [
+    "1. LANGUAGE: html lang=\"es\" matches the Spanish letter, and the English skip link, Replace labels, Purpose notes, caption text and P517 line carry lang=\"en\".",
+    "2. TITLE: the title reads 'Carta a las familias sobre el cuidado infantil, diciembre de 2020 (Escuelas Públicas de Portland)'.",
+    "3. HEADINGS: one h1 'Carta a las familias sobre el cuidado infantil, diciembre de 2020' and no skipped levels.",
+    "4. LANDMARKS: all letter content sits inside main; a one-page letter has no navigation to mark.",
+    "5. IMAGES: the logo alt names the sender ('Logotipo de Portland Public Schools (Escuelas Públicas de Portland): prepared & empowered') and the signature alt reads 'Firma de Xavier Botana'.",
+    "6. TABLES: no data tables are present.",
+    "7. CONTRAST: body text #1e293b, the h1 #1f2a44 and captions #475569 on white all exceed 4.5:1; the Replace labels are white on #475569.",
+    "8. LINKS: the content link reads 'Aquí hay un resumen de los gatos que enfrenta el distrito (PDF)'.",
+    "9. LISTS: the letter is prose with no list-like content.",
+    "10. SKIP NAV: the first element in body is a skip link to #main-content.",
+    "11. FORMS: each Replace file input sits inside a label with visible text."
+  ]
+}

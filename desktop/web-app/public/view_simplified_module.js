@@ -1941,8 +1941,22 @@ function ReadingGlossEditor({
     onClick: () => open ? requestAction({
       type: 'close'
     }) : setOpen(true),
-    className: "min-h-11 rounded-lg px-2 text-left font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, simplifiedText('simplified.gloss_review_word_supports', 'Review word supports'), ' ', entries.length ? '(' + entries.length + ')' : ''), open && /*#__PURE__*/React.createElement("div", {
+    className: "flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-2 text-left font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:cursor-wait"
+  }, /*#__PURE__*/React.createElement("span", null, simplifiedText('simplified.gloss_review_word_supports', 'Review word supports'), ' ', entries.length ? '(' + entries.length + ')' : ''), /*#__PURE__*/React.createElement("svg", {
+    "aria-hidden": "true",
+    focusable: "false",
+    width: "18",
+    height: "18",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className: "shrink-0"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: open ? 'm6 15 6-6 6 6' : 'm9 6 6 6-6 6'
+  }))), open && /*#__PURE__*/React.createElement("div", {
     id: panelId,
     className: "mt-2 space-y-3"
   }, /*#__PURE__*/React.createElement("p", {

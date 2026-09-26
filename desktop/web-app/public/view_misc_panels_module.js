@@ -1781,42 +1781,72 @@ function SourceGenPanel(props) {
   const [ownSourceImportFailures, setOwnSourceImportFailures] = React.useState([]);
   const [ownSourceList, setOwnSourceList] = React.useState([]);
   const [ownSourceBusy, setOwnSourceBusy] = React.useState(false);
+  const ownSourceRevision = React.useRef(0);
+  const ownSourceControlsBusy = ownSourceBusy || ownSourceImporting || isGeneratingSource;
   const ownSourcesApi = typeof window !== "undefined" && window.AlloOwnSources || null;
+  React.useEffect(() => {
+    if (ownSourceCount === 0 && useOwnSources && setUseOwnSources) setUseOwnSources(false);
+  }, [ownSourceCount, useOwnSources, setUseOwnSources]);
+  const reportOwnSourceFailure = React.useCallback((outcome) => {
+    setOwnSourceImportMsg(outcome && outcome.reason === "storage" ? t("input.my_sources_storage_failed") : t("input.my_sources_unavailable"));
+  }, [t]);
   const handleToggleOwnSource = React.useCallback(async (source) => {
-    if (!ownSourcesApi || typeof ownSourcesApi.setSourceActive !== "function" || !source) return;
+    if (ownSourceControlsBusy) return;
+    if (!ownSourcesApi || typeof ownSourcesApi.setSourceActive !== "function" || !source) {
+      setOwnSourceImportMsg(t("input.my_sources_unavailable"));
+      return;
+    }
+    ownSourceRevision.current++;
     setOwnSourceBusy(true);
     try {
       const outcome = await ownSourcesApi.setSourceActive(source.id, !source.active, {});
-      if (outcome.ok) {
+      if (outcome && outcome.ok) {
         setOwnSourceList(outcome.sources);
         setOwnSourceCount(outcome.count);
+        if (!outcome.count && setUseOwnSources) setUseOwnSources(false);
         setOwnSourceImportMsg("");
-      } else if (outcome.reason === "storage") {
-        setOwnSourceImportMsg(t("input.my_sources_storage_failed"));
+      } else {
+        reportOwnSourceFailure(outcome);
       }
+    } catch (_) {
+      reportOwnSourceFailure(null);
     } finally {
       setOwnSourceBusy(false);
     }
-  }, [ownSourcesApi, t]);
-  const handleRemoveOwnSource = React.useCallback(async (source) => {
-    if (!ownSourcesApi || typeof ownSourcesApi.removeSource !== "function" || !source) return;
-    const ask = typeof window !== "undefined" && typeof window.confirm === "function" ? window.confirm : null;
-    if (ask && !ask(t("input.my_sources_remove_confirm", { title: source.title }))) return;
+  }, [ownSourcesApi, t, reportOwnSourceFailure, ownSourceControlsBusy, setUseOwnSources]);
+  const [pendingRemoveId, setPendingRemoveId] = React.useState(null);
+  const handleRemoveOwnSource = React.useCallback(async (source, confirmed) => {
+    if (ownSourceControlsBusy) return;
+    if (!source) return;
+    if (!confirmed) {
+      setPendingRemoveId(source.id);
+      return;
+    }
+    setPendingRemoveId(null);
+    if (!ownSourcesApi || typeof ownSourcesApi.removeSource !== "function") {
+      setOwnSourceImportMsg(t("input.my_sources_unavailable"));
+      return;
+    }
+    ownSourceRevision.current++;
     setOwnSourceBusy(true);
     try {
       const outcome = await ownSourcesApi.removeSource(source.id, {});
-      if (outcome.ok) {
+      if (outcome && outcome.ok) {
         setOwnSourceList(outcome.sources);
         setOwnSourceCount(outcome.count);
+        if (!outcome.count && setUseOwnSources) setUseOwnSources(false);
         setOwnSourceImportMsg(t("input.my_sources_removed", { title: source.title }));
-      } else if (outcome.reason === "storage") {
-        setOwnSourceImportMsg(t("input.my_sources_storage_failed"));
+      } else {
+        reportOwnSourceFailure(outcome);
       }
+    } catch (_) {
+      reportOwnSourceFailure(null);
     } finally {
       setOwnSourceBusy(false);
     }
-  }, [ownSourcesApi, t]);
+  }, [ownSourcesApi, t, reportOwnSourceFailure, ownSourceControlsBusy, setUseOwnSources]);
   const handleImportOwnSources = React.useCallback(async (event) => {
+    if (ownSourceControlsBusy) return;
     const input = event && event.target;
     const files = input && input.files ? Array.from(input.files) : [];
     if (!files.length) return;
@@ -1824,6 +1854,7 @@ function SourceGenPanel(props) {
       setOwnSourceImportMsg(t("input.my_sources_unavailable"));
       return;
     }
+    ownSourceRevision.current++;
     setOwnSourceImporting(true);
     setOwnSourceImportMsg("");
     setOwnSourceImportFailures([]);
@@ -1838,6 +1869,8 @@ function SourceGenPanel(props) {
       );
       if (outcome.reason === "storage") {
         setOwnSourceImportMsg(t("input.my_sources_storage_failed"));
+      } else if (outcome.reason === "unavailable") {
+        setOwnSourceImportMsg(t("input.my_sources_unavailable"));
       } else if (outcome.imported > 0) {
         setOwnSourceImportMsg(t("input.my_sources_imported", { count: outcome.imported }));
       } else {
@@ -1849,29 +1882,51 @@ function SourceGenPanel(props) {
       setOwnSourceImporting(false);
       if (input) input.value = "";
     }
-  }, [ownSourcesApi, t]);
+  }, [ownSourcesApi, t, ownSourceControlsBusy]);
   React.useEffect(() => {
     if (!showSourceGen) return void 0;
     let cancelled = false;
-    (async () => {
+    let timer = null;
+    const startedAt = Date.now();
+    const revision = ownSourceRevision.current;
+    setPendingRemoveId(null);
+    setOwnSourceImportMsg("");
+    setOwnSourceImportFailures([]);
+    const refresh = async () => {
+      if (cancelled || revision !== ownSourceRevision.current) return;
+      const OS = typeof window !== "undefined" && window.AlloOwnSources || null;
+      const ready = !!(OS && typeof OS.countSources === "function" && (typeof OS.available !== "function" || OS.available()));
+      if (!ready && Date.now() - startedAt < 3e4) {
+        if (OS && typeof OS.ensureLumen === "function") Promise.resolve(OS.ensureLumen(1)).catch(() => {
+        });
+        timer = setTimeout(refresh, 1e3);
+        return;
+      }
       try {
-        const OS = ownSourcesApi;
         if (!OS || typeof OS.countSources !== "function") {
           if (!cancelled) setOwnSourceCount(0);
           return;
         }
-        const n = await OS.countSources({});
-        if (!cancelled) setOwnSourceCount(n);
         if (typeof OS.listSources === "function") {
           const rows = await OS.listSources({});
-          if (!cancelled) setOwnSourceList(rows);
+          if (cancelled || revision !== ownSourceRevision.current) return;
+          setOwnSourceList(rows);
+          setOwnSourceCount(rows.filter((source) => source.active !== false).length);
+        } else {
+          const n = await OS.countSources({});
+          if (!cancelled && revision === ownSourceRevision.current) setOwnSourceCount(n);
         }
       } catch (_) {
-        if (!cancelled) setOwnSourceCount(0);
+        if (!cancelled && revision === ownSourceRevision.current) {
+          setOwnSourceCount(0);
+          setOwnSourceImportMsg(t("input.my_sources_unavailable"));
+        }
       }
-    })();
+    };
+    refresh();
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
     };
   }, [showSourceGen]);
   if (!showSourceGen) return null;
@@ -2068,7 +2123,7 @@ function SourceGenPanel(props) {
       onChange: (e) => setIncludeSourceCitations(e.target.checked),
       className: "w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCitations", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Search, { size: 12, className: "text-purple-600" }), " ", t("input.verify_facts"))), includeSourceCitations && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-6 leading-relaxed" }, t("input.verify_facts_desc")), ownSourceCount !== null && ownSourceCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCitations", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Search, { size: 12, className: "text-purple-600" }), " ", t("input.verify_facts"))), includeSourceCitations && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-6 leading-relaxed" }, t("input.verify_facts_desc"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 bg-purple-50 p-2.5 rounded-lg border-2 border-purple-200 shadow-sm" }, ownSourceCount !== null && ownSourceList.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("input.use_my_sources"),
@@ -2076,6 +2131,7 @@ function SourceGenPanel(props) {
       type: "checkbox",
       checked: !!useOwnSources,
       onChange: (e) => setUseOwnSources && setUseOwnSources(e.target.checked),
+      disabled: ownSourceCount === 0 || ownSourceControlsBusy,
       className: "w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useOwnSources", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(FileText, { size: 12, className: "text-purple-600", "aria-hidden": "true" }), " ", t("input.use_my_sources"), /* @__PURE__ */ React.createElement("span", { className: "font-normal text-purple-700" }, "(", ownSourceCount, ")"))), ownSourceCount !== null && ownSourceCount > 0 && useOwnSources && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-12 leading-relaxed" }, t("input.use_my_sources_desc")), ownSourceCount !== null && /* @__PURE__ */ React.createElement("div", { className: "ml-6 " + (ownSourceCount > 0 ? "pt-1" : "pt-1.5 border-t border-purple-200/70") }, /* @__PURE__ */ React.createElement(
@@ -2094,15 +2150,15 @@ function SourceGenPanel(props) {
       multiple: true,
       className: "sr-only",
       accept: ownSourcesApi ? ownSourcesApi.acceptAttribute() : void 0,
-      disabled: ownSourceImporting,
+      disabled: ownSourceControlsBusy,
       onChange: handleImportOwnSources
     }
-  ), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "text-[11px] text-purple-700 leading-relaxed" }, ownSourceImportMsg || (ownSourceCount > 0 ? t("input.my_sources_stored", { count: ownSourceCount }) : t("input.my_sources_empty"))), ownSourceImportFailures.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "text-[11px] text-amber-900 leading-relaxed list-disc ml-4" }, ownSourceImportFailures.map((failure, index) => /* @__PURE__ */ React.createElement("li", { key: index }, failure))), ownSourceList.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 flex items-center cursor-pointer text-[11px] font-bold text-purple-900 select-none" }, t("input.my_sources_manage", { count: ownSourceList.length })), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1" }, ownSourceList.map((source) => /* @__PURE__ */ React.createElement("li", { key: source.id, className: "flex items-center justify-between gap-2 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words " + (source.active ? "text-purple-900" : "text-slate-500 line-through") }, source.title), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 shrink-0" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "text-[11px] text-purple-700 leading-relaxed" }, ownSourceImportMsg || (ownSourceList.length > 0 ? `${t("input.my_sources_stored", { count: ownSourceList.length })} ${t("input.my_sources_included", { count: ownSourceCount })}` : t("input.my_sources_empty"))), ownSourceImportFailures.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "text-[11px] text-amber-900 leading-relaxed list-disc ml-4" }, ownSourceImportFailures.map((failure, index) => /* @__PURE__ */ React.createElement("li", { key: index }, failure))), ownSourceList.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 flex items-center cursor-pointer text-[11px] font-bold text-purple-900 select-none" }, t("input.my_sources_manage", { count: ownSourceList.length })), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1" }, ownSourceList.map((source) => /* @__PURE__ */ React.createElement("li", { key: source.id, className: "text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words " + (source.active ? "text-purple-900" : "text-slate-500 line-through") }, source.title), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => handleToggleOwnSource(source),
-      disabled: ownSourceBusy,
+      disabled: ownSourceControlsBusy,
       className: "min-h-11 px-2 rounded border border-purple-300 bg-white font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50"
     },
     source.active ? t("input.my_sources_exclude") : t("input.my_sources_include")
@@ -2110,19 +2166,39 @@ function SourceGenPanel(props) {
     "button",
     {
       type: "button",
-      onClick: () => handleRemoveOwnSource(source),
-      disabled: ownSourceBusy,
+      onClick: () => handleRemoveOwnSource(source, false),
+      disabled: ownSourceControlsBusy,
       "aria-label": t("input.my_sources_remove_aria", { title: source.title }),
+      "aria-expanded": pendingRemoveId === source.id,
       className: "min-h-11 px-2 rounded border border-rose-300 bg-white font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
     },
     t("input.my_sources_remove")
+  ))), pendingRemoveId === source.id && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-2 text-rose-800" }, /* @__PURE__ */ React.createElement("span", null, t("input.my_sources_remove_confirm", { title: source.title })), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      autoFocus: true,
+      onClick: () => handleRemoveOwnSource(source, true),
+      disabled: ownSourceControlsBusy,
+      "aria-label": t("input.my_sources_remove_aria", { title: source.title }),
+      className: "min-h-11 px-2 rounded border border-rose-700 bg-rose-700 font-bold text-white hover:bg-rose-800 disabled:opacity-50"
+    },
+    t("input.my_sources_remove")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => setPendingRemoveId(null),
+      className: "min-h-11 px-2 rounded border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-50"
+    },
+    t("common.cancel")
   )))))))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.generate_source_text"),
       "data-help-key": "source_generate_button",
       onClick: handleGenerateSource,
-      disabled: !sourceTopic.trim() && targetStandards.length === 0 || isGeneratingSource,
+      disabled: !sourceTopic.trim() && targetStandards.length === 0 || ownSourceControlsBusy,
       "aria-busy": isGeneratingSource,
       className: "w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     },

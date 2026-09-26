@@ -15358,7 +15358,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             return !!((window.AlloModules && window.AlloModules.StemLab)
               || (window.StemLab && typeof window.StemLab.ensureThree === 'function'));
           };
-          if (label === 'Stem' && window.__alloModuleRegistry && !stemHostReady()) {
+          var stemHostFree = mod === 'stem_lab/stem_lumen_evidence.js' || mod === 'stem_lab/stem_lumen_documents.js';
+          if (label === 'Stem' && !stemHostFree && window.__alloModuleRegistry && !stemHostReady()) {
             var hostWaitStarted = Date.now();
             var waitForStemHost = function() {
               if (states[mod] !== state || state.status !== 'loading') return;

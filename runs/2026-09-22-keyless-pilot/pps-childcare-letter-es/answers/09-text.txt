@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Carta a las familias sobre el cuidado infantil, diciembre de 2020 (Escuelas Públicas de Portland)</title>
+<style>
+body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.7; color: #1e293b; }
+h1, h2, h3, h4 { color: #0f172a; margin-top: 1.5em; }
+h1 { font-size: 1.75rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.15rem; }
+p { margin: 0.75em 0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+th, td { border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; text-align: left; }
+th { background: #f1f5f9; font-weight: bold; }
+caption { font-weight: bold; margin-bottom: 0.5rem; text-align: left; }
+img { max-width: 100%; height: auto; }
+figure { margin: 1em 0; }
+figcaption { font-size: 0.875rem; color: #64748b; font-style: italic; margin-top: 0.25rem; }
+a { color: #2563eb; overflow-wrap: anywhere; }
+ul, ol { margin: 0.75em 0; padding-left: 1.5em; }
+li { margin: 0.25em 0; }
+pre { background: #f8fafc; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.875rem; }
+hr { border: none; border-top: 1px solid #e2e8f0; margin: 2rem 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.sr-only:focus { position: static; width: auto; height: auto; padding: 0.5rem 1rem; margin: 0; overflow: visible; clip: auto; background: #2563eb; color: white; border-radius: 0.25rem; z-index: 1000; }
+.extraction-note { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
+figure[data-img-idx] { break-inside: avoid; }
+@media print { body { padding: 0.5in; } .sr-only { display: none; } label input[type="file"] { display: none !important; } label:has(input[type="file"]) { display: none !important; } button[onclick*="pdfCropImage"] { display: none !important; } }
+</style>
+
+</head>
+<body>
+<a href="#main-content" class="sr-only" lang="en">Skip to main content</a>
+<main id="main-content" role="main">
+<figure id="pdf-img-1-figure" data-img-idx="1" data-crop="{&quot;page&quot;:1,&quot;x&quot;:123,&quot;y&quot;:34,&quot;w&quot;:672,&quot;h&quot;:97,&quot;canvasW&quot;:918,&quot;canvasH&quot;:1188}" style="position:relative;margin:1em 0">
+
+<div id="pdf-img-1-container" style="text-align:center;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">
+<img src="__ALLOFLOW_DATAURL_FINAL_1__" alt="Logotipo de Portland Public Schools (Escuelas Públicas de Portland): prepared &amp; empowered" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">
+<div data-alloflow-image-toolbar="pdf-img-1" style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
+<label data-alloflow-image-replace="pdf-img-1" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#475569;color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #334155">
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+<span lang="en" style="color:#ffffff !important">Replace</span>
+<input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('pdf-img-1-container');(function(c, dataUrl, altText){var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}if(target){target.src=dataUrl;if(altText)target.alt=altText;}else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');target.style.width='100%';target.style.height='auto';target.setAttribute('width','600');var _bar=document.createElement('div');_bar.className='allo-img-controls';_bar.setAttribute('contenteditable','false');_bar.style.cssText='display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px;font-size:11px;color:#475569';var _cur=100;var _lab=document.createElement('span');var _apply=function(){target.style.width=_cur+'%';target.setAttribute('width',String(Math.round(_cur*6)));_lab.textContent='size '+_cur+'%';try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}};var _mk=function(l,f){var b=document.createElement('button');b.type='button';b.textContent=l;b.title='Resize image (persists in every export)';b.style.cssText='padding:2px 9px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700';b.onclick=function(ev){ev.preventDefault();f();};return b;};_bar.appendChild(_mk('−',function(){_cur=Math.max(25,_cur-25);_apply();}));_bar.appendChild(_lab);_bar.appendChild(_mk('+',function(){_cur=Math.min(100,_cur+25);_apply();}));_apply();if(target.parentNode===c)c.appendChild(_bar);else if(target.parentNode)target.parentNode.insertBefore(_bar,target.nextSibling);try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})(c,e.target.result,'Portland Public Schools logo: a navy blue three-masted sailing ship inside a thin circle, beside the words PORTLAND PUBLIC SCHOOLS (PORTLAND in dark navy capitals, PUBLIC SCHOOLS in teal capitals) and the tagline prepared & empowered in red lowercase underneath.');};r.readAsDataURL(f);})(this)">
+</label>
+
+
+
+</div>
+</div>
+<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true" lang="en">Portland Public Schools logo: a navy blue three-masted sailing ship inside a thin circle, beside the words PORTLAND PUBLIC SCHOOLS (PORTLAND in dark navy capitals, PUBLIC SCHOOLS in teal capitals) and the tagline 'prepared &amp; empowered' in red lowercase underneath.</span><br><em lang="en" style="font-size:0.85em;color:#475569">Purpose: Identifies the sender of the letter as Portland Public Schools.</em></figcaption>
+</figure>
+<h1 id="carta-familias-cuidado-infantil" style="color:#1f2a44;font-size:1.75rem;font-weight:bold;border-bottom:3px solid #1155cc;padding-bottom:0.5rem;margin:1.5em 0 0.5em">Carta a las familias sobre el cuidado infantil, diciembre de 2020</h1>
+<p style="margin:0.6em 0;line-height:1.7">Estimadas familias de las Escuelas Públicas de Portland,</p>
+<p style="margin:0.6em 0;line-height:1.7">Nos complace haber podido ofrecer guardería de tiempo completo o parcial y actividades después de la escuela a las familias este otoño. Dado que los estudiantes no pueden asistir a la escuela en persona en tiempo completo debido a la pandemia de COVID-19, sabemos cuánto dependen las familias trabajadoras de estos programas.</p>
+<p style="margin:0.6em 0;line-height:1.7">Hemos sido capaces de ofrecer este tipo de programación a las familias este otoño porque el Fondo de Alivio del Coronavirus (CRF) federal que recibimos nos permitió pagar a 13 socios comunitarios por este servicio vital.</p>
+<p style="margin:0.6em 0;line-height:1.7">Desafortunadamente, todo el alivio del coronavirus debe usarse antes del 30 de diciembre y luego se agota el dinero. A estas alturas no hay indicios de que se vaya a extender la financiación o de que obtengamos nueva financiación en 2021.</p>
+<p style="margin:0.6em 0;line-height:1.7">Usamos alrededor de dos tercios de los $10.5 millones de alivio del coronavirus que recibimos para inversiones urgentes y únicas relacionadas con COVID, como materiales, computadoras para que los estudiantes puedan aprender virtualmente y actualizaciones en nuestras instalaciones para hacerlas más seguras para los estudiantes y empleados. Aproximadamente un tercio de ese dinero se utilizó para financiar la contratación de empleados y servicios adicionales, como el programa comunitario en el que participó su hijo este otoño. Ese personal y esos servicios tienen implicaciones de costos para que podamos continuar.</p>
+<p style="margin:0.6em 0;line-height:1.7">Les escribo ahora para hacerles saber que el distrito está evaluando la programación que podemos continuar después de diciembre. La recomendación que presentaré a la Junta de Educación de Portland en la próxima reunión del martes, 8 de diciembre priorizará el financiamiento continuo para las necesidades del personal del distrito, como maestros sustitutos, maestros de nuestra Academia Virtual, maestros de inglés y de educación especial, así como la continuación de los programas comunitarios. Esta es una decisión difícil y dolorosa, pero nos gustaría que tuviera esta información antes de que se haga pública a finales de esta semana. La Junta hará una primera lectura y taller sobre la propuesta el martes por la noche y votará sobre el asunto en la reunión del 22 de diciembre. <a href="https://go.boarddocs.com/me/portland/Board.nsf/files/BVHSPE72F5A0/$file/Finance%20Committee%20-%20Nov%202020.pdf">Aquí hay un resumen de los gatos que enfrenta el distrito (PDF)</a>.</p>
+<p style="margin:0.6em 0;line-height:1.7">Esperamos continuar teniendo una relación sólida con los socios comunitarios que brindan el cuidado de los niños y la programación de enriquecimiento. Sin embargo, tenga en cuenta que nuestro presupuesto escolar actual para el año fiscal 2021 ya es muy bajo y no tendremos la capacidad en el nuevo año de continuar pagando por esta programación y los servicios que describí anteriormente.</p>
+<p style="margin:0.6em 0;line-height:1.7">Mantendré a todos informados mientras trabajamos para determinar la mejor manera de satisfacer las necesidades de nuestros estudiantes y familias con la nueva realidad financiera que enfrentamos al comienzo del nuevo año.</p>
+<p style="margin:0.6em 0;line-height:1.7">Atenciosamente,</p>
+<figure id="pdf-img-2-figure" data-img-idx="2" data-crop="{&quot;page&quot;:1,&quot;x&quot;:76,&quot;y&quot;:1046,&quot;w&quot;:115,&quot;h&quot;:39,&quot;canvasW&quot;:918,&quot;canvasH&quot;:1188}" style="position:relative;margin:1em 0">
+
+<div id="pdf-img-2-container" style="text-align:center;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">
+<img src="__ALLOFLOW_DATAURL_FINAL_2__" alt="Firma de Xavier Botana" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">
+<div data-alloflow-image-toolbar="pdf-img-2" style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
+<label data-alloflow-image-replace="pdf-img-2" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#475569;color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #334155">
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+<span lang="en" style="color:#ffffff !important">Replace</span>
+<input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('pdf-img-2-container');(function(c, dataUrl, altText){var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}if(target){target.src=dataUrl;if(altText)target.alt=altText;}else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');target.style.width='100%';target.style.height='auto';target.setAttribute('width','600');var _bar=document.createElement('div');_bar.className='allo-img-controls';_bar.setAttribute('contenteditable','false');_bar.style.cssText='display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px;font-size:11px;color:#475569';var _cur=100;var _lab=document.createElement('span');var _apply=function(){target.style.width=_cur+'%';target.setAttribute('width',String(Math.round(_cur*6)));_lab.textContent='size '+_cur+'%';try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}};var _mk=function(l,f){var b=document.createElement('button');b.type='button';b.textContent=l;b.title='Resize image (persists in every export)';b.style.cssText='padding:2px 9px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700';b.onclick=function(ev){ev.preventDefault();f();};return b;};_bar.appendChild(_mk('−',function(){_cur=Math.max(25,_cur-25);_apply();}));_bar.appendChild(_lab);_bar.appendChild(_mk('+',function(){_cur=Math.min(100,_cur+25);_apply();}));_apply();if(target.parentNode===c)c.appendChild(_bar);else if(target.parentNode)target.parentNode.insertBefore(_bar,target.nextSibling);try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})(c,e.target.result,'Handwritten signature in dark ink above the typed name Xavier Botana, Superintendente.');};r.readAsDataURL(f);})(this)">
+</label>
+
+
+
+</div>
+</div>
+<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true" lang="en">Handwritten signature in dark ink above the typed name 'Xavier Botana, Superintendente'.</span><br><em lang="en" style="font-size:0.85em;color:#475569">Purpose: Shows the superintendent signed the letter; the typed name below carries the same information.</em></figcaption>
+</figure>
+<p style="margin:0.6em 0;line-height:1.7"><strong><em>Xavier Botana, Superintendente</em></strong></p>
+<p lang="en" style="margin:0.6em 0;line-height:1.7">P517- SPA Childcare Letter to Families December 2020</p>
+</main>
+<footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#475569;">
+<p lang="en">This document was automatically transformed for accessibility compliance (WCAG 2.2 AA) by AlloFlow. Original: pps-childcare-letter-es-2020-12.pdf (1 pages). Transformed: 9/22/2026.</p>
+</footer>
+</body>
+</html>

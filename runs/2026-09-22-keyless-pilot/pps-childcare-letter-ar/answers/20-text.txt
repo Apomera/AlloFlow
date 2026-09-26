@@ -1,0 +1,36 @@
+{
+ "score": 82,
+ "summary": "The page declares Arabic with right-to-left direction, has a descriptive Arabic title, a skip link, a main landmark, one h1 and an Arabic logo alternative, but the link to the expense summary shows raw markup as visible text.",
+ "issues": [
+  {
+   "ruleId": "other",
+   "claimKind": "quality",
+   "issue": "The link to the expense summary displays literal markup (<span lang='en'> and </span>) as visible text.",
+   "wcag": "1.3.1",
+   "severity": "serious",
+   "count": 1,
+   "location": "ملخص للنفقات"
+  },
+  {
+   "ruleId": "link-text",
+   "claimKind": "quality",
+   "issue": "The link to the expense summary includes visible markup text in its name, so its accessible name is not clean descriptive text.",
+   "wcag": "2.4.4",
+   "severity": "moderate",
+   "count": 1,
+   "location": "ملخص للنفقات"
+  }
+ ],
+ "passes": [
+  "1. LANGUAGE: html lang=\"ar\" dir=\"rtl\" matches the Arabic letter, and the English skip link, Replace labels, caption text and Purpose notes carry lang=\"en\".",
+  "2. TITLE: the title reads 'رسالة إلى العائلات حول رعاية الأطفال، ديسمبر 2020 (مدارس بورتلاند العامة)'.",
+  "3. HEADINGS: one h1 and no skipped levels.",
+  "4. LANDMARKS: the letter sits inside main.",
+  "5. IMAGES: the logo alt names the sender in Arabic and the signature alt reads 'توقيع Xavier Botana'.",
+  "6. TABLES: none present.",
+  "7. CONTRAST: body text, the h1 and captions meet 4.5:1 on white; Replace labels are white on #475569.",
+  "9. LISTS: prose only.",
+  "10. SKIP NAV: a skip link to #main-content comes first.",
+  "11. FORMS: each Replace file input sits inside a label with visible text."
+ ]
+}

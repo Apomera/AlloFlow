@@ -1,0 +1,12 @@
+{
+  "score": 85,
+  "summary": "The document head declares the correct language (lang=\"es\") and a stylesheet whose text colors meet contrast minimums, but the page title is generic English boilerplate plus the file name rather than a description of this Spanish letter.",
+  "issues": [
+    {"ruleId": "document-title", "claimKind": "quality", "issue": "The title element reads as generic English boilerplate followed by the file name, so it does not describe the topic of this Spanish-language letter to families.", "wcag": "2.4.2", "severity": "serious", "count": 1, "location": "document"}
+  ],
+  "passes": [
+    "1. LANGUAGE: the html element declares lang=\"es\", matching the Spanish body text.",
+    "7. CONTRAST: the declared colors meet 4.5:1 on white: body text #1e293b, links #2563eb, figure captions #64748b.",
+    "The crop dialog script gives its dialog a label, a description, labelled coordinate inputs and keyboard focus handling."
+  ]
+}

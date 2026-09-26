@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>رسالة إلى العائلات حول رعاية الأطفال، ديسمبر 2020 (مدارس بورتلاند العامة)</title>
+<style>
+body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.7; color: #1e293b; }
+h1, h2, h3, h4 { color: #0f172a; margin-top: 1.5em; }
+h1 { font-size: 1.75rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.15rem; }
+p { margin: 0.75em 0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+th, td { border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; text-align: left; }
+th { background: #f1f5f9; font-weight: bold; }
+caption { font-weight: bold; margin-bottom: 0.5rem; text-align: left; }
+img { max-width: 100%; height: auto; }
+figure { margin: 1em 0; }
+figcaption { font-size: 0.875rem; color: #64748b; font-style: italic; margin-top: 0.25rem; }
+a { color: #2563eb; overflow-wrap: anywhere; }
+ul, ol { margin: 0.75em 0; padding-left: 1.5em; }
+li { margin: 0.25em 0; }
+pre { background: #f8fafc; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.875rem; }
+hr { border: none; border-top: 1px solid #e2e8f0; margin: 2rem 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.sr-only:focus { position: static; width: auto; height: auto; padding: 0.5rem 1rem; margin: 0; overflow: visible; clip: auto; background: #2563eb; color: white; border-radius: 0.25rem; z-index: 1000; }
+.extraction-note { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
+figure[data-img-idx] { break-inside: avoid; }
+@media print { body { padding: 0.5in; } .sr-only { display: none; } label input[type="file"] { display: none !important; } label:has(input[type="file"]) { display: none !important; } button[onclick*="pdfCropImage"] { display: none !important; } }
+</style>
+
+</head>
+<body>
+<a href="#main-content" class="sr-only" lang="en">Skip to main content</a>
+<main id="main-content" role="main">
+<figure id="pdf-img-1-figure" data-img-idx="1" data-crop="{&quot;page&quot;:1,&quot;x&quot;:76,&quot;y&quot;:54,&quot;w&quot;:702,&quot;h&quot;:126,&quot;canvasW&quot;:918,&quot;canvasH&quot;:1188}" style="position:relative;margin:1em 0">
+
+<div id="pdf-img-1-container" style="text-align:center;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">
+<img src="__ALLOFLOW_DATAURL_FINAL_1__" alt="شعار مدارس بورتلاند العامة (Portland Public Schools)، prepared &amp; empowered" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">
+<div data-alloflow-image-toolbar="pdf-img-1" style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
+<label data-alloflow-image-replace="pdf-img-1" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#475569;color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #334155">
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+<span lang="en" style="color:#ffffff !important">Replace</span>
+<input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('pdf-img-1-container');(function(c, dataUrl, altText){var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}if(target){target.src=dataUrl;if(altText)target.alt=altText;}else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');target.style.width='100%';target.style.height='auto';target.setAttribute('width','600');var _bar=document.createElement('div');_bar.className='allo-img-controls';_bar.setAttribute('contenteditable','false');_bar.style.cssText='display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px;font-size:11px;color:#475569';var _cur=100;var _lab=document.createElement('span');var _apply=function(){target.style.width=_cur+'%';target.setAttribute('width',String(Math.round(_cur*6)));_lab.textContent='size '+_cur+'%';try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}};var _mk=function(l,f){var b=document.createElement('button');b.type='button';b.textContent=l;b.title='Resize image (persists in every export)';b.style.cssText='padding:2px 9px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700';b.onclick=function(ev){ev.preventDefault();f();};return b;};_bar.appendChild(_mk('−',function(){_cur=Math.max(25,_cur-25);_apply();}));_bar.appendChild(_lab);_bar.appendChild(_mk('+',function(){_cur=Math.min(100,_cur+25);_apply();}));_apply();if(target.parentNode===c)c.appendChild(_bar);else if(target.parentNode)target.parentNode.insertBefore(_bar,target.nextSibling);try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})(c,e.target.result,'Portland Public Schools logo: a navy blue three-masted sailing ship inside a thin circle, beside the words PORTLAND PUBLIC SCHOOLS and the tagline prepared & empowered in red underneath.');};r.readAsDataURL(f);})(this)">
+</label>
+
+
+
+</div>
+</div>
+<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true" lang="en">Portland Public Schools logo: a navy blue three-masted sailing ship inside a thin circle, beside the words PORTLAND PUBLIC SCHOOLS and the tagline 'prepared &amp; empowered' in red underneath.</span><br><em lang="en" style="font-size:0.85em;color:#475569">Purpose: Identifies the sender of the letter as Portland Public Schools.</em></figcaption>
+</figure>
+<h1 id="risala-riaya-atfal" style="color:#1f2a44;font-size:1.75rem;font-weight:bold;border-bottom:3px solid #1155cc;padding-bottom:0.5rem;margin:1.5em 0 0.5em"><span lang="ar" dir="rtl">رسالة إلى العائلات حول رعاية الأطفال، ديسمبر </span>2020</h1>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">عائلات مدارس بورتلاند العامة العزيزة،</span></p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">لقد كنا سعداء جدا لتقديم الأسر يوم كامل أو جزئي لرعاية الطفل وبرامج الإثراء في خريف هذا العام. ومع عدم تمكن الطلاب من الالتحاق بمدرسة شخصية بدوام كامل، بسبب وباء "كوفيد-</span>19"<span lang="ar" dir="rtl">، فإننا نعرف كم اعتمدت الأسر العاملة على هذه البرمجة.</span></p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">لقد تمكنا من توفير هذا النوع من البرمجة هذا الخريف لأن صناديق الإغاثة في فيروس كورونا الفيدرالي (</span>CRF) <span lang="ar" dir="rtl">التي تلقيناها مكنتنا من دفع </span>13 <span lang="ar" dir="rtl">شريكًا مجتمعيًا مذهلاً مقابل هذه الخدمة الحيوية.</span></p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">لسوء الحظ، أن الأموال نموذج الاحتياطي الموحد يجب أن تنفق جميع بحلول </span>30 <span lang="ar" dir="rtl">ديسمبر ونقضي بعد ذلك. ليس هناك أي مؤشر في الوقت هذا على أن التمويل سيتم تمديده أو أننا سنحصل على تمويل جديد في عام </span>2021.</p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">استخدمنا حوالي ثلثي نموذج الإبلاغ الموحد البالغ </span>10.5 <span lang="ar" dir="rtl">مليون دولار الذي تلقيناه للاستثمارات العاجلة ذات الصلة بـ </span>COVID <span lang="ar" dir="rtl">لمرة واحدة ، مثل الإمدادات وأجهزة الكمبيوتر حتى يتمكن الطلاب من التعلم عن بعد والترقيات في مرافقنا لجعلها أكثر أمانًا للطلاب والموظفين. وقد تم استخدام حوالي ثلث هذه الأموال لتمويل التوظيف الإضافي والخدمات، مثل برنامج شريك المجتمع الذي تمكن طفلك من الوصول إليه هذا الخريف. ولهذا الملاك الوظيفي وتلك الخدمات آثار من حيث التكلفة بالنسبة لنا للاستمرار.</span></p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">نحن نكتب إليكم الآن لنعلمك أن المنطقة في عملية تقييم ما البرمجة التي يمكننا أن نستمر بعد ديسمبر كانون الاول. وسوف نقدم توصية إلى مجلس بورتلاند للتعليم العام في اجتماعه يوم الثلاثاء، </span>8 <span lang="ar" dir="rtl">كانون الأول</span>/<span lang="ar" dir="rtl">ديسمبر. وستعطي هذه التوصية الأولوية للتمويل المستمر لاحتياجات التوظيف في المقاطعات، مثل البدائل داخل المدرسة، والموظفين في أكاديميتنا عن بعد، و خدمات تعليم اللغة الانكليزية لغير الناطقين بها، ومعلمي التعليم الخاص، على مدى استمرار الشراكات المجتمعية. هذا قرار صعب ومؤلم، لكننا أردناك أن تعرف عنه قبل أن يصبح علنياً في وقت لاحق من هذا الأسبوع.</span></p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">وسوف يعقد المجلس قراءة اولى وورشة عمل حول الاقتراح ليلة الثلاثاء وسيجرى تصويتا حول هذه القضية فى اجتماع يوم </span>22 <span lang="ar" dir="rtl">ديسمبر. وفيما يلي </span><a href="https://go.boarddocs.com/me/portland/Board.nsf/files/BVHSPE72F5A0/$file/Finance%20Committee%20-%20Nov%202020.pdf"><span lang="ar" dir="rtl">ملخص للنفقات </span><span lang="en">summary</span> <span lang="ar" dir="rtl">التي تواجه المنطقة (</span>PDF)</a>.</p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">ونأمل أن تستمر في إقامة علاقة قوية مع الشركاء المجتمعيين الذين يقدمون برامج رعاية الطفل و دعمهه. ومع ذلك، يرجى أن تكون على علم بأن لدينا ميزانية المدرسة </span>FY21 <span lang="ar" dir="rtl">الحالية بالفعل العجاف جدا، ونحن لن يكون لدينا القدرة في العام الجديد لمواصلة دفع ثمن هذه البرمجة والخدمات التي وصفتها في وقت سابق.</span></p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">سأطلعكم على المعلومات أثناء عملنا على تحديد أفضل السبل لتلبية احتياجات طلابنا وعائلاتهم مع الواقع المالي الجديد الذي نواجهه مع بداية العام الجديد.</span></p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="ar" dir="rtl">المخلص،</span></p>
+<figure id="pdf-img-2-figure" data-img-idx="2" data-crop="{&quot;page&quot;:1,&quot;x&quot;:76,&quot;y&quot;:715,&quot;w&quot;:115,&quot;h&quot;:39,&quot;canvasW&quot;:918,&quot;canvasH&quot;:1188}" style="position:relative;margin:1em 0">
+
+<div id="pdf-img-2-container" style="text-align:center;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">
+<img src="__ALLOFLOW_DATAURL_FINAL_2__" alt="توقيع Xavier Botana" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">
+<div data-alloflow-image-toolbar="pdf-img-2" style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
+<label data-alloflow-image-replace="pdf-img-2" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#475569;color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #334155">
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+<span lang="en" style="color:#ffffff !important">Replace</span>
+<input type="file" accept="image/*" style="display:none" onchange="(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('pdf-img-2-container');(function(c, dataUrl, altText){var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}if(target){target.src=dataUrl;if(altText)target.alt=altText;}else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');target.style.width='100%';target.style.height='auto';target.setAttribute('width','600');var _bar=document.createElement('div');_bar.className='allo-img-controls';_bar.setAttribute('contenteditable','false');_bar.style.cssText='display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px;font-size:11px;color:#475569';var _cur=100;var _lab=document.createElement('span');var _apply=function(){target.style.width=_cur+'%';target.setAttribute('width',String(Math.round(_cur*6)));_lab.textContent='size '+_cur+'%';try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}};var _mk=function(l,f){var b=document.createElement('button');b.type='button';b.textContent=l;b.title='Resize image (persists in every export)';b.style.cssText='padding:2px 9px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700';b.onclick=function(ev){ev.preventDefault();f();};return b;};_bar.appendChild(_mk('−',function(){_cur=Math.max(25,_cur-25);_apply();}));_bar.appendChild(_lab);_bar.appendChild(_mk('+',function(){_cur=Math.min(100,_cur+25);_apply();}));_apply();if(target.parentNode===c)c.appendChild(_bar);else if(target.parentNode)target.parentNode.insertBefore(_bar,target.nextSibling);try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})(c,e.target.result,'Handwritten signature in dark ink above the typed name Xavier Botana.');};r.readAsDataURL(f);})(this)">
+</label>
+
+
+
+</div>
+</div>
+<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true" lang="en">Handwritten signature in dark ink above the typed name Xavier Botana.</span><br><em lang="en" style="font-size:0.85em;color:#475569">Purpose: Shows the superintendent signed the letter; the typed name below carries the same information.</em></figcaption>
+</figure>
+<p style="margin:0.6em 0;line-height:1.7"><strong><em>Xavier Botana</em></strong><span lang="ar" dir="rtl">، المشرف العام لمدارس بورتلاند</span></p>
+<p style="margin:0.6em 0;line-height:1.7"><span lang="en">P517- ARA Childcare Letter to Families December 2020</span></p>
+</main>
+<footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#475569;">
+<p lang="en">This document was automatically transformed for accessibility compliance (WCAG 2.2 AA) by AlloFlow. Original: pps-childcare-letter-ar-2020-12.pdf (1 pages). Transformed: 9/22/2026.</p>
+</footer>
+</body>
+</html>

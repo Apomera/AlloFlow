@@ -1,0 +1,7 @@
+{"items":[
+ {"key":"equalAccess|potential|style_color_misuse","action":"not-an-issue","reason":"This style block only darkens utility-class text colors to raise contrast; no information in the letter is conveyed by color, and its one link keeps the default underline."},
+ {"key":"equalAccess|potential|text_quoted_correctly","action":"not-an-issue","reason":"'prepared & empowered' is the logo tagline quoted inside an image description that is hidden from assistive technology, not a quotation from another source."},
+ {"key":"equalAccess|potential|text_block_heading","action":"not-an-issue","reason":"'Xavier Botana, Superintendente' is the sender's signature line at the end of the letter, not a label for a following section."},
+ {"key":"equalAccess|manual|style_highcontrast_visible","action":"not-an-issue","reason":"This style block only shortens animations and transitions for reduced-motion users and does not add, position or alter any content."},
+ {"key":"equalAccess|manual|download_keyboard_controllable","action":"not-an-issue","reason":"The download is a plain link to a PDF, which a keyboard user activates and leaves like any other link, so it cannot trap focus."}
+]}

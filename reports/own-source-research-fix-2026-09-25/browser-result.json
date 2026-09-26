@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "generated reading excluded and preserved",
+    "real TXT import and retrieval",
+    "Exclude/Include persistence",
+    "independent document and web toggles",
+    "inline Remove confirmation"
+  ],
+  "pageErrors": []
+}

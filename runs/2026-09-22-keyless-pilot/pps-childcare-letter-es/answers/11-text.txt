@@ -1,0 +1,11 @@
+{
+  "score": 100,
+  "summary": "The closing section keeps the signature line inside main, marks the English P517 reference as English, and places the notice in a footer landmark with sufficient contrast.",
+  "issues": [],
+  "passes": [
+    "4. LANDMARKS: main closes after the P517 line and the notice sits in a footer with role contentinfo.",
+    "7. CONTRAST: the footer text #475569 on white is about 7.6:1.",
+    "Language of parts: the English P517 line and the English footer paragraph carry lang=\"en\".",
+    "6. TABLES, 9. LISTS and 11. FORMS: none present in this section."
+  ]
+}

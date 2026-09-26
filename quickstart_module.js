@@ -494,16 +494,29 @@ const QuickStartWizard = React.memo(({
   useEffect(() => {
     if (!isOpen) return undefined;
     let cancelled = false;
-    (async () => {
+    let timer = null;
+    const startedAt = Date.now();
+    // Same as the source panel: the module and Lumen arrive after boot, and a
+    // single early count hid the toggle for the whole wizard. Keep checking.
+    const refresh = async () => {
+      if (cancelled) return;
+      const OS = typeof window !== 'undefined' && window.AlloOwnSources;
+      const ready = !!(OS && typeof OS.countSources === 'function' && (typeof OS.available !== 'function' || OS.available()));
+      if (!ready && Date.now() - startedAt < 30000) {
+        if (OS && typeof OS.ensureLumen === 'function') Promise.resolve(OS.ensureLumen(1)).catch(() => {});
+        timer = setTimeout(refresh, 1000);
+        return;
+      }
       try {
-        const OS = typeof window !== 'undefined' && window.AlloOwnSources;
         if (!OS || typeof OS.countSources !== 'function') return;
         const n = await OS.countSources({});
         if (!cancelled) setWizOwnSourceCount(n);
       } catch (_) {/* the toggle simply stays hidden */}
-    })();
+    };
+    refresh();
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
     };
   }, [isOpen]);
   const wizardStepHelp = {

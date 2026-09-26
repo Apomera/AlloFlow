@@ -1,0 +1,4 @@
+{"images": [
+ {"id": 1, "description": "Portland Public Schools logo: a navy blue three-masted sailing ship inside a thin circle, beside the words PORTLAND PUBLIC SCHOOLS and the tagline 'prepared & empowered' in red underneath.", "page": 1, "position": "top", "bbox": [0.09, 0.05, 0.84, 0.145], "type": "logo", "educationalPurpose": "Identifies the sender of the letter as Portland Public Schools."},
+ {"id": 2, "description": "Handwritten signature in dark ink above the typed name Xavier Botana.", "page": 1, "position": "middle", "bbox": [0.08, 0.60, 0.215, 0.63], "type": "illustration", "educationalPurpose": "Shows the superintendent signed the letter; the typed name below carries the same information."}
+]}

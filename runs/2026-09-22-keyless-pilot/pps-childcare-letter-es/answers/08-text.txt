@@ -1,0 +1,19 @@
+{
+  "score": 88,
+  "summary": "The body is well structured, with a skip link, a main landmark, a single h1, text alternatives on both images and a descriptive link, but several English passages sit unmarked inside this Spanish document and the logo alternative text describes appearance at length rather than purpose.",
+  "issues": [
+    {"ruleId": "other", "claimKind": "other", "issue": "English passages inside the Spanish document carry no lang=\"en\" marking, so screen readers voice them with Spanish pronunciation: the skip link, the Replace and Adjust Crop controls, both image alternatives, both Purpose notes, the final P517 reference line and the footer notice.", "wcag": "3.1.2", "severity": "serious", "count": 11, "location": "This document was automatically transformed for accessibility"},
+    {"ruleId": "alt-quality", "claimKind": "quality", "issue": "The logo alternative text is a long visual description of colors and shapes instead of stating the sender, and the signature alternative repeats the typed name that follows it.", "wcag": "1.1.1", "severity": "moderate", "count": 2, "location": "Portland Public Schools logo: a navy blue three-masted"}
+  ],
+  "passes": [
+    "3. HEADINGS: one h1 (Carta a las familias sobre el cuidado infantil, diciembre de 2020) and no skipped levels.",
+    "4. LANDMARKS: a main landmark holds the letter and a footer landmark holds the notice; a one-page letter needs no nav.",
+    "5. IMAGES: both img elements have non-empty alt text.",
+    "6. TABLES: no data tables are present.",
+    "7. CONTRAST: toolbar labels are white on #475569 (about 7.6:1), crop buttons white on #6d28d9 (about 7:1), captions and footer #475569 on white.",
+    "8. LINKS: the only content link reads 'Aquí hay un resumen de los gatos que enfrenta el distrito (PDF)', which states its destination.",
+    "9. LISTS: the letter is prose with no list-like content.",
+    "10. SKIP NAV: a skip link to #main-content is the first focusable element.",
+    "11. FORMS: the only inputs are the Replace file pickers, each inside a label with visible text."
+  ]
+}

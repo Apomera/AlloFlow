@@ -1,0 +1,30 @@
+{
+  "score": 55,
+  "confidence": "medium",
+  "summary": "The letter has a real text layer, a tag tree for its paragraphs and a correct Spanish language tag, but its two images have no alternative text, it has no document title or headings, and its only link reads just 'Aquí'.",
+  "critical": [
+    {"ruleId": "image-alt", "claimKind": "absence", "issue": "The Portland Public Schools logo and the superintendent's signature are tagged as figures with no alternative text.", "wcag": "1.1.1", "count": 2, "location": "page 1"},
+    {"ruleId": "document-title", "claimKind": "absence", "issue": "The PDF has no document title in its metadata, so assistive technology announces only the file name.", "wcag": "2.4.2", "count": 1, "location": "document"}
+  ],
+  "serious": [
+    {"ruleId": "heading-root", "claimKind": "absence", "issue": "The tag tree contains no heading, so the letter has no top-level heading that states what it is about.", "wcag": "1.3.1", "count": 1, "location": "Estimadas familias de las Escuelas Públicas"}
+  ],
+  "moderate": [
+    {"ruleId": "link-text", "claimKind": "quality", "issue": "The only link uses the text 'Aquí', which does not say where it leads without the surrounding sentence.", "wcag": "2.4.4", "count": 1, "location": "Aquí hay un resumen de los gatos"}
+  ],
+  "minor": [],
+  "passes": [
+    "TEXT: the page has a searchable text layer and 22 tagged paragraphs.",
+    "LANGUAGE: the document language is set to es-US and the text is Spanish.",
+    "CONTRAST: body text is dark on a white background.",
+    "TABLES: the letter contains no data tables.",
+    "FORMS: the letter contains no form fields.",
+    "LISTS: the content is prose paragraphs with nothing that should be a list."
+  ],
+  "pageCount": 1,
+  "hasSearchableText": true,
+  "hasImages": true,
+  "hasTables": false,
+  "hasForms": false,
+  "documentLanguage": "es"
+}

@@ -1,0 +1,214 @@
+{
+  "input": "C:\\tmp\\remediation_corpus\\new\\pps-childcare-letter-es-2020-12.pdf",
+  "files": {
+    "accessibleHtml": "C:\\tmp\\alloflow_dispatch\\wave1\\R2_scratch\\bridge_stdio\\pps-es\\output\\pps-childcare-letter-es-2020-12-accessible.html",
+    "report": "C:\\tmp\\alloflow_dispatch\\wave1\\R2_scratch\\bridge_stdio\\pps-es\\output\\pps-childcare-letter-es-2020-12-remediation-report.json",
+    "completionManifest": "C:\\tmp\\alloflow_dispatch\\wave1\\R2_scratch\\bridge_stdio\\pps-es\\output\\pps-childcare-letter-es-2020-12-remediation-completion.json"
+  },
+  "pdfUa": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "not-applicable",
+    "reason": "No tagged PDF was produced."
+  },
+  "verdict": {
+    "level": "review",
+    "reviewCount": 1,
+    "cautionCount": 1
+  },
+  "beforeScore": 40,
+  "afterScore": 90,
+  "aiVerificationIncomplete": false,
+  "scoreSource": "min",
+  "estimatedMinimumScore": null,
+  "contentCoverage": {
+    "status": "matched",
+    "reviewRequired": false,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 473,
+    "outputTokens": 563,
+    "matchedTokens": 473,
+    "missingTokens": 0,
+    "tokenRecall": 1,
+    "missingPassages": [],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "pdfjs",
+      "pagesExamined": 1,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "b2ed7e7b10ec1034c1ebbdb0ffc32c2555796ddc881a0f2cd5ff9f69c3cbb29b",
+    "htmlSha256": "e408fafe83e174681bb28a3a140167cce52785da6f1b2d474ef4432455d3791d"
+  },
+  "integrityCoverage": 100,
+  "integrityWarning": null,
+  "fidelityNotes": [],
+  "candidateRejectionCount": 0,
+  "candidateRejections": [],
+  "verification": {
+    "ai": {
+      "score": 100,
+      "issueCount": 0,
+      "reviewIssueCount": 0,
+      "passCount": 28,
+      "chunksAudited": 2,
+      "chunksRequested": 2,
+      "partial": false,
+      "scoreDegraded": false,
+      "issues": []
+    },
+    "axe": {
+      "score": 100,
+      "totalViolations": 0,
+      "totalIncomplete": 0,
+      "violations": []
+    },
+    "equalAccess": {
+      "score": 90,
+      "failViolations": 0,
+      "potentialViolations": 3,
+      "manualViolations": 2,
+      "reviewFindingCount": 5,
+      "fails": [],
+      "reviewFindings": [
+        {
+          "id": "style_color_misuse",
+          "nodes": 1,
+          "description": "Verify color is not used as the only visual means of conveying information"
+        },
+        {
+          "id": "text_quoted_correctly",
+          "nodes": 1,
+          "description": "If the following text is a quotation, mark it as a <q> or <blockquote> element: 'prepared & empowered'"
+        },
+        {
+          "id": "text_block_heading",
+          "nodes": 1,
+          "description": "Confirm this text 'Xavier Botana, Superintendente Xavier Botana, Superintendente' is used as a heading and if so, modify to use a heading element or role"
+        },
+        {
+          "id": "style_highcontrast_visible",
+          "nodes": 1,
+          "description": "Confirm Windows high contrast mode is supported when using CSS to include, position or alter non-decorative content"
+        },
+        {
+          "id": "download_keyboard_controllable",
+          "nodes": 1,
+          "description": "Verify that the file download mechanism does not cause a keyboard trap"
+        }
+      ]
+    }
+  },
+  "verificationChecks": {
+    "ai": {
+      "status": "passed",
+      "findings": 0,
+      "reviewFindings": 0
+    },
+    "axe": {
+      "status": "passed",
+      "findings": 0,
+      "reviewFindings": 0
+    },
+    "equalAccess": {
+      "status": "review-required",
+      "findings": 0,
+      "reviewFindings": 5
+    },
+    "pdfUa": {
+      "standard": "PDF/UA-1 (ISO 14289-1)",
+      "profile": "ua1",
+      "scope": "machine-verifiable PDF/UA checks",
+      "status": "not-applicable",
+      "reason": "No tagged PDF was produced."
+    }
+  },
+  "reviewTriage": {
+    "attempted": 5,
+    "applied": 0,
+    "resolved": 0,
+    "remaining": 5,
+    "skipped": null,
+    "dispositions": [
+      {
+        "key": "equalAccess|potential|style_color_misuse",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "This style block only darkens utility-class text colors to raise contrast; no information in the letter is conveyed by color, and its one link keeps the default underline.",
+        "skipReason": null
+      },
+      {
+        "key": "equalAccess|potential|text_quoted_correctly",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "'prepared & empowered' is the logo tagline quoted inside an image description that is hidden from assistive technology, not a quotation from another source.",
+        "skipReason": null
+      },
+      {
+        "key": "equalAccess|potential|text_block_heading",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "'Xavier Botana, Superintendente' is the sender's signature line at the end of the letter, not a label for a following section.",
+        "skipReason": null
+      },
+      {
+        "key": "equalAccess|manual|style_highcontrast_visible",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "This style block only shortens animations and transitions for reduced-motion users and does not add, position or alter any content.",
+        "skipReason": null
+      },
+      {
+        "key": "equalAccess|manual|download_keyboard_controllable",
+        "action": "not-an-issue",
+        "applied": false,
+        "stillFlagged": true,
+        "reason": "The download is a plain link to a PDF, which a keyboard user activates and leaves like any other link, so it cannot trap focus.",
+        "skipReason": null
+      }
+    ]
+  },
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": "original_layout",
+  "activeContentScanVerified": true,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 3,
+    "sliced": false
+  },
+  "taggedPdfError": "distribution_review_required",
+  "runId": "run-mudaaz73-qhpzbo",
+  "stats": {
+    "apiCalls": 12,
+    "visionCalls": 6,
+    "retries": 0,
+    "recoveredRetries": 0,
+    "authThrottles": 0,
+    "terminalFailures": 0
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+  "htmlVerificationState": "review-required",
+  "deliveryReviewReasons": [],
+  "reviewRequired": true,
+  "deliveryStatus": "review-required"
+}

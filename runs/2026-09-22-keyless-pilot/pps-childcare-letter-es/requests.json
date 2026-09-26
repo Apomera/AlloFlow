@@ -1,0 +1,149 @@
+[
+ {
+  "n": 1,
+  "kind": "vision",
+  "promptChars": 6698,
+  "images": 1,
+  "task": "You are a WCAG 2.2 AA accessibility auditor for educational documents. Analyze this PDF for accessibility viol"
+ },
+ {
+  "n": 2,
+  "kind": "vision",
+  "promptChars": 6739,
+  "images": 1,
+  "task": "You are a WCAG 2.2 AA accessibility auditor for educational documents. Perform an independent accessibility an"
+ },
+ {
+  "n": 3,
+  "kind": "vision",
+  "promptChars": 6741,
+  "images": 1,
+  "task": "You are a WCAG 2.2 AA accessibility auditor for educational documents. As a fresh auditor with no prior contex"
+ },
+ {
+  "n": 4,
+  "kind": "vision",
+  "promptChars": 1192,
+  "images": 1,
+  "task": "Identify and extract ALL images from this PDF document. For each image:"
+ },
+ {
+  "n": 5,
+  "kind": "vision",
+  "promptChars": 888,
+  "images": 1,
+  "task": "Analyze the visual design of this PDF. Extract the exact color scheme and typography."
+ },
+ {
+  "n": 6,
+  "kind": "vision",
+  "promptChars": 5129,
+  "images": 1,
+  "task": "You are a WCAG 2.2 AA accessibility specialist extracting a PDF into structured, semantically correct HTML con"
+ },
+ {
+  "n": 7,
+  "kind": "text",
+  "promptChars": 19708,
+  "images": 0,
+  "task": "You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section 1 of 2) for accessibility compli"
+ },
+ {
+  "n": 8,
+  "kind": "text",
+  "promptChars": 19896,
+  "images": 0,
+  "task": "You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section 2 of 2) for accessibility compli"
+ },
+ {
+  "n": 9,
+  "kind": "text",
+  "promptChars": 18228,
+  "images": 0,
+  "task": "Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do N"
+ },
+ {
+  "n": 10,
+  "kind": "text",
+  "promptChars": 20449,
+  "images": 0,
+  "task": "You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section 1 of 2) for accessibility compli"
+ },
+ {
+  "n": 11,
+  "kind": "text",
+  "promptChars": 5363,
+  "images": 0,
+  "task": "You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section 2 of 2) for accessibility compli"
+ },
+ {
+  "n": 12,
+  "kind": "text",
+  "promptChars": 17915,
+  "images": 0,
+  "task": "Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, a"
+ },
+ {
+  "n": 13,
+  "kind": "text",
+  "promptChars": 2208,
+  "images": 0,
+  "task": "Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, a"
+ },
+ {
+  "n": 14,
+  "kind": "text",
+  "promptChars": 4414,
+  "images": 0,
+  "task": "You are resolving accessibility review findings that automated checkers could not decide. For each item decide"
+ },
+ {
+  "n": 15,
+  "kind": "text",
+  "promptChars": 16757,
+  "images": 0,
+  "task": "You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section 1 of 2) for accessibility compli"
+ },
+ {
+  "n": 16,
+  "kind": "text",
+  "promptChars": 10431,
+  "images": 0,
+  "task": "You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section 2 of 2) for accessibility compli"
+ },
+ {
+  "n": 17,
+  "kind": "vision",
+  "promptChars": 958,
+  "images": 1,
+  "task": "You are checking IMAGE ALT TEXT accuracy for a screen-reader user. Look at the image and compare it with the d"
+ },
+ {
+  "n": 18,
+  "kind": "vision",
+  "promptChars": 1492,
+  "images": 1,
+  "task": "You are describing ONE image extracted from an educational document, for accessibility. Return ONLY JSON, no p"
+ },
+ {
+  "n": 19,
+  "kind": "vision",
+  "promptChars": 1492,
+  "images": 1,
+  "task": "You are describing ONE image extracted from an educational document, for accessibility. Return ONLY JSON, no p"
+ },
+ {
+  "n": 20,
+  "kind": "text",
+  "promptChars": 16822,
+  "images": 0,
+  "task": "You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section 1 of 2) for accessibility compli"
+ },
+ {
+  "n": 21,
+  "kind": "text",
+  "promptChars": 10493,
+  "images": 0,
+  "task": "You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section 2 of 2) for accessibility compli"
+ }
+]

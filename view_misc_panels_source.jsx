@@ -2188,51 +2188,84 @@ function SourceGenPanel(props) {
   const [ownSourceImportFailures, setOwnSourceImportFailures] = React.useState([]);
   const [ownSourceList, setOwnSourceList] = React.useState([]);
   const [ownSourceBusy, setOwnSourceBusy] = React.useState(false);
+  const ownSourceRevision = React.useRef(0);
+  const ownSourceControlsBusy = ownSourceBusy || ownSourceImporting || isGeneratingSource;
   const ownSourcesApi = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
+  React.useEffect(() => {
+    if (ownSourceCount === 0 && useOwnSources && setUseOwnSources) setUseOwnSources(false);
+  }, [ownSourceCount, useOwnSources, setUseOwnSources]);
 
   // Exclude keeps the document but drops it from retrieval; the count follows,
   // because the count is what the toggle promises the AI will read.
+  // A failed change must say so: every reason but 'storage' used to leave the
+  // button looking dead.
+  const reportOwnSourceFailure = React.useCallback((outcome) => {
+    setOwnSourceImportMsg(outcome && outcome.reason === 'storage'
+      ? t('input.my_sources_storage_failed')
+      : t('input.my_sources_unavailable'));
+  }, [t]);
   const handleToggleOwnSource = React.useCallback(async (source) => {
-    if (!ownSourcesApi || typeof ownSourcesApi.setSourceActive !== 'function' || !source) return;
+    if (ownSourceControlsBusy) return;
+    if (!ownSourcesApi || typeof ownSourcesApi.setSourceActive !== 'function' || !source) {
+      setOwnSourceImportMsg(t('input.my_sources_unavailable'));
+      return;
+    }
+    ownSourceRevision.current++;
     setOwnSourceBusy(true);
     try {
       const outcome = await ownSourcesApi.setSourceActive(source.id, !source.active, {});
-      if (outcome.ok) {
+      if (outcome && outcome.ok) {
         setOwnSourceList(outcome.sources);
         setOwnSourceCount(outcome.count);
+        if (!outcome.count && setUseOwnSources) setUseOwnSources(false);
         setOwnSourceImportMsg('');
-      } else if (outcome.reason === 'storage') {
-        setOwnSourceImportMsg(t('input.my_sources_storage_failed'));
+      } else {
+        reportOwnSourceFailure(outcome);
       }
+    } catch (_) {
+      reportOwnSourceFailure(null);
     } finally {
       setOwnSourceBusy(false);
     }
-  }, [ownSourcesApi, t]);
+  }, [ownSourcesApi, t, reportOwnSourceFailure, ownSourceControlsBusy, setUseOwnSources]);
 
-  // Deleting a teacher's document is not undoable from here, so ask first.
-  const handleRemoveOwnSource = React.useCallback(async (source) => {
-    if (!ownSourcesApi || typeof ownSourcesApi.removeSource !== 'function' || !source) return;
-    const ask = (typeof window !== 'undefined' && typeof window.confirm === 'function') ? window.confirm : null;
-    if (ask && !ask(t('input.my_sources_remove_confirm', { title: source.title }))) return;
+  // Deleting a teacher's document is not undoable from here, so ask first, in
+  // the panel: window.confirm returns false in Gemini Canvas, which made Remove
+  // do nothing there. The first click asks; the confirm button deletes.
+  const [pendingRemoveId, setPendingRemoveId] = React.useState(null);
+  const handleRemoveOwnSource = React.useCallback(async (source, confirmed) => {
+    if (ownSourceControlsBusy) return;
+    if (!source) return;
+    if (!confirmed) { setPendingRemoveId(source.id); return; }
+    setPendingRemoveId(null);
+    if (!ownSourcesApi || typeof ownSourcesApi.removeSource !== 'function') {
+      setOwnSourceImportMsg(t('input.my_sources_unavailable'));
+      return;
+    }
+    ownSourceRevision.current++;
     setOwnSourceBusy(true);
     try {
       const outcome = await ownSourcesApi.removeSource(source.id, {});
-      if (outcome.ok) {
+      if (outcome && outcome.ok) {
         setOwnSourceList(outcome.sources);
         setOwnSourceCount(outcome.count);
+        if (!outcome.count && setUseOwnSources) setUseOwnSources(false);
         setOwnSourceImportMsg(t('input.my_sources_removed', { title: source.title }));
-      } else if (outcome.reason === 'storage') {
-        setOwnSourceImportMsg(t('input.my_sources_storage_failed'));
+      } else {
+        reportOwnSourceFailure(outcome);
       }
+    } catch (_) {
+      reportOwnSourceFailure(null);
     } finally {
       setOwnSourceBusy(false);
     }
-  }, [ownSourcesApi, t]);
+  }, [ownSourcesApi, t, reportOwnSourceFailure, ownSourceControlsBusy, setUseOwnSources]);
 
   // Import documents into the teacher's own corpus. Everything runs locally:
   // Lumen's adapter extracts text in this browser and only the text is stored,
   // so a PDF that contains student names never leaves the device.
   const handleImportOwnSources = React.useCallback(async (event) => {
+    if (ownSourceControlsBusy) return;
     const input = event && event.target;
     const files = input && input.files ? Array.from(input.files) : [];
     if (!files.length) return;
@@ -2240,6 +2273,7 @@ function SourceGenPanel(props) {
       setOwnSourceImportMsg(t('input.my_sources_unavailable'));
       return;
     }
+    ownSourceRevision.current++;
     setOwnSourceImporting(true);
     setOwnSourceImportMsg('');
     setOwnSourceImportFailures([]);
@@ -2258,6 +2292,8 @@ function SourceGenPanel(props) {
       );
       if (outcome.reason === 'storage') {
         setOwnSourceImportMsg(t('input.my_sources_storage_failed'));
+      } else if (outcome.reason === 'unavailable') {
+        setOwnSourceImportMsg(t('input.my_sources_unavailable'));
       } else if (outcome.imported > 0) {
         setOwnSourceImportMsg(t('input.my_sources_imported', { count: outcome.imported }));
       } else {
@@ -2270,27 +2306,51 @@ function SourceGenPanel(props) {
       // Clear the input so choosing the same file again still fires onChange.
       if (input) input.value = '';
     }
-  }, [ownSourcesApi, t]);
+  }, [ownSourcesApi, t, ownSourceControlsBusy]);
   React.useEffect(() => {
     if (!showSourceGen) return undefined;
     let cancelled = false;
-    (async () => {
+    let timer = null;
+    const startedAt = Date.now();
+    const revision = ownSourceRevision.current;
+    setPendingRemoveId(null);
+    setOwnSourceImportMsg('');
+    setOwnSourceImportFailures([]);
+    // own_sources_module and Lumen load in the background after boot. Opening
+    // this panel before they arrived counted "0 documents" once, which hid the
+    // toggle and the manage list until the panel was reopened. Keep checking.
+    const refresh = async () => {
+      if (cancelled || revision !== ownSourceRevision.current) return;
+      const OS = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
+      const ready = !!(OS && typeof OS.countSources === 'function'
+        && (typeof OS.available !== 'function' || OS.available()));
+      if (!ready && Date.now() - startedAt < 30000) {
+        if (OS && typeof OS.ensureLumen === 'function') Promise.resolve(OS.ensureLumen(1)).catch(() => {});
+        timer = setTimeout(refresh, 1000);
+        return;
+      }
       try {
-        const OS = ownSourcesApi;
         if (!OS || typeof OS.countSources !== 'function') { if (!cancelled) setOwnSourceCount(0); return; }
-        const n = await OS.countSources({});
-        if (!cancelled) setOwnSourceCount(n);
-        // The manage list comes from the same load, so the count and the list
-        // can never disagree about what retrieval will search.
+        // Derive the count from the same snapshot as the list. A delayed panel
+        // read must not overwrite an import, Include, or Remove made meanwhile.
         if (typeof OS.listSources === 'function') {
           const rows = await OS.listSources({});
-          if (!cancelled) setOwnSourceList(rows);
+          if (cancelled || revision !== ownSourceRevision.current) return;
+          setOwnSourceList(rows);
+          setOwnSourceCount(rows.filter((source) => source.active !== false).length);
+        } else {
+          const n = await OS.countSources({});
+          if (!cancelled && revision === ownSourceRevision.current) setOwnSourceCount(n);
         }
       } catch (_) {
-        if (!cancelled) setOwnSourceCount(0);
+        if (!cancelled && revision === ownSourceRevision.current) {
+          setOwnSourceCount(0);
+          setOwnSourceImportMsg(t('input.my_sources_unavailable'));
+        }
       }
-    })();
-    return () => { cancelled = true; };
+    };
+    refresh();
+    return () => { cancelled = true; if (timer) clearTimeout(timer); };
   }, [showSourceGen]);
   if (!(showSourceGen)) return null;
   // N7 (2026-08-16): the standards finder inside this panel read the UNIVERSAL
@@ -2561,19 +2621,19 @@ function SourceGenPanel(props) {
                           {includeSourceCitations && (
                               <p className="text-[11px] text-purple-700 ml-6 leading-relaxed">{t('input.verify_facts_desc')}</p>
                           )}
-                          {/* Own-source grounding sits inside the same card as web
-                              search, as a quieter second line: it is the same kind of
-                              choice (where do the facts come from?) and having it as a
-                              separate block would overstate it. Hidden entirely until
-                              the teacher has imported something, so the default panel
-                              is no busier than before. */}
-                          {ownSourceCount !== null && ownSourceCount > 0 && (
+                      </div>
+                      <div className="flex flex-col gap-2 bg-purple-50 p-2.5 rounded-lg border-2 border-purple-200 shadow-sm">
+                          {/* Documents and web search are independent options. Keep
+                              the document toggle visible when all saved files are
+                              excluded, so the user can still see its state. */}
+                          {ownSourceCount !== null && ownSourceList.length > 0 && (
                               <div className="flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70">
                                   <input aria-label={t('input.use_my_sources')}
                                       id="useOwnSources"
                                       type="checkbox"
                                       checked={!!useOwnSources}
                                       onChange={(e) => setUseOwnSources && setUseOwnSources(e.target.checked)}
+                                      disabled={ownSourceCount === 0 || ownSourceControlsBusy}
                                       className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
                                   />
                                   <label htmlFor="useOwnSources" className="text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5">
@@ -2604,15 +2664,15 @@ function SourceGenPanel(props) {
                                       multiple
                                       className="sr-only"
                                       accept={ownSourcesApi ? ownSourcesApi.acceptAttribute() : undefined}
-                                      disabled={ownSourceImporting}
+                                      disabled={ownSourceControlsBusy}
                                       onChange={handleImportOwnSources}
                                   />
                                   {/* role=status so a screen reader hears the outcome; the
                                       per-file detail matters because one unreadable scan among
                                       five documents is not "import failed". */}
                                   <p role="status" aria-live="polite" className="text-[11px] text-purple-700 leading-relaxed">
-                                      {ownSourceImportMsg || (ownSourceCount > 0
-                                          ? t('input.my_sources_stored', { count: ownSourceCount })
+                                      {ownSourceImportMsg || (ownSourceList.length > 0
+                                          ? `${t('input.my_sources_stored', { count: ownSourceList.length })} ${t('input.my_sources_included', { count: ownSourceCount })}`
                                           : t('input.my_sources_empty'))}
                                   </p>
                                   {ownSourceImportFailures.length > 0 && (
@@ -2633,27 +2693,50 @@ function SourceGenPanel(props) {
                                           </summary>
                                           <ul className="mt-1 space-y-1">
                                               {ownSourceList.map((source) => (
-                                                  <li key={source.id} className="flex items-center justify-between gap-2 text-[11px]">
+                                                  <li key={source.id} className="text-[11px]">
+                                                    <div className="flex items-center justify-between gap-2">
                                                       <span className={'min-w-0 break-words ' + (source.active ? 'text-purple-900' : 'text-slate-500 line-through')}>
                                                           {source.title}
                                                       </span>
                                                       <span className="flex items-center gap-1 shrink-0">
                                                           <button type="button"
                                                               onClick={() => handleToggleOwnSource(source)}
-                                                              disabled={ownSourceBusy}
+                                                              disabled={ownSourceControlsBusy}
                                                               className="min-h-11 px-2 rounded border border-purple-300 bg-white font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50"
                                                           >
                                                               {source.active ? t('input.my_sources_exclude') : t('input.my_sources_include')}
                                                           </button>
                                                           <button type="button"
-                                                              onClick={() => handleRemoveOwnSource(source)}
-                                                              disabled={ownSourceBusy}
+                                                              onClick={() => handleRemoveOwnSource(source, false)}
+                                                              disabled={ownSourceControlsBusy}
                                                               aria-label={t('input.my_sources_remove_aria', { title: source.title })}
+                                                              aria-expanded={pendingRemoveId === source.id}
                                                               className="min-h-11 px-2 rounded border border-rose-300 bg-white font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
                                                           >
                                                               {t('input.my_sources_remove')}
                                                           </button>
                                                       </span>
+                                                    </div>
+                                                    {pendingRemoveId === source.id && (
+                                                      <div className="mt-1 flex flex-wrap items-center gap-2 text-rose-800">
+                                                          <span>{t('input.my_sources_remove_confirm', { title: source.title })}</span>
+                                                          <button type="button"
+                                                              autoFocus
+                                                              onClick={() => handleRemoveOwnSource(source, true)}
+                                                              disabled={ownSourceControlsBusy}
+                                                              aria-label={t('input.my_sources_remove_aria', { title: source.title })}
+                                                              className="min-h-11 px-2 rounded border border-rose-700 bg-rose-700 font-bold text-white hover:bg-rose-800 disabled:opacity-50"
+                                                          >
+                                                              {t('input.my_sources_remove')}
+                                                          </button>
+                                                          <button type="button"
+                                                              onClick={() => setPendingRemoveId(null)}
+                                                              className="min-h-11 px-2 rounded border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-50"
+                                                          >
+                                                              {t('common.cancel')}
+                                                          </button>
+                                                      </div>
+                                                    )}
                                                   </li>
                                               ))}
                                           </ul>
@@ -2665,7 +2748,7 @@ function SourceGenPanel(props) {
                       <button aria-label={t('common.generate_source_text')}
                         data-help-key="source_generate_button"
                         onClick={handleGenerateSource}
-                        disabled={(!sourceTopic.trim() && targetStandards.length === 0) || isGeneratingSource} aria-busy={isGeneratingSource}
+                        disabled={(!sourceTopic.trim() && targetStandards.length === 0) || ownSourceControlsBusy} aria-busy={isGeneratingSource}
                         className="w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         {isGeneratingSource ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Pencil size={14} />}

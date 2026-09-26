@@ -1,0 +1,30 @@
+{
+  "score": 40,
+  "confidence": "medium",
+  "summary": "The letter has a real text layer and a tag tree for its paragraphs, but it declares English (en-US) although the text is Arabic, has no title or headings, gives its two images no alternative text, and its only link reads just 'summary'.",
+  "critical": [
+    {"ruleId": "document-language", "claimKind": "quality", "issue": "The document language is set to en-US although the letter is written in Arabic, so screen readers will read it with English pronunciation rules.", "wcag": "3.1.1", "count": 1, "location": "document"},
+    {"ruleId": "image-alt", "claimKind": "absence", "issue": "The Portland Public Schools logo and the superintendent's signature are tagged as figures with no alternative text.", "wcag": "1.1.1", "count": 2, "location": "page 1"},
+    {"ruleId": "document-title", "claimKind": "absence", "issue": "The PDF has no document title in its metadata, so assistive technology announces only the file name.", "wcag": "2.4.2", "count": 1, "location": "document"}
+  ],
+  "serious": [
+    {"ruleId": "heading-root", "claimKind": "absence", "issue": "The tag tree contains no heading, so the letter has no top-level heading that states what it is about.", "wcag": "1.3.1", "count": 1, "location": "عائلات مدارس بورتلاند العامة العزيزة"}
+  ],
+  "moderate": [
+    {"ruleId": "link-text", "claimKind": "quality", "issue": "The only link is the single English word 'summary' inside Arabic text, which does not describe its destination and is in a different language from the sentence around it.", "wcag": "2.4.4", "count": 1, "location": "ملخص للنفقات summary التي تواجه المنطقة"}
+  ],
+  "minor": [],
+  "passes": [
+    "TEXT: the page has a searchable text layer and 15 tagged paragraphs.",
+    "CONTRAST: body text is dark on a white background.",
+    "TABLES: the letter contains no data tables.",
+    "FORMS: the letter contains no form fields.",
+    "LISTS: the content is prose paragraphs with nothing that should be a list."
+  ],
+  "pageCount": 1,
+  "hasSearchableText": true,
+  "hasImages": true,
+  "hasTables": false,
+  "hasForms": false,
+  "documentLanguage": "ar"
+}

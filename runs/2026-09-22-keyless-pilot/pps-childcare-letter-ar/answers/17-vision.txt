@@ -1,0 +1,1 @@
+{"match": true, "reason": "The image is the Portland Public Schools logo with the tagline prepared & empowered, as the alt text says."}

@@ -132,6 +132,7 @@ function makeContentEngine(callGemini, addToast = vi.fn()) {
     t: (key) => key,
     getBilingualPromptInstruction: () => '',
     flyToElement: noop,
+    getState: () => window.__contentEngineState,
   });
 }
 

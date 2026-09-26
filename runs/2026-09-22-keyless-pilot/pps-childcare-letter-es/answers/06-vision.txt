@@ -1,0 +1,61 @@
+[
+ {
+  "type": "image",
+  "alt": "Logotipo de Portland Public Schools, prepared & empowered",
+  "description": "Logotipo del distrito: un velero de tres mástiles azul marino dentro de un círculo, junto a las palabras PORTLAND PUBLIC SCHOOLS y el lema prepared & empowered. Identifica al remitente de la carta."
+ },
+ {
+  "type": "h1",
+  "text": "Carta a las familias sobre el cuidado infantil, diciembre de 2020",
+  "id": "carta-familias-cuidado-infantil"
+ },
+ {
+  "type": "p",
+  "text": "Estimadas familias de las Escuelas Públicas de Portland,"
+ },
+ {
+  "type": "p",
+  "text": "Nos complace haber podido ofrecer guardería de tiempo completo o parcial y actividades después de la escuela a las familias este otoño. Dado que los estudiantes no pueden asistir a la escuela en persona en tiempo completo debido a la pandemia de COVID-19, sabemos cuánto dependen las familias trabajadoras de estos programas."
+ },
+ {
+  "type": "p",
+  "text": "Hemos sido capaces de ofrecer este tipo de programación a las familias este otoño porque el Fondo de Alivio del Coronavirus (CRF) federal que recibimos nos permitió pagar a 13 socios comunitarios por este servicio vital."
+ },
+ {
+  "type": "p",
+  "text": "Desafortunadamente, todo el alivio del coronavirus debe usarse antes del 30 de diciembre y luego se agota el dinero. A estas alturas no hay indicios de que se vaya a extender la financiación o de que obtengamos nueva financiación en 2021."
+ },
+ {
+  "type": "p",
+  "text": "Usamos alrededor de dos tercios de los $10.5 millones de alivio del coronavirus que recibimos para inversiones urgentes y únicas relacionadas con COVID, como materiales, computadoras para que los estudiantes puedan aprender virtualmente y actualizaciones en nuestras instalaciones para hacerlas más seguras para los estudiantes y empleados. Aproximadamente un tercio de ese dinero se utilizó para financiar la contratación de empleados y servicios adicionales, como el programa comunitario en el que participó su hijo este otoño. Ese personal y esos servicios tienen implicaciones de costos para que podamos continuar."
+ },
+ {
+  "type": "p",
+  "text": "Les escribo ahora para hacerles saber que el distrito está evaluando la programación que podemos continuar después de diciembre. La recomendación que presentaré a la Junta de Educación de Portland en la próxima reunión del martes, 8 de diciembre priorizará el financiamiento continuo para las necesidades del personal del distrito, como maestros sustitutos, maestros de nuestra Academia Virtual, maestros de inglés y de educación especial, así como la continuación de los programas comunitarios. Esta es una decisión difícil y dolorosa, pero nos gustaría que tuviera esta información antes de que se haga pública a finales de esta semana. La Junta hará una primera lectura y taller sobre la propuesta el martes por la noche y votará sobre el asunto en la reunión del 22 de diciembre. <a href='https://go.boarddocs.com/me/portland/Board.nsf/files/BVHSPE72F5A0/$file/Finance%20Committee%20-%20Nov%202020.pdf'>Aquí hay un resumen de los gatos que enfrenta el distrito (PDF)</a>."
+ },
+ {
+  "type": "p",
+  "text": "Esperamos continuar teniendo una relación sólida con los socios comunitarios que brindan el cuidado de los niños y la programación de enriquecimiento. Sin embargo, tenga en cuenta que nuestro presupuesto escolar actual para el año fiscal 2021 ya es muy bajo y no tendremos la capacidad en el nuevo año de continuar pagando por esta programación y los servicios que describí anteriormente."
+ },
+ {
+  "type": "p",
+  "text": "Mantendré a todos informados mientras trabajamos para determinar la mejor manera de satisfacer las necesidades de nuestros estudiantes y familias con la nueva realidad financiera que enfrentamos al comienzo del nuevo año."
+ },
+ {
+  "type": "p",
+  "text": "Atenciosamente,"
+ },
+ {
+  "type": "image",
+  "alt": "Firma de Xavier Botana",
+  "description": "Firma manuscrita del superintendente Xavier Botana sobre su nombre impreso."
+ },
+ {
+  "type": "p",
+  "text": "<strong><em>Xavier Botana, Superintendente</em></strong>"
+ },
+ {
+  "type": "p",
+  "text": "P517- SPA Childcare Letter to Families December 2020"
+ }
+]

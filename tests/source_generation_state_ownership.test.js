@@ -127,7 +127,10 @@ describe('source generation state ownership', () => {
 
     expect(hostRegion).toContain(`${refName}.current = {`);
     expect(hostRegion).toContain(`window.__contentEngineState = ${refName}.current`);
-    expect(hostRegion).toContain(`getState: () => ${refName}.current`);
+    // Factory creation now lives in the extracted host handler module.
+    expect(hostRegion).toContain('_alloHostHandlers()._getContentEngine');
+    const hostHandlers = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
+    expect(hostHandlers).toContain(`getState: () => __d.${refName}.current`);
   });
 });
 

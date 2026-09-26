@@ -1,0 +1,20 @@
+{
+  "score": 62,
+  "summary": "The body has a skip link, a main landmark, a single Arabic h1 and alternative text on both images, but two paragraphs show raw HTML markup as visible text, English passages are unmarked inside the Arabic document, and both image alternatives are in English.",
+  "issues": [
+    {"ruleId": "other", "claimKind": "quality", "issue": "Two passages display literal markup (<span lang='en'> and </span>) as visible text, inside the link to the expense summary and in the final P517 reference line, so readers and screen readers encounter code instead of content.", "wcag": "1.3.1", "severity": "serious", "count": 2, "location": "ملخص للنفقات"},
+    {"ruleId": "link-text", "claimKind": "quality", "issue": "The link to the expense summary contains visible markup text in its name, so its accessible name is not clean descriptive text.", "wcag": "2.4.4", "severity": "moderate", "count": 1, "location": "ملخص للنفقات"},
+    {"ruleId": "other", "claimKind": "other", "issue": "English passages inside the Arabic document carry no lang=\"en\" marking: the skip link, the Replace and Adjust Crop controls, both image alternatives, both Purpose notes and the footer notice.", "wcag": "3.1.2", "severity": "serious", "count": 10, "location": "This document was automatically transformed for accessibility"},
+    {"ruleId": "alt-quality", "claimKind": "quality", "issue": "Both image alternatives are written in English in an Arabic document, and the logo alternative describes colors and shapes rather than naming the sender.", "wcag": "1.1.1", "severity": "moderate", "count": 2, "location": "Portland Public Schools logo: a navy blue three-masted"}
+  ],
+  "passes": [
+    "3. HEADINGS: one h1 (رسالة إلى العائلات حول رعاية الأطفال، ديسمبر 2020) and no skipped levels.",
+    "4. LANDMARKS: a main landmark holds the letter and a footer landmark holds the notice.",
+    "5. IMAGES: both img elements have non-empty alt text.",
+    "6. TABLES: no data tables are present.",
+    "7. CONTRAST: toolbar labels are white on #475569, crop buttons white on #6d28d9, captions and footer #475569 on white.",
+    "9. LISTS: the letter is prose with no list-like content.",
+    "10. SKIP NAV: a skip link to #main-content is the first focusable element.",
+    "11. FORMS: the only inputs are the Replace file pickers, each inside a label with visible text."
+  ]
+}

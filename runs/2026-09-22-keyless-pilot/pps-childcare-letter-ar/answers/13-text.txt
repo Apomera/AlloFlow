@@ -1,0 +1,13 @@
+{
+  "score": 85,
+  "summary": "The closing section marks the Arabic part of the signature line as Arabic and keeps the notice in a footer landmark, but the P517 line still shows raw markup and the English footer notice is not marked as English.",
+  "issues": [
+    {"ruleId": "other", "claimKind": "quality", "issue": "The P517 reference line displays literal markup (<span lang='en'> and </span>) as visible text.", "wcag": "1.3.1", "severity": "serious", "count": 1, "location": "P517- ARA Childcare Letter to Families December 2020"},
+    {"ruleId": "other", "claimKind": "other", "issue": "The English footer notice inside the Arabic document carries no lang=\"en\" marking.", "wcag": "3.1.2", "severity": "moderate", "count": 1, "location": "This document was automatically transformed for accessibility"}
+  ],
+  "passes": [
+    "4. LANDMARKS: main closes after the P517 line and the notice sits in a footer with role contentinfo.",
+    "7. CONTRAST: the footer text #475569 on white is about 7.6:1.",
+    "Language of parts: the Arabic title after the name is wrapped in lang=\"ar\" dir=\"rtl\"."
+  ]
+}
