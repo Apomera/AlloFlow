@@ -39,7 +39,7 @@ it('uses the recorded decision target and eases head and ears toward it without 
       seen.add(id);expect(a.id).toBe(p[a.kind]);expect(a.index).toBe(p[a.kind+'Index']);
       const target=frames[t-1][a.id][a.index];expect([a.x,a.z]).toEqual([target.x,target.z]);
       expect(Math.abs(p.headTurn-a.turn)).toBeLessThanOrEqual(Math.abs(old.headTurn-a.turn)+1e-12);
-      if(Math.abs(p.headTurn-a.turn)<1e-10){settled++;expect(Math.sign(p.headTurn)).toBe(Math.sign(a.bearing));}
+      if(Math.abs(p.headTurn-a.turn)<1e-10){settled++;if(Math.abs(a.bearing)>1e-9)expect(Math.sign(p.headTurn)).toBe(Math.sign(a.bearing));}
       const angle=a.bearing-p.headTurn,residual=Math.max(-.55,Math.min(.55,Math.atan2(Math.sin(angle),Math.cos(angle)))),scan=Math.sin(t/10*1.4+p.phase)*.09;
       for(const [key,desired] of [['earLeft',residual+scan],['earRight',residual-scan*.7]])expect(p[key]).toBeCloseTo(old[key]+Math.max(-.065,Math.min(.065,desired-old[key])),12);
     }

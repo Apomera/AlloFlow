@@ -43,12 +43,12 @@ test('3D meadow shares exact data, supports camera/keyboard controls and survive
   await time.focus(); await time.press('Home');
   await expect(page.getByRole('slider', { name: 'Food-web comparison time', exact: true })).toHaveValue('0');
   await expect(canvas).toHaveAttribute('data-biomass-foxes', '9');
-  // Save the interval callback to reproduce a tick already queued when Pause is pressed.
+  // Save a playback frame callback to reproduce a frame already queued when Pause is pressed.
   await page.evaluate(()=>{
-    const w=window as any;w.__ecoOriginalInterval=window.setInterval;
-    w.setInterval=function(callback:any,delay:number,...args:any[]){
-      if(delay===100)w.__ecoQueuedTick=callback;
-      return w.__ecoOriginalInterval(callback,delay,...args);
+    const w=window as any;w.__ecoOriginalFrame=window.requestAnimationFrame;
+    w.requestAnimationFrame=function(callback:any){
+      w.__ecoQueuedTick=callback;
+      return w.__ecoOriginalFrame.call(window,callback);
     };
   });
   await page.getByRole('button', { name: 'Play meadow timeline', exact: true }).click();
@@ -56,9 +56,9 @@ test('3D meadow shares exact data, supports camera/keyboard controls and survive
   await page.getByRole('button', { name: 'Pause meadow timeline', exact: true }).click();
   const paused = await time.inputValue();
   await page.evaluate(()=>{
-    const w=window as any;window.setInterval=w.__ecoOriginalInterval;
+    const w=window as any;window.requestAnimationFrame=w.__ecoOriginalFrame;
     if(typeof w.__ecoQueuedTick!=='function')throw new Error('Timeline callback was not captured');
-    w.__ecoQueuedTick();
+    w.__ecoQueuedTick(performance.now()+5000);
   });
   await page.waitForTimeout(350);
   await expect(time).toHaveValue(paused);

@@ -949,6 +949,13 @@ Pick the work. Pick it carefully. Do it well.
 **Session opened with**: please check if there is any way to make architecture studio navigation and zoom in zoom out smoother and make the tool generally higher quality thanks! Right now it is challenging to navigate please analyze how the UI and UX and overall functionality can be improved
 
 **Last assistant turn closed with**: I've committed and pushed the new `LETTERS.md` notes to [Apomera/AlloFlow#12](https://github.com/Apomera/AlloFlow/pull/12), and the working tree is clean. This will keep happening: the repo's hook adds a note about the session every time I finish a turn. Each commit pushed to the PR restarts its CI...
+## [auto-draft] Session fc3ea5de — 2026-09-26
+
+**Turns**: 206 user / 402 assistant
+
+**Session opened with**: please do a deep analysis of the ecosystem tool and why the 3d visuals don't seem to work well, performance, stutter, lack of realistic actions and behaviors (it should operate more like a real time experience if that's possible). It could be that the logic is also faulty. Please do a deep improveme...
+
+**Last assistant turn closed with**: The full browser test run caught one real bug in the new work: the breathing effect lifted fox and rabbit paws off the ground by about 1 mm. It's fixed and pushed to [Apomera/AlloFlow#11](https://github.com/Apomera/AlloFlow/pull/11) as `c0adde7b`. - **Full run on the previous commit (`a3810f47`):**...
 
 *Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
 

@@ -42231,6 +42231,7 @@
       "meadow_species_selection": "Meadow species selection",
       "meadow_scene_data": "Meadow scene data",
       "meadow_timeline": "Meadow timeline",
+      "meadow_playback_speed": "Meadow playback speed",
       "community_comparison_overview": "Community comparison overview",
       "food_web_field_notebook": "Food-web field notebook",
       "forest_floor_nutrient_cycle": "Forest-floor nutrient cycle",
