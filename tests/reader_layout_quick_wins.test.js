@@ -105,3 +105,48 @@ describe('what a student sees', () => {
     expect(host.textContent).toMatch(/Word counts/);
   });
 });
+
+// Calmer toolbar (2026-09-26): reading, word help and Display stay together;
+// the teacher's text-changing tools form their own group; the active mode is
+// named with what to do in it.
+describe('a simpler reading toolbar', () => {
+  const readingTools = () => host.querySelector('[role=group][aria-label="Reading tools"]');
+  const teacherTools = () => host.querySelector('[data-teacher-editing-tools]');
+  it('keeps the reading modes, Practice and Display in the reading tools', () => {
+    mount({ onFocusViewChange: vi.fn() });
+    const modes = [...readingTools().querySelectorAll('[data-reading-mode]')].map(b => b.getAttribute('data-reading-mode'));
+    expect(modes).toEqual(['read', 'define', 'phonics', 'explain']);
+    expect(readingTools().querySelector('[data-reader-display]')).not.toBeNull();
+    expect(readingTools().querySelector('[data-reader-focus-view]')).not.toBeNull();
+    expect(readingTools().querySelector('[aria-controls="simplified-practice-tools"]')).not.toBeNull();
+    expect(teacherTools()).toBeNull();
+  });
+  it('groups Add term, Revise, Edit and Teacher tools apart from reading', () => {
+    mount({ isTeacherMode: true, isZenMode: false });
+    expect(readingTools().querySelector('[data-reading-mode="revise"], [data-reading-mode="add-glossary"]')).toBeNull();
+    const group = teacherTools();
+    expect(group.getAttribute('role')).toBe('group');
+    expect(host.querySelector('#' + group.getAttribute('aria-labelledby')).textContent).toBe('Teacher editing');
+    expect([...group.querySelectorAll('[data-reading-mode]')].map(b => b.getAttribute('data-reading-mode'))).toEqual(['add-glossary', 'revise']);
+    expect(group.querySelector('[data-help-key="simplified_teacher_tools"]')).not.toBeNull();
+    expect(group.querySelector('[data-help-key="simplified_edit"]')).not.toBeNull();
+  });
+  it.each([
+    ['phonics', 'Word sounds · Select a word to hear its sounds. Use Left and Right arrows to move between words.'],
+    ['define', 'Word meaning · Select a word to see what it means. Use Left and Right arrows to move between words.'],
+    ['explain', 'Explain · Choose a sentence for an explanation, or select a longer passage.'],
+  ])('names the %s mode and what to do in it', (interactionMode, text) => {
+    mount({ interactionMode });
+    const status = host.querySelector('[data-reading-mode-status]');
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.getAttribute('data-reading-mode-status')).toBe(interactionMode);
+    expect(status.textContent).toBe(text);
+    expect(status.className).toContain('border-indigo-700');
+  });
+  it('keeps plain reading calm, with no mode banner', () => {
+    mount();
+    const status = host.querySelector('[data-reading-mode-status]');
+    expect(status.textContent).toBe('Read at your own pace. Choose any sentence to listen from there.');
+    expect(status.className).not.toContain('border-indigo-700');
+  });
+});

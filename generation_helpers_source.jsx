@@ -3492,8 +3492,15 @@ const handleComplexityAdjustment = async (deps) => {
     ? { ...resolvedTranslationPolicy, enabled: true, target: 'English', mode: 'artifact-preserve' }
     : resolvedTranslationPolicy;
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleComplexityAdjustment fired"); } catch(_) {}
+    // adaptationPlan (reader, 2026-09-26): { options } adds precise changes;
+    // preview returns the candidate without saving; apply saves a previewed one.
+    const plan = deps.adaptationPlan && typeof deps.adaptationPlan === 'object' ? deps.adaptationPlan : null;
+    const planOptions = generatedContent?.type === 'simplified' && plan && plan.options ? plan.options : {};
+    const keepTerms = (Array.isArray(planOptions.keepTerms) ? planOptions.keepTerms : []).map(term => String(term || '').trim()).filter(Boolean).slice(0, 30);
+    const hasPlanOptions = !!(planOptions.shorterSentences || planOptions.explainVocabulary || keepTerms.length);
+    const prepared = plan && plan.apply && typeof plan.apply === 'object' ? plan.apply : null;
     const supportedTypes = ['simplified', 'quiz', 'sentence-frames', 'glossary'];
-    if (complexityLevel === 5 || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
+    if ((complexityLevel === 5 && !hasPlanOptions && !prepared) || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
     const originalForm = generatedContent.instructionalText?.form || generatedContent.config?.instructionalText?.form;
     if (generatedContent.type === 'simplified' && ['original', 'same-text-supported'].includes(originalForm)) {
         addToast('Create an adapted copy to change the wording of an original.', 'info');
@@ -3503,6 +3510,10 @@ const handleComplexityAdjustment = async (deps) => {
     const requestResourceData = generatedContent.data;
     const canUpdateResource = item => item?.id === requestResourceId && item.data === requestResourceData
         && (item.type !== 'simplified' || !['original', 'same-text-supported'].includes(item.instructionalText?.form || item.config?.instructionalText?.form));
+    if (prepared && (prepared.resourceId !== requestResourceId || prepared.baseData !== requestResourceData)) {
+        addToast('The text changed after this preview. Prepare the change again.', 'warning');
+        return { status: 'stale' };
+    }
     setIsProcessing(true);
     try {
         const isSimpler = complexityLevel < 5;
@@ -3568,7 +3579,12 @@ const handleComplexityAdjustment = async (deps) => {
                 references: referenceParts.references || '',
                 wasBilingual: !!sourceExtraction.isBilingual
             };
-            const direction = isSimpler ? "Simpler / Easier to read" : "More Complex / Academic / Rigorous";
+            const direction = complexityLevel === 5 ? "About the same reading level" : isSimpler ? "Simpler / Easier to read" : "More Complex / Academic / Rigorous";
+            const planLines = [
+                planOptions.shorterSentences ? '- Break long sentences into shorter ones, with one main idea per sentence.' : '',
+                planOptions.explainVocabulary ? '- When an unfamiliar or technical word is needed, keep it and explain it briefly in plain words where it first appears.' : '',
+                keepTerms.length ? `- Keep these essential terms exactly as written; do not replace or simplify them: ${keepTerms.join('; ')}.` : ''
+            ].filter(Boolean).join('\n                ');
             prompt = `
                 Rewrite the following educational text as an adapted companion to the unchanged original.
                 ${window.AlloModules?.GenDispatcher?.buildAdaptationFormatPolicy?.(generatedContent.config?.textFormat || 'Standard Text') || 'Preserve the current format and tone while adjusting language.'}
@@ -3578,7 +3594,8 @@ const handleComplexityAdjustment = async (deps) => {
                 ${standardsDirective}
                 Instructions:
                 - Keep the same topic and core information.
-                - ${isSimpler ? "Shorten sentences, reduce vocabulary difficulty, focus on clarity." : "Increase sentence variety, use more precise academic vocabulary, add nuance."}
+                ${complexityLevel === 5 ? '- Keep the overall difficulty the same; make only the changes listed here.' : `- ${isSimpler ? "Shorten sentences, reduce vocabulary difficulty, focus on clarity." : "Increase sentence variety, use more precise academic vocabulary, add nuance."}`}
+                ${planLines}
                 - Write the rewritten text in ${effectiveLanguage}.
                 - Preserve every inline citation exactly, including its superscript number, URL, occurrence count, and order.
                 - Do not produce a Sources, References, Bibliography, or Works Cited section; AlloFlow appends the preserved reference trailer after validation.
@@ -3643,10 +3660,10 @@ const handleComplexityAdjustment = async (deps) => {
                 Return ONLY JSON matching the input structure exactly.
             `;
         }
-        let result = (!jsonMode && generatedContent.type === 'simplified')
+        let result = prepared ? null : (!jsonMode && generatedContent.type === 'simplified')
             ? await generateBilingualText(prompt, effectiveLanguage, callGemini, _xlate)
             : await callGemini(prompt, jsonMode);
-        if (generatedContent.type === 'simplified' && simplifiedCitationContext) {
+        if (!prepared && generatedContent.type === 'simplified' && simplifiedCitationContext) {
             const candidateParts = splitReferenceTrailer(result);
             const candidateBody = candidateParts.body.trim();
             const candidateExtraction = extractSourceTextForProcessing(candidateBody, false);
@@ -3694,7 +3711,9 @@ const handleComplexityAdjustment = async (deps) => {
             ].filter(Boolean).join('\n\n');
         }
         let updatedData;
-        if (jsonMode) {
+        if (prepared) {
+            updatedData = prepared.data;
+        } else if (jsonMode) {
             const parsed = JSON.parse(cleanJson(result));
             if (generatedContent.type === 'quiz') {
                 updatedData = { ...generatedContent?.data, questions: parsed.questions };
@@ -3713,16 +3732,16 @@ const handleComplexityAdjustment = async (deps) => {
         } else {
             updatedData = result;
         }
-        const changeLabel = generatedContent.type === 'sentence-frames'
+        const changeLabel = prepared && prepared.changeLabel ? prepared.changeLabel : generatedContent.type === 'sentence-frames'
             ? (isSimpler ? 'More Support' : 'Less Support')
-            : (isSimpler ? 'Adapted' : 'Increased Rigor');
+            : complexityLevel === 5 ? 'Adjusted' : (isSimpler ? 'Adapted' : 'Increased Rigor');
         const priorConfig = generatedContent.config && typeof generatedContent.config === 'object'
             ? generatedContent.config
             : {};
         const priorAudit = priorConfig.citationAudit && typeof priorConfig.citationAudit === 'object'
             ? priorConfig.citationAudit
             : null;
-        const adjustedConfig = {
+        const adjustedConfig = prepared && prepared.config ? prepared.config : {
             ...priorConfig,
             ...(complexityCitationAudit ? {
                 citationAudit: {
@@ -3821,6 +3840,9 @@ const handleComplexityAdjustment = async (deps) => {
             if (freshItem.alignmentCheck) delete freshItem.alignmentCheck;
             return freshItem;
         };
+        if (plan && plan.preview) {
+            return { status: 'preview', resourceId: requestResourceId, baseData: requestResourceData, data: updatedData, config: adjustedConfig, changeLabel };
+        }
         if (saveOriginalOnAdjust) {
             const newItem = refreshSimplifiedComplexity({
                 ...generatedContent,
@@ -3833,11 +3855,13 @@ const handleComplexityAdjustment = async (deps) => {
             setGeneratedContent(prev => canUpdateResource(prev) ? newItem : prev); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms);
             setHistory(prev => prev.some(canUpdateResource) ? [...prev, newItem] : prev);
             addToast(t('toasts.saved_new_version', { label: changeLabel }), "success");
+            return { status: 'applied', previousId: requestResourceId, newId: newItem.id };
         } else {
             const updatedContent = refreshSimplifiedComplexity({ ...generatedContent, data: updatedData, config: adjustedConfig });
             setGeneratedContent(prev => canUpdateResource(prev) ? updatedContent : prev);
             setHistory(prev => prev.map(item => canUpdateResource(item) ? updatedContent : item));
             addToast(t('toasts.adjusted_version', { label: changeLabel }), "success");
+            return { status: 'applied', previousId: requestResourceId, newId: requestResourceId, previousData: requestResourceData, data: updatedData };
         }
     } catch (err) {
         if (err?.code === 'citation-conservation-failed') {
@@ -3850,7 +3874,7 @@ const handleComplexityAdjustment = async (deps) => {
         addToast(t('toasts.adjustment_failed'), "error");
     } finally {
         setIsProcessing(false);
-        setComplexityLevel(5);
+        if (!(plan && plan.preview)) setComplexityLevel(5);
     }
 };
 

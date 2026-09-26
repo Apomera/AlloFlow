@@ -39523,9 +39523,10 @@ const handleSubmitOrganizerReflection = async (reflection) => {
   const submitGradingSession = async (...__a) => _alloHostHandlers().submitGradingSession(...__a);
   const handleGenerateRubric = async (...__a) => _alloHostHandlers().handleGenerateRubric(...__a);
   const handleAutoGrade = async (...__a) => _alloHostHandlers().handleAutoGrade(...__a);
-  const handleComplexityAdjustment = async () => {
+  const handleComplexityAdjustment = async (plan) => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
-    if (_m && typeof _m.handleComplexityAdjustment === "function") return _m.handleComplexityAdjustment(_alloGenerationHelpersDeps());
+    const adaptationPlan = plan && (plan.preview || plan.apply || plan.options) ? plan : null;
+    if (_m && typeof _m.handleComplexityAdjustment === "function") return _m.handleComplexityAdjustment({ ..._alloGenerationHelpersDeps(), adaptationPlan });
     throw new Error("[handleComplexityAdjustment] GenerationHelpers module not loaded - reload the page");
   };
   const handlePresentationOptionClick = (...__a) => _alloHostHandlers().handlePresentationOptionClick(...__a);
@@ -41755,6 +41756,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
                     studentInterests, standardsInput, sourceTopic,
                     isTeacherMode, studentAiFeaturesHidden, isProcessing, isPlaying,
+                    readingLearnerKey: isTeacherMode === false && !selectedProfileId && !studentNickname ? '' : readingProfileScope,
                     interactionMode, isCompareMode, isFluencyMode, isEditingLeveledText,
                     isImmersiveReaderActive, immersiveSettings, immersiveRulerY,
                     isFocusReaderActive, isChunkReaderActive, chunkReaderIdx,

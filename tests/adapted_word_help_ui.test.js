@@ -39,7 +39,7 @@ function adaptedItem(entries, shown, data = PASSAGE) {
   return { ...item, data };
 }
 // A host like the real one: saves through the contract and re-renders.
-function mountReader(item, { teacher = false, compare = false, history = [], mode = 'read' } = {}) {
+function mountReader(item, { teacher = false, compare = false, history = [], mode = 'read', extra = {} } = {}) {
   const noop = () => {};
   let current = item;
   const onUpdateReadingSupports = vi.fn(async (owner, action) => {
@@ -55,7 +55,7 @@ function mountReader(item, { teacher = false, compare = false, history = [], mod
     return saved;
   });
   const onGenerateReadingSupports = vi.fn(async () => current.adaptedReadingSupports || null);
-  const props = () => ({ ComplexityGauge: () => null, setComplexityLevel: vi.fn(), setSaveOriginalOnAdjust: vi.fn(), setReadingTheme: vi.fn(), setSelectionMenu: vi.fn(), setIsCustomReviseOpen: vi.fn(), setInteractionMode: vi.fn(), setIsCompareMode: vi.fn(), setIsFluencyMode: vi.fn(), stopPlayback: vi.fn(), closeDefinition: vi.fn(), closePhonics: vi.fn(), closeRevision: vi.fn(), handleToggleIsEditingLeveledText: vi.fn(), t: k => k, inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1, isTeacherMode: teacher, isEditingLeveledText: false, isImmersiveReaderActive: false, isCompareMode: compare, isSideBySide: false, isZenMode: true, isProcessing: false, isPlaying: false, interactionMode: mode, history: [...history, current], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: vi.fn(), handleWordClick: vi.fn(), handleQuickAddGlossary: vi.fn(), handlePhonicsClick: vi.fn(), isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop, cursorStyles: { read: '', define: '', 'add-glossary': '', revise: '' }, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: text => React.createElement('div', null, text), formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, handleTextMouseUp: noop, highlightGlossaryTerms: x => x, latestGlossary: [], generatedContent: current, onUpdateReadingSupports, onGenerateReadingSupports });
+  const props = () => ({ ComplexityGauge: () => null, setComplexityLevel: vi.fn(), setSaveOriginalOnAdjust: vi.fn(), setReadingTheme: vi.fn(), setSelectionMenu: vi.fn(), setIsCustomReviseOpen: vi.fn(), setInteractionMode: vi.fn(), setIsCompareMode: vi.fn(), setIsFluencyMode: vi.fn(), stopPlayback: vi.fn(), closeDefinition: vi.fn(), closePhonics: vi.fn(), closeRevision: vi.fn(), handleToggleIsEditingLeveledText: vi.fn(), t: k => k, inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1, isTeacherMode: teacher, isEditingLeveledText: false, isImmersiveReaderActive: false, isCompareMode: compare, isSideBySide: false, isZenMode: true, isProcessing: false, isPlaying: false, interactionMode: mode, history: [...history, current], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: vi.fn(), handleWordClick: vi.fn(), handleQuickAddGlossary: vi.fn(), handlePhonicsClick: vi.fn(), isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop, cursorStyles: { read: '', define: '', 'add-glossary': '', revise: '' }, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: text => React.createElement('div', null, text), formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, handleTextMouseUp: noop, highlightGlossaryTerms: x => x, latestGlossary: [], generatedContent: current, onUpdateReadingSupports, onGenerateReadingSupports, ...extra });
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
   const render = () => root.render(React.createElement(View, props()));
   act(render);
@@ -157,7 +157,7 @@ describe('finding word help in the passage on screen', () => {
     const registry = new Map();
     const savedCSS = window.CSS, savedHighlight = globalThis.Highlight;
     window.CSS = { ...(savedCSS || {}), highlights: registry };
-    globalThis.Highlight = class { constructor(...ranges) { this.ranges = ranges; } };
+    globalThis.Highlight = class extends Set { constructor(...ranges) { super(ranges); } get ranges() { return [...this]; } }; // set-like, as the real API
     const scrolled = [];
     const savedScroll = Element.prototype.scrollIntoView;
     Element.prototype.scrollIntoView = function () { scrolled.push(this); };
@@ -208,7 +208,9 @@ describe('word help controls for teachers on an adapted text', () => {
     expect(panel, 'teacher panel').toBeTruthy();
     expect(panel.open, 'collapsed until needed').toBe(false);
     expect(panel.querySelector('[data-adapted-word-help-show]').disabled).toBe(true); // nothing to show yet
-    await click(byText('Review word supports'));
+    // One disclosure level: the editor sits inside the panel with no second toggle.
+    expect(byText('Review word supports')).toBeUndefined();
+    expect(panel.querySelector('summary').textContent).toBe('Word help · No supports yet');
     await click(byText('Add a word or phrase'));
     expect(panel.textContent).toContain('Word or phrase from the adapted text');
     expect(panel.textContent).not.toContain('Always show in lighter view');
@@ -300,5 +302,105 @@ describe('word help controls for teachers on an adapted text', () => {
     mountReader(original, { teacher: true });
     expect(host.querySelector('[data-adapted-word-help-teacher]')).toBe(null);
     expect(host.querySelector('[data-adapted-word-help]')).toBe(null);
+  });
+});
+
+describe('one teacher section for adapted word help', () => {
+  const SIX = ['heron', 'walked', 'slowly', 'in', 'shallow', 'water'];
+  it('summarises the supports and whether students see them in one line', () => {
+    mountReader(adaptedItem([at('heron'), at('shallow')], true), { teacher: true });
+    expect(host.querySelector('[data-adapted-word-help-teacher] summary').textContent).toBe('Word help · 2 supports · Shown to students');
+    act(() => root.unmount()); host.remove(); root = null;
+    mountReader(adaptedItem([at('heron')], false), { teacher: true });
+    expect(host.querySelector('[data-adapted-word-help-teacher] summary').textContent).toBe('Word help · 1 support · Hidden from students');
+    act(() => root.unmount()); host.remove(); root = null;
+    mountReader(adaptedItem([at('heron')], true, 'A heron stood in the pond.'), { teacher: true });
+    expect(host.querySelector('[data-adapted-word-help-teacher] summary').textContent).toBe('Word help · Needs review after an edit');
+  });
+
+  it('lists the supports as soon as the section opens, with editing forms collapsed', () => {
+    mountReader(adaptedItem([at('heron'), at('shallow')], true), { teacher: true });
+    const panel = host.querySelector('[data-adapted-word-help-teacher]');
+    expect(panel.querySelectorAll('[data-reading-gloss-editor] li')).toHaveLength(2);
+    expect(panel.querySelector('[data-gloss-draft]')).toBe(null);
+    expect(panel.querySelector('[aria-expanded]')).toBe(null);
+  });
+
+  it('offers a search and a filter only once the list is long', async () => {
+    mountReader(adaptedItem(SIX.slice(0, 5).map(word => at(word)), true), { teacher: true });
+    expect(host.querySelector('[data-gloss-filter]')).toBe(null);
+    act(() => root.unmount()); host.remove(); root = null;
+    mountReader(adaptedItem(SIX.map(word => at(word, word === 'shallow' ? { priority: 'essential' } : {})), true), { teacher: true });
+    const panel = host.querySelector('[data-adapted-word-help-teacher]');
+    const items = () => [...panel.querySelectorAll('[data-reading-gloss-editor] li strong')].map(node => node.textContent);
+    expect(items()).toEqual(SIX);
+    await typeInto(panel.querySelector('[data-gloss-filter] input[type=search]'), 'meaning of wa');
+    expect(items()).toEqual(['walked', 'water']);
+    expect(panel.querySelector('[data-gloss-filter-count]').textContent).toBe('Showing 2 of 6 word supports.');
+    await typeInto(panel.querySelector('[data-gloss-filter] input[type=search]'), 'zebra');
+    expect(items()).toEqual([]);
+    expect(panel.querySelector('[data-gloss-filter-count]').textContent).toMatch(/No word supports match/);
+    await click(byText('Show all'));
+    expect(items()).toEqual(SIX);
+    expect(panel.querySelector('[data-gloss-filter-count]').textContent).toBe('');
+  });
+});
+
+describe('word help opens from the passage', () => {
+  const PICTURE = { src: 'data:image/png;base64,QUJD', alt: 'Water that is not deep.', source: 'mulberry', attribution: CREDIT };
+  const word = text => [...host.querySelectorAll('[data-reading-passage] [data-reading-word]')].find(node => node.textContent === text);
+  const card = () => host.querySelector('[data-word-help-card]');
+
+  it('selecting a supported word in Word meaning opens the teacher help beside the passage, not an AI definition', async () => {
+    const handleWordClick = vi.fn();
+    mountReader(adaptedItem([at('shallow', { text: 'Not deep.', image: PICTURE }), at('heron')], true), { mode: 'define', extra: { handleWordClick } });
+    const opener = word('shallow');
+    await click(opener);
+    expect(card(), 'word help card').toBeTruthy();
+    expect(card().querySelector('h5').textContent).toBe('shallow');
+    expect(card().querySelector('[data-word-help-card-text]').textContent).toBe('Not deep.');
+    expect(card().querySelector('[data-word-help-card-picture]').getAttribute('alt')).toBe('Water that is not deep.');
+    expect(card().textContent).toContain('Mulberry Symbols');
+    expect(handleWordClick).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(card());
+    await act(async () => { card().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+    expect(card()).toBe(null);
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it('an unsupported word still gets the usual definition, and More about this word asks for one', async () => {
+    const handleWordClick = vi.fn();
+    mountReader(adaptedItem([at('heron')], true), { mode: 'define', extra: { handleWordClick } });
+    await click(word('walked'));
+    expect(card()).toBe(null);
+    expect(handleWordClick.mock.calls[0][0]).toBe('walked');
+    await click(word('heron'));
+    await click(card().querySelector('[data-word-help-card-more]'));
+    expect(card()).toBe(null);
+    expect(handleWordClick.mock.calls[1][0]).toBe('heron');
+  });
+
+  it('reads the word aloud, and leads to the full list', async () => {
+    const handleSpeak = vi.fn();
+    mountReader(adaptedItem([at('heron')], true), { mode: 'define', extra: { handleSpeak } });
+    await click(word('heron'));
+    await click(card().querySelector('[data-word-help-card-hear]'));
+    expect(handleSpeak.mock.calls.at(-1)[0]).toBe('heron');
+    await click(card().querySelector('[data-word-help-card-all]'));
+    expect(card()).toBe(null);
+    expect(document.activeElement).toBe(host.querySelector('[data-adapted-word-help]'));
+  });
+
+  it('opens nothing for word help that students cannot see yet', async () => {
+    const handleWordClick = vi.fn();
+    mountReader(adaptedItem([at('heron')], false), { mode: 'define', extra: { handleWordClick } });
+    await click(word('heron'));
+    expect(card()).toBe(null);
+    expect(handleWordClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('says in the Word meaning banner that underlined words open prepared help', () => {
+    mountReader(adaptedItem([at('heron')], true), { mode: 'define' });
+    expect(host.querySelector('[data-reading-mode-status]').textContent).toBe('Word meaning · Select a word to see what it means. Underlined words open the word help your teacher prepared. Use Left and Right arrows to move between words.');
   });
 });
