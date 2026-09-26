@@ -60,10 +60,15 @@ describe('Cephalopod Lab form-control accessibility', () => {
   it('keeps the complete form inventory and repaired names explicit in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
 
-    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(23);
+    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(26);
     expect(source).toContain(
       "'aria-label': __alloT('stem.cephalopodlab.audio_volume', 'Audio volume')"
     );
+    ['Dive mode','Graphics quality','World seed'].forEach(label => {
+      const input = renderSection('hunt', { _threeLoaded: true }).querySelector('[aria-label="' + label + '"]');
+      expect(input).toBeTruthy();
+      expect(input.labels).toHaveLength(1);
+    });
     expect(source).toContain("htmlFor: 'ch-explanation'");
     expect(source).toContain("id: 'ch-explanation'");
     expect(source).toContain("'aria-pressed': active");

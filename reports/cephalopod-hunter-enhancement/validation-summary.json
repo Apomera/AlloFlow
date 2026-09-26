@@ -1,0 +1,120 @@
+{
+  "date": "2026-09-26",
+  "unit": {
+    "passed": 192,
+    "failed": 0,
+    "files": 9,
+    "timeoutMs": 30000
+  },
+  "browser": {
+    "uniqueCases": 19,
+    "passed": 19,
+    "failed": 0,
+    "retries": 0,
+    "explanation": "Latest result per named scenario across the initial suite and targeted corrections. Initial run 14/18; four corrections passed. Expanded suite 8/9; corrected cover fixture then passed. This is not a single clean combined run.",
+    "cases": [
+      {
+        "name": "dives into a live, non-blank scene with the HUD attached",
+        "status": "expected"
+      },
+      {
+        "name": "W moves the octopus: the frame changes and the loop is running",
+        "status": "expected"
+      },
+      {
+        "name": "the canvas follows its container when the container resizes",
+        "status": "expected"
+      },
+      {
+        "name": "the HUD reports a real reef depth and pressure on arrival",
+        "status": "expected"
+      },
+      {
+        "name": "descending warns about pressure before it starts doing damage",
+        "status": "expected"
+      },
+      {
+        "name": "jetting burns calories faster than crawling, and says so",
+        "status": "expected"
+      },
+      {
+        "name": "inking reports what ink actually does",
+        "status": "expected"
+      },
+      {
+        "name": "camouflage fades when the animal leaves the bottom",
+        "status": "expected"
+      },
+      {
+        "name": "surfacing releases the WebGL context",
+        "status": "expected"
+      },
+      {
+        "name": "a lost context during the hunt raises Retry, and Retry dives again",
+        "status": "expected"
+      },
+      {
+        "name": "pause freezes dive time and energy; losing canvas focus releases held movement",
+        "status": "expected"
+      },
+      {
+        "name": "the seabed is solid and the home den only protects at its actual height",
+        "status": "expected"
+      },
+      {
+        "name": "target selection never catches a different nearby animal, and repeated catches persist",
+        "status": "expected"
+      },
+      {
+        "name": "reef mission requires both foods and a return home, then writes one debrief",
+        "status": "expected"
+      },
+      {
+        "name": "vampire squid gathers marine snow and has no ink",
+        "status": "expected"
+      },
+      {
+        "name": "touch buttons move and release cleanly; settings can be changed during a dive",
+        "status": "expected"
+      },
+      {
+        "name": "new rigs have distinct anatomy, render without shader errors and release every context",
+        "status": "expected"
+      },
+      {
+        "name": "voluntary surfacing persists results and releases the actual WebGL context",
+        "status": "expected"
+      },
+      {
+        "name": "rock cover blocks awareness and a spatial ink cloud interrupts pursuit",
+        "status": "expected"
+      }
+    ]
+  },
+  "mirrors": {
+    "identical": true,
+    "hashes": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "adc8be902c7a7b124f89b714b2c5f40cb378b5cd2b8b0cc9c76b3e16179e215b"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "adc8be902c7a7b124f89b714b2c5f40cb378b5cd2b8b0cc9c76b3e16179e215b"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "adc8be902c7a7b124f89b714b2c5f40cb378b5cd2b8b0cc9c76b3e16179e215b"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "adc8be902c7a7b124f89b714b2c5f40cb378b5cd2b8b0cc9c76b3e16179e215b"
+      }
+    ]
+  },
+  "limitations": [
+    "Real Chromium WebGL in local harness; no deployed app or classroom hardware benchmark.",
+    "Controlled-object fixtures establish rule consistency, not natural encounter balance.",
+    "No deployment or installer build."
+  ]
+}

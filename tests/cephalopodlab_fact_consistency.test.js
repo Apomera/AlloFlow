@@ -473,18 +473,18 @@ describe('Cephalopod Lab charges the metabolic cost it teaches', () => {
     // stationaryTime and that the substrate row prints as "still"/"moving".
     // Billing only moveFwd would print "moving" and "resting 1.0 cal/s" on
     // the same frame while the player turns in place.
-    expect(src).toMatch(/var isMoving = moveFwd !== 0 \|\| turn !== 0;/);
+    expect(src).toMatch(/var isMoving = moveFwd !== 0 \|\| turn !== 0 \|\| !!keys.KeyQ \|\| !!keys.KeyZ;/);
     expect(src).toMatch(/else if \(isMoving\) locomotionCost = CRAWL_LOCOMOTION_RATE;/);
     expect(src).toContain('gameState.isMovingOnFloor = isMoving;');
     // and the substrate row still keys off the same stationaryTime it always did
-    expect(src).toContain("gameState.stationaryTime > 0.5 ? ' · still' : ' · moving'");
+    expect(src).toContain("gameState.stationaryTime>0.5?'still':'moving'");
   });
 
   it('shows the burn rate live and reports the budget at the end', () => {
     // A cost the player cannot see is just a bar draining faster for no reason.
-    expect(src).toContain("hungerRateHud.toFixed(1) + ' cal/s'");
+    expect(src).toContain("(gameState.hungerRate||1).toFixed(1)+' energy/s'");
     expect(src).toMatch(/statCard\('Time jetting'/);
-    expect(src).toMatch(/statCard\('Calories burned'/);
+    expect(src).toMatch(/statCard\('Energy spent'/);
     expect(src).toMatch(/jetMs: 0,/);
     expect(src).toMatch(/caloriesBurned: 0,/);
   });
@@ -547,27 +547,27 @@ describe('Cephalopod Lab ink degrades detection instead of switching it off', ()
     expect(src).not.toMatch(/grDist < grEffectiveRange && !gameState\.isInked/);
     expect(src).not.toMatch(/mDistHome < morayEffectiveRange && !gameState\.isInked/);
     // and both now fold ink into the range calculation instead.
-    expect(src).toMatch(/grEffectiveRange = gr\.aggroRange[\s\S]{0,200}?gameState\.isInked \? INK_DETECTION_FACTOR/);
-    expect(src).toMatch(/morayEffectiveRange = me\.aggroRange[\s\S]{0,200}?gameState\.isInked \? INK_DETECTION_FACTOR/);
+    expect(src).toMatch(/grEffectiveRange = gr\.aggroRange[\s\S]{0,200}?inkBlocks\([^)]*\) \? INK_DETECTION_FACTOR/);
+    expect(src).toMatch(/morayEffectiveRange = me\.aggroRange[\s\S]{0,200}?inkBlocks\([^)]*\) \? INK_DETECTION_FACTOR/);
   });
 
   it('lets ink break off a charge from the hard hitters too', () => {
     // The shark's charge ignored ink entirely, so the pseudomorph escape the
     // glossary describes did not exist against it.
-    expect(src).toMatch(/if \(gameState\.inDen \|\| gameState\.isInked \|\| sk\.stateTimer > 4\)/);
-    expect(src).toMatch(/if \(gameState\.inDen \|\| zpInkEscapes \|\| zpud\.stateTimer > 4\.5\)/);
+    expect(src).toMatch(/if \(gameState\.inDen \|\| inkBlocks\(shark.position,octopus.position\) \|\| lostSight\(shark,dt\) \|\| sk\.stateTimer > 4\)/);
+    expect(src).toMatch(/if \(gameState\.inDen \|\| zpInkEscapes \|\| lostSight\(zp,dt\) \|\| zpud\.stateTimer > 4\.5\)/);
   });
 
   it('keeps the two hunters it already models as ink-resistant resistant', () => {
     // zpInkMod 0.6 marks these two; the escape must respect that rather than
     // handing ink a blanket win and flattening the depth-zone contrast.
     expect(src).toMatch(/zpInkMod = \(zpud\.kind === 'spermWhale' \|\| zpud\.kind === 'giantSquid'\) \? 0\.6/);
-    expect(src).toMatch(/zpInkEscapes = gameState\.isInked &&\s*\n\s*zpud\.kind !== 'spermWhale' && zpud\.kind !== 'giantSquid';/);
+    expect(src).toMatch(/zpInkEscapes = inkBlocks\(zp.position,octopus.position\) &&\s*\n\s*zpud\.kind !== 'spermWhale' && zpud\.kind !== 'giantSquid';/);
   });
 
   it('stops telling the player ink makes them unseeable', () => {
     expect(src).not.toMatch(/predators can.{0,2}t see you/);
-    expect(src).toContain('INKED — harder to track, breaks off attacks');
+    expect(src).toContain('INKED — harder to track');
   });
 });
 
@@ -602,11 +602,12 @@ describe('Cephalopod Lab ink labels describe the mechanic that exists', () => {
     // The card used to read "3 charges, 8s cooldown between", which reads as
     // a regenerating resource.
     expect(src).not.toContain('Ink defense — 3 charges');
-    expect(src).toMatch(/Ink — 3 per dive, 8s between\..*never comes back mid-dive/);
+    expect(src).toMatch(/3 charges for ink-capable species; no refill this dive/);
   });
 
   it('keeps the two species the tool says do not ink unable to ink', () => {
-    expect(src).toMatch(/canInk = species\.id !== 'dumboOcto' && species\.id !== 'vampireSquid'/);
+    expect(src).toContain("ink:['nautilus','dumboOcto','vampireSquid'].indexOf(speciesId)<0");
+    expect(src).toContain('canInk = capabilities.ink');
   });
 });
 
@@ -632,20 +633,20 @@ describe('Cephalopod Lab background matching needs a background', () => {
     // Descending into open water leaves the substrate behind just as surely
     // as rising above it. A one-sided clamp would keep full camo all the way
     // down to the abyssal floor.
-    expect(src).toContain('var distFromFloor = Math.abs(gameState.verticalY - FLOOR_REST_Y);');
+    expect(src).toContain('var distFromFloor = Math.abs(gameState.verticalY - terrainHeight(octopus.position.x,octopus.position.z) - FLOOR_REST_Y);');
     expect(contact(FLOOR + FADE)).toBe(0);
     expect(contact(FLOOR - FADE)).toBe(0);
     expect(contact(-20)).toBe(0);
   });
 
   it('multiplies it into camoEff rather than replacing the other factors', () => {
-    expect(src).toMatch(/camoEff = matchScore \* stillnessBonus \* species\.camoQualityMul \* substrateContact;/);
+    expect(src).toMatch(/camoEff = Math\.min\(1,matchScore \* stillnessBonus \* species\.camoQualityMul \* substrateContact\);/);
   });
 
   it('leaves counter-illumination working in open water', () => {
     // The bobtail squid's ventral glow is exactly the open-water answer, so
     // it must be added AFTER the substrate fade, not scaled by it.
-    const fadeAt = src.indexOf('* substrateContact;');
+    const fadeAt = src.indexOf('* substrateContact)');
     const ciAt = src.indexOf("species.specialAbility === 'counterIllumination'");
     expect(fadeAt).toBeGreaterThan(0);
     expect(ciAt).toBeGreaterThan(fadeAt);

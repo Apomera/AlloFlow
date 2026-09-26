@@ -148,6 +148,8 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     const canvas = page.locator('#wrap canvas[role="application"]');
     await canvas.click({ position: { x: 20, y: 20 } });
 
+    // The shelf is solid: move to the drop-off before descending.
+    await page.getByRole('button', { name: 'Explore depths' }).click();
     // Hold Z and sample the HUD on the way down.
     const seen = { warning: false, crushing: false };
     let warnedBeforeDamage = false;
@@ -189,7 +191,7 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     // Regex literals, not `new RegExp('...' + '\s*')`: a single-backslash
     // string collapses '\s' to 's' and the pattern silently never matches,
     // which reads as "the HUD has no HUNGER row" rather than as a typo.
-    const HUNGER_RE = /HUNGER\s*(\d+)/;
+    const HUNGER_RE = /ENERGY\s*(\d+)/;
     const STAMINA_RE = /STAMINA\s*(\d+)/;
     const numFrom = (hud: string, re: RegExp) => {
       const m = re.exec(hud);
@@ -214,7 +216,7 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     const crawlDrop = crawlStart! - crawlEnd!;
 
     // The row has to name the crawl state and its rate while it happens.
-    expect(crawlHud).toMatch(/crawling [\d.]+ cal\/s/);
+    expect(crawlHud).toMatch(/crawling [\d.]+ energy\/s/);
 
     // Let stamina come back before the jet leg.
     await page.waitForTimeout(6000);
@@ -232,7 +234,7 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     const jetDrop = jetStart! - jetEnd!;
 
     // Sampled 600ms in, while stamina certainly still has ~2.2s of jet in it.
-    expect(jetHud).toMatch(/jetting [\d.]+ cal\/s/);
+    expect(jetHud).toMatch(/jetting [\d.]+ energy\/s/);
     expect(jetHud).toContain('5× crawl');
 
     // Stamina caps sustained jetting at a ~29% duty cycle, so a 9s jet leg
@@ -268,9 +270,8 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     expect(inked).not.toMatch(/can.{0,2}t see you/);
 
     // Ink is temporary (3.2s), so the row must clear itself again.
-    await page.waitForTimeout(3600);
-    const cleared = await readHud();
-    expect(cleared).not.toContain('INKED');
+    // Simulation time stops on pause and is capped on slow frames; wait for the state.
+    await expect.poll(readHud,{timeout:20000}).not.toContain('INKED');
     save('hunt_6_ink.png', await page.locator('#wrap').screenshot());
   });
 

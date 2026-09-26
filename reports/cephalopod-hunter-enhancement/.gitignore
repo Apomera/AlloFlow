@@ -1,0 +1,14 @@
+*.log
+*.txt
+*.json
+!validation-summary.json
+apply-*.cjs
+refine-*.cjs
+align-contracts.cjs
+final-polish.cjs
+probe.cjs
+*.generated.cjs
+01-common-first.png
+test-artifacts/
+retest-artifacts/
+final-artifacts/
