@@ -56,7 +56,7 @@ async function perform(page: any, tool?: string, answer = '6') {
 }
 test('full vehicle, staged lift, brake service, handoff and return path work on real WebGL', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1000 });
-  await harness.mount(page, { autoRepair: { view: 'workshop' } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels' } });
   await expect(page.locator('[data-ar-shop-task="intake"]')).toBeVisible();
   await page.waitForFunction(() => (window as any).__shopObject('workshop-vehicle'));
   expect(await page.evaluate(() => (window as any).__glLive()?.lost)).toBe(false);
@@ -114,7 +114,7 @@ test('full vehicle, staged lift, brake service, handoff and return path work on 
 test('mobile controls, reduced motion and independent work-order progress', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await harness.mount(page, { autoRepair: { view: 'workshop' } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels' } });
   await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
   await perform(page);
   await page.locator('#ar-shop-job').selectOption('electrical');
@@ -149,7 +149,7 @@ test('mobile controls, reduced motion and independent work-order progress', asyn
 
 test('oil work order updates fluid and filter geometry and preserves the recorded calculation', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1000 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'oil' } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'oil' } } });
   const oilTools: Record<string, string> = { drain: 'drain-pan', filter: 'filter', refill: 'funnel', verify: 'checklist' };
   while (await page.locator('[data-ar-shop-perform]').count()) {
     const id = (await page.locator('[data-ar-shop-perform]').getAttribute('data-ar-shop-perform'))!;
@@ -175,7 +175,7 @@ test('oil work order updates fluid and filter geometry and preserves the recorde
 
 test('station labels stay attached to physical components and the final views remain usable', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1000 });
-  await harness.mount(page, { autoRepair: { view: 'workshop' } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels' } });
   await page.waitForFunction(() => (window as any).__shopObject('service-desk')?.data.labelAnchor);
   const anchor = await page.evaluate(() => {
     const w = window as any, desk = w.__shopScene.getObjectByName('service-desk');
@@ -208,7 +208,7 @@ test('station labels stay attached to physical components and the final views re
 
 test('voltmeter setup changes the real display and fresh evidence is required after service', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
   await page.locator('[data-ar-shop-instrument-read]').click();
   await expect(page.locator('[data-ar-shop-reading]')).toHaveText('12.6 V');
   await page.locator('#ar-shop-answer').fill('1.4');
@@ -241,7 +241,7 @@ test('voltmeter setup changes the real display and fresh evidence is required af
 
 test('the physical wheel fasteners and accessible diagram share the reassembly sequence', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 9, station: 'brakes', tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true, measured: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 9, station: 'brakes', tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true, measured: true } } });
   await page.locator('[data-ar-shop-seat-wheel]').click();
   await page.locator('[data-ar-shop-instrument-focus]').click();
   await page.waitForFunction(() => (window as any).__shopObject('workshop-wheel-fastener-0'));
@@ -269,7 +269,7 @@ test('the physical wheel fasteners and accessible diagram share the reassembly s
 
 test('the measured jug and lining gauge render their captured values and survive mobile layout', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', lift: 'ground', oilDrained: true, plugSecured: true, serviced: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', lift: 'ground', oilDrained: true, plugSecured: true, serviced: true } } });
   await page.locator('[data-ar-shop-jug-change="500"]').click();
   await page.locator('[data-ar-shop-instrument-read]').click();
   await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
@@ -301,7 +301,7 @@ test('the measured jug and lining gauge render their captured values and survive
 
 test('alignment setup, live 3D toe, target picking and verified handoff complete a fourth job', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'alignment' } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'alignment' } } });
   await perform(page);
   await page.locator('[data-ar-shop-go-task]').click();
   await page.locator('#ar-shop-tool').selectOption('aligner');
@@ -368,7 +368,7 @@ test('alignment setup, live 3D toe, target picking and verified handoff complete
 test('alignment rejects a misleading passing total and preserves adjustments on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
     alignment: { left: 30, right: -10, tyres: true, targets: true, centered: true } } } });
   await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
   await expect(page.locator('[data-ar-alignment-total]')).toContainText('Total in range');
@@ -426,7 +426,7 @@ async function pickPhysicalTool(page: any, id: string) {
 
 test('direct 3D hood, tool cases and meter controls capture diagnostic evidence', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 1, station: 'engine', tool: 'lamp' } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 1, station: 'engine', tool: 'lamp' } } });
   await page.locator('[data-ar-scene-focus]').click();
   await clickShop(page, 'workshop-hood');
   await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Hood opened');
@@ -473,7 +473,7 @@ test('direct 3D hood, tool cases and meter controls capture diagnostic evidence'
 
 test('direct lift controls distinguish orbit drag from a click and enforce the current task', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lamp', lift: 'prepared' } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lamp', lift: 'prepared' } } });
   await page.locator('[data-ar-scene-focus]').click();
   await clickShop(page, 'workshop-control-task');
   await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Choose Lift controls');
@@ -493,7 +493,7 @@ test('direct lift controls distinguish orbit drag from a click and enforce the c
 
 test('direct jug and alignment controls change scene state and remain keyboard-accessible on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', lift: 'ground', serviced: true, plugSecured: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', lift: 'ground', serviced: true, plugSecured: true } } });
   await page.locator('[data-ar-scene-focus]').click();
   await clickShop(page, 'workshop-control-jug-add');
   await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4600');
@@ -523,7 +523,7 @@ test('direct jug and alignment controls change scene state and remain keyboard-a
 
 test('physical lift stop latches, survives view changes and resets without resuming motion', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 4, station: 'lift', tool: 'lift-controls', lift: 'checked' } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 4, station: 'lift', tool: 'lift-controls', lift: 'checked' } } });
   await page.locator('[data-ar-lift-focus]').click();
   await clickShop(page, 'lift-emergency-stop');
   await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status', 'stopped');
@@ -570,7 +570,7 @@ test('physical lift stop latches, survives view changes and resets without resum
 
 test('brake explorer separates real parts, supports physical picking and restores service interactions', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 8, station: 'brakes', tool: 'brake-kit', lift: 'locked', wheelRemoved: true, measured: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 8, station: 'brakes', tool: 'brake-kit', lift: 'locked', wheelRemoved: true, measured: true } } });
   await page.locator('[data-ar-brake-focus]').click();
   await clickShop(page, 'workshop-control-brake-spread');
   await expect(page.locator('#ar-brake-spacing')).toHaveValue('100');
@@ -615,7 +615,7 @@ test('brake explorer separates real parts, supports physical picking and restore
 
 test('detailed brake parts retain clickable components, tracked gauge and selected-part close-ups', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 7, station: 'brakes', tool: 'gauge', lift: 'locked', wheelRemoved: true, brakeSpread: 100, brakePart: 'pad' } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 7, station: 'brakes', tool: 'gauge', lift: 'locked', wheelRemoved: true, brakeSpread: 100, brakePart: 'pad' } } });
   await page.locator('[data-ar-brake-focus]').click();
   await shopPoint(page, 'gauge-digital-head');
   const details = await page.evaluate(() => {
@@ -661,7 +661,7 @@ test('detailed brake parts retain clickable components, tracked gauge and select
 
 
 test('live task guide navigates tools, evidence and calculation without performing the task', async ({ page }) => {
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 7, station: 'tools', tool: 'lamp', lift: 'locked', wheelRemoved: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 7, station: 'tools', tool: 'lamp', lift: 'locked', wheelRemoved: true } } });
   const guide = page.locator('[data-ar-task-guide]'), go = page.locator('[data-ar-task-guide-go]');
   await expect(guide).toHaveAttribute('data-ar-task-guide', 'tool');
   await go.focus(); await page.keyboard.press('Enter');
@@ -702,7 +702,7 @@ test('live task guide navigates tools, evidence and calculation without performi
 });
 
 test('live task guide supports lift recovery, alignment, wheel seating and customer handoff', async ({ page }) => {
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lift-controls', lift: 'prepared', liftStopped: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lift-controls', lift: 'prepared', liftStopped: true } } });
   const guide = page.locator('[data-ar-task-guide]'), go = page.locator('[data-ar-task-guide-go]');
   await go.click(); await expect(page.locator('[data-ar-scene-action="lift-clear"]')).toBeFocused();
   await expect(guide).toHaveAttribute('data-ar-task-guide', 'lift-stop');
@@ -736,7 +736,7 @@ test('live task guide supports lift recovery, alignment, wheel seating and custo
 
 
 test('instrument coach identifies meter setup and routes keyboard focus without changing it', async ({ page }) => {
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true,
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true,
     instrument: { mode: 'resistance', contact: 'posts', load: 'off' } } } });
   const coach = page.locator('[data-ar-instrument-coach="meter"]'), go = page.locator('[data-ar-task-guide-go]');
   await expect(coach).toHaveAttribute('data-ar-coach-status', 'setup');
@@ -768,7 +768,7 @@ test('instrument coach identifies meter setup and routes keyboard focus without 
 });
 
 test('physical fine-fill control changes the jug by 100 mL and coaching routes alignment adjustment', async ({ page }) => {
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', serviced: true, plugSecured: true,
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', serviced: true, plugSecured: true,
     instrument: { jugMl: 4500 } } } });
   const go = page.locator('[data-ar-task-guide-go]');
   await go.click(); await expect(page.locator('[data-ar-scene-action="jug-fine"]')).toBeFocused();
@@ -795,7 +795,7 @@ test('physical fine-fill control changes the jug by 100 mL and coaching routes a
 
 
 test('battery close-up places probes on physical contacts and preserves unchanged evidence', async ({ page }) => {
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
   const closeup = page.locator('[data-ar-meter-contacts-focus]');
   await page.locator('[data-ar-scene-action="read"]').click();
   await expect(page.locator('[data-ar-shop-reading]')).toHaveText('12.6 V');
@@ -839,7 +839,7 @@ test('battery close-up places probes on physical contacts and preserves unchange
 
 
 test('3D inspection previews controls, expires changed state and explicitly applies a current selection', async ({ page }) => {
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
   await page.locator('[data-ar-shop-interaction="inspect"]').click();
   await page.locator('[data-ar-scene-focus]').click();
   const before = await page.evaluate(() => JSON.stringify((window as any).__ctx.toolData.autoRepair.shop));
@@ -872,7 +872,7 @@ test('3D inspection previews controls, expires changed state and explicitly appl
 });
 
 test('inspection keeps the physical stop immediate and retains lift gates and drag behavior', async ({ page }) => {
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lamp', lift: 'prepared' } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lamp', lift: 'prepared' } } });
   await page.locator('[data-ar-shop-interaction="inspect"]').click();
   await page.locator('[data-ar-scene-focus]').click(); await clickShop(page, 'workshop-control-task');
   await expect(page.locator('[data-ar-control-preview]')).toContainText('Perform the current work-order step');
@@ -897,7 +897,7 @@ test('inspection keeps the physical stop immediate and retains lift gates and dr
 
 test('moving 3D torque wrench, numbered targets and inspection share five deliberate checks', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 9, station: 'brakes', tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true, measured: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 9, station: 'brakes', tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true, measured: true } } });
   await page.locator('[data-ar-shop-seat-wheel]').click();
   await page.locator('[data-ar-shop-instrument-focus]').click();
   const count = () => page.evaluate(() => (window as any).__toolData.autoRepair.shop.lugs.length);
@@ -952,7 +952,7 @@ test('moving 3D torque wrench, numbered targets and inspection share five delibe
 
 test('voltage evidence lesson records before and after, supports reasoning retries and exports the comparison', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
   const panel = page.locator('[data-ar-voltage-evidence]');
   await expect(panel.locator('[data-ar-evidence-value="before"]')).toHaveText('Not recorded yet');
   await expect(panel.locator('[data-ar-evidence-choice]')).toHaveCount(0);
@@ -994,7 +994,7 @@ test('voltage evidence lesson records before and after, supports reasoning retri
 
 test('live toe diagram explains cancellation and keeps target overlays separate from evidence', async ({ page }) => {
   await page.setViewportSize({ width: 1360, height: 1100 });
-  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
     alignment: { left: 30, right: -10, tyres: true, targets: true, centered: true } } } });
   const panel = page.locator('[data-ar-toe-diagram]');
   await expect(panel.locator('[data-ar-toe-check="total"]')).toHaveAttribute('data-ar-toe-pass', 'true');
@@ -1039,7 +1039,7 @@ test('live toe diagram explains cancellation and keeps target overlays separate 
 
 test('graduated jug links unit scales, fine 3D fill and fresh measurement evidence', async ({ page }) => {
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,oilDrained:true,plugSecured:true}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,oilDrained:true,plugSecured:true}}});
   const panel=page.locator('[data-ar-jug-lesson]');
   const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
   const initial=await state();
@@ -1082,7 +1082,7 @@ test('graduated jug links unit scales, fine 3D fill and fresh measurement eviden
 });
 
 test('empty 3D measuring jug has no oil mesh and full capacity stays in bounds',async({page})=>{
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',serviced:true,plugSecured:true,instrument:{jugMl:0}}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'oil',step:9,station:'engine',tool:'funnel',serviced:true,plugSecured:true,instrument:{jugMl:0}}}});
   await page.locator('[data-ar-shop-instrument-focus]').click();
   await page.waitForFunction(()=>(window as any).__shopObject('workshop-measuring-jug')?.data.quantityMl===0);
   expect(await page.evaluate(()=>(window as any).__shopObject('jug-oil-volume'))).toBeNull();
@@ -1098,7 +1098,7 @@ test('empty 3D measuring jug has no oil mesh and full capacity stays in bounds',
 
 test('brake layer lesson connects physical pad selection to valid lining evidence',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,brakeSpread:100,brakePart:'pad'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,brakeSpread:100,brakePart:'pad'}}});
   const panel=page.locator('[data-ar-brake-measurement]');
   await expect(panel).toHaveAttribute('data-ar-brake-measurement','pending');
   await page.locator('[data-ar-brake-closeup]').click();
@@ -1139,7 +1139,7 @@ test('brake layer lesson connects physical pad selection to valid lining evidenc
 
 test('handoff support uses completed records and preserves learner writing through prompts and export',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,notes:'My initial observation. '}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,notes:'My initial observation. '}}});
   const panel=page.locator('[data-ar-handoff-guide]');
   await expect(panel).toHaveAttribute('data-ar-handoff-guide','closed');
   const original=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
@@ -1193,7 +1193,7 @@ test('handoff support uses completed records and preserves learner writing throu
 
 test('practice board resumes exact saved work and updates after a completed oil handoff',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,answer:'6',notes:'My brake inspection draft'},shopRecords:{
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,answer:'6',notes:'My brake inspection draft'},shopRecords:{
     oil:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,oilDrained:true,instrument:{jugMl:4500},notes:'My oil draft'},
     electrical:{job:'electrical',step:6,verified:true,released:true,notes:'Completed connection repair and verification.'}
   }}});
@@ -1241,7 +1241,7 @@ test('practice board resumes exact saved work and updates after a completed oil 
 
 test('live cross-hub path tracks deliberate checks in the diagram and 3D wheel',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:9,station:'brakes',tool:'torque',lift:'locked',wheelRemoved:true,serviced:true}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:9,station:'brakes',tool:'torque',lift:'locked',wheelRemoved:true,serviced:true}}});
   await expect(page.locator('[data-ar-wheel-path]')).toHaveCount(0);
   await page.locator('[data-ar-shop-seat-wheel]').click();
   await expect(page.locator('[data-ar-wheel-move]')).toContainText('Begin at fastener 1');
@@ -1282,7 +1282,7 @@ test('live cross-hub path tracks deliberate checks in the diagram and 3D wheel',
 
 test('lift support diagram tracks physical stages while comparison and reset preserve height',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:2,station:'lift',tool:'lift-controls',lift:'prepared'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:2,station:'lift',tool:'lift-controls',lift:'prepared'}}});
   const panel=page.locator('[data-ar-lift-support]');
   await expect(panel).toHaveAttribute('data-ar-lift-support','prepared');
   const before=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
@@ -1329,7 +1329,7 @@ test('lift support diagram tracks physical stages while comparison and reset pre
 
 test('workshop shortcuts stay reachable and preserve evidence, drafts and camera framing',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,oilDrained:true,instrument:{jugMl:4600},answer:'0.5',notes:'My unfinished customer explanation.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,oilDrained:true,instrument:{jugMl:4600},answer:'0.5',notes:'My unfinished customer explanation.'}}});
   await page.locator('[data-ar-shop-instrument-read]').click();
   const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
   const before=await state();const nav=page.locator('[data-ar-workshop-shortcuts]');
@@ -1361,7 +1361,7 @@ test('workshop shortcuts stay reachable and preserve evidence, drafts and camera
 });
 
 test('equipment shortcut falls back to the tool chooser and completed work order',async({page})=>{
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes'}}});
   await page.locator('[data-ar-workshop-jump="equipment"]').click();await expect(page.locator('#ar-shop-tool')).toBeFocused();
   expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBeUndefined();
   await page.evaluate(()=>(window as any).__ctx.update('autoRepair','shop',{job:'electrical',step:6,released:true,verified:true,notes:'My completed report.'}));
@@ -1374,7 +1374,7 @@ test('equipment shortcut falls back to the tool chooser and completed work order
 
 test('probe map follows physical contacts and preserves captures until the setup changes',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,notes:'Keep my diagnosis draft.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,notes:'Keep my diagnosis draft.'}}});
   const toggle=page.locator('[data-ar-meter-trace-toggle]'),panel=page.locator('[data-ar-meter-trace]');
   await expect(panel).toHaveCount(0);await page.locator('[data-ar-shop-instrument-read]').click();
   const before=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
@@ -1413,7 +1413,7 @@ test('probe map follows physical contacts and preserves captures until the setup
 
 test('task route reviews recorded evidence without skipping tasks or losing drafts',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:0,station:'intake',tool:'job-card',notes:'My explanation of the finding, service and verification.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:0,station:'intake',tool:'job-card',notes:'My explanation of the finding, service and verification.'}}});
   const toggle=page.locator('[data-ar-route-toggle]'),route=page.locator('[data-ar-task-route]');
   await expect(route).toHaveCount(0);await toggle.focus();await page.keyboard.press('Enter');
   await expect(route.locator('[data-ar-route-status="current"]')).toHaveAttribute('data-ar-route-step','intake');
@@ -1448,7 +1448,7 @@ test('task route reviews recorded evidence without skipping tasks or losing draf
 
 test('calculation coach links scene and work order while preserving captured instrument evidence',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,instrument:{jugMl:4600},answer:'500',notes:'Keep my explanation draft.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,instrument:{jugMl:4600},answer:'500',notes:'Keep my explanation draft.'}}});
   const order=page.locator('[data-ar-calculation-coach="order"]'),scene=page.locator('[data-ar-calculation-coach="scene"]');
   await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
   const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
@@ -1475,7 +1475,7 @@ test('calculation coach links scene and work order while preserving captured ins
 
 test('inspector camera locates areas without operating controls or invalidating evidence',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep this diagnostic draft.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep this diagnostic draft.'}}});
   await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
   const chooser=page.locator('#ar-shop-inspect-target'),view=page.locator('[data-ar-control-view]'),inspector=page.locator('[data-ar-control-inspector]');
   const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
@@ -1505,7 +1505,7 @@ test('inspector camera locates areas without operating controls or invalidating 
 
 test('viewport response follows 3D input, capture freshness and keyboard equipment navigation', async ({page}) => {
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Preserve this diagnostic draft.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Preserve this diagnostic draft.'}}});
   const panel=page.locator('[data-ar-workshop-response]'),capture=panel.locator('[data-ar-response-capture]');
   await expect(capture).toHaveAttribute('data-ar-response-capture','missing');
   await page.locator('[data-ar-shop-instrument-read]').click();await expect(capture).toContainText('1.6 V');await expect(capture).toHaveAttribute('data-ar-response-capture','current');
@@ -1530,7 +1530,7 @@ test('viewport response follows 3D input, capture freshness and keyboard equipme
 
 test('inspection outline follows physical controls without rebuilding or operating the workshop',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});await page.emulateMedia({reducedMotion:'reduce'});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'}}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'}}}});
   await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
   const chooser=page.locator('#ar-shop-inspect-target'),viewport=page.locator('.ar-bay-viewport');
   const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
@@ -1567,7 +1567,7 @@ function materialSeparation(a:number[],b:number[]){
 }
 test('contrast workshop keeps battery contacts and leads distinct through theme changes',async({page})=>{
   await page.setViewportSize({width:1360,height:1000});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep this measured finding.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep this measured finding.'}}});
   await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-meter-contacts-focus]').click();const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
   await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
   await page.locator('[data-ar-meter-contacts-focus]').click();await shopPoint(page,'negative-post');
@@ -1593,7 +1593,7 @@ test('contrast workshop keeps battery contacts and leads distinct through theme 
 
 test('contrast workshop separates brake layers, lift stop and measured oil',async({page})=>{
   await page.setViewportSize({width:1360,height:1000});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,brakeSpread:100,brakePart:'pad'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,brakeSpread:100,brakePart:'pad'}}});
   await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
   await page.locator('[data-ar-brake-closeup]').click();await shopPoint(page,'pad-steel-backing');
   const lining=await workshopMaterial(page,'pad-friction-lining'),backing=await workshopMaterial(page,'pad-steel-backing');expect(materialSeparation(lining.color,backing.color)).toBeGreaterThan(4.5);
@@ -1614,7 +1614,7 @@ test('contrast workshop separates brake layers, lift stop and measured oil',asyn
 test('reviewed restarts recover measurements, records and drafts independently for each job',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
   const other={job:'oil',step:2,station:'lift',tool:'lift-controls',lift:'prepared',notes:'Keep the oil work order.'};
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Original customer explanation.',history:[{id:'intake',label:'Read work order',result:'Concern recorded.'},{id:'hood',label:'Open hood',result:'Access ready.'}]},shopRecords:{oil:other}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Original customer explanation.',history:[{id:'intake',label:'Read work order',result:'Concern recorded.'},{id:'hood',label:'Open hood',result:'Access ready.'}]},shopRecords:{oil:other}}});
   await page.locator('[data-ar-shop-instrument-read]').click();const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const original=await raw();
   const restart=page.locator('[data-ar-attempt-open="restart"]'),review=page.locator('#ar-attempt-review');
   await restart.click();await expect(review).toBeFocused();expect(await raw()).toBe(original);await page.keyboard.press('Escape');await expect(restart).toBeFocused();await expect(review).toHaveCount(0);expect(await raw()).toBe(original);
@@ -1640,7 +1640,7 @@ test('reviewed restarts recover measurements, records and drafts independently f
 
 test('setup guidance explains blocked work and reviews earlier steps without changing the vehicle',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:6,station:'brakes',tool:'socket',lift:'raised',notes:'Keep this service draft.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:6,station:'brakes',tool:'socket',lift:'raised',notes:'Keep this service draft.'}}});
   const setup=page.locator('[data-ar-setup-checks]'),raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
   await page.locator('[data-ar-task-guide-go="prerequisites"]').focus();await page.keyboard.press('Enter');await expect(setup).toBeFocused();await expect(setup).toHaveAttribute('open','');expect(await raw()).toBe(before);
   await expect(setup).toContainText('Required: Supported on mechanical locks');await expect(setup).toContainText('Current: Raised: locks not set');
@@ -1666,7 +1666,7 @@ test('setup guidance explains blocked work and reviews earlier steps without cha
 
 test('inspection previews setup effects and evidence retention before deliberate use',async({page})=>{
   await page.setViewportSize({width:1360,height:1100});
-  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep my diagnostic reasoning.'}}});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep my diagnostic reasoning.'}}});
   await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
   const chooser=page.locator('#ar-shop-inspect-target'),effect=page.locator('[data-ar-control-effect]'),use=page.locator('[data-ar-control-use]');
   const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
@@ -1698,7 +1698,7 @@ test('inspection previews setup effects and evidence retention before deliberate
 
 
 test('work-order previews match readable downloads and preserve incomplete saved attempts',async({page})=>{
-  await page.setViewportSize({width:1360,height:1100});await harness.mount(page,{autoRepair:{view:'workshop'}});
+  await page.setViewportSize({width:1360,height:1100});await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels'}});
   const preview=page.locator('[data-ar-report-preview]'),report=page.locator('[data-ar-report-text]');
   const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
   async function openPreview(){if(await preview.getAttribute('open')===null)await preview.locator('summary').click();}
@@ -1730,4 +1730,36 @@ test('work-order previews match readable downloads and preserve incomplete saved
   await report.evaluate((el:HTMLElement)=>{el.scrollTop=0;});await preview.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await preview.screenshot({path:'reports/automobile-workshop/report-review-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   await checkDownload('brakes');await page.locator('#ar-shop-notes').fill('Revised handoff, kept in my own words.');await expect(report).toContainText('Revised handoff, kept in my own words.');await checkDownload('brakes');
   expect(await preview.locator('summary').evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);expect(JSON.parse(completed).released).toBe(true);
+});
+
+test('immersive HUD walks the shop: one objective, outlined target, and a direct 3D NEXT', async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 1000 });
+  await harness.mount(page, { autoRepair: { view: 'workshop' } });
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-vehicle'));
+  const card = page.locator('[data-ar-hud-objective]'), clip = page.locator('details[data-ar-shop-clipboard]');
+  await expect(card).toBeVisible();
+  await expect(clip).not.toHaveAttribute('open', '');
+  await expect(page.locator('[data-ar-shop-station]').first()).toBeHidden();
+  const outline = () => page.evaluate(() => (window as any).__shopObject('workshop-inspection-outline')?.data.targetId);
+  await expect.poll(outline).toMatch(/^shop-use-brakes-0-task$/);
+  await card.locator('[data-ar-hud-cta]').click();
+  await expect(card).toHaveAttribute('data-ar-hud-objective', 'tool');
+  await expect.poll(outline).toBe('shop-use-brakes-1-equip-lift-card');
+  await card.locator('[data-ar-hud-cta="tool"]').click();
+  await expect(page.locator('[data-ar-hud-tool="lift-card"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(card).toHaveAttribute('data-ar-hud-objective', 'station');
+  await expect.poll(outline).toBe('lift');
+  await card.locator('[data-ar-hud-cta="station"]').click();
+  await expect(card).toHaveAttribute('data-ar-hud-objective', 'ready');
+  await clickShop(page, 'workshop-control-task');
+  await expect(card).toHaveAttribute('data-ar-hud-objective', 'tool');
+  await expect(page.locator('.ar-hud-status')).toContainText('Step 3 of 13');
+  await page.locator('[data-ar-workshop]').screenshot({ path: 'reports/automobile-workshop/immersive-hud.png' });
+  await page.locator('[data-ar-hud-clipboard]').click();
+  await expect(clip).toHaveAttribute('open', '');
+  await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  await page.locator('[data-ar-shop-layout="panels"]').first().click();
+  await expect(card).toHaveCount(0);
+  await expect(page.locator('[data-ar-shop-task="low-lift"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__glLive()?.lost)).toBe(false);
 });
