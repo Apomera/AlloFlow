@@ -6870,11 +6870,107 @@
     return true;
   }
 
-  function printCollection(items, preparation, title) {
-    if (!items.length) return false;
-    var popup = window.open('', '_blank');
-    if (!popup) return false;
-    try { popup.opener = null; } catch (_) {}
+  // Print-sheet presets, in inches. Sizes are chosen to fit both US Letter and
+  // A4 at the sheet's .45in margins (printable width about 7.3in).
+  var PRINT_SIZE_PRESETS = {
+    small: { label: 'Small (2 × 2 in)', width: 2, height: 2 },
+    medium: { label: 'Medium (3.3 × 2.75 in)', width: 3.3, height: 2.75 },
+    large: { label: 'Large (7 × 5 in)', width: 7, height: 5 },
+    page: { label: 'Full page (one per page)', width: 7.3, height: 9.6, landscapeWidth: 9.9, landscapeHeight: 7.1 }
+  };
+
+  // Runs inside the print popup. Serialized with toString(), so it must not
+  // reference anything from this module's scope.
+  function sourcebookPrintSheetScript() {
+    var KEY = 'sourcebook-print-options-v1';
+    var form = document.getElementById('sb-print-options');
+    if (!form) return;
+    var presets = JSON.parse(form.getAttribute('data-presets'));
+    var body = document.body;
+    var pageStyle = document.getElementById('sb-page-style');
+    var fitNote = document.getElementById('sb-fit-note');
+    var creditWarning = document.getElementById('sb-credit-warning');
+    var ccByCount = document.querySelectorAll('article[data-rights="ccby"]').length;
+    var el = function (name) { return form.elements[name]; };
+    var inches = { width: presets.medium.width, height: presets.medium.height };
+    function clampInches(value, fallback) {
+      var n = Number(value);
+      return isFinite(n) && n > 0 ? Math.max(0.5, Math.min(24, n)) : fallback;
+    }
+    function round(value) { return String(Math.round(value * 100) / 100); }
+    function factor() { return el('unit').value === 'cm' ? 2.54 : 1; }
+    function showSize() {
+      el('width').value = round(inches.width * factor());
+      el('height').value = round(inches.height * factor());
+    }
+    function usePreset() {
+      var preset = presets[el('size').value];
+      if (!preset) return;
+      var landscape = el('orient').value === 'landscape' && preset.landscapeWidth;
+      inches.width = landscape ? preset.landscapeWidth : preset.width;
+      inches.height = landscape ? preset.landscapeHeight : preset.height;
+      showSize();
+    }
+    function readSize() {
+      inches.width = clampInches(Number(el('width').value) / factor(), inches.width);
+      inches.height = clampInches(Number(el('height').value) / factor(), inches.height);
+    }
+    function apply() {
+      var text = el('text').value;
+      var onePerPage = el('size').value === 'page';
+      body.className = 'text-' + text + ' fit-' + el('fit').value + (onePerPage ? ' one-per-page' : '');
+      body.style.setProperty('--w', inches.width + 'in');
+      body.style.setProperty('--h', inches.height + 'in');
+      pageStyle.textContent = '@page{size:' + el('orient').value + ';margin:.45in}';
+      var hires = el('hires').checked;
+      Array.prototype.forEach.call(document.querySelectorAll('img[data-preview]'), function (img) {
+        var next = hires && img.getAttribute('data-hires') ? img.getAttribute('data-hires') : img.getAttribute('data-preview');
+        if (img.getAttribute('src') !== next) { img.removeAttribute('data-fell-back'); img.setAttribute('src', next); }
+      });
+      var pageWidth = el('orient').value === 'landscape' ? 9.9 : 7.3;
+      var frame = text === 'none' ? 0 : 0.23;
+      var across = Math.floor((pageWidth + 0.15) / (inches.width + frame + 0.15));
+      var unit = el('unit').value === 'cm' ? ' cm' : ' in';
+      var note = 'Each image prints at ' + round(inches.width * factor()) + ' × ' + round(inches.height * factor()) + unit + '. ';
+      note += across < 1 ? 'That is wider than the printable page, so images will shrink to the page width.' : (onePerPage ? 'One image per page.' : 'About ' + across + ' across a Letter or A4 page.');
+      if (onePerPage && text !== 'none') note += ' Captions will spill onto the next page; choose Images only to keep one image per page.';
+      fitNote.textContent = note;
+      creditWarning.hidden = !(text === 'none' && ccByCount);
+      try {
+        localStorage.setItem(KEY, JSON.stringify({ text: text, size: el('size').value, unit: el('unit').value, fit: el('fit').value, orient: el('orient').value, hires: hires, width: inches.width, height: inches.height }));
+      } catch (_) {}
+    }
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) {}
+    if (saved && typeof saved === 'object') {
+      ['text', 'size', 'unit', 'fit', 'orient'].forEach(function (name) {
+        var select = el(name);
+        if (Array.prototype.some.call(select.options, function (option) { return option.value === saved[name]; })) select.value = saved[name];
+      });
+      el('hires').checked = saved.hires === true;
+      inches.width = clampInches(saved.width, inches.width);
+      inches.height = clampInches(saved.height, inches.height);
+    }
+    if (el('size').value === 'custom') showSize(); else usePreset();
+    form.addEventListener('change', function (event) {
+      var name = event.target.name;
+      if (name === 'size' || (name === 'orient' && el('size').value === 'page')) usePreset();
+      else if (name === 'unit') showSize();
+      else if (name === 'width' || name === 'height') { readSize(); el('size').value = 'custom'; showSize(); }
+      apply();
+    });
+    form.addEventListener('input', function (event) {
+      if (event.target.name !== 'width' && event.target.name !== 'height') return;
+      if (!(Number(event.target.value) > 0)) return;
+      readSize();
+      el('size').value = 'custom';
+      apply();
+    });
+    form.addEventListener('submit', function (event) { event.preventDefault(); window.print(); });
+    apply();
+  }
+
+  function buildPrintSheetHtml(items, preparation, title) {
     var printPreflight = summarizePalettePreflight(items, preparation);
     var printPreflightSummary = palettePreflightLabel(printPreflight);
     var cards = items.map(function (item) {
@@ -6887,16 +6983,56 @@
       var itemPreflightNote = itemPreflightRow.status === 'ready'
         ? 'Ready - all current evidence checks pass.'
         : 'Review - ' + itemPreflightRow.actions.join('; ') + '.';
+      var hires = safeHttpsUrl(item.downloadUrl);
+      var imgAttrs = ' src="' + escapeHtml(item.imageUrl) + '" data-preview="' + escapeHtml(item.imageUrl) + '"'
+        + (hires && hires !== item.imageUrl ? ' data-hires="' + escapeHtml(hires) + '"' : '')
+        + ' onerror="if(!this.dataset.fellBack){this.dataset.fellBack=1;this.src=this.dataset.preview}"'
+        + ' alt="' + escapeHtml(accessibility.altText) + '"';
       var visual;
       if (prep.mode === 'tile') {
-        visual = '<div class="tile"' + (accessibility.decorative ? ' aria-hidden="true"' : ' role="img" aria-label="' + escapeHtml(accessibility.altText) + '"') + ' style="background-image:url(&quot;' + escapeHtml(item.imageUrl) + '&quot;);background-size:' + Number(prep.tile || 180) + 'px auto"></div>';
+        visual = '<div class="tile"' + (accessibility.decorative ? ' aria-hidden="true"' : ' role="img" aria-label="' + escapeHtml(accessibility.altText) + '"') + ' style="background-image:url(&quot;' + escapeHtml(item.imageUrl) + '&quot;);background-size:' + Number(prep.tile || 180) + 'px auto"></div><img class="alt"' + imgAttrs + '>';
       } else {
-        visual = '<div class="image"><img src="' + escapeHtml(item.imageUrl) + '" alt="' + escapeHtml(accessibility.altText) + '" style="object-fit:' + (prep.mode === 'crop' ? 'cover' : 'contain') + ';object-position:' + Number(prep.x || 50) + '% ' + Number(prep.y || 50) + '%;transform:scale(' + (Number(prep.zoom || 100) / 100) + ')"></div>';
+        visual = '<img' + imgAttrs + ' style="object-fit:' + (prep.mode === 'crop' ? 'cover' : 'contain') + ';object-position:' + Number(prep.x || 50) + '% ' + Number(prep.y || 50) + '%;transform:scale(' + (Number(prep.zoom || 100) / 100) + ')">';
       }
-      return '<article>' + visual + '<h2>' + escapeHtml(item.title) + '</h2><p class="meta">' + escapeHtml(item.creator) + ' · ' + escapeHtml(item.year) + '</p><p class="usage"><strong>Intended use:</strong> ' + escapeHtml(itemPreflightRow.usageIntentLabel + ' - ' + itemPreflightRow.usageIntentSourceLabel) + '</p><p class="preflight"><strong>Output preflight:</strong> ' + escapeHtml(itemPreflightNote) + '</p><p class="accessibility"><strong>Accessibility:</strong> ' + escapeHtml(accessibilityNote) + '</p><p><strong>' + escapeHtml(item.license) + '</strong> — ' + escapeHtml(item.rightsNote) + '</p><p class="url">Credit: ' + escapeHtml(attributionText(item)) + '</p></article>';
+      return '<article data-rights="' + escapeHtml(item.rightsType) + '"><div class="box">' + visual + '</div><h2>' + escapeHtml(item.title) + '</h2><p class="meta">' + escapeHtml(item.creator) + ' · ' + escapeHtml(item.year) + '</p><p class="usage"><strong>Intended use:</strong> ' + escapeHtml(itemPreflightRow.usageIntentLabel + ' - ' + itemPreflightRow.usageIntentSourceLabel) + '</p><p class="preflight"><strong>Output preflight:</strong> ' + escapeHtml(itemPreflightNote) + '</p><p class="accessibility"><strong>Accessibility:</strong> ' + escapeHtml(accessibilityNote) + '</p><p class="rights"><strong>' + escapeHtml(item.license) + '</strong> — ' + escapeHtml(item.rightsNote) + '</p><p class="url">Credit: ' + escapeHtml(attributionText(item)) + '</p></article>';
     }).join('');
+    var option = function (value, label) { return '<option value="' + value + '"' + (value === 'medium' ? ' selected' : '') + '>' + label + '</option>'; };
+    var sizeOptions = Object.keys(PRINT_SIZE_PRESETS).map(function (key) { return option(key, escapeHtml(PRINT_SIZE_PRESETS[key].label)); }).join('') + option('custom', 'Custom size');
+    var controls = '<form id="sb-print-options" class="screen" aria-label="Print settings" data-presets="' + escapeHtml(JSON.stringify(PRINT_SIZE_PRESETS)) + '"><div class="row">'
+      + '<label>Text on the page<select name="text">' + option('full', 'Full details') + option('caption', 'Title and credit only') + option('none', 'Images only') + '</select></label>'
+      + '<label>Image size<select name="size">' + sizeOptions + '</select></label>'
+      + '<label>Width<input name="width" type="number" min="0.5" max="60" step="0.1" inputmode="decimal"></label>'
+      + '<label>Height<input name="height" type="number" min="0.5" max="60" step="0.1" inputmode="decimal"></label>'
+      + '<label>Units<select name="unit">' + option('in', 'inches') + option('cm', 'cm') + '</select></label>'
+      + '<label>Fit<select name="fit">' + option('prepared', 'As prepared in Sourcebook') + option('whole', 'Whole image, no cropping') + option('fill', 'Fill the size exactly (crops edges)') + '</select></label>'
+      + '<label>Page<select name="orient">' + option('portrait', 'Portrait') + option('landscape', 'Landscape') + '</select></label>'
+      + '<label class="check"><input type="checkbox" name="hires"> Full-resolution files (sharper, slower to load)</label>'
+      + '<button type="submit">Print</button></div>'
+      + '<p id="sb-fit-note" aria-live="polite"></p>'
+      + '<p id="sb-credit-warning" class="warn" role="status" hidden>Some images are CC BY: anything you share or publish with them must carry their credit line. Choose Title and credit only, or copy the credits from Sourcebook.</p></form>';
+    var medium = PRINT_SIZE_PRESETS.medium;
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + escapeHtml(title || 'Sourcebook palette') + '</title><style id="sb-page-style">@page{margin:.45in}</style><style>'
+      + '*{box-sizing:border-box}body{font:11px/1.35 system-ui,sans-serif;color:#17221d;margin:0;background:#fff}.doc{padding:0 16px 16px}header{border-bottom:2px solid #17221d;margin-bottom:16px;padding-bottom:10px}h1{font:700 28px Georgia,serif;margin:0}header p{margin:4px 0 0;color:#52635b}'
+      + '.grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.15in}article{width:calc(var(--w) + .23in);max-width:100%;break-inside:avoid;border:1px solid #b8c4bd;padding:10px;background:white}.box{width:100%;height:var(--h);overflow:hidden;background:#eef1ed}.box img{width:100%;height:100%;display:block}.tile{width:100%;height:100%;background-repeat:repeat;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+      + 'h2{font:700 17px Georgia,serif;margin:9px 0 2px}.meta{color:#52635b;margin:0 0 7px}p{margin:4px 0}.url{font-size:9px;overflow-wrap:anywhere;border-top:1px solid #d9dfdb;padding-top:6px}.notice{font-size:9px;margin-top:18px;color:#52635b}'
+      + '.text-caption header p,.text-caption .notice,.text-caption article>p:not(.url){display:none}.text-none header,.text-none .notice,.text-none article>:not(.box){display:none}.text-none article{width:var(--w);border:0;padding:0}.text-none .box{background:none}'
+      + '.fit-whole .box{background:none}.fit-whole .box img{object-fit:contain!important;object-position:50% 50%!important;transform:none!important}.fit-fill .box img{object-fit:cover!important;transform:none!important}.fit-prepared .alt,body:not(.fit-prepared) .tile{display:none}'
+      + '.one-per-page .grid{display:block}.one-per-page article{margin:0 auto .15in;break-after:page}.one-per-page article:last-child{break-after:auto}'
+      + '.screen{position:sticky;top:0;z-index:2;margin:0 0 16px;padding:12px 16px;background:#f3f6f2;border-bottom:1px solid #b8c4bd;font-size:13px}.screen .row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px}.screen label{display:flex;flex-direction:column;gap:3px;font-weight:700}.screen label.check{flex-direction:row;align-items:center;gap:8px;min-height:44px}.screen select,.screen input[type=number]{min-height:44px;padding:0 8px;border:1px solid #6f8279;border-radius:8px;background:#fff;font:inherit;font-weight:400}.screen input[type=number]{width:6.5em}.screen input[type=checkbox]{width:20px;height:20px}.screen button{min-height:44px;padding:0 22px;border:0;border-radius:10px;background:#b84d37;color:#fff;font:inherit;font-weight:800;cursor:pointer}.screen :focus-visible{outline:3px solid #1d5fd1;outline-offset:2px}.screen p{margin:8px 0 0}.warn{color:#7a2d1c;font-weight:700}'
+      + '@media print{.screen{display:none!important}.doc{padding:0}}</style></head><body class="text-full fit-prepared" style="--w:' + medium.width + 'in;--h:' + medium.height + 'in">'
+      + controls + '<div class="doc"><header><h1>' + escapeHtml(title || 'Sourcebook palette') + '</h1><p>Output preflight: ' + escapeHtml(printPreflightSummary) + '</p><p>Prepared visual assets with source and reuse notes</p></header><main class="grid">' + cards + '</main><p class="notice">Every item in this sheet passed Sourcebook’s strict Public Domain, CC0, or CC BY allowlist. Rights metadata and attribution are reproduced from linked item records; verify the source record for your intended use.</p></div>'
+      + '<script>(' + sourcebookPrintSheetScript.toString() + ')()<\/script></body></html>';
+  }
+
+  // Opens a print preview. The reader sets text, image size, fit, and page
+  // orientation there, then prints; nothing prints automatically.
+  function printCollection(items, preparation, title) {
+    if (!items.length) return false;
+    var popup = window.open('', '_blank');
+    if (!popup) return false;
+    try { popup.opener = null; } catch (_) {}
     popup.document.open();
-    popup.document.write('<!doctype html><html><head><title>' + escapeHtml(title || 'Sourcebook palette') + '</title><style>@page{margin:.45in}*{box-sizing:border-box}body{font:11px/1.35 system-ui,sans-serif;color:#17221d;margin:0}header{border-bottom:2px solid #17221d;margin-bottom:16px;padding-bottom:10px}h1{font:700 28px Georgia,serif;margin:0}header p{margin:4px 0 0;color:#52635b}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}article{break-inside:avoid;border:1px solid #b8c4bd;padding:10px;background:white}.image,.tile{height:260px;overflow:hidden;background:#eef1ed}.image img{width:100%;height:100%;display:block}.tile{background-repeat:repeat}h2{font:700 17px Georgia,serif;margin:9px 0 2px}.meta{color:#52635b;margin:0 0 7px}p{margin:4px 0}.url{font-size:9px;overflow-wrap:anywhere;border-top:1px solid #d9dfdb;padding-top:6px}.notice{font-size:9px;margin-top:18px;color:#52635b}@media print{.screen{display:none}}</style></head><body><header><h1>' + escapeHtml(title || 'Sourcebook palette') + '</h1><p>Output preflight: ' + escapeHtml(printPreflightSummary) + '</p><p>Prepared visual assets with source and reuse notes</p></header><main class="grid">' + cards + '</main><p class="notice">Every item in this sheet passed Sourcebook’s strict Public Domain, CC0, or CC BY allowlist. Rights metadata and attribution are reproduced from linked item records; verify the source record for your intended use.</p><script>window.addEventListener("load",function(){setTimeout(function(){window.print()},350)})<\/script></body></html>');
+    popup.document.write(buildPrintSheetHtml(items, preparation, title));
     popup.document.close();
     return true;
   }
@@ -7060,6 +7196,7 @@
     preparationDescription: preparationDescription,
     assetPixelDimensions: assetPixelDimensions,
     printReadiness: printReadiness,
+    buildPrintSheetHtml: buildPrintSheetHtml,
     buildPaletteManifest: buildPaletteManifest,
     buildPageDesignerArtwork: buildPageDesignerArtwork,
     resolveFetchableImageUrl: resolveFetchableImageUrl,
