@@ -157,7 +157,7 @@ describe('finding word help in the passage on screen', () => {
     const registry = new Map();
     const savedCSS = window.CSS, savedHighlight = globalThis.Highlight;
     window.CSS = { ...(savedCSS || {}), highlights: registry };
-    globalThis.Highlight = class { constructor(...ranges) { this.ranges = ranges; } };
+    globalThis.Highlight = class extends Set { constructor(...ranges) { super(ranges); } get ranges() { return [...this]; } }; // set-like, as the real API
     const scrolled = [];
     const savedScroll = Element.prototype.scrollIntoView;
     Element.prototype.scrollIntoView = function () { scrolled.push(this); };
