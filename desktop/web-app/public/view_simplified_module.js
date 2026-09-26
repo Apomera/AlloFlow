@@ -1654,6 +1654,10 @@ function simplifiedText(key, fallback, params, translate) {
   var text = typeof value === 'string' && value && value !== key ? value : fallback;
   return params ? String(text).replace(/\{(\w+)\}/g, (match, name) => params[name] != null ? String(params[name]) : match) : text;
 }
+// A search box appears once the list is this long.
+var GLOSS_FILTER_MIN = 6;
+// embedded: the editor sits inside a panel that already has its own disclosure,
+// so it shows its list directly instead of adding a second toggle.
 function ReadingGlossEditor({
   item,
   supports,
@@ -1661,7 +1665,8 @@ function ReadingGlossEditor({
   onUpdate,
   disabled,
   adapted,
-  snapshot: adaptedSnapshot
+  snapshot: adaptedSnapshot,
+  embedded
 }) {
   // An adapted text's word help anchors to the adapted passage, never the original.
   const snapshot = adapted ? adaptedSnapshot : getInstructionalContextApi()?.getSourceSnapshot?.(item);
@@ -1675,6 +1680,8 @@ function ReadingGlossEditor({
   const [notice, setNotice] = React.useState('');
   const [error, setError] = React.useState('');
   const [busy, setBusy] = React.useState(false);
+  const [filterQuery, setFilterQuery] = React.useState('');
+  const [filterKind, setFilterKind] = React.useState('all');
   const sourceKeyRef = React.useRef(sourceKey);
   sourceKeyRef.current = sourceKey;
   const termRef = React.useRef(null),
@@ -1825,7 +1832,15 @@ function ReadingGlossEditor({
     setError('');
     setBusy(false);
     setPickingPicture(false);
+    setFilterQuery('');
+    setFilterKind('all');
   }, [sourceKey]);
+  const isOpen = !!embedded || open;
+  const canFilter = entries.length >= GLOSS_FILTER_MIN;
+  const needle = canFilter ? filterQuery.trim().toLocaleLowerCase() : '';
+  const kind = canFilter ? filterKind : 'all';
+  const listed = entries.filter(entry => (kind === 'all' || (kind === 'essential' ? entry.priority === 'essential' : kind === 'educator' ? entry.origin === 'educator' : entry.origin !== 'educator')) && (!needle || (entry.quote + ' ' + (entry.definition || entry.explanation || entry.text || '')).toLocaleLowerCase().includes(needle)));
+  const filtering = listed.length !== entries.length;
   React.useEffect(() => {
     if (!request || request.ownerId !== item?.id) return;
     const entry = entries.find(value => value.id === request.id) || draft?.id === request.id && entries.find(value => sameAnchor(value, draft.anchor));
@@ -1931,8 +1946,8 @@ function ReadingGlossEditor({
   };
   return /*#__PURE__*/React.createElement("section", {
     "data-reading-gloss-editor": true,
-    className: "my-4 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800"
-  }, /*#__PURE__*/React.createElement("button", {
+    className: embedded ? 'text-sm text-slate-800' : 'my-4 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800'
+  }, !embedded && /*#__PURE__*/React.createElement("button", {
     ref: toggleRef,
     type: "button",
     "aria-expanded": open,
@@ -1942,9 +1957,9 @@ function ReadingGlossEditor({
       type: 'close'
     }) : setOpen(true),
     className: "min-h-11 rounded-lg px-2 text-left font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, simplifiedText('simplified.gloss_review_word_supports', 'Review word supports'), ' ', entries.length ? '(' + entries.length + ')' : ''), open && /*#__PURE__*/React.createElement("div", {
+  }, simplifiedText('simplified.gloss_review_word_supports', 'Review word supports'), ' ', entries.length ? '(' + entries.length + ')' : ''), isOpen && /*#__PURE__*/React.createElement("div", {
     id: panelId,
-    className: "mt-2 space-y-3"
+    className: embedded ? 'space-y-3' : 'mt-2 space-y-3'
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm leading-relaxed text-slate-600"
   }, adapted ? simplifiedText('simplified.gloss_add_or_adjust_explanations_for_words', 'Add or adjust explanations for words in the adapted text.') : simplifiedText('simplified.gloss_add_or_adjust_explanations_beside_the', 'Add or adjust explanations beside the original words.'), ' ', simplifiedText('simplified.gloss_teacher_edits_and_removed_supports_are', 'Teacher edits and removed supports are kept when AI suggestions are refreshed.')), /*#__PURE__*/React.createElement("button", {
@@ -2183,9 +2198,49 @@ function ReadingGlossEditor({
     className: notice ? 'rounded bg-indigo-50 p-2 text-indigo-900' : 'sr-only'
   }, notice), !entries.length && !draft && /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600"
-  }, simplifiedText('simplified.gloss_no_word_supports_yet_add_your', 'No word supports yet. Add your own explanation or generate suggestions.')), /*#__PURE__*/React.createElement("ul", {
+  }, simplifiedText('simplified.gloss_no_word_supports_yet_add_your', 'No word supports yet. Add your own explanation or generate suggestions.')), canFilter && /*#__PURE__*/React.createElement("div", {
+    "data-gloss-filter": true,
+    role: "search",
+    "aria-label": simplifiedText('simplified.gloss_find_a_word_support', 'Find a word support'),
+    className: "flex flex-wrap items-end gap-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "flex min-w-0 flex-1 flex-col font-semibold"
+  }, simplifiedText('simplified.gloss_find_a_word_support', 'Find a word support'), /*#__PURE__*/React.createElement("input", {
+    type: "search",
+    value: filterQuery,
+    onChange: event => setFilterQuery(event.target.value),
+    className: "mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "flex flex-col font-semibold"
+  }, simplifiedText('simplified.gloss_filter_show', 'Show'), /*#__PURE__*/React.createElement("select", {
+    value: filterKind,
+    onChange: event => setFilterKind(event.target.value),
+    className: "mt-1 min-h-11 rounded border border-slate-400 bg-white px-2 font-normal"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "all"
+  }, simplifiedText('simplified.gloss_filter_all', 'All supports')), /*#__PURE__*/React.createElement("option", {
+    value: "essential"
+  }, simplifiedText('simplified.gloss_essential', 'Essential')), /*#__PURE__*/React.createElement("option", {
+    value: "educator"
+  }, simplifiedText('simplified.gloss_teacher_edited', 'Teacher edited')), /*#__PURE__*/React.createElement("option", {
+    value: "suggested"
+  }, simplifiedText('simplified.gloss_suggested', 'Suggested')))), filtering && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      setFilterQuery('');
+      setFilterKind('all');
+    },
+    className: "min-h-11 rounded-lg border border-slate-300 px-3"
+  }, simplifiedText('simplified.gloss_filter_clear', 'Show all'))), canFilter && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "data-gloss-filter-count": true,
+    className: filtering ? 'text-slate-700' : 'sr-only'
+  }, filtering ? listed.length ? simplifiedText('simplified.gloss_filter_count', 'Showing {shown} of {total} word supports.', {
+    shown: listed.length,
+    total: entries.length
+  }) : simplifiedText('simplified.gloss_filter_none', 'No word supports match. Choose Show all to see every support.') : ''), /*#__PURE__*/React.createElement("ul", {
     className: "space-y-2"
-  }, entries.map(entry => /*#__PURE__*/React.createElement("li", {
+  }, listed.map(entry => /*#__PURE__*/React.createElement("li", {
     key: entry.id,
     className: "rounded-lg border border-slate-200 p-3"
   }, /*#__PURE__*/React.createElement("p", {
@@ -2335,6 +2390,25 @@ function rangeForOffsets(segments, start, end) {
   range.setStart(from.node, Math.min(from.offset, from.node.data.length));
   range.setEnd(to.node, Math.min(to.offset, to.node.data.length));
   return range;
+}
+// The shown word-help entry that covers a word the reader selected in the passage
+// on screen, or null. Same lookup as the passage marks, so a selected word opens
+// exactly the help its underline stands for.
+function adaptedWordHelpAt(item, container, language, wordNode) {
+  const contract = getInstructionalContextApi();
+  if (!item || !container || !wordNode || !contract?.isAdaptedReading?.(item) || !contract.validateAdaptedReadingSupports) return null;
+  const help = contract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports);
+  if (!help.shown || help.status === 'stale' || !(help.annotations || []).length) return null;
+  const passage = contract.getAdaptedSupportSnapshot(item, item.adaptedReadingSupports);
+  if (!passage) return null;
+  const {
+    text,
+    segments
+  } = readingTextSegments(container, language);
+  const segment = segments.find(value => wordNode === value.node || wordNode.contains(value.node));
+  if (!segment) return null;
+  const hit = locateWordHelp(passage.text, help.annotations, text).find(value => segment.start >= value.start && segment.start < value.end);
+  return hit ? hit.entry : null;
 }
 
 // Word help for an ADAPTED text: its own supports (item.adaptedReadingSupports),
@@ -2514,7 +2588,10 @@ function AdaptedWordHelp({
     type: "button",
     onClick: () => onListen(entries.map(entry => entry.quote + '. ' + explanation(entry)).join('. ')),
     className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-indigo-900"
-  }, listening ? simplifiedText('simplified.word_help_stop_word_help', 'Stop word help') : simplifiedText('simplified.word_help_listen_to_word_help', 'Listen to word help'))), /*#__PURE__*/React.createElement("ul", {
+  }, listening ? simplifiedText('simplified.word_help_stop_word_help', 'Stop word help') : simplifiedText('simplified.word_help_listen_to_word_help', 'Listen to word help'))), markWords !== false && /*#__PURE__*/React.createElement("p", {
+    "data-adapted-word-help-tip": true,
+    className: "mt-1 text-sm text-indigo-900"
+  }, simplifiedText('simplified.word_help_tip_select', 'Tip: choose Word meaning, then select an underlined word to open its help.')), /*#__PURE__*/React.createElement("ul", {
     className: "mt-2 space-y-2",
     lang: languageTag,
     dir: direction
@@ -2550,9 +2627,12 @@ function AdaptedWordHelp({
     className: "my-4 space-y-3 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "min-h-11 cursor-pointer rounded-lg px-2 py-2 font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, simplifiedText('simplified.word_help_word_help_for_this_adapted_text', 'Word help for this adapted text'), entries.length ? ' (' + simplifiedText(help.shown ? 'simplified.word_help_count_shown' : 'simplified.word_help_count_hidden', help.shown ? '{count}, shown to students' : '{count}, hidden from students', {
+  }, simplifiedText('simplified.word_help_word_help', 'Word help'), /*#__PURE__*/React.createElement("span", {
+    "data-word-help-summary": true,
+    className: "font-normal text-slate-700"
+  }, ' · ' + (stale ? simplifiedText('simplified.word_help_summary_needs_review', 'Needs review after an edit') : !entries.length ? simplifiedText('simplified.word_help_summary_none', 'No supports yet') : (entries.length === 1 ? simplifiedText('simplified.word_help_summary_one', '1 support') : simplifiedText('simplified.word_help_summary_count', '{count} supports', {
     count: entries.length
-  }) + ')' : ''), /*#__PURE__*/React.createElement("p", {
+  })) + ' · ' + (help.shown ? simplifiedText('simplified.word_help_summary_shown', 'Shown to students') : simplifiedText('simplified.word_help_summary_hidden', 'Hidden from students'))))), /*#__PURE__*/React.createElement("p", {
     className: "leading-relaxed text-slate-600"
   }, simplifiedText('simplified.word_help_optional_explanations_for_words_in_this', 'Optional explanations for words in this adapted text. Students see them as a list after the passage only when you show it. The original\'s word supports are kept separately.')), stale && /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -2630,6 +2710,7 @@ function AdaptedWordHelp({
     supports: help,
     snapshot: snapshot,
     adapted: true,
+    embedded: true,
     onUpdate: onUpdate,
     disabled: disabled || busy
   }));
@@ -4720,7 +4801,123 @@ function SimplifiedView(props) {
     if (props.isCustomReviseOpen && typeof setIsCustomReviseOpen === 'function') setIsCustomReviseOpen(false);
   }, [isTeacherMode, props.isCompareMode, props.isEditingLeveledText, props.interactionMode, props.revisionData?.type, props.isCustomReviseOpen]);
   var readingLanguage = generatedContent?.config?.language || generatedContent?.instructionalText?.complexity?.language || leveledTextLanguage || 'English';
-  var wordHelpHint = readerText('simplified.word_navigation_hint', 'Choose a word for help. Use Left and Right arrows to move between words.');
+  // Teacher-prepared word help students can see on this adapted text.
+  var shownWordHelpCount = function () {
+    try {
+      if (!readingContract?.isAdaptedReading?.(generatedContent) || !readingContract.validateAdaptedReadingSupports) return 0;
+      var help = readingContract.validateAdaptedReadingSupports(generatedContent, generatedContent.adaptedReadingSupports);
+      return help.shown && help.status !== 'stale' ? (help.annotations || []).length : 0;
+    } catch (_) {
+      return 0;
+    }
+  }();
+  // The active mode, named, with what to do in it: the banner under the reading tools.
+  function readingModeStatus() {
+    var arrows = ' ' + viewText('simplified.word_arrows_hint', 'Use Left and Right arrows to move between words.');
+    if (isCompareMode) return {
+      mode: 'compare',
+      hint: isTeacherMode ? readerText('simplified.compare_hint', 'Review the source and adapted versions below.') : readerText('simplified.compare_hint_student', 'Read the original and the easier version side by side.')
+    };
+    if (isEditingLeveledText) return {
+      mode: 'edit',
+      label: viewText('simplified.mode_editing', 'Editing'),
+      hint: readerText('simplified.edit_hint', 'Edit the passage below. Choose Read to return to reading.')
+    };
+    if (isFluencyMode) return {
+      mode: 'fluency',
+      label: readerText('simplified.record_my_reading', 'Record my reading'),
+      hint: readerText('simplified.fluency_hint', 'Use the read-along panel to practice at your own pace.')
+    };
+    if (interactionMode === 'define') return {
+      mode: 'define',
+      label: readerText('simplified.word_meaning', 'Word meaning'),
+      hint: viewText('simplified.define_hint', 'Select a word to see what it means.') + (shownWordHelpCount && !protectedOriginal ? ' ' + viewText('simplified.define_hint_prepared', 'Underlined words open the word help your teacher prepared.') : '') + arrows
+    };
+    if (interactionMode === 'phonics') return {
+      mode: 'phonics',
+      label: readerText('simplified.word_sounds', 'Word sounds'),
+      hint: viewText('simplified.phonics_hint', 'Select a word to hear its sounds.') + arrows
+    };
+    if (interactionMode === 'add-glossary') return {
+      mode: 'add-glossary',
+      label: readerText('simplified.add_term', 'Add term'),
+      hint: viewText('simplified.add_term_hint', 'Select a word to add it to the glossary.') + arrows
+    };
+    if (interactionMode === 'explain') return {
+      mode: 'explain',
+      label: readerText('simplified.explain_mode', 'Explain'),
+      hint: readerText('simplified.explain_hint', 'Choose a sentence for an explanation, or select a longer passage.')
+    };
+    if (interactionMode === 'revise') return {
+      mode: 'revise',
+      label: readerText('simplified.revise_mode', 'Revise'),
+      hint: readerText('simplified.revise_hint', 'Select the words you want to revise.')
+    };
+    if (interactionMode === 'cloze') return {
+      mode: 'cloze',
+      label: readerText('simplified.practice_blanks', 'Fill in the blanks'),
+      hint: readerText('simplified.cloze_hint', 'Fill in the missing words. Choose Read to see the complete passage.')
+    };
+    return {
+      mode: 'read',
+      hint: protectedOriginal ? readerText('simplified.original_read_hint', 'Read at your own pace. Use Listen to hear the original.') : readerText('simplified.read_hint', 'Read at your own pace. Choose any sentence to listen from there.')
+    };
+  }
+  // Add term and Revise work on adapted text only; on an original they did nothing.
+  // They edit the text, so they sit with the teacher's editing tools, not the reading tools.
+  var teacherReadingModes = isTeacherMode && !protectedOriginal ? [['add-glossary', 'simplified.add_term', 'Add term', Plus], ['revise', 'simplified.revise_mode', 'Revise', Pencil]] : [];
+  function renderReadingModeButton(entry) {
+    var mode = entry[0],
+      Icon = entry[3],
+      active = interactionMode === mode && !isFluencyMode && !isEditingLeveledText;
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: mode,
+      "data-reading-mode": mode,
+      "data-help-key": mode === 'add-glossary' ? 'simplified_add_term' : 'simplified_' + mode + '_mode',
+      onClick: () => chooseReadingMode(mode),
+      "aria-pressed": active,
+      className: 'min-h-11 rounded-xl border-2 px-3 py-2 text-sm font-bold inline-flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + (active ? 'border-indigo-700 bg-indigo-100 text-indigo-900' : 'border-transparent text-slate-700 hover:bg-slate-100')
+    }, /*#__PURE__*/React.createElement(Icon, {
+      size: 16,
+      "aria-hidden": "true"
+    }), readerText(entry[1], entry[2]));
+  }
+  // Selecting an underlined word in Word meaning opens the word help the teacher
+  // prepared for it beside the passage, before any AI definition.
+  var [wordHelpCard, setWordHelpCard] = React.useState(null);
+  var wordHelpCardRef = React.useRef(null),
+    wordHelpCardOpener = React.useRef(null);
+  React.useEffect(function () {
+    setWordHelpCard(null);
+  }, [generatedContent?.id, generatedContent?.data, generatedContent?.adaptedReadingSupports, interactionMode, isCompareMode]);
+  React.useEffect(function () {
+    if (wordHelpCard && wordHelpCardRef.current) wordHelpCardRef.current.focus();
+  }, [wordHelpCard && wordHelpCard.entry.id, wordHelpCard && wordHelpCard.x, wordHelpCard && wordHelpCard.y]);
+  function closeWordHelpCard(restoreFocus) {
+    var opener = wordHelpCardOpener.current;
+    wordHelpCardOpener.current = null;
+    setWordHelpCard(null);
+    if (restoreFocus !== false && opener && opener.isConnected) opener.focus();
+  }
+  function openWordHelpCard(event, container, language) {
+    var word = event.currentTarget;
+    var entry = container ? adaptedWordHelpAt(generatedContent, container, language, word) : null;
+    if (!entry) {
+      if (wordHelpCard) closeWordHelpCard(false);
+      return false;
+    }
+    if (typeof props.closeDefinition === 'function') props.closeDefinition();
+    var rect = word.getBoundingClientRect ? word.getBoundingClientRect() : null;
+    wordHelpCardOpener.current = word;
+    setWordHelpCard({
+      entry: entry,
+      language: language,
+      x: event.clientX || rect?.left || 0,
+      y: event.clientY || rect?.bottom || 0
+    });
+    return true;
+  }
   var [showComparisonChanges, setShowComparisonChanges] = React.useState(function () {
     try {
       return localStorage.getItem('alloflow_reading_show_changes') === 'on';
@@ -4989,6 +5186,7 @@ function SimplifiedView(props) {
       onClick: () => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)
     }, viewText('simplified.compare_open_original_reader', 'Open original reader'))), /*#__PURE__*/React.createElement("div", {
       "data-compare-version": version.key,
+      "data-word-help-language": version.key === 'adapted' && showReadingGlosses && !showDiff && !(adaptedParts && effectiveLanguage === 'english') ? targetLanguage : undefined,
       lang: simplifiedLanguageTag(version.language),
       dir: getContentDirection(version.language),
       style: {
@@ -5097,10 +5295,15 @@ function SimplifiedView(props) {
           if (part.word && interactive !== false && ['define', 'phonics'].includes(interactionMode)) {
             var activate = event => {
               event.stopPropagation();
-              if (interactionMode === 'phonics') handlePhonicsClick(part.text, event, {
-                audioPlayback: 'reader',
-                language
-              });else handleWordClick(part.text, event, {
+              if (interactionMode === 'phonics') {
+                handlePhonicsClick(part.text, event, {
+                  audioPlayback: 'reader',
+                  language
+                });
+                return;
+              }
+              var helpPane = pane === 'adapted' ? event.currentTarget.closest('[data-word-help-language]') : null;
+              if (!openWordHelpCard(event, helpPane, helpPane && helpPane.getAttribute('data-word-help-language'))) handleWordClick(part.text, event, {
                 text: raw,
                 language
               });
@@ -5445,7 +5648,7 @@ function SimplifiedView(props) {
               event.stopPropagation();
               if (interactionMode === 'phonics') handlePhonicsClick(part.text, event, {
                 audioPlayback: 'reader'
-              });else if (interactionMode === 'add-glossary') handleQuickAddGlossary(part.text, true);else handleWordClick(part.text, event);
+              });else if (interactionMode === 'add-glossary') handleQuickAddGlossary(part.text, true);else if (!openWordHelpCard(event, event.currentTarget.closest('[data-reading-passage]'), readingLanguage)) handleWordClick(part.text, event);
             };
             return /*#__PURE__*/React.createElement("span", {
               key: index,
@@ -6061,20 +6264,7 @@ function SimplifiedView(props) {
     role: "group",
     "aria-label": readerText('simplified.reading_actions', 'Reading tools'),
     className: "flex flex-wrap justify-center w-full min-w-0 bg-white rounded-2xl p-2 border border-indigo-200 shadow-sm gap-2"
-  }, [['read', 'simplified.read_mode', 'Read', Volume2], ['define', 'simplified.word_meaning', 'Word meaning', Search], ['phonics', 'simplified.word_sounds', 'Word sounds', Ear], ...(studentAiFeaturesHidden ? [] : [['explain', 'simplified.explain_mode', 'Explain', HelpCircle]]),
-  // Add term and Revise work on adapted text only; on an original they did nothing.
-  ...(isTeacherMode && !protectedOriginal ? [['add-glossary', 'simplified.add_term', 'Add term', Plus], ['revise', 'simplified.revise_mode', 'Revise', Pencil]] : [])].map(([mode, key, fallback, Icon]) => /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    key: mode,
-    "data-reading-mode": mode,
-    "data-help-key": mode === 'add-glossary' ? 'simplified_add_term' : 'simplified_' + mode + '_mode',
-    onClick: () => chooseReadingMode(mode),
-    "aria-pressed": interactionMode === mode && !isFluencyMode && !isEditingLeveledText,
-    className: 'min-h-11 rounded-xl border-2 px-3 py-2 text-sm font-bold inline-flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + (interactionMode === mode && !isFluencyMode && !isEditingLeveledText ? 'border-indigo-700 bg-indigo-100 text-indigo-900' : 'border-transparent text-slate-700 hover:bg-slate-100')
-  }, /*#__PURE__*/React.createElement(Icon, {
-    size: 16,
-    "aria-hidden": "true"
-  }), readerText(key, fallback))), /*#__PURE__*/React.createElement("button", {
+  }, [['read', 'simplified.read_mode', 'Read', Volume2], ['define', 'simplified.word_meaning', 'Word meaning', Search], ['phonics', 'simplified.word_sounds', 'Word sounds', Ear], ...(studentAiFeaturesHidden ? [] : [['explain', 'simplified.explain_mode', 'Explain', HelpCircle]])].map(renderReadingModeButton), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-expanded": practiceOpen,
     "aria-controls": "simplified-practice-tools",
@@ -6086,6 +6276,31 @@ function SimplifiedView(props) {
   }) : /*#__PURE__*/React.createElement(ChevronDown, {
     size: 14,
     className: "inline ml-1"
+  })), typeof props.onFocusViewChange === 'function' && /*#__PURE__*/React.createElement("button", {
+    ref: focusViewButtonRef,
+    type: "button",
+    "data-reader-focus-view": true,
+    "aria-pressed": !!isZenMode,
+    "aria-describedby": "simplified-focus-view-hint",
+    onClick: () => props.onFocusViewChange(!isZenMode),
+    className: "min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, isZenMode ? readerText('simplified.exit_focus_view', 'Exit focus view') : readerText('simplified.focus_view', 'Focus view')), /*#__PURE__*/React.createElement("button", {
+    ref: displayToggleRef,
+    type: "button",
+    "data-reader-display": true,
+    "aria-expanded": displayOpen,
+    "aria-controls": "simplified-display-panel",
+    onClick: () => setDisplayOpen(!displayOpen),
+    className: "min-h-11 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "font-serif text-base leading-none"
+  }, "Aa"), viewText('simplified.display_menu', 'Display'), displayOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
+    size: 14,
+    "aria-hidden": "true"
+  }) : /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 14,
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("div", {
     id: "simplified-practice-tools",
     hidden: !practiceOpen,
@@ -6110,61 +6325,7 @@ function SimplifiedView(props) {
     "data-help-key": "simplified_scramble_game",
     onClick: handleSetIsSyntaxGameToTrue,
     className: "min-h-11 rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm font-semibold text-orange-900"
-  }, readerText('simplified.practice_sentences', 'Sentence scramble'))), /*#__PURE__*/React.createElement("p", {
-    role: "status",
-    className: "my-2 text-center text-sm text-slate-700"
-  }, isCompareMode ? isTeacherMode ? readerText('simplified.compare_hint', 'Review the source and adapted versions below.') : readerText('simplified.compare_hint_student', 'Read the original and the easier version side by side.') : isEditingLeveledText ? readerText('simplified.edit_hint', 'Edit the passage below. Choose Read to return to reading.') : isFluencyMode ? readerText('simplified.fluency_hint', 'Use the read-along panel to practice at your own pace.') : interactionMode === 'define' || interactionMode === 'phonics' || interactionMode === 'add-glossary' ? wordHelpHint : interactionMode === 'explain' ? readerText('simplified.explain_hint', 'Choose a sentence for an explanation, or select a longer passage.') : interactionMode === 'revise' ? readerText('simplified.revise_hint', 'Select the words you want to revise.') : interactionMode === 'cloze' ? readerText('simplified.cloze_hint', 'Fill in the missing words. Choose Read to see the complete passage.') : protectedOriginal ? readerText('simplified.original_read_hint', 'Read at your own pace. Use Listen to hear the original.') : readerText('simplified.read_hint', 'Read at your own pace. Choose any sentence to listen from there.')), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap items-center justify-center gap-2"
-  }, typeof props.onFocusViewChange === 'function' && /*#__PURE__*/React.createElement("button", {
-    ref: focusViewButtonRef,
-    type: "button",
-    "data-reader-focus-view": true,
-    "aria-pressed": !!isZenMode,
-    "aria-describedby": "simplified-focus-view-hint",
-    onClick: () => props.onFocusViewChange(!isZenMode),
-    className: "min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, isZenMode ? readerText('simplified.exit_focus_view', 'Exit focus view') : readerText('simplified.focus_view', 'Focus view')), /*#__PURE__*/React.createElement("button", {
-    ref: displayToggleRef,
-    type: "button",
-    "data-reader-display": true,
-    "aria-expanded": displayOpen,
-    "aria-controls": "simplified-display-panel",
-    onClick: () => setDisplayOpen(!displayOpen),
-    className: "min-h-11 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true",
-    className: "font-serif text-base leading-none"
-  }, "Aa"), viewText('simplified.display_menu', 'Display'), displayOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
-    size: 14,
-    "aria-hidden": "true"
-  }) : /*#__PURE__*/React.createElement(ChevronDown, {
-    size: 14,
-    "aria-hidden": "true"
-  })), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-help-key": "simplified_teacher_tools",
-    "aria-expanded": !!isTeacherToolbarExpanded,
-    "aria-controls": "simplified-teacher-tools-panel",
-    onClick: handleToggleIsTeacherToolbarExpanded,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`,
-    title: t('simplified.teacher_tools_tooltip')
-  }, /*#__PURE__*/React.createElement(Settings, {
-    size: 14
-  }), /*#__PURE__*/React.createElement("span", null, readerText('simplified.teacher_actions', 'Teacher tools')), isTeacherToolbarExpanded ? /*#__PURE__*/React.createElement(ChevronLeft, {
-    size: 14
-  }) : /*#__PURE__*/React.createElement(ChevronRight, {
-    size: 14
-  })), isTeacherMode && !protectedOriginal && !isZenMode && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.toggle_edit_text'),
-    onClick: handleToggleIsEditingLeveledText,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`,
-    "data-help-key": "simplified_edit"
-  }, isEditingLeveledText ? /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 14
-  }) : /*#__PURE__*/React.createElement(Pencil, {
-    size: 14
-  }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))), /*#__PURE__*/React.createElement("div", {
+  }, readerText('simplified.practice_sentences', 'Sentence scramble'))), /*#__PURE__*/React.createElement("div", {
     id: "simplified-display-panel",
     "data-reader-display-panel": true,
     role: "group",
@@ -6241,7 +6402,48 @@ function SimplifiedView(props) {
     value: 56
   }, readerText('simplified.width_medium', 'Medium')), /*#__PURE__*/React.createElement("option", {
     value: 72
-  }, readerText('simplified.width_wide', 'Wide'))))), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("div", {
+  }, readerText('simplified.width_wide', 'Wide'))))), (() => {
+    var status = readingModeStatus();
+    return /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      "data-reading-mode-status": status.mode,
+      className: 'my-2 text-center text-sm ' + (status.label ? 'mx-auto w-fit max-w-full rounded-xl border-2 border-indigo-700 bg-indigo-50 px-3 py-2 text-indigo-950' : 'text-slate-700')
+    }, status.label && /*#__PURE__*/React.createElement("strong", {
+      className: "font-bold"
+    }, status.label, ' · '), status.hint);
+  })(), isTeacherMode && (teacherReadingModes.length > 0 || !isZenMode) && /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-labelledby": "simplified-teacher-editing-label",
+    "data-teacher-editing-tools": true,
+    className: "mt-1 flex w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    id: "simplified-teacher-editing-label",
+    className: "px-1 text-xs font-bold uppercase tracking-wide text-slate-600"
+  }, viewText('simplified.teacher_editing', 'Teacher editing')), teacherReadingModes.map(renderReadingModeButton), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "simplified_teacher_tools",
+    "aria-expanded": !!isTeacherToolbarExpanded,
+    "aria-controls": "simplified-teacher-tools-panel",
+    onClick: handleToggleIsTeacherToolbarExpanded,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`,
+    title: t('simplified.teacher_tools_tooltip')
+  }, /*#__PURE__*/React.createElement(Settings, {
+    size: 14
+  }), /*#__PURE__*/React.createElement("span", null, readerText('simplified.teacher_actions', 'Teacher tools')), isTeacherToolbarExpanded ? /*#__PURE__*/React.createElement(ChevronLeft, {
+    size: 14
+  }) : /*#__PURE__*/React.createElement(ChevronRight, {
+    size: 14
+  })), isTeacherMode && !protectedOriginal && !isZenMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('common.toggle_edit_text'),
+    onClick: handleToggleIsEditingLeveledText,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`,
+    "data-help-key": "simplified_edit"
+  }, isEditingLeveledText ? /*#__PURE__*/React.createElement(CheckCircle2, {
+    size: 14
+  }) : /*#__PURE__*/React.createElement(Pencil, {
+    size: 14
+  }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))), isTeacherMode && !isZenMode && /*#__PURE__*/React.createElement("div", {
     id: "simplified-teacher-tools-panel",
     hidden: !isTeacherToolbarExpanded,
     style: {
@@ -6607,14 +6809,111 @@ function SimplifiedView(props) {
     size: 14
   })))))), typeof props.onFocusViewChange === 'function' && /*#__PURE__*/React.createElement("p", {
     id: "simplified-focus-view-hint",
-    className: "mt-2 text-center text-xs text-slate-600"
+    className: isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'
   }, isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')))), /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
     "data-tts-prep-status": true,
     className: ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'
-  }, ttsPrepNotice), definitionData && /*#__PURE__*/React.createElement("div", {
+  }, ttsPrepNotice), wordHelpCard && (() => {
+    var entry = wordHelpCard.entry,
+      cardLanguage = wordHelpCard.language || readingLanguage,
+      explanation = entry.definition || entry.explanation || entry.text || '';
+    var cardDirection = typeof getContentDirection === 'function' ? getContentDirection(cardLanguage) : undefined;
+    var cardButton = 'min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+    var cardLink = 'min-h-11 rounded px-1 text-sm text-indigo-800 underline underline-offset-2 hover:text-indigo-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+    var moreHelp = () => {
+      var card = wordHelpCard,
+        opener = wordHelpCardOpener.current;
+      closeWordHelpCard(false);
+      if (typeof handleWordClick === 'function') handleWordClick(card.entry.quote, {
+        stopPropagation: () => {},
+        currentTarget: opener,
+        clientX: card.x,
+        clientY: card.y
+      }, {
+        language: card.language
+      });
+    };
+    var showAll = () => {
+      var list = (readerSurfaceRef.current || document).querySelector('[data-adapted-word-help]');
+      closeWordHelpCard(!list);
+      if (!list) return;
+      if (!list.hasAttribute('tabindex')) list.setAttribute('tabindex', '-1');
+      if (typeof list.scrollIntoView === 'function') list.scrollIntoView({
+        block: 'start'
+      });
+      list.focus();
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      ref: wordHelpCardRef,
+      role: "dialog",
+      "aria-labelledby": "simplified-word-help-card-title",
+      tabIndex: -1,
+      "data-word-help-card": true,
+      onKeyDown: e => {
+        if (e.key !== 'Escape') return;
+        e.preventDefault();
+        e.stopPropagation();
+        closeWordHelpCard();
+      },
+      className: `fixed ${_popupZ} rounded-xl border-2 border-indigo-200 bg-white p-4 text-slate-900 shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600`,
+      style: simplifiedPopupStyle(wordHelpCard, 20)
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-2 flex items-start justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "min-w-0"
+    }, /*#__PURE__*/React.createElement("h5", {
+      id: "simplified-word-help-card-title",
+      lang: simplifiedLanguageTag(cardLanguage),
+      dir: cardDirection,
+      className: "break-words text-lg font-bold text-indigo-900"
+    }, entry.quote), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs font-semibold text-indigo-700"
+    }, viewText('simplified.word_help_card_prepared', 'Word help from your teacher'))), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => closeWordHelpCard(),
+      "aria-label": viewText('common.close', 'Close'),
+      className: "min-h-11 min-w-11 shrink-0 rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, /*#__PURE__*/React.createElement(X, {
+      size: 14
+    }))), entry.image && /*#__PURE__*/React.createElement("img", {
+      src: entry.image.src,
+      alt: entry.image.alt || '',
+      "data-word-help-card-picture": true,
+      className: "mb-2 h-24 w-full rounded-lg bg-white object-contain"
+    }), /*#__PURE__*/React.createElement("p", {
+      "data-word-help-card-text": true,
+      lang: simplifiedLanguageTag(cardLanguage),
+      dir: cardDirection,
+      className: "break-words text-base leading-relaxed"
+    }, explanation), /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 flex flex-wrap gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-word-help-card-hear": true,
+      onClick: () => speakExactPassage(entry.quote, 'word-help-word', cardLanguage),
+      className: cardButton
+    }, isExactPassagePlaying('word-help-word') ? viewText('common.stop', 'Stop') : viewText('simplified.word_help_card_hear_word', 'Hear the word')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-word-help-card-listen": true,
+      onClick: () => speakExactPassage(entry.quote + '. ' + explanation, 'word-help-card', cardLanguage),
+      className: cardButton
+    }, isExactPassagePlaying('word-help-card') ? viewText('common.stop', 'Stop') : viewText('simplified.word_help_card_listen', 'Listen to the help'))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 flex flex-wrap gap-x-3"
+    }, typeof handleWordClick === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-word-help-card-more": true,
+      onClick: moreHelp,
+      className: cardLink
+    }, viewText('simplified.word_help_card_more', 'More about this word')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-word-help-card-all": true,
+      onClick: showAll,
+      className: cardLink
+    }, viewText('simplified.word_help_card_all', 'All word help'))), renderPictureCredits([entry]));
+  })(), definitionData && /*#__PURE__*/React.createElement("div", {
     ref: definitionDialogRef,
     role: "dialog",
     "aria-modal": "true",
