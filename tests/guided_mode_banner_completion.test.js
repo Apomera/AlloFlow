@@ -18,7 +18,7 @@
 // click-vs-completion transition, so a regression to the old behavior fails here.
 // Also covers the source-step "Try this example" loader and the About read-aloud.
 
-import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -1227,5 +1227,58 @@ describe('Guided resume clarity and busy state', () => {
     const actions=Array.from(b.host.querySelectorAll('.allo-guided-resume-card button'));
     expect(actions).toHaveLength(3);expect(actions.every(button=>button.disabled)).toBe(true);
     act(()=>actions.forEach(button=>button.click()));expect(focus).not.toHaveBeenCalled();expect(review).not.toHaveBeenCalled();b.cleanup();
+  });
+});
+
+// First-run onboarding (2026-09-25): the Teacher door starts on "Adapt a reading",
+// so step 1 shows one path line with Change instead of the 8-way chooser, the
+// example passage sits right under the instruction, and a keyless teacher is told
+// at step 1 that creating materials needs AI.
+describe('Guided step 1 first-run onboarding', () => {
+  afterEach(() => { delete window.__alloResolveAiCapability; delete window.__alloOpenAiSetup; });
+
+  it('shows the chosen path as one line and Change reopens the chooser', () => {
+    localStorage.setItem('allo_guided_path_prompt_seen', 'true');
+    const b = mountBanner(baseProps({ guidedStep: 0, inputText: '', guidedPresets: [{ id: 'reading-access', label: 'Adapt a reading', stepIds: [] }],
+      guidedPlanBrief: { id: 'reading-access', title: 'Adapt a reading' } }));
+    expect(b.host.querySelector('[data-help-key="guided_path_summary"]').textContent).toContain('Adapt a reading');
+    expect(b.host.querySelector('[data-help-key="guided_path_choice"]')).toBeNull();
+    act(() => { b.button('Change').click(); });
+    expect(b.host.querySelector('[data-help-key="guided_path_choice"]')).not.toBeNull();
+    b.cleanup();
+  });
+
+  it('puts the example passage directly under the step instruction', () => {
+    const b = mountBanner(baseProps({ guidedStep: 0, inputText: '' }));
+    const example = b.host.querySelector('[data-help-key="guided_example_source"]');
+    const nav = b.host.querySelector('[data-help-key="guided_plan_navigation"]');
+    expect(example).not.toBeNull();
+    expect(nav).not.toBeNull();
+    expect(example.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    b.cleanup();
+  });
+
+  it('tells a keyless teacher at step 1 and opens AI setup from there', () => {
+    window.__alloResolveAiCapability = () => ({ text: false });
+    const open = vi.fn();
+    window.__alloOpenAiSetup = open;
+    const b = mountBanner(baseProps({ guidedStep: 0, inputText: '' }));
+    const note = b.host.querySelector('[data-help-key="guided_ai_status"]');
+    expect(note).not.toBeNull();
+    expect(note.textContent).toContain('creating materials needs AI');
+    act(() => { note.querySelector('button').click(); });
+    expect(open).toHaveBeenCalledTimes(1);
+    b.cleanup();
+  });
+
+  it('stays quiet when AI is connected, or on an older host without the resolver', () => {
+    window.__alloResolveAiCapability = () => ({ text: true });
+    let b = mountBanner(baseProps({ guidedStep: 0, inputText: '' }));
+    expect(b.host.querySelector('[data-help-key="guided_ai_status"]')).toBeNull();
+    b.cleanup();
+    delete window.__alloResolveAiCapability;
+    b = mountBanner(baseProps({ guidedStep: 0, inputText: '' }));
+    expect(b.host.querySelector('[data-help-key="guided_ai_status"]')).toBeNull();
+    b.cleanup();
   });
 });

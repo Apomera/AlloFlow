@@ -238,7 +238,7 @@ function HeaderBar(props) {
     screenerSession,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
     setSliderFontSize, setSpotlightMessage, setTourStep, setVoiceSpeed, setVoiceVolume,
-    showExportMenu, showHelpOnboarding, showReadThisPage, showTextSettings,
+    showExportMenu, showHelpOnboarding, showReadThisPage, showTextSettings, isSpecialistMode,
     showVoiceSettings, sliderFontSize, startClassSession, studentAiPolicyForShare, t,
     voiceSpeed, voiceVolume,
   } = props;
@@ -696,7 +696,9 @@ function HeaderBar(props) {
     }
   };
   const piiWarningText = t('header.pii_warning');
-  const compactRoleLabel = isIndependentMode
+  const compactRoleLabel = isSpecialistMode
+    ? (t('launch_pad.door_specialist') || 'Specialist')
+    : isIndependentMode
     ? (t('roles.independent') || 'Independent Learner')
     : isParentMode
       ? (t('parent_mode.label') || t('roles.parent') || 'Family Mode')
@@ -1004,6 +1006,34 @@ function HeaderBar(props) {
                     )}
                   </div>
                 )}
+                {/* Help Mode lives in the expanded toolbar, but the header starts
+                    collapsed, so the one-shot "Click ? anytime" tip fired into an
+                    unmounted branch and expired unseen (critique 2026-09-25). The
+                    compact bar carries the same control so the tip has an anchor. */}
+                <div className="relative shrink-0">
+                  <button type="button"
+                    data-help-ignore="true"
+                    onClick={handleToggleIsHelpMode}
+                    aria-pressed={isHelpMode}
+                    className={`inline-flex shrink-0 min-w-11 items-center justify-center rounded-xl px-3 transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
+                    title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+                    aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+                  >
+                    <CircleHelp size={18} aria-hidden="true" />
+                  </button>
+                  {showHelpOnboarding && !isHelpMode && (
+                    <button
+                      type="button"
+                      onClick={dismissHelpOnboarding}
+                      aria-label={t('common.dismiss') || 'Dismiss help tip'}
+                      className="absolute -bottom-14 right-0 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400"
+                      style={{ minWidth: '160px', textAlign: 'center' }}
+                    >
+                      <span aria-hidden="true" className="absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400"></span>
+                      <span><span aria-hidden="true">&#128161;</span> {t('header.click_for_help') || 'Click'} <strong>?</strong> {t('header.anytime_for_help') || 'anytime for help!'}</span>
+                    </button>
+                  )}
+                </div>
                 {isTeacherMode && (
                   <button type="button"
                     onClick={() => setShowSetupPathMenu(true)}

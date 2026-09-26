@@ -367,10 +367,12 @@ function OnboardingCoach(props) {
   // Chip label — host overrides for pick_mode via t() to stay i18n-consistent.
   var chipLabel = function (chip) {
     if (chip.kind === 'pick_mode') {
-      var titleKey = 'launch_pad.' + chip.key + '_title';
+      var roleChip = { teacher: ['roles.teacher', 'Teacher'], student: ['roles.student', 'Student'], family: ['launch_pad.door_family', 'Family'], specialist: ['launch_pad.door_specialist', 'Specialist'] }[chip.key];
+      var titleKey = roleChip ? roleChip[0] : 'launch_pad.' + chip.key + '_title';
       var label = t(titleKey);
       if (!label || label === titleKey) {
         var fallback = {
+          teacher: 'Teacher', student: 'Student', family: 'Family', specialist: 'Specialist',
           full: 'Full AlloFlow', guided: 'Guided Mode',
           learning_tools: 'Learning Tools', educator: 'Educator Tools',
         };
@@ -394,36 +396,36 @@ function OnboardingCoach(props) {
   // the lang pack hasn't been translated yet.
   var modes = [
     {
-      key: 'full',
-      icon: '\u{1F680}',
-      title: t('launch_pad.full_title') || 'Full AlloFlow',
-      desc:  t('launch_pad.full_desc')  || 'All AlloFlow features unlocked. Full power-user surface.',
-      bestIf: t('onboarding.full_best_if') ||
-        'Best if you want full control and you’re comfortable exploring on your own.',
+      key: 'teacher',
+      icon: '\u{1F3EB}',
+      title: t('roles.teacher') || 'Teacher',
+      desc:  t('roles.teacher_description') || 'Build accessible lessons and adapt materials for your class.',
+      bestIf: t('onboarding.teacher_best_if') ||
+        'Starts in Guided Mode, one step at a time. A link opens the full workspace if you prefer.',
     },
     {
-      key: 'guided',
-      icon: '\u{1F9ED}',
-      title: t('launch_pad.guided_title') || 'Guided Mode',
-      desc:  t('launch_pad.guided_desc')  || 'A simpler, step-by-step interface that walks you through each task.',
-      bestIf: t('onboarding.guided_best_if') ||
-        'Best if you’re brand new and want a calmer interface that holds your hand at each step.',
+      key: 'student',
+      icon: '\u{1F392}',
+      title: t('roles.student') || 'Student',
+      desc:  t('roles.student_description') || 'Join your class and learn with a private codename.',
+      bestIf: t('onboarding.student_best_if') ||
+        'Have a class code from your teacher? Type it on the Student card. No code? Explore on your own.',
     },
     {
-      key: 'learning_tools',
+      key: 'family',
+      icon: '\u{1F3E0}',
+      title: t('launch_pad.door_family') || 'Family',
+      desc:  t('launch_pad.door_family_desc') || 'Turn what your child is reading into stories, word lists, and simpler versions at home.',
+      bestIf: t('onboarding.family_best_if') ||
+        'Best if you are a parent or caregiver helping with reading at home.',
+    },
+    {
+      key: 'specialist',
       icon: '\u{1F9E0}',
-      title: t('launch_pad.learning_tools_title') || 'Learning Tools',
-      desc:  t('launch_pad.learning_tools_desc')  || 'STEAM Lab, StoryForge, SEL Hub, Research Hub & more — explore, create, investigate, and grow.',
-      bestIf: t('onboarding.learning_tools_best_if') ||
-        'Best if you’re a student or independent learner who wants to jump into activities right away.',
-    },
-    {
-      key: 'educator',
-      icon: '\u{1F6E0}\u{FE0F}',
-      title: t('launch_pad.educator_tools_title') || 'Educator Tools',
-      desc:  t('launch_pad.educator_tools_desc')  || 'BehaviorLens, Report Writer, and professional clinical tools — password protected.',
-      bestIf: t('onboarding.educator_best_if') ||
-        'Best if you’re a teacher, clinician, or school psychologist on a password-protected workstation.',
+      title: t('launch_pad.door_specialist') || 'Specialist',
+      desc:  t('launch_pad.door_specialist_desc') || 'BehaviorLens, Report Writer, and tools for psychologists, counselors, and support staff.',
+      bestIf: t('onboarding.specialist_best_if') ||
+        'Best if you are a school psychologist, counselor, BCBA, or related-services provider. Some schools protect it with a code.',
     },
   ];
 

@@ -142,10 +142,29 @@ describe('teacher-surface disable-with-doorway sweep (X6, 2026-08-17)', () => {
       const next = sidebar.indexOf('\nfunction ', at + 10);
       const body = sidebar.slice(at, next === -1 ? undefined : next);
       expect(body, panel + ' must call useAiTextAvailable').toContain('useAiTextAvailable()');
-      expect(body, panel + ' must disable on !aiTextAvailable').toContain('|| !aiTextAvailable}');
+      // 2026-09-25: keyless generate buttons stay clickable and open AI setup (aiGate),
+      // instead of a disabled button that silently does nothing.
+      expect(body, panel + ' must route its generate click through aiGate').toContain('onClick={aiGate(aiTextAvailable, ');
+      expect(body, panel + ' must mark the blocked state for assistive tech').toContain('aria-disabled={!aiTextAvailable || undefined}');
+      expect(body, panel + ' must no longer hard-disable on capability').not.toContain('|| !aiTextAvailable}');
       expect(body, panel + ' must render the doorway notice').toContain('<AiSetupNotice t={t} />');
     });
   }
+
+  it('aiGate opens AI setup when no AI is connected and otherwise runs the action', () => {
+    const m = sidebar.match(/function aiGate\(available, fn\) \{[\s\S]*?\n\}/);
+    expect(m, 'aiGate must be liftable').toBeTruthy();
+    const opened = [];
+    const win = { __alloOpenAiSetup: () => opened.push('setup') };
+    const aiGate = new Function('window', m[0] + ' return aiGate;')(win);
+    const ran = [];
+    aiGate(false, () => ran.push('generate'))({});
+    expect(opened).toEqual(['setup']);
+    expect(ran).toEqual([]);
+    aiGate(true, () => ran.push('generate'))({});
+    expect(ran).toEqual(['generate']);
+    expect(opened).toEqual(['setup']);
+  });
 
   it('the hook fails OPEN on hosts without the resolver (older host contract)', () => {
     // Lift read() out of the hook and run it with no window resolver.

@@ -11973,12 +11973,14 @@ const AlloFlowContent = () => {
                 await Promise.all([
                     loadScriptSequence([
                         "./vendor/lz-string-1.4.4.min.js",
+                        "https://alloflow-cdn.pages.dev/vendor/lz-string-1.4.4.min.js",
                         "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js",
                         "https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js",
                         "https://unpkg.com/lz-string@1.4.4/libs/lz-string.min.js"
                     ], "LZString"),
                     loadScriptSequence([
                         "./vendor/idb-keyval-6.2.0.umd.min.js",
+                        "https://alloflow-cdn.pages.dev/vendor/idb-keyval-6.2.0.umd.min.js",
                         "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.0/umd.min.js",
                         "https://cdn.jsdelivr.net/npm/idb-keyval@6.2.0/dist/umd.js",
                         "https://unpkg.com/idb-keyval@6.2.0/dist/umd.js"
@@ -12347,18 +12349,6 @@ const AlloFlowContent = () => {
   const [isResearchSuiteOpen, setIsResearchSuiteOpen] = useState(false);
   const [isHelpMode, setIsHelpMode] = useState(false);
   const [showHelpOnboarding, setShowHelpOnboarding] = useState(false);
-  useEffect(() => {
-      try {
-          if (safeGetItem('allo_help_onboarded') !== 'true') {
-              const timer = setTimeout(() => setShowHelpOnboarding(true), 4000);
-              const autoDismiss = setTimeout(() => {
-                  setShowHelpOnboarding(false);
-                  try { safeSetItem('allo_help_onboarded', 'true'); } catch {}
-              }, 14000);
-              return () => { clearTimeout(timer); clearTimeout(autoDismiss); };
-          }
-      } catch {}
-  }, []);
   const dismissHelpOnboarding = () => { setShowHelpOnboarding(false); try { safeSetItem('allo_help_onboarded', 'true'); } catch {} };
   const [hasSeenBotIntro, setHasSeenBotIntro] = useState(() => {
       if (typeof window !== 'undefined') {
@@ -12386,6 +12376,22 @@ const AlloFlowContent = () => {
   const [isAppReady, setIsAppReady] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [hasSelectedMode, setHasSelectedMode] = useState(false);
+  // The one-shot help tip waits for the workspace. Fired at boot it expired
+  // behind the Launch Pad and marked itself seen (critique 2026-09-25).
+  useEffect(() => {
+      if (!hasSelectedMode) return undefined;
+      try {
+          if (safeGetItem('allo_help_onboarded') !== 'true') {
+              const timer = setTimeout(() => setShowHelpOnboarding(true), 4000);
+              const autoDismiss = setTimeout(() => {
+                  setShowHelpOnboarding(false);
+                  try { safeSetItem('allo_help_onboarded', 'true'); } catch {}
+              }, 14000);
+              return () => { clearTimeout(timer); clearTimeout(autoDismiss); };
+          }
+      } catch {}
+      return undefined;
+  }, [hasSelectedMode]);
   const [micBannerDismissed, setMicBannerDismissed] = useState(false);
   const [micPermissionStatus, setMicPermissionStatus] = useState('unknown');
   const requestMicPermission = useCallback(() => {
@@ -12875,6 +12881,18 @@ const AlloFlowContent = () => {
   }, [isAppReady]);
   
   const [showStudentEntry, setShowStudentEntry] = useState(false);
+  // Set when a student arrived through the Guided Mode card: Guided is the
+  // teacher's authoring path, so the codename hands off to Learning Tools.
+  const studentHubAfterEntryRef = useRef(false);
+  // Student doors on the Launch Pad: a class code waits for the codename
+  // (the roster stores it), and Escape from the codename returns to the doors.
+  const [pendingJoinCode, setPendingJoinCode] = useState(null);
+  // Specialist door: the hub opens on clinician tools and the header says so.
+  const [isSpecialistMode, setIsSpecialistMode] = useState(false);
+  // A student join that failed: { code, reason } drives an on-screen recovery card.
+  const [studentJoinFailure, setStudentJoinFailure] = useState(null);
+  const studentEntryFromPadRef = useRef(false);
+  const gateFromPadRef = useRef(false);
   const [showWizard, setShowWizard] = useState(true);
   // Guided Mode always suppresses the QuickStart wizard. The HEADER guided
   // entry closed it explicitly, but the Launch Pad guided card and the
@@ -14267,7 +14285,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=29d9f6add');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=29d9f6add');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=4875db2b');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=bfd0c4f4');
     loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=29d9f6add');
     loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=29d9f6add');
     loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=29d9f6add');
@@ -14507,7 +14525,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea0793fd');
     loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=29d9f6add');
     loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=29d9f6add');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=29d9f6add');
+    // Class groups head the Class & Materials tab; opening it promotes this
+    // module instead of waiting on the background queue (2026-09-25).
+    window.__alloLazyTeacherHistoryTab = function() {
+      if (window.AlloModules && window.AlloModules.TeacherHistoryTab) return true;
+      var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.TeacherHistoryTab;
+      if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('TeacherHistoryTab');
+      if (entry && entry.status === 'pending') return true;
+      loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=29d9f6add');
+      return true;
+    };
+    window.__alloLazyTeacherHistoryTab();
     loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=29d9f6add');
     loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=29d9f6add');
     window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=29d9f6add'); }; })();
@@ -14557,9 +14585,26 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('ExportPreviewView', '__alloLazyExportPreviewView', 'ExportPreviewView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=29d9f6add');
+    // Lazy entry for the AI Backend modal: a keyless doorway tap promotes the
+    // module out of the background queue instead of waiting on the pump.
+    window.__alloLazyMiscModals = function() {
+      if (window.AlloModules && window.AlloModules.AIBackendModal) return true;
+      var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.MiscModals;
+      if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('MiscModals');
+      loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=29d9f6add');
+      return true;
+    };
+    window.__alloLazyMiscModals();
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=29d9f6add');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=29d9f6add');
+    // Tour engine lives here; a tour request promotes it out of the queue.
+    window.__alloLazyMiscPanels = function() {
+      if (window.AlloModules && window.AlloModules.TourOverlay) return true;
+      var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.MiscPanels;
+      if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('MiscPanels');
+      loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=29d9f6add');
+      return true;
+    };
+    window.__alloLazyMiscPanels();
     // The teacher's own imported documents, shared by the source generator,
     // its toggle, the Quick Start toggle and the import control. No
     // dependencies of its own: it reaches Lumen lazily, loading those STEM
@@ -14830,14 +14875,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // is only running because continuous input has starved it.
         var budget = (blocked || slowBackground) ? 1 : PUMP_PARALLEL;
         var available = Math.max(0, budget - inFlight);
+        // The idle-slice check gates the SECOND dispatch onward only. A page with
+        // any running animation (the loading pill's own spinner) reports 4-8ms
+        // slices and never hits the rIC timeout, so gating the first dispatch
+        // let nothing through: 143 queued, 0 pending, all session (2026-09-25).
+        // Appending one async script tag costs microseconds.
+        var dispatchedThisPump = 0;
         while (available > 0 && __alloDeferredModuleQueue.length
-          && (deadline.didTimeout || deadline.timeRemaining() > 10)) {
+          && (dispatchedThisPump === 0 || deadline.didTimeout || deadline.timeRemaining() > 10)) {
           var queued = __alloDeferredModuleQueue.shift();
           if (__alloDeferredModuleNames[queued.name] !== queued) continue;
           delete __alloDeferredModuleNames[queued.name];
           pumpDispatched[queued.name] = true;
           __alloLoadModuleNow(queued.name, queued.url);
           available--;
+          dispatchedThisPump++;
         }
         schedule(slowBackground ? 1200 : (available > 0 ? 180 : 360));
       };
@@ -16625,7 +16677,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       user?.uid, sessionData?.interactiveOrganizer]);
   const handleCloseClassAnalytics = useCallback(() => { setShowClassAnalytics(false); setIsResearchSuiteOpen(false); }, []);
   const handleCloseSubmitModal = useCallback(() => setShowSubmitModal(false), []);
-  const handleCloseGate = useCallback(() => setIsGateOpen(false), []);
+  const handleCloseGate = useCallback(() => {
+      setIsGateOpen(false);
+      if (gateFromPadRef.current) { gateFromPadRef.current = false; setPendingRole(null); setHasSelectedRole(false); setHasSelectedMode(false); }
+  }, []);
   const handleCloseDashboard = useCallback(() => setActiveView('input'), []);
   const [isChunkReaderActive, setIsChunkReaderActive] = useState(false);
   const [chunkReaderIdx, setChunkReaderIdx] = useState(0);
@@ -16749,7 +16804,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setChunkReaderAutoPlay(false);
   }, []);
   const handleCloseStudentWelcome = useCallback(() => setShowStudentWelcome(false), []);
-  const handleCloseStudentEntry = useCallback(() => { setShowStudentEntry(false); setHasSelectedRole(false); }, []);
+  const handleCloseStudentEntry = useCallback(() => {
+      studentHubAfterEntryRef.current = false; setPendingJoinCode(null);
+      setShowStudentEntry(false); setHasSelectedRole(false);
+      if (studentEntryFromPadRef.current) { studentEntryFromPadRef.current = false; setHasSelectedMode(false); }
+  }, []);
   const handleCloseWordScramble = useCallback(() => setIsWordScrambleGame(false), []);
   const handleOpenStorybookExport = useCallback(() => setShowStorybookExportModal(true), []);
   const closeTimeline = useCallback(() => setIsTimelineGame(false), []);
@@ -18302,20 +18361,35 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setAiBackendModuleTick(tick => tick + 1);
       return;
     }
+    // Not registered yet: promote the module and say so, then either mount
+    // it or close with a retry hint. A silent no-op was the keyless
+    // teacher's dead end at the first generate (critique 2026-09-25).
+    try { if (typeof window.__alloLazyMiscModals === 'function') window.__alloLazyMiscModals(); } catch (_) {}
+    addToast(t('ai_backend.settings_loading') || 'Opening AI settings…', 'info');
     let attempts = 0;
+    const giveUp = () => {
+      clearInterval(poll);
+      setShowAIBackendModal(false);
+      addToast(t('ai_backend.settings_unavailable') || 'AI settings could not load. Check your connection, then tap Needs AI setup again.', 'error');
+    };
     const poll = setInterval(() => {
       attempts += 1;
       if (window.AlloModules && window.AlloModules.AIBackendModal) {
         clearInterval(poll);
         setAiBackendModuleTick(tick => tick + 1);
-      } else if (attempts >= 80) {
-        clearInterval(poll);
+        return;
       }
+      const entry = window.__alloModuleRegistry && window.__alloModuleRegistry.MiscModals;
+      if ((entry && entry.status === 'failed') || attempts >= 300) giveUp();
     }, 100);
     return () => clearInterval(poll);
   }, [showAIBackendModal, _isCanvasEnv]);
   React.useEffect(() => {
     if (!_isDesktopBundledApp || _isCanvasEnv || !isAppReady || desktopAISetupPromptedRef.current) return;
+    // Wait for an adult in the plain workspace: over the Launch Pad, the Quick
+    // Start wizard or a hub it stacked a second first-run panel.
+    // Guided Mode says it at step 1 with a setup button, so no modal there.
+    if (!hasSelectedMode || !hasSelectedRole || !isTeacherMode || guidedMode || showWizard || showEducatorHub || showLearningHub) return;
     let shouldPrompt = true;
     const hasUsableKey = (value) => {
       const key = String(value || '').trim();
@@ -18332,7 +18406,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (!shouldPrompt) return;
     desktopAISetupPromptedRef.current = true;
     setShowAIBackendModal(true);
-  }, [isAppReady, _isCanvasEnv]);
+  }, [isAppReady, _isCanvasEnv, hasSelectedMode, hasSelectedRole, isTeacherMode, showWizard, guidedMode, showEducatorHub, showLearningHub]);
   // Focus traps for 5 more student-facing modals (a11y D1, 2026-06-28): same proven pattern as above —
   // traps Tab inside the modal while open + restores focus to the trigger on close (WCAG 2.4.3). Inline-arrow
   // close handlers use the setters (declared above); the handleSet* wrappers are defined later so can't be used here.
@@ -19024,6 +19098,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isGateOpen, setIsGateOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState(null);
   const onGateUnlock = () => {
+    gateFromPadRef.current = false;
     if (pendingRole === 'toggle_view') {
         setIsTeacherMode(true);
     } else if (pendingRole === 'educator_hub') {
@@ -19036,6 +19111,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   };
   const handleToggleAllTools = (...__a) => _alloHostHandlers().handleToggleAllTools(...__a);
   const executeRoleSelect = (role) => {
+      setIsSpecialistMode(false);
       // Promote the setup wizard just after the role-selection feedback frame;
       // its local script evaluation should never lengthen the role click.
       if (role !== 'student') {
@@ -19047,6 +19123,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           setIsIndependentMode(false);
           setIsStudentLinkMode(true);
           setShowWizard(false);
+          if (guidedMode) { setGuidedMode(false); studentHubAfterEntryRef.current = true; }
           setShowStudentEntry(true);
           setIsAdventureStoryMode(false);
       } else if (role === 'parent') {
@@ -19085,6 +19162,45 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // the student entry flow, which link-based entry already handles.
       if (role !== 'student') {
           try { localStorage.setItem('alloflow_last_role', role); } catch (_) {}
+      }
+  };
+  // Role doors on the Launch Pad and the coach's chips share this dispatch.
+  // Teacher lands in Guided; the gate is honored exactly as the role modal does.
+  const chooseLaunchRole = (key, opts) => {
+      const gated = _alloEducatorAccessCodeRequired();
+      // Gated: hold the role popup back (it would ask again behind the gate);
+      // cancelling the gate returns to the doors.
+      const viaGate = (role) => { if (gated) { gateFromPadRef.current = true; setHasSelectedRole(true); setPendingRole(role); setIsGateOpen(true); } else executeRoleSelect(role); };
+      if (key === 'specialist') {
+          setIsSpecialistMode(true);
+          setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false);
+          try { localStorage.setItem('alloflow_last_role', 'specialist'); } catch (_) {}
+          if (gated) { gateFromPadRef.current = true; setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); }
+          return;
+      }
+      setHasSelectedMode(true);
+      setGuidedMode(key === 'teacher');
+      // A first-time Guided teacher starts on "Adapt a reading" (7 steps), not an
+      // 8-way chooser above the fold; the banner shows it as one line with Change.
+      if (key === 'teacher') {
+          let hasSaved = false;
+          try { hasSaved = !!localStorage.getItem('allo_guided_progress'); } catch (_) {}
+          const reading = (GUIDED_PRESETS || []).find(p => p && p.id === 'reading-access');
+          if (!hasSaved && reading) {
+              applyGuidedPreset(reading);
+              try { localStorage.setItem('allo_guided_path_prompt_seen', 'true'); } catch (_) {}
+          }
+      }
+      if (key === 'teacher' || key === 'teacher_full') viaGate('teacher');
+      else if (key === 'family') viaGate('parent');
+      else if (key === 'adult') viaGate('independent');
+      else if (key === 'student_explore' || key === 'student_code') {
+          executeRoleSelect('student');
+          // Phones open on Tools; a student's next step lives in Preview.
+          setWorkspacePane('preview');
+          studentEntryFromPadRef.current = true;
+          studentHubAfterEntryRef.current = key === 'student_explore';
+          setPendingJoinCode(key === 'student_code' ? String((opts && opts.code) || '') : null);
       }
   };
   // ── Family deep link (?allo_family) ──────────────────────────────────────
@@ -19183,6 +19299,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return () => clearInterval(heartbeat);
   }, [hasSelectedRole, isTeacherMode, isParentMode, isIndependentMode]);
   const handleStudentEntryConfirm = (name, mode) => {
+      studentEntryFromPadRef.current = false;
       setStudentNickname(name);
       setStudentProjectSettings(prev => ({
           ...prev,
@@ -19191,6 +19308,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }));
       setShowStudentEntry(false);
       addToast(t('toasts.welcome_name', { name }) || `Welcome, ${name}!`, "success");
+      if (studentHubAfterEntryRef.current) {
+          studentHubAfterEntryRef.current = false;
+          if (mode !== 'load') setShowLearningHub(true);
+      }
       if (mode === 'load') {
           setTimeout(() => {
               if (projectFileInputRef.current) {
@@ -19209,6 +19330,26 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // carry an `onEnter` callback for per-step UI side effects.
   const [customTourSteps, setCustomTourSteps] = useState(null);
   useEffect(() => { if (!runTour) setCustomTourSteps(null); }, [runTour]);
+  // The tour engine loads in the background queue; a click used to find it
+  // missing and do nothing (critique 2026-09-25). Promote, wait, re-render.
+  const [, setTourModuleTick] = useState(0);
+  useEffect(() => {
+    if (!runTour || (window.AlloModules && window.AlloModules.TourOverlay)) return undefined;
+    try { window.__alloLazyMiscPanels?.(); } catch (_) {}
+    addToast(t('tour.loading') || 'Starting the tour…', 'info');
+    let attempts = 0;
+    const poll = setInterval(() => {
+      attempts += 1;
+      if (window.AlloModules && window.AlloModules.TourOverlay) { clearInterval(poll); setTourModuleTick(n => n + 1); return; }
+      const entry = window.__alloModuleRegistry && window.__alloModuleRegistry.MiscPanels;
+      if ((entry && entry.status === 'failed') || attempts >= 300) {
+        clearInterval(poll);
+        setRunTour(false);
+        addToast(t('tour.unavailable') || 'The tour could not load. Check your connection, then try again.', 'error');
+      }
+    }, 100);
+    return () => clearInterval(poll);
+  }, [runTour]);
   const _resolveTourEl = (step) => {
     if (!step) return null;
     if (step.id) { const el = document.getElementById(step.id); if (el) return el; }
@@ -27617,6 +27758,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     .join(',');
 
   const [workspacePane, setWorkspacePane] = useState('create');
+  // The second workspace tab: class groups + everything made here for teachers;
+  // just the materials for everyone else (2026-09-25, was "History").
+  const _alloMaterialsTabLabel = !isTeacherMode
+      ? (t('sidebar.my_resources') || 'My Resources')
+      : (isIndependentMode || isParentMode)
+          ? (t('sidebar.materials_tab') || 'Materials')
+          : (t('sidebar.class_materials_tab') || 'Class & Materials');
+  // A failed class join puts its recovery card in Preview; show it on phones too.
+  useEffect(() => { if (studentJoinFailure && !isTeacherMode) setWorkspacePane('preview'); }, [studentJoinFailure, isTeacherMode]);
   const [activeSidebarTab, setActiveSidebarTab] = useState('create');
   // N2 (2026-08-16): this used to read
   //   if (guidedMode && activeSidebarTab !== 'create') setActiveSidebarTab('create')
@@ -29219,7 +29369,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (timeSinceLastSave >= thirtyMinutes) {
               const toastKey = isTeacherMode ? 'common.save_reminder_teacher' : 'common.save_reminder_student';
               const fallbackMsg = isTeacherMode
-                  ? "💾 It's been 30 minutes! Click 'History' to save your resources as a JSON file."
+                  ? "💾 It's been 30 minutes! Save a backup of your work from your materials list."
                   : "💾 It's been 30 minutes! Use the export button in the toolbar to save your work.";
               addToast(t(toastKey) || fallbackMsg, "info");
               if (isBotVisible && alloBotRef.current) {
@@ -34134,12 +34284,15 @@ const parseTaggedContent = (text) => {
       const timeoutId = setTimeout(syncStudentAiPolicy, 250);
       return () => clearTimeout(timeoutId);
   }, [activeSessionCode, activeSessionAppId, isTeacherMode, appId, studentAiPolicyForShare]);
-  const joinClassSession = async (code, hostOverride = '') => {
+  const joinClassSession = async (code, hostOverride = '', joinOpts = null) => {
       const cleanCode = _alloCleanLiveSessionCode(code);
+      const noteJoinFailure = (reason) => { if (!isTeacherMode) setStudentJoinFailure({ code: cleanCode || String(code || '').toUpperCase(), reason: String(reason || 'unknown') }); };
       if (!cleanCode) {
           addToast(t('session.error_invalid_code'), "error");
+          noteJoinFailure('invalid-code');
           return false;
       }
+      setStudentJoinFailure(null);
       if (sessionUnsubscribeRef.current) {
           sessionUnsubscribeRef.current();
           sessionUnsubscribeRef.current = null;
@@ -34154,6 +34307,7 @@ const parseTaggedContent = (text) => {
           const sessionSnap = await getDoc(sessionRef);
           if (!sessionSnap.exists()) {
               addToast(t('session.error_not_found') || "Session not found. It may have ended.", "error");
+              noteJoinFailure('not-found');
               setActiveSessionCode(null);
               setActiveSessionAppId(appId);
               return false;
@@ -34169,6 +34323,7 @@ const parseTaggedContent = (text) => {
           if (sessionInfo.isActive === false || sessionInfo.status === 'ended') {
               _alloDisconnectStudentAi();
               addToast(t('session.toast_ended') || "Session has ended.", "info");
+              noteJoinFailure('ended');
               setActiveSessionCode(null);
               setActiveSessionAppId(appId);
               return false;
@@ -34192,6 +34347,15 @@ const parseTaggedContent = (text) => {
           // Keep the raw code visible: a student screenshot of this toast is
           // the only field diagnostic we get from an external phone.
           const codeSuffix = ' [' + errorCode + ']';
+          noteJoinFailure(errorCode);
+          // From the Launch Pad the recovery card shows the code, so the student
+          // gets one plain sentence here instead of a Firebase diagnosis.
+          if (joinOpts && joinOpts.fromPad && !isTeacherMode) {
+              addToast(t('student_join.failed_toast') || 'We couldn\u2019t reach your class. Your options are on the screen.', 'error');
+              setActiveSessionCode(null);
+              setActiveSessionAppId(appId);
+              return false;
+          }
           if (errorCode === 'permission-denied') {
               addToast("The class Firebase project refused this student device — its security rules denied the session read/write. The teacher's hosting environment may not accept outside student devices." + codeSuffix, "error");
           } else if (errorCode === 'auth/operation-not-allowed' || errorCode === 'auth/admin-restricted-operation') {
@@ -34206,6 +34370,12 @@ const parseTaggedContent = (text) => {
           return false;
       }
   };
+  useEffect(() => {
+      if (!pendingJoinCode || showStudentEntry || !studentNickname) return;
+      const code = pendingJoinCode;
+      setPendingJoinCode(null);
+      joinClassSession(code, '', { fromPad: true });
+  }, [pendingJoinCode, showStudentEntry, studentNickname]);
   const leaveLiveSession = React.useCallback(() => {
       if (isTeacherMode || !activeSessionCode) return;
       try { if (sessionUnsubscribeRef.current) sessionUnsubscribeRef.current(); } catch (_) {}
@@ -40243,8 +40413,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           ✋
         </button>
       )}
+      {/* bottom-16: the save chip owns bottom-4 and hid this pill's Retry. */}
       {isAppReady && (moduleLoadInfo.pending.length + (moduleLoadInfo.queued || []).length > 0 || moduleLoadInfo.failed.length > 0) && (
-        <div data-allo-module-loading-pill="" role="status" aria-live="polite" className="fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm">
+        <div data-allo-module-loading-pill="" role="status" aria-live="polite" className="fixed bottom-16 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm">
           {moduleLoadInfo.pending.length + (moduleLoadInfo.queued || []).length > 0 && (
             <span className="flex items-center gap-1.5">
               <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-slate-400 border-t-transparent animate-spin" aria-hidden="true"></span>
@@ -40324,7 +40495,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           </button>
         </div>
       )}
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} liveStatus={!isTeacherMode && !activeSessionCode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) ? { mode: 'homework', nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, changeCodename: () => setShowStudentWelcome(true) } : !isTeacherMode && activeSessionCode ? { nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, connection: liveSessionConnectionState.status, hostState: liveHostConnectionState, retryConnection: retryLiveSessionConnection, leave: leaveLiveSession, changeCodename: () => setShowStudentWelcome(true), signals: (user && user.uid) ? (() => {
+      {!isZenMode && <HeaderBar isSpecialistMode={isSpecialistMode} APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} liveStatus={!isTeacherMode && !activeSessionCode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) ? { mode: 'homework', nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, changeCodename: () => setShowStudentWelcome(true) } : !isTeacherMode && activeSessionCode ? { nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, connection: liveSessionConnectionState.status, hostState: liveHostConnectionState, retryConnection: retryLiveSessionConnection, leave: leaveLiveSession, changeCodename: () => setShowStudentWelcome(true), signals: (user && user.uid) ? (() => {
         // Help signals (student sender). Enum-only Tier-1 channel: writes
         // roster.{uid}.signal + signalAt via writeToSession; the teacher's Live
         // Session Center lists + clears them. No free text by design. Lived in
@@ -40575,7 +40746,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 aria-controls="workspace-sidebar-pane"
                 aria-disabled={guidedMode ? 'true' : undefined}
                 disabled={guidedMode}
-                title={guidedMode ? 'History is available after you finish or exit Guided Mode.' : undefined}
+                title={guidedMode ? ((t('sidebar.materials_after_guided') || '{tab} is available after you finish or exit Guided Mode.').replace('{tab}', _alloMaterialsTabLabel)) : undefined}
                 onClick={() => {
                   setActiveSidebarTab('history');
                   setIsHistoryPulsing(false);
@@ -40583,7 +40754,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 }}
                 className={`min-h-[44px] rounded-xl px-3 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${workspacePane === 'history' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
               >
-                History
+                {_alloMaterialsTabLabel}
               </button>
             </div>
           </nav>
@@ -40603,7 +40774,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               display: (isFullscreen || isZenMode || (!isWide && workspacePane === 'preview')) ? 'none' : 'flex'
             }}
         >
-          {isTeacherMode && isWide && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
+          {isTeacherMode && isWide && <SidebarTabsNav showsClassGroups={!isIndependentMode && !isParentMode} activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
           {guidedMode && !guidedModeConfigReady && (
             <section role="status" aria-live="polite" aria-labelledby="guided-config-recovery-title" className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-slate-800 shadow-sm">
               <h2 id="guided-config-recovery-title" className="text-sm font-black">Guided Mode needs one more tool</h2>
@@ -40615,7 +40786,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             </section>
           )}
           {guidedMode && guidedModeConfigReady && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print', guidedCreatedHistoryIds)} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} />}
-          {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} subtitle={isIndependentMode ? t('sidebar.ai_guide_sub_independent') : undefined} />}
+          {isTeacherMode && !(guidedMode && String(inputText || '').trim().length <= 20) && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} subtitle={isIndependentMode ? t('sidebar.ai_guide_sub_independent') : undefined} />}
           {isTeacherMode && <div
             id="sidebar-create-panel"
             role={isWide ? 'tabpanel' : undefined}
@@ -40648,7 +40819,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     showUrlInput, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceTopic,
     sourceVocabulary, standardInputValue, standardMode, startNewPdfAudit, suggestedStandards, t,
     targetStandards, toggleTool, urlSearchQuery, urlToFetch, videoTranscriptSourceContext,
-    useOwnSources, setUseOwnSources,
+    useOwnSources, setUseOwnSources, guidedMode,
   })}
 </CDNModuleGate>
           )}
@@ -41358,25 +41529,55 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     the honest next step differs: a live student waits for the
                     teacher, a homework student whose pack never lands needs a
                     new link. */}
+                {(() => {
+                  // Students from the Launch Pad are neither on a homework link nor
+                  // in a live class yet, so "Connected / Loading your homework" was
+                  // untrue for them; a failed join gets a recovery card instead.
+                  const _isStudentView = !isTeacherMode && !isIndependentMode;
+                  const _homework = ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type);
+                  if (_isStudentView && studentJoinFailure && !activeSessionCode) return (
+                    <div role="alert" data-help-key="student_join_recovery" className="w-full max-w-xl text-left">
+                      <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{t('student_join.failed_title') || 'We couldn\u2019t reach your class'}</h2>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base">{t('student_join.failed_body') || 'Check the code with your teacher, then try again. You can explore on your own while you wait.'}</p>
+                      <div className="mt-5 flex flex-wrap gap-3">
+                        <button type="button" onClick={() => joinClassSession(studentJoinFailure.code, '', { fromPad: true })} className="min-h-11 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300">{t('student_join.try_again') || 'Try again'}</button>
+                        <button type="button" onClick={() => { setStudentJoinFailure(null); setShowLearningHub(true); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-bold text-slate-800 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300">{t('student_join.explore') || 'Explore on my own'}</button>
+                      </div>
+                      <p className="mt-5 text-sm text-slate-700">{(t('student_join.tell_teacher') || 'If it still does not work, show your teacher this code: {code}').replace('{code}', studentJoinFailure.code)}</p>
+                      <p className="mt-1 text-xs text-slate-500">{(t('student_join.detail') || 'Detail for your teacher: {reason}').replace('{reason}', studentJoinFailure.reason)}</p>
+                    </div>
+                  );
+                  if (_isStudentView && !activeSessionCode && !_homework) return (
+                    <>
+                      <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{t('student_join.explore_title') || 'Pick something to learn'}</h2>
+                      <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">{t('student_join.explore_body') || 'Open Learning Tools to read, explore science, write, and more.'}</p>
+                      <button type="button" onClick={() => setShowLearningHub(true)} className="mt-5 min-h-11 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300">{t('student_join.open_tools') || 'Open Learning Tools'}</button>
+                    </>
+                  );
+                  return (
+                    <>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">
-                  {!isTeacherMode && !isIndependentMode
-                    ? (t('input.empty_student_eyebrow') || 'Connected')
-                    : (t('common.ready') || 'Workspace ready')}
-                </p>
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{
-                  !isTeacherMode && !isIndependentMode
-                    ? (isStudentLinkMode
-                        ? (t('input.empty_student_homework_heading') || 'Loading your homework')
-                        : (t('input.empty_student_heading') || 'Waiting for your class'))
-                    : (t('tools.source') || 'Source Material')
-                }</h2>
-                <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">{
-                  !isTeacherMode && !isIndependentMode
-                    ? (isStudentLinkMode
-                        ? (t('input.empty_desc_student_homework') || 'Your homework is loading. If nothing appears, ask your teacher for a new link or QR code.')
-                        : (t('input.empty_desc_student_live') || 'You are connected. Activities will appear here as soon as your teacher shares them — you do not need to do anything.'))
-                    : (isIndependentMode ? t('input.empty_desc_independent') : t('input.empty_desc'))
-                }</p>
+                    {!isTeacherMode && !isIndependentMode
+                      ? (t('input.empty_student_eyebrow') || 'Connected')
+                      : (t('common.ready') || 'Workspace ready')}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{
+                    !isTeacherMode && !isIndependentMode
+                      ? (isStudentLinkMode
+                          ? (t('input.empty_student_homework_heading') || 'Loading your homework')
+                          : (t('input.empty_student_heading') || 'Waiting for your class'))
+                      : (t('tools.source') || 'Source Material')
+                  }</h2>
+                  <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">{
+                    !isTeacherMode && !isIndependentMode
+                      ? (isStudentLinkMode
+                          ? (t('input.empty_desc_student_homework') || 'Your homework is loading. If nothing appears, ask your teacher for a new link or QR code.')
+                          : (t('input.empty_desc_student_live') || 'You are connected. Activities will appear here as soon as your teacher shares them — you do not need to do anything.'))
+                      : (isIndependentMode ? t('input.empty_desc_independent') : t('input.empty_desc'))
+                  }</p>
+                    </>
+                  );
+                })()}
                 {isTeacherMode && !guidedMode && (
                   <div className="mt-8 w-full max-w-2xl">
                     <button
@@ -42798,6 +42999,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       <StudentEntryModal
         isOpen={showStudentEntry && hasSelectedRole && !isTeacherMode}
         isLiveSession={!!activeSessionCode}
+        classCode={pendingJoinCode || ''}
         onClose={handleCloseStudentEntry}
         onConfirm={handleStudentEntryConfirm}
       />
@@ -43992,15 +44194,30 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           setHasSelectedMode, setMicBannerDismissed, setGuidedMode,
           setHasSelectedRole, setShowWizard, setIsTeacherMode,
           setShowLearningHub, setShowEducatorHub,
-          setPendingRole, setIsGateOpen, setShowAIBackendModal
-      })}
-      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
-          t, setRunTour,
+          setPendingRole, setIsGateOpen, setShowAIBackendModal,
+          onChooseRole: chooseLaunchRole,
+          // AlloBot onboarding coach rides INSIDE the pad (companion slot):
+          // the pad inerts every sibling, so a sibling coach was unreachable
+          // and the help tip expired unseen behind it (critique 2026-09-25).
+          companion: (window.AlloModules.OnboardingCoach ? React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
+          t,
+          // The tour walks the teacher workspace, so leave the pad for it
+          // first. A gated device takes the normal role path instead.
+          setRunTour: function (on) {
+              if (!on) { setRunTour(false); return; }
+              setHasSelectedMode(true); setGuidedMode(false);
+              if (_alloEducatorAccessCodeRequired()) return;
+              executeRoleSelect('teacher'); setShowWizard(false);
+              setTourStep(0);
+              setTimeout(() => setRunTour(true), 400);
+          },
           // Tier 3 — pickMode dispatch. Mirrors the exact setter sequence each
           // LaunchPad mode card fires (the mode cards in view_launch_pad_source.jsx),
           // including the educator password gate. Single source of truth lives
           // in the host so the coach module never bypasses the gate.
           pickMode: function (key) {
+              if (key === 'teacher' || key === 'family' || key === 'specialist') { chooseLaunchRole(key); return; }
+              if (key === 'student') { chooseLaunchRole('student_explore'); return; }
               switch (key) {
                   case 'full':
                       // Explicit false: a restored workspace can arrive with guided
@@ -44024,6 +44241,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                       break;
               }
           }
+      
+          }) : null)
       })}
       {/* Agentic AlloBot S0 (docs/allobot_agentic_design.md): the command
           palette — Ctrl/Cmd+K anywhere. ONE registry that the bot chat (S1)
@@ -44277,7 +44496,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                   setShowStemLab, setStemLabTab, setStemLabTool
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} openSchoolRewards={handleOpenSchoolRewards} openCommunicationsStudio={() => { if (typeof window.__alloLazyCommunicationsStudio === 'function') { try { window.__alloLazyCommunicationsStudio(); } catch (_) {} } setIsCommunicationsStudioOpen(true); }} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
+        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} userRole={isSpecialistMode ? 'clinician' : undefined} addToast={addToast} openSchoolRewards={handleOpenSchoolRewards} openCommunicationsStudio={() => { if (typeof window.__alloLazyCommunicationsStudio === 'function') { try { window.__alloLazyCommunicationsStudio(); } catch (_) {} } setIsCommunicationsStudioOpen(true); }} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowLearningWebExplorer={setShowLearningWebExplorer} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate loaderName="__alloLazyReportWriter" moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
@@ -45844,6 +46063,7 @@ function UDLGuideButton(props) {
 function TeacherHistoryTab(props) {
     var Real = window.AlloModules && window.AlloModules.TeacherHistoryTab && window.AlloModules.TeacherHistoryTab.TeacherHistoryTab;
     if (Real && Real !== TeacherHistoryTab) return React.createElement(Real, props);
+    try { if (typeof window.__alloLazyTeacherHistoryTab === 'function') window.__alloLazyTeacherHistoryTab(); } catch (_) {}
     return null;
 }
 // ── HistoryPanel extracted to view_history_panel_module.js (CDN) ──

@@ -233,7 +233,8 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(teacherStart.indexOf('await _alloEnsureAuthenticatedUser()')).toBeLessThan(teacherStart.indexOf('_m.startClassSession'));
     expect(teacherStart).toContain('user: sessionUser');
 
-    const join = sliceBetween(rootSource, "const joinClassSession = async (code, hostOverride = '')", '// Desktop LAN classroom auto-join:');
+    // 2026-09-25: a third joinOpts parameter lets a Launch Pad join show the on-screen recovery card.
+    const join = sliceBetween(rootSource, "const joinClassSession = async (code, hostOverride = '', joinOpts = null)", '// Desktop LAN classroom auto-join:');
     const auth = join.indexOf('await _alloEnsureAuthenticatedUser()');
     const read = join.indexOf('await getDoc(sessionRef)');
     const roster = join.indexOf('await updateDoc(sessionRef');

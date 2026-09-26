@@ -1680,7 +1680,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
   );
 });
 
-const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
+const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm, classCode }) => {
   const { t } = useContext(LanguageContext);
   const [selectedAdj, setSelectedAdj] = useState('');
   const [selectedAnimal, setSelectedAnimal] = useState('');
@@ -1807,7 +1807,9 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
             <X aria-hidden="true" size={20} />
         </button>
         <h2 id="student-entry-title" className="text-2xl font-black text-slate-800 mb-2">{t('wizard.step_codename') || 'Pick Your Codename!'}</h2>
-        <p id="student-entry-description" className="text-slate-600 mb-6 font-medium">{t('modals.student_entry_sub')}</p>
+        <p id="student-entry-description" className="text-slate-600 mb-6 font-medium">{classCode
+            ? (t('modals.student_entry_sub_class') || 'Pick a secret name for class {code}.').replace('{code}', classCode)
+            : t('modals.student_entry_sub')}</p>
         <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6">
             <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2">
                 <label className="text-left text-xs font-bold text-indigo-900">
@@ -1865,7 +1867,9 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 data-help-key="entry_start_new"
             >
-                <Sparkles size={18} className="text-yellow-400 fill-current" /> {t('entry.start')}
+                <Sparkles size={18} className="text-yellow-400 fill-current" /> {classCode && selectedAdj && selectedAnimal
+                    ? (t('entry.join_as') || 'Join {code} as {name}').replace('{code}', classCode).replace('{name}', selectedAdj + ' ' + selectedAnimal)
+                    : t('entry.start')}
             </button>
             <button
                 onClick={() => handleConfirm('load')}

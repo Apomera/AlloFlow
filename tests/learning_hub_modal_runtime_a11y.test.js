@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -32,6 +32,10 @@ afterEach(() => {
   host = opener = outside = null;
   window.__alloFocusTrapStack = [];
 });
+
+// These tests exercise every card with all sections open. A first visit folds
+// all but the first section (2026-09-25), so state that premise explicitly.
+beforeEach(() => { localStorage.setItem('alloflow_hub_learning_collapsed', '[]'); });
 
 describe('Learning Hub modal runtime accessibility', () => {
   it('renders all launchers with visible naming, contains focus, passes axe, and restores its opener', async () => {

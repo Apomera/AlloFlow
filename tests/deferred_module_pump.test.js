@@ -57,7 +57,11 @@ function makeHarness(options) {
       addEventListener: (type, handler) => { (listeners[type] = listeners[type] || []).push(handler); },
       // Left undefined on purpose: the pump then takes its documented fallback path and runs the
       // work with a didTimeout deadline, which is the branch every browser without rIC uses.
-      requestIdleCallback: undefined,
+      requestIdleCallback: settings.shortIdleSlices
+        // A page with a running animation reports a few ms of idle time per callback and
+        // never reaches the rIC timeout, so didTimeout stays false and timeRemaining() small.
+        ? (run) => environment.setTimeout(() => run({ didTimeout: false, timeRemaining: () => 6 }), 0)
+        : undefined,
     },
     setTimeout: (fn, delay) => {
       timers.push({ fn, at: clock + (delay || 0), order: sequence++ });
@@ -115,6 +119,16 @@ function makeHarness(options) {
 }
 
 describe('deferred module pump', () => {
+  it('dispatches even when the browser only ever offers short idle slices', () => {
+    // Seen live 2026-09-25: 143 queued, 0 pending, for the whole session, because the
+    // loading pill's own spinner kept every idle slice under the 10ms dispatch guard.
+    const harness = makeHarness({ shortIdleSlices: true });
+    harness.enqueue(12);
+    harness.runUntil(10000);
+    expect(harness.dispatched.length, 'short idle slices starved the queue completely').toBeGreaterThan(0);
+    expect(harness.dispatched.length, 'the idle-slice check no longer throttles at all').toBeLessThan(12);
+  });
+
   it('starts more than one background module at a time', () => {
     const harness = makeHarness();
     harness.enqueue(10);

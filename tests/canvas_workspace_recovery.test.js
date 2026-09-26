@@ -524,7 +524,9 @@ describe('Canvas workspace recovery integration contracts', () => {
     // Shell deep links now suppress both landing surfaces, but do not change their
     // recovery-first ordering. Include that shared guard in the canonical anchor.
     const launchPadGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView', recoveryGate);
-    const coachGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.OnboardingCoach', launchPadGate + 1);
+    // 2026-09-25: the coach renders INSIDE the pad (companion slot) so the pad's
+    // inert sweep cannot disable it; it therefore still follows the pad gate.
+    const coachGate = anti.indexOf('companion: (window.AlloModules.OnboardingCoach ? React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach', launchPadGate + 1);
 
     expect(recoveryGate).toBeGreaterThan(-1);
     expect(launchPadGate).toBeGreaterThan(recoveryGate);

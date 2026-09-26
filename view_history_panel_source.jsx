@@ -900,6 +900,9 @@ function HistoryPanel(props) {
                                     {isResourceFilterActive ? filteredHistory.length + ' of ' + unitFilteredHistory.length : unitFilteredHistory.length}
                                 </span>
                             </h3>
+                        <p className="mt-1 pl-10 text-xs leading-relaxed text-slate-600">{isTeacherMode
+                            ? (t('history.panel_intro') || 'Everything you have made in this workspace. Sort it into units, save a backup file, or share it as a pack.')
+                            : (t('history.panel_intro_student') || 'Everything you have made. Save a copy so you do not lose it.')}</p>
                         <div className="flex items-center gap-1.5 mt-1 pl-10 text-xs font-medium text-slate-500">
                             {isCanvas && canvasRecoverySaveStatus === 'inactive' ? (
                                 <span className="flex min-h-11 items-center gap-1 text-slate-500">Live-session device recovery is off</span>

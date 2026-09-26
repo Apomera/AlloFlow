@@ -23,6 +23,10 @@
   var Unplug = _lazyIcon('Unplug');
 
   function LaunchPadView(props) {
+  // Companion UI (the AlloBot onboarding coach) renders INSIDE the pad. The
+  // pad marks every sibling inert, so a sibling coach was unreachable by
+  // mouse, keyboard and screen reader (critique 2026-09-25).
+  var companion = props.companion || null;
   var React = window.React;
   var useState = React.useState;
   var useContext = React.useContext;
@@ -45,6 +49,15 @@
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  // Host-owned role dispatch (gate, codename, guided default). Older hosts
+  // lack it and get the legacy workspace chooser instead of doors.
+  var onChooseRole = props.onChooseRole;
+  var _studentOpen = useState(false);
+  var studentOpen = _studentOpen[0];
+  var setStudentOpen = _studentOpen[1];
+  var _classCode = useState('');
+  var classCode = _classCode[0];
+  var setClassCode = _classCode[1];
   var _aiSettingsLoad = useState('idle');
   var aiSettingsLoadStatus = _aiSettingsLoad[0];
   var setAiSettingsLoadStatus = _aiSettingsLoad[1];
@@ -376,6 +389,7 @@
     var value = t ? t(key) : '';
     return value && value !== key ? value : fallback;
   };
+  var legacyHost = typeof onChooseRole !== 'function';
   var fullTitle = copy('launch_pad.full_title', 'Full AlloFlow');
   var fullDesc = copy('launch_pad.full_desc', 'Use the complete workspace with every tool available.');
   var guidedTitle = copy('launch_pad.guided_title', 'Guided Mode');
@@ -384,7 +398,18 @@
   var learningToolsDesc = copy('launch_pad.learning_tools_desc', 'STEAM Lab, StoryForge, SEL Hub, Research Hub & more - explore, create, investigate, and grow.');
   var educatorToolsTitle = copy('launch_pad.educator_tools_title', 'Educator Tools');
   var educatorToolsDesc = copy('launch_pad.educator_tools_desc_open', 'BehaviorLens, Report Writer, and other professional educator tools.');
-  var switchHint = copy('launch_pad.switch_hint', 'You can switch modes later.');
+  var doorTitle = copy('roles.subtitle', 'How will you be using the app today?');
+  var teacherTitle = copy('roles.teacher', 'Teacher');
+  var teacherDesc = copy('roles.teacher_description', 'Build accessible lessons and adapt materials for your class.');
+  var teacherFullLink = copy('launch_pad.teacher_full_link', 'Open the full workspace instead');
+  var studentTitle = copy('roles.student', 'Student');
+  var studentDesc = copy('roles.student_description', 'Join your class and learn with a private codename.');
+  var familyTitle = copy('launch_pad.door_family', 'Family');
+  var familyDesc = copy('launch_pad.door_family_desc', 'Turn what your child is reading into stories, word lists, and simpler versions at home.');
+  var specialistTitle = copy('launch_pad.door_specialist', 'Specialist');
+  var specialistDesc = copy('launch_pad.door_specialist_desc', 'BehaviorLens, Report Writer, and tools for psychologists, counselors, and support staff.');
+  var lastTimeLabel = copy('roles.last_time', 'Last time');
+  var switchHint = copy('launch_pad.switch_hint', 'You can switch anytime from Start & setup.');
   var voiceAccessStarting = !voiceAccessActive && micPermissionStatus === 'requesting';
   var voiceAccessDenied = !voiceAccessActive && micPermissionStatus === 'denied';
   var voiceAccessButtonText = voiceAccessActive ? copy('launch_pad.voice_access_active', 'Voice Access Active') : voiceAccessStarting ? copy('launch_pad.voice_access_starting', 'Starting Voice Access...') : voiceAccessDenied ? copy('launch_pad.voice_access_retry', 'Retry Voice Access') : copy('launch_pad.voice_access_enable', 'Enable Voice Access');
@@ -739,7 +764,7 @@
       element.setAttribute('inert', '');
       element.setAttribute('aria-hidden', 'true');
     });
-    var focusTarget = root.querySelector('button:not([disabled]), summary, [href], input, select, textarea');
+    var focusTarget = root.querySelector('[data-lp-initial-focus="true"]') || root.querySelector('button:not([disabled]), summary, [href], input, select, textarea');
     if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
     return function () {
       previousState.forEach(function (state) {
@@ -817,6 +842,57 @@
       html.style.overflow = previousHtmlOverflow;
     };
   }, []);
+  // Last role on this device earns a quiet badge and first focus. A hint,
+  // never an auto-skip: shared classroom devices change hands.
+  var lastRole = function () {
+    try {
+      return localStorage.getItem('alloflow_last_role');
+    } catch (_) {
+      return null;
+    }
+  }();
+  var lastDoor = lastRole === 'teacher' ? 'teacher' : lastRole === 'parent' ? 'family' : lastRole === 'independent' ? 'student' : lastRole === 'specialist' ? 'specialist' : null;
+  var initialDoor = lastDoor || 'teacher';
+  var cleanClassCode = String(classCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+  // Doors render only when the host supplies onChooseRole (see legacyHost).
+  function chooseRole(key, event, opts) {
+    runLaunchTransition(function () {
+      onChooseRole(key, opts || {});
+    }, event);
+  }
+  function closeStudentPanel() {
+    setStudentOpen(false);
+    var door = launchPadRef.current && launchPadRef.current.querySelector('[data-pathway="student"]');
+    if (door) door.focus();
+  }
+  function renderDoor(door) {
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "lp-card",
+      "data-pathway": door.key,
+      "data-lp-initial-focus": initialDoor === door.key ? 'true' : undefined,
+      "aria-labelledby": 'launch-pad-' + door.key + '-title',
+      "aria-describedby": (lastDoor === door.key ? 'launch-pad-' + door.key + '-last ' : '') + 'launch-pad-' + door.key + '-desc',
+      "aria-expanded": door.expanded,
+      "aria-controls": door.controls,
+      onClick: door.onClick
+    }, lastDoor === door.key && /*#__PURE__*/React.createElement("span", {
+      className: "lp-door-badge"
+    }, /*#__PURE__*/React.createElement("span", {
+      id: 'launch-pad-' + door.key + '-last',
+      className: "lp-badge"
+    }, lastTimeLabel)), /*#__PURE__*/React.createElement(LaunchPadIcon, {
+      className: "lp-card-icon",
+      name: door.icon,
+      size: 24
+    }), /*#__PURE__*/React.createElement("span", {
+      id: 'launch-pad-' + door.key + '-title',
+      className: "lp-card-title"
+    }, door.title), /*#__PURE__*/React.createElement("span", {
+      id: 'launch-pad-' + door.key + '-desc',
+      className: "lp-card-desc"
+    }, door.desc));
+  }
   function LaunchPadIcon(iconProps) {
     var IconComponent = window.AlloIcons && window.AlloIcons[iconProps.name];
     if (IconComponent) {
@@ -859,35 +935,63 @@
             .lp-root { background: radial-gradient(circle at 14% 0%, rgba(99,102,241,.18), transparent 34%), radial-gradient(circle at 88% 8%, rgba(14,165,233,.11), transparent 30%), linear-gradient(155deg, #080b16 0%, #0d1324 48%, #10182b 100%); }
             .lp-root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
             .lp-root *, .lp-root *::before, .lp-root *::after { box-sizing: border-box; }
-            .lp-shell { width: min(760px, 100%); padding: 0 24px; display: grid; gap: 28px; }
+            .lp-shell { width: min(760px, 100%); padding: 0 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
             .lp-utility-bar { position: absolute; top: 18px; right: 20px; z-index: 2147483001; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
             .lp-lang-switcher { position: relative; }
             .lp-logo-block { text-align: center; }
             .lp-brand-mark { width: 64px; height: 64px; margin: 0 auto 15px; display: block; padding: 3px; border: 0; border-radius: 19px; object-fit: cover; background: linear-gradient(145deg, rgba(253,230,138,.9), rgba(129,140,248,.78) 58%, rgba(56,189,248,.7)); box-shadow: 0 0 0 1px rgba(255,255,255,.16), 0 18px 38px rgba(2,6,23,.42); }
             .lp-voice-setup { width: 100%; }
             .lp-launch-footer { padding-top: 2px; }
-            .lp-section-intro { display: grid; gap: 7px; margin-bottom: 14px; }
-            .lp-eyebrow { margin: 0; color: #a5b4fc; font-size: 10px; font-weight: 850; letter-spacing: 1.45px; text-transform: uppercase; }
             .lp-section-title { margin: 0; color: #f8fafc; font-size: clamp(20px, 3vw, 25px); line-height: 1.2; font-weight: 820; letter-spacing: -.45px; }
-            .lp-section-copy { margin: 0; color: #aebbd2; font-size: 12px; line-height: 1.55; }
-            .lp-mode-grid, .lp-direct-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
             .lp-card { appearance: none; width: 100%; min-height: 44px; font: inherit; color: inherit; text-align: left; background: rgba(20,29,49,.92); border: 1px solid rgba(148,163,184,.22); border-radius: 18px; cursor: pointer; transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease; position: relative; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 14px 36px rgba(2,6,23,.2); }
             .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; border-top: 1px solid rgba(255,255,255,.06); }
             .lp-card::after { content: '→'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 18px; transition: transform .18s ease, color .18s ease; }
+            .lp-card-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(165,180,252,.24); border-radius: 13px; color: #c7d2fe; background: rgba(99,102,241,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 8px 18px rgba(2,6,23,.14); transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+            .lp-section-intro { display: grid; gap: 7px; margin-bottom: 14px; }
+            .lp-eyebrow { margin: 0; color: #a5b4fc; font-size: 10px; font-weight: 850; letter-spacing: 1.45px; text-transform: uppercase; }
+            .lp-section-copy { margin: 0; color: #aebbd2; font-size: 12px; line-height: 1.55; }
+            .lp-mode-grid, .lp-direct-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
             .lp-mode-grid .lp-card { min-height: 178px; padding: 24px 54px 22px 22px; }
             .lp-mode-grid .lp-card[data-emphasis="recommended"] { background: linear-gradient(145deg, rgba(55,48,163,.86), rgba(30,41,82,.96)); border-color: rgba(165,180,252,.62); box-shadow: inset 0 1px 0 rgba(255,255,255,.13), 0 18px 46px rgba(49,46,129,.28); }
             .lp-direct-grid .lp-card { min-height: 104px; padding: 18px 50px 18px 18px; display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 13px; box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 10px 26px rgba(2,6,23,.15); }
-            .lp-card-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(165,180,252,.24); border-radius: 13px; color: #c7d2fe; background: rgba(99,102,241,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 8px 18px rgba(2,6,23,.14); transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease; }
             .lp-mode-grid .lp-card-icon { width: 46px; height: 46px; margin-bottom: 18px; border-radius: 14px; }
             .lp-card[data-emphasis="recommended"] .lp-card-icon { color: #fff7d6; border-color: rgba(253,230,138,.33); background: rgba(253,230,138,.12); }
             .lp-card[data-pathway="full"] .lp-card-icon { color: #bae6fd; border-color: rgba(125,211,252,.3); background: rgba(14,165,233,.11); }
             .lp-card[data-pathway="learning"] .lp-card-icon { color: #a7f3d0; border-color: rgba(110,231,183,.3); background: rgba(16,185,129,.11); }
             .lp-card[data-pathway="educator"] .lp-card-icon { color: #ddd6fe; border-color: rgba(196,181,253,.3); background: rgba(139,92,246,.11); }
+            .lp-direct-copy { min-width: 0; padding-right: 4px; }
+            .lp-mode-badge { position: absolute; top: 14px; right: 14px; }
+            .lp-door-title { margin-bottom: 14px; text-align: center; }
+            .lp-door-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+            .lp-door-cell { display: grid; align-content: start; gap: 2px; }
+            .lp-door-grid .lp-card { position: relative; min-height: 164px; padding: 22px 54px 20px 22px; box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 30px rgba(2,6,23,.18); }
+            .lp-door-grid .lp-card-icon { width: 46px; height: 46px; margin-bottom: 16px; border-radius: 14px; }
+            .lp-card[data-pathway="teacher"] .lp-card-icon { color: #fff7d6; border-color: rgba(253,230,138,.33); background: rgba(253,230,138,.12); }
+            .lp-card[data-pathway="student"] .lp-card-icon { color: #a7f3d0; border-color: rgba(110,231,183,.3); background: rgba(16,185,129,.11); }
+            .lp-card[data-pathway="family"] .lp-card-icon { color: #bae6fd; border-color: rgba(125,211,252,.3); background: rgba(14,165,233,.11); }
+            .lp-card[data-pathway="specialist"] .lp-card-icon { color: #ddd6fe; border-color: rgba(196,181,253,.3); background: rgba(139,92,246,.11); }
+            .lp-card[aria-expanded="true"] { border-color: rgba(110,231,183,.58); background: rgba(22,44,52,.96); }
+            .lp-door-grid .lp-card[aria-expanded]::after { transform: translateY(-50%) rotate(90deg); }
+            .lp-door-grid .lp-card[aria-expanded="true"]::after { transform: translateY(-50%) rotate(-90deg); color: #a7f3d0; }
+            .lp-door-badge { position: absolute; top: 14px; right: 14px; }
+            .lp-alt-link { appearance: none; justify-self: start; min-height: 44px; padding: 0 6px; border: 0; background: none; color: #c7d2fe; font: inherit; font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(199,210,254,.45); cursor: pointer; }
+            .lp-alt-link:hover { color: #fff; text-decoration-color: currentColor; }
+            .lp-alt-link:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; border-radius: 6px; }
+            .lp-student-panel { grid-column: 1 / -1; display: grid; gap: 8px; padding: 16px; border: 1px solid rgba(110,231,183,.32); border-radius: 18px; background: rgba(9,20,33,.82); animation: lpReveal .2s cubic-bezier(.16,1,.3,1); }
+            @keyframes lpReveal { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+            .lp-student-options { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; }
+            .lp-option { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 8px; margin: 0; padding: 14px; border: 1px solid rgba(148,163,184,.18); border-radius: 14px; background: rgba(255,255,255,.035); }
+            .lp-option-title { display: flex; align-items: center; gap: 8px; margin: 0; color: #f8fafc; font-size: 14px; font-weight: 800; }
+            .lp-option-copy { margin: 0; color: #c3cede; font-size: 12px; line-height: 1.5; }
+            .lp-code-row { display: flex; gap: 8px; }
+            .lp-code-input { flex: 1 1 0; width: 0; min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid rgba(148,163,184,.42); border-radius: 11px; background: rgba(2,6,23,.62); color: #f8fafc; font: inherit; font-size: 18px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; font-variant-numeric: tabular-nums; caret-color: #facc15; }
+            .lp-code-input::placeholder { color: #7c8aa3; letter-spacing: .24em; }
+            .lp-code-input:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+            .lp-explore-button { justify-self: start; border-color: rgba(110,231,183,.45); background: rgba(16,185,129,.2); }
+            .lp-explore-button:hover:not([disabled]) { background: rgba(16,185,129,.34); border-color: rgba(167,243,208,.7); }
             .lp-card-title { display: block; color: #f8fafc; font-size: 17px; font-weight: 820; line-height: 1.25; letter-spacing: -.2px; }
             .lp-card-desc { display: block; color: #c3cede; font-size: 12px; line-height: 1.55; margin-top: 6px; }
-            .lp-direct-copy { min-width: 0; padding-right: 4px; }
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; font-size: 9px; font-weight: 800; padding: 5px 9px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; text-transform: uppercase; letter-spacing: 1.1px; box-shadow: 0 4px 14px rgba(15,23,42,.2); }
-            .lp-mode-badge { position: absolute; top: 14px; right: 14px; }
             @media (hover: hover) {
               .lp-card:hover { transform: translateY(-2px); background: rgba(27,38,63,.98); border-color: rgba(165,180,252,.48); box-shadow: inset 0 1px 0 rgba(255,255,255,.075), 0 18px 42px rgba(2,6,23,.28); }
               .lp-card:hover::after { transform: translate(3px, -50%); color: #fde68a; }
@@ -924,14 +1028,17 @@
             .lp-lang-trigger, .lp-lang-item, .lp-mic-actions button, .lp-download-button, .lp-ai-settings { min-height: 44px; }
             @media (max-width: 680px), (max-height: 820px) { .lp-root { justify-content: flex-start !important; } }
             @media (max-width: 680px) {
-              .lp-root { padding: 18px 0 32px !important; }
+              .lp-root { padding: 18px 0 104px !important; }
               .lp-utility-bar { position: static; width: 100%; padding: 0 16px; margin-bottom: 22px; }
               .lp-shell { padding: 0 16px; gap: 24px; }
               .lp-logo-block { margin-bottom: 2px !important; }
+              .lp-door-grid, .lp-student-options { grid-template-columns: minmax(0, 1fr) !important; }
               .lp-mode-grid, .lp-direct-grid { grid-template-columns: 1fr !important; }
-              .lp-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
               .lp-mode-grid .lp-card { min-height: 142px; padding: 20px 54px 19px 19px; }
               .lp-direct-grid .lp-card { min-height: 92px; }
+              .lp-door-grid .lp-card { min-height: 0; padding: 18px 50px 18px 18px; display: grid; grid-template-columns: 42px minmax(0, 1fr); column-gap: 13px; align-items: center; }
+              .lp-door-grid .lp-card-icon { grid-row: span 2; width: 42px; height: 42px; margin-bottom: 0; }
+              .lp-door-grid .lp-card-desc { grid-column: 2; }
               .lp-mic-actions { flex-direction: column; align-items: stretch; }
               .lp-mic-actions button { width: 100%; }
               .lp-voice-grid { grid-template-columns: 1fr !important; }
@@ -948,7 +1055,7 @@
               .lp-ai-settings span { display: none; }
             }
             @media (prefers-reduced-motion: reduce) {
-              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge, .lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-download-button, .lp-download-button:hover, .lp-ai-settings { animation: none !important; transition: none !important; transform: none !important; }
+              .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge, .lp-student-panel, .lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-download-button, .lp-download-button:hover, .lp-ai-settings { animation: none !important; transition: none !important; transform: none !important; }
             }
           `), /*#__PURE__*/React.createElement("div", {
     className: "lp-utility-bar",
@@ -1101,7 +1208,7 @@
       textTransform: 'uppercase',
       margin: 0
     }
-  }, copy('launch_pad.subtitle', 'Adaptive Levels, Layers, & Outputs'))), /*#__PURE__*/React.createElement("section", {
+  }, copy('launch_pad.subtitle', 'Adaptive Levels, Layers, & Outputs'))), legacyHost ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("section", {
     className: "lp-choice-section",
     "aria-labelledby": "launch-pad-choice-title"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1231,7 +1338,139 @@
   }, educatorToolsTitle), /*#__PURE__*/React.createElement("span", {
     id: "launch-pad-educator-desc",
     className: "lp-card-desc"
-  }, educatorToolsDesc))))), /*#__PURE__*/React.createElement("section", {
+  }, educatorToolsDesc)))))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("section", {
+    className: "lp-door-section",
+    "aria-labelledby": "launch-pad-door-title"
+  }, /*#__PURE__*/React.createElement("h2", {
+    id: "launch-pad-door-title",
+    className: "lp-section-title lp-door-title"
+  }, doorTitle), /*#__PURE__*/React.createElement("div", {
+    className: "lp-door-grid"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lp-door-cell"
+  }, renderDoor({
+    key: 'teacher',
+    icon: 'School',
+    title: teacherTitle,
+    desc: teacherDesc,
+    onClick: function (event) {
+      chooseRole('teacher', event);
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-alt-link",
+    onClick: function (event) {
+      chooseRole('teacher_full', event);
+    }
+  }, teacherFullLink)), /*#__PURE__*/React.createElement("div", {
+    className: "lp-door-cell"
+  }, renderDoor({
+    key: 'student',
+    icon: 'Backpack',
+    title: studentTitle,
+    desc: studentDesc,
+    expanded: studentOpen,
+    controls: 'launch-pad-student-panel',
+    onClick: function () {
+      setStudentOpen(!studentOpen);
+    }
+  })), studentOpen && /*#__PURE__*/React.createElement("div", {
+    id: "launch-pad-student-panel",
+    className: "lp-student-panel",
+    role: "group",
+    "aria-labelledby": "launch-pad-student-title",
+    onKeyDown: function (event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        closeStudentPanel();
+      }
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lp-student-options"
+  }, /*#__PURE__*/React.createElement("form", {
+    className: "lp-option",
+    onSubmit: function (event) {
+      event.preventDefault();
+      if (cleanClassCode.length === 5) chooseRole('student_code', event.nativeEvent && event.nativeEvent.submitter ? {
+        currentTarget: event.nativeEvent.submitter
+      } : null, {
+        code: cleanClassCode
+      });
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "launch-pad-class-code",
+    className: "lp-option-title"
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: "Key",
+    size: 16
+  }), copy('launch_pad.student_code_label', 'I have a class code')), /*#__PURE__*/React.createElement("p", {
+    id: "launch-pad-class-code-hint",
+    className: "lp-option-copy"
+  }, copy('launch_pad.student_code_hint', 'Type the 5 letters or numbers your teacher shared. Next, you pick a private codename.')), /*#__PURE__*/React.createElement("div", {
+    className: "lp-code-row"
+  }, /*#__PURE__*/React.createElement("input", {
+    id: "launch-pad-class-code",
+    className: "lp-code-input",
+    type: "text",
+    inputMode: "text",
+    autoComplete: "off",
+    autoCapitalize: "characters",
+    spellCheck: false,
+    maxLength: 9,
+    value: classCode,
+    "aria-describedby": "launch-pad-class-code-hint",
+    onChange: function (event) {
+      setClassCode(event.target.value);
+    },
+    placeholder: "ABC12"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    className: "lp-download-button",
+    disabled: cleanClassCode.length !== 5
+  }, copy('launch_pad.student_code_join', 'Join class')))), /*#__PURE__*/React.createElement("div", {
+    className: "lp-option"
+  }, /*#__PURE__*/React.createElement("p", {
+    id: "launch-pad-explore-title",
+    className: "lp-option-title"
+  }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
+    name: "Search",
+    size: 16
+  }), copy('launch_pad.student_explore_title', 'No code? Explore on your own')), /*#__PURE__*/React.createElement("p", {
+    className: "lp-option-copy"
+  }, copy('launch_pad.student_explore_desc', 'Pick a private codename, then choose something to learn.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-download-button lp-explore-button",
+    onClick: function (event) {
+      chooseRole('student_explore', event);
+    }
+  }, copy('launch_pad.student_explore', 'Explore on my own')))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-alt-link",
+    onClick: function (event) {
+      chooseRole('adult', event);
+    }
+  }, copy('launch_pad.student_adult_link', "I'm an adult learning on my own"))), /*#__PURE__*/React.createElement("div", {
+    className: "lp-door-cell"
+  }, renderDoor({
+    key: 'family',
+    icon: 'Heart',
+    title: familyTitle,
+    desc: familyDesc,
+    onClick: function (event) {
+      chooseRole('family', event);
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "lp-door-cell"
+  }, renderDoor({
+    key: 'specialist',
+    icon: 'ClipboardList',
+    title: specialistTitle,
+    desc: specialistDesc,
+    onClick: function (event) {
+      chooseRole('specialist', event);
+    }
+  }))))), /*#__PURE__*/React.createElement("section", {
     className: "lp-voice-setup",
     "aria-labelledby": "launch-pad-offline-voice-title"
   }, /*#__PURE__*/React.createElement("details", {
@@ -1427,7 +1666,14 @@
       color: '#94a3b8',
       fontWeight: 550
     }
-  }, switchHint))));
+  }, switchHint))), companion && /*#__PURE__*/React.createElement("div", {
+    "data-launch-pad-companion": "",
+    style: {
+      position: 'relative',
+      zIndex: 2147483002,
+      colorScheme: 'light'
+    }
+  }, companion));
 }
 
   window.AlloModules = window.AlloModules || {};

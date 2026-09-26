@@ -265,6 +265,7 @@ function HeaderBar(props) {
     showHelpOnboarding,
     showReadThisPage,
     showTextSettings,
+    isSpecialistMode,
     showVoiceSettings,
     sliderFontSize,
     startClassSession,
@@ -658,7 +659,7 @@ function HeaderBar(props) {
     }
   };
   const piiWarningText = t("header.pii_warning");
-  const compactRoleLabel = isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
+  const compactRoleLabel = isSpecialistMode ? t("launch_pad.door_specialist") || "Specialist" : isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
   const dashboardNavLabel = isParentMode ? t("parent_mode.dashboard_title") || t("dashboard.title_parent") || "Family Dashboard" : isIndependentMode ? t("common.progress") || "My Learning Progress" : isTeacherMode ? t("dashboard.title") || "Dashboard" : t("common.progress") || "My Learning Progress";
   const parentProgressLabel = isParentMode ? t("parent_mode.progress_label") || t("common.assessment_center") || "Child Progress" : t("common.assessment_center") || "Assessment Center";
   const screeningLiveActive = Boolean(screenerSession && screenerSession.status !== "complete" && !isParentMode && !isIndependentMode);
@@ -823,7 +824,30 @@ function HeaderBar(props) {
   }, className: `rounded-lg border px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.surface : "border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100"}` }, liveStatus.nickname ? "Change codename" : "Set codename"), !_liveConnected && liveStatus && typeof liveStatus.retryConnection === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => liveStatus.retryConnection(), className: `rounded-lg px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.accent : "bg-amber-700 text-white hover:bg-amber-800"}` }, t("mailbox.retry") || "Retry"), liveStatus && typeof liveStatus.leave === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     handleCloseLiveStatus();
     liveStatus.leave();
-  }, className: `ml-auto rounded-lg border px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.surface : "border-rose-300 bg-white text-rose-800 hover:bg-rose-50"}` }, t("mailbox.leave_session") || "Leave session"))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleCloseLiveStatus }))), isTeacherMode && /* @__PURE__ */ React.createElement(
+  }, className: `ml-auto rounded-lg border px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.surface : "border-rose-300 bg-white text-rose-800 hover:bg-rose-50"}` }, t("mailbox.leave_session") || "Leave session"))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleCloseLiveStatus }))), /* @__PURE__ */ React.createElement("div", { className: "relative shrink-0" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-ignore": "true",
+      onClick: handleToggleIsHelpMode,
+      "aria-pressed": isHelpMode,
+      className: `inline-flex shrink-0 min-w-11 items-center justify-center rounded-xl px-3 transition-colors ${isHelpMode ? "bg-yellow-400 text-slate-900 shadow-md" : "text-white/85 hover:bg-white/10 hover:text-white"}`,
+      title: isHelpMode ? t("help_mode.deactivate") : t("help_mode.activate"),
+      "aria-label": isHelpMode ? t("help_mode.deactivate") : t("help_mode.activate")
+    },
+    /* @__PURE__ */ React.createElement(CircleHelp, { size: 18, "aria-hidden": "true" })
+  ), showHelpOnboarding && !isHelpMode && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: dismissHelpOnboarding,
+      "aria-label": t("common.dismiss") || "Dismiss help tip",
+      className: "absolute -bottom-14 right-0 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400",
+      style: { minWidth: "160px", textAlign: "center" }
+    },
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
+    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " ", t("header.click_for_help") || "Click", " ", /* @__PURE__ */ React.createElement("strong", null, "?"), " ", t("header.anytime_for_help") || "anytime for help!")
+  )), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

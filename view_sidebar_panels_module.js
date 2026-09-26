@@ -353,6 +353,18 @@ function useAiTextAvailable() {
   }, []);
   return available;
 }
+function aiGate(available, fn) {
+  return function(event) {
+    if (!available) {
+      try {
+        if (typeof window.__alloOpenAiSetup === "function") window.__alloOpenAiSetup();
+      } catch (_) {
+      }
+      return void 0;
+    }
+    return typeof fn === "function" ? fn(event) : void 0;
+  };
+}
 function AiSetupNotice({ t }) {
   return /* @__PURE__ */ React.createElement(
     "button",
@@ -1280,11 +1292,12 @@ function AdventurePanel(props) {
   )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-1 font-mono opacity-70" }, globalPoints, " / ", studentProjectSettings.adventureUnlockXP, " XP"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-3 text-purple-200 font-medium" }, t("adventure.locked_tip"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": adventureState.currentScene ? t("adventure.restart") : t("adventure.start"),
       "data-help-key": "adventure_start_btn",
-      onClick: handleStartAdventure,
-      disabled: !hasSourceOrAnalysis || adventureState.isLoading || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, handleStartAdventure),
+      disabled: !hasSourceOrAnalysis || adventureState.isLoading || isProcessing,
       "aria-busy": adventureState.isLoading || isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -1409,10 +1422,11 @@ function SimplifiedPanel(props) {
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCharts", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.data_visuals"))))), /* @__PURE__ */ React.createElement("p", { className: "my-3 text-sm text-slate-700" }, t("sidebar.read_original_guidance") || "Read the original with supports first. An adapted companion can activate background knowledge, build context, preview key concepts, and scaffold students toward the original; it does not replace the grade-level text."), /* @__PURE__ */ React.createElement("button", { type: "button", "data-read-original": true, onClick: () => handleReadOriginal && handleReadOriginal(), disabled: !hasSourceOrAnalysis || isProcessing, className: SIDEBAR_PANEL_UI.primaryAction }, t("sidebar.read_original_with_supports") || "Read original with supports"), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("simplified"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("simplified")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -1686,11 +1700,12 @@ function MathPanel(props) {
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathContext", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(FileText, { size: 12, className: "text-blue-500" }), " ", t("math.customize_label")))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate_math_problems"),
       "data-help-key": "math_generate_button",
-      onClick: handleGenerateMath,
-      disabled: !mathInput.trim() || isProcessing || mathMode === "Fluency Probe" || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, handleGenerateMath),
+      disabled: !mathInput.trim() || isProcessing || mathMode === "Fluency Probe",
       style: mathMode === "Fluency Probe" ? { display: "none" } : {},
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -1908,11 +1923,12 @@ function DbqPanel(props) {
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 border border-rose-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("dbq.includes") || "DBQ Packet Includes"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4C4} Document Excerpts"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F50D} HAPP Sourcing"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F517} Corroboration"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u270D\uFE0F Essay Prompt"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4CA} 4-Point Rubric"), window._dbqMode === "perspectives" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium" }, "\u2694\uFE0F POV Comparison"), window._dbqMode === "search" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium" }, "\u{1F310} Web Sources"), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium" }, "\u270F\uFE0F Teacher Docs")))), !hasSourceOrAnalysis && window._dbqMode !== "custom" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-700 italic flex items-center gap-1" }, t("dbq.need_source_hint") || "\u2B06\uFE0F Paste a source text above first \u2014 the DBQ will be built from it.")), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("dbq.generate_aria") || "Generate DBQ",
       "data-help-key": "dbq_generate_button",
-      onClick: () => handleGenerate("dbq"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("dbq")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
     },
@@ -2280,10 +2296,11 @@ function GlossaryPanel(props) {
   ), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-600" }), " ", t("glossary.auto_remove"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-normal" }, t("glossary.slower")))))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("glossary"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("glossary")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -2564,9 +2581,10 @@ function QuizPanel(props) {
   )), (generatedContent?.data?.analysis || history.some((item) => item && item.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.visuals_label") || "Visuals:"), /* @__PURE__ */ React.createElement("select", { id: "quiz-visuals-select", value: mcqVisualMode, onChange: (event) => setMcqVisualMode(event.target.value), disabled: isProcessing, "data-help-key": "quiz_visual_mode_select", className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50", "aria-label": t("quiz.visuals_aria") || "MCQ visual mode" }, /* @__PURE__ */ React.createElement("option", { value: "none" }, t("quiz.visuals_none") || "\u2205 None (text only)"), /* @__PURE__ */ React.createElement("option", { value: "question" }, t("quiz.visuals_question") || "Question images"), /* @__PURE__ */ React.createElement("option", { value: "options" }, t("quiz.visuals_options") || "Option images"), /* @__PURE__ */ React.createElement("option", { value: "both" }, t("quiz.visuals_both") || "Question + option images"))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("quiz", null, false, null, {
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("quiz", null, false, null, {
         quizMode,
         quizMcqCount: clampCount(effectiveMix.mcq || 0, 20),
         quizReflectionCount: reflectionTotal,
@@ -2574,9 +2592,9 @@ function QuizPanel(props) {
         scoringPolicy,
         mcqVisualMode,
         imageStyle
-      }),
+      })),
       "data-help-key": "quiz_generate_button",
-      disabled: !hasSourceOrAnalysis || isProcessing || assessedTotal <= 0 || !aiTextAvailable,
+      disabled: !hasSourceOrAnalysis || isProcessing || assessedTotal <= 0,
       "aria-busy": isProcessing,
       className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
     },
@@ -2669,10 +2687,11 @@ function TimelinePanel(props) {
   ), "\u{1F3A8} ", t("timeline.settings.include_visuals") || "Include sequence visuals"), /* @__PURE__ */ React.createElement("p", { className: `${SIDEBAR_PANEL_UI.help} ml-6` }, t("timeline.settings.visuals_hint") || "Generates an AI icon for each item. Adds ~30-50 seconds."))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("timeline"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("timeline")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction,
       "data-help-key": "timeline_generate_button"
@@ -2770,11 +2789,12 @@ function ConceptSortPanel(props) {
   )), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
       "data-help-key": "concept_sort_generate_button",
-      onClick: () => handleGenerate("concept-sort"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("concept-sort")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -2869,10 +2889,11 @@ function BrainstormPanel(props) {
   ))), activityMode !== "simulation" && !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), activityMode !== "simulation" && /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("brainstorm", null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } }),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("brainstorm", null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } })),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3021,10 +3042,11 @@ function ImagePanel(props) {
   ))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("image"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("image")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3156,11 +3178,12 @@ function OutlinePanel(props) {
   )), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
       "data-help-key": "outline_generate_button",
-      onClick: () => handleGenerate("outline"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("outline")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3211,11 +3234,12 @@ function NoteTakingPanel(props) {
   ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, t("note_taking.help") || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.")), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate") || "Generate",
       "data-help-key": "note_taking_generate_button",
-      onClick: () => handleGenerate("note-taking"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("note-taking")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3272,11 +3296,12 @@ function AnchorChartPanel(props) {
   ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, t("anchor_chart.help") || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it.")), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate") || "Generate",
       "data-help-key": "anchor_chart_generate_button",
-      onClick: () => handleGenerate("anchor-chart"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("anchor-chart")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3325,10 +3350,11 @@ function FaqPanel(props) {
   )), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("faq"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("faq")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3377,10 +3403,11 @@ function SentenceFramesPanel(props) {
   )), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("sentence-frames"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("sentence-frames")),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3418,10 +3445,11 @@ function LessonPlanPanel(props) {
   )), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": isParentMode ? lessonPlanActionLabel : t("common.generate_lesson_plan"),
-      onClick: handleGenerateLessonPlan,
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, handleGenerateLessonPlan),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3454,11 +3482,12 @@ function AnalysisPanel(props) {
   ), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Globe, { size: 12, className: "text-blue-500" }), " ", t("analysis.check_accuracy"))), /* @__PURE__ */ React.createElement("p", { className: `${SIDEBAR_PANEL_UI.help} ml-6` }, t("analysis.grounding_desc"))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "aria-disabled": !aiTextAvailable || void 0,
       type: "button",
       "aria-label": t("common.generate"),
       "data-help-key": "analysis_generate_button",
-      onClick: () => handleGenerate("analysis", null, false, inputText, { selectedReadingSourceId: "__input__" }),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: aiGate(aiTextAvailable, () => handleGenerate("analysis", null, false, inputText, { selectedReadingSourceId: "__input__" })),
+      disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
@@ -3928,6 +3957,7 @@ function GeneratorActionsView(props) {
     visualLayoutMode,
     visualStyle
   } = props;
+  const _guidedLean = !!guidedMode && String(inputText || "").trim().length <= 20;
   return /* @__PURE__ */ React.createElement("div", { id: "tour-generator-actions", "data-help-key": "generator_actions", className: "grid min-w-0 grid-cols-1 gap-4" }, /* @__PURE__ */ React.createElement("style", null, `
               ${hiddenToolCatalogSelector ? `${hiddenToolCatalogSelector}{display:none!important;}` : ""}
               #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) {
@@ -3978,7 +4008,7 @@ function GeneratorActionsView(props) {
       setToolCatalogGroup("all");
       setIsToolCatalogExpanded(true);
     }, className: "inline-flex min-h-11 shrink-0 items-center rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" }, "Show all tools")));
-  })(), /* @__PURE__ */ React.createElement(ReadingSourceChoice, { ...props }), window.AlloModules && window.AlloModules.UniversalSettingsPanel && React.createElement(window.AlloModules.UniversalSettingsPanel, {
+  })(), !_guidedLean && /* @__PURE__ */ React.createElement(ReadingSourceChoice, { ...props }), !(_guidedLean && !isUniversalSettingsOpen) && window.AlloModules && window.AlloModules.UniversalSettingsPanel && React.createElement(window.AlloModules.UniversalSettingsPanel, {
     InfoTooltip,
     addInterest,
     addToast,
@@ -4970,8 +5000,12 @@ function SourceInputShellView(props) {
     toggleTool,
     urlSearchQuery,
     urlToFetch,
-    videoTranscriptSourceContext
+    videoTranscriptSourceContext,
+    guidedMode
   } = props;
+  const _guidedFirstStep = !!guidedMode && String(inputText || "").trim().length <= 20;
+  const MoreSources = _guidedFirstStep ? "details" : React.Fragment;
+  const moreSourcesProps = _guidedFirstStep ? { "data-help-key": "source_more_ways", className: "min-w-0" } : {};
   return /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("source-input") ? void 0 : "none" }, id: "tour-input-panel", "data-help-key": "source_input", className: `bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === "input" ? "border-indigo-600 shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200"}` }, /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -5003,7 +5037,7 @@ function SourceInputShellView(props) {
       },
       isExtracting ? /* @__PURE__ */ React.createElement(RefreshCw2, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Upload, { size: 12 }),
       isExtracting ? t("input.actions.analyzing_short") : t("common.upload")
-    ), /* @__PURE__ */ React.createElement("label", { className: "text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer", title: t("input.load_project_tooltip") || "Load a previously saved AlloFlow PDF project" }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.load_project") || "Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
+    ), /* @__PURE__ */ React.createElement(MoreSources, { ...moreSourcesProps }, _guidedFirstStep && /* @__PURE__ */ React.createElement("summary", { className: "list-none [&::-webkit-details-marker]:hidden cursor-pointer text-xs inline-flex items-center gap-1 bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(ChevronDown2, { size: 12, "aria-hidden": "true" }), t("input.actions.more_sources") || "More ways to add text"), /* @__PURE__ */ React.createElement("div", { className: _guidedFirstStep ? "mt-2 flex flex-wrap items-center gap-2" : "contents" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer", title: t("input.load_project_tooltip") || "Load a previously saved AlloFlow PDF project" }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.load_project") || "Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       if (file.size > 64 * 1024 * 1024) {
@@ -5218,7 +5252,7 @@ function SourceInputShellView(props) {
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D6}"),
       t("input.actions.books_short") || "Books"
-    )), expandedTools.includes("source-input") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" }))
+    )))), expandedTools.includes("source-input") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" }))
   ), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
     "button",
     {

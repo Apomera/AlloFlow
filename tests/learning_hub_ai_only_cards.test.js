@@ -1,7 +1,7 @@
 // Learning Hub hides AI-only cards for a viewer whose runtime AI is blocked
 // (2026-09-14): a QR student without a personal key, or an in-app student under
 // the project's hide-AI setting. Tools that work without AI keep their cards.
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -30,6 +30,10 @@ afterEach(() => {
   window.__alloFocusTrapStack = [];
   localStorage.clear();
 });
+
+// These tests exercise every card with all sections open. A first visit folds
+// all but the first section (2026-09-25), so state that premise explicitly.
+beforeEach(() => { localStorage.setItem('alloflow_hub_learning_collapsed', '[]'); });
 
 async function mount() {
   host = document.createElement('div'); document.body.appendChild(host);

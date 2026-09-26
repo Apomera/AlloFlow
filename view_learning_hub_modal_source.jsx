@@ -149,7 +149,10 @@ function LearningHubModal(props) {
     catch (_) { return {}; }
   });
   const [hubCollapsedSections, setHubCollapsedSections] = React.useState(() => {
-    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_collapsed') || '[]'); return Array.isArray(parsed) ? parsed : []; }
+    // First visit (nothing saved): keep Core open and fold the rest, so a
+    // new student meets a handful of tools, not sixteen. Search still
+    // reaches every tool (clarify 2026-09-25).
+    try { const saved = localStorage.getItem('alloflow_hub_learning_collapsed'); if (saved === null) return ['practice', 'explore', 'create']; const parsed = JSON.parse(saved || '[]'); return Array.isArray(parsed) ? parsed : []; }
     catch (_) { return []; }
   });
   const [hubRoleOverride, setHubRoleOverride] = React.useState(() => {
@@ -285,7 +288,7 @@ function LearningHubModal(props) {
                       <button key={card.id} type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 rounded-lg border border-emerald-200 bg-white px-3 text-left text-xs font-bold text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">{card.label}</button>
                     ))}
                   </div>
-                  <p className="text-[11px] text-emerald-700 mt-2">{tr('hub.recommended_hint', 'Based on your role and local tool use')}</p>
+                  <p className="text-[11px] text-emerald-700 mt-2">{tr('hub.recommended_hint', 'Picked for your role and what you have used on this device')}</p>
                 </div>
               )}
               {hubManageFavorites && hubCards.length > 0 && (
@@ -320,7 +323,7 @@ function LearningHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('learning_hub.section_core_title', 'Core learning')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_core_desc', 'Start with reading, evidence, inquiry, and subject exploration.')}</p>
+                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_core_desc', 'Read, ask questions, and explore a subject.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="core" aria-expanded={!hubCollapsedSections.includes('core')} aria-label={hubCollapsedSections.includes('core') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('core')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('core') ? '+' : '-'}</button>
                 </div>
@@ -336,7 +339,7 @@ function LearningHubModal(props) {
                   <span className="text-4xl" aria-hidden="true">💡</span>
                   <div>
                     <h3 className="font-bold text-amber-900">{tr('learning_hub.lumen_title', 'Lumen Study')}</h3>
-                    <p className="text-xs text-amber-800 mt-1">{tr('learning_hub.lumen_desc', 'Ask questions, inspect exact supporting passages, and save source-grounded notes.')}</p>
+                    <p className="text-xs text-amber-800 mt-1">{tr('learning_hub.lumen_desc', 'Ask questions about a reading and save notes that point back to the text.')}</p>
                   </div>
                 </button>
 
@@ -383,7 +386,7 @@ function LearningHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('learning_hub.section_practice_title', 'Practice and progress')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_practice_desc', 'Build fluency, prepare for assessments, and support learner wellbeing.')}</p>
+                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_practice_desc', 'Practice skills, get ready for tests, and check in on how you feel.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="practice" aria-expanded={!hubCollapsedSections.includes('practice')} aria-label={hubCollapsedSections.includes('practice') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('practice')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('practice') ? '+' : '-'}</button>
                 </div>
@@ -394,7 +397,7 @@ function LearningHubModal(props) {
                   <span className="w-12 h-12 rounded-lg bg-emerald-700 text-white flex items-center justify-center text-sm font-black" aria-hidden="true">A/文</span>
                   <div>
                     <h3 className="font-bold text-emerald-900">{tr('learning_hub.lingua_title', 'Lingua Practice')}</h3>
-                    <p className="text-xs text-emerald-800 mt-1">{tr('learning_hub.lingua_desc', 'Build vocabulary, practice speaking, and rehearse real conversations')}</p>
+                    <p className="text-xs text-emerald-800 mt-1">{tr('learning_hub.lingua_desc', 'Learn new words and practice real conversations out loud.')}</p>
                   </div>
                 </button>
 
@@ -444,7 +447,7 @@ function LearningHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('learning_hub.section_explore_title', 'Explore and organize')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_explore_desc', 'Connect ideas, investigate questions, and make sense of complex material.')}</p>
+                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_explore_desc', 'Connect ideas and dig into big questions.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="explore" aria-expanded={!hubCollapsedSections.includes('explore')} aria-label={hubCollapsedSections.includes('explore') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('explore')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('explore') ? '+' : '-'}</button>
                 </div>
@@ -466,7 +469,7 @@ function LearningHubModal(props) {
                     <span className="text-4xl" aria-hidden="true">{'\uD83D\uDD78\uFE0F'}</span>
                     <div>
                       <h3 className="font-bold text-violet-900">{tr('learning_hub.learning_web_explorer_title', 'Learning Web: Explore')}</h3>
-                      <p className="text-xs text-violet-700 mt-1">{tr('learning_hub.learning_web_explorer_desc', 'Explore standards, concepts, lessons, evidence, and word connections in one accessible map.')}</p>
+                      <p className="text-xs text-violet-700 mt-1">{tr('learning_hub.learning_web_explorer_desc', 'See how ideas, lessons, and words connect on one map.')}</p>
                     </div>
                   </button>
                   <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('learning-web-explorer')} aria-label={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Explore' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Explore'} title={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('learning-web-explorer'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-violet-700 text-lg leading-none shadow-sm hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('learning-web-explorer') ? '★' : '☆'}</button>
@@ -489,7 +492,7 @@ function LearningHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('learning_hub.section_create_title', 'Create and express')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_create_desc', 'Use voice, story, music, poetry, and reflection to demonstrate understanding.')}</p>
+                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_create_desc', 'Show what you know with stories, music, poems, and your voice.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="create" aria-expanded={!hubCollapsedSections.includes('create')} aria-label={hubCollapsedSections.includes('create') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('create')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('create') ? '+' : '-'}</button>
                 </div>

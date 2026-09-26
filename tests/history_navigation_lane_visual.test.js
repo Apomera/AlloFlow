@@ -54,7 +54,9 @@ describe('calm History/Create navigation lane', () => {
 
   it('retains the Create/History tab contract with visible fallback labels and roving focus', () => {
     expect(tabsSource).toContain("translatedLabel('sidebar.create_tab', 'Create')");
-    expect(tabsSource).toContain("translatedLabel('sidebar.history_tab', 'History')");
+    // 2026-09-25: the tab holds class groups and made materials, so it is named for both.
+    expect(tabsSource).toContain("translatedLabel('sidebar.class_materials_tab', 'Class & Materials')");
+    expect(tabsSource).toContain("translatedLabel('sidebar.materials_tab', 'Materials')");
     expect(tabsSource).toContain('role="tablist"');
     expect(tabsSource).toContain('id="tab-create"');
     expect(tabsSource).toContain('id="tab-history"');

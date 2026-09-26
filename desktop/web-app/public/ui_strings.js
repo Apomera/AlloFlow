@@ -161,8 +161,8 @@
     "dashboard_text": "The Tool Navigation Bar and Teacher Dashboard access point.\n### Tool Navigation Bar\n• **Tool Icons**: One-click jump to any generator (Quiz, Glossary, Adventure, etc.).\n• **Status Dots**: Green = active content, Orange = processing, Gray = empty.\n• **Logical Flow**: Tools ordered left-to-right from Input → Generate → Export.\n### Teacher Dashboard Button\nClick the Dashboard icon to open the **Teacher Grading Dashboard** - a dedicated panel for tracking student progress:\n• **Upload Student JSONs**: Students export their work as JSON files; upload them here for batch analysis.\n• **Student Roster**: View all uploaded students with nickname, date, quiz progress, and Adventure level.\n• **Individual Review**: Click any student to see their full history•quizzes, adventures, responses.\n• **Mark as Graded**: Checkbox to track which students you've reviewed.\n• **Class Insights Tab**: Analytics charts showing common misconceptions and class-wide performance.\n• **Export to CSV**: Download class data for gradebook import.\n### Related Header Actions\n• **Jump to Lesson**: Quick-return to your most recent lesson plan.\n• **View Toggle**: Switch between Teacher and Student views.\n### Pro Tip\nHave students export their JSON saves at the end of class, then batch-upload them here for efficient overnight grading!",
     "actions_title": "Action Bar",
     "actions_text": "Use the header controls to set the interface language, manage live sessions, translate resources, and open export tools.\n### Review before delivery\n• Check translated content for meaning and accuracy.\n• Open Document Builder to review the selected resources and available download formats. Preview the result before sharing it with learners.\n• Start a live session to obtain a join code, or create a supported homework share for independent work.\n### Continue exploring\nThe Educator and Learning tool menus open additional planning, assessment, creative, and interactive activities. Guided Mode helps you build a focused lesson before exploring those options.",
-    "history_title": "Session History",
-    "history_text": "History holds the resources in your current workspace. Open a saved item to review it or return to an earlier result.\n### Keep a backup\n• Save a project backup to continue on another device or recover your work later. Guided Mode also shows whether progress was saved on this device.\n• A workspace may contain materials from several lessons. Check the selected resources before exporting or sharing.\n### Guided lesson packages\nOpen Document Builder from Guided Mode to work with that lesson’s selected resources. The general Builder can use the wider workspace, so review its contents before delivery.",
+    "history_title": "Class & Materials",
+    "history_text": "Class & Materials holds two things. Class groups give each group its own grade and language: tap a group to create for it. Below them is everything you have made in this workspace: open an item to review it, or sort items into units.\n### Keep a backup\n• Save a project backup to continue on another device or recover your work later. Guided Mode also shows whether progress was saved on this device.\n• A workspace may contain materials from several lessons. Check the selected resources before exporting or sharing.\n### Guided lesson packages\nOpen Document Builder from Guided Mode to work with that lesson’s selected resources. The general Builder can use the wider workspace, so review its contents before delivery.",
     "spotlight_title": "Spotlight",
     "spotlight_message": "Say hello to {name}!",
     "dbq_title": "Document-Based Questions",
@@ -176,7 +176,9 @@
     "applied_challenge_text": "Create one sustained transfer challenge. Auto Match or choose Investigate, Design, Decide, Propose, or Explore, then decide how much AI framing to provide while students own the work.",
     "applied_challenge_title": "Applied Challenge Studio",
     "memory_aid_text": "Create a purposeful mix of memory aids. You can model one, scaffold one, coach student authorship, and ask students to explain why their cue works.",
-    "memory_aid_title": "Memory Aid Studio"
+    "memory_aid_title": "Memory Aid Studio",
+    "loading": "Starting the tour…",
+    "unavailable": "The tour could not load. Check your connection, then try again."
   },
   "checkpoint": {
     "offer": "Talk about your work",
@@ -200,7 +202,7 @@
     "title": "A quick check-in about your work"
   },
   "launch_pad": {
-    "subtitle": "Choose your learning pathway",
+    "subtitle": "Adaptive Levels, Layers, & Outputs",
     "full_title": "Full Platform",
     "full_desc": "Complete access to all AlloFlow features: lessons, STEAM Lab, and tools",
     "guided_title": "Guided Mode",
@@ -214,7 +216,7 @@
     "badge_new": "New",
     "badge_educator": "🔒 Educator",
     "badge_educator_open": "🛠️ Educator",
-    "switch_hint": "You can switch modes anytime from the menu",
+    "switch_hint": "You can switch anytime from Start & setup.",
     "learning_tools_title": "Learning Tools",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub & more: explore, create, investigate, and grow",
     "mic_title": "Microphone Setup",
@@ -222,7 +224,19 @@
     "mic_canvas_warning": "In this environment, enabling the microphone will briefly reload the app. It's best to do it now before you start working.",
     "change_language": "Change language",
     "current_language": "Current",
-    "available_languages": "Available languages"
+    "available_languages": "Available languages",
+    "teacher_full_link": "Open the full workspace instead",
+    "door_family": "Family",
+    "door_family_desc": "Turn what your child is reading into stories, word lists, and simpler versions at home.",
+    "door_specialist": "Specialist",
+    "door_specialist_desc": "BehaviorLens, Report Writer, and tools for psychologists, counselors, and support staff.",
+    "student_code_label": "I have a class code",
+    "student_code_hint": "Type the 5 letters or numbers your teacher shared. Next, you pick a private codename.",
+    "student_code_join": "Join class",
+    "student_explore_title": "No code? Explore on your own",
+    "student_explore_desc": "Pick a private codename, then choose something to learn.",
+    "student_explore": "Explore on my own",
+    "student_adult_link": "I'm an adult learning on my own"
   },
   "guided": {
     "resume_saved_step": "Your saved step: {step}",
@@ -720,7 +734,11 @@
     "saved_reflections": "Saved Guided reflections",
     "no_reflections": "No reflections saved on this device.",
     "step_announcement": "Step {current} of {total}. {label}. {action}",
-    "readiness_context_changed": "The lesson or delivery route changed. Please confirm the manual checks again."
+    "readiness_context_changed": "The lesson or delivery route changed. Please confirm the manual checks again.",
+    "ai_status_none": "No AI is connected yet. You can add your text now; creating materials needs AI.",
+    "ai_status_setup": "Set up AI (about 2 minutes)",
+    "path_label": "Path",
+    "path_change": "Change"
   },
   "lesson_import": {
     "button": "Import lesson deck",
@@ -3784,7 +3802,7 @@
     "tool_alignment_parent": "What They Are Learning",
     "tool_lesson": "Lesson Plan",
     "tool_bridge": "Gemini Bridge",
-    "resource_pack_history": "Resource Pack History",
+    "resource_pack_history": "Your materials",
     "my_resources": "My Resources",
     "tool_note_taking": "Note-Taking Templates",
     "tool_anchor_chart": "Anchor Chart",
@@ -3795,7 +3813,10 @@
     "tool_dbq_aria": "Document-Based Questions",
     "open_stem_lab_explore_aria": "Open STEAM Lab Explore",
     "stem_lab_explore": "Explore",
-    "tool_applied_challenge": "Applied Challenge Studio"
+    "tool_applied_challenge": "Applied Challenge Studio",
+    "class_materials_tab": "Class & Materials",
+    "materials_tab": "Materials",
+    "materials_after_guided": "{tab} is available after you finish or exit Guided Mode."
   },
   "history": {
     "load_project": "Load Project",
@@ -3846,7 +3867,9 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "panel_intro": "Everything you have made in this workspace. Sort it into units, save a backup file, or share it as a pack.",
+    "panel_intro_student": "Everything you have made. Save a copy so you do not lose it."
   },
   "input": {
     "placeholder": "Paste curriculum text here, upload a document or lesson deck, image, audio, or video, or use 'Generate Source Text'...",
@@ -3887,7 +3910,8 @@
       "analyzing_short": "Analyzing...",
       "generate_short": "Generate",
       "books_hint": "Open picture books — any book can become your source text",
-      "books_short": "Books"
+      "books_short": "Books",
+      "more_sources": "More ways to add text"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text generated successfully!",
@@ -10404,7 +10428,7 @@
     "creating": "Creating Session {code}...",
     "live": "Session Live! Code: {code}",
     "error_generic": "Failed to start session. Data may be too large.",
-    "error_invalid_code": "Please enter a valid 4-character code.",
+    "error_invalid_code": "Please enter the 5-character class code.",
     "joining": "Joining Session {code} on host {host}...",
     "join_panel_title": "Join Class Session",
     "join_instructions": "Enter the 5-character code provided by your teacher to sync.",
@@ -10693,7 +10717,7 @@
   "modals": {
     "student_welcome": "Student Workspace",
     "student_entry": "Welcome, Student",
-    "student_entry_sub": "Enter your Class Codename or Nickname to begin.",
+    "student_entry_sub": "Pick a secret codename from the two lists.",
     "work_summary": "Work Summary",
     "submit_title": "Submit Work",
     "submit_ready": "Ready to send your assignment?",
@@ -10765,7 +10789,8 @@
       "processing": "Transcribing...",
       "confirm": "Start Chunked Transcription",
       "select_audio_label": "Select audio file"
-    }
+    },
+    "student_entry_sub_class": "Pick a secret name for class {code}."
   },
   "immersive": {
     "title": "Immersive Options",
@@ -10867,7 +10892,8 @@
     "placeholder": "e.g. Red Falcon",
     "warning": "Do not use your real name.",
     "start": "Start New Adventure",
-    "load": "Load Saved File"
+    "load": "Load Saved File",
+    "join_as": "Join {code} as {name}"
   },
   "codenames": {
     "adjectives": [
@@ -11680,7 +11706,11 @@
     "bridge_ondevice_pair_na": "On-device translation isn't available for this language pair yet; using the secure service.",
     "bridge_ondevice_ready": "On-device translation on — this language pair now stays on your device.",
     "bridge_phrase_edit_hint": "Tap to edit, then press Enter to send",
-    "seating_chart": "Seating Chart"
+    "seating_chart": "Seating Chart",
+    "edit_groups": "Edit groups",
+    "strip_intro": "Give each group its own grade and language. Tap a group to create for it, or make a version for every group.",
+    "strip_empty_groups": "No groups yet.",
+    "strip_setup_groups": "Set up groups"
   },
   "adventure": {
     "title": "Adventure Mode",
@@ -104749,7 +104779,7 @@
     "quick_access_hint": "Recent and favorite tools",
     "recommended": "Recommended tools",
     "recommended_for": "For",
-    "recommended_hint": "Based on your role and local tool use",
+    "recommended_hint": "Picked for your role and what you have used on this device",
     "collapse_section": "Collapse section",
     "expand_section": "Expand section",
     "add_favorite": "Add to favorites",
@@ -105489,35 +105519,35 @@
     "title": "Learning Tools",
     "subtitle": "Choose a tool to explore",
     "stem_title": "STEAM Lab",
-    "stem_desc": "100+ interactive math & science explorations",
+    "stem_desc": "Play with 100+ math and science simulations.",
     "storyforge_title": "StoryForge",
-    "storyforge_desc": "Create illustrated stories with AI writing tools",
+    "storyforge_desc": "Write and illustrate your own stories, with AI help.",
     "sel_title": "SEL Hub",
-    "sel_desc": "Social-emotional learning for self-awareness & growth",
+    "sel_desc": "Learn about feelings, friendships, and making choices.",
     "close_aria": "Close learning hub",
     "litlab_title": "LitLab",
-    "litlab_desc": "Bring stories to life with character voices & literary analysis",
+    "litlab_desc": "Hear stories in character voices and talk about what happens.",
     "throughline_title": "Learning Web: Unit Path",
     "throughline_desc": "Arrange lessons as a unit path, then explore linked standards and evidence in the shared Learning Web",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Write poems with form scaffolds, rhyme & meter analysis, AI feedback",
+    "poettree_desc": "Write poems with help on rhyme, rhythm, and form.",
     "section_core_title": "Core learning",
-    "section_core_desc": "Start with reading, evidence, inquiry, and subject exploration.",
+    "section_core_desc": "Read, ask questions, and explore a subject.",
     "section_practice_title": "Practice and progress",
-    "section_practice_desc": "Build fluency, prepare for assessments, and support learner wellbeing.",
+    "section_practice_desc": "Practice skills, get ready for tests, and check in on how you feel.",
     "section_explore_title": "Explore and organize",
-    "section_explore_desc": "Connect ideas, investigate questions, and make sense of complex material.",
+    "section_explore_desc": "Connect ideas and dig into big questions.",
     "section_create_title": "Create and express",
-    "section_create_desc": "Use voice, story, music, poetry, and reflection to demonstrate understanding.",
-    "open_groove_desc": "Make beats, shape synths, and connect patterns to real composition and notation.",
+    "section_create_desc": "Show what you know with stories, music, poems, and your voice.",
+    "open_groove_desc": "Make beats and music, then see how the notes are written.",
     "open_groove_title": "Open Groove Studio",
-    "reading_library_desc": "Browse picture books, longer reads, textbooks, and primary sources",
+    "reading_library_desc": "Find something to read: picture books, longer books, textbooks, and more.",
     "reading_library_title": "Reading Library",
-    "research_desc": "Scientific Inquiry, Engineering Design, and Humanities research — one inquiry journal, three lanes.",
+    "research_desc": "Ask a question, investigate it, and keep your notes in one journal.",
     "research_title": "Research Hub",
     "screen_coach_desc": "Stuck on a website? Share it and get the next step. It helps you use the site, not answer your work.",
     "screen_coach_title": "Screen Coach",
-    "timeline_studio_desc": "Turn readings into interactive timelines, or build one by hand.",
+    "timeline_studio_desc": "Put events in order on a timeline, from a reading or by hand.",
     "timeline_studio_title": "Timeline Studio"
   },
   "sel_hub": {
@@ -107115,7 +107145,9 @@
     "sd_no_gpu": "Not available on this computer (no WebGPU graphics adapter). Cloud image AI needs Gemini Canvas or a billing-enabled key; the free API tier does not generate images.",
     "sd_ready": "Ready. Images generate on this computer when cloud image AI is unavailable.",
     "sd_title": "Local images (SD-Turbo)",
-    "student_verified_note": "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified."
+    "student_verified_note": "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.",
+    "settings_loading": "Opening AI settings…",
+    "settings_unavailable": "AI settings could not load. Check your connection, then tap Needs AI setup again."
   },
   "diff_view": {
     "title": "Source PDF ↔ Remediated HTML · Diff",
@@ -111783,7 +111815,11 @@
     "tts_test_cue": "Voice on. I will read help out loud.",
     "tts_toggle_label": "Read help aloud",
     "tts_toggle_sublabel": "Off by default. If you use a screen reader, leave this off — your reader already reads this panel.",
-    "tts_unavailable_globally_muted": "Sound is muted globally. Un-mute in the main toolbar to hear AlloBot."
+    "tts_unavailable_globally_muted": "Sound is muted globally. Un-mute in the main toolbar to hear AlloBot.",
+    "teacher_best_if": "Starts in Guided Mode, one step at a time. A link opens the full workspace if you prefer.",
+    "student_best_if": "Have a class code from your teacher? Type it on the Student card. No code? Explore on your own.",
+    "family_best_if": "Best if you are a parent or caregiver helping with reading at home.",
+    "specialist_best_if": "Best if you are a school psychologist, counselor, BCBA, or related-services provider. Some schools protect it with a code."
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -118072,5 +118108,17 @@
     "exit_scanning_mode": "Exit scanning mode",
     "close_symbol_studio": "Close Symbol Studio",
     "studio_sections": "Studio sections"
+  },
+  "student_join": {
+    "failed_title": "We couldn’t reach your class",
+    "failed_body": "Check the code with your teacher, then try again. You can explore on your own while you wait.",
+    "try_again": "Try again",
+    "explore": "Explore on my own",
+    "tell_teacher": "If it still does not work, show your teacher this code: {code}",
+    "detail": "Detail for your teacher: {reason}",
+    "explore_title": "Pick something to learn",
+    "explore_body": "Open Learning Tools to read, explore science, write, and more.",
+    "open_tools": "Open Learning Tools",
+    "failed_toast": "We couldn’t reach your class. Your options are on the screen."
   }
 }

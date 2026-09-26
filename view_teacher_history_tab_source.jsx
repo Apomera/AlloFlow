@@ -32,19 +32,20 @@ function TeacherHistoryTab({
   const Layers = window.Layers || noop;
 
   return (
-    <div id="ui-roster-strip" className="bg-white rounded-3xl shadow-indigo-500/10 border border-slate-400 overflow-hidden shrink-0">
+    <div id="ui-roster-strip" data-help-key="class_groups_strip" className="bg-white rounded-3xl shadow-indigo-500/10 border border-slate-400 overflow-hidden shrink-0">
       <div className="p-3 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center">
         <div className="text-sm font-bold text-indigo-800 flex items-center gap-2">
           <ClipboardList size={16} /> {t('roster.strip_title') || 'Class Groups'}
         </div>
         <div className="flex items-center gap-1">
           {/* Bridge moved to a header button (🌐 Bridge) for discoverability — removed here to avoid redundancy. */}
-          <button onClick={() => setIsRosterKeyOpen(true)} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('roster.title') || 'Manage Roster'} aria-label={t('roster.title')} data-help-key="roster_manage_button">
-            <Settings size={14} />
+          <button type="button" onClick={() => setIsRosterKeyOpen(true)} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" data-help-key="roster_manage_btn">
+            <Settings size={14} aria-hidden="true" /> {t('roster.edit_groups') || 'Edit groups'}
           </button>
         </div>
       </div>
       <div className="p-3">
+        <p className="text-xs leading-relaxed text-slate-600 mb-2">{t('roster.strip_intro') || 'Give each group its own grade and language. Tap a group to create for it, or make a version for every group.'}</p>
         {rosterKey && Object.keys(rosterKey.groups || {}).length > 0 ? (
           <>
             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -68,9 +69,9 @@ function TeacherHistoryTab({
           </>
         ) : (
           <div className="text-center py-2">
-            <p className="text-xs text-slate-600 mb-1">{t('roster.strip_empty') || 'No class roster yet'}</p>
-            <button onClick={() => setIsRosterKeyOpen(true)} className="text-xs text-indigo-600 font-bold hover:underline">
-              {t('roster.strip_create') || 'Create one'}
+            <p className="text-xs text-slate-600 mb-1">{t('roster.strip_empty_groups') || 'No groups yet.'}</p>
+            <button type="button" onClick={() => setIsRosterKeyOpen(true)} className="inline-flex min-h-11 items-center px-2 text-xs text-indigo-700 font-bold underline underline-offset-2 hover:text-indigo-900">
+              {t('roster.strip_setup_groups') || 'Set up groups'}
             </button>
           </div>
         )}

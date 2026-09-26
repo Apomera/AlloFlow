@@ -23,16 +23,21 @@ function SidebarTabsNav({
   setActiveSidebarTab,
   setIsHistoryPulsing,
   t,
+  showsClassGroups = true,
 }) {
   const noop = () => null;
   const Sparkles = window.Sparkles || noop;
-  const History = window.History || noop;
+  // The second tab holds class groups and everything made here, not a log,
+  // so it reads as a folder, not a clock (2026-09-25).
+  const History = window.FolderOpen || window.History || noop;
   const translatedLabel = (key, fallback) => {
     const value = t(key);
     return value && value !== key ? value : fallback;
   };
   const createLabel = translatedLabel('sidebar.create_tab', 'Create');
-  const historyLabel = translatedLabel('sidebar.history_tab', 'History');
+  const historyLabel = showsClassGroups
+    ? translatedLabel('sidebar.class_materials_tab', 'Class & Materials')
+    : translatedLabel('sidebar.materials_tab', 'Materials');
   const createTabRef = React.useRef(null);
   const historyTabRef = React.useRef(null);
   const focusSiblingTab = (event, targetRef) => {

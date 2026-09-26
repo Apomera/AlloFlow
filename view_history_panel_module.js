@@ -921,7 +921,7 @@ function HistoryPanel(props) {
       "aria-label": isResourceFilterActive ? t("history.resource_count_filtered", { visible: filteredHistory.length, total: unitFilteredHistory.length }) : t("history.resource_count", { count: unitFilteredHistory.length })
     },
     isResourceFilterActive ? filteredHistory.length + " of " + unitFilteredHistory.length : unitFilteredHistory.length
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1 pl-10 text-xs font-medium text-slate-500" }, isCanvas && canvasRecoverySaveStatus === "inactive" ? /* @__PURE__ */ React.createElement("span", { className: "flex min-h-11 items-center gap-1 text-slate-500" }, "Live-session device recovery is off") : isCanvas ? /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("p", { className: "mt-1 pl-10 text-xs leading-relaxed text-slate-600" }, isTeacherMode ? t("history.panel_intro") || "Everything you have made in this workspace. Sort it into units, save a backup file, or share it as a pack." : t("history.panel_intro_student") || "Everything you have made. Save a copy so you do not lose it."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1 pl-10 text-xs font-medium text-slate-500" }, isCanvas && canvasRecoverySaveStatus === "inactive" ? /* @__PURE__ */ React.createElement("span", { className: "flex min-h-11 items-center gap-1 text-slate-500" }, "Live-session device recovery is off") : isCanvas ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

@@ -1747,7 +1747,8 @@ const RoleSelectionModal = React.memo(({
 const StudentEntryModal = React.memo(({
   isOpen,
   onClose,
-  onConfirm
+  onConfirm,
+  classCode
 }) => {
   const {
     t
@@ -1937,7 +1938,7 @@ const StudentEntryModal = React.memo(({
   }, t('wizard.step_codename') || 'Pick Your Codename!'), /*#__PURE__*/React.createElement("p", {
     id: "student-entry-description",
     className: "text-slate-600 mb-6 font-medium"
-  }, t('modals.student_entry_sub')), /*#__PURE__*/React.createElement("div", {
+  }, classCode ? (t('modals.student_entry_sub_class') || 'Pick a secret name for class {code}.').replace('{code}', classCode) : t('modals.student_entry_sub')), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2"
@@ -2000,7 +2001,7 @@ const StudentEntryModal = React.memo(({
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
     className: "text-yellow-400 fill-current"
-  }), " ", t('entry.start')), /*#__PURE__*/React.createElement("button", {
+  }), " ", classCode && selectedAdj && selectedAnimal ? (t('entry.join_as') || 'Join {code} as {name}').replace('{code}', classCode).replace('{name}', selectedAdj + ' ' + selectedAnimal) : t('entry.start')), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleConfirm('load'),
     disabled: !selectedAdj || !selectedAnimal,
     className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",

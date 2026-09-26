@@ -261,7 +261,9 @@ function EducatorHubModal(props) {
     catch (_) { return {}; }
   });
   const [hubCollapsedSections, setHubCollapsedSections] = React.useState(() => {
-    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_educator_collapsed') || '[]'); return Array.isArray(parsed) ? parsed : []; }
+    // First visit (nothing saved): "Start here" open, other sections folded
+    // to their headings. Search still reaches every tool (2026-09-25).
+    try { const saved = localStorage.getItem('alloflow_hub_educator_collapsed'); if (saved === null) return String(userRole || '').toLowerCase().includes('clin') ? ['plan', 'access', 'extend'] : ['plan', 'teach', 'access', 'extend']; const parsed = JSON.parse(saved || '[]'); return Array.isArray(parsed) ? parsed : []; }
     catch (_) { return []; }
   });
   const [hubRoleOverride, setHubRoleOverride] = React.useState(() => {
@@ -399,7 +401,7 @@ function EducatorHubModal(props) {
                       <button key={card.id} type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 rounded-lg border border-emerald-200 bg-white px-3 text-left text-xs font-bold text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">{card.label}</button>
                     ))}
                   </div>
-                  <p className="text-[11px] text-emerald-700 mt-2">{tr('hub.recommended_hint', 'Based on your role and local tool use')}</p>
+                  <p className="text-[11px] text-emerald-700 mt-2">{tr('hub.recommended_hint', 'Picked for your role and what you have used on this device')}</p>
                 </div>
               )}
               {hubManageFavorites && hubCards.length > 0 && (

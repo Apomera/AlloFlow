@@ -38,7 +38,15 @@ function useAiTextAvailable() {
   }, []);
   return available;
 }
-// The doorway: rendered directly above a disabled generate button. Clicking
+// A generate button with no AI connected stays clickable and opens AI setup,
+// instead of a disabled button that silently does nothing (critique 2026-09-25).
+function aiGate(available, fn) {
+  return function (event) {
+    if (!available) { try { if (typeof window.__alloOpenAiSetup === 'function') window.__alloOpenAiSetup(); } catch (_) {} return undefined; }
+    return typeof fn === 'function' ? fn(event) : undefined;
+  };
+}
+// The doorway: rendered directly above a gated generate button. Clicking
 // opens AI Backend Settings via the host bridge (window.__alloOpenAiSetup,
 // registered beside the aiCapability state in ANTI).
 function AiSetupNotice({ t }) {
@@ -1245,9 +1253,9 @@ function AdventurePanel(props) {
                     ) : (
                         <>
                             {!aiTextAvailable && <AiSetupNotice t={t} />}
-                            <button type="button" aria-label={adventureState.currentScene ? t('adventure.restart') : t('adventure.start')}
-                                data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                disabled={!hasSourceOrAnalysis || adventureState.isLoading || isProcessing || !aiTextAvailable} aria-busy={adventureState.isLoading || isProcessing}
+                            <button aria-disabled={!aiTextAvailable || undefined} type="button" aria-label={adventureState.currentScene ? t('adventure.restart') : t('adventure.start')}
+                                data-help-key="adventure_start_btn" onClick={aiGate(aiTextAvailable, handleStartAdventure)}
+                                disabled={!hasSourceOrAnalysis || adventureState.isLoading || isProcessing} aria-busy={adventureState.isLoading || isProcessing}
                                 className={SIDEBAR_PANEL_UI.primaryAction}
                             >
                                 <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{adventureState.currentScene ? t('adventure.restart') : t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -1398,10 +1406,10 @@ function SimplifiedPanel(props) {
                 <p className="my-3 text-sm text-slate-700">{t('sidebar.read_original_guidance') || 'Read the original with supports first. An adapted companion can activate background knowledge, build context, preview key concepts, and scaffold students toward the original; it does not replace the grade-level text.'}</p>
                 <button type="button" data-read-original onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing} className={SIDEBAR_PANEL_UI.primaryAction}>{t('sidebar.read_original_with_supports') || 'Read original with supports'}</button>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
-                <button type="button"
+                <button aria-disabled={!aiTextAvailable || undefined} type="button"
                     aria-label={t('common.generate')}
-                    onClick={() => handleGenerate('simplified')}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                    onClick={aiGate(aiTextAvailable, () => handleGenerate('simplified'))}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('simplified.rewrite')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -1698,11 +1706,11 @@ function MathPanel(props) {
                         </div>
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('common.generate_math_problems')}
                         data-help-key="math_generate_button"
-                        onClick={handleGenerateMath}
-                        disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probe' || !aiTextAvailable}
+                        onClick={aiGate(aiTextAvailable, handleGenerateMath)}
+                        disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probe'}
                         style={mathMode === 'Fluency Probe' ? { display: 'none' } : {}}
                          className={SIDEBAR_PANEL_UI.primaryAction}
                      >
@@ -1904,11 +1912,11 @@ function DbqPanel(props) {
                         </div>
                     )}
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('dbq.generate_aria') || 'Generate DBQ'}
                         data-help-key="dbq_generate_button"
-                        onClick={() => handleGenerate('dbq')}
-                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                        onClick={aiGate(aiTextAvailable, () => handleGenerate('dbq'))}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-rose-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('dbq.generate') || 'Generate DBQ Packet'} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -2241,10 +2249,10 @@ function GlossaryPanel(props) {
                     </div>
                 </div>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
-                <button type="button"
+                <button aria-disabled={!aiTextAvailable || undefined} type="button"
                     aria-label={t('common.generate')}
-                    onClick={() => handleGenerate('glossary')}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                    onClick={aiGate(aiTextAvailable, () => handleGenerate('glossary'))}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-sky-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('glossary.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -2636,10 +2644,10 @@ function QuizPanel(props) {
         </select>
       </div>
       {!aiTextAvailable && <AiSetupNotice t={t} />}
-      <button
+      <button aria-disabled={!aiTextAvailable || undefined}
         type="button"
         aria-label={t('common.generate')}
-        onClick={() => handleGenerate('quiz', null, false, null, {
+        onClick={aiGate(aiTextAvailable, () => handleGenerate('quiz', null, false, null, {
           quizMode,
           quizMcqCount: clampCount(effectiveMix.mcq || 0, 20),
           quizReflectionCount: reflectionTotal,
@@ -2647,9 +2655,9 @@ function QuizPanel(props) {
           scoringPolicy,
           mcqVisualMode,
           imageStyle
-        })}
+        }))}
         data-help-key="quiz_generate_button"
-        disabled={!hasSourceOrAnalysis || isProcessing || assessedTotal <= 0 || !aiTextAvailable}
+        disabled={!hasSourceOrAnalysis || isProcessing || assessedTotal <= 0}
         aria-busy={isProcessing}
         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
       >
@@ -2745,10 +2753,10 @@ function TimelinePanel(props) {
                         </div>
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('common.generate')}
-                        onClick={() => handleGenerate('timeline')}
-                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                        onClick={aiGate(aiTextAvailable, () => handleGenerate('timeline'))}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                         data-help-key="timeline_generate_button"
                     >
@@ -2847,11 +2855,11 @@ function ConceptSortPanel(props) {
                             placeholderKey="common.custom_instructions_placeholder" />
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('common.generate')}
                         data-help-key="concept_sort_generate_button"
-                        onClick={() => handleGenerate('concept-sort')}
-                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                        onClick={aiGate(aiTextAvailable, () => handleGenerate('concept-sort'))}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('concept_sort.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -2959,10 +2967,10 @@ function BrainstormPanel(props) {
                     )}
                     {activityMode !== 'simulation' && !aiTextAvailable && <AiSetupNotice t={t} />}
                     {activityMode !== 'simulation' && (
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('common.generate')}
-                    onClick={() => handleGenerate('brainstorm', null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } })}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                    onClick={aiGate(aiTextAvailable, () => handleGenerate('brainstorm', null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } }))}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-700 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2 font-semibold">{generateLabel} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3146,10 +3154,10 @@ function ImagePanel(props) {
                         </div>
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('common.generate')}
-                    onClick={() => handleGenerate('image')}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                    onClick={aiGate(aiTextAvailable, () => handleGenerate('image'))}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('visuals.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3271,11 +3279,11 @@ function OutlinePanel(props) {
                         placeholderKey="outline.placeholder_instructions" />
                 </div>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
-                <button type="button"
+                <button aria-disabled={!aiTextAvailable || undefined} type="button"
                     aria-label={t('common.generate')}
                     data-help-key="outline_generate_button"
-                    onClick={() => handleGenerate('outline')}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                    onClick={aiGate(aiTextAvailable, () => handleGenerate('outline'))}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('outline.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3325,11 +3333,11 @@ function NoteTakingPanel(props) {
         </p>
       </div>
       {!aiTextAvailable && <AiSetupNotice t={t} />}
-      <button type="button"
+      <button aria-disabled={!aiTextAvailable || undefined} type="button"
         aria-label={t('common.generate') || 'Generate'}
         data-help-key="note_taking_generate_button"
-        onClick={() => handleGenerate('note-taking')}
-        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
+        onClick={aiGate(aiTextAvailable, () => handleGenerate('note-taking'))}
+        disabled={!hasSourceOrAnalysis || isProcessing}
         aria-busy={isProcessing}
         className={SIDEBAR_PANEL_UI.primaryAction}
       >
@@ -3387,11 +3395,11 @@ function AnchorChartPanel(props) {
         </p>
       </div>
       {!aiTextAvailable && <AiSetupNotice t={t} />}
-      <button type="button"
+      <button aria-disabled={!aiTextAvailable || undefined} type="button"
         aria-label={t('common.generate') || 'Generate'}
         data-help-key="anchor_chart_generate_button"
-        onClick={() => handleGenerate('anchor-chart')}
-        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
+        onClick={aiGate(aiTextAvailable, () => handleGenerate('anchor-chart'))}
+        disabled={!hasSourceOrAnalysis || isProcessing}
         aria-busy={isProcessing}
         className={SIDEBAR_PANEL_UI.primaryAction}
       >
@@ -3434,10 +3442,10 @@ function FaqPanel(props) {
                             placeholderKey="faq.placeholder_instructions" />
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('common.generate')}
-                    onClick={() => handleGenerate('faq')}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                    onClick={aiGate(aiTextAvailable, () => handleGenerate('faq'))}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('faq.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3479,10 +3487,10 @@ function SentenceFramesPanel(props) {
                             placeholderKey="scaffolds.placeholder_instructions" />
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('common.generate')}
-                    onClick={() => handleGenerate('sentence-frames')}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                    onClick={aiGate(aiTextAvailable, () => handleGenerate('sentence-frames'))}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('scaffolds.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3513,10 +3521,10 @@ function LessonPlanPanel(props) {
                              placeholderKey="lesson_plan.placeholder_additions" />
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={isParentMode ? lessonPlanActionLabel : t('common.generate_lesson_plan')}
-                        onClick={handleGenerateLessonPlan}
-                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                        onClick={aiGate(aiTextAvailable, handleGenerateLessonPlan)}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
@@ -3554,11 +3562,11 @@ function AnalysisPanel(props) {
                         <p className={`${SIDEBAR_PANEL_UI.help} ml-6`}>{t('analysis.grounding_desc')}</p>
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
-                    <button type="button"
+                    <button aria-disabled={!aiTextAvailable || undefined} type="button"
                         aria-label={t('common.generate')}
                         data-help-key="analysis_generate_button"
-                        onClick={() => handleGenerate('analysis', null, false, inputText, { selectedReadingSourceId: '__input__' })}
-                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                        onClick={aiGate(aiTextAvailable, () => handleGenerate('analysis', null, false, inputText, { selectedReadingSourceId: '__input__' }))}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('analysis.run')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3714,6 +3722,10 @@ function GeneratorActionsView(props) {
     useEmojis, useLowQualityVisuals, useMathSourceContext, visualCustomInstructions, visualCustomStyle,
     visualLayoutMode, visualStyle,
   } = props;
+  // Guided step 1 with no text yet: the reading-source chooser and Universal
+  // Settings wait until there is something to base them on. The banner's
+  // "Adjust" checkpoint still opens settings on demand (distill 2026-09-25).
+  const _guidedLean = !!guidedMode && String(inputText || '').trim().length <= 20;
   return (
 <div id="tour-generator-actions" data-help-key="generator_actions" className="grid min-w-0 grid-cols-1 gap-4">
             <style>{`
@@ -3784,9 +3796,9 @@ function GeneratorActionsView(props) {
                 </section>
               );
             })()}
-            <ReadingSourceChoice {...props} />
+            {!_guidedLean && <ReadingSourceChoice {...props} />}
             {/* -- UniversalSettingsPanel (CDN): cross-resource settings (grade, language, standards, interests, DoK, emoji) extracted from the Text Adaptation card 2026-07-28. Mounts ONCE above the tool accordion; per-control applicability is measured (docs/resource_setting_coverage.json). -- */}
-            {window.AlloModules && window.AlloModules.UniversalSettingsPanel && React.createElement(window.AlloModules.UniversalSettingsPanel, {
+            {!(_guidedLean && !isUniversalSettingsOpen) && window.AlloModules && window.AlloModules.UniversalSettingsPanel && React.createElement(window.AlloModules.UniversalSettingsPanel, {
           InfoTooltip, addInterest, addToast, aiStandardQuery, dokLevel,
           gradeLevel, handleAddStandard, handleFindStandards, handleUseResolvedStandard, handleInterestKeyDown, handleRemoveStandard,
           handleSetStandardModeToAi, handleSetStandardModeToManual, interestInput, isFindingStandards, leveledTextLanguage,
@@ -4357,7 +4369,14 @@ function SourceInputShellView(props) {
     showUrlInput, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceTopic,
     sourceVocabulary, standardInputValue, standardMode, startNewPdfAudit, suggestedStandards, t,
     targetStandards, toggleTool, urlSearchQuery, urlToFetch, videoTranscriptSourceContext,
+    guidedMode,
   } = props;
+  // Guided step 1 offers one way in (paste or upload) until text exists; the
+  // other four sources wait behind "More ways to add text" (distill 2026-09-25).
+  // A native <details> holds them: this view is called as a plain function, so no hooks.
+  const _guidedFirstStep = !!guidedMode && String(inputText || '').trim().length <= 20;
+  const MoreSources = _guidedFirstStep ? 'details' : React.Fragment;
+  const moreSourcesProps = _guidedFirstStep ? { 'data-help-key': 'source_more_ways', className: 'min-w-0' } : {};
   return (
 <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
             <div
@@ -4387,6 +4406,14 @@ function SourceInputShellView(props) {
                         {isExtracting ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Upload size={12} />}
                         {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
                      </button>
+                     <MoreSources {...moreSourcesProps}>
+                     {_guidedFirstStep && (
+                       <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer text-xs inline-flex items-center gap-1 bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none">
+                          <ChevronDown size={12} aria-hidden="true" />
+                          {t('input.actions.more_sources') || 'More ways to add text'}
+                       </summary>
+                     )}
+                     <div className={_guidedFirstStep ? 'mt-2 flex flex-wrap items-center gap-2' : 'contents'}>
                      <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer" title={t('input.load_project_tooltip') || 'Load a previously saved AlloFlow PDF project'}>
                         <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
@@ -4569,6 +4596,8 @@ function SourceInputShellView(props) {
                         <span aria-hidden="true">📖</span>
                         {t('input.actions.books_short') || 'Books'}
                      </button>
+                     </div>
+                     </MoreSources>
                  </div>
                  {expandedTools.includes('source-input') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </div>
