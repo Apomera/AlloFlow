@@ -56,23 +56,25 @@ describe('Moon Mission optional LRV traverse', () => {
     expect(source).toContain('V to board or exit the optional lunar rover');
   });
 
-  it('uses clamped dt, exact signed slope probes, lunar grade force, and traction-limited drive', () => {
-    expect(source).toContain('Math.min(0.05, Math.max(0.001, (evaNow - evaLastFrameTime) / 1000))');
-    expect(source).toContain('var lrvThrottle = (moveState.forward ? 1 : 0) - (moveState.back ? 1 : 0)');
+  it('uses active-time fixed steps, exact signed slope probes, lunar grade force, and traction-limited drive', () => {
+    expect(source).toContain('var evaDt = evaResourceDt');
+    expect(source).toContain('var MM_ROVER_STEP = 1 / 120');
+    expect(source).toContain('}, evaResourceDt, _terrainHeightAt)');
+    expect(source).toContain('var lrvThrottle = (input.forward ? 1 : 0) - (input.back ? 1 : 0)');
     expect(source).toContain('var LRV_LUNAR_G = LRV_SCENE_EARTH_G * 0.165');
     expect(source).toContain('(lrvFrontH - lrvRearH) / 1.24');
     expect(source).toContain('(lrvRightH - lrvLeftH) / 1.52');
     expect(source).toContain('lrvGradeRatio / Math.sqrt(1 + lrvGradeRatio * lrvGradeRatio)');
     expect(source).toContain('Math.max(-0.52, Math.min(0.52, -LRV_LUNAR_G * lrvGradeComponent))');
     expect(source).toContain('var lrvAppliedDrive = Math.min(lrvDriveDemand, lrvTractionLimit)');
-    expect(source).toContain("Math.abs(roverSpeed) > 0.001 &&\n                          Math.sign(roverSpeed) !== Math.sign(lrvThrottle)");
+    expect(source).toMatch(/Math.abs\(roverSpeed\) > 0\.001 &&\s+Math.sign\(roverSpeed\) !== Math.sign\(lrvThrottle\)/);
     expect(source).toContain('var lrvBrakeStep = Math.min(lrvSpeedAbsBefore, lrvAppliedDrive * evaDt)');
     expect(source).toContain('if (lrvReversing && roverSpeed * lrvSpeedBefore < 0) roverSpeed = 0');
     expect(source).toContain('roverHeading += roverSteer * roverSpeed * 0.38 * evaDt');
     expect(source).toContain('roverSpeed = Math.max(-2.2, Math.min(6.2, roverSpeed))');
     const driveBlock = source.slice(
-      source.indexOf('// Frame-rate-independent terrain-aware traverse dynamics'),
-      source.indexOf('} else {\n                        lrvThrottleSignal = 0;', source.indexOf('// Frame-rate-independent terrain-aware traverse dynamics')),
+      source.indexOf('function mmRoverSlice('),
+      source.indexOf('function mmRoverStep('),
     );
     expect(driveBlock.indexOf('var lrvFrontH = _terrainHeightAt')).toBeLessThan(
       driveBlock.indexOf('var lrvSpeedBefore = roverSpeed'),
@@ -138,9 +140,11 @@ describe('Moon Mission optional LRV traverse', () => {
 
   it('keeps local -Z forward, local +X right, exit side, and roll aligned with Three rotation', () => {
     expect(source.match(/lrvForward\.set\(-Math\.sin\(roverHeading\), 0, -Math\.cos\(roverHeading\)\)/g))
-      .toHaveLength(2);
+      .toHaveLength(1);
     expect(source.match(/lrvRight\.set\(Math\.cos\(roverHeading\), 0, -Math\.sin\(roverHeading\)\)/g))
-      .toHaveLength(2);
+      .toHaveLength(1);
+    expect(source).toContain('lrvForward.x = -Math.sin(roverHeading); lrvForward.z = -Math.cos(roverHeading)');
+    expect(source).toContain('lrvRight.x = Math.cos(roverHeading); lrvRight.z = -Math.sin(roverHeading)');
     expect(source).toContain('var exitZ = roverGrp.position.z + Math.sin(roverHeading) * 1.45');
     expect(source).toContain('Math.atan2(lrvRightH - lrvLeftH, 1.52) - roverGrp.rotation.z');
     expect(source).not.toContain('lrvForward.set(Math.sin(roverHeading)');
@@ -548,7 +552,7 @@ describe('Moon Mission optional LRV traverse', () => {
     expect(source).toContain('roverVisualShell.position.y = lrvImpactSpring * lrvImpactVisualScale');
     expect(source).toContain('lrvCamDesired.y += lrvImpactCameraEnvelope');
     expect(source).toContain('lrvImpactAudioEnvelope');
-    expect(source).toContain('emitLunarDustBurst(roverGrp.position.x');
+    expect(source).toContain('emitLunarDustBurst(contactPose.x, contactPose.z');
 
     const simulate = (hz, moving, bump) => {
       const dt = 1 / hz;

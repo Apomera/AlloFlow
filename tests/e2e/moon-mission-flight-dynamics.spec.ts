@@ -128,6 +128,18 @@ test('a controlled approach reaches the dust layer and lands with fuel remaining
   expect((await readFlight(page)).fuel).toBeGreaterThan(0);
   await expect(page.locator('[data-flight-value="altitude"]')).toHaveText('0.0 m');
   await expect(page.getByRole('button', { name: /Begin EVA/ })).toBeEnabled();
+  await expect(page.locator('[data-landing-recorder]')).toBeVisible();
+  const recorded = await page.evaluate(() => {
+    const mission = (window as any).__toolData.moonMission;
+    return { result: mission.landingResult, attempts: mission.landingAttempts };
+  });
+  expect(recorded.attempts).toHaveLength(1);
+  const samples = recorded.result.recording.samples;
+  expect(samples.length).toBeGreaterThan(20);
+  expect(samples[0]).toMatchObject({ t: 0, alt: 300, v: -9, h: 4 });
+  expect(samples.at(-1).alt).toBe(0);
+  expect(Math.abs(samples.at(-1).v)).toBeCloseTo(recorded.result.vVel, 8);
+  expect(samples.at(-1).t).toBeCloseTo((await readFlight(page)).time, 2);
   await page.waitForTimeout(3200); // allow airborne ejecta to settle after cutoff
   await page.locator('[data-descent-canvas]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: testInfo.outputPath('descent-touchdown.png'), fullPage: true });

@@ -72,6 +72,36 @@ describe('what caused what', () => {
   it('a flight with nothing graded shows no chain', () => {
     expect(html({ missionPhase: 10 })).not.toContain('data-moonmission-cause-chain');
   });
+
+  it('explains a lateral-only crash without blaming a safe vertical speed', () => {
+    const state = Object.assign({}, FLOWN, {
+      landingResult: { crashed: true, score: 0, grade: '', vVel: 1.2, hVel: 5.4, fuel: 22, fuelUnit: 's' },
+    });
+    const h = html(state);
+    const landing = chainItems(h).find((item) => item.includes('hard landing'));
+    expect(landing).toContain('You drifted at 5.4 m/s');
+    expect(landing).toContain('lateral limit 5 m/s');
+    expect(landing).not.toContain('vertical limit');
+    expect(h).toContain('HARD LANDING — vertical 1.2 m/s (limit 3), lateral 5.4 m/s (limit 5)');
+    expect(h).toContain('Your vertical speed was within the landing limit.');
+    expect(h).not.toContain('Bleed vertical speed early');
+    const app = mount(state);
+    const [report] = walk(app.tree(), (n) => n.type === 'textarea' && n.props['data-moonmission-report-text']);
+    expect(report.value).toContain('You drifted at 5.4 m/s');
+  });
+
+  it('names both limits for a combined crash, including equality at the limits', () => {
+    const state = Object.assign({}, FLOWN, {
+      landingResult: { crashed: true, score: 0, grade: '', vVel: 3, hVel: 5, fuel: 0, fuelUnit: 's' },
+    });
+    const h = html(state);
+    const landing = chainItems(h).find((item) => item.includes('hard landing'));
+    expect(landing).toContain('came down at 3.0 m/s and drifted at 5.0 m/s');
+    expect(landing).toContain('vertical limit 3 m/s, lateral limit 5 m/s');
+    expect(landing).toContain('with the tanks dry');
+    expect(h).toContain('Both touchdown speeds reached or exceeded their limits.');
+    expect(h).not.toContain('Your vertical speed was within');
+  });
 });
 
 describe('debrief notes and the report', () => {

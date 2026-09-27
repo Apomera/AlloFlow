@@ -371,6 +371,26 @@ describe('Moon Mission loops', () => {
     expect(wrong.querySelector('[data-moonmission-predict="coast_speed"]').textContent).toMatch(/The flight showed: Slows down, then speeds up near the Moon/);
   }, 120_000);   // 2,500 real loop frames; slow under load, not wrong
 
+  it('ascent range and altitude stay identical across narrow and wide views', () => {
+    const ascentCanvas = (p) => /lunar ascent and rendezvous/i.test(String(p['aria-label']));
+    const observations = [300, 1014].map((width) => {
+      const { frames } = run({ missionPhase: 7 }, ascentCanvas, 550, 1000 / 60, width);
+      return [1, 89, 150, 449, 520].map((index) => {
+        const labels = frames[index].text.map((item) => item.s);
+        return { altitude: labels[labels.indexOf('ALTITUDE') + 1], range: labels[labels.indexOf('DIST TO CSM') + 1] };
+      });
+    });
+    expect(observations[0]).toEqual(observations[1]);
+    expect(new Set(observations[0].map((frame) => frame.range)).size).toBeGreaterThan(3);
+  });
+
+  it('a restored entry without an outcome uses the default angle to calculate peak g', () => {
+    const { frames } = run({ missionPhase: 9 }, reentryCanvas, 4);
+    const labels = frames.flatMap((frame) => frame.text.map((item) => item.s));
+    expect(labels.some((label) => /ENTRY -6\.5°.*PEAK 6\.5 g/.test(label))).toBe(true);
+    expect(labels.some((label) => /PEAK 6\.9 g/.test(label))).toBe(false);
+  });
+
   it('lunar ascent: Eagle catches Columbia from a lower, faster orbit, and the card waits for the dock', () => {
     // The readout used to jump straight to Columbia's 110 km, which teaches the
     // opposite of how a rendezvous works: Eagle gained on Columbia while BELOW it.
@@ -707,4 +727,3 @@ describe('canvas text alternatives', () => {
     expect(label(7)).not.toMatch(/60 kilometers/);
   });
 });
-

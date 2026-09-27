@@ -97,8 +97,8 @@ describe('predict first', () => {
 
   it('the moonwalk loop times each hop from take-off to touchdown', () => {
     const src = fs.readFileSync(FILE, 'utf8');
-    expect(src).toContain('playerVelY = EVA_JUMP_V0; isJumping = true; evaHopStart = performance.now();');
-    expect(src).toMatch(/if \(evaWasAirborne && evaHopStart\) \{[\s\S]{0,200}var hopSecs = Math\.round\(\(performance\.now\(\) - evaHopStart\) \/ 100\) \/ 10;[\s\S]{0,80}upd\('evaHopTime', hopSecs\);/);
+    expect(src).toContain('playerVelY = EVA_JUMP_V0; isJumping = true; evaHopStart = evaResources.elapsed;');
+    expect(src).toMatch(/if \(evaWasAirborne && evaHopStart !== null\) \{[\s\S]{0,250}var hopSecs = Math\.round\(\(evaResources\.elapsed - evaHopStart\) \* 10\) \/ 10;[\s\S]{0,120}upd\('evaHopTime', hopSecs\);/);
   });
 
   it('the debrief and the report count predictions against the flight', () => {

@@ -53,6 +53,23 @@ describe('EVA consumables use active elapsed time', () => {
     expect(state.elapsed).toBe(1);
   });
 
+  it('records hop airtime from the same active clock, including a takeoff at time zero', () => {
+    const expression = source.match(/var hopSecs = ([^;]+);/)[1];
+    const measuredHop = new Function('evaResources', 'evaHopStart', 'return ' + expression);
+    const state = fresh();
+    advance(state, 0, false, 0.3);
+    const takeoff = state.elapsed;
+    advance(state, 1000, false, 0.3);
+    advance(state, 2000, true, 0.3);
+    advance(state, 600000, false, 0.3);
+    advance(state, 601000, false, 0.3);
+    advance(state, 601100, false, 0.3);
+    expect(measuredHop(state, takeoff)).toBe(2.1);
+    expect(source).toContain('evaHopStart = evaResources.elapsed');
+    expect(source).toContain('evaWasAirborne && evaHopStart !== null');
+    expect(source).toContain('var evaHopDt = evaResourceDt');
+  });
+
   it('stops exactly at an empty reserve and never produces a negative cooldown', () => {
     const state = fresh();
     state.oxygen = 0.1;

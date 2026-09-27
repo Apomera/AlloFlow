@@ -296,11 +296,15 @@ test.describe('Moon Mission — real WebGL EVA', () => {
       const action = document.getElementById('eva-lrv-action');
       return action && /Board LRV/i.test(String(action.textContent)) ? true : false;
     }, null, { timeout: 30000 }).then(() => true).catch(() => false);
-    await page.keyboard.up('KeyD');
-    await page.keyboard.up('KeyW');
-    expect(reached, 'the visible LRV control never reported boarding range').toBe(true);
-
-    await page.keyboard.press('KeyV');
+    try {
+      expect(reached, 'the visible LRV control never reported boarding range').toBe(true);
+      // Board on the range cue. Releasing two keys in separate browser round
+      // trips first can let the active-time walk pass the rover on a slow GPU.
+      await page.keyboard.press('KeyV');
+    } finally {
+      await page.keyboard.up('KeyD');
+      await page.keyboard.up('KeyW');
+    }
     await expect(page.locator('#eva-mode')).toContainText('LRV');
     await expect(page.locator('#eva-lrv-action')).toContainText('Exit LRV');
     await expect.poll(() => evaCanvas.getAttribute('data-geology-traverse-step')).toBe('2');
